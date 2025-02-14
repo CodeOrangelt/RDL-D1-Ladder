@@ -5,6 +5,7 @@ auth.onAuthStateChanged(function(user) {
     if (user) {
         document.getElementById('report-form').style.display = 'block';
         document.getElementById('auth-warning').style.display = 'none';
+        document.getElementById('loser-username').value = user.email;  // Auto-fill loser's username
         populateWinnerDropdown();
     } else {
         document.getElementById('report-form').style.display = 'none';
@@ -37,6 +38,7 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
     const finalScore = document.getElementById('final-score').value;
     const suicides = document.getElementById('suicides').value;
     const mapPlayed = document.getElementById('map-played').value;
+    const loserComment = document.getElementById('loser-comment').value;
     const reportErrorDiv = document.getElementById('report-error');
 
     const reportData = {
@@ -45,6 +47,8 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
         finalScore: finalScore,
         suicides: suicides,
         mapPlayed: mapPlayed,
+        loserComment: loserComment,
+        winnerComment: '',
         approved: false  // Initial status
     };
 
@@ -59,15 +63,3 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
             reportErrorDiv.innerHTML = error.message;
         });
 });
-
-// Example CORS Bypass using no-cors mode
-fetch('https://s1.npass.app/icons/github.io.png', {
-    mode: 'no-cors'
-})
-.then(response => {
-    console.log(response);
-})
-.catch(error => {
-    console.error('Error fetching resource:', error);
-});
-

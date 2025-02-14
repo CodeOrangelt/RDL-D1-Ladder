@@ -22,7 +22,7 @@
         <h1>Report Game</h1>
         <div id="auth-warning" style="display: none; color: red;">You must be signed in to report a game.</div>
         <form id="report-form" style="display: none;">
-            <input type="text" id="loser-username" placeholder="Your Username (Loser)" required>
+            <input type="text" id="loser-username" placeholder="Your Username (Loser)" required readonly>
             <select id="winner-username" required>
                 <option value="">Select Winner</option>
                 <!-- Options will be populated by JavaScript -->
@@ -30,6 +30,7 @@
             <input type="number" id="final-score" placeholder="Final Score by 20" required>
             <input type="number" id="suicides" placeholder="Suicides" required>
             <input type="text" id="map-played" placeholder="Map Played" required>
+            <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
             <button type="submit">Report Game</button>
         </form>
         <div id="report-error"></div>
