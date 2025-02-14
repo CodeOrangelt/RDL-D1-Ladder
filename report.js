@@ -3,9 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             fetchUsername(user.uid);
-            document.getElementById('auth-warning').style.display = 'none';
-            document.getElementById('report-form').style.display = 'block';
-            document.getElementById('confirm-form').style.display = 'block';
+            checkForOutstandingReport(user.uid);
         } else {
             document.getElementById('auth-warning').style.display = 'block';
             document.getElementById('report-form').style.display = 'none';
@@ -90,4 +88,34 @@ function fetchUsername(uid) {
     }).catch(error => {
         console.error('Error getting document:', error);
     });
+}
+
+function checkForOutstandingReport(uid) {
+    db.collection('reports')
+        .where('loserUsername', '==', uid)
+        .where('approved', '==', false)
+        .get()
+        .then(querySnapshot => {
+            if (!querySnapshot.empty) {
+                // Outstanding report found
+                document.getElementById('confirm-form').style.display = 'block';
+                document.getElementById('report-form').style.display = 'none';
+
+                const reportData = querySnapshot.docs[0].data();
+                // Populate confirm form fields with report data
+                document.getElementById('loser-username-confirm').textContent = reportData.loserUsername;
+                document.getElementById('winner-username-confirm').textContent = reportData.winnerUsername;
+                document.getElementById('final-score-confirm').textContent = reportData.finalScore;
+                document.getElementById('suicides-confirm').textContent = reportData.suicides;
+                document.getElementById('map-played-confirm').textContent = reportData.mapPlayed;
+                document.getElementById('loser-comment-confirm').textContent = reportData.loserComment;
+            } else {
+                // No outstanding report, show report form
+                document.getElementById('report-form').style.display = 'block';
+                document.getElementById('confirm-form').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching reports: ', error);
+        });
 }
