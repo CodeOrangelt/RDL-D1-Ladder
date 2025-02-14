@@ -4,7 +4,7 @@
 auth.onAuthStateChanged(function(user) {
     if (user) {
         document.getElementById('auth-warning').style.display = 'none';
-        fetchUsername(user.uid);  // Fetch the username
+        checkForOutstandingReports(user.email);
     } else {
         document.getElementById('report-form').style.display = 'none';
         document.getElementById('confirm-form').style.display = 'none';
@@ -12,26 +12,11 @@ auth.onAuthStateChanged(function(user) {
     }
 });
 
-// Fetch the username and check for outstanding reports
-function fetchUsername(uid) {
-    db.collection('players').doc(uid).get().then(doc => {
-        if (doc.exists) {
-            const username = doc.data().username;
-            document.getElementById('loser-username').textContent = username;  // Display loser's username
-            checkForOutstandingReports(username);
-        } else {
-            console.error("No such document!");
-        }
-    }).catch(error => {
-        console.error("Error getting document:", error);
-    });
-}
-
 // Check for outstanding reports and toggle forms
-function checkForOutstandingReports(winnerUsername) {
+function checkForOutstandingReports(winnerEmail) {
     const reportErrorDiv = document.getElementById('report-error');
 
-    db.collection('reports').where('winnerUsername', '==', winnerUsername).where('approved', '==', false).get()
+    db.collection('reports').where('winnerUsername', '==', winnerEmail).where('approved', '==', false).get()
         .then(snapshot => {
             if (!snapshot.empty) {
                 // Show confirm form
@@ -65,6 +50,7 @@ function checkForOutstandingReports(winnerUsername) {
             } else {
                 // Show report form
                 document.getElementById('report-form').style.display = 'block';
+                document.getElementById('loser-username').textContent = auth.currentUser.email;  // Display loser's username
                 populateWinnerDropdown();
             }
         })
@@ -117,7 +103,7 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
     db.collection('reports').add(reportData)
         .then(() => {
             alert('Game reported successfully! Awaiting approval from the winner.');
-            document.getElementById('report-form').reset();
+            document.getElementById('repsort-form').reset();
         })
         .catch(error => {
             console.error("Error reporting game:", error);
