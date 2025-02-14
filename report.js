@@ -1,5 +1,33 @@
 // report.js
 
+// Check if user is signed in
+auth.onAuthStateChanged(function(user) {
+    if (user) {
+        document.getElementById('report-form').style.display = 'block';
+        document.getElementById('auth-warning').style.display = 'none';
+        populateWinnerDropdown();
+    } else {
+        document.getElementById('report-form').style.display = 'none';
+        document.getElementById('auth-warning').style.display = 'block';
+    }
+});
+
+// Populate winner dropdown with players from Firestore
+function populateWinnerDropdown() {
+    const winnerSelect = document.getElementById('winner-username');
+    db.collection('players').get()
+        .then(snapshot => {
+            snapshot.forEach(doc => {
+                const player = doc.data();
+                const option = document.createElement('option');
+                option.value = player.username;
+                option.textContent = player.username;
+                winnerSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching players:', error));
+}
+
 // Report Form Submission
 document.getElementById('report-form').addEventListener('submit', function (e) {
     e.preventDefault();

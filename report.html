@@ -20,9 +20,13 @@
     </nav>
     <div class="container">
         <h1>Report Game</h1>
-        <form id="report-form">
+        <div id="auth-warning" style="display: none; color: red;">You must be signed in to report a game.</div>
+        <form id="report-form" style="display: none;">
             <input type="text" id="loser-username" placeholder="Your Username (Loser)" required>
-            <input type="text" id="winner-username" placeholder="Winner's Username" required>
+            <select id="winner-username" required>
+                <option value="">Select Winner</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
             <input type="number" id="final-score" placeholder="Final Score by 20" required>
             <input type="number" id="suicides" placeholder="Suicides" required>
             <input type="text" id="map-played" placeholder="Map Played" required>
