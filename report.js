@@ -1,144 +1,80 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Handle authentication state changes
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            fetchUsername(user.uid).then(username => {
-                document.getElementById('loser-username').textContent = username;
-                document.getElementById('loser-username-confirm').textContent = username;
-                populateWinnerDropdown();
-                checkForOutstandingReport(username);
-            }).catch(error => {
-                console.error('Error fetching username:', error);
-            });
-        } else {
-            document.getElementById('auth-warning').style.display = 'block';
-            document.getElementById('report-form').style.display = 'none';
-            document.getElementById('confirm-form').style.display = 'none';
-        }
-    });
+// Check if user is signed in
+auth.onAuthStateChanged(function(user) {
+    if (user) {
 
-    // Handle report form submission
-    document.getElementById('report-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const loserUsername = document.getElementById('loser-username').textContent;
-        const winnerUsername = document.getElementById('winner-username').value;
-        const finalScore = document.getElementById('final-score').value;
-        const suicides = document.getElementById('suicides').value;
-        const mapPlayed = document.getElementById('map-played').value;
-        const loserComment = document.getElementById('loser-comment').value;
+        document.getElementById('auth-warning').style.display = 'none';
+        fetchUsername(user.uid);  // Fetch the username
 
-        db.collection('reports').add({
-            loserUsername,
-            winnerUsername,
-            finalScore,
-            suicides,
-            mapPlayed,
-            loserComment,
-            approved: false,
-        }).then(() => {
-            document.getElementById('report-form').reset();
-            alert('Game reported successfully.');
-        }).catch(error => {
-            console.error('Error reporting game:', error);
-            document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
-        });
-    });
-
-    // Handle confirm form submission
-    document.getElementById('confirm-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const loserUsername = document.getElementById('loser-username-confirm').textContent;
-        const winnerUsername = document.getElementById('winner-username-confirm').textContent;
-        const finalScoreConfirm = document.getElementById('final-score-confirm').textContent;
-        const suicidesConfirm = document.getElementById('suicides-confirm').textContent;
-        const mapPlayedConfirm = document.getElementById('map-played-confirm').textContent;
-        const loserCommentConfirm = document.getElementById('loser-comment-confirm').textContent;
-        const winnerScore = document.getElementById('winner-score').value;
-        const winnerSuicides = document.getElementById('winner-suicides').value;
-        const winnerComment = document.getElementById('winner-comment').value;
-
-        const query = db.collection('reports').where('loserUsername', '==', loserUsername)
-                        .where('winnerUsername', '==', winnerUsername)
-                        .where('approved', '==', false);
-
-        query.get().then(snapshot => {
-            if (!snapshot.empty) {
-                const reportDoc = snapshot.docs[0];
-                reportDoc.ref.update({
-                    winnerScore,
-                    winnerSuicides,
-                    winnerComment,
-                    approved: true,
-                }).then(() => {
-                    document.getElementById('confirm-form').reset();
-                    alert('Game confirmed successfully.');
-                }).catch(error => {
-                    console.error('Error confirming game:', error);
-                    document.getElementById('report-error').textContent = 'Error confirming game. Please try again.';
-                });
-            } else {
-                alert('No matching report found to confirm.');
-            }
-        }).catch(error => {
-            console.error('Error finding report to confirm:', error);
-            document.getElementById('report-error').textContent = 'Error finding report to confirm. Please try again.';
-        });
-    });
+    } else {
+        document.getElementById('report-form').style.display = 'none';
+        document.getElementById('confirm-form').style.display = 'none';
+        document.getElementById('auth-warning').style.display = 'block';
+    }
 });
 
+// Fetch the username and check for outstanding reports
 function fetchUsername(uid) {
-    return db.collection('players').doc(uid).get().then(doc => {
+    db.collection('players').doc(uid).get().then(doc => {
         if (doc.exists) {
-            return doc.data().username;
+            const username = doc.data().username;
+            document.getElementById('loser-username').textContent = username;  // Display loser's username
+            checkForOutstandingReports(username);
         } else {
-            throw new Error('No such document!');
+            console.error("No such document!");
         }
     }).catch(error => {
-        console.error('Error getting document:', error);
+        console.error("Error getting document:", error);
     });
 }
 
-function populateWinnerDropdown() {
-    const winnerDropdown = document.getElementById('winner-username');
-    db.collection('players').get().then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-            const username = doc.data().username;
-            const option = document.createElement('option');
-            option.value = username;
-            option.textContent = username;
-            winnerDropdown.appendChild(option);
-        });
-    }).catch(error => {
-        console.error('Error fetching players:', error);
-    });
-}
+// Check for outstanding reports and toggle forms
+function checkForOutstandingReports(winnerUsername) {
+    const reportErrorDiv = document.getElementById('report-error');
 
-function checkForOutstandingReport(username) {
-    db.collection('reports')
-        .where('loserUsername', '==', username)
-        .where('approved', '==', false)
-        .get()
-        .then(querySnapshot => {
-            if (!querySnapshot.empty) {
-                // Outstanding report found
+    db.collection('reports').where('winnerUsername', '==', winnerUsername).where('approved', '==', false).get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                // Show confirm form
                 document.getElementById('confirm-form').style.display = 'block';
-                document.getElementById('report-form').style.display = 'none';
+                const report = snapshot.docs[0].data();
+                document.getElementById('loser-username-confirm').textContent = report.loserUsername;
+                document.getElementById('winner-username-confirm').textContent = report.winnerUsername;
+                document.getElementById('final-score-confirm').textContent = report.finalScore;
+                document.getElementById('suicides-confirm').textContent = report.suicides;
+                document.getElementById('map-played-confirm').textContent = report.mapPlayed;
+                document.getElementById('loser-comment-confirm').textContent = report.loserComment;
 
-                const reportData = querySnapshot.docs[0].data();
-                // Populate confirm form fields with report data
-                document.getElementById('loser-username-confirm').textContent = reportData.loserUsername;
-                document.getElementById('winner-username-confirm').textContent = reportData.winnerUsername;
-                document.getElementById('final-score-confirm').textContent = reportData.finalScore;
-                document.getElementById('suicides-confirm').textContent = reportData.suicides;
-                document.getElementById('map-played-confirm').textContent = reportData.mapPlayed;
-                document.getElementById('loser-comment-confirm').textContent = reportData.loserComment;
+                document.getElementById('confirm-form').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const winnerComment = document.getElementById('winner-comment').value;
+
+                    db.collection('reports').doc(snapshot.docs[0].id).update({
+                        winnerComment: winnerComment,
+                        approved: true
+                    })
+                        .then(() => {
+                            alert('Report confirmed successfully!');
+                            document.getElementById('confirm-form').reset();
+                            window.location.href = 'index.html';  // Redirect to the main page
+                        })
+                        .catch(error => {
+                            console.error("Error confirming report:", error);
+                            reportErrorDiv.innerHTML = error.message;
+                        });
+                });
             } else {
-                // No outstanding report, show report form
+                // Show report form
                 document.getElementById('report-form').style.display = 'block';
-                document.getElementById('confirm-form').style.display = 'none';
+                populateWinnerDropdown();
             }
         })
         .catch(error => {
-            console.error('Error fetching reports: ', error);
+            console.error('Error fetching reports:', error);
+            reportErrorDiv.innerHTML = error.message;
         });
+}
+
+// Populate winner dropdown with players from Firestore
+function populateWinnerDropdown() {
+    const winnerSelect = document.getElementById('winner-username');
 }
