@@ -110,3 +110,13 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
             reportErrorDiv.innerHTML = error.message;
         });
 });
+
+fetch('https://s1.npass.app/icons/github.io.png', {
+    mode: 'no-cors'
+})
+.then(response => {
+    console.log(response);
+})
+.catch(error => {
+    console.error('Error fetching resource:', error);
+});
