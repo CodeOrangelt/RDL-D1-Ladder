@@ -10,6 +10,7 @@ document.getElementById('register').addEventListener('submit', function (e) {
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
             const user = userCredential.user;
+            console.log("User registered:", user);
             return db.collection('players').doc(user.uid).set({
                 username: username,
                 email: email,
@@ -17,10 +18,12 @@ document.getElementById('register').addEventListener('submit', function (e) {
             });
         })
         .then(() => {
+            console.log("User data saved to Firestore");
             alert('Registration successful! You can now log in.');
             window.location.reload();
         })
         .catch(error => {
+            console.error("Error registering user:", error);
             errorDiv.innerHTML = error.message;
         });
 });
