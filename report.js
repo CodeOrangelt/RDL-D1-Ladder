@@ -5,7 +5,7 @@ auth.onAuthStateChanged(function(user) {
     if (user) {
         document.getElementById('report-form').style.display = 'block';
         document.getElementById('auth-warning').style.display = 'none';
-        document.getElementById('loser-username').value = user.email;  // Auto-fill loser's username
+        document.getElementById('loser-username').textContent = user.email;  // Display loser's username
         populateWinnerDropdown();
     } else {
         document.getElementById('report-form').style.display = 'none';
@@ -33,7 +33,7 @@ function populateWinnerDropdown() {
 document.getElementById('report-form').addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const loserUsername = document.getElementById('loser-username').value;
+    const loserUsername = document.getElementById('loser-username').textContent;
     const winnerUsername = document.getElementById('winner-username').value;
     const finalScore = document.getElementById('final-score').value;
     const suicides = document.getElementById('suicides').value;

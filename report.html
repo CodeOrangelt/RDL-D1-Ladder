@@ -16,13 +16,17 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="login.html">Login/Register</a></li>
             <li><a href="report.html">Report Game</a></li>
+            <li><a href="#" id="sign-out">Sign Out</a></li>
         </ul>
     </nav>
     <div class="container">
         <h1>Report Game</h1>
         <div id="auth-warning" style="display: none; color: red;">You must be signed in to report a game.</div>
         <form id="report-form" style="display: none;">
-            <input type="text" id="loser-username" placeholder="Your Username (Loser)" required readonly>
+            <div>
+                <label for="loser-username">Your Username (Loser):</label>
+                <span id="loser-username" style="font-weight: bold;"></span>
+            </div>
             <select id="winner-username" required>
                 <option value="">Select Winner</option>
                 <!-- Options will be populated by JavaScript -->
@@ -36,5 +40,6 @@
         <div id="report-error"></div>
     </div>
     <script src="report.js"></script>
+    <script src="logout.js"></script> <!-- Include logout.js -->
 </body>
 </html>
