@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Game</title>
+    <link rel="stylesheet" href="report-style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="login.html">Login/Register</a></li>
+            <li><a href="report.html">Report Game</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Report Game</h1>
+        <form id="report-form">
+            <input type="text" id="loser-username" placeholder="Your Username (Loser)" required>
+            <input type="text" id="winner-username" placeholder="Winner's Username" required>
+            <input type="number" id="final-score" placeholder="Final Score by 20" required>
+            <input type="number" id="suicides" placeholder="Suicides" required>
+            <input type="text" id="map-played" placeholder="Map Played" required>
+            <button type="submit">Report Game</button>
+        </form>
+        <div id="report-error"></div>
+    </div>
+    <script src="report.js"></script>
+</body>
+</html>
