@@ -4,6 +4,11 @@
 auth.onAuthStateChanged(function(user) {
     if (user) {
         fetchUsername(user.uid);  // Fetch the username
+        document.getElementById('sign-out-container').style.display = 'block';
+        document.getElementById('login-register').style.display = 'none';  // Hide Login/Register
+    } else {
+        document.getElementById('sign-out-container').style.display = 'none';
+        document.getElementById('login-register').style.display = 'block';  // Show Login/Register
     }
 });
 
