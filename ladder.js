@@ -6,6 +6,7 @@ db.collection('players').orderBy('points', 'desc')
         const seenUsernames = new Set();
         snapshot.forEach(doc => {
             const player = doc.data();
+            console.log(`Fetched username: ${player.username}`);  // Log fetched usernames
             if (!seenUsernames.has(player.username)) {
                 seenUsernames.add(player.username);
                 const row = document.createElement('tr');
@@ -16,6 +17,8 @@ db.collection('players').orderBy('points', 'desc')
                 `;
                 tbody.appendChild(row);
                 rank++;
+            } else {
+                console.log(`Duplicate username skipped: ${player.username}`);
             }
         });
     });

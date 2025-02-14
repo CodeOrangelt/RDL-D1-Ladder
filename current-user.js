@@ -1,5 +1,3 @@
-// current-user.js
-
 // Check if user is signed in
 auth.onAuthStateChanged(function(user) {
     if (user) {
@@ -32,24 +30,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function fetchLadderData() {
-    const ladderTableBody = document.getElementById('ladder').getElementsByTagName('tbody')[0];
+    const table = document.getElementById('ladder');
+    if (!table) {
+        console.error('Ladder table not found');
+        return;
+    }
 
-    db.collection('players').orderBy('points', 'desc').get()
-        .then(snapshot => {
+    const tbody = table.getElementsByTagName('tbody')[0];
+    if (!tbody) {
+        console.error('Ladder table body not found');
+        return;
+    }
+
+    // Clear existing rows and fetch data
+    tbody.innerHTML = '';  // Clear existing rows
+    let rank = 1;
+    const seenUsernames = new Set();
+
+    db.collection('players').orderBy('points', 'desc')
+        .onSnapshot(snapshot => {
+            tbody.innerHTML = '';  // Clear existing rows
             snapshot.forEach(doc => {
                 const player = doc.data();
-                const row = ladderTableBody.insertRow();
-
-                const rankCell = row.insertCell(0);
-                const usernameCell = row.insertCell(1);
-                const pointsCell = row.insertCell(2);
-
-                rankCell.textContent = row.rowIndex + 1;  // Rank is the row index + 1
-                usernameCell.textContent = player.username;
-                pointsCell.textContent = player.points;
+                if (!seenUsernames.has(player.username)) {
+                    seenUsernames.add(player.username);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${rank}</td>
+                        <td>${player.username}</td>
+                        <td>${player.points}</td>
+                    `;
+                    tbody.appendChild(row);
+                    rank++;
+                }
             });
-        })
-        .catch(error => {
-            console.error("Error fetching ladder data:", error);
         });
 }
