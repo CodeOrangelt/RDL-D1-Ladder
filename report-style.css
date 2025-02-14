@@ -14,36 +14,6 @@ h1 {
     margin: 20px;
 }
 
-nav {
-    width: 100%;
-    background-color: #4CAF50;
-    overflow: hidden;
-}
-
-nav ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-}
-
-nav ul li {
-    margin: 0 15px;
-}
-
-nav ul li a {
-    display: block;
-    padding: 14px 20px;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-}
-
-nav ul li a:hover {
-    background-color: #45a049;
-}
-
 .container {
     display: flex;
     justify-content: center;

@@ -1,0 +1,44 @@
+/* Navigation Bar Styling */
+nav {
+    width: 100%;
+    background-color: #4CAF50;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    display: block;
+    padding: 14px 20px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav ul li a:hover {
+    background-color: #45a049;
+    transition: background-color 0.3s ease;
+}
+
+/* Sign Out Container Styling */
+#sign-out-container {
+    display: flex;
+    align-items: center;
+}
+
+#current-user {
+    margin-left: 10px;
+    font-weight: bold;
+}
