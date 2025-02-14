@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Game</title>
+    <title>Report or Confirm Game</title>
     <link rel="stylesheet" href="report-style.css">
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
@@ -15,14 +15,17 @@
         <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="login.html">Login/Register</a></li>
-            <li><a href="report.html">Report Game</a></li>
+            <li><a href="report.html">Report/Confirm Game</a></li>
             <li><a href="#" id="sign-out">Sign Out</a></li>
         </ul>
     </nav>
     <div class="container">
-        <h1>Report Game</h1>
-        <div id="auth-warning" style="display: none; color: red;">You must be signed in to report a game.</div>
+        <h1>Report or Confirm Game</h1>
+        <div id="auth-warning" style="display: none; color: red;">You must be signed in to report or confirm a game.</div>
+        
+        <!-- Report Form -->
         <form id="report-form" style="display: none;">
+            <h2>Report Game</h2>
             <div>
                 <label for="loser-username">Your Username (Loser):</label>
                 <span id="loser-username" style="font-weight: bold;"></span>
@@ -37,9 +40,40 @@
             <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
             <button type="submit">Report Game</button>
         </form>
+        
+        <!-- Confirm Form -->
+        <form id="confirm-form" style="display: none;">
+            <h2>Confirm Game Report</h2>
+            <div>
+                <label for="loser-username-confirm">Loser's Username:</label>
+                <span id="loser-username-confirm" style="font-weight: bold;"></span>
+            </div>
+            <div>
+                <label for="winner-username-confirm">Your Username (Winner):</label>
+                <span id="winner-username-confirm" style="font-weight: bold;"></span>
+            </div>
+            <div>
+                <label for="final-score-confirm">Final Score by 20:</label>
+                <span id="final-score-confirm" style="font-weight: bold;"></span>
+            </div>
+            <div>
+                <label for="suicides-confirm">Suicides:</label>
+                <span id="suicides-confirm" style="font-weight: bold;"></span>
+            </div>
+            <div>
+                <label for="map-played-confirm">Map Played:</label>
+                <span id="map-played-confirm" style="font-weight: bold;"></span>
+            </div>
+            <div>
+                <label for="loser-comment-confirm">Loser's Comment:</label>
+                <span id="loser-comment-confirm" style="font-weight: bold;"></span>
+            </div>
+            <textarea id="winner-comment" placeholder="Your Comment" required></textarea>
+            <button type="submit">Confirm Game</button>
+        </form>
         <div id="report-error"></div>
     </div>
     <script src="report.js"></script>
-    <script src="logout.js"></script> <!-- Include logout.js -->
+    <script src="logout.js"></script>
 </body>
 </html>
