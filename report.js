@@ -2,9 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle authentication state changes
     auth.onAuthStateChanged(user => {
         if (user) {
-            fetchUsername(user.uid);
-            populateWinnerDropdown();
-            checkForOutstandingReport(user.uid);
+            fetchUsername(user.uid).then(username => {
+                document.getElementById('loser-username').textContent = username;
+                document.getElementById('loser-username-confirm').textContent = username;
+                populateWinnerDropdown();
+                checkForOutstandingReport(username);
+            }).catch(error => {
+                console.error('Error fetching username:', error);
+            });
         } else {
             document.getElementById('auth-warning').style.display = 'block';
             document.getElementById('report-form').style.display = 'none';
@@ -82,13 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function fetchUsername(uid) {
-    db.collection('players').doc(uid).get().then(doc => {
+    return db.collection('players').doc(uid).get().then(doc => {
         if (doc.exists) {
-            const username = doc.data().username;
-            document.getElementById('loser-username').textContent = username;
-            document.getElementById('loser-username-confirm').textContent = username;
+            return doc.data().username;
         } else {
-            console.error('No such document!');
+            throw new Error('No such document!');
         }
     }).catch(error => {
         console.error('Error getting document:', error);
@@ -110,9 +113,9 @@ function populateWinnerDropdown() {
     });
 }
 
-function checkForOutstandingReport(uid) {
+function checkForOutstandingReport(username) {
     db.collection('reports')
-        .where('loserUsername', '==', uid)
+        .where('loserUsername', '==', username)
         .where('approved', '==', false)
         .get()
         .then(querySnapshot => {
