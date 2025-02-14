@@ -30,6 +30,8 @@ document.getElementById('register-form').addEventListener('submit', function (e)
         });
 });
 
+// login.js
+
 // Login Form Submission
 document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -38,8 +40,11 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
     const password = document.getElementById('login-password').value;
     const loginErrorDiv = document.getElementById('login-error');
 
+    console.log("Attempting login with email:", email);  // Debugging log
+
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
+            console.log("Login successful for email:", email);  // Debugging log
             alert('Login successful!');
             window.location.href = 'index.html';
         })
@@ -48,3 +53,4 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
             loginErrorDiv.innerHTML = error.message;
         });
 });
+
