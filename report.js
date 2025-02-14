@@ -59,3 +59,15 @@ document.getElementById('report-form').addEventListener('submit', function (e) {
             reportErrorDiv.innerHTML = error.message;
         });
 });
+
+// Example CORS Bypass using no-cors mode
+fetch('https://s1.npass.app/icons/github.io.png', {
+    mode: 'no-cors'
+})
+.then(response => {
+    console.log(response);
+})
+.catch(error => {
+    console.error('Error fetching resource:', error);
+});
+
