@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             fetchUsername(user.uid);
+            populateWinnerDropdown();
             checkForOutstandingReport(user.uid);
         } else {
             document.getElementById('auth-warning').style.display = 'block';
@@ -43,10 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const loserUsername = document.getElementById('loser-username-confirm').textContent;
         const winnerUsername = document.getElementById('winner-username-confirm').textContent;
-        const finalScore = document.getElementById('final-score-confirm').textContent;
-        const suicides = document.getElementById('suicides-confirm').textContent;
-        const mapPlayed = document.getElementById('map-played-confirm').textContent;
-        const loserComment = document.getElementById('loser-comment-confirm').textContent;
+        const finalScoreConfirm = document.getElementById('final-score-confirm').textContent;
+        const suicidesConfirm = document.getElementById('suicides-confirm').textContent;
+        const mapPlayedConfirm = document.getElementById('map-played-confirm').textContent;
+        const loserCommentConfirm = document.getElementById('loser-comment-confirm').textContent;
+        const winnerScore = document.getElementById('winner-score').value;
+        const winnerSuicides = document.getElementById('winner-suicides').value;
         const winnerComment = document.getElementById('winner-comment').value;
 
         const query = db.collection('reports').where('loserUsername', '==', loserUsername)
@@ -57,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!snapshot.empty) {
                 const reportDoc = snapshot.docs[0];
                 reportDoc.ref.update({
+                    winnerScore,
+                    winnerSuicides,
                     winnerComment,
                     approved: true,
                 }).then(() => {
@@ -87,6 +92,21 @@ function fetchUsername(uid) {
         }
     }).catch(error => {
         console.error('Error getting document:', error);
+    });
+}
+
+function populateWinnerDropdown() {
+    const winnerDropdown = document.getElementById('winner-username');
+    db.collection('players').get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+            const username = doc.data().username;
+            const option = document.createElement('option');
+            option.value = username;
+            option.textContent = username;
+            winnerDropdown.appendChild(option);
+        });
+    }).catch(error => {
+        console.error('Error fetching players:', error);
     });
 }
 
