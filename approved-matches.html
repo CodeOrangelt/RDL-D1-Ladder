@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Competitive Ladder</title>
+    <title>Approved Matches</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
@@ -14,26 +14,30 @@
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li id="login-register"><a href="login.html">Login/Register</a></li>
+            <li><a href="login.html">Login/Register</a></li>
             <li><a href="report.html">Report Game</a></li>
-            <li><a href="approved-matches.html">Recent Matches</a></li>
+            <li><a href="approved-matches.html">Approved Matches</a></li>
             <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
         </ul>
     </nav>
-    <h1>Competitive Ladder</h1>
-    <table id="ladder">
+    <h1>Approved Matches</h1>
+    <table id="approved-matches">
         <thead>
             <tr>
-                <th>Rank</th>
-                <th>Username</th>
-                <th>Points</th>
+                <th>Loser Username</th>
+                <th>Winner Username</th>
+                <th>Final Score</th>
+                <th>Suicides</th>
+                <th>Map Played</th>
+                <th>Loser Comment</th>
+                <th>Winner Comment</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Player data will be injected here by JavaScript -->
+            <!-- Approved matches data will be injected here by JavaScript -->
         </tbody>
     </table>
-    <script src="ladder.js"></script>
+    <script src="approved-matches.js"></script>
     <script src="logout.js"></script> <!-- Include logout.js -->
     <script src="current-user.js"></script> <!-- Include current-user.js -->
 </body>
