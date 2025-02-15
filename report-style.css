@@ -144,18 +144,18 @@ textarea {
 }
 
 #ladder th, #ladder td {
-    border: 1px solid #ff0000;
+    border: 1px solid #dddddd;
     padding: 8px;
     text-align: left;
 }
 
 #ladder th {
-    background-color: #f0f0f0;
+    background-color: #ff0000;
     font-weight: bold;
 }
 
 #ladder tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #ff0000;
 }
 
 /* Styles for the report lightbox */

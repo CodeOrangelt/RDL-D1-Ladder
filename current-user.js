@@ -1,54 +1,36 @@
 // current-user.js
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is signed in
-    auth.onAuthStateChanged(function(user) {
-        const signOutContainer = document.getElementById('sign-out-container');
-        const loginRegister = document.getElementById('login-register');
+    firebase.auth().onAuthStateChanged(function(user) {
+        const currentUserSpan = document.getElementById('current-user');
+        const signOutLink = document.getElementById('sign-out');
+        const loginRegisterLink = document.getElementById('login-register');
 
-        // Check if the elements exist before running any code
-        if (signOutContainer || loginRegister) {
-            if (user) {
-                fetchUsername(user.uid);  // Fetch the username
-                if (signOutContainer) {
-                    signOutContainer.style.display = 'block';
-                } else {
-                    console.error('Element with ID "sign-out-container" not found.');
-                }
+        if (user) {
+            // User is signed in.
+            currentUserSpan.textContent = user.displayName || user.email;
+            currentUserSpan.style.display = 'inline'; // Show the username
+            signOutLink.style.display = 'inline'; // Make sure sign-out link is visible
+            loginRegisterLink.style.display = 'none'; // Hide login/register
 
-                if (loginRegister) {
-                    loginRegister.style.display = 'none';  // Hide Login/Register
-                } else {
-                    console.error('Element with ID "login-register" not found.');
-                }
-            } else {
-                if (signOutContainer) {
-                    signOutContainer.style.display = 'none';
-                } else {
-                    console.error('Element with ID "sign-out-container" not found.');
-                }
-
-                if (loginRegister) {
-                    loginRegister.style.display = 'block';  // Show Login/Register
-                } else {
-                    console.error('Element with ID "login-register" not found.');
-                }
-            }
+            // Add event listener to sign out
+            signOutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                firebase.auth().signOut().then(function() {
+                    // Sign-out successful.
+                    console.log('User signed out.');
+                    window.location.href = 'index.html'; // Redirect to home page
+                }).catch(function(error) {
+                    // An error happened.
+                    console.error('Sign-out error:', error);
+                });
+            });
         } else {
-            console.warn('Elements with IDs "sign-out-container" and "login-register" not found on this page.');
+            // No user is signed in.
+            currentUserSpan.textContent = ''; // Clear the username
+            currentUserSpan.style.display = 'none'; // Hide the username
+            signOutLink.style.display = 'none'; // Hide the sign-out link
+            loginRegisterLink.style.display = 'inline'; // Show login/register
         }
     });
-
-    // Fetch the username and display it
-    function fetchUsername(uid) {
-        db.collection('players').doc(uid).get().then(doc => {
-            if (doc.exists) {
-                const username = doc.data().username;
-                document.getElementById('current-user').textContent = `(${username})`;  // Display current user's username
-            } else {
-                console.error("No such document!");
-            }
-        }).catch(error => {
-            console.error("Error getting document:", error);
-        });
-    }
 });

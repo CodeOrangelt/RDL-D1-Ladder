@@ -1,35 +1,38 @@
 /* Navigation Bar Styling */
 nav {
     width: 100%;
-    background-color: #4CAF50;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 nav ul {
-    list-style-type: none;
-    margin: 0;
+    list-style: none;
     padding: 0;
+    margin: 0;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 nav ul li {
-    margin: 0 15px;
+    margin: 0 10px;
 }
 
 nav ul li a {
     display: block;
-    padding: 14px 20px;
-    color: white;
+    padding: 8px 15px;
+    color: #fff;
     text-align: center;
     text-decoration: none;
     font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
 nav ul li a:hover {
-    background-color: #45a049;
-    transition: background-color 0.3s ease;
+    background-color: #555;
 }
 
 /* Sign Out Container Styling */
@@ -41,4 +44,35 @@ nav ul li a:hover {
 #current-user {
     margin-left: 10px;
     font-weight: bold;
+}
+
+/* Style for the user menu */
+#user-menu {
+    position: relative;
+}
+
+#user-menu #sign-out-container {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #333;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: none; /* Hide by default */
+}
+
+#user-menu:hover #sign-out-container {
+    display: block; /* Show on hover */
+}
+
+#user-menu #sign-out-container a {
+    display: block;
+    padding: 8px 15px;
+    text-decoration: none;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+#user-menu #sign-out-container a:hover {
+    background-color: #555;
 }
