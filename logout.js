@@ -1,4 +1,3 @@
-// logout.js
 
 function initializeLogout() {
     const signOutLink = document.getElementById('sign-out');
@@ -19,4 +18,3 @@ function initializeLogout() {
         console.error('Sign-out link not found.');
     }
 }
-</body>
