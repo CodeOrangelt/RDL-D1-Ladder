@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Report</title>
+    <link rel="stylesheet" href="nav.css"> <!-- Link to the nav bar CSS -->
+    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li id="login-register"><a href="login.html">Login/Register</a></li>
+            <li><a href="report.html">Report Game</a></li>
+            <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Confirm Report</h1>
+        <div id="auth-warning" class="auth-warning">You must be signed in to confirm a report.</div>
+
+        <!-- Confirm Form -->
+        <form id="confirm-form" class="form" style="display: none;">
+            <div class="form-group">
+                <label for="loser-username">Loser Username:</label>
+                <span id="loser-username"></span>
+            </div>
+            <div class="form-group">
+                <label for="winner-username">Winner Username:</label>
+                <span id="winner-username"></span>
+            </div>
+            <div class="form-group">
+                <label for="final-score">Final Score:</label>
+                <span id="final-score"></span>
+            </div>
+            <div class="form-group">
+                <label for="suicides">Suicides:</label>
+                <span id="suicides"></span>
+            </div>
+            <div class="form-group">
+                <label for="map-played">Map Played:</label>
+                <span id="map-played"></span>
+            </div>
+            <div class="form-group">
+                <label for="loser-comment">Loser Comment:</label>
+                <span id="loser-comment"></span>
+            </div>
+            <div class="form-group">
+                <label for="winner-comment">Your Comment:</label>
+                <textarea id="winner-comment" placeholder="Your Comment" required></textarea>
+            </div>
+            <button type="submit" class="btn">Confirm Report</button>
+        </form>
+        <div id="confirm-error" class="error"></div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script> <!-- Include your Firebase config -->
+    <script src="confirm.js"></script> <!-- Include your confirm script -->
+</body>
+</html>

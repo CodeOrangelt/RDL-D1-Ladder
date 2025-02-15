@@ -95,18 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .get()
             .then(snapshot => {
                 if (!snapshot.empty) {
-                    confirmationNotification.style.display = 'block'; // Show the notification button
-                    confirmationNotification.innerHTML = `<button id="confirm-report-button" class="btn">You have reports to confirm</button>`;
+                    confirmationNotification.style.display = 'block'; // Show the notification banner
+                    confirmationNotification.innerHTML = `
+                        <div class="notification-banner">
+                            You have outstanding reports to confirm. <a href="confirm.html">Click here to review</a>
+                        </div>
+                    `;
                     console.log('Outstanding reports found');
-
-                    // Auto-fill the form with report data
-                    const reportData = snapshot.docs[0].data();
-                    autofillReportForm(reportData);
-
-                    // Add click event to the button
-                    document.getElementById('confirm-report-button').addEventListener('click', () => {
-                        alert('Please check your outstanding reports.');
-                    });
                 } else {
                     console.log('No outstanding reports found');
                 }
@@ -114,19 +109,5 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Error checking for outstanding reports:', error);
             });
-    }
-
-    // Function to auto-fill the report form with report data
-    function autofillReportForm(reportData) {
-        console.log('Auto-filling report form with data:', reportData); // Debugging log
-
-        winnerUsername.value = reportData.winnerUsername;
-        finalScore.value = reportData.finalScore;
-        suicides.value = reportData.suicides;
-        mapPlayed.value = reportData.mapPlayed;
-        loserComment.value = reportData.loserComment;
-
-        // Display the form for confirmation
-        document.getElementById('report-form').style.display = 'block';
     }
 });
