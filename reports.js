@@ -138,26 +138,44 @@ document.addEventListener('DOMContentLoaded', () => {
                         const winnerDoc = querySnapshot.docs[0];
                         const winnerUsername = winnerDoc.data().username;
 
-                        // Populate the lightbox
-                        document.getElementById('lightbox-winner').textContent = winnerUsername;
-                        document.getElementById('lightbox-score').textContent = reportData.finalScore;
-                        document.getElementById('lightbox-suicides').textContent = reportData.suicides;
-                        document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
-                        document.getElementById('lightbox-comment').textContent = reportData.loserComment;
+                         db.collection('players')
+                            .where('email', '==', reportData.loserUsername)
+                            .get()
+                            .then(loserQuerySnapshot => {
+                                if (!loserQuerySnapshot.empty) {
+                                    const loserDoc = loserQuerySnapshot.docs[0];
+                                    const loserUsernameDisplay = loserDoc.data().username;
 
-                        // Show the lightbox
-                        document.getElementById('report-lightbox').style.display = 'block';
+                                    // Populate the lightbox
+                                    document.getElementById('lightbox-winner').textContent = winnerUsername;
+                                    document.getElementById('lightbox-loser').textContent = loserUsernameDisplay; // ADD THIS LINE
+                                    document.getElementById('lightbox-score').textContent = reportData.finalScore;
+                                    document.getElementById('lightbox-suicides').textContent = reportData.suicides;
+                                    document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
+                                    document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
-                        // Add event listener to the Approve button
-                        document.getElementById('approve-button').addEventListener('click', function() {
-                            approveReport(reportData.id);
-                            document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
-                        });
+                                    // Show the lightbox
+                                    document.getElementById('report-lightbox').style.display = 'block';
 
-                        // Add event listener to the Cancel button
-                        document.getElementById('cancel-button').addEventListener('click', function() {
-                            document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
-                        });
+                                    // Add event listener to the Approve button
+                                    document.getElementById('approve-button').addEventListener('click', function() {
+                                        approveReport(reportData.id);
+                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
+                                    });
+
+                                    // Add event listener to the Cancel button
+                                    document.getElementById('cancel-button').addEventListener('click', function() {
+                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
+                                    });
+                                } else {
+                                    console.error('No loser found with email:', reportData.loserUsername);
+                                    alert('Error: No loser found with that email.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching loser:', error);
+                                alert('Error fetching loser. Please try again.');
+                            });
                     } else {
                         console.error('No player found with email:', reportData.winnerUsername);
                         alert('Error: No player found with that email.');
