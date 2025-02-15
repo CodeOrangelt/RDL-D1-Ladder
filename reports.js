@@ -66,33 +66,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("Winner Username Value:", winnerUsername.value); // ADD THIS LINE
 
-        const reportData = {
-            matchId: matchId,
-            loserUsername: document.getElementById('loser-username').textContent,
-            winnerUsername: winnerUsername.value,
-            loserScore: loserScore.value,
-            suicides: suicides.value,
-            mapPlayed: mapPlayed.value,
-            loserComment: loserComment.value,
-            approved: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+        // Fetch the winner's username based on the email
+        db.collection('players')
+            .where('email', '==', winnerUsername.value)
+            .get()
+            .then(querySnapshot => {
+                if (!querySnapshot.empty) {
+                    const winnerDoc = querySnapshot.docs[0];
+                    const winnerUsernameValue = winnerDoc.data().username;
 
-        console.log("Report data being written:", reportData); // ADD THIS LINE
+                    const reportData = {
+                        matchId: matchId,
+                        loserUsername: document.getElementById('loser-username').textContent,
+                        winnerUsername: winnerUsernameValue, // Store the winner's username
+                        winnerEmail: winnerUsername.value, // Store the winner's email
+                        loserScore: loserScore.value,
+                        suicides: suicides.value,
+                        mapPlayed: mapPlayed.value,
+                        loserComment: loserComment.value,
+                        approved: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
 
-        db.collection('pendingMatches').doc(matchId).set(reportData)
-            .then(() => {
-                console.log('Report successfully added to pendingMatches.');
-                console.log("Report data after write:", reportData); // ADD THIS LINE
-                reportForm.reset();
-                alert('Game reported successfully.');
+                    console.log("Report data being written:", reportData); // ADD THIS LINE
 
-                // Check for outstanding reports for the LOSER (logged-in user)
-                checkForOutstandingReports(document.getElementById('loser-username').textContent);
+                    db.collection('pendingMatches').doc(matchId).set(reportData)
+                        .then(() => {
+                            console.log('Report successfully added to pendingMatches.');
+                            console.log("Report data after write:", reportData); // ADD THIS LINE
+                            reportForm.reset();
+                            alert('Game reported successfully.');
+
+                            // Check for outstanding reports for the LOSER (logged-in user)
+                            checkForOutstandingReports(document.getElementById('loser-username').textContent);
+                        })
+                        .catch((error) => {
+                            console.error('Error adding report to Firestore:', error);
+                            document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
+                        });
+                } else {
+                    console.error('No player found with email:', winnerUsername.value);
+                    alert('Error: No player found with that email.');
+                }
             })
-            .catch((error) => {
-                console.error('Error adding report to Firestore:', error);
-                document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
+            .catch(error => {
+                console.error('Error fetching winner:', error);
+                alert('Error fetching winner. Please try again.');
             });
     });
 
@@ -180,71 +199,35 @@ document.addEventListener('DOMContentLoaded', () => {
     function autoFillReportForm(reportData) {
         console.log("Report Data in autoFillReportForm:", reportData); // ADD THIS LINE
         if (reportData) {
-            // Fetch the username from the players collection
-            db.collection('players')
-                .where('email', '==', reportData.winnerUsername)
-                .get()
-                .then(querySnapshot => {
-                    if (!querySnapshot.empty) {
-                        // Get the username from the document
-                        const winnerDoc = querySnapshot.docs[0];
-                        const winnerUsername = winnerDoc.data().username;
+            // Populate the lightbox
+            document.getElementById('lightbox-winner').textContent = reportData.winnerUsername;
+            document.getElementById('lightbox-loser').textContent = reportData.loserUsername;
+            document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
+            document.getElementById('lightbox-suicides').textContent = reportData.suicides;
+            document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
+            document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
-                         db.collection('players')
-                            .where('email', '==', reportData.loserUsername)
-                            .get()
-                            .then(loserQuerySnapshot => {
-                                if (!loserQuerySnapshot.empty) {
-                                    const loserDoc = loserQuerySnapshot.docs[0];
-                                    const loserUsernameDisplay = loserDoc.data().username;
+            // Show the lightbox
+            document.getElementById('report-lightbox').style.display = 'block';
 
-                                    // Populate the lightbox
-                                    document.getElementById('lightbox-winner').textContent = winnerUsername;
-                                    document.getElementById('lightbox-loser').textContent = loserUsernameDisplay;
-                                    document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
-                                    document.getElementById('lightbox-suicides').textContent = reportData.suicides;
-                                    document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
-                                    document.getElementById('lightbox-comment').textContent = reportData.loserComment;
+            // Add event listener to the Approve button
+            const approveButton = document.getElementById('approve-button'); // Get the button element
+            const approveReportHandler = function() { // Store the function in a variable
+                // Get the winner's input values
+                const winnerScore = document.getElementById('winner-score').value;
+                const winnerSuicides = document.getElementById('winner-suicides').value;
+                const winnerComment = document.getElementById('winner-comment').value;
 
-                                    // Show the lightbox
-                                    document.getElementById('report-lightbox').style.display = 'block';
+                approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
+                approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
+            };
+            approveButton.addEventListener('click', approveReportHandler); // Add the event listener
 
-                                    // Add event listener to the Approve button
-                                    const approveButton = document.getElementById('approve-button'); // Get the button element
-                                    const approveReportHandler = function() { // Store the function in a variable
-                                        // Get the winner's input values
-                                        const winnerScore = document.getElementById('winner-score').value;
-                                        const winnerSuicides = document.getElementById('winner-suicides').value;
-                                        const winnerComment = document.getElementById('winner-comment').value;
-
-                                        approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
-                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
-                                        approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
-                                    };
-                                    approveButton.addEventListener('click', approveReportHandler); // Add the event listener
-
-                                    // Add event listener to the Cancel button
-                                    document.getElementById('cancel-button').addEventListener('click', function() {
-                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
-                                    });
-                                } else {
-                                    console.error('No loser found with email:', reportData.loserUsername);
-                                    alert('Error: No loser found with that email.');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching loser:', error);
-                                alert('Error fetching loser. Please try again.');
-                            });
-                    } else {
-                        console.error('No player found with email:', reportData.winnerUsername);
-                        alert('Error: No player found with that email.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching player:', error);
-                    alert('Error fetching player. Please try again.');
-                });
+            // Add event listener to the Cancel button
+            document.getElementById('cancel-button').addEventListener('click', function() {
+                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
+            });
         }
     }
 
