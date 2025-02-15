@@ -1,14 +1,10 @@
-<nav>
-    <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="report.html">Report Game</a></li>
-        <li><a href="approved-matches.html">Recent Matches</a></li>
-        <li id="user-menu">
-            <span id="current-user" style="font-weight: bold;"></span>
-            <div id="sign-out-container">
-                <a href="#" id="sign-out">Sign Out</a>
-            </div>
-        </li>
-        <li id="login-register"><a href="login.html">Login/Register</a></li>
-    </ul>
-</nav>
+<div id="nav-placeholder"></div>
+<script>
+    fetch('nav.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('nav-placeholder').innerHTML = data;
+            // Call initializeLogout after nav.html is loaded
+            initializeLogout();
+        });
+</script>
