@@ -14,10 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const row = ladderTable.insertRow();
 
                     const rankCell = row.insertCell();
-                    rankCell.textContent = rank++;
+                    rankCell.textContent = rank;
 
                     const usernameCell = row.insertCell();
                     usernameCell.textContent = player.username;
+
+                    // Apply shimmer effect to the #1 player
+                    if (rank === 1) {
+                        usernameCell.classList.add('shimmer');
+                    }
+
+                    rank++;
                 }
             });
         })
