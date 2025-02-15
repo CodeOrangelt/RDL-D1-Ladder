@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             // User is signed in, check if the email is "admin@ladder.com"
             if (user.email === 'admin@ladder.com') {
-                // User is authorized, show the admin backend and button
-                document.getElementById('admin-container').style.display = 'block';
+                // User is authorized, show the admin button
                 adminButton.style.display = 'block';
             } else {
                 // User is not authorized, redirect to another page or show an error message
