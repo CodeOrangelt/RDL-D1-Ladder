@@ -51,15 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Log the form data to the console (for debugging purposes)
         console.log('Report Data:', reportData);
 
-        // Send the reportData to your Firebase Firestore
-        db.collection('reports').add(reportData)
+        // Send the reportData to your Firebase Firestore (pendingMatches collection)
+        db.collection('pendingMatches').add(reportData)
             .then(() => {
-                console.log('Report successfully added to Firestore.');
+                console.log('Report successfully added to pendingMatches.');
                 reportForm.reset(); // Reset form fields after submission
                 alert('Game reported successfully.');
             })
             .catch((error) => {
-                console.error('Error adding report to Firestore: ', error);
+                console.error('Error adding report to Firestore:', error);
                 document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
             });
     });
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log('Checking for outstanding reports for username:', username); // Debugging log
 
-        db.collection('reports')
+        db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
             .where('approved', '==', false)
             .get()

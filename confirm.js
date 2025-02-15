@@ -17,16 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkForOutstandingReports(username) {
         console.log('Checking for outstanding reports for username:', username); // Debugging log
 
-        db.collection('reports')
+        db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
             .where('approved', '==', false)
             .get()
             .then(snapshot => {
                 if (!snapshot.empty) {
                     const reportData = snapshot.docs[0].data();
-                    autofillConfirmForm(reportData, snapshot.docs[0].id);
+                    const reportId = snapshot.docs[0].id;
+                    autofillConfirmForm(reportData, reportId);
                 } else {
                     console.log('No outstanding reports found');
+                    document.getElementById('auth-warning').textContent = 'No outstanding reports to confirm.';
                 }
             })
             .catch(error => {
@@ -52,27 +54,39 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const winnerComment = document.getElementById('winner-comment').value;
-            confirmReport(reportId, winnerComment);
+            confirmReport(reportId, reportData, winnerComment);
         });
     }
 
     // Function to confirm the report
-    function confirmReport(reportId, winnerComment) {
+    function confirmReport(reportId, reportData, winnerComment) {
         console.log('Confirming report with ID:', reportId); // Debugging log
 
-        db.collection('reports').doc(reportId).update({
-            approved: true,
-            winnerComment: winnerComment
-        })
-        .then(() => {
-            console.log('Report successfully confirmed.');
-            alert('Report confirmed successfully.');
-            document.getElementById('confirm-form').reset();
-            document.getElementById('confirm-form').style.display = 'none';
-        })
-        .catch((error) => {
-            console.error('Error confirming report:', error);
-            document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
-        });
+        // Update the original report with the confirmation details
+        reportData.winnerComment = winnerComment;
+        reportData.approved = true;
+
+        // Move report to approvedMatches collection
+        db.collection('approvedMatches').add(reportData)
+            .then(() => {
+                console.log('Report successfully added to approvedMatches.');
+
+                // Delete report from pendingMatches collection
+                db.collection('pendingMatches').doc(reportId).delete()
+                    .then(() => {
+                        console.log('Report successfully deleted from pendingMatches.');
+                        alert('Report confirmed successfully.');
+                        document.getElementById('confirm-form').reset();
+                        document.getElementById('confirm-form').style.display = 'none';
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting report from pendingMatches:', error);
+                        document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                    });
+            })
+            .catch((error) => {
+                console.error('Error adding report to approvedMatches:', error);
+                document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+            });
     }
 });
