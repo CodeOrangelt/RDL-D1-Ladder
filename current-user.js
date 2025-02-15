@@ -1,35 +1,40 @@
+// current-user.js
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is signed in
     auth.onAuthStateChanged(function(user) {
-        if (user) {
-            fetchUsername(user.uid);  // Fetch the username
-            const signOutContainer = document.getElementById('sign-out-container');
-            if (signOutContainer) {
-                signOutContainer.style.display = 'block';
-            } else {
-                console.error('Element with ID "sign-out-container" not found.');
-            }
+        const signOutContainer = document.getElementById('sign-out-container');
+        const loginRegister = document.getElementById('login-register');
 
-            const loginRegister = document.getElementById('login-register');
-            if (loginRegister) {
-                loginRegister.style.display = 'none';  // Hide Login/Register
+        // Check if the elements exist before running any code
+        if (signOutContainer || loginRegister) {
+            if (user) {
+                fetchUsername(user.uid);  // Fetch the username
+                if (signOutContainer) {
+                    signOutContainer.style.display = 'block';
+                } else {
+                    console.error('Element with ID "sign-out-container" not found.');
+                }
+
+                if (loginRegister) {
+                    loginRegister.style.display = 'none';  // Hide Login/Register
+                } else {
+                    console.error('Element with ID "login-register" not found.');
+                }
             } else {
-                console.error('Element with ID "login-register" not found.');
+                if (signOutContainer) {
+                    signOutContainer.style.display = 'none';
+                } else {
+                    console.error('Element with ID "sign-out-container" not found.');
+                }
+
+                if (loginRegister) {
+                    loginRegister.style.display = 'block';  // Show Login/Register
+                } else {
+                    console.error('Element with ID "login-register" not found.');
+                }
             }
         } else {
-            const signOutContainer = document.getElementById('sign-out-container');
-            if (signOutContainer) {
-                signOutContainer.style.display = 'none';
-            } else {
-                console.error('Element with ID "sign-out-container" not found.');
-            }
-
-            const loginRegister = document.getElementById('login-register');
-            if (loginRegister) {
-                loginRegister.style.display = 'block';  // Show Login/Register
-            } else {
-                console.error('Element with ID "login-register" not found.');
-            }
+            console.warn('Elements with IDs "sign-out-container" and "login-register" not found on this page.');
         }
     });
 
