@@ -132,22 +132,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateWinnerDropdown() {
         db.collection('players').get().then(querySnapshot => {
             // Clear existing options
-            winnerUsername.innerHTML = '<option value="">Select Winner</option>';
+            if (winnerUsername) {
+                winnerUsername.innerHTML = '<option value="">Select Winner</option>';
 
-            if (querySnapshot.empty) {
-                // Display a message if no players are found
-                winnerUsername.innerHTML = '<option value="">No players found</option>';
-            } else {
-                querySnapshot.forEach(doc => {
-                    const player = doc.data();
-                    // Exclude the current user from the dropdown
-                    if (player.email !== currentUserEmail) {
-                        const option = document.createElement('option');
-                        option.value = player.email; // Store the email address as the value
-                        option.textContent = player.username; // Display the username
-                        winnerUsername.appendChild(option);
-                    }
-                });
+                if (querySnapshot.empty) {
+                    // Display a message if no players are found
+                    winnerUsername.innerHTML = '<option value="">No players found</option>';
+                } else {
+                    querySnapshot.forEach(doc => {
+                        const player = doc.data();
+                        // Exclude the current user from the dropdown
+                        if (player.email !== currentUserEmail) {
+                            const option = document.createElement('option');
+                            option.value = player.email; // Store the email address as the value
+                            option.textContent = player.username; // Display the username
+                            winnerUsername.appendChild(option);
+                        }
+                    });
+                }
             }
         }).catch(error => {
             console.error('Error fetching players:', error);
@@ -156,16 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkForOutstandingReports(username) {
         console.log("Checking for outstanding reports for username:", username);
-    
+
         if (!confirmationNotification) {
             confirmationNotification = document.createElement('div');
             confirmationNotification.id = 'confirmation-notification';
             confirmationNotification.classList.add('notification-banner');
             confirmationNotification.style.display = 'none';
             confirmationNotification.style.marginTop = '10px';
-            document.querySelector('.container').prepend(confirmationNotification);
+            const container = document.querySelector('.container');
+            if (container) {
+                container.prepend(confirmationNotification);
+            } else {
+                console.error('Container element not found.');
+                return;
+            }
         }
-    
+
         db.collection('pendingMatches')
             .where('winnerEmail', '==', currentUserEmail) // Use winnerEmail instead of winnerUsername
             .where('approved', '==', false)
@@ -177,10 +185,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         outstandingReportData = doc.data();
                         outstandingReportData.id = doc.id;
                         console.log("Outstanding report data:", outstandingReportData);
-    
+
                         // The loserUsername is already the username, so no need to fetch it
                         const loserUsername = outstandingReportData.loserUsername;
-    
+
                         confirmationNotification.innerHTML = `
                             <div>
                                 You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
@@ -188,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                         confirmationNotification.style.display = 'block';
                         console.log('Outstanding reports found');
-    
+
                         const autoFillReportLink = document.getElementById('auto-fill-report');
                         if (autoFillReportLink) {
                             autoFillReportLink.addEventListener('click', function(e) {
