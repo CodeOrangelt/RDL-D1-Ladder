@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approved Matches</title>
     <link rel="stylesheet" href="nav.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="approved-matches-style.css">
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
@@ -22,29 +22,34 @@
                 initializeLogout();
             });
     </script>
-    <h1>Approved Matches</h1>
-    <table id="approved-matches">
-        <thead>
-            <tr>
-                <th>Winner Username</th>
-                <th>Loser Username</th>
-                <th>Winner Score</th>
-                <th>Loser Score</th>
-                <th>Winner Suicides</th>
-                <th>Loser Suicides</th>
-                <th>Winner Comment</th>
-                <th>Loser Comment</th>
-                <th>Map Played</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Approved matches data will be injected here by JavaScript -->
-        </tbody>
-    </table>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="container">
+        <h1>Approved Matches</h1>
+        <table id="approved-matches-table">
+            <thead>
+                <tr>
+                    <th>Winner</th>
+                    <th>Loser</th>
+                    <th>Winner Score</th>
+                    <th>Loser Score</th>
+                    <th>Winner Suicides</th>
+                    <th>Loser Suicides</th>
+                    <th>Map Played</th>
+                    <th>Winner Comment</th>
+                    <th>Loser Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Approved matches will be populated here -->
+            </tbody>
+        </table>
+    </div>
     <script src="approved-matches.js"></script>
     <script src="logout.js"></script> <!-- Include logout.js -->
     <script src="current-user.js"></script> <!-- Include current-user.js -->
-    <script src="current-user.js"></script>
-    <script src="logout.js"></script>
 </body>
 </html>
