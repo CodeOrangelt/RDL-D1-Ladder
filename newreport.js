@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user) {
             // User is signed in
             const loserUsername = document.getElementById('loser-username');
-            loserUsername.textContent = user.displayName; // Use display name if available, otherwise use email
+            loserUsername.textContent = user.displayName || user.email; // Use display name if available, otherwise use email
 
             // Show the report form
             document.getElementById('report-form').style.display = 'block';
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch players from Firestore and populate the winner dropdown
     function fetchPlayers() {
-        const playersRef = firebase.firestore().collection('players'); // Replace 'players' with your collection name
+        const playersRef = firebase.firestore().collection('players'); // Ensure 'players' is the correct collection name
         playersRef.get().then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
                 const player = doc.data();
