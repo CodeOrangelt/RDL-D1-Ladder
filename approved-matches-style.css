@@ -8,8 +8,8 @@ body {
 }
 
 .container {
-    width: 80%;
-    max-width: 800px;
+    width: 90%; /* Increase the width of the container */
+    max-width: 1200px; /* Increase the max-width of the container */
     margin: auto;
     overflow: hidden;
     padding: 20px;
