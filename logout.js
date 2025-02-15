@@ -20,13 +20,5 @@ function initializeLogout() {
     }
 }
 
-<script>
-    fetch('nav.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('nav-placeholder').innerHTML = data;
-        });
-</script>
-
 <script src="logout.js"></script>
 </body>
