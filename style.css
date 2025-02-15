@@ -6,8 +6,7 @@ body {
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
+    width: 100%; /* Make container full-width */
     margin: auto;
     overflow: hidden;
     padding: 20px;
@@ -51,6 +50,8 @@ tr:nth-child(even) {
     background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 25%, rgba(255, 215, 0, 0.8) 50%, rgba(255, 215, 0, 0.2) 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
+    width: 100%; /* Ensure the shimmer effect covers the entire row */
+    display: table-row; /* Apply shimmer effect to the entire row */
 }
 
 @keyframes shimmer {
