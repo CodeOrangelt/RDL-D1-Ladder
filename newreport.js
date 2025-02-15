@@ -1,8 +1,12 @@
 // Ensure the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded'); // Debugging log
+
     // Initialize Firebase (make sure firebase-config.js is included and configured properly)
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
+            console.log('User signed in:', user.email || user.displayName); // Debugging log
+
             // User is signed in
             const loserUsername = document.getElementById('loser-username');
             loserUsername.textContent = user.displayName || user.email; // Use display name if available, otherwise use email
@@ -11,12 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('report-form').style.display = 'block';
 
             // Fetch and populate the winner dropdown with player list from ladder.js
-            fetchLadderData(); // Call fetchLadderData from ladder.js
+            fetchPlayersFromLadder(); // Call fetchPlayersFromLadder from ladder.js
 
             // Check for outstanding reports for the current user
             checkOutstandingReports(user.email || user.displayName);
         } else {
             // No user is signed in, show the authentication warning
+            console.log('No user signed in'); // Debugging log
             document.getElementById('auth-warning').style.display = 'block';
         }
     });
@@ -59,12 +64,24 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Function to populate the winner dropdown with player list from fetchLadderData
+    // Function to populate the winner dropdown with player list from ladder.js
     function fetchPlayersFromLadder() {
         const winnerDropdown = document.getElementById('winner-username');
-        const ladder = document.getElementById('ladder');
-        const tbody = ladder.getElementsByTagName('tbody')[0];
 
+        // Fetch the ladder data and then call fetchPlayersFromLadder
+        const table = document.getElementById('ladder');
+        if (!table) {
+            console.error('Ladder table not found'); // Debugging log
+            return;
+        }
+
+        const tbody = table.getElementsByTagName('tbody')[0];
+        if (!tbody) {
+            console.error('Ladder table body not found'); // Debugging log
+            return;
+        }
+
+        // Populate the winner dropdown with player list
         const rows = tbody.getElementsByTagName('tr');
         for (let row of rows) {
             const username = row.cells[1].textContent;
@@ -74,50 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
             option.textContent = username;
             winnerDropdown.appendChild(option);
         }
-    }
-
-    // Fetch the ladder data and then call fetchPlayersFromLadder
-    function fetchLadderData() {
-        const table = document.getElementById('ladder');
-        if (!table) {
-            console.error('Ladder table not found');
-            return;
-        }
-
-        const tbody = table.getElementsByTagName('tbody')[0];
-        if (!tbody) {
-            console.error('Ladder table body not found');
-            return;
-        }
-
-        // Clear existing rows and fetch data
-        tbody.innerHTML = '';  // Clear existing rows
-        let rank = 1;
-        const seenUsernames = new Set();
-
-        db.collection('players').orderBy('points', 'desc')
-            .onSnapshot(snapshot => {
-                tbody.innerHTML = '';  // Clear existing rows
-                snapshot.forEach(doc => {
-                    const player = doc.data();
-                    console.log(`Fetched username: ${player.username}`);  // Log fetched usernames
-                    if (!seenUsernames.has(player.username)) {
-                        seenUsernames.add(player.username);
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${rank}</td>
-                            <td>${player.username}</td>
-                            <td>${player.points}</td>
-                        `;
-                        tbody.appendChild(row);
-                        rank++;
-                    } else {
-                        console.log(`Duplicate username skipped: ${player.username}`);
-                    }
-                });
-
-                fetchPlayersFromLadder(); // Populate the winner dropdown
-            });
     }
 
     // Function to check for outstanding reports and display the notification button
@@ -130,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(snapshot => {
                 if (!snapshot.empty) {
                     confirmationNotification.style.display = 'block'; // Show the notification button
+                    console.log('Outstanding reports found'); // Debugging log
                 }
             })
             .catch(error => {
