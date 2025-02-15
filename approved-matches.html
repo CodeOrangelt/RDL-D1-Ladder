@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approved Matches</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="nav.css">
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>
-    <link rel="stylesheet" href="nav.css"> 
+</head>
 <body>
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li><a href="login.html">Login/Register</a></li>
+            <li id="login-register"><a href="login.html">Login/Register</a></li>
             <li><a href="report.html">Report Game</a></li>
             <li><a href="approved-matches.html">Recent Matches</a></li>
             <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
