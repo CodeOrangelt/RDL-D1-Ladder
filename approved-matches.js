@@ -27,17 +27,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Create table cells
                             const loserCell = row.insertCell(0);
                             const winnerCell = row.insertCell(1);
-                            const scoreCell = row.insertCell(2);
-                            const loserSuicidesCell = row.insertCell(3);
-                            const winnerSuicidesCell = row.insertCell(4);
-                            const mapCell = row.insertCell(5);
-                            const loserCommentCell = row.insertCell(6);
-                            const winnerCommentCell = row.insertCell(7);
+                            const loserScoreCell = row.insertCell(2);  // Changed from scoreCell
+                            const winnerScoreCell = row.insertCell(3);
+                            const loserSuicidesCell = row.insertCell(4);
+                            const winnerSuicidesCell = row.insertCell(5);
+                            const mapCell = row.insertCell(6);
+                            const loserCommentCell = row.insertCell(7);
+                            const winnerCommentCell = row.insertCell(8);
 
                             // Populate table cells
                             loserCell.textContent = loserUsername;
                             winnerCell.textContent = winnerUsername;
-                            scoreCell.textContent = matchData.finalScore;
+                            loserScoreCell.textContent = matchData.finalScore;  // Changed from matchData.loserScore
+                            winnerScoreCell.textContent = matchData.winnerScore;
                             loserSuicidesCell.textContent = matchData.suicides;
                             winnerSuicidesCell.textContent = matchData.winnerSuicides;
                             mapCell.textContent = matchData.mapPlayed;
@@ -47,12 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else {
                     // Display message if no approved matches
-                    approvedMatchesTable.innerHTML = '<tr><td colspan="8">No approved matches found.</td></tr>';
+                    approvedMatchesTable.innerHTML = '<tr><td colspan="9">No approved matches found.</td></tr>';  // Changed colspan to 9
                 }
             })
             .catch(error => {
                 console.error('Error fetching approved matches:', error);
-                approvedMatchesTable.innerHTML = '<tr><td colspan="8">Error fetching approved matches. Please try again.</td></tr>';
+                approvedMatchesTable.innerHTML = '<tr><td colspan="9">Error fetching approved matches. Please try again.</td></tr>';  // Changed colspan to 9
             });
     }
 
