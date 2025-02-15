@@ -122,15 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkForOutstandingReports(username) {
-        console.log("Checking for outstanding reports for username:", username); // ADD THIS LINE
+        console.log("Checking for outstanding reports for username:", username);
     
         if (!confirmationNotification) {
             confirmationNotification = document.createElement('div');
-            confirmationNotification.id = 'confirmation-notification';
-            confirmationNotification.classList.add('notification-banner');
-            confirmationNotification.style.display = 'none';
-            confirmationNotification.style.marginTop = '10px';
-            document.querySelector('.container').prepend(confirmationNotification);
         }
     
         db.collection('pendingMatches')
@@ -139,25 +134,47 @@ document.addEventListener('DOMContentLoaded', () => {
             .limit(1)
             .get()
             .then(snapshot => {
-                console.log("Snapshot size:", snapshot.size); // ADD THIS LINE
                 if (!snapshot.empty) {
                     snapshot.forEach(doc => {
                         outstandingReportData = doc.data();
                         outstandingReportData.id = doc.id;
-                        console.log("Outstanding report data:", outstandingReportData); // ADD THIS LINE
-                    });
+                        console.log("Outstanding report data:", outstandingReportData);
     
-                    confirmationNotification.style.display = 'block';
-                    confirmationNotification.innerHTML = `
-                        <div>
-                            You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
-                        </div>
-                    `;
-                    console.log('Outstanding reports found');
+                        // Fetch the loser's username based on the email
+                        db.collection('players')
+                            .where('email', '==', outstandingReportData.loserUsername)
+                            .get()
+                            .then(loserQuerySnapshot => {
+                                if (!loserQuerySnapshot.empty) {
+                                    const loserDoc = loserQuerySnapshot.docs[0];
+                                    const loserUsername = loserDoc.data().username;
     
-                    document.getElementById('auto-fill-report').addEventListener('click', function(e) {
-                        e.preventDefault();
-                        autoFillReportForm(outstandingReportData);
+                                    // Update the outstandingReportData with the loser's username
+                                    outstandingReportData.loserUsername = loserUsername;
+    
+                                    confirmationNotification.style.display = 'block';
+                                    confirmationNotification.innerHTML = `
+                                        <div>
+                                            You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
+                                        </div>
+                                    `;
+                                    console.log('Outstanding reports found');
+    
+                                    document.getElementById('auto-fill-report').addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        autoFillReportForm(outstandingReportData);
+                                    });
+                                } else {
+                                    console.error('No loser found with email:', outstandingReportData.loserUsername);
+                                    confirmationNotification.style.display = 'none';
+                                    outstandingReportData = null;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching loser:', error);
+                                confirmationNotification.style.display = 'none';
+                                outstandingReportData = null;
+                            });
                     });
                 } else {
                     confirmationNotification.style.display = 'none';
