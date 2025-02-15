@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkForOutstandingReports(username) {
         console.log("Checking for outstanding reports for username:", username);
-
+    
         if (!confirmationNotification) {
             confirmationNotification = document.createElement('div');
             confirmationNotification.id = 'confirmation-notification';
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         }
-
+    
         db.collection('pendingMatches')
             .where('winnerEmail', '==', currentUserEmail) // Use winnerEmail instead of winnerUsername
             .where('approved', '==', false)
@@ -185,10 +185,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         outstandingReportData = doc.data();
                         outstandingReportData.id = doc.id;
                         console.log("Outstanding report data:", outstandingReportData);
-
+    
                         // The loserUsername is already the username, so no need to fetch it
                         const loserUsername = outstandingReportData.loserUsername;
-
+    
                         confirmationNotification.innerHTML = `
                             <div>
                                 You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                         confirmationNotification.style.display = 'block';
                         console.log('Outstanding reports found');
-
+    
                         const autoFillReportLink = document.getElementById('auto-fill-report');
                         if (autoFillReportLink) {
                             autoFillReportLink.addEventListener('click', function(e) {
