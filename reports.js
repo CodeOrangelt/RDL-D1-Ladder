@@ -158,10 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                     document.getElementById('report-lightbox').style.display = 'block';
 
                                     // Add event listener to the Approve button
-                                    document.getElementById('approve-button').addEventListener('click', function() {
+                                    const approveButton = document.getElementById('approve-button'); // Get the button element
+                                    const approveReportHandler = function() { // Store the function in a variable
                                         approveReport(reportData.id);
                                         document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
-                                    });
+                                        approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
+                                    };
+                                    approveButton.addEventListener('click', approveReportHandler); // Add the event listener
 
                                     // Add event listener to the Cancel button
                                     document.getElementById('cancel-button').addEventListener('click', function() {
