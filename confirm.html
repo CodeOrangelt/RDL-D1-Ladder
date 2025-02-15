@@ -5,15 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Report</title>
     <link rel="stylesheet" href="nav.css"> <!-- Link to the nav bar CSS -->
+    #include virtual="nav.html
     <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
 </head>
 <body>
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
-            <li id="login-register"><a href="login.html">Login/Register</a></li>
             <li><a href="report.html">Report Game</a></li>
-            <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
+            <li><a href="approved-matches.html">Recent Matches</a></li>
+            <li id="user-menu">
+                <span id="current-user" style="font-weight: bold;"></span>
+                <div id="sign-out-container">
+                    <a href="#" id="sign-out">Sign Out</a>
+                </div>
+            </li>
+            <li id="login-register"><a href="login.html">Login/Register</a></li>
         </ul>
     </nav>
     <div class="container">

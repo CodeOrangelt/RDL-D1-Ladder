@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="report-style.css">
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li id="login-register"><a href="login.html">Login/Register</a></li>
-            <li><a href="report.html">Report Game</a></li>
-            <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
-        </ul>
-    </nav>
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
     <div class="container">
         <h1>Report Game</h1>
         <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>

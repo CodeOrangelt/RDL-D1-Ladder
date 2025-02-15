@@ -12,12 +12,14 @@
     <link rel="stylesheet" href="nav.css"> <!-- Link to nav.css -->
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="login.html">Login/Register</a></li>
-        </ul>
-    </nav>
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
     <div class="container">
         <h1>Login and Register</h1>
         <div class="form-container" id="register-container">

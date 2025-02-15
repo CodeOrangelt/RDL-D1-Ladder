@@ -9,18 +9,17 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>
-    <link rel="stylesheet" href="nav.css"> 
+    <link rel="stylesheet" href="nav.css">
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li id="login-register"><a href="login.html">Login/Register</a></li>
-            <li><a href="report.html">Report Game</a></li>
-            <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
-            <li><a href="approved-matches.html">Recent Matches</a></li> <!-- Link to approved-matches.html -->
-        </ul>
-    </nav>
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
     <h1>Competitive Ladder</h1>
     <table id="ladder">
         <thead>

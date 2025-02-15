@@ -12,15 +12,14 @@
     <script src="firebase-config.js"></script>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li id="login-register"><a href="login.html">Login/Register</a></li>
-            <li><a href="report.html">Report Game</a></li>
-            <li><a href="approved-matches.html">Recent Matches</a></li>
-            <li id="sign-out-container" style="display: none;"><a href="#" id="sign-out">Sign Out</a> <span id="current-user" style="font-weight: bold;"></span></li>
-        </ul>
-    </nav>
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
     <h1>Approved Matches</h1>
     <table id="approved-matches">
         <thead>

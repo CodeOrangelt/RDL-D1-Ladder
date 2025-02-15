@@ -155,7 +155,7 @@ textarea {
 }
 
 #ladder tr:nth-child(even) {
-    background-color: #ff0000;
+    background-color: #818181;
 }
 
 /* Styles for the report lightbox */
