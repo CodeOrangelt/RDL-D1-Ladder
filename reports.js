@@ -128,26 +128,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function autoFillReportForm(reportData) {
         console.log("Report Data in autoFillReportForm:", reportData); // ADD THIS LINE
         if (reportData) {
-            // Populate the form fields
-            winnerUsername.value = reportData.winnerUsername;
-            finalScore.value = reportData.finalScore;
-            suicides.value = reportData.suicides;
-            mapPlayed.value = reportData.mapPlayed;
-            loserComment.value = reportData.loserComment;
+            // Populate the lightbox
+            document.getElementById('lightbox-winner').textContent = reportData.winnerUsername;
+            document.getElementById('lightbox-score').textContent = reportData.finalScore;
+            document.getElementById('lightbox-suicides').textContent = reportData.suicides;
+            document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
+            document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
-            // Remove disabling of fields (temporarily)
-            // winnerUsername.disabled = true;
-            // finalScore.disabled = true;
-            // suicides.disabled = true;
-            // mapPlayed.disabled = true;
-            // loserComment.disabled = true;
-
-            // Change the submit button to an "Approve" button
-            reportForm.innerHTML += '<button type="button" id="approve-report">Approve Report</button>';
+            // Show the lightbox
+            document.getElementById('report-lightbox').style.display = 'block';
 
             // Add event listener to the Approve button
-            document.getElementById('approve-report').addEventListener('click', function() {
+            document.getElementById('approve-button').addEventListener('click', function() {
                 approveReport(reportData.id);
+                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
+            });
+
+            // Add event listener to the Cancel button
+            document.getElementById('cancel-button').addEventListener('click', function() {
+                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
             });
         }
     }

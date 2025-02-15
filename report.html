@@ -67,6 +67,20 @@
             </tbody>
         </table>
     </div>
+
+    <div id="report-lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px;">
+            <h2>Report Details</h2>
+            <p>Winner: <span id="lightbox-winner"></span></p>
+            <p>Final Score: <span id="lightbox-score"></span></p>
+            <p>Suicides: <span id="lightbox-suicides"></span></p>
+            <p>Map: <span id="lightbox-map"></span></p>
+            <p>Loser Comment: <span id="lightbox-comment"></span></p>
+            <button id="approve-button">Approve</button>
+            <button id="cancel-button">Cancel</button>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
