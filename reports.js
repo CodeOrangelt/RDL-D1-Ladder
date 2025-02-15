@@ -12,10 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('report-form').style.display = 'block';
             populateWinnerDropdown();
 
-            // Add a delay before calling checkForOutstandingReports
-            setTimeout(() => {
-                checkForOutstandingReports(user.email || user.displayName);
-            }, 2000); // 2 seconds
+            // Remove setTimeout
+            checkForOutstandingReports(user.email || user.displayName);
         } else {
             console.log('No user signed in');
             document.getElementById('auth-warning').style.display = 'block';
@@ -56,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Report data after write:", reportData); // ADD THIS LINE
                 reportForm.reset();
                 alert('Game reported successfully.');
+
+                // Move the call to checkForOutstandingReports here
+                checkForOutstandingReports(reportData.winnerUsername);
             })
             .catch((error) => {
                 console.error('Error adding report to Firestore:', error);
