@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Game</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="nav.css"> <!-- Link to the nav bar CSS -->
+    <link rel="stylesheet" href="report-style.css"> <!-- Link to your CSS file -->
 </head>
 <body>
     <nav>
@@ -17,28 +18,43 @@
     </nav>
     <div class="container">
         <h1>Report Game</h1>
-        <div id="auth-warning" style="display: none; color: red;">You must be signed in to report a game.</div>
+        <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
         
         <!-- Report Form -->
-        <form id="report-form" style="display: none;">
-            <div>
+        <form id="report-form" class="form" style="display: none;">
+            <div class="form-group">
                 <label for="loser-username">Your Username (Loser):</label>
-                <span id="loser-username" style="font-weight: bold;"></span>
+                <span id="loser-username" class="username-display"></span>
             </div>
-            <select id="winner-username" required>
-                <option value="">Select Winner</option>
-                <!-- Options will be populated by JavaScript -->
-            </select>
-            <input type="number" id="final-score" placeholder="Final Score" required>
-            <input type="number" id="suicides" placeholder="Suicides" required>
-            <input type="text" id="map-played" placeholder="Map Played" required>
-            <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
-            <button type="submit">Report Game</button>
+            <div class="form-group">
+                <label for="winner-username">Select Winner:</label>
+                <select id="winner-username" required>
+                    <option value="">Select Winner</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="final-score">Final Score:</label>
+                <input type="number" id="final-score" placeholder="Final Score" required>
+            </div>
+            <div class="form-group">
+                <label for="suicides">Suicides:</label>
+                <input type="number" id="suicides" placeholder="Suicides" required>
+            </div>
+            <div class="form-group">
+                <label for="map-played">Map Played:</label>
+                <input type="text" id="map-played" placeholder="Map Played" required>
+            </div>
+            <div class="form-group">
+                <label for="loser-comment">Your Comment:</label>
+                <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
+            </div>
+            <button type="submit" class="btn">Report Game</button>
         </form>
-        <div id="report-error"></div>
+        <div id="report-error" class="error"></div>
 
-        <!-- Add the ladder table here -->
-        <table id="ladder">
+        <!-- Ladder Table -->
+        <table id="ladder" class="table">
             <thead>
                 <tr>
                     <th>Rank</th>
@@ -56,6 +72,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script> <!-- Include your Firebase config -->
     <script src="ladder.js"></script> <!-- Include ladder.js -->
-    <script src="reports.js"></script> <!-- Include your JavaScript file -->
+    <script src="reports.js"></script> <!-- Include reports.js -->
 </body>
 </html>
