@@ -140,41 +140,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         outstandingReportData.id = doc.id;
                         console.log("Outstanding report data:", outstandingReportData);
     
-                        // Fetch the loser's username based on the email
-                        db.collection('players')
-                            .where('email', '==', outstandingReportData.loserUsername)
-                            .get()
-                            .then(loserQuerySnapshot => {
-                                if (!loserQuerySnapshot.empty) {
-                                    const loserDoc = loserQuerySnapshot.docs[0];
-                                    const loserUsername = loserDoc.data().username;
+                        // The loserUsername is already the username, so no need to fetch it
+                        const loserUsername = outstandingReportData.loserUsername;
     
-                                    // Update the outstandingReportData with the loser's username
-                                    outstandingReportData.loserUsername = loserUsername;
+                        confirmationNotification.style.display = 'block';
+                        confirmationNotification.innerHTML = `
+                            <div>
+                                You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
+                            </div>
+                        `;
+                        console.log('Outstanding reports found');
     
-                                    confirmationNotification.style.display = 'block';
-                                    confirmationNotification.innerHTML = `
-                                        <div>
-                                            You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
-                                        </div>
-                                    `;
-                                    console.log('Outstanding reports found');
-    
-                                    document.getElementById('auto-fill-report').addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        autoFillReportForm(outstandingReportData);
-                                    });
-                                } else {
-                                    console.error('No loser found with email:', outstandingReportData.loserUsername);
-                                    confirmationNotification.style.display = 'none';
-                                    outstandingReportData = null;
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching loser:', error);
-                                confirmationNotification.style.display = 'none';
-                                outstandingReportData = null;
-                            });
+                        document.getElementById('auto-fill-report').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            autoFillReportForm(outstandingReportData);
+                        });
                     });
                 } else {
                     confirmationNotification.style.display = 'none';
