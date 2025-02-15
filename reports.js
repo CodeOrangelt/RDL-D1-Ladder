@@ -99,16 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clear existing options
             winnerUsername.innerHTML = '<option value="">Select Winner</option>';
 
-            querySnapshot.forEach(doc => {
-                const player = doc.data();
-                // Exclude the current user from the dropdown
-                if (player.email !== currentUserEmail) {
-                    const option = document.createElement('option');
-                    option.value = player.email; // Store the email address as the value
-                    option.textContent = player.username; // Display the username
-                    winnerUsername.appendChild(option);
-                }
-            });
+            if (querySnapshot.empty) {
+                // Display a message if no players are found
+                winnerUsername.innerHTML = '<option value="">No players found</option>';
+            } else {
+                querySnapshot.forEach(doc => {
+                    const player = doc.data();
+                    // Exclude the current user from the dropdown
+                    if (player.email !== currentUserEmail) {
+                        const option = document.createElement('option');
+                        option.value = player.email; // Store the email address as the value
+                        option.textContent = player.username; // Display the username
+                        winnerUsername.appendChild(option);
+                    }
+                });
+            }
         }).catch(error => {
             console.error('Error fetching players:', error);
         });
