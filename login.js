@@ -1,5 +1,20 @@
 // login.js
 
+// Initialize Firebase
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  // Your firebase config object goes here
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 // Register Form Submission
 document.getElementById('register-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -9,11 +24,11 @@ document.getElementById('register-form').addEventListener('submit', function (e)
     const password = document.getElementById('register-password').value;
     const registerErrorDiv = document.getElementById('register-error');
 
-    auth.createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
             const user = userCredential.user;
             console.log("User registered:", user);
-            return db.collection('players').doc(user.uid).set({
+            return setDoc(doc(db, 'players', user.uid), {
                 username: username,
                 email: email,
                 points: 0
@@ -38,7 +53,7 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
     const password = document.getElementById('login-password').value;
     const loginErrorDiv = document.getElementById('login-error');
 
-    auth.signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(auth, email, password)
         .then(() => {
             alert('Login successful!');
             window.location.href = 'index.html';
