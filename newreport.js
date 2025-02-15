@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show the report form
             document.getElementById('report-form').style.display = 'block';
 
-            // Fetch and populate the winner dropdown with player list
-            fetchPlayers();
+            // Fetch and populate the winner dropdown with player list from ladder.js
+            fetchLadderData(); // Call fetchLadderData from ladder.js
         } else {
             // No user is signed in, show the authentication warning
             document.getElementById('auth-warning').style.display = 'block';
@@ -47,19 +47,63 @@ document.addEventListener('DOMContentLoaded', function() {
         // Example: sendReportDataToFirestore(reportData);
     });
 
-    // Function to fetch players from Firestore and populate the winner dropdown
-    function fetchPlayers() {
-        const playersRef = firebase.firestore().collection('players'); // Ensure 'players' is the correct collection name
-        playersRef.get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                const player = doc.data();
-                const option = document.createElement('option');
-                option.value = player.username; // Adjust according to your data structure
-                option.textContent = player.username;
-                winnerUsername.appendChild(option);
+    // Function to populate the winner dropdown with player list from fetchLadderData
+    function fetchPlayersFromLadder() {
+        const winnerDropdown = document.getElementById('winner-username');
+        const ladder = document.getElementById('ladder');
+        const tbody = ladder.getElementsByTagName('tbody')[0];
+
+        const rows = tbody.getElementsByTagName('tr');
+        for (let row of rows) {
+            const username = row.cells[1].textContent;
+            const option = document.createElement('option');
+            option.value = username;
+            option.textContent = username;
+            winnerDropdown.appendChild(option);
+        }
+    }
+
+    // Fetch the ladder data and then call fetchPlayersFromLadder
+    function fetchLadderData() {
+        const table = document.getElementById('ladder');
+        if (!table) {
+            console.error('Ladder table not found');
+            return;
+        }
+
+        const tbody = table.getElementsByTagName('tbody')[0];
+        if (!tbody) {
+            console.error('Ladder table body not found');
+            return;
+        }
+
+        // Clear existing rows and fetch data
+        tbody.innerHTML = '';  // Clear existing rows
+        let rank = 1;
+        const seenUsernames = new Set();
+
+        db.collection('players').orderBy('points', 'desc')
+            .onSnapshot(snapshot => {
+                tbody.innerHTML = '';  // Clear existing rows
+                snapshot.forEach(doc => {
+                    const player = doc.data();
+                    console.log(`Fetched username: ${player.username}`);  // Log fetched usernames
+                    if (!seenUsernames.has(player.username)) {
+                        seenUsernames.add(player.username);
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${rank}</td>
+                            <td>${player.username}</td>
+                            <td>${player.points}</td>
+                        `;
+                        tbody.appendChild(row);
+                        rank++;
+                    } else {
+                        console.log(`Duplicate username skipped: ${player.username}`);
+                    }
+                });
+
+                fetchPlayersFromLadder(); // Populate the winner dropdown
             });
-        }).catch(function(error) {
-            console.error("Error fetching players: ", error);
-        });
     }
 });
