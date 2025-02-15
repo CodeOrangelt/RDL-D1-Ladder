@@ -199,35 +199,71 @@ document.addEventListener('DOMContentLoaded', () => {
     function autoFillReportForm(reportData) {
         console.log("Report Data in autoFillReportForm:", reportData); // ADD THIS LINE
         if (reportData) {
-            // Populate the lightbox
-            document.getElementById('lightbox-winner').textContent = reportData.winnerUsername;
-            document.getElementById('lightbox-loser').textContent = reportData.loserUsername;
-            document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
-            document.getElementById('lightbox-suicides').textContent = reportData.suicides;
-            document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
-            document.getElementById('lightbox-comment').textContent = reportData.loserComment;
+            // Fetch the winner's username
+            db.collection('players')
+                .where('email', '==', reportData.winnerEmail)
+                .get()
+                .then(winnerQuerySnapshot => {
+                    if (!winnerQuerySnapshot.empty) {
+                        const winnerDoc = winnerQuerySnapshot.docs[0];
+                        const winnerUsername = winnerDoc.data().username;
 
-            // Show the lightbox
-            document.getElementById('report-lightbox').style.display = 'block';
+                        // Fetch the loser's username
+                        db.collection('players')
+                            .where('username', '==', reportData.loserUsername)
+                            .get()
+                            .then(loserQuerySnapshot => {
+                                if (!loserQuerySnapshot.empty) {
+                                    const loserDoc = loserQuerySnapshot.docs[0];
+                                    const loserUsername = loserDoc.data().username;
 
-            // Add event listener to the Approve button
-            const approveButton = document.getElementById('approve-button'); // Get the button element
-            const approveReportHandler = function() { // Store the function in a variable
-                // Get the winner's input values
-                const winnerScore = document.getElementById('winner-score').value;
-                const winnerSuicides = document.getElementById('winner-suicides').value;
-                const winnerComment = document.getElementById('winner-comment').value;
+                                    // Populate the lightbox
+                                    document.getElementById('lightbox-winner').textContent = winnerUsername;
+                                    document.getElementById('lightbox-loser').textContent = loserUsername;
+                                    document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
+                                    document.getElementById('lightbox-suicides').textContent = reportData.suicides;
+                                    document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
+                                    document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
-                approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
-                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
-                approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
-            };
-            approveButton.addEventListener('click', approveReportHandler); // Add the event listener
+                                    // Show the lightbox
+                                    document.getElementById('report-lightbox').style.display = 'block';
 
-            // Add event listener to the Cancel button
-            document.getElementById('cancel-button').addEventListener('click', function() {
-                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
-            });
+                                    // Add event listener to the Approve button
+                                    const approveButton = document.getElementById('approve-button'); // Get the button element
+                                    const approveReportHandler = function() { // Store the function in a variable
+                                        // Get the winner's input values
+                                        const winnerScore = document.getElementById('winner-score').value;
+                                        const winnerSuicides = document.getElementById('winner-suicides').value;
+                                        const winnerComment = document.getElementById('winner-comment').value;
+
+                                        approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
+                                        approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
+                                    };
+                                    approveButton.addEventListener('click', approveReportHandler); // Add the event listener
+
+                                    // Add event listener to the Cancel button
+                                    document.getElementById('cancel-button').addEventListener('click', function() {
+                                        document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
+                                    });
+                                } else {
+                                    console.error('No loser found with username:', reportData.loserUsername);
+                                    alert('Error: No loser found with that username.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching loser:', error);
+                                alert('Error fetching loser. Please try again.');
+                            });
+                    } else {
+                        console.error('No winner found with email:', reportData.winnerEmail);
+                        alert('Error: No winner found with that email.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching winner:', error);
+                    alert('Error fetching winner. Please try again.');
+                });
         }
     }
 
@@ -245,7 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 reportForm.reset();
                 winnerUsername.disabled = false;
                 loserScore.disabled = false;
-                document.getElementById('approve-report').remove();
+
+                const approveReportElement = document.getElementById('approve-report');
+                if (approveReportElement) {
+                    approveReportElement.remove();
+                }
+
                 confirmationNotification.style.display = 'none';
                 outstandingReportData = null;
 
