@@ -278,16 +278,28 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Report approved successfully.');
             alert('Report approved!');
             // Clean up the form
-            reportForm.reset();
-            winnerUsername.disabled = false;
-            loserScore.disabled = false;
+            const reportForm = document.getElementById('report-form');
+            if (reportForm) {
+                reportForm.reset();
+            }
+            const winnerUsername = document.getElementById('winner-username');
+            if (winnerUsername) {
+                winnerUsername.disabled = false;
+            }
+            const loserScore = document.getElementById('loser-score');
+            if (loserScore) {
+                loserScore.disabled = false;
+            }
 
             const approveReportElement = document.getElementById('approve-report');
             if (approveReportElement) {
                 approveReportElement.remove();
             }
 
-            confirmationNotification.style.display = 'none';
+            const confirmationNotification = document.getElementById('confirmation-notification');
+            if (confirmationNotification) {
+                confirmationNotification.style.display = 'none';
+            }
             outstandingReportData = null;
 
             // Apply the ELO rating algorithm
@@ -321,17 +333,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                         .then(() => {
                                             console.log('Report successfully deleted from pendingMatches.');
                                             alert('Report confirmed successfully.');
-                                            document.getElementById('confirm-form').reset();
-                                            document.getElementById('confirm-form').style.display = 'none';
+                                            const confirmForm = document.getElementById('confirm-form');
+                                            if (confirmForm) {
+                                                confirmForm.reset();
+                                                confirmForm.style.display = 'none';
+                                            }
                                         })
                                         .catch((error) => {
                                             console.error('Error deleting report from pendingMatches:', error);
-                                            document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                                            const confirmError = document.getElementById('confirm-error');
+                                            if (confirmError) {
+                                                confirmError.textContent = 'Error confirming report. Please try again.';
+                                            }
                                         });
                                 })
                                 .catch((error) => {
                                     console.error('Error adding report to approvedMatches:', error);
-                                    document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                                    const confirmError = document.getElementById('confirm-error');
+                                    if (confirmError) {
+                                        confirmError.textContent = 'Error confirming report. Please try again.';
+                                    }
                                 });
                         } else {
                             console.error('Winner or loser not found in the database.');
