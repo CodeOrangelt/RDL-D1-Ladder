@@ -128,26 +128,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function autoFillReportForm(reportData) {
         console.log("Report Data in autoFillReportForm:", reportData); // ADD THIS LINE
         if (reportData) {
-            // Populate the lightbox
-            document.getElementById('lightbox-winner').textContent = reportData.winnerUsername;
-            document.getElementById('lightbox-score').textContent = reportData.finalScore;
-            document.getElementById('lightbox-suicides').textContent = reportData.suicides;
-            document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
-            document.getElementById('lightbox-comment').textContent = reportData.loserComment;
+            // Fetch the username from the players collection
+            db.collection('players')
+                .where('email', '==', reportData.winnerUsername)
+                .get()
+                .then(querySnapshot => {
+                    if (!querySnapshot.empty) {
+                        // Get the username from the document
+                        const winnerDoc = querySnapshot.docs[0];
+                        const winnerUsername = winnerDoc.data().username;
 
-            // Show the lightbox
-            document.getElementById('report-lightbox').style.display = 'block';
+                        // Populate the lightbox
+                        document.getElementById('lightbox-winner').textContent = winnerUsername;
+                        document.getElementById('lightbox-score').textContent = reportData.finalScore;
+                        document.getElementById('lightbox-suicides').textContent = reportData.suicides;
+                        document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
+                        document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
-            // Add event listener to the Approve button
-            document.getElementById('approve-button').addEventListener('click', function() {
-                approveReport(reportData.id);
-                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
-            });
+                        // Show the lightbox
+                        document.getElementById('report-lightbox').style.display = 'block';
 
-            // Add event listener to the Cancel button
-            document.getElementById('cancel-button').addEventListener('click', function() {
-                document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
-            });
+                        // Add event listener to the Approve button
+                        document.getElementById('approve-button').addEventListener('click', function() {
+                            approveReport(reportData.id);
+                            document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
+                        });
+
+                        // Add event listener to the Cancel button
+                        document.getElementById('cancel-button').addEventListener('click', function() {
+                            document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox
+                        });
+                    } else {
+                        console.error('No player found with email:', reportData.winnerUsername);
+                        alert('Error: No player found with that email.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching player:', error);
+                    alert('Error fetching player. Please try again.');
+                });
         }
     }
 
