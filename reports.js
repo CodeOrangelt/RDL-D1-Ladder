@@ -3,10 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let outstandingReportData = null; // Store outstanding report data
     let currentUserEmail; // Store the current user's email
 
-    firebase.auth().onAuthStateChanged(user => {
-        const authWarning = document.getElementById('auth-warning');
+    firebase.auth().onAuthStateChanged(function(user) {
+        console.log("Authentication state changed:", user); // Add this line
         if (user) {
             console.log('User signed in:', user.email || user.displayName);
+            const authWarning = document.getElementById('auth-warning');
             if (authWarning) {
                 authWarning.style.display = 'none'; // Hide the warning
             }
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkForOutstandingReports(user.email || user.displayName);
         } else {
             console.log('No user signed in');
+            const authWarning = document.getElementById('auth-warning');
             if (authWarning) {
                 authWarning.style.display = 'block'; // Show the warning
             }
