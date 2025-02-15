@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.collection('pendingMatches')
         .where('approved', '==', true)
-        .orderBy('timeApproved', 'desc') // Order by timeApproved in descending order
+        // .orderBy('timeApproved', 'desc') // Remove this line to avoid the need for an index
         .get()
         .then(querySnapshot => {
             querySnapshot.forEach(doc => {
