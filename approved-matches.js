@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.collection('pendingMatches')
         .where('approved', '==', true)
+        .orderBy('timeApproved', 'desc') // Order by timeApproved in descending order
         .get()
         .then(querySnapshot => {
             querySnapshot.forEach(doc => {
@@ -49,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const loserCommentCell = row.insertCell();
                         loserCommentCell.textContent = match.loserComment;
+
+                        const timeApprovedCell = row.insertCell();
+                        timeApprovedCell.textContent = new Date(match.timeApproved.seconds * 1000).toLocaleString(); // Convert Firestore timestamp to readable format
                     })
                     .catch(error => {
                         console.error('Error fetching winner:', error);
@@ -80,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const loserCommentCell = row.insertCell();
                         loserCommentCell.textContent = match.loserComment;
+
+                        const timeApprovedCell = row.insertCell();
+                        timeApprovedCell.textContent = new Date(match.timeApproved.seconds * 1000).toLocaleString(); // Convert Firestore timestamp to readable format
                     });
             });
         })
