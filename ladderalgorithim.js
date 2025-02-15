@@ -12,11 +12,11 @@ function calculateElo(winnerRating, loserRating, kFactor = 32) {
     };
 }
 
-// Function to update ELO ratings after a match
+// Function to update ELO ratings and swap positions after a match
 function updateEloRatings(winnerId, loserId) {
     const playersRef = db.collection('players');
 
-    // Get the current ratings of the winner and loser
+    // Get the current ratings and positions of the winner and loser
     Promise.all([
         playersRef.doc(winnerId).get(),
         playersRef.doc(loserId).get()
@@ -36,13 +36,24 @@ function updateEloRatings(winnerId, loserId) {
             playersRef.doc(loserId).update({ eloRating: newLoserRating });
 
             console.log(`Updated ELO ratings: Winner (${winnerId}) - ${newWinnerRating}, Loser (${loserId}) - ${newLoserRating}`);
+
+            // Swap positions in the ladder
+            const winnerPosition = winnerData.position;
+            const loserPosition = loserData.position;
+
+            if (winnerPosition > loserPosition) {
+                playersRef.doc(winnerId).update({ position: loserPosition });
+                playersRef.doc(loserId).update({ position: winnerPosition });
+
+                console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
+            }
         } else {
             console.error('One or both players not found in the database.');
         }
     }).catch(error => {
-        console.error('Error updating ELO ratings:', error);
+        console.error('Error updating ELO ratings and positions:', error);
     });
 }
 
 // Example usage: Call this function when a match is reported
-// updateEloRatings('winnerPlayerId', 'loserPlayerId');
+// updateEloRatings('winnerPlayerId', 'loserPlayerId');s
