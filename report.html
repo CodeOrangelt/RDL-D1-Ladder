@@ -14,8 +14,7 @@
             .then(response => response.text())
             .then(data => {
                 document.getElementById('nav-placeholder').innerHTML = data;
-                // Call initializeLogout after nav.html is loaded
-                initializeLogout();
+                // Remove initializeLogout call
             });
     </script>
     <br>
