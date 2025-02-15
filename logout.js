@@ -19,6 +19,4 @@ function initializeLogout() {
         console.error('Sign-out link not found.');
     }
 }
-
-<script src="logout.js"></script>
 </body>
