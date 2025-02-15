@@ -59,12 +59,11 @@ function updateEloRatings(winnerId, loserId) {
             const winnerPosition = winnerData.position;
             const loserPosition = loserData.position;
 
-            if (winnerPosition > loserPosition) {
-                playersRef.doc(winnerId).update({ position: loserPosition });
-                playersRef.doc(loserId).update({ position: winnerPosition });
+            // Swap positions regardless of their initial positions
+            playersRef.doc(winnerId).update({ position: loserPosition });
+            playersRef.doc(loserId).update({ position: winnerPosition });
 
-                console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
-            }
+            console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
         } else {
             console.error('One or both players not found in the database.');
         }
