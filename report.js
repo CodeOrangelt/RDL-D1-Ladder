@@ -2,7 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle authentication state changes
     auth.onAuthStateChanged(user => {
         if (user) {
-            fetchUsername(user.uid).then(username => { // Line 5
+            fetchUsername(user.uid).then(username => {
+                document.getElementById('loser-username').textContent = username;
+                document.getElementById('loser-username-confirm').textContent = username;
                 populateWinnerDropdown();
                 checkForOutstandingReport(username);
             }).catch(error => {
@@ -55,13 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Fetch username from Firestore
 function fetchUsername(uid) {
     return db.collection('players').doc(uid).get().then(doc => {
         if (doc.exists) {
-            const username = doc.data().username;
-            document.getElementById('loser-username').textContent = username;
-            document.getElementById('loser-username-confirm').textContent = username;
-            return username;
+            return doc.data().username;
         } else {
             throw new Error('No such document!');
         }
@@ -71,6 +71,7 @@ function fetchUsername(uid) {
     });
 }
 
+// Populate winner dropdown with usernames
 function populateWinnerDropdown() {
     const winnerDropdown = document.getElementById('winner-username');
     db.collection('players').get().then(querySnapshot => {
@@ -86,6 +87,7 @@ function populateWinnerDropdown() {
     });
 }
 
+// Check for outstanding reports
 function checkForOutstandingReport(username) {
     db.collection('reports')
         .where('loserUsername', '==', username)
@@ -110,6 +112,7 @@ function checkForOutstandingReport(username) {
         });
 }
 
+// Populate confirm form with report data
 function populateConfirmForm(data) {
     document.getElementById('loser-username-confirm').textContent = data.loserUsername;
     document.getElementById('winner-username-confirm').textContent = data.winnerUsername;
@@ -119,6 +122,7 @@ function populateConfirmForm(data) {
     document.getElementById('loser-comment-confirm').textContent = data.loserComment;
 }
 
+// Get report form data
 function getReportFormData() {
     return {
         loserUsername: document.getElementById('loser-username').textContent,
@@ -131,8 +135,15 @@ function getReportFormData() {
     };
 }
 
+// Get confirm form data
 function getConfirmFormData() {
     return {
+        loserUsername: document.getElementById('loser-username-confirm').textContent,
+        winnerUsername: document.getElementById('winner-username-confirm').textContent,
+        finalScore: document.getElementById('final-score-confirm').textContent,
+        suicides: document.getElementById('suicides-confirm').textContent,
+        mapPlayed: document.getElementById('map-played-confirm').textContent,
+        loserComment: document.getElementById('loser-comment-confirm').textContent,
         winnerScore: document.getElementById('winner-score').value,
         winnerSuicides: document.getElementById('winner-suicides').value,
         winnerComment: document.getElementById('winner-comment').value,
@@ -140,6 +151,7 @@ function getConfirmFormData() {
     };
 }
 
+// Show authentication warning
 function showAuthWarning() {
     document.getElementById('auth-warning').style.display = 'block';
     document.getElementById('report-form').style.display = 'none';
