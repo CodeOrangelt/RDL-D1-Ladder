@@ -26,20 +26,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Display the username in the loser-username span
                         const loserUsername = document.getElementById('loser-username');
-                        loserUsername.textContent = username;
+                        if (loserUsername) {
+                            loserUsername.textContent = username;
+                        }
                     } else {
                         console.error('No player found with email:', user.email);
                         const loserUsername = document.getElementById('loser-username');
-                        loserUsername.textContent = "Unknown User";
+                        if (loserUsername) {
+                            loserUsername.textContent = "Unknown User";
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching player:', error);
                     const loserUsername = document.getElementById('loser-username');
-                    loserUsername.textContent = "Error Fetching Username";
+                    if (loserUsername) {
+                        loserUsername.textContent = "Error Fetching Username";
+                    }
                 });
 
-            document.getElementById('report-form').style.display = 'block';
+            const reportForm = document.getElementById('report-form');
+            if (reportForm) {
+                reportForm.style.display = 'block';
+            }
             populateWinnerDropdown(); // Move this line up
             checkForOutstandingReports(user.email || user.displayName);
         } else {
@@ -48,7 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (authWarning) {
                 authWarning.style.display = 'block'; // Show the warning
             }
-            document.getElementById('report-form').style.display = 'none';
+            const reportForm = document.getElementById('report-form');
+            if (reportForm) {
+                reportForm.style.display = 'none';
+            }
         }
     });
 
@@ -59,61 +71,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapPlayed = document.getElementById('map-played');
     const loserComment = document.getElementById('loser-comment');
 
-    reportForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+    if (reportForm) {
+        reportForm.addEventListener('submit', function(event) {
+            event.preventDefault();
 
-        const matchId = db.collection('pendingMatches').doc().id;
+            const matchId = db.collection('pendingMatches').doc().id;
 
-        console.log("Winner Username Value:", winnerUsername.value); // ADD THIS LINE
+            console.log("Winner Username Value:", winnerUsername.value); // ADD THIS LINE
 
-        // Fetch the winner's username based on the email
-        db.collection('players')
-            .where('email', '==', winnerUsername.value)
-            .get()
-            .then(querySnapshot => {
-                if (!querySnapshot.empty) {
-                    const winnerDoc = querySnapshot.docs[0];
-                    const winnerUsernameValue = winnerDoc.data().username;
+            // Fetch the winner's username based on the email
+            db.collection('players')
+                .where('email', '==', winnerUsername.value)
+                .get()
+                .then(querySnapshot => {
+                    if (!querySnapshot.empty) {
+                        const winnerDoc = querySnapshot.docs[0];
+                        const winnerUsernameValue = winnerDoc.data().username;
 
-                    const reportData = {
-                        matchId: matchId,
-                        loserUsername: document.getElementById('loser-username').textContent,
-                        winnerUsername: winnerUsernameValue, // Store the winner's username
-                        winnerEmail: winnerUsername.value, // Store the winner's email
-                        loserScore: loserScore.value,
-                        suicides: suicides.value,
-                        mapPlayed: mapPlayed.value,
-                        loserComment: loserComment.value,
-                        approved: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
+                        const reportData = {
+                            matchId: matchId,
+                            loserUsername: document.getElementById('loser-username').textContent,
+                            winnerUsername: winnerUsernameValue, // Store the winner's username
+                            winnerEmail: winnerUsername.value, // Store the winner's email
+                            loserScore: loserScore.value,
+                            suicides: suicides.value,
+                            mapPlayed: mapPlayed.value,
+                            loserComment: loserComment.value,
+                            approved: false,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
 
-                    console.log("Report data being written:", reportData); // ADD THIS LINE
+                        console.log("Report data being written:", reportData); // ADD THIS LINE
 
-                    db.collection('pendingMatches').doc(matchId).set(reportData)
-                        .then(() => {
-                            console.log('Report successfully added to pendingMatches.');
-                            console.log("Report data after write:", reportData); // ADD THIS LINE
-                            reportForm.reset();
-                            alert('Game reported successfully.');
+                        db.collection('pendingMatches').doc(matchId).set(reportData)
+                            .then(() => {
+                                console.log('Report successfully added to pendingMatches.');
+                                console.log("Report data after write:", reportData); // ADD THIS LINE
+                                reportForm.reset();
+                                alert('Game reported successfully.');
 
-                            // Check for outstanding reports for the LOSER (logged-in user)
-                            checkForOutstandingReports(document.getElementById('loser-username').textContent);
-                        })
-                        .catch((error) => {
-                            console.error('Error adding report to Firestore:', error);
-                            document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
-                        });
-                } else {
-                    console.error('No player found with email:', winnerUsername.value);
-                    alert('Error: No player found with that email.');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching winner:', error);
-                alert('Error fetching winner. Please try again.');
-            });
-    });
+                                // Check for outstanding reports for the LOSER (logged-in user)
+                                checkForOutstandingReports(document.getElementById('loser-username').textContent);
+                            })
+                            .catch((error) => {
+                                console.error('Error adding report to Firestore:', error);
+                                document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
+                            });
+                    } else {
+                        console.error('No player found with email:', winnerUsername.value);
+                        alert('Error: No player found with that email.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching winner:', error);
+                    alert('Error fetching winner. Please try again.');
+                });
+        });
+    }
 
     function populateWinnerDropdown() {
         db.collection('players').get().then(querySnapshot => {
