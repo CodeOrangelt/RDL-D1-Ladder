@@ -12,19 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUserSpan.style.display = 'inline'; // Show the username
             signOutLink.style.display = 'inline'; // Make sure sign-out link is visible
             loginRegisterLink.style.display = 'none'; // Hide login/register
-
-            // Add event listener to sign out
-            signOutLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                firebase.auth().signOut().then(function() {
-                    // Sign-out successful.
-                    console.log('User signed out.');
-                    window.location.href = 'index.html'; // Redirect to home page
-                }).catch(function(error) {
-                    // An error happened.
-                    console.error('Sign-out error:', error);
-                });
-            });
         } else {
             // No user is signed in.
             currentUserSpan.textContent = ''; // Clear the username
