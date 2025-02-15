@@ -306,6 +306,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             const winnerId = winnerSnapshot.docs[0].id;
                             const loserId = loserSnapshot.docs[0].id;
 
+                            console.log(`Winner ID: ${winnerId}, Loser ID: ${loserId}`); // Debug statement
+
                             // Update ELO ratings and swap positions
                             updateEloRatings(winnerId, loserId);
 
