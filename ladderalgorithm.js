@@ -76,6 +76,8 @@ function updateEloRatings(winnerId, loserId) {
             const loserPosition = loserData.position;
 
             if (winnerPosition > loserPosition) {
+                console.log(`Swapping positions: Winner (${winnerId}) from position ${winnerPosition} to ${loserPosition}, Loser (${loserId}) from position ${loserPosition} to ${winnerPosition}`);
+
                 playersRef.doc(winnerId).update({ position: loserPosition })
                     .then(() => {
                         console.log(`Updated winner's position to ${loserPosition}`);

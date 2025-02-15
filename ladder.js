@@ -1,46 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const ladderTable = document.getElementById('ladder').getElementsByTagName('tbody')[0];
-    const usernamesSet = new Set(); // Set to keep track of usernames
+    const ladderTableBody = document.getElementById('ladder').querySelector('tbody');
 
-    db.collection('players')
-        .orderBy('points', 'desc') // Order by points in descending order
-        .get()
-        .then(querySnapshot => {
-            let rank = 1;
-            querySnapshot.forEach(doc => {
-                const player = doc.data();
-                if (!usernamesSet.has(player.username)) { // Check if username is already added
-                    usernamesSet.add(player.username); // Add username to the set
-                    const row = ladderTable.insertRow();
+    function fetchLadder() {
+        db.collection('players').orderBy('position', 'asc').get()
+            .then(querySnapshot => {
+                // Clear existing table rows
+                ladderTableBody.innerHTML = '';
 
-                    const rankCell = row.insertCell();
-                    rankCell.textContent = rank;
+                querySnapshot.forEach(doc => {
+                    const player = doc.data();
+                    const row = document.createElement('tr');
+                    const rankCell = document.createElement('td');
+                    const usernameCell = document.createElement('td');
+                    const pointsCell = document.createElement('td');
 
-                    const usernameCell = row.insertCell();
+                    rankCell.textContent = player.position;
                     usernameCell.textContent = player.username;
+                    pointsCell.textContent = player.eloRating;
 
-                    // Apply shimmer effect to the #1 player
-                    if (rank === 1) {
-                        usernameCell.classList.add('shimmer');
-                    }
-
-                    // Assign default ELO rating if not present
-                    if (!player.eloRating) {
-                        const defaultEloRating = 1200; // Default ELO rating
-                        db.collection('players').doc(doc.id).update({ eloRating: defaultEloRating })
-                            .then(() => {
-                                console.log(`Assigned default ELO rating to player ${player.username}`);
-                            })
-                            .catch(error => {
-                                console.error('Error assigning default ELO rating:', error);
-                            });
-                    }
-
-                    rank++;
-                }
+                    row.appendChild(rankCell);
+                    row.appendChild(usernameCell);
+                    row.appendChild(pointsCell);
+                    ladderTableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching ladder:', error);
             });
-        })
-        .catch(error => {
-            console.error('Error fetching player data:', error);
-        });
+    }
+
+    // Fetch the ladder initially
+    fetchLadder();
+
+    // Optionally, set up a listener to refresh the ladder when changes are made
+    db.collection('players').orderBy('position', 'asc').onSnapshot(snapshot => {
+        fetchLadder();
+    });
 });

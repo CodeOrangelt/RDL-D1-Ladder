@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const viewEloRatingsButton = document.getElementById('view-elo-ratings');
     const eloRatingsDiv = document.getElementById('elo-ratings');
-    const eloTableBody = document.getElementById('elo-table').getElementsByTagName('tbody')[0];
+    const eloTableBody = document.getElementById('elo-table').querySelector('tbody');
     const adminButton = document.getElementById('admin-button');
 
     if (!adminButton) {
@@ -31,44 +31,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    viewEloRatingsButton.addEventListener('click', () => {
-        // Toggle the display of the ELO ratings table
-        if (eloRatingsDiv.style.display === 'none') {
-            eloRatingsDiv.style.display = 'block';
-            loadEloRatings();
-        } else {
-            eloRatingsDiv.style.display = 'none';
-        }
-    });
+    if (viewEloRatingsButton) {
+        viewEloRatingsButton.addEventListener('click', () => {
+            // Fetch ELO ratings from Firestore
+            db.collection('players').orderBy('eloRating', 'desc').get()
+                .then(querySnapshot => {
+                    // Clear existing table rows
+                    eloTableBody.innerHTML = '';
 
-    function loadEloRatings() {
-        // Clear the existing table rows
-        eloTableBody.innerHTML = '';
+                    querySnapshot.forEach(doc => {
+                        const player = doc.data();
+                        const row = document.createElement('tr');
+                        const usernameCell = document.createElement('td');
+                        const eloRatingCell = document.createElement('td');
 
-        // Set to keep track of usernames
-        const usernamesSet = new Set();
-
-        // Fetch player data from Firestore
-        db.collection('players')
-            .orderBy('eloRating', 'desc') // Order by ELO rating in descending order
-            .get()
-            .then(querySnapshot => {
-                querySnapshot.forEach(doc => {
-                    const player = doc.data();
-                    if (!usernamesSet.has(player.username)) { // Check if username is already added
-                        usernamesSet.add(player.username); // Add username to the set
-                        const row = eloTableBody.insertRow();
-
-                        const usernameCell = row.insertCell();
                         usernameCell.textContent = player.username;
+                        eloRatingCell.textContent = player.eloRating;
 
-                        const eloRatingCell = row.insertCell();
-                        eloRatingCell.textContent = player.eloRating || 1200; // Default ELO rating is 1200
-                    }
+                        row.appendChild(usernameCell);
+                        row.appendChild(eloRatingCell);
+                        eloTableBody.appendChild(row);
+                    });
+
+                    // Show the ELO ratings div
+                    eloRatingsDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching ELO ratings:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error fetching player data:', error);
-            });
+        });
+    } else {
+        console.error('Button with ID "view-elo-ratings" not found.');
     }
 });
