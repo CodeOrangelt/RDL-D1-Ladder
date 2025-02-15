@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = tbody.getElementsByTagName('tr');
         for (let row of rows) {
             const username = row.cells[1].textContent;
+            console.log(`Adding player to dropdown: ${username}`); // Debugging log
             const option = document.createElement('option');
             option.value = username;
             option.textContent = username;
