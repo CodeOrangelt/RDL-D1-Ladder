@@ -16,46 +16,71 @@ document.addEventListener('DOMContentLoaded', () => {
                     .where('email', '==', match.winnerEmail)
                     .get()
                     .then(winnerQuerySnapshot => {
+                        let winnerUsername = "Unknown Player";
                         if (!winnerQuerySnapshot.empty) {
                             const winnerDoc = winnerQuerySnapshot.docs[0];
-                            const winnerUsername = winnerDoc.data().username;
-
-                            const winnerCell = row.insertCell();
-                            winnerCell.textContent = winnerUsername;
-                        } else {
-                            const winnerCell = row.insertCell();
-                            winnerCell.textContent = "Unknown Player";
+                            winnerUsername = winnerDoc.data().username;
                         }
+
+                        // Insert cells in the correct order
+                        const winnerCell = row.insertCell();
+                        winnerCell.textContent = winnerUsername;
+
+                        const loserCell = row.insertCell();
+                        loserCell.textContent = match.loserUsername;
+
+                        const winnerScoreCell = row.insertCell();
+                        winnerScoreCell.textContent = match.winnerScore;
+
+                        const loserScoreCell = row.insertCell();
+                        loserScoreCell.textContent = match.loserScore;
+
+                        const winnerSuicidesCell = row.insertCell();
+                        winnerSuicidesCell.textContent = match.winnerSuicides;
+
+                        const loserSuicidesCell = row.insertCell();
+                        loserSuicidesCell.textContent = match.suicides;
+
+                        const mapPlayedCell = row.insertCell();
+                        mapPlayedCell.textContent = match.mapPlayed;
+
+                        const winnerCommentCell = row.insertCell();
+                        winnerCommentCell.textContent = match.winnerComment;
+
+                        const loserCommentCell = row.insertCell();
+                        loserCommentCell.textContent = match.loserComment;
                     })
                     .catch(error => {
                         console.error('Error fetching winner:', error);
+
+                        // Insert cells with error message for winner
                         const winnerCell = row.insertCell();
                         winnerCell.textContent = "Error Fetching Username";
+
+                        const loserCell = row.insertCell();
+                        loserCell.textContent = match.loserUsername;
+
+                        const winnerScoreCell = row.insertCell();
+                        winnerScoreCell.textContent = match.winnerScore;
+
+                        const loserScoreCell = row.insertCell();
+                        loserScoreCell.textContent = match.loserScore;
+
+                        const winnerSuicidesCell = row.insertCell();
+                        winnerSuicidesCell.textContent = match.winnerSuicides;
+
+                        const loserSuicidesCell = row.insertCell();
+                        loserSuicidesCell.textContent = match.suicides;
+
+                        const mapPlayedCell = row.insertCell();
+                        mapPlayedCell.textContent = match.mapPlayed;
+
+                        const winnerCommentCell = row.insertCell();
+                        winnerCommentCell.textContent = match.winnerComment;
+
+                        const loserCommentCell = row.insertCell();
+                        loserCommentCell.textContent = match.loserComment;
                     });
-
-                const loserCell = row.insertCell();
-                loserCell.textContent = match.loserUsername;
-
-                const winnerScoreCell = row.insertCell();
-                winnerScoreCell.textContent = match.winnerScore;
-
-                const loserScoreCell = row.insertCell();
-                loserScoreCell.textContent = match.loserScore;
-
-                const winnerSuicidesCell = row.insertCell();
-                winnerSuicidesCell.textContent = match.winnerSuicides;
-
-                const loserSuicidesCell = row.insertCell();
-                loserSuicidesCell.textContent = match.suicides;
-
-                const mapPlayedCell = row.insertCell();
-                mapPlayedCell.textContent = match.mapPlayed;
-
-                const winnerCommentCell = row.insertCell();
-                winnerCommentCell.textContent = match.winnerComment;
-
-                const loserCommentCell = row.insertCell();
-                loserCommentCell.textContent = match.loserComment;
             });
         })
         .catch(error => {
