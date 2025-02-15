@@ -3,19 +3,29 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 h1 {
-    margin: 20px;
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
 }
 
 table {
-    width: 80%;
+    width: 100%;
     border-collapse: collapse;
-    margin: 20px;
+    margin-top: 20px;
 }
 
 table, th, td {
@@ -23,7 +33,7 @@ table, th, td {
 }
 
 th, td {
-    padding: 8px;
+    padding: 10px;
     text-align: left;
 }
 
@@ -34,4 +44,20 @@ th {
 
 tr:nth-child(even) {
     background-color: #f2f2f2;
+}
+
+/* Shimmer effect for the #1 player */
+.shimmer {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 25%, rgba(255, 215, 0, 0.8) 50%, rgba(255, 215, 0, 0.2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }

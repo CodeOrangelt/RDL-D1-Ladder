@@ -1,44 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
-    fetchLadderData();  // Fetch and display ladder data
-});
+    const ladderTable = document.getElementById('ladder').getElementsByTagName('tbody')[0];
+    const usernamesSet = new Set(); // Set to keep track of usernames
 
-function fetchLadderData() {
-    const table = document.getElementById('ladder');
-    if (!table) {
-        console.error('Ladder table not found');
-        return;
-    }
-
-    const tbody = table.getElementsByTagName('tbody')[0];
-    if (!tbody) {
-        console.error('Ladder table body not found');
-        return;
-    }
-
-    // Clear existing rows and fetch data
-    tbody.innerHTML = '';  // Clear existing rows
-    let rank = 1;
-    const seenUsernames = new Set();
-
-    db.collection('players').orderBy('points', 'desc')
-        .onSnapshot(snapshot => {
-            tbody.innerHTML = '';  // Clear existing rows
-            snapshot.forEach(doc => {
+    db.collection('players')
+        .orderBy('points', 'desc') // Order by points in descending order
+        .get()
+        .then(querySnapshot => {
+            let rank = 1;
+            querySnapshot.forEach(doc => {
                 const player = doc.data();
-                console.log(`Fetched username: ${player.username}`);  // Log fetched usernames
-                if (!seenUsernames.has(player.username)) {
-                    seenUsernames.add(player.username);
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${rank}</td>
-                        <td>${player.username}</td>
-                        <td>${player.points}</td>
-                    `;
-                    tbody.appendChild(row);
-                    rank++;
-                } else {
-                    console.log(`Duplicate username skipped: ${player.username}`);
+                if (!usernamesSet.has(player.username)) { // Check if username is already added
+                    usernamesSet.add(player.username); // Add username to the set
+                    const row = ladderTable.insertRow();
+
+                    const rankCell = row.insertCell();
+                    rankCell.textContent = rank++;
+
+                    const usernameCell = row.insertCell();
+                    usernameCell.textContent = player.username;
                 }
             });
+        })
+        .catch(error => {
+            console.error('Error fetching player data:', error);
         });
-}
+});
