@@ -10,9 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loserUsername.textContent = user.displayName || user.email;
 
             document.getElementById('report-form').style.display = 'block';
-            populateWinnerDropdown();
-
-            // Remove setTimeout
+            populateWinnerDropdown(); // Move this line up
             checkForOutstandingReports(user.email || user.displayName);
         } else {
             console.log('No user signed in');
@@ -55,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 reportForm.reset();
                 alert('Game reported successfully.');
 
-                // Move the call to checkForOutstandingReports here
-                checkForOutstandingReports(reportData.winnerUsername);
+                // Check for outstanding reports for the LOSER (logged-in user)
+                checkForOutstandingReports(document.getElementById('loser-username').textContent);
             })
             .catch((error) => {
                 console.error('Error adding report to Firestore:', error);
@@ -137,12 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
             mapPlayed.value = reportData.mapPlayed;
             loserComment.value = reportData.loserComment;
 
-            // Optionally, disable the fields to prevent modification
-            winnerUsername.disabled = true;
-            finalScore.disabled = true;
-            suicides.disabled = true;
-            mapPlayed.disabled = true;
-            loserComment.disabled = true;
+            // Remove disabling of fields (temporarily)
+            // winnerUsername.disabled = true;
+            // finalScore.disabled = true;
+            // suicides.disabled = true;
+            // mapPlayed.disabled = true;
+            // loserComment.disabled = true;
 
             // Change the submit button to an "Approve" button
             reportForm.innerHTML += '<button type="button" id="approve-report">Approve Report</button>';
