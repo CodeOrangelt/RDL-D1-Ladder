@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         db.collection('pendingMatches')
-            .where('winnerUsername', '==', username)
+            .where('winnerEmail', '==', currentUserEmail) // Use winnerEmail instead of winnerUsername
             .where('approved', '==', false)
             .limit(1)
             .get()
