@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Fetch and populate the winner dropdown with player list from ladder.js
             fetchLadderData(); // Call fetchLadderData from ladder.js
+
+            // Check for outstanding reports for the current user
+            checkOutstandingReports(user.email || user.displayName);
         } else {
             // No user is signed in, show the authentication warning
             document.getElementById('auth-warning').style.display = 'block';
@@ -104,6 +107,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 fetchPlayersFromLadder(); // Populate the winner dropdown
+            });
+    }
+
+    // Function to check for outstanding reports and display the notification button
+    function checkOutstandingReports(currentUser) {
+        const confirmationNotification = document.getElementById('confirmation-notification');
+        db.collection('reports')
+            .where('winnerUsername', '==', currentUser)
+            .where('confirmed', '==', false) // Adjust according to your data structure
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    confirmationNotification.style.display = 'block'; // Show the notification button
+                }
+            })
+            .catch(error => {
+                console.error("Error checking for outstanding reports: ", error);
             });
     }
 });
