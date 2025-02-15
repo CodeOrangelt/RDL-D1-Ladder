@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             fetchUsername(user.uid).then(username => {
                 document.getElementById('loser-username').textContent = username;
-                document.getElementById('loser-username-confirm').textContent = username;
                 populateWinnerDropdown();
                 checkForOutstandingReport(username);
             }).catch(error => {
@@ -26,33 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(error => {
             console.error('Error reporting game:', error);
             document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
-        });
-    });
-
-    // Handle confirm form submission
-    document.getElementById('confirm-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const confirmData = getConfirmFormData();
-        const query = db.collection('reports').where('loserUsername', '==', confirmData.loserUsername)
-                        .where('winnerUsername', '==', confirmData.winnerUsername)
-                        .where('approved', '==', false);
-
-        query.get().then(snapshot => {
-            if (!snapshot.empty) {
-                const reportDoc = snapshot.docs[0];
-                reportDoc.ref.update(confirmData).then(() => {
-                    document.getElementById('confirm-form').reset();
-                    alert('Game confirmed successfully.');
-                }).catch(error => {
-                    console.error('Error confirming game:', error);
-                    document.getElementById('report-error').textContent = 'Error confirming game. Please try again.';
-                });
-            } else {
-                alert('No matching report found to confirm.');
-            }
-        }).catch(error => {
-            console.error('Error finding report to confirm:', error);
-            document.getElementById('report-error').textContent = 'Error finding report to confirm. Please try again.';
         });
     });
 });
@@ -87,41 +59,6 @@ function populateWinnerDropdown() {
     });
 }
 
-// Check for outstanding reports
-function checkForOutstandingReport(username) {
-    db.collection('reports')
-        .where('loserUsername', '==', username)
-        .where('approved', '==', false)
-        .get()
-        .then(querySnapshot => {
-            if (!querySnapshot.empty) {
-                // Outstanding report found
-                document.getElementById('confirm-form').style.display = 'block';
-                document.getElementById('report-form').style.display = 'none';
-
-                const reportData = querySnapshot.docs[0].data();
-                populateConfirmForm(reportData);
-            } else {
-                // No outstanding report, show report form
-                document.getElementById('report-form').style.display = 'block';
-                document.getElementById('confirm-form').style.display = 'none';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching reports:', error);
-        });
-}
-
-// Populate confirm form with report data
-function populateConfirmForm(data) {
-    document.getElementById('loser-username-confirm').textContent = data.loserUsername;
-    document.getElementById('winner-username-confirm').textContent = data.winnerUsername;
-    document.getElementById('final-score-confirm').textContent = data.finalScore;
-    document.getElementById('suicides-confirm').textContent = data.suicides;
-    document.getElementById('map-played-confirm').textContent = data.mapPlayed;
-    document.getElementById('loser-comment-confirm').textContent = data.loserComment;
-}
-
 // Get report form data
 function getReportFormData() {
     return {
@@ -135,18 +72,26 @@ function getReportFormData() {
     };
 }
 
-// Get confirm form data
-function getConfirmFormData() {
-    return {
-        loserUsername: document.getElementById('loser-username-confirm').textContent,
-        winnerUsername: document.getElementById('winner-username-confirm').textContent,
-        finalScore: document.getElementById('final-score-confirm').textContent,
-        suicides: document.getElementById('suicides-confirm').textContent,
-        mapPlayed: document.getElementById('map-played-confirm').textContent,
-        loserComment: document.getElementById('loser-comment-confirm').textContent,
-        winnerScore: document.getElementById('winner-score').value,
-        winnerSuicides: document.getElementById('winner-suicides').value,
-        winnerComment: document.getElementById('winner-comment').value,
-        approved: true,
-    };
+// Show authentication warning
+function showAuthWarning() {
+    document.getElementById('auth-warning').style.display = 'block';
+    document.getElementById('report-form').style.display = 'none';
+}
+
+// Check for outstanding reports
+function checkForOutstandingReport(username) {
+    const confirmationNotification = document.getElementById('confirmation-notification');
+    db.collection('reports')
+        .where('winnerUsername', '==', username)
+        .where('approved', '==', false)
+        .get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                confirmationNotification.style.display = 'block'; // Show the notification button
+                console.log('Outstanding reports found'); // Debugging log
+            }
+        })
+        .catch(error => {
+            console.error("Error checking for outstanding reports: ", error);
+        });
 }
