@@ -1,4 +1,19 @@
-// login.js
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyDMF-bq4tpLoZvUYep_G-igmHbK2h-e-Zs",
+    authDomain: "rdladder.firebaseapp.com",
+    projectId: "rdladder",
+    storageBucket: "rdladder.firebasestorage.app",
+    messagingSenderId: "152922774046",
+    appId: "1:152922774046:web:c14bd25f07ad1aa0366c0f",
+    measurementId: "G-MXVPNC0TVJ"
+  };
+
+firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Register Form Submission
 document.getElementById('register-form').addEventListener('submit', function (e) {
@@ -30,8 +45,6 @@ document.getElementById('register-form').addEventListener('submit', function (e)
         });
 });
 
-// login.js
-
 // Login Form Submission
 document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -53,4 +66,3 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
             loginErrorDiv.innerHTML = error.message;
         });
 });
-
