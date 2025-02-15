@@ -39,6 +39,9 @@ function updateEloRatings(winnerId, loserId) {
             const winnerData = winnerDoc.data();
             const loserData = loserDoc.data();
 
+            console.log(`Current winner data: ${JSON.stringify(winnerData)}`);
+            console.log(`Current loser data: ${JSON.stringify(loserData)}`);
+
             // Assign default ELO rating if not present
             assignDefaultEloRating(winnerId, winnerData);
             assignDefaultEloRating(loserId, loserData);
@@ -49,19 +52,45 @@ function updateEloRatings(winnerId, loserId) {
             // Calculate new ELO ratings
             const { newWinnerRating, newLoserRating } = calculateElo(winnerRating, loserRating);
 
-            // Update the ratings in the database
-            playersRef.doc(winnerId).update({ eloRating: newWinnerRating });
-            playersRef.doc(loserId).update({ eloRating: newLoserRating });
+            console.log(`New ELO ratings: Winner (${winnerId}) - ${newWinnerRating}, Loser (${loserId}) - ${newLoserRating}`);
 
-            console.log(`Updated ELO ratings: Winner (${winnerId}) - ${newWinnerRating}, Loser (${loserId}) - ${newLoserRating}`);
+            // Update the ratings in the database
+            playersRef.doc(winnerId).update({ eloRating: newWinnerRating })
+                .then(() => {
+                    console.log(`Updated winner's ELO rating to ${newWinnerRating}`);
+                })
+                .catch(error => {
+                    console.error('Error updating winner\'s ELO rating:', error);
+                });
+
+            playersRef.doc(loserId).update({ eloRating: newLoserRating })
+                .then(() => {
+                    console.log(`Updated loser's ELO rating to ${newLoserRating}`);
+                })
+                .catch(error => {
+                    console.error('Error updating loser\'s ELO rating:', error);
+                });
 
             // Swap positions in the ladder only if the winner's position is lower (higher number) than the loser's position
             const winnerPosition = winnerData.position;
             const loserPosition = loserData.position;
 
             if (winnerPosition > loserPosition) {
-                playersRef.doc(winnerId).update({ position: loserPosition });
-                playersRef.doc(loserId).update({ position: winnerPosition });
+                playersRef.doc(winnerId).update({ position: loserPosition })
+                    .then(() => {
+                        console.log(`Updated winner's position to ${loserPosition}`);
+                    })
+                    .catch(error => {
+                        console.error('Error updating winner\'s position:', error);
+                    });
+
+                playersRef.doc(loserId).update({ position: winnerPosition })
+                    .then(() => {
+                        console.log(`Updated loser's position to ${winnerPosition}`);
+                    })
+                    .catch(error => {
+                        console.error('Error updating loser\'s position:', error);
+                    });
 
                 console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
             } else {
@@ -74,6 +103,9 @@ function updateEloRatings(winnerId, loserId) {
         console.error('Error updating ELO ratings and positions:', error);
     });
 }
+
+// Attach the function to the window object to make it globally accessible
+window.updateEloRatings = updateEloRatings;
 
 function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     db.collection('pendingMatches').doc(reportId).update({
