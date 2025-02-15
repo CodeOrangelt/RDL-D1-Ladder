@@ -4,6 +4,10 @@ nav {
     color: #fff;
     padding: 10px 0;
     width: 100%; /* Ensure the nav takes full width */
+    position: fixed; /* Stick to the top */
+    top: 0;
+    left: 0;
+    z-index: 100; /* Ensure it's above other content */
 }
 
 nav ul {
@@ -11,19 +15,21 @@ nav ul {
     padding: 0;
     margin: 0;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-around; /* Distribute items evenly */
     width: 100%; /* Make the ul take up the full width */
 }
 
 nav li {
-    margin: 0 10px;
+    margin: 0; /* Remove default list item margins */
+    flex: 1; /* Distribute list items evenly */
+    text-align: center; /* Center the text in each list item */
 }
 
 nav a {
     color: #fff;
     text-decoration: none;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 10px 15px; /* Adjust padding for better spacing */
+    display: block; /* Make the entire list item clickable */
     transition: background-color 0.3s ease;
 }
 
@@ -33,18 +39,19 @@ nav a:hover {
 
 /* Sign Out Container Styling */
 #sign-out-container {
-    display: flex;
+    display: inline; /* Display items inline */
     align-items: center;
 }
 
 #current-user {
-    margin-left: 10px;
+    margin-left: 5px;
     font-weight: bold;
 }
 
 /* Style for the user menu */
 #user-menu {
     position: relative;
+    display: inline; /* Display items inline */
 }
 
 #user-menu #sign-out-container {
@@ -55,6 +62,7 @@ nav a:hover {
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     display: none; /* Hide by default */
+    z-index: 1; /* Ensure it's above other content */
 }
 
 #user-menu:hover #sign-out-container {
@@ -83,5 +91,5 @@ nav a:hover {
 
 body {
     margin: 0;
-    padding: 0;;
+    padding: 0;
 }
