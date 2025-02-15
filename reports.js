@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const reportForm = document.getElementById('report-form');
     const winnerUsername = document.getElementById('winner-username');
-    const finalScore = document.getElementById('final-score');
+    const winnerScore = document.getElementById('winner-score');
+    const loserScore = document.getElementById('loser-score');
     const suicides = document.getElementById('suicides');
     const mapPlayed = document.getElementById('map-played');
     const loserComment = document.getElementById('loser-comment');
@@ -43,7 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
             matchId: matchId,
             loserUsername: document.getElementById('loser-username').textContent,
             winnerUsername: winnerUsername.value,
-            finalScore: finalScore.value,
+            winnerScore: winnerScore.value,
+            loserScore: loserScore.value,
             suicides: suicides.value,
             mapPlayed: mapPlayed.value,
             loserComment: loserComment.value,
@@ -155,8 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                     // Populate the lightbox
                                     document.getElementById('lightbox-winner').textContent = winnerUsername;
-                                    document.getElementById('lightbox-loser').textContent = loserUsernameDisplay; // ADD THIS LINE
-                                    document.getElementById('lightbox-score').textContent = reportData.finalScore;
+                                    document.getElementById('lightbox-loser').textContent = loserUsernameDisplay;
+                                    document.getElementById('lightbox-winner-score').textContent = reportData.winnerScore;
+                                    document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
                                     document.getElementById('lightbox-suicides').textContent = reportData.suicides;
                                     document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
                                     document.getElementById('lightbox-comment').textContent = reportData.loserComment;
@@ -168,11 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const approveButton = document.getElementById('approve-button'); // Get the button element
                                     const approveReportHandler = function() { // Store the function in a variable
                                         // Get the winner's input values
-                                        const winnerScore = document.getElementById('winner-score').value;
-                                        const winnerSuicides = document.getElementById('winner-suicides').value;
                                         const winnerComment = document.getElementById('winner-comment').value;
 
-                                        approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                                        approveReport(reportData.id, winnerComment);
                                         document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
                                         approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
                                     };
@@ -203,11 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+    function approveReport(reportId, winnerComment) {
         db.collection('pendingMatches').doc(reportId).update({
             approved: true,
-            winnerScore: winnerScore,
-            suicides: winnerSuicides,
             winnerComment: winnerComment
         })
             .then(() => {
@@ -216,10 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Clean up the form
                 reportForm.reset();
                 winnerUsername.disabled = false;
-                finalScore.disabled = false;
-                suicides.disabled = false;
-                mapPlayed.disabled = false;
-                loserComment.disabled = false;
+                winnerScore.disabled = false;
+                loserScore.disabled = false;
+                suicides = false;
+                mapPlayed = false;
+                loserComment = false;
                 document.getElementById('approve-report').remove();
                 confirmationNotification.style.display = 'none';
                 outstandingReportData = null;
