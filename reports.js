@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let confirmationNotification; // Declare it here
     let outstandingReportData = null; // Store outstanding report data
+    let currentUserEmail; // Store the current user's email
 
     firebase.auth().onAuthStateChanged(user => {
         const authWarning = document.getElementById('auth-warning');
@@ -12,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const loserUsername = document.getElementById('loser-username');
             loserUsername.textContent = user.displayName || user.email;
+
+            currentUserEmail = user.email; // Store the current user's email
 
             document.getElementById('report-form').style.display = 'block';
             populateWinnerDropdown(); // Move this line up
@@ -71,12 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateWinnerDropdown() {
         db.collection('players').get().then(querySnapshot => {
+            // Clear existing options
+            winnerUsername.innerHTML = '<option value="">Select Winner</option>';
+
             querySnapshot.forEach(doc => {
                 const player = doc.data();
-                const option = document.createElement('option');
-                option.value = player.email; // Store the email address as the value
-                option.textContent = player.username; // Display the username
-                winnerUsername.appendChild(option);
+                // Exclude the current user from the dropdown
+                if (player.email !== currentUserEmail) {
+                    const option = document.createElement('option');
+                    option.value = player.email; // Store the email address as the value
+                    option.textContent = player.username; // Display the username
+                    winnerUsername.appendChild(option);
+                }
             });
         }).catch(error => {
             console.error('Error fetching players:', error);
