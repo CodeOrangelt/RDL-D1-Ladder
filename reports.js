@@ -1,97 +1,72 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Handle authentication state changes
-    auth.onAuthStateChanged(user => {
+    // Initialize Firebase (make sure firebase-config.js is included and configured properly)
+    firebase.auth().onAuthStateChanged(user => {
         if (user) {
-            fetchUsername(user.uid).then(username => {
-                document.getElementById('loser-username').textContent = username;
-                populateWinnerDropdown();
-                checkForOutstandingReport(username);
-            }).catch(error => {
-                console.error('Error fetching username:', error);
-                showAuthWarning();
+            const loserUsername = document.getElementById('loser-username');
+            loserUsername.textContent = user.displayName || user.email; // Use display name if available, otherwise use email
+
+            // Show the report form
+            document.getElementById('report-form').style.display = 'block';
+
+            // Fetch and populate the winner dropdown with player list from Firestore
+            populateWinnerDropdown();
+        } else {
+            // No user is signed in, show the authentication warning
+            document.getElementById('auth-warning').style.display = 'block';
+        }
+    });
+
+    // Get form elements
+    const reportForm = document.getElementById('report-form');
+    const winnerUsername = document.getElementById('winner-username');
+    const finalScore = document.getElementById('final-score');
+    const suicides = document.getElementById('suicides');
+    const mapPlayed = document.getElementById('map-played');
+    const loserComment = document.getElementById('loser-comment');
+
+    // Listen for the form submission
+    reportForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form from submitting the default way
+
+        // Get the values from the form inputs
+        const reportData = {
+            loserUsername: document.getElementById('loser-username').textContent,
+            winnerUsername: winnerUsername.value,
+            finalScore: finalScore.value,
+            suicides: suicides.value,
+            mapPlayed: mapPlayed.value,
+            loserComment: loserComment.value,
+            approved: false
+        };
+
+        // Log the form data to the console (for debugging purposes)
+        console.log('Report Data:', reportData);
+
+        // Send the reportData to your Firebase Firestore
+        db.collection('reports').add(reportData)
+            .then(() => {
+                console.log('Report successfully added to Firestore.');
+                reportForm.reset(); // Reset form fields after submission
+                alert('Game reported successfully.');
+            })
+            .catch((error) => {
+                console.error('Error adding report to Firestore: ', error);
+                document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
             });
-        } else {
-            showAuthWarning();
-        }
     });
 
-    // Handle report form submission
-    document.getElementById('report-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const reportData = getReportFormData();
-        db.collection('reports').add(reportData).then(() => {
-            document.getElementById('report-form').reset();
-            alert('Game reported successfully.');
+    // Function to populate the winner dropdown with player list from Firestore
+    function populateWinnerDropdown() {
+        db.collection('players').get().then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                const player = doc.data();
+                const option = document.createElement('option');
+                option.value = player.username; // Adjust according to your data structure
+                option.textContent = player.username;
+                winnerUsername.appendChild(option);
+            });
         }).catch(error => {
-            console.error('Error reporting game:', error);
-            document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
+            console.error('Error fetching players: ', error);
         });
-    });
+    }
 });
-
-// Fetch username from Firestore
-function fetchUsername(uid) {
-    return db.collection('players').doc(uid).get().then(doc => {
-        if (doc.exists) {
-            return doc.data().username;
-        } else {
-            throw new Error('No such document!');
-        }
-    }).catch(error => {
-        console.error('Error getting document:', error);
-        throw error;
-    });
-}
-
-// Populate winner dropdown with usernames
-function populateWinnerDropdown() {
-    const winnerDropdown = document.getElementById('winner-username');
-    db.collection('players').get().then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-            const username = doc.data().username;
-            const option = document.createElement('option');
-            option.value = username;
-            option.textContent = username;
-            winnerDropdown.appendChild(option);
-        });
-    }).catch(error => {
-        console.error('Error fetching players:', error);
-    });
-}
-
-// Get report form data
-function getReportFormData() {
-    return {
-        loserUsername: document.getElementById('loser-username').textContent,
-        winnerUsername: document.getElementById('winner-username').value,
-        finalScore: document.getElementById('final-score').value,
-        suicides: document.getElementById('suicides').value,
-        mapPlayed: document.getElementById('map-played').value,
-        loserComment: document.getElementById('loser-comment').value,
-        approved: false,
-    };
-}
-
-// Show authentication warning
-function showAuthWarning() {
-    document.getElementById('auth-warning').style.display = 'block';
-    document.getElementById('report-form').style.display = 'none';
-}
-
-// Check for outstanding reports
-function checkForOutstandingReport(username) {
-    const confirmationNotification = document.getElementById('confirmation-notification');
-    db.collection('reports')
-        .where('winnerUsername', '==', username)
-        .where('approved', '==', false)
-        .get()
-        .then(snapshot => {
-            if (!snapshot.empty) {
-                confirmationNotification.style.display = 'block'; // Show the notification button
-                console.log('Outstanding reports found'); // Debugging log
-            }
-        })
-        .catch(error => {
-            console.error("Error checking for outstanding reports: ", error);
-        });
-}
