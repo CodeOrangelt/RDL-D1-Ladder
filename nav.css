@@ -76,3 +76,11 @@ nav ul li a:hover {
 #user-menu #sign-out-container a:hover {
     background-color: #555;
 }
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}

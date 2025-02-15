@@ -8,14 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             // User is signed in.
-            currentUserSpan.style.display = 'inline'; // Show the username
-            signOutLink.style.display = 'block'; // Show the sign-out link
-            loginRegisterLink.style.display = 'none'; // Hide login/register
+            currentUserSpan.textContent = user.displayName || user.email;
+            currentUserSpan.classList.remove('hidden');
+            signOutLink.classList.remove('hidden');
+            loginRegisterLink.classList.add('hidden');
         } else {
             // No user is signed in.
-            currentUserSpan.style.display = 'none'; // Hide the username
-            signOutLink.style.display = 'none'; // Hide the sign-out link
-            loginRegisterLink.style.display = 'block'; // Show login/register
+            currentUserSpan.textContent = '';
+            currentUserSpan.classList.add('hidden');
+            signOutLink.classList.add('hidden');
+            loginRegisterLink.classList.remove('hidden');
         }
     });
 });
