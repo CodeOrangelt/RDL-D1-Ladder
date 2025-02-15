@@ -34,10 +34,6 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="winner-score">Winner Score:</label>
-                <input type="number" id="winner-score" placeholder="Winner Score" required>
-            </div>
-            <div class="form-group">
                 <label for="loser-score">Loser Score:</label>
                 <input type="number" id="loser-score" placeholder="Loser Score" required>
             </div>
@@ -77,13 +73,14 @@
             <h2>Report Details</h2>
             <p>Winner: <span id="lightbox-winner"></span></p>
             <p>Loser: <span id="lightbox-loser"></span></p>
-            <p>Winner Score: <span id="lightbox-winner-score"></span></p>
             <p>Loser Score: <span id="lightbox-loser-score"></span></p>
             <p>Suicides: <span id="lightbox-suicides"></span></p>
             <p>Map: <span id="lightbox-map"></span></p>
             <p>Loser Comment: <span id="lightbox-comment"></span></p>
 
             <!-- Winner Input Fields -->
+            <p>Winner's Score: <input type="number" id="winner-score"></p>
+            <p>Winner's Suicides: <input type="number" id="winner-suicides"></p>
             <p>Winner's Comment: <textarea id="winner-comment"></textarea></p>
 
             <button id="approve-button">Approve</button>

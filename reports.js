@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const reportForm = document.getElementById('report-form');
     const winnerUsername = document.getElementById('winner-username');
-    const winnerScore = document.getElementById('winner-score');
     const loserScore = document.getElementById('loser-score');
     const suicides = document.getElementById('suicides');
     const mapPlayed = document.getElementById('map-played');
@@ -44,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             matchId: matchId,
             loserUsername: document.getElementById('loser-username').textContent,
             winnerUsername: winnerUsername.value,
-            winnerScore: winnerScore.value,
             loserScore: loserScore.value,
             suicides: suicides.value,
             mapPlayed: mapPlayed.value,
@@ -158,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     // Populate the lightbox
                                     document.getElementById('lightbox-winner').textContent = winnerUsername;
                                     document.getElementById('lightbox-loser').textContent = loserUsernameDisplay;
-                                    document.getElementById('lightbox-winner-score').textContent = reportData.winnerScore;
                                     document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
                                     document.getElementById('lightbox-suicides').textContent = reportData.suicides;
                                     document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
@@ -215,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Clean up the form
                 reportForm.reset();
                 winnerUsername.disabled = false;
-                winnerScore.disabled = false;
                 loserScore.disabled = false;
                 suicides = false;
                 mapPlayed = false;
