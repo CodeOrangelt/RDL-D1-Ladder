@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 querySnapshot.forEach(doc => {
                     const player = doc.data();
+                    console.log('Player data:', player); // Debug statement
+
                     const row = document.createElement('tr');
                     const rankCell = document.createElement('td');
                     const usernameCell = document.createElement('td');
