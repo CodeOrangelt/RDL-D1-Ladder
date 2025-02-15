@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle authentication state changes
     auth.onAuthStateChanged(user => {
         if (user) {
-            fetchUsername(user.uid).then(username => {
+            fetchUsername(user.uid).then(username => { // Line 5
                 populateWinnerDropdown();
                 checkForOutstandingReport(username);
             }).catch(error => {
