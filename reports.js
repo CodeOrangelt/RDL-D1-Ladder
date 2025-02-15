@@ -126,6 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
         if (!confirmationNotification) {
             confirmationNotification = document.createElement('div');
+            confirmationNotification.id = 'confirmation-notification';
+            confirmationNotification.classList.add('notification-banner');
+            confirmationNotification.style.display = 'none';
+            confirmationNotification.style.marginTop = '10px';
+            document.querySelector('.container').prepend(confirmationNotification);
         }
     
         db.collection('pendingMatches')
@@ -143,18 +148,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         // The loserUsername is already the username, so no need to fetch it
                         const loserUsername = outstandingReportData.loserUsername;
     
-                        confirmationNotification.style.display = 'block';
                         confirmationNotification.innerHTML = `
                             <div>
                                 You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
                             </div>
                         `;
+                        confirmationNotification.style.display = 'block';
                         console.log('Outstanding reports found');
     
-                        document.getElementById('auto-fill-report').addEventListener('click', function(e) {
-                            e.preventDefault();
-                            autoFillReportForm(outstandingReportData);
-                        });
+                        const autoFillReportLink = document.getElementById('auto-fill-report');
+                        if (autoFillReportLink) {
+                            autoFillReportLink.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                autoFillReportForm(outstandingReportData);
+                            });
+                        } else {
+                            console.error("auto-fill-report link not found");
+                        }
                     });
                 } else {
                     confirmationNotification.style.display = 'none';
