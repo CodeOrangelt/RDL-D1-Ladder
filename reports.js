@@ -274,61 +274,79 @@ document.addEventListener('DOMContentLoaded', () => {
             winnerSuicides: winnerSuicides,
             winnerComment: winnerComment
         })
-            .then(() => {
-                console.log('Report approved successfully.');
-                alert('Report approved!');
-                // Clean up the form
-                reportForm.reset();
-                winnerUsername.disabled = false;
-                loserScore.disabled = false;
+        .then(() => {
+            console.log('Report approved successfully.');
+            alert('Report approved!');
+            // Clean up the form
+            reportForm.reset();
+            winnerUsername.disabled = false;
+            loserScore.disabled = false;
 
-                const approveReportElement = document.getElementById('approve-report');
-                if (approveReportElement) {
-                    approveReportElement.remove();
+            const approveReportElement = document.getElementById('approve-report');
+            if (approveReportElement) {
+                approveReportElement.remove();
+            }
+
+            confirmationNotification.style.display = 'none';
+            outstandingReportData = null;
+
+            // Apply the ELO rating algorithm
+            db.collection('pendingMatches').doc(reportId).get().then(doc => {
+                if (doc.exists) {
+                    const reportData = doc.data();
+                    const winnerEmail = reportData.winnerEmail;
+                    const loserUsername = reportData.loserUsername;
+
+                    // Fetch the winner and loser IDs
+                    Promise.all([
+                        db.collection('players').where('email', '==', winnerEmail).get(),
+                        db.collection('players').where('username', '==', loserUsername).get()
+                    ]).then(([winnerSnapshot, loserSnapshot]) => {
+                        if (!winnerSnapshot.empty && !loserSnapshot.empty) {
+                            const winnerId = winnerSnapshot.docs[0].id;
+                            const loserId = loserSnapshot.docs[0].id;
+
+                            // Update ELO ratings and swap positions
+                            updateEloRatings(winnerId, loserId);
+
+                            // Move the report to the approvedMatches collection
+                            db.collection('approvedMatches').doc(reportId).set(reportData)
+                                .then(() => {
+                                    console.log('Report successfully added to approvedMatches.');
+
+                                    // Delete the report from the pendingMatches collection
+                                    db.collection('pendingMatches').doc(reportId).delete()
+                                        .then(() => {
+                                            console.log('Report successfully deleted from pendingMatches.');
+                                            alert('Report confirmed successfully.');
+                                            document.getElementById('confirm-form').reset();
+                                            document.getElementById('confirm-form').style.display = 'none';
+                                        })
+                                        .catch((error) => {
+                                            console.error('Error deleting report from pendingMatches:', error);
+                                            document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                                        });
+                                })
+                                .catch((error) => {
+                                    console.error('Error adding report to approvedMatches:', error);
+                                    document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                                });
+                        } else {
+                            console.error('Winner or loser not found in the database.');
+                        }
+                    }).catch(error => {
+                        console.error('Error fetching winner or loser:', error);
+                    });
+                } else {
+                    console.error('Report not found.');
                 }
-
-                confirmationNotification.style.display = 'none';
-                outstandingReportData = null;
-
-                // Delay the page refresh by 500 milliseconds
-                setTimeout(() => {
-                    window.location.href = window.location.href; // Refresh the page
-                }, 500);
-
-                // Apply the ELO rating algorithm
-                db.collection('pendingMatches').doc(reportId).get().then(doc => {
-                    if (doc.exists) {
-                        const reportData = doc.data();
-                        const winnerEmail = reportData.winnerEmail;
-                        const loserUsername = reportData.loserUsername;
-
-                        // Fetch the winner and loser IDs
-                        Promise.all([
-                            db.collection('players').where('email', '==', winnerEmail).get(),
-                            db.collection('players').where('username', '==', loserUsername).get()
-                        ]).then(([winnerSnapshot, loserSnapshot]) => {
-                            if (!winnerSnapshot.empty && !loserSnapshot.empty) {
-                                const winnerId = winnerSnapshot.docs[0].id;
-                                const loserId = loserSnapshot.docs[0].id;
-
-                                // Update ELO ratings and swap positions
-                                updateEloRatings(winnerId, loserId);
-                            } else {
-                                console.error('Winner or loser not found in the database.');
-                            }
-                        }).catch(error => {
-                            console.error('Error fetching winner or loser:', error);
-                        });
-                    } else {
-                        console.error('Report not found.');
-                    }
-                }).catch(error => {
-                    console.error('Error fetching report:', error);
-                });
-            })
-            .catch(error => {
-                console.error('Error approving report:', error);
-                alert('Error approving report. Please try again.');
+            }).catch(error => {
+                console.error('Error fetching report:', error);
             });
+        })
+        .catch(error => {
+            console.error('Error approving report:', error);
+            alert('Error approving report. Please try again.');
+        });
     }
 });
