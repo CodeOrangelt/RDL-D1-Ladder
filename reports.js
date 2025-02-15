@@ -226,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 reportForm.reset();
                 winnerUsername.disabled = false;
                 loserScore.disabled = false;
-                suicides = false;
                 mapPlayed = false;
                 loserComment = false;
                 document.getElementById('approve-report').remove();
