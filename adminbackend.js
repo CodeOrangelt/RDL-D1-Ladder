@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const eloTableBody = document.getElementById('elo-table').getElementsByTagName('tbody')[0];
     const adminButton = document.getElementById('admin-button');
 
+    if (!adminButton) {
+        console.error('Admin button not found in the DOM');
+        return;
+    }
+
     // Check if the user is authenticated and authorized
     firebase.auth().onAuthStateChanged(user => {
         if (user) {

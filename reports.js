@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const winnerId = winnerSnapshot.docs[0].id;
                                 const loserId = loserSnapshot.docs[0].id;
 
-                                // Update ELO ratings
+                                // Update ELO ratings and swap positions
                                 updateEloRatings(winnerId, loserId);
                             } else {
                                 console.error('Winner or loser not found in the database.');

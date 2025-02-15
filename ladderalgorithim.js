@@ -55,15 +55,18 @@ function updateEloRatings(winnerId, loserId) {
 
             console.log(`Updated ELO ratings: Winner (${winnerId}) - ${newWinnerRating}, Loser (${loserId}) - ${newLoserRating}`);
 
-            // Swap positions in the ladder
+            // Swap positions in the ladder only if the winner's position is lower (higher number) than the loser's position
             const winnerPosition = winnerData.position;
             const loserPosition = loserData.position;
 
-            // Swap positions regardless of their initial positions
-            playersRef.doc(winnerId).update({ position: loserPosition });
-            playersRef.doc(loserId).update({ position: winnerPosition });
+            if (winnerPosition > loserPosition) {
+                playersRef.doc(winnerId).update({ position: loserPosition });
+                playersRef.doc(loserId).update({ position: winnerPosition });
 
-            console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
+                console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
+            } else {
+                console.log(`No position swap needed: Winner (${winnerId}) is already higher ranked than Loser (${loserId})`);
+            }
         } else {
             console.error('One or both players not found in the database.');
         }
