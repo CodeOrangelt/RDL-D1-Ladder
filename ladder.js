@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (querySnapshot.empty) {
                     console.log('No players found in the ladder.'); // Debug statement
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 3;
+                    cell.textContent = 'No players found in the ladder.';
+                    row.appendChild(cell);
+                    ladderTableBody.appendChild(row);
                 } else {
                     querySnapshot.forEach(doc => {
                         const player = doc.data();
