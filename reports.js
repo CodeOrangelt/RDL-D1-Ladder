@@ -177,9 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const approveButton = document.getElementById('approve-button'); // Get the button element
                                     const approveReportHandler = function() { // Store the function in a variable
                                         // Get the winner's input values
+                                        const winnerScore = document.getElementById('winner-score').value;
+                                        const winnerSuicides = document.getElementById('winner-suicides').value;
                                         const winnerComment = document.getElementById('winner-comment').value;
 
-                                        approveReport(reportData.id, winnerComment);
+                                        approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
                                         document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
                                         approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
                                     };
@@ -210,9 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function approveReport(reportId, winnerComment) {
+    function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
         db.collection('pendingMatches').doc(reportId).update({
             approved: true,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
             winnerComment: winnerComment
         })
             .then(() => {
