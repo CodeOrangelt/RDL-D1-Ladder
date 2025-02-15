@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUserSpan.textContent = ''; // Clear the username
             currentUserSpan.style.display = 'none'; // Hide the username
             signOutLink.style.display = 'none'; // Hide the sign-out link
-            loginRegisterLink.style.display = 'inline'; // Show login/register
+            loginRegisterLink.style.display = 'inline-block'; // Show login/register
         }
     });
 });
