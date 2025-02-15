@@ -25,36 +25,36 @@ document.addEventListener('DOMContentLoaded', () => {
                             const row = approvedMatchesTable.insertRow();
 
                             // Create table cells
-                            const loserCell = row.insertCell(0);
-                            const winnerCell = row.insertCell(1);
-                            const loserScoreCell = row.insertCell(2);  // Changed from scoreCell
-                            const winnerScoreCell = row.insertCell(3);
-                            const loserSuicidesCell = row.insertCell(4);
-                            const winnerSuicidesCell = row.insertCell(5);
-                            const mapCell = row.insertCell(6);
+                            const winnerCell = row.insertCell(0);
+                            const loserCell = row.insertCell(1);
+                            const winnerScoreCell = row.insertCell(2);
+                            const loserScoreCell = row.insertCell(3);
+                            const winnerSuicidesCell = row.insertCell(4);
+                            const loserSuicidesCell = row.insertCell(5);
+                            const winnerCommentCell = row.insertCell(6);
                             const loserCommentCell = row.insertCell(7);
-                            const winnerCommentCell = row.insertCell(8);
+                            const mapCell = row.insertCell(8);
 
                             // Populate table cells
-                            loserCell.textContent = loserUsername;
                             winnerCell.textContent = winnerUsername;
-                            loserScoreCell.textContent = matchData.finalScore;  // Changed from matchData.loserScore
+                            loserCell.textContent = loserUsername;
                             winnerScoreCell.textContent = matchData.winnerScore;
-                            loserSuicidesCell.textContent = matchData.suicides;
+                            loserScoreCell.textContent = matchData.loserScore;
                             winnerSuicidesCell.textContent = matchData.winnerSuicides;
-                            mapCell.textContent = matchData.mapPlayed;
-                            loserCommentCell.textContent = matchData.loserComment;
+                            loserSuicidesCell.textContent = matchData.suicides;
                             winnerCommentCell.textContent = matchData.winnerComment || ''; // Handle missing winner comment
+                            loserCommentCell.textContent = matchData.loserComment;
+                            mapCell.textContent = matchData.mapPlayed;
                         });
                     });
                 } else {
                     // Display message if no approved matches
-                    approvedMatchesTable.innerHTML = '<tr><td colspan="9">No approved matches found.</td></tr>';  // Changed colspan to 9
+                    approvedMatchesTable.innerHTML = '<tr><td colspan="9">No approved matches found.</td></tr>';
                 }
             })
             .catch(error => {
                 console.error('Error fetching approved matches:', error);
-                approvedMatchesTable.innerHTML = '<tr><td colspan="9">Error fetching approved matches. Please try again.</td></tr>';  // Changed colspan to 9
+                approvedMatchesTable.innerHTML = '<tr><td colspan="9">Error fetching approved matches. Please try again.</td></tr>';
             });
     }
 
