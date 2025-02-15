@@ -150,10 +150,3 @@ function getConfirmFormData() {
         approved: true,
     };
 }
-
-// Show authentication warning
-function showAuthWarning() {
-    document.getElementById('auth-warning').style.display = 'block';
-    document.getElementById('report-form').style.display = 'none';
-    document.getElementById('confirm-form').style.display = 'none';
-}
