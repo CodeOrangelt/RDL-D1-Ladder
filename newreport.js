@@ -5,10 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user) {
             // User is signed in
             const loserUsername = document.getElementById('loser-username');
-            loserUsername.textContent = user.displayName || user.email; // Use display name if available, otherwise use email
+            loserUsername.textContent = user.displayName; // Use display name if available, otherwise use email
 
             // Show the report form
             document.getElementById('report-form').style.display = 'block';
+
+            // Fetch and populate the winner dropdown with player list
+            fetchPlayers();
         } else {
             // No user is signed in, show the authentication warning
             document.getElementById('auth-warning').style.display = 'block';
@@ -43,4 +46,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Here you can add the logic to send the reportData to your Firebase Firestore or other backend
         // Example: sendReportDataToFirestore(reportData);
     });
+
+    // Function to fetch players from Firestore and populate the winner dropdown
+    function fetchPlayers() {
+        const playersRef = firebase.firestore().collection('players'); // Replace 'players' with your collection name
+        playersRef.get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                const player = doc.data();
+                const option = document.createElement('option');
+                option.value = player.username; // Adjust according to your data structure
+                option.textContent = player.username;
+                winnerUsername.appendChild(option);
+            });
+        }).catch(function(error) {
+            console.error("Error fetching players: ", error);
+        });
+    }
 });
