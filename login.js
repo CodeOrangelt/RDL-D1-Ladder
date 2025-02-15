@@ -1,19 +1,4 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-    apiKey: "AIzaSyDMF-bq4tpLoZvUYep_G-igmHbK2h-e-Zs",
-    authDomain: "rdladder.firebaseapp.com",
-    projectId: "rdladder",
-    storageBucket: "rdladder.firebasestorage.app",
-    messagingSenderId: "152922774046",
-    appId: "1:152922774046:web:c14bd25f07ad1aa0366c0f",
-    measurementId: "G-MXVPNC0TVJ"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication
-const auth = firebase.auth();
-const db = firebase.firestore();
+// login.js
 
 // Register Form Submission
 document.getElementById('register-form').addEventListener('submit', function (e) {
@@ -53,11 +38,8 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
     const password = document.getElementById('login-password').value;
     const loginErrorDiv = document.getElementById('login-error');
 
-    console.log("Attempting login with email:", email);  // Debugging log
-
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-            console.log("Login successful for email:", email);  // Debugging log
             alert('Login successful!');
             window.location.href = 'index.html';
         })
