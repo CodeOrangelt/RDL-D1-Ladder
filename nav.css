@@ -3,7 +3,7 @@ nav {
     background-color: #333;
     color: #fff;
     padding: 10px 0;
-    width: 100% !important; /* Ensure the nav takes full width */
+    width: 100%; /* Ensure the nav takes full width */
 }
 
 nav ul {
@@ -82,7 +82,6 @@ nav a:hover {
 }
 
 body {
-    max-width: none !important; /* Override any max-width on the body */
     margin: 0;
-    padding: 0;
+    padding: 0;;
 }
