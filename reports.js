@@ -68,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
             querySnapshot.forEach(doc => {
                 const player = doc.data();
                 const option = document.createElement('option');
-                option.value = player.username;
-                option.textContent = player.username;
+                option.value = player.email; // Store the email address as the value
+                option.textContent = player.username; // Display the username
                 winnerUsername.appendChild(option);
             });
         }).catch(error => {
