@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function autoFillReportForm(reportData) {
+        console.log("Report Data in autoFillReportForm:", reportData); // ADD THIS LINE
         if (reportData) {
             // Populate the form fields
             winnerUsername.value = reportData.winnerUsername;
