@@ -7,16 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if the user is authenticated and authorized
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
+            console.log('User is signed in:', user.email); // Debug statement
             // User is signed in, check if the email is "admin@ladder.com"
             if (user.email === 'admin@ladder.com') {
+                console.log('User is authorized as admin'); // Debug statement
                 // User is authorized, show the admin button
                 adminButton.style.display = 'block';
             } else {
+                console.log('User is not authorized as admin'); // Debug statement
                 // User is not authorized, redirect to another page or show an error message
                 alert('You are not authorized to access this page.');
                 window.location.href = 'index.html'; // Redirect to the home page
             }
         } else {
+            console.log('No user is signed in'); // Debug statement
             // No user is signed in, redirect to the login page
             window.location.href = 'login.html'; // Redirect to the login page
         }
