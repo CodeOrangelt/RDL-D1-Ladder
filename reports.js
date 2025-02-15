@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Fetch and populate the winner dropdown with player list from Firestore
             populateWinnerDropdown();
+
+            // Check for outstanding reports for the current user
+            checkForOutstandingReports(user.displayName || user.email);
         } else {
             // No user is signed in, show the authentication warning
             document.getElementById('auth-warning').style.display = 'block';
@@ -36,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
             suicides: suicides.value,
             mapPlayed: mapPlayed.value,
             loserComment: loserComment.value,
-            approved: false
+            approved: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         // Log the form data to the console (for debugging purposes)
@@ -68,5 +72,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(error => {
             console.error('Error fetching players: ', error);
         });
+    }
+
+    // Function to check for outstanding reports for the current user
+    function checkForOutstandingReports(username) {
+        const confirmationNotification = document.createElement('div');
+        confirmationNotification.id = 'confirmation-notification';
+        confirmationNotification.style.display = 'none';
+        confirmationNotification.style.marginTop = '10px';
+        document.querySelector('.container').appendChild(confirmationNotification);
+
+        db.collection('reports')
+            .where('winnerUsername', '==', username)
+            .where('approved', '==', false)
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    confirmationNotification.style.display = 'block'; // Show the notification button
+                    confirmationNotification.innerHTML = `<button id="confirm-report-button" class="btn">You have reports to confirm</button>`;
+                    console.log('Outstanding reports found');
+
+                    // Add click event to the button
+                    document.getElementById('confirm-report-button').addEventListener('click', () => {
+                        alert('Please check your outstanding reports.');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error checking for outstanding reports:', error);
+            });
     }
 });
