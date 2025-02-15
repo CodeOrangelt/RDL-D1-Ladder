@@ -69,7 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkForOutstandingReports(username) {
-        if (!confirmationNotification) { // Create only once
+        console.log("Checking for outstanding reports for username:", username); // ADD THIS LINE
+    
+        if (!confirmationNotification) {
             confirmationNotification = document.createElement('div');
             confirmationNotification.id = 'confirmation-notification';
             confirmationNotification.classList.add('notification-banner');
@@ -77,20 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmationNotification.style.marginTop = '10px';
             document.querySelector('.container').prepend(confirmationNotification);
         }
-
+    
         db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
             .where('approved', '==', false)
-            .limit(1) // Only fetch one outstanding report
+            .limit(1)
             .get()
             .then(snapshot => {
+                console.log("Snapshot size:", snapshot.size); // ADD THIS LINE
                 if (!snapshot.empty) {
-                    // Store the report data
                     snapshot.forEach(doc => {
                         outstandingReportData = doc.data();
-                        outstandingReportData.id = doc.id; // Store the document ID
+                        outstandingReportData.id = doc.id;
+                        console.log("Outstanding report data:", outstandingReportData); // ADD THIS LINE
                     });
-
+    
                     confirmationNotification.style.display = 'block';
                     confirmationNotification.innerHTML = `
                         <div>
@@ -98,16 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     console.log('Outstanding reports found');
-
-                    // Add event listener to the link
+    
                     document.getElementById('auto-fill-report').addEventListener('click', function(e) {
                         e.preventDefault();
                         autoFillReportForm(outstandingReportData);
                     });
                 } else {
-                    confirmationNotification.style.display = 'none'; // Hide if no reports
+                    confirmationNotification.style.display = 'none';
                     console.log('No outstanding reports found');
-                    outstandingReportData = null; // Clear any previous data
+                    outstandingReportData = null;
                 }
             })
             .catch(error => {
