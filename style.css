@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-    width: 100%; /* Make container full-width */
+    width: auto; /* Make container full-width */
     margin: auto;
     overflow: hidden;
     padding: 20px;

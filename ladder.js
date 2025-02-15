@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Apply shimmer effect to the #1 player
                     if (rank === 1) {
                         usernameCell.classList.add('shimmer');
+                        rankCell.classList.add('shimmer');
                     }
 
                     // Assign default ELO rating if not present
