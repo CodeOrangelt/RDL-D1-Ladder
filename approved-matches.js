@@ -28,16 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             const loserCell = row.insertCell(0);
                             const winnerCell = row.insertCell(1);
                             const scoreCell = row.insertCell(2);
-                            const suicidesCell = row.insertCell(3);
-                            const mapCell = row.insertCell(4);
-                            const loserCommentCell = row.insertCell(5);
-                            const winnerCommentCell = row.insertCell(6);
+                            const loserSuicidesCell = row.insertCell(3);
+                            const winnerSuicidesCell = row.insertCell(4);
+                            const mapCell = row.insertCell(5);
+                            const loserCommentCell = row.insertCell(6);
+                            const winnerCommentCell = row.insertCell(7);
 
                             // Populate table cells
                             loserCell.textContent = loserUsername;
                             winnerCell.textContent = winnerUsername;
                             scoreCell.textContent = matchData.finalScore;
-                            suicidesCell.textContent = matchData.suicides;
+                            loserSuicidesCell.textContent = matchData.suicides;
+                            winnerSuicidesCell.textContent = matchData.winnerSuicides;
                             mapCell.textContent = matchData.mapPlayed;
                             loserCommentCell.textContent = matchData.loserComment;
                             winnerCommentCell.textContent = matchData.winnerComment || ''; // Handle missing winner comment
@@ -45,12 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else {
                     // Display message if no approved matches
-                    approvedMatchesTable.innerHTML = '<tr><td colspan="7">No approved matches found.</td></tr>';
+                    approvedMatchesTable.innerHTML = '<tr><td colspan="8">No approved matches found.</td></tr>';
                 }
             })
             .catch(error => {
                 console.error('Error fetching approved matches:', error);
-                approvedMatchesTable.innerHTML = '<tr><td colspan="7">Error fetching approved matches. Please try again.</td></tr>';
+                approvedMatchesTable.innerHTML = '<tr><td colspan="8">Error fetching approved matches. Please try again.</td></tr>';
             });
     }
 

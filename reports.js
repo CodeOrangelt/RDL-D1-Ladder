@@ -3,8 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let outstandingReportData = null; // Store outstanding report data
 
     firebase.auth().onAuthStateChanged(user => {
+        const authWarning = document.getElementById('auth-warning');
         if (user) {
             console.log('User signed in:', user.email || user.displayName);
+            if (authWarning) {
+                authWarning.style.display = 'none'; // Hide the warning
+            }
 
             const loserUsername = document.getElementById('loser-username');
             loserUsername.textContent = user.displayName || user.email;
@@ -14,7 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
             checkForOutstandingReports(user.email || user.displayName);
         } else {
             console.log('No user signed in');
-            document.getElementById('auth-warning').style.display = 'block';
+            if (authWarning) {
+                authWarning.style.display = 'block'; // Show the warning
+            }
+            document.getElementById('report-form').style.display = 'none';
         }
     });
 
@@ -160,7 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                     // Add event listener to the Approve button
                                     const approveButton = document.getElementById('approve-button'); // Get the button element
                                     const approveReportHandler = function() { // Store the function in a variable
-                                        approveReport(reportData.id);
+                                        // Get the winner's input values
+                                        const winnerScore = document.getElementById('winner-score').value;
+                                        const winnerSuicides = document.getElementById('winner-suicides').value;
+                                        const winnerComment = document.getElementById('winner-comment').value;
+
+                                        approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
                                         document.getElementById('report-lightbox').style.display = 'none'; // Hide lightbox after approval
                                         approveButton.removeEventListener('click', approveReportHandler); // Remove the event listener
                                     };
@@ -191,8 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function approveReport(reportId) {
-        db.collection('pendingMatches').doc(reportId).update({ approved: true })
+    function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+        db.collection('pendingMatches').doc(reportId).update({
+            approved: true,
+            winnerScore: winnerScore,
+            suicides: winnerSuicides,
+            winnerComment: winnerComment
+        })
             .then(() => {
                 console.log('Report approved successfully.');
                 alert('Report approved!');

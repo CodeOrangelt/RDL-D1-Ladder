@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Game</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to the main CSS file -->
     <link rel="stylesheet" href="nav.css"> <!-- Link to the nav bar CSS -->
     <link rel="stylesheet" href="report-style.css"> <!-- Link to your CSS file -->
 </head>
@@ -72,11 +73,17 @@
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px;">
             <h2>Report Details</h2>
             <p>Winner: <span id="lightbox-winner"></span></p>
-            <p>Loser: <span id="lightbox-loser"></span></p>  <!-- Make sure this element exists -->
+            <p>Loser: <span id="lightbox-loser"></span></p>
             <p>Final Score: <span id="lightbox-score"></span></p>
             <p>Suicides: <span id="lightbox-suicides"></span></p>
             <p>Map: <span id="lightbox-map"></span></p>
             <p>Loser Comment: <span id="lightbox-comment"></span></p>
+
+            <!-- Winner Input Fields -->
+            <p>Winner's Score: <input type="number" id="winner-score"></p>
+            <p>Winner's Suicides: <input type="number" id="winner-suicides"></p>
+            <p>Winner's Comment: <textarea id="winner-comment"></textarea></p>
+
             <button id="approve-button">Approve</button>
             <button id="cancel-button">Cancel</button>
         </div>
@@ -88,5 +95,7 @@
     <script src="firebase-config.js"></script> <!-- Include your Firebase config -->
     <script src="ladder.js"></script> <!-- Include ladder.js -->
     <script src="reports.js"></script> <!-- Include reports.js -->
+    <script src="logout.js"></script>
+    <script src="current-user.js"></script>
 </body>
 </html>
