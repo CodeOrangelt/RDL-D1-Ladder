@@ -17,6 +17,7 @@ nav ul {
     display: flex;
     justify-content: space-around; /* Distribute items evenly */
     width: 100%; /* Make the ul take up the full width */
+    align-items: center; /* Vertically align items */
 }
 
 nav li {
