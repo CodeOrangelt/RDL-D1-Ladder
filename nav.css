@@ -39,7 +39,7 @@ nav a:hover {
 
 /* Sign Out Container Styling */
 #sign-out-container {
-    display: inline; /* Display items inline */
+    display: flex;
     align-items: center;
 }
 
@@ -51,13 +51,13 @@ nav a:hover {
 /* Style for the user menu */
 #user-menu {
     position: relative;
-    display: inline; /* Display items inline */
+    display: inline-block; /* Change to inline-block */
 }
 
 #user-menu #sign-out-container {
     position: absolute;
     top: 100%;
-    right: 0;
+    left: 0; /* Change from right: 0 to left: 0 */
     background-color: #333;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
