@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let confirmationNotification; // Declare it here
+    let outstandingReportData = null; // Store outstanding report data
 
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
@@ -80,23 +81,85 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
             .where('approved', '==', false)
+            .limit(1) // Only fetch one outstanding report
             .get()
             .then(snapshot => {
                 if (!snapshot.empty) {
+                    // Store the report data
+                    snapshot.forEach(doc => {
+                        outstandingReportData = doc.data();
+                        outstandingReportData.id = doc.id; // Store the document ID
+                    });
+
                     confirmationNotification.style.display = 'block';
                     confirmationNotification.innerHTML = `
                         <div>
-                            You have outstanding reports to confirm. <a href="confirm.html">Click here to review</a>
+                            You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
                         </div>
                     `;
                     console.log('Outstanding reports found');
+
+                    // Add event listener to the link
+                    document.getElementById('auto-fill-report').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        autoFillReportForm(outstandingReportData);
+                    });
                 } else {
                     confirmationNotification.style.display = 'none'; // Hide if no reports
                     console.log('No outstanding reports found');
+                    outstandingReportData = null; // Clear any previous data
                 }
             })
             .catch(error => {
                 console.error('Error checking for outstanding reports:', error);
+            });
+    }
+
+    function autoFillReportForm(reportData) {
+        if (reportData) {
+            // Populate the form fields
+            winnerUsername.value = reportData.winnerUsername;
+            finalScore.value = reportData.finalScore;
+            suicides.value = reportData.suicides;
+            mapPlayed.value = reportData.mapPlayed;
+            loserComment.value = reportData.loserComment;
+
+            // Optionally, disable the fields to prevent modification
+            winnerUsername.disabled = true;
+            finalScore.disabled = true;
+            suicides.disabled = true;
+            mapPlayed.disabled = true;
+            loserComment.disabled = true;
+
+            // Change the submit button to an "Approve" button
+            reportForm.innerHTML += '<button type="button" id="approve-report">Approve Report</button>';
+
+            // Add event listener to the Approve button
+            document.getElementById('approve-report').addEventListener('click', function() {
+                approveReport(reportData.id);
+            });
+        }
+    }
+
+    function approveReport(reportId) {
+        db.collection('pendingMatches').doc(reportId).update({ approved: true })
+            .then(() => {
+                console.log('Report approved successfully.');
+                alert('Report approved!');
+                // Clean up the form
+                reportForm.reset();
+                winnerUsername.disabled = false;
+                finalScore.disabled = false;
+                suicides.disabled = false;
+                mapPlayed.disabled = false;
+                loserComment.disabled = false;
+                document.getElementById('approve-report').remove();
+                confirmationNotification.style.display = 'none';
+                outstandingReportData = null;
+            })
+            .catch(error => {
+                console.error('Error approving report:', error);
+                alert('Error approving report. Please try again.');
             });
     }
 });
