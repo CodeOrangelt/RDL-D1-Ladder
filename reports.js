@@ -294,6 +294,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     window.location.href = window.location.href; // Refresh the page
                 }, 500);
+
+                // Apply the ELO rating algorithm
+                db.collection('pendingMatches').doc(reportId).get().then(doc => {
+                    if (doc.exists) {
+                        const reportData = doc.data();
+                        const winnerEmail = reportData.winnerEmail;
+                        const loserUsername = reportData.loserUsername;
+
+                        // Fetch the winner and loser IDs
+                        Promise.all([
+                            db.collection('players').where('email', '==', winnerEmail).get(),
+                            db.collection('players').where('username', '==', loserUsername).get()
+                        ]).then(([winnerSnapshot, loserSnapshot]) => {
+                            if (!winnerSnapshot.empty && !loserSnapshot.empty) {
+                                const winnerId = winnerSnapshot.docs[0].id;
+                                const loserId = loserSnapshot.docs[0].id;
+
+                                // Update ELO ratings
+                                updateEloRatings(winnerId, loserId);
+                            } else {
+                                console.error('Winner or loser not found in the database.');
+                            }
+                        }).catch(error => {
+                            console.error('Error fetching winner or loser:', error);
+                        });
+                    } else {
+                        console.error('Report not found.');
+                    }
+                }).catch(error => {
+                    console.error('Error fetching report:', error);
+                });
             })
             .catch(error => {
                 console.error('Error approving report:', error);
