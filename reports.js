@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let confirmationNotification; // Declare it here
+
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             console.log('User signed in:', user.email || user.displayName);
@@ -66,12 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkForOutstandingReports(username) {
-        const confirmationNotification = document.createElement('div');
-        confirmationNotification.id = 'confirmation-notification';
-        confirmationNotification.classList.add('notification-banner');
-        confirmationNotification.style.display = 'none';
-        confirmationNotification.style.marginTop = '10px';
-        document.querySelector('.container').prepend(confirmationNotification);
+        if (!confirmationNotification) { // Create only once
+            confirmationNotification = document.createElement('div');
+            confirmationNotification.id = 'confirmation-notification';
+            confirmationNotification.classList.add('notification-banner');
+            confirmationNotification.style.display = 'none';
+            confirmationNotification.style.marginTop = '10px';
+            document.querySelector('.container').prepend(confirmationNotification);
+        }
 
         db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
@@ -81,12 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!snapshot.empty) {
                     confirmationNotification.style.display = 'block';
                     confirmationNotification.innerHTML = `
-                        <div class="notification-banner">
+                        <div>
                             You have outstanding reports to confirm. <a href="confirm.html">Click here to review</a>
                         </div>
                     `;
                     console.log('Outstanding reports found');
                 } else {
+                    confirmationNotification.style.display = 'none'; // Hide if no reports
                     console.log('No outstanding reports found');
                 }
             })
