@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('report-form').style.display = 'block';
             populateWinnerDropdown();
-            checkForOutstandingReports(user.email || user.displayName);
+
+            // Add a delay before calling checkForOutstandingReports
+            setTimeout(() => {
+                checkForOutstandingReports(user.email || user.displayName);
+            }, 2000); // 2 seconds
         } else {
             console.log('No user signed in');
             document.getElementById('auth-warning').style.display = 'block';
@@ -30,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const matchId = db.collection('pendingMatches').doc().id;
 
+        console.log("Winner Username Value:", winnerUsername.value); // ADD THIS LINE
+
         const reportData = {
             matchId: matchId,
             loserUsername: document.getElementById('loser-username').textContent,
@@ -42,9 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
+        console.log("Report data being written:", reportData); // ADD THIS LINE
+
         db.collection('pendingMatches').doc(matchId).set(reportData)
             .then(() => {
                 console.log('Report successfully added to pendingMatches.');
+                console.log("Report data after write:", reportData); // ADD THIS LINE
                 reportForm.reset();
                 alert('Game reported successfully.');
             })
