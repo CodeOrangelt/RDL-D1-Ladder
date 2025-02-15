@@ -1,4 +1,4 @@
-
+// logout.js
 function initializeLogout() {
     const signOutLink = document.getElementById('sign-out');
 
