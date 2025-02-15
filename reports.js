@@ -83,9 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkForOutstandingReports(username) {
         const confirmationNotification = document.createElement('div');
         confirmationNotification.id = 'confirmation-notification';
+        confirmationNotification.classList.add('notification-banner');
         confirmationNotification.style.display = 'none';
         confirmationNotification.style.marginTop = '10px';
-        document.querySelector('.container').appendChild(confirmationNotification);
+        document.querySelector('.container').prepend(confirmationNotification);
 
         console.log('Checking for outstanding reports for username:', username); // Debugging log
 
