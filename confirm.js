@@ -1,22 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Firebase (make sure firebase-config.js is included and configured properly)
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
-            console.log('User signed in:', user.email || user.displayName); // Debugging log
+            console.log('User signed in:', user.email || user.displayName);
 
-            // Check for outstanding reports for the current user
             checkForOutstandingReports(user.email || user.displayName);
         } else {
-            // No user is signed in, show the authentication warning
-            console.log('No user signed in'); // Debugging log
+            console.log('No user signed in');
             document.getElementById('auth-warning').style.display = 'block';
         }
     });
 
-    // Function to check for outstanding reports for the current user
     function checkForOutstandingReports(username) {
-        console.log('Checking for outstanding reports for username:', username); // Debugging log
-
         db.collection('pendingMatches')
             .where('winnerUsername', '==', username)
             .where('approved', '==', false)
@@ -36,10 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Function to auto-fill the confirm form with report data
     function autofillConfirmForm(reportData, reportId) {
-        console.log('Auto-filling confirm form with data:', reportData); // Debugging log
-
         document.getElementById('loser-username').textContent = reportData.loserUsername;
         document.getElementById('winner-username').textContent = reportData.winnerUsername;
         document.getElementById('final-score').textContent = reportData.finalScore;
@@ -47,10 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('map-played').textContent = reportData.mapPlayed;
         document.getElementById('loser-comment').textContent = reportData.loserComment;
 
-        // Show the confirm form
         document.getElementById('confirm-form').style.display = 'block';
 
-        // Handle confirm form submission
         document.getElementById('confirm-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const winnerComment = document.getElementById('winner-comment').value;
@@ -58,20 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to confirm the report
     function confirmReport(reportId, reportData, winnerComment) {
-        console.log('Confirming report with ID:', reportId); // Debugging log
-
-        // Update the original report with the confirmation details
         reportData.winnerComment = winnerComment;
         reportData.approved = true;
 
-        // Move report to approvedMatches collection
-        db.collection('approvedMatches').add(reportData)
+        db.collection('approvedMatches').doc(reportId).set(reportData)
             .then(() => {
                 console.log('Report successfully added to approvedMatches.');
 
-                // Delete report from pendingMatches collection
                 db.collection('pendingMatches').doc(reportId).delete()
                     .then(() => {
                         console.log('Report successfully deleted from pendingMatches.');
