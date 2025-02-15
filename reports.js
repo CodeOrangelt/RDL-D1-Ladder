@@ -245,11 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 reportForm.reset();
                 winnerUsername.disabled = false;
                 loserScore.disabled = false;
-                mapPlayed = false;
-                loserComment = false;
                 document.getElementById('approve-report').remove();
                 confirmationNotification.style.display = 'none';
                 outstandingReportData = null;
+
+                // Delay the page refresh by 500 milliseconds
+                setTimeout(() => {
+                    window.location.href = window.location.href; // Refresh the page
+                }, 500);
             })
             .catch(error => {
                 console.error('Error approving report:', error);
