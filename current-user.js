@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUserSpan.textContent = user.displayName || user.email;
             currentUserSpan.style.display = 'inline'; // Show the username
             signOutLink.style.display = 'inline'; // Show the sign-out link
-            loginRegisterLink.style.display = 'none'; // Hide login/register
         } else {
             // No user is signed in.
             currentUserSpan.textContent = '';
