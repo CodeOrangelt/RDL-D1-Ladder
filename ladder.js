@@ -24,6 +24,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         usernameCell.classList.add('shimmer');
                     }
 
+                    // Assign default ELO rating if not present
+                    if (!player.eloRating) {
+                        const defaultEloRating = 1200; // Default ELO rating
+                        db.collection('players').doc(doc.id).update({ eloRating: defaultEloRating })
+                            .then(() => {
+                                console.log(`Assigned default ELO rating to player ${player.username}`);
+                            })
+                            .catch(error => {
+                                console.error('Error assigning default ELO rating:', error);
+                            });
+                    }
+
                     rank++;
                 }
             });

@@ -12,6 +12,20 @@ function calculateElo(winnerRating, loserRating, kFactor = 32) {
     };
 }
 
+// Function to assign default ELO rating if not present
+function assignDefaultEloRating(playerId, playerData) {
+    const defaultEloRating = 1200; // Default ELO rating
+    if (!playerData.eloRating) {
+        db.collection('players').doc(playerId).update({ eloRating: defaultEloRating })
+            .then(() => {
+                console.log(`Assigned default ELO rating to player ${playerData.username}`);
+            })
+            .catch(error => {
+                console.error('Error assigning default ELO rating:', error);
+            });
+    }
+}
+
 // Function to update ELO ratings and swap positions after a match
 function updateEloRatings(winnerId, loserId) {
     const playersRef = db.collection('players');
@@ -24,6 +38,10 @@ function updateEloRatings(winnerId, loserId) {
         if (winnerDoc.exists && loserDoc.exists) {
             const winnerData = winnerDoc.data();
             const loserData = loserDoc.data();
+
+            // Assign default ELO rating if not present
+            assignDefaultEloRating(winnerId, winnerData);
+            assignDefaultEloRating(loserId, loserData);
 
             const winnerRating = winnerData.eloRating || 1200; // Default ELO rating is 1200
             const loserRating = loserData.eloRating || 1200;
@@ -56,4 +74,4 @@ function updateEloRatings(winnerId, loserId) {
 }
 
 // Example usage: Call this function when a match is reported
-// updateEloRatings('winnerPlayerId', 'loserPlayerId');s
+// updateEloRatings('winnerPlayerId', 'loserPlayerId');
