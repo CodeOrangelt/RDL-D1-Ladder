@@ -8,7 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             // User is signed in.
-            currentUserSpan.textContent = user.displayName || user.email;
+            db.collection('players').doc(user.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const username = doc.data().username;
+                        currentUserSpan.textContent = username; // Display the username
+                    } else {
+                        currentUserSpan.textContent = user.displayName || user.email; // Fallback to display name or email
+                        console.log("No such document!");
+                    }
+                }).catch(error => {
+                    console.log("Error getting document:", error);
+                    currentUserSpan.textContent = user.displayName || user.email; // Fallback to display name or email
+                });
             currentUserSpan.style.display = 'inline'; // Show the username
             signOutLink.style.display = 'inline'; // Show the sign-out link
             loginRegisterLink.style.display = 'none'; // Hide login/register
