@@ -40,14 +40,21 @@ document.addEventListener('DOMContentLoaded', function() {
             finalScore: finalScore.value,
             suicides: suicides.value,
             mapPlayed: mapPlayed.value,
-            loserComment: loserComment.value
+            loserComment: loserComment.value,
+            approved: false
         };
 
         // Log the form data to the console (for debugging purposes)
         console.log('Report Data:', reportData);
 
-        // Here you can add the logic to send the reportData to your Firebase Firestore or other backend
-        // Example: sendReportDataToFirestore(reportData);
+        // Send the reportData to your Firebase Firestore
+        db.collection('reports').add(reportData)
+            .then(() => {
+                console.log('Report successfully added to Firestore.');
+            })
+            .catch((error) => {
+                console.error('Error adding report to Firestore: ', error);
+            });
     });
 
     // Function to populate the winner dropdown with player list from fetchLadderData
@@ -115,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const confirmationNotification = document.getElementById('confirmation-notification');
         db.collection('reports')
             .where('winnerUsername', '==', currentUser)
-            .where('confirmed', '==', false) // Adjust according to your data structure
+            .where('approved', '==', false)
             .get()
             .then(snapshot => {
                 if (!snapshot.empty) {
