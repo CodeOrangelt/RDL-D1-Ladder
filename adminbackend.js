@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the existing table rows
         eloTableBody.innerHTML = '';
 
+        // Set to keep track of usernames
+        const usernamesSet = new Set();
+
         // Fetch player data from Firestore
         db.collection('players')
             .orderBy('eloRating', 'desc') // Order by ELO rating in descending order
@@ -44,13 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(querySnapshot => {
                 querySnapshot.forEach(doc => {
                     const player = doc.data();
-                    const row = eloTableBody.insertRow();
+                    if (!usernamesSet.has(player.username)) { // Check if username is already added
+                        usernamesSet.add(player.username); // Add username to the set
+                        const row = eloTableBody.insertRow();
 
-                    const usernameCell = row.insertCell();
-                    usernameCell.textContent = player.username;
+                        const usernameCell = row.insertCell();
+                        usernameCell.textContent = player.username;
 
-                    const eloRatingCell = row.insertCell();
-                    eloRatingCell.textContent = player.eloRating || 1200; // Default ELO rating is 1200
+                        const eloRatingCell = row.insertCell();
+                        eloRatingCell.textContent = player.eloRating || 1200; // Default ELO rating is 1200
+                    }
                 });
             })
             .catch(error => {
