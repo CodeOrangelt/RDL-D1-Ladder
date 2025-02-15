@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
     reportForm.addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent form from submitting the default way
 
+        console.log('Form submitted'); // Debugging log
+
         // Get the values from the form inputs
         const reportData = {
             loserUsername: document.getElementById('loser-username').textContent,
