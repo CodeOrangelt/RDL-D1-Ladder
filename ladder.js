@@ -1,3 +1,5 @@
+// ladder.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const ladderTableBody = document.getElementById('ladder').querySelector('tbody');
 
