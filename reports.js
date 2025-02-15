@@ -11,10 +11,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 authWarning.style.display = 'none'; // Hide the warning
             }
 
-            const loserUsername = document.getElementById('loser-username');
-            loserUsername.textContent = user.displayName || user.email;
-
             currentUserEmail = user.email; // Store the current user's email
+
+            // Fetch the username from the players collection
+            db.collection('players')
+                .where('email', '==', user.email)
+                .get()
+                .then(querySnapshot => {
+                    if (!querySnapshot.empty) {
+                        // Get the username from the document
+                        const playerDoc = querySnapshot.docs[0];
+                        const username = playerDoc.data().username;
+
+                        // Display the username in the loser-username span
+                        const loserUsername = document.getElementById('loser-username');
+                        loserUsername.textContent = username;
+                    } else {
+                        console.error('No player found with email:', user.email);
+                        const loserUsername = document.getElementById('loser-username');
+                        loserUsername.textContent = "Unknown User";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching player:', error);
+                    const loserUsername = document.getElementById('loser-username');
+                    loserUsername.textContent = "Error Fetching Username";
+                });
 
             document.getElementById('report-form').style.display = 'block';
             populateWinnerDropdown(); // Move this line up
