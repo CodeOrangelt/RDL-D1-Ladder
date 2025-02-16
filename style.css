@@ -1,18 +1,22 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background: url('images/descentspace.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     margin: 0;
-    padding: 0;
+    padding: 60px 0 0 0;  /* Account for fixed navbar */
 }
 
 .container {
     width: auto; /* Make container full-width */
-    margin: auto;
+    margin: 20px auto;
     overflow: hidden;
     padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
+    backdrop-filter: blur(5px); /* Add slight blur to background */
 }
 
 h1 {
@@ -46,10 +50,16 @@ tr:nth-child(even) {
 }
 
 /* Shimmer effect for the #1 player */
-.shimmer {
-    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 25%, rgba(255, 215, 0, 0.8) 50%, rgba(255, 215, 0, 0.2) 75%);
+#ladder tr:first-child td:first-child {
+    background: linear-gradient(90deg, 
+        rgba(255, 215, 0, 0.2) 25%, 
+        rgba(255, 215, 0, 0.8) 50%, 
+        rgba(255, 215, 0, 0.2) 75%
+    );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
+    font-weight: bold;
+    color: #000;
 }
 
 @keyframes shimmer {
@@ -61,11 +71,12 @@ tr:nth-child(even) {
     }
 }
 
-/* Adjust rank column width in ladder table */
-#ladder th:first-child,
+/* Make sure the shimmer is contained within the cell */
 #ladder td:first-child {
-    width: 50px; /* Make rank column narrower */
-    text-align: center; /* Center the rank numbers */
+    width: 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
 #ladder td[title] {
