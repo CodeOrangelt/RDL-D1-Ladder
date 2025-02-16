@@ -1,7 +1,5 @@
 // login.js
 
-//import { firebaseConfig } from './firebase-config.js'; // Import Firebase configuration
-
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -75,5 +73,3 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
             loginErrorDiv.textContent = error.message; // Use textContent to prevent XSS
         });
 });
-
-export { auth, app };
