@@ -20,6 +20,7 @@ body {
 main {
     flex: 1;  /* This will push the footer down */
     width: 100%;
+    margin-top: 0;  /* Remove any top margin */
 }
 
 /* Remove .container styles and apply directly to table */

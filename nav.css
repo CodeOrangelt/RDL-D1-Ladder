@@ -8,14 +8,19 @@ nav {
     background-position: center;
     background-repeat: repeat;
     color: #fff;
+    padding: 10px 0;
     width: 100%;
     position: relative;
     z-index: 100;
+    top: 0;      /* Ensure nav starts at the top */
+    left: 0;
 }
 
 #nav-placeholder {
     width: 100%;
     display: block;
+    margin: 0;    /* Ensure no margins */
+    padding: 0;   /* Ensure no padding */
 }
 
 nav::after {
@@ -119,7 +124,7 @@ nav a:hover {
 
 body {
     margin: 0;
-    padding: 60px 0 0 0;  /* Increased top padding to account for nav + separator */
+    padding: 0;  /* Remove the 60px top padding */
 }
 
 .user-menu {
