@@ -81,3 +81,62 @@ async function loadEloHistory() {
         console.error("Error loading ELO history:", error);
     }
 }
+
+import { auth, db } from './firebase-config.js';
+import { collection, getDocs, query, orderBy, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getEloHistory } from './elo-history.js';
+
+// Add test data array
+const testPlayers = [
+    { username: "EmergingPro", eloRating: 2250, position: 1 },    // Emerald
+    { username: "GoldMaster", eloRating: 1950, position: 2 },     // Gold
+    { username: "SilverStriker", eloRating: 1750, position: 3 },  // Silver
+    { username: "BronzeWarrior", eloRating: 1500, position: 4 },  // Bronze
+    { username: "GoldChampion", eloRating: 1850, position: 5 },   // Gold
+    { username: "EmberEmerald", eloRating: 2150, position: 6 },   // Emerald
+    { username: "SilverPhoenix", eloRating: 1650, position: 7 },  // Silver
+    { username: "BronzeKnight", eloRating: 1450, position: 8 },   // Bronze
+    { username: "Newcomer", eloRating: 1200, position: 9 },       // Unranked
+    { username: "RookiePlayer", eloRating: 1350, position: 10 }   // Unranked
+];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // ...existing auth code...
+
+    // Add new button to HTML
+    const adminActions = document.getElementById('admin-actions');
+    if (adminActions) {
+        const populateButton = document.createElement('button');
+        populateButton.id = 'populate-test-ladder';
+        populateButton.textContent = 'Populate Test Ladder';
+        adminActions.appendChild(populateButton);
+
+        populateButton.addEventListener('click', populateTestLadder);
+    }
+});
+
+async function populateTestLadder() {
+    try {
+        const playersRef = collection(db, 'players');
+        
+        // Clear existing players
+        const existingPlayers = await getDocs(playersRef);
+        const deletePromises = existingPlayers.docs.map(doc => doc.ref.delete());
+        await Promise.all(deletePromises);
+
+        // Add test players
+        const addPromises = testPlayers.map(player => addDoc(playersRef, player));
+        await Promise.all(addPromises);
+
+        alert('Test ladder populated successfully!');
+        // Refresh ELO ratings display if visible
+        if (document.getElementById('elo-ratings').style.display === 'block') {
+            await loadEloRatings();
+        }
+    } catch (error) {
+        console.error("Error populating test ladder:", error);
+        alert('Error populating test ladder: ' + error.message);
+    }
+}
+
+// ...existing code for loadEloRatings and loadEloHistory...
