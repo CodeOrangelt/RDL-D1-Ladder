@@ -315,8 +315,8 @@ class RetroTrackerMonitor {
         if (!game) return;
 
         const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
-        // Create a more concise text format
-        const text = `Now Playing: ${game.gameName} (${game.gameVersion}) - ${gameType}`;
+        // Add LIVE-GAME prefix and format text
+        const text = `LIVE-GAME: ${game.gameName} (${game.gameVersion}) - ${gameType} - Map: ${game.map}`;
         bannerText.textContent = text;
         banner.style.display = 'block';
     }
@@ -446,10 +446,10 @@ const styles = `
 
     .game-banner {
         width: 100%;
-        height: 30px; // Set fixed height for thin banner
+        height: 30px;
         background: linear-gradient(90deg, #881e8e, #b026b9);
         color: white;
-        padding: 5px 0; // Reduced padding
+        padding: 5px 0;
         overflow: hidden;
         white-space: nowrap;
         position: fixed;
@@ -457,22 +457,27 @@ const styles = `
         left: 0;
         z-index: 1000;
         display: none;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes scroll-left {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
     }
 
     .game-banner-content {
         display: inline-block;
-        animation: scroll-left 15s linear infinite; // Slightly faster animation
-        padding-right: 50px;
-        line-height: 20px; // Center text vertically
+        animation: scroll-left 20s linear infinite;
+        padding-right: 100%;
+        line-height: 30px;
     }
 
     .game-banner-text {
         font-family: Arial, sans-serif;
-        font-size: 14px; // Slightly smaller font
+        font-size: 14px;
         font-weight: bold;
-        white-space: nowrap; // Ensure text stays on one line
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
 `;
 
