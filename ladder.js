@@ -1,7 +1,5 @@
 import { 
     collection, 
-    query, 
-    orderBy, 
     getDocs 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
@@ -17,22 +15,16 @@ async function displayLadder() {
     try {
         console.log('Fetching players from Firestore...');
         const playersRef = collection(db, 'players');
-        // Simplified query to just order by position
-        const q = query(playersRef, orderBy('position', 'asc'));
         
         console.log('Executing query...');
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(playersRef);
         console.log('Query complete. Number of documents:', querySnapshot.size);
         
         // Clear existing content
         tableBody.innerHTML = '';
 
         if (querySnapshot.empty) {
-            console.log('No players found in the database. Checking database connection...');
-            // Test database connection
-            const testQuery = await getDocs(collection(db, 'players'));
-            console.log('Raw collection access returned:', testQuery.size, 'documents');
-            
+            console.log('No players found in the database.');
             const emptyRow = document.createElement('tr');
             emptyRow.innerHTML = `
                 <td colspan="3" style="text-align: center;">No players found</td>
@@ -41,30 +33,35 @@ async function displayLadder() {
             return;
         }
 
-        let rank = 1;
+        // Convert to array for sorting
+        const players = [];
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
-            console.log('Player document ID:', doc.id);
             console.log('Player data:', playerData);
-            
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rank}</td>
-                <td>${playerData.username || 'Unknown'}</td>
-                <td>${playerData.eloRating || 1200}</td>
-            `;
-            tableBody.appendChild(row);
-            rank++;
+            players.push({
+                ...playerData,
+                position: playerData.position || Number.MAX_SAFE_INTEGER,
+                eloRating: playerData.eloRating || 1200
+            });
         });
 
-        console.log(`Successfully loaded ${querySnapshot.size} players into ladder`);
+        // Sort players by position
+        players.sort((a, b) => a.position - b.position);
+
+        // Display sorted players
+        players.forEach((playerData, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${playerData.username || 'Unknown'}</td>
+                <td>${playerData.eloRating}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        console.log(`Successfully loaded ${players.length} players into ladder`);
     } catch (error) {
         console.error("Error loading ladder:", error);
-        console.error("Error details:", {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-        });
         tableBody.innerHTML = `
             <tr>
                 <td colspan="3" style="text-align: center; color: red;">
@@ -76,11 +73,6 @@ async function displayLadder() {
 }
 
 // Initialize ladder when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing ladder display...');
-    displayLadder().catch(error => {
-        console.error('Failed to display ladder:', error);
-    });
-});
+document.addEventListener('DOMContentLoaded', displayLadder);
 
 export { displayLadder };
