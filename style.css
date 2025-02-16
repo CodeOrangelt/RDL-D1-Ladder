@@ -5,15 +5,23 @@ body {
     background-position: center;
     background-attachment: fixed;
     margin: 0;
-    padding: 60px 0 0 0;  /* Account for fixed navbar */
+    padding: 60px 0 60px 0;  /* Added bottom padding for footer */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main content wrapper */
+main {
+    flex: 1;
 }
 
 /* Remove .container styles and apply directly to table */
-table {
-    width: 100%;
+main table {
+    width: 85%;  /* Changed from 100% to 95% */
     border-collapse: collapse;
-    margin: 20px auto;
-    background-color: rgba(255, 255, 255, 0.95);
+    margin: 20px auto;  /* 'auto' for horizontal margins centers the table */
+    background-color: rgba(255, 255, 255, 0.5);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(5px);
 }
@@ -34,12 +42,12 @@ th, td {
 }
 
 th {
-    background-color: #4CAF50;
+    background-color: #881e8e;
     color: white;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #f2f2f276;
 }
 
 /* Replace shimmer with glow effect for #1 player */
