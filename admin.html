@@ -5,12 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Backend</title>
     <link rel="stylesheet" href="admin.css">
-    <script src="firebase-config.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <!-- Add nav.css for consistency -->
+    <link rel="stylesheet" href="nav.css">
+    
+    <!-- Initialize Firebase using ES modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { firebaseConfig } from './firebase-config.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase services available globally
+        window.auth = auth;
+        window.db = db;
+    </script>
 </head>
 <body>
+    <!-- Add navigation -->
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
+    
     <div class="container">
         <h1>Admin Backend</h1>
         <div id="admin-actions">
@@ -32,7 +57,12 @@
             </table>
         </div>
     </div>
-    <script src="adminbackend.js"></script>
-    <script src="ladderalgorithm.js"></script>
+
+    <!-- Update script imports to use modules -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="adminbackend.js"></script>
+    <script type="module" src="ladderalgorithm.js"></script>
+    <script type="module" src="current-user.js"></script>
+    <script type="module" src="logout.js"></script>
 </body>
 </html>

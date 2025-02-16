@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         reportLightbox: document.getElementById('report-lightbox')
     };
 
+    // Log which elements were not found
+    Object.entries(elements).forEach(([key, value]) => {
+        if (!value) {
+            console.warn(`Element '${key}' not found in the DOM`);
+        }
+    });
+
     setupAuthStateListener(elements);
     setupReportForm(elements);
 });
@@ -40,15 +47,28 @@ function setupAuthStateListener(elements) {
 }
 
 async function handleUserSignedIn(user, elements) {
-    elements.authWarning.style.display = 'none';
-    elements.reportForm.style.display = 'block';
+    if (!elements) {
+        console.error('Elements object is null or undefined');
+        return;
+    }
+
+    // Add null checks for each element
+    if (elements.authWarning) {
+        elements.authWarning.style.display = 'none';
+    }
+    
+    if (elements.reportForm) {
+        elements.reportForm.style.display = 'block';
+    }
     
     // Set email first before any other operations
     currentUserEmail = user.email || null;
 
     try {
         await updateUserDisplay(user.email, elements);
-        await populateWinnerDropdown(elements.winnerUsername);
+        if (elements.winnerUsername) {
+            await populateWinnerDropdown(elements.winnerUsername);
+        }
         checkForOutstandingReports(user.email, elements);
     } catch (error) {
         console.error('Error during sign-in handling:', error);

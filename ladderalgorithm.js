@@ -1,9 +1,10 @@
-import {
-    doc,
-    getDoc,
-    updateDoc,
-    setDoc,
-    deleteDoc
+import { 
+    collection,
+    doc, 
+    getDoc, 
+    updateDoc, 
+    setDoc, 
+    deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
@@ -113,47 +114,46 @@ export function updateEloRatings(winnerId, loserId) {
     });
 }
 
-export function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
-    // Update to use the modular API syntax
-    const pendingMatchRef = doc(db, 'pendingMatches', reportId);
-    
-    updateDoc(pendingMatchRef, {
-        approved: true,
-        winnerScore: winnerScore,
-        winnerSuicides: winnerSuicides,
-        winnerComment: winnerComment
-    })
-    .then(() => {
-        console.log('Report approved successfully.');
-        alert('Report approved!');
+export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+    try {
+        // Get reference to the pending match document
+        const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         
-        // Get the report data first
-        getDoc(pendingMatchRef).then(doc => {
-            if (doc.exists()) {
-                const reportData = doc.data();
-                const approvedMatchRef = doc(db, 'approvedMatches', reportId);
-
-                // Copy to approved matches
-                setDoc(approvedMatchRef, reportData)
-                    .then(() => {
-                        // Delete from pending matches
-                        deleteDoc(pendingMatchRef)
-                            .then(() => {
-                                console.log('Report processed successfully');
-                                // Reset UI elements if needed
-                                const reportLightbox = document.getElementById('report-lightbox');
-                                if (reportLightbox) {
-                                    reportLightbox.style.display = 'none';
-                                }
-                            });
-                    });
-            }
+        // Update the pending match with winner's data
+        await updateDoc(pendingMatchRef, {
+            approved: true,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
+            winnerComment: winnerComment
         });
-    })
-    .catch(error => {
-        console.error('Error approving report:', error);
-        alert('Error approving report. Please try again.');
-    });
+
+        console.log('Report approved successfully.');
+
+        // Get the complete report data
+        const reportSnapshot = await getDoc(pendingMatchRef);
+        
+        if (reportSnapshot.exists()) {
+            const reportData = reportSnapshot.data();
+            
+            // Create reference for approved match document
+            const approvedMatchRef = doc(db, 'approvedMatches', reportId);
+            
+            // Copy to approved matches collection
+            await setDoc(approvedMatchRef, {
+                ...reportData,
+                approvedAt: new Date()
+            });
+            
+            // Remove from pending matches
+            await deleteDoc(pendingMatchRef);
+            
+            console.log('Report processed and moved to approved matches');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error in approveReport:', error);
+        throw error;
+    }
 }
 
 // Example usage: Call this function when a match is reported

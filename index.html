@@ -38,6 +38,22 @@
     <br>
     
     <div class="container">
+        <div class="auth-buttons">
+            <button id="login-button" class="auth-button">Login</button>
+            <button id="sign-out-link" class="auth-button">Logout</button>
+        </div>
+        <div id="auth-warning" style="display: none;">
+            Please log in to submit reports.
+        </div>
+
+        <form id="report-form" style="display: none;">
+            <!-- ...form fields... -->
+        </form>
+
+        <div id="report-error"></div>
+        <div id="report-lightbox" class="lightbox">
+            <!-- ...lightbox content... -->
+        </div>
         <table id="ladder">
             <thead>
                 <tr>
