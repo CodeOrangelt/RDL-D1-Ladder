@@ -32,22 +32,26 @@ class RetroTrackerMonitor {
 
     async fetchGameData() {
         try {
-            const response = await fetch('https://retro-tracker.game-server.cc/', {
-                mode: 'cors',  // Required for cross-origin requests
-                headers: {
-                    'Accept': 'text/html'
-                }
-            });
+            // Use a CORS proxy service
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
+
+            // Alternative proxy URLs you can try:
+            const corsAnywhere = 'https://cors-anywhere.herokuapp.com/';
+            const corsProxy = 'https://api.codetabs.com/v1/proxy?quest=';
+            
+            const response = await fetch(`${proxyUrl}${targetUrl}`);
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
-            const html = await response.text();
+            const data = await response.json();
+            const html = data.contents;
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            // Find all active game sessions
+            // Rest of the scraping code remains the same
             const gamesList = doc.querySelectorAll('.game-session');
             const games = Array.from(gamesList).map(game => {
                 return {
@@ -69,7 +73,7 @@ class RetroTrackerMonitor {
             return this.processGameData(games);
         } catch (error) {
             console.error('Error fetching game data:', error);
-            this.displayError('Unable to fetch game data from RetroTracker. Please try again later.');
+            this.displayError('Unable to fetch game data. Using proxy service...');
             return null;
         }
     }
