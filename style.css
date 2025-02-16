@@ -86,19 +86,40 @@ tr:nth-child(even) {
     padding-right: 5px; /* Add space for hover box */
 }
 
-#ladder td[title]:hover::after {
+/* Player name and rank hover styling */
+.player-name {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.player-name::after {
+    visibility: hidden;
+    opacity: 0;
     content: attr(title);
     position: absolute;
-    left: calc(100% + 5px); /* Position right after username with small gap */
+    left: 100%;  /* Position to the right of the username */
     top: 50%;
     transform: translateY(-50%);
     background: #333;
+    color: inherit;
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 0.9em;
-    z-index: 1000;
     white-space: nowrap;
-    color: inherit;
+    margin-left: 10px;
     border: 1px solid currentColor;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.player-name:hover::after {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Remove any previous hover styles if they exist */
+#ladder td[title]:hover::after {
+    display: none;
 }

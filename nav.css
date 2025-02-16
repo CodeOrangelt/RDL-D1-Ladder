@@ -9,14 +9,14 @@ nav {
     background-repeat: repeat;
     color: #fff;
     padding: 10px 0;
-    width: 100%; /* Ensure the nav takes full width */
-    position: relative;  /* Changed from fixed to relative */
-    top: auto;  /* Remove fixed positioning */
-    left: auto;
-    z-index: 100; /* Ensure it's above other content */
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: bold;
-    text-transform: uppercase;
+    width: 100%;
+    position: relative;
+    z-index: 100;
+}
+
+#nav-placeholder {
+    width: 100%;
+    display: block;
 }
 
 nav::after {
