@@ -26,26 +26,24 @@ const testPlayers = [
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is admin
     auth.onAuthStateChanged(async (user) => {
-        console.log('Auth state changed:', user?.email); // Debug log
         if (!user) {
-            console.log('No user logged in');
             window.location.href = 'login.html';
             return;
         }
         
         if (ADMIN_EMAILS.includes(user.email)) {
-            console.log('Admin access granted');
-            setupAdminButtons();
+            setupCollapsibleButtons();
         } else {
-            console.log('Not an admin user');
             window.location.href = 'index.html';
         }
     });
+});
 
+function setupCollapsibleButtons() {
     const buttons = document.querySelectorAll('.collapse-btn');
     
     buttons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
             const targetId = button.getAttribute('data-target');
             const targetDiv = document.getElementById(targetId);
             
@@ -56,16 +54,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            // Toggle the clicked section
+            // Toggle the clicked section and load data
             if (targetDiv.style.display === 'none' || targetDiv.style.display === '') {
                 targetDiv.style.display = 'block';
                 button.classList.add('active');
+                
+                // Load appropriate data based on button clicked
+                switch(targetId) {
+                    case 'elo-ratings':
+                        await loadEloRatings();
+                        break;
+                    case 'elo-history':
+                        await loadEloHistory();
+                        break;
+                    case 'template-ladder':
+                        displayTemplateLadder();
+                        break;
+                }
             } else {
                 targetDiv.style.display = 'none';
                 button.classList.remove('active');
             }
             
-            // Update button states
+            // Update other button states
             buttons.forEach(btn => {
                 if (btn !== button) {
                     btn.classList.remove('active');
@@ -73,9 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-});
+}
 
-function setupAdminButtons() {
+async function setupAdminButtons() {
     const viewEloButton = document.getElementById('view-elo-ratings');
     if (viewEloButton) {
         viewEloButton.addEventListener('click', async () => {
@@ -160,16 +171,16 @@ async function loadEloRatings() {
 }
 
 async function loadEloHistory() {
-    const tableBody = document.querySelector('#elo-history-table tbody');
+    const tableBody = document.querySelector('#elo-history tbody'); // Fixed selector
     tableBody.innerHTML = ''; // Clear existing content
 
     try {
-        const history = await getEloHistory();
+        const { entries } = await getEloHistory(); // Destructure to get entries
         
-        history.forEach(record => {
+        entries.forEach(record => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${record.timestamp.toDate().toLocaleString()}</td>
+                <td>${record.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
                 <td>${record.player}</td>
                 <td>${record.previousElo}</td>
                 <td>${record.newElo}</td>
@@ -181,6 +192,7 @@ async function loadEloHistory() {
         });
     } catch (error) {
         console.error("Error loading ELO history:", error);
+        tableBody.innerHTML = '<tr><td colspan="7">Error loading ELO history</td></tr>';
     }
 }
 
