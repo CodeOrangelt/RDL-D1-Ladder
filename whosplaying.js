@@ -49,30 +49,51 @@ class RetroTrackerMonitor {
             }
 
             const data = await response.json();
+            console.log('Raw HTML received:', data.contents); // Debug raw HTML
+
             const html = data.contents;
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            // Update selectors based on actual RetroTracker HTML structure
-            const gamesList = doc.querySelectorAll('.game-list .game'); // Updated selector
-            console.log('Found games:', gamesList.length); // Debug log
+            // Try different possible selectors
+            const gamesListSelectors = [
+                '.game-list .game',
+                '#game-list .game',
+                '.game',
+                '[data-game-id]',
+                '.game-session'
+            ];
+
+            let gamesList = null;
+            for (const selector of gamesListSelectors) {
+                const elements = doc.querySelectorAll(selector);
+                if (elements.length > 0) {
+                    console.log(`Found games using selector: ${selector}`);
+                    gamesList = elements;
+                    break;
+                }
+            }
+
+            if (!gamesList) {
+                console.log('HTML structure:', doc.body.innerHTML); // Debug full HTML
+                throw new Error('Could not find game elements');
+            }
 
             const games = Array.from(gamesList).map(game => {
+                // Log the game element structure
+                console.log('Game element HTML:', game.outerHTML);
+
                 const gameData = {
-                    host: game.querySelector('.game-host')?.textContent?.trim() || 'Unknown Host',
-                    status: 'active', // Default to active since we're only scraping active games
-                    type: game.querySelector('.game-mode')?.textContent?.trim() || 'Unknown Type',
-                    gameName: game.querySelector('.game-name')?.textContent?.trim() || 'Unknown Game',
-                    gameVersion: game.querySelector('.game-version')?.textContent?.trim() || '',
-                    startTime: new Date().toISOString(), // Current time as fallback
-                    players: Array.from(game.querySelectorAll('.player-item')).map(player => ({
-                        name: player.querySelector('.player-name')?.textContent?.trim(),
-                        score: player.querySelector('.player-score')?.textContent?.trim(),
-                        character: player.querySelector('.player-char')?.textContent?.trim(),
-                        wins: player.querySelector('.player-wins')?.textContent?.trim()
-                    }))
+                    host: this.findText(game, ['.host', '.game-host', '.player-host']),
+                    status: 'active',
+                    type: this.findText(game, ['.type', '.game-type', '.game-mode']),
+                    gameName: this.findText(game, ['.title', '.game-title', '.game-name']),
+                    gameVersion: this.findText(game, ['.version', '.game-version']),
+                    startTime: new Date().toISOString(),
+                    players: this.findPlayers(game)
                 };
-                console.log('Processed game:', gameData); // Debug log
+
+                console.log('Processed game data:', gameData);
                 return gameData;
             });
 
@@ -82,6 +103,46 @@ class RetroTrackerMonitor {
             this.displayError('Unable to fetch game data. Check console for details.');
             return null;
         }
+    }
+
+    // Helper method to find text content using multiple possible selectors
+    findText(element, selectors) {
+        for (const selector of selectors) {
+            const el = element.querySelector(selector);
+            if (el && el.textContent) {
+                return el.textContent.trim();
+            }
+        }
+        return '';
+    }
+
+    // Helper method to find players
+    findPlayers(game) {
+        const playerSelectors = [
+            '.player',
+            '.player-item',
+            '[data-player]'
+        ];
+
+        let playerElements = null;
+        for (const selector of playerSelectors) {
+            const elements = game.querySelectorAll(selector);
+            if (elements.length > 0) {
+                playerElements = elements;
+                break;
+            }
+        }
+
+        if (!playerElements) {
+            return [];
+        }
+
+        return Array.from(playerElements).map(player => ({
+            name: this.findText(player, ['.name', '.player-name']),
+            score: this.findText(player, ['.score', '.player-score']),
+            character: this.findText(player, ['.character', '.player-char']),
+            wins: this.findText(player, ['.wins', '.player-wins'])
+        }));
     }
 
     processGameData(data) {
