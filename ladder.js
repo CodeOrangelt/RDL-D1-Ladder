@@ -56,12 +56,15 @@ async function displayLadder() {
         players.forEach((playerData, index) => {
             const rankStyle = getRankStyle(playerData.eloRating);
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td class="player-name" style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}" data-rank-color="${rankStyle.color}">
-                    ${playerData.username || 'Unknown'}
-                </td>
-            `;
+            row.innerHTML = 
+                '<td>' + (index + 1) + '</td>' +
+                '<td class="player-name" style="color: ' + rankStyle.color + 
+                '; font-weight: bold;" title="' + rankStyle.name + 
+                '" data-rank-color="' + rankStyle.color + '">' +
+                (playerData.username || 'Unknown') +
+                '</td>' +
+                '<td>' + (playerData.eloRating || 1200) + '</td>';
+            
             tableBody.appendChild(row);
         });
 
