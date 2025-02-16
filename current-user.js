@@ -1,12 +1,16 @@
-// current-user.js
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is signed in
-    firebase.auth().onAuthStateChanged(function(user) {
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+
+// Initialize Firebase Auth
+const auth = getAuth();
+
+document.addEventListener('DOMContentLoaded', function () {
+    onAuthStateChanged(auth, user => {
         const currentUserSpan = document.getElementById('current-user');
         const signOutLink = document.getElementById('sign-out');
         const loginRegisterLink = document.getElementById('login-register');
 
         if (user) {
+            console.log('User is signed in:', user);
             // User is signed in.
             db.collection('players').doc(user.uid).get()
                 .then(doc => {
@@ -37,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginRegisterLink.style.display = 'none'; // Hide login/register
             }
         } else {
+            console.log('No user is signed in.');
             // No user is signed in.
             if (currentUserSpan) {
                 currentUserSpan.textContent = '';
