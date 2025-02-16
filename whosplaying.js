@@ -32,7 +32,7 @@ class RetroTrackerMonitor {
 
     async fetchGameData() {
         try {
-            // Mock data for testing since we can't directly access the RetroTracker API
+            // Updated mock data to include proper score structure
             const mockData = {
                 games: [
                     {
@@ -42,27 +42,17 @@ class RetroTrackerMonitor {
                         players: [
                             { name: "Player1", score: 100 },
                             { name: "Player2", score: 85 }
-                        ]
+                        ],
+                        scores: {
+                            Player1: 100,
+                            Player2: 85
+                        }
                     }
-                    // Add more mock games as needed
                 ]
             };
 
-            // Instead of fetching, use mock data for now
+            // Process mock data
             return this.processGameData(mockData.games);
-
-            /* Real API fetch - uncomment when API is available
-            const response = await fetch('https://retro-tracker.game-server.cc/api/games', {
-                method: 'GET',
-                mode: 'cors',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-            return this.processGameData(data);
-            */
         } catch (error) {
             console.error('Error fetching game data:', error);
             this.displayError('Unable to fetch game data. Please try again later.');
@@ -80,17 +70,27 @@ class RetroTrackerMonitor {
     }
 
     storeGameData(game) {
+        // Ensure all required fields are present before storing
         const gameData = {
-            host: game.host,
-            players: game.players,
-            scores: game.scores,
+            host: game.host || 'Unknown Host',
+            players: game.players || [],
+            scores: game.scores || {},  // Use empty object if scores undefined
             timestamp: new Date().toISOString(),
-            gameType: game.type
+            gameType: game.type || 'Unknown Type',
+            status: game.status || 'active'
         };
 
-        // Store in Firebase
+        // Store in Firebase with error handling
         addDoc(collection(db, 'retroTracker'), gameData)
-            .catch(error => console.error('Error storing game data:', error));
+            .then(() => {
+                // Add game to local tracking
+                this.activeGames.set(game.host, gameData);
+                this.updateDisplay();
+            })
+            .catch(error => {
+                console.error('Error storing game data:', error);
+                this.displayError('Error saving game data');
+            });
     }
 
     updateDisplay() {
