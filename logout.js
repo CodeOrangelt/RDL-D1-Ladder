@@ -1,4 +1,9 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+import { firebaseConfig } from './firebase-config.js';
+
+// Initialize Firebase (if not already initialized)
+const app = initializeApp(firebaseConfig);
 
 export function initializeLogout() {
     const auth = getAuth();
