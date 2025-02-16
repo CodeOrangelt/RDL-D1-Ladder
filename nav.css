@@ -14,6 +14,20 @@ nav {
     top: 0;
     left: 0;
     z-index: 100; /* Ensure it's above other content */
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+nav::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;  /* Position slightly below the nav */
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(128, 128, 128, 0.5);  /* Semi-transparent gray */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);  /* Subtle shadow */
 }
 
 nav ul {
@@ -38,6 +52,9 @@ nav a {
     padding: 10px 15px; /* Adjust padding for better spacing */
     display: block; /* Make the entire list item clickable */
     transition: background-color 0.3s ease;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 nav a:hover {
@@ -53,6 +70,9 @@ nav a:hover {
 #current-user {
     margin-left: 5px;
     font-weight: bold;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 /* Style for the user menu */
@@ -100,7 +120,7 @@ nav a:hover {
 
 body {
     margin: 0;
-    padding: 0;
+    padding: 60px 0 0 0;  /* Increased top padding to account for nav + separator */
 }
 
 .user-menu {
@@ -119,6 +139,9 @@ body {
     padding: 8px 16px;
     border-radius: 4px;
     transition: background-color 0.2s;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .auth-link:hover {
@@ -135,6 +158,9 @@ body {
     color: white;
     padding: 10px;
     display: inline-block;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .dropdown-content {
@@ -158,6 +184,9 @@ body {
     text-decoration: none;
     display: block;
     transition: background-color 0.2s;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .dropdown-content a:hover {
