@@ -1,17 +1,24 @@
 // current-user.js
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { app } from './login.js'; // Import the Firebase app instance
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is signed in
-    firebase.auth().onAuthStateChanged(function(user) {
+    onAuthStateChanged(auth, function(user) {
         const currentUserSpan = document.getElementById('current-user');
         const signOutLink = document.getElementById('sign-out');
         const loginRegisterLink = document.getElementById('login-register');
 
         if (user) {
             // User is signed in.
-            db.collection('players').doc(user.uid).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const username = doc.data().username;
+            getDoc(doc(db, 'players', user.uid))
+                .then(docSnapshot => {
+                    if (docSnapshot.exists()) {
+                        const username = docSnapshot.data().username;
                         if (currentUserSpan) {
                             currentUserSpan.textContent = username; // Display the username
                         }
