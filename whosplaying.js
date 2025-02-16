@@ -52,6 +52,7 @@ class RetroTrackerMonitor {
 
             // Find all scoreboard games
             const gamesList = doc.querySelectorAll('.scoreboard_game');
+            console.log('Found games elements:', gamesList.length); // Debug log
             
             if (!gamesList || gamesList.length === 0) {
                 throw new Error('No games found');
@@ -60,19 +61,27 @@ class RetroTrackerMonitor {
             const games = Array.from(gamesList).map(game => {
                 // Get the game ID from the onclick attribute
                 const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
+                console.log('Processing game ID:', gameId); // Debug log
+
                 // Get the detailed info table
                 const detailsTable = doc.querySelector(`#game${gameId}`);
+                
+                // Get game status
+                const statusText = this.findDetailText(detailsTable, 'Status:');
+                const isActive = statusText?.includes('Playing');
 
                 const gameData = {
-                    gameVersion: detailsTable.querySelector('td[bgcolor="#D0D0D0"]')?.textContent?.trim().split('-')[0] || '', // Gets "REDUX 1.1"
+                    gameVersion: detailsTable.querySelector('td[bgcolor="#D0D0D0"]')?.textContent?.trim().split('-')[0] || '',
                     gameName: this.findDetailText(detailsTable, 'Game Name:'),
                     map: this.findDetailText(detailsTable, 'Mission:'),
                     players: this.findPlayers(detailsTable),
                     scores: this.findScores(detailsTable),
                     startTime: this.findDetailText(detailsTable, 'Start time:'),
+                    status: isActive ? 'active' : 'inactive', // Add status
                     timestamp: new Date().toISOString()
                 };
 
+                console.log('Processed game data:', gameData); // Debug log
                 return gameData;
             });
 
@@ -183,19 +192,30 @@ class RetroTrackerMonitor {
 
     processGameData(data) {
         if (!data || data.length === 0) {
-            console.log('No games data received'); // Debug log
+            console.log('No games data received');
             return;
         }
 
         // Clear existing games before adding new ones
         this.activeGames.clear();
         
-        const activeGames = data.filter(game => game.status === 'active');
-        console.log('Active games found:', activeGames.length); // Debug log
+        // Filter for active games
+        const activeGames = data.filter(game => 
+            game.status === 'active' && 
+            game.players && 
+            game.players.length > 0
+        );
+        
+        console.log('Total games:', data.length);
+        console.log('Active games found:', activeGames.length);
         
         activeGames.forEach(game => {
-            this.storeGameData(game);
+            // Use game name as unique identifier instead of host
+            const gameId = `${game.gameName}-${game.startTime}`;
+            this.activeGames.set(gameId, game);
         });
+
+        this.updateDisplay();
     }
 
     storeGameData(game) {
