@@ -10,10 +10,13 @@ class RetroTrackerMonitor {
         this.lastUpdate = null;
         this.activeGames = new Map();
         this.updateInterval = 30000; // 30 seconds
+        this.isMainPage = window.location.pathname.endsWith('whosplaying.html');
     }
 
     async initialize() {
-        this.createGameDisplay();
+        if (this.isMainPage) {
+            this.createGameDisplay();
+        }
         this.startMonitoring();
     }
 
@@ -26,6 +29,7 @@ class RetroTrackerMonitor {
     }
 
     createGameDisplay() {
+        if (!this.isMainPage) return;
         const container = document.createElement('div');
         container.id = 'retro-tracker-container';
         container.innerHTML = `
@@ -229,61 +233,63 @@ class RetroTrackerMonitor {
     }
 
     updateDisplay() {
-        const gamesList = document.getElementById('games-list');
-        if (!gamesList) return;
+        if (this.isMainPage) {
+            const gamesList = document.getElementById('games-list');
+            if (!gamesList) return;
 
-        if (this.activeGames.size === 0) {
-            gamesList.innerHTML = `
-                <div class="no-games">
-                    <p>No active games found</p>
-                </div>
-            `;
-            return;
-        }
-
-        gamesList.innerHTML = '';
-        this.activeGames.forEach((game, id) => {
-            const gameElement = document.createElement('div');
-            gameElement.className = 'game-box';
-            gameElement.innerHTML = `
-                <div class="game-header">
-                    <div class="game-title">
-                        <span class="game-name">${game.gameName}</span>
-                        ${game.gameVersion ? `<span class="game-version">(v${game.gameVersion})</span>` : ''}
+            if (this.activeGames.size === 0) {
+                gamesList.innerHTML = `
+                    <div class="no-games">
+                        <p>No active games found</p>
                     </div>
-                    <span class="host">Host: ${game.host}</span>
-                </div>
-                <div class="game-info">
-                    <span class="game-type">${game.gameType}</span>
-                    <span class="game-status">${game.status}</span>
-                </div>
-                <div class="players-list">
-                    ${game.players.map(player => `
-                        <div class="player">
-                            <div class="player-info">
-                                <span class="player-name">${player.name}</span>
-                                ${player.character ? 
-                                    `<span class="player-character">${player.character}</span>` : ''}
-                            </div>
-                            <div class="player-stats">
-                                ${player.score ? 
-                                    `<span class="player-score">Score: ${player.score}</span>` : ''}
-                                ${player.wins ? 
-                                    `<span class="player-wins">Wins: ${player.wins}</span>` : ''}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="game-footer">
-                    <span class="start-time">Started: ${new Date(game.startTime).toLocaleTimeString()}</span>
-                    <span class="timestamp">Updated: ${new Date(game.timestamp).toLocaleTimeString()}</span>
-                </div>
-            `;
-            gamesList.appendChild(gameElement);
-        });
+                `;
+                return;
+            }
 
-        document.querySelector('.last-update').textContent = 
-            `Last updated: ${new Date().toLocaleTimeString()}`;
+            gamesList.innerHTML = '';
+            this.activeGames.forEach((game, id) => {
+                const gameElement = document.createElement('div');
+                gameElement.className = 'game-box';
+                gameElement.innerHTML = `
+                    <div class="game-header">
+                        <div class="game-title">
+                            <span class="game-name">${game.gameName}</span>
+                            ${game.gameVersion ? `<span class="game-version">(v${game.gameVersion})</span>` : ''}
+                        </div>
+                        <span class="host">Host: ${game.host}</span>
+                    </div>
+                    <div class="game-info">
+                        <span class="game-type">${game.gameType}</span>
+                        <span class="game-status">${game.status}</span>
+                    </div>
+                    <div class="players-list">
+                        ${game.players.map(player => `
+                            <div class="player">
+                                <div class="player-info">
+                                    <span class="player-name">${player.name}</span>
+                                    ${player.character ? 
+                                        `<span class="player-character">${player.character}</span>` : ''}
+                                </div>
+                                <div class="player-stats">
+                                    ${player.score ? 
+                                        `<span class="player-score">Score: ${player.score}</span>` : ''}
+                                    ${player.wins ? 
+                                        `<span class="player-wins">Wins: ${player.wins}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="game-footer">
+                        <span class="start-time">Started: ${new Date(game.startTime).toLocaleTimeString()}</span>
+                        <span class="timestamp">Updated: ${new Date(game.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                `;
+                gamesList.appendChild(gameElement);
+            });
+
+            document.querySelector('.last-update').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
 
         // Update the banner at the end
         this.updateBanner();
@@ -514,5 +520,9 @@ document.head.appendChild(styleSheet);
 // Initialize the monitor
 document.addEventListener('DOMContentLoaded', () => {
     const monitor = new RetroTrackerMonitor();
-    monitor.initialize();
+    if (window.location.pathname.endsWith('whosplaying.html')) {
+        monitor.initialize();
+    } else {
+        monitor.initializeBannerOnly();
+    }
 });
