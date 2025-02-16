@@ -22,12 +22,12 @@ nav {
 nav::after {
     content: '';
     position: absolute;
-    bottom: -2px;  /* Position slightly below the nav */
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: rgba(128, 128, 128, 0.5);  /* Semi-transparent gray */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);  /* Subtle shadow */
+    bottom: -4px;  /* Increased from -2px for more overlap */
+    left: -10px;   /* Extend past the left edge */
+    width: calc(100% + 20px); /* Extend past both edges */
+    height: 4px;   /* Increased from 2px for thicker line */
+    background: rgba(128, 128, 128, 0.6);  /* Slightly more opaque */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);  /* Enhanced shadow */
 }
 
 nav ul {

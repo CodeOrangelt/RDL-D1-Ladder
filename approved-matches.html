@@ -65,5 +65,15 @@
     <script type="module" src="approved-matches.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="current-user.js"></script>
+
+    <div id="footer-placeholder"></div>
+    <link rel="stylesheet" href="footer.css">
+    <script>
+        fetch('footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
+            });
+    </script>
 </body>
 </html>
