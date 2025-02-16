@@ -32,30 +32,44 @@ class RetroTrackerMonitor {
 
     async fetchGameData() {
         try {
-            // Updated mock data to include proper score structure
-            const mockData = {
-                games: [
-                    {
-                        host: "Player1",
-                        status: "active",
-                        type: "Versus",
-                        players: [
-                            { name: "Player1", score: 100 },
-                            { name: "Player2", score: 85 }
-                        ],
-                        scores: {
-                            Player1: 100,
-                            Player2: 85
-                        }
-                    }
-                ]
-            };
+            const response = await fetch('https://retro-tracker.game-server.cc/', {
+                mode: 'cors',  // Required for cross-origin requests
+                headers: {
+                    'Accept': 'text/html'
+                }
+            });
 
-            // Process mock data
-            return this.processGameData(mockData.games);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Find all active game sessions
+            const gamesList = doc.querySelectorAll('.game-session');
+            const games = Array.from(gamesList).map(game => {
+                return {
+                    host: game.querySelector('.host-name')?.textContent || 'Unknown Host',
+                    status: game.querySelector('.game-status')?.textContent || 'active',
+                    type: game.querySelector('.game-type')?.textContent,
+                    gameName: game.querySelector('.game-title')?.textContent,
+                    gameVersion: game.querySelector('.game-version')?.textContent,
+                    startTime: game.querySelector('.start-time')?.getAttribute('datetime'),
+                    players: Array.from(game.querySelectorAll('.player')).map(player => ({
+                        name: player.querySelector('.player-name')?.textContent,
+                        score: player.querySelector('.player-score')?.textContent,
+                        character: player.querySelector('.player-character')?.textContent,
+                        wins: player.querySelector('.player-wins')?.textContent
+                    }))
+                };
+            });
+
+            return this.processGameData(games);
         } catch (error) {
             console.error('Error fetching game data:', error);
-            this.displayError('Unable to fetch game data. Please try again later.');
+            this.displayError('Unable to fetch game data from RetroTracker. Please try again later.');
             return null;
         }
     }
@@ -77,7 +91,10 @@ class RetroTrackerMonitor {
             scores: game.scores || {},  // Use empty object if scores undefined
             timestamp: new Date().toISOString(),
             gameType: game.type || 'Unknown Type',
-            status: game.status || 'active'
+            status: game.status || 'active',
+            gameName: game.gameName || 'Unknown Game',
+            gameVersion: game.gameVersion || '',
+            startTime: game.startTime || new Date().toISOString()
         };
 
         // Store in Firebase with error handling
@@ -103,18 +120,29 @@ class RetroTrackerMonitor {
             gameElement.className = 'game-box';
             gameElement.innerHTML = `
                 <div class="game-header">
-                    <span class="host">${game.host}</span>
-                    <span class="game-type">${game.gameType}</span>
+                    <div class="game-title">
+                        <span class="game-name">${game.gameName}</span>
+                        ${game.gameVersion ? `<span class="game-version">(${game.gameVersion})</span>` : ''}
+                    </div>
+                    <span class="host">Host: ${game.host}</span>
                 </div>
+                <div class="game-type">Type: ${game.gameType}</div>
                 <div class="players-list">
                     ${game.players.map(player => `
                         <div class="player">
-                            <span class="player-name">${player.name}</span>
-                            <span class="player-score">${player.score}</span>
+                            <div class="player-info">
+                                <span class="player-name">${player.name}</span>
+                                ${player.character ? `<span class="player-character">Character: ${player.character}</span>` : ''}
+                            </div>
+                            <div class="player-stats">
+                                <span class="player-score">Score: ${player.score}</span>
+                                ${player.wins !== undefined ? `<span class="player-wins">Wins: ${player.wins}</span>` : ''}
+                            </div>
                         </div>
                     `).join('')}
                 </div>
                 <div class="game-footer">
+                    <span class="start-time">Started: ${new Date(game.startTime).toLocaleTimeString()}</span>
                     <span class="timestamp">Updated: ${new Date(game.timestamp).toLocaleTimeString()}</span>
                 </div>
             `;
