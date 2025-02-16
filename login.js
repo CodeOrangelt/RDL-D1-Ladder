@@ -72,3 +72,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         document.getElementById('login-error').textContent = error.message;
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Add form switching handlers
+    document.getElementById('show-register').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'block';
+    });
+
+    document.getElementById('show-login').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('login-container').style.display = 'block';
+    });
+});
