@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who is Playing?</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <!-- RetroTracker monitor will be inserted here -->
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="whosplaying.js"></script>
+    <script>
+        // Load nav and footer
+        Promise.all([
+            fetch('nav.html').then(response => response.text()),
+            fetch('footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        });
+    </script>
+</body>
+</html>
