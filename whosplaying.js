@@ -109,10 +109,27 @@ class RetroTrackerMonitor {
     findPlayers(detailsTable) {
         if (!detailsTable) return [];
         
-        const scoreBoard = detailsTable.querySelector('table:has(td:contains("Player"))');
+        // Find table with player information by looking for a table row containing "Player"
+        const tables = detailsTable.querySelectorAll('table');
+        let scoreBoard = null;
+        
+        for (const table of tables) {
+            const rows = table.querySelectorAll('tr');
+            for (const row of rows) {
+                if (row.textContent.includes('Player')) {
+                    scoreBoard = table;
+                    break;
+                }
+            }
+            if (scoreBoard) break;
+        }
+        
         if (!scoreBoard) return [];
 
-        return Array.from(scoreBoard.querySelectorAll('tr')).slice(1).map(row => {
+        // Get all rows except header row
+        const playerRows = Array.from(scoreBoard.querySelectorAll('tr')).slice(1);
+        
+        return playerRows.map(row => {
             const cells = row.querySelectorAll('td');
             return {
                 name: cells[0]?.textContent?.trim() || '',
