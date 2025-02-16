@@ -5,7 +5,7 @@ body {
     background-position: center;
     background-attachment: fixed;
     margin: 0;
-    padding: 0;  /* Remove padding since nav/footer aren't fixed */
+    padding: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -20,7 +20,8 @@ body {
 main {
     flex: 1;  /* This will push the footer down */
     width: 100%;
-    margin-top: 0;  /* Remove any top margin */
+    padding: 40px 0;  /* Add padding top and bottom */
+    margin: 0;  /* Remove any top margin */
 }
 
 /* Remove .container styles and apply directly to table */
@@ -34,8 +35,15 @@ main table {
     backdrop-filter: blur(5px);
 }
 
+.container {
+    width: 95%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 #footer-placeholder {
     width: 100%;
+    margin-top: 40px;  /* Add space above footer */
 }
 
 h1 {
