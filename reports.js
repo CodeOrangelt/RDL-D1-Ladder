@@ -143,20 +143,30 @@ async function submitReport(elements) {
     }
 }
 
-function checkForOutstandingReports(username, elements) {
+async function checkForOutstandingReports(username, elements) {
     console.log("Checking reports for email:", currentUserEmail);
     
-    db.collection('pendingMatches')
-        .where('winnerEmail', '==', currentUserEmail)
-        .where('approved', '==', false)
-        .get()
-        .then(snapshot => {
-            console.log("Query results:", snapshot.size, "matches found");
-            snapshot.forEach(doc => {
-                console.log("Report data:", doc.data());
-            });
-            // ... rest of the code
+    try {
+        const pendingMatchesRef = collection(db, 'pendingMatches');
+        const q = query(
+            pendingMatchesRef,
+            where('winnerEmail', '==', currentUserEmail),
+            where('approved', '==', false)
+        );
+        
+        const snapshot = await getDocs(q);
+        console.log("Query results:", snapshot.size, "matches found");
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            console.log("Report data:", data);
+            // Add the document ID to the data
+            data.id = doc.id;
+            autoFillReportForm(data);
         });
+    } catch (error) {
+        console.error('Error checking outstanding reports:', error);
+    }
 }
 
 function autoFillReportForm(reportData) {
