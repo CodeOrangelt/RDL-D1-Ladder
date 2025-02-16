@@ -18,7 +18,7 @@ main {
 
 /* Remove .container styles and apply directly to table */
 main table {
-    width: 85%;  /* Changed from 100% to 95% */
+    width: 95%;  /* Changed from 100% to 95% */
     border-collapse: collapse;
     margin: 20px auto;  /* 'auto' for horizontal margins centers the table */
     background-color: rgba(255, 255, 255, 0.5);
