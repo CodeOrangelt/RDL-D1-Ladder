@@ -1,56 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login and Register</title>
-    <link rel="stylesheet" href="nav.css">
-    <link rel="stylesheet" href="login-style.css">
-</head>
-<body>
-    <div id="nav-placeholder"></div>
-    <script type="module">
-        import { initializeLogout } from './logout.js';
-
-        fetch('nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-placeholder').innerHTML = data;
-                // Call initializeLogout after nav.html is loaded
-                initializeLogout();
-            });
-    </script>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="login.html">Login/Register</a></li>
-            <li><button id="logout-button">Logout</button></li>
-            <!-- Add other navigation links here -->
-        </ul>
-    </nav>
-    <div class="container">
-        <h1>Login and Register</h1>
-        <div class="form-container" id="register-container">
-            <h2>Register</h2>
-            <form id="register-form">
-                <input type="text" id="register-username" placeholder="Username" required>
-                <input type="email" id="register-email" placeholder="Email" required>
-                <input type="password" id="register-password" placeholder="Password" required>
-                <button type="submit">Register</button>
-            </form>
-            <div id="register-error"></div>
-        </div>
-        <div class="form-container" id="login-container">
-            <h2>Login</h2>
-            <form id="login-form">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <div id="login-error"></div>
-        </div>
-    </div>
-    <script src="login.js" type="module"></script>
-    <script src="current-user.js" type="module"></script>
-</body>
-</html>
+<nav>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="report.html">Report Game</a></li>
+        <li><a href="approved-matches.html">Recent Matches</a></li>
+        <li id="user-menu">
+            <span id="current-user" style="font-weight: bold;"></span>
+            <div id="sign-out-container">
+                <a href="#" id="sign-out">Sign Out</a>
+            </div>
+        </li>
+        <li id="admin-button" style="display: none;"><a href="admin.html">Admin</a></li>
+        <li id="login-register"><a href="login.html">Login/Register</a></li>
+    </ul>
+</nav>
