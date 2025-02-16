@@ -1,11 +1,15 @@
 // logout.js
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+import { app } from './login.js';
+
 export function initializeLogout() {
+    const auth = getAuth(app);
     const signOutLink = document.getElementById('sign-out');
 
     if (signOutLink) {
         signOutLink.addEventListener('click', function(e) {
             e.preventDefault();
-            firebase.auth().signOut().then(function() {
+            auth.signOut().then(function() {
                 // Sign-out successful.
                 console.log('User signed out.');
                 window.location.href = 'index.html'; // Redirect to home page

@@ -1,5 +1,7 @@
+import { db } from './firebase-config.js';
+
 // ELO rating calculation function
-function calculateElo(winnerRating, loserRating, kFactor = 32) {
+export function calculateElo(winnerRating, loserRating, kFactor = 32) {
     const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
     const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
 
@@ -13,7 +15,7 @@ function calculateElo(winnerRating, loserRating, kFactor = 32) {
 }
 
 // Function to assign default ELO rating if not present
-function assignDefaultEloRating(playerId, playerData) {
+export function assignDefaultEloRating(playerId, playerData) {
     const defaultEloRating = 1200; // Default ELO rating
     if (!playerData.eloRating) {
         db.collection('players').doc(playerId).update({ eloRating: defaultEloRating })
@@ -27,7 +29,7 @@ function assignDefaultEloRating(playerId, playerData) {
 }
 
 // Function to update ELO ratings and swap positions after a match
-function updateEloRatings(winnerId, loserId) {
+export function updateEloRatings(winnerId, loserId) {
     const playersRef = db.collection('players');
 
     // Get the current ratings and positions of the winner and loser
@@ -106,10 +108,7 @@ function updateEloRatings(winnerId, loserId) {
     });
 }
 
-// Attach the function to the window object to make it globally accessible
-window.updateEloRatings = updateEloRatings;
-
-function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+export function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     db.collection('pendingMatches').doc(reportId).update({
         approved: true,
         winnerScore: winnerScore,
@@ -214,6 +213,3 @@ function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
         alert('Error approving report. Please try again.');
     });
 }
-
-// Example usage: Call this function when a match is reported
-// updateEloRatings('winnerPlayerId', 'loserPlayerId');

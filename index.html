@@ -12,8 +12,9 @@
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <script src="logout.js"></script>
-    <script>
+    <script src="logout.js" type="module"></script>
+    <script type="module">
+        import { initializeLogout } from './logout.js';
         fetch('nav.html')
             .then(response => response.text())
             .then(data => {
@@ -38,9 +39,9 @@
             </tbody>
         </table>
     </div>
-    <script src="ladder.js"></script>
-    <script src="current-user.js"></script>
+    <script src="ladder.js" type="module"></script>
+    <script src="current-user.js" type="module"></script>
     <script src="ladderalgorithm.js"></script>
-    <script src="reports.js"></script>
+    <script src="reports.js" type="module"></script>
 </body>
 </html>
