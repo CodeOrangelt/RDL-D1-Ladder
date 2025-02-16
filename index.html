@@ -6,47 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="footer.css">
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <script>
-        fetch('nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-placeholder').innerHTML = data;
-            });
-    </script>
-    <br>
-    <br>
-    <br>
-    <div class="container">
-        <table id="ladder">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Username</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Ladder rankings will be populated here -->
-            </tbody>
-        </table>
-    </div>
+    <main>
+        <div class="container">
+            <table id="ladder">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Ladder rankings will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
 
-    <!-- Update script imports to use modules -->
+    <!-- Scripts -->
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
-
-    <div id="footer-placeholder"></div>
-    <link rel="stylesheet" href="footer.css">
     <script>
-        fetch('footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-placeholder').innerHTML = data;
-            });
+        // Load nav and footer
+        Promise.all([
+            fetch('nav.html').then(response => response.text()),
+            fetch('footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
     </script>
 </body>
 </html>

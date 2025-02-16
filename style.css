@@ -5,7 +5,7 @@ body {
     background-position: center;
     background-attachment: fixed;
     margin: 0;
-    padding: 60px 0 60px 0;  /* Added bottom padding for footer */
+    padding: 0;  /* Remove padding since nav/footer aren't fixed */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -13,12 +13,13 @@ body {
 
 /* Main content wrapper */
 main {
-    flex: 1;
+    flex: 1;  /* This will push the footer down */
 }
 
 /* Remove .container styles and apply directly to table */
 main table {
-    width: 95%;  /* Changed from 100% to 95% */
+    width: 90%;  /* Increased from 95% to 90% for better spacing */
+    max-width: 1200px;  /* Added max-width to prevent too wide tables */
     border-collapse: collapse;
     margin: 20px auto;  /* 'auto' for horizontal margins centers the table */
     background-color: rgba(255, 255, 255, 0.5);

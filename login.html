@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login and Register</title>
     <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="footer.css">
     <link rel="stylesheet" href="login-style.css">
     <!-- Update Firebase SDK imports -->
     <script type="module">
@@ -29,54 +30,54 @@
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <script>
-        fetch('nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-placeholder').innerHTML = data;
-            });
-    </script>
-    <div class="container">
-        <div class="form-container" id="login-container">
-            <h2>Login</h2>
-            <form id="login-form">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <div id="login-error"></div>
-            <p class="switch-form">
-                Need an account? <a href="#" id="show-register">Register here</a>
-            </p>
-        </div>
+    <main>
+        <div class="container">
+            <div class="form-container" id="login-container">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="login-error"></div>
+                <p class="switch-form">
+                    Need an account? <a href="#" id="show-register">Register here</a>
+                </p>
+            </div>
 
-        <div class="form-container" id="register-container" style="display: none;">
-            <h2>Create Account</h2>
-            <form id="register-form">
-                <input type="text" id="register-username" placeholder="Username" required>
-                <input type="email" id="register-email" placeholder="Email" required>
-                <input type="password" id="register-password" placeholder="Password" required>
-                <button type="submit">Register</button>
-            </form>
-            <div id="register-error"></div>
-            <p class="switch-form">
-                Already have an account? <a href="#" id="show-login">Login here</a>
-            </p>
+            <div class="form-container" id="register-container" style="display: none;">
+                <h2>Create Account</h2>
+                <form id="register-form">
+                    <input type="text" id="register-username" placeholder="Username" required>
+                    <input type="email" id="register-email" placeholder="Email" required>
+                    <input type="password" id="register-password" placeholder="Password" required>
+                    <button type="submit">Register</button>
+                </form>
+                <div id="register-error"></div>
+                <p class="switch-form">
+                    Already have an account? <a href="#" id="show-login">Login here</a>
+                </p>
+            </div>
         </div>
-    </div>
-    <!-- Load your custom scripts AFTER Firebase scripts -->
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts -->
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="login.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
-    <div id="footer-placeholder"></div>
-    <link rel="stylesheet" href="footer.css">
     <script>
-        fetch('footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-placeholder').innerHTML = data;
-            });
+        // Load nav and footer using Promise.all
+        Promise.all([
+            fetch('nav.html').then(response => response.text()),
+            fetch('footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
     </script>
 </body>
 </html>
