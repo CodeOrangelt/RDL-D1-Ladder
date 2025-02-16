@@ -1,12 +1,12 @@
 /* Navigation Bar Styling */
 nav {
     background: linear-gradient(to bottom,
-        rgba(0, 0, 0, 0.9),
-        rgba(0, 0, 0, 0.7)),
+        rgba(0, 0, 0, 0.7),  /* Lightened from 0.9 to 0.7 */
+        rgba(0, 0, 0, 0.5)), /* Lightened from 0.7 to 0.5 */
         url('images/image.png');
-    background-size: cover;
+    background-size: 100px;  /* Adjust size of the repeating pattern */
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: repeat;  /* Changed from no-repeat to repeat */
     color: #fff;
     padding: 10px 0;
     width: 100%; /* Ensure the nav takes full width */
