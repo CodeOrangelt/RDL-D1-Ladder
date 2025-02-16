@@ -315,7 +315,8 @@ class RetroTrackerMonitor {
         if (!game) return;
 
         const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
-        const text = `${game.gameName} - ${game.gameVersion} - ${gameType}`;
+        // Create a more concise text format
+        const text = `Now Playing: ${game.gameName} (${game.gameVersion}) - ${gameType}`;
         bannerText.textContent = text;
         banner.style.display = 'block';
     }
@@ -445,9 +446,10 @@ const styles = `
 
     .game-banner {
         width: 100%;
+        height: 30px; // Set fixed height for thin banner
         background: linear-gradient(90deg, #881e8e, #b026b9);
         color: white;
-        padding: 10px 0;
+        padding: 5px 0; // Reduced padding
         overflow: hidden;
         white-space: nowrap;
         position: fixed;
@@ -459,19 +461,18 @@ const styles = `
 
     .game-banner-content {
         display: inline-block;
-        animation: scroll-left 20s linear infinite;
+        animation: scroll-left 15s linear infinite; // Slightly faster animation
         padding-right: 50px;
-    }
-
-    @keyframes scroll-left {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
+        line-height: 20px; // Center text vertically
     }
 
     .game-banner-text {
         font-family: Arial, sans-serif;
-        font-size: 16px;
+        font-size: 14px; // Slightly smaller font
         font-weight: bold;
+        white-space: nowrap; // Ensure text stays on one line
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 `;
 
