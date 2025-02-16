@@ -171,11 +171,11 @@ async function loadEloRatings() {
 }
 
 async function loadEloHistory() {
-    const tableBody = document.querySelector('#elo-history tbody'); // Fixed selector
+    const tableBody = document.querySelector('#elo-history-table tbody'); // Updated selector
     tableBody.innerHTML = ''; // Clear existing content
 
     try {
-        const { entries } = await getEloHistory(); // Destructure to get entries
+        const { entries } = await getEloHistory();
         
         entries.forEach(record => {
             const row = document.createElement('tr');
