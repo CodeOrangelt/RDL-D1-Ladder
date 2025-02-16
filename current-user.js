@@ -1,10 +1,10 @@
 // current-user.js
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-import { app } from './login.js'; // Import the Firebase app instance
+//import { app } from './login.js'; // Import the Firebase app instance
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+const auth = getAuth();
+const db = getFirestore();
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is signed in
@@ -15,25 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             // User is signed in.
-            getDoc(doc(db, 'players', user.uid))
-                .then(docSnapshot => {
-                    if (docSnapshot.exists()) {
-                        const username = docSnapshot.data().username;
-                        if (currentUserSpan) {
-                            currentUserSpan.textContent = username; // Display the username
-                        }
-                    } else {
-                        if (currentUserSpan) {
-                            currentUserSpan.textContent = user.displayName || user.email; // Fallback to display name or email
-                        }
-                        console.log("No such document!");
-                    }
-                }).catch(error => {
-                    console.log("Error getting document:", error);
-                    if (currentUserSpan) {
-                        currentUserSpan.textContent = user.displayName || user.email; // Fallback to display name or email
-                    }
-                });
+            // Fetch the username from the 'players' collection
+            getDoc(firebase.firestore().collection('players').doc(user.uid)).then((doc) => {
+                if (doc.exists) {
+                    const username = doc.data().username;
+                    currentUserSpan.textContent = username;
+                } else {
+                    console.log("No such document!");
+                    currentUserSpan.textContent = "User"; // Default username
+                }
+            }).catch((error) => {
+                console.log("Error getting document:", error);
+                currentUserSpan.textContent = "User"; // Default username
+            });
+
             if (currentUserSpan) {
                 currentUserSpan.style.display = 'inline'; // Show the username
             }

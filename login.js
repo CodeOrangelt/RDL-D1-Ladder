@@ -16,26 +16,43 @@ document.getElementById('register-form').addEventListener('submit', function (e)
     const password = document.getElementById('register-password').value;
     const registerErrorDiv = document.getElementById('register-error');
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            const user = userCredential.user;
-            console.log("User registered:", user);
-            return db.collection('players').doc(user.uid).set({
-                username: username,
-                email: email,
-                points: 0,
-                eloRating: 1200, // Default ELO rating
-                position: 0 // Default position
-            });
-        })
-        .then(() => {
-            console.log("User data saved to Firestore");
-            alert('Registration successful! You can now log in.');
-            document.getElementById('register-form').reset();
+    // Check if the username is already taken
+    db.collection('players')
+        .where('username', '==', username)
+        .get()
+        .then(querySnapshot => {
+            if (!querySnapshot.empty) {
+                // Username is already taken
+                registerErrorDiv.textContent = 'This username is already taken. Please choose a different one.';
+            } else {
+                // Username is available, proceed with registration
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then(userCredential => {
+                        const user = userCredential.user;
+                        console.log("User registered:", user);
+                        // Add user data to the 'players' collection in Firestore
+                        return db.collection('players').doc(user.uid).set({
+                            username: username,
+                            email: email,
+                            points: 0,
+                            eloRating: 1200, // Default ELO rating
+                            position: 0 // Default position
+                        });
+                    })
+                    .then(() => {
+                        console.log("User data saved to Firestore");
+                        alert('Registration successful! You can now log in.');
+                        document.getElementById('register-form').reset();
+                    })
+                    .catch(error => {
+                        console.error("Error registering user:", error);
+                        registerErrorDiv.textContent = error.message; // Use textContent to prevent XSS
+                    });
+            }
         })
         .catch(error => {
-            console.error("Error registering user:", error);
-            registerErrorDiv.textContent = error.message; // Use textContent to prevent XSS
+            console.error("Error checking username:", error);
+            registerErrorDiv.textContent = 'Error checking username. Please try again.';
         });
 });
 
