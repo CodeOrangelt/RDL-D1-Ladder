@@ -42,7 +42,7 @@ async function displayLadder() {
             players.push({
                 ...playerData,
                 position: playerData.position || Number.MAX_SAFE_INTEGER,
-                eloRating: playerData.eloRating || 1200
+                //eloRating: playerData.eloRating || 1200
             });
         });
 
