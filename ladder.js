@@ -3,6 +3,7 @@ import {
     getDocs 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
+import { getRankStyle } from './ranks.js';
 
 async function displayLadder() {
     console.log('Loading ladder...');
@@ -50,10 +51,15 @@ async function displayLadder() {
 
         // Display sorted players
         players.forEach((playerData, index) => {
+            const rankStyle = getRankStyle(playerData.eloRating);
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td>${playerData.username || 'Unknown'}</td>
+                <td style="color: ${rankStyle.color}; font-weight: bold;">
+                    ${playerData.username || 'Unknown'} 
+                    <span style="font-size: 0.8em;">(${rankStyle.name})</span>
+                </td>
+                <td>${playerData.eloRating}</td>
             `;
             tableBody.appendChild(row);
         });
