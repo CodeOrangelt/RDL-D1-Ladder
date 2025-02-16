@@ -9,7 +9,7 @@ import { db } from './firebase-config.js';
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const playersRef = collection(db, 'players');
-        const q = query(playersRef, orderBy('elo', 'desc'));
+        const q = query(playersRef, orderBy('eloRating', 'desc'));
         const querySnapshot = await getDocs(q);
 
         const ladderTable = document.getElementById('ladder').getElementsByTagName('tbody')[0];
