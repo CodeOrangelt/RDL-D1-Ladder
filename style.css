@@ -60,3 +60,10 @@ tr:nth-child(even) {
         background-position: 200% 0;
     }
 }
+
+/* Adjust rank column width in ladder table */
+#ladder th:first-child,
+#ladder td:first-child {
+    width: 50px; /* Make rank column narrower */
+    text-align: center; /* Center the rank numbers */
+}
