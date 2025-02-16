@@ -1,7 +1,15 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+import { firebaseConfig } from './firebase-config.js';
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 // current-user.js
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is signed in
-    firebase.auth().onAuthStateChanged(function(user) {
+    onAuthStateChanged(auth, function(user) {
         const currentUserSpan = document.getElementById('current-user');
         const signOutLink = document.getElementById('sign-out');
         const loginRegisterLink = document.getElementById('login-register');
