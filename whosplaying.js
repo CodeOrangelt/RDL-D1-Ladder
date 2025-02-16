@@ -92,20 +92,36 @@ class RetroTrackerMonitor {
 
     // Optimize player finding
     findPlayers(detailsTable) {
-        const scoreBoardLabel = detailsTable.querySelector('td[bgcolor="#D0D0D0"]:contains("Score Board")');
-        if (!scoreBoardLabel) return [];
+        if (!detailsTable) return [];
+        
+        // Find Score Board section using standard selectors
+        const scoreBoardHeaders = Array.from(detailsTable.querySelectorAll('td[bgcolor="#D0D0D0"]'))
+            .find(td => td.textContent.includes('Score Board'));
+        
+        if (!scoreBoardHeaders) return [];
 
-        const scoreBoardTable = scoreBoardLabel.closest('tr').nextElementSibling?.querySelector('table');
+        // Get the score board table that follows the header
+        const scoreBoardTable = scoreBoardHeaders.closest('tr').nextElementSibling?.querySelector('table');
         if (!scoreBoardTable) return [];
 
+        // Process player rows
         return Array.from(scoreBoardTable.querySelectorAll('tr'))
             .slice(1) // Skip header row
             .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
             .map(row => {
-                const [name, kills, deaths, suicides, kdr, timeInGame] = 
-                    Array.from(row.cells).map(cell => cell?.textContent?.trim() || '0');
-                return { name, kills, deaths, suicides, kdr, timeInGame };
-            });
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 6) return null;
+
+                return {
+                    name: cells[0]?.textContent?.trim() || '',
+                    kills: parseInt(cells[1]?.textContent?.trim() || '0', 10),
+                    deaths: parseInt(cells[2]?.textContent?.trim() || '0', 10),
+                    suicides: parseInt(cells[3]?.textContent?.trim() || '0', 10),
+                    kdr: parseFloat(cells[4]?.textContent?.trim() || '0'),
+                    timeInGame: cells[5]?.textContent?.trim() || ''
+                };
+            })
+            .filter(Boolean); // Remove any null entries
     }
 
     // Optimize score finding
