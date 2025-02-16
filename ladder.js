@@ -7,6 +7,7 @@ import {
 import { db } from './firebase-config.js';
 
 async function displayLadder() {
+    console.log('Loading ladder...');
     const tableBody = document.querySelector('#ladder tbody');
     if (!tableBody) {
         console.error('Ladder table body not found');
@@ -14,26 +15,34 @@ async function displayLadder() {
     }
 
     try {
-        // Get players collection reference
         const playersRef = collection(db, 'players');
-        // Create query ordered by position
-        const q = query(playersRef, orderBy('position', 'asc'));
-        // Get all players
-        const querySnapshot = await getDocs(q);
-
-        // Clear existing table content
-        tableBody.innerHTML = '';
+        // Order by position ascending, then by username as backup
+        const q = query(
+            playersRef, 
+            orderBy('position', 'asc'),
+            orderBy('username', 'asc')
+        );
         
-        // Check if we have any players
+        const querySnapshot = await getDocs(q);
+        
+        // Clear existing content
+        tableBody.innerHTML = '';
+
         if (querySnapshot.empty) {
             console.log('No players found in the database');
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="3" style="text-align: center;">No players found</td>
+            `;
+            tableBody.appendChild(emptyRow);
             return;
         }
 
-        // Populate table with players
         let rank = 1;
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
+            console.log('Player data:', playerData); // Debug log
+            
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${rank}</td>
@@ -52,7 +61,6 @@ async function displayLadder() {
 
 // Initialize ladder when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Loading ladder...');
     displayLadder();
 });
 
