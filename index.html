@@ -3,43 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Backend</title>
-    <link rel="stylesheet" href="admin.css">
+    <title>RD Ladder</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDK imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { firebaseConfig } from './firebase-config.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase services available globally
+        window.auth = auth;
+        window.db = db;
+    </script>
 </head>
 <body>
-    <!-- Include navigation -->
     <div id="nav-placeholder"></div>
-
-    <div class="container">
-        <h1>Admin Backend</h1>
-        <div id="admin-actions">
-            <button id="view-elo-ratings">View ELO Ratings</button>
-            <!-- Add more admin actions here -->
-        </div>
-        <div id="elo-ratings" style="display: none;">
-            <h2>Player ELO Ratings</h2>
-            <table id="elo-table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>ELO Rating</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- ELO ratings will be populated here by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Import Firebase SDK using type="module" -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-    </script>
-
-    <!-- Load navigation -->
     <script>
         fetch('nav.html')
             .then(response => response.text())
@@ -47,10 +33,32 @@
                 document.getElementById('nav-placeholder').innerHTML = data;
             });
     </script>
-
-    <!-- Your module scripts -->
+    <br>
+    <br>
+    <br>
+    
+    <div class="container">
+        <table id="ladder">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Ladder data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <a href="#" id="sign-out-link">Sign Out</a>
     <script type="module" src="firebase-config.js"></script>
-    <script type="module" src="ladderalgorithm.js"></script>
-    <script type="module" src="adminbackend.js"></script>
+    <script type="module" src="current-user.js"></script>
+    <script type="module" src="reports.js"></script>
+    <script type="module" src="ladder.js"></script>
+    <script type="module">
+        import { initializeLogout } from './logout.js';
+        initializeLogout();
+    </script>
+    <script type="module" src="logout.js"></script>
 </body>
 </html>
