@@ -9,27 +9,17 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
 }
 
 #nav-placeholder {
     width: 100%;
     order: -1; /* Ensures nav always appears first */
-    display: block;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    z-index: 100;
 }
 
 /* Main content wrapper */
 main {
     flex: 1;  /* This will push the footer down */
     width: 100%;
-    margin-top: 20px;  /* Add some space below nav */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 /* Remove .container styles and apply directly to table */
