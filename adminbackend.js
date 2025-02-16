@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, addDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 
@@ -19,23 +19,10 @@ const testPlayers = [
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is admin
     auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            try {
-                const userDoc = await getDocs(query(collection(db, 'users'), where('email', '==', user.email)));
-                const isAdmin = userDoc.docs[0]?.data()?.isAdmin || false;
-                
-                if (!isAdmin) {
-                    window.location.href = 'index.html'; // Redirect non-admins
-                    return;
-                }
-
-                setupAdminButtons();
-            } catch (error) {
-                console.error("Error checking admin status:", error);
-                window.location.href = 'index.html';
-            }
+        if (user && user.email === 'admin@ladder.com') {
+            setupAdminButtons();
         } else {
-            window.location.href = 'login.html'; // Redirect if not logged in
+            window.location.href = 'index.html'; // Redirect non-admins
         }
     });
 });

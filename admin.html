@@ -43,7 +43,7 @@
         <div id="admin-actions">
             <button id="view-elo-ratings">View ELO Ratings</button>
             <button id="view-elo-history">View ELO History</button>
-            <button id="populate-test-ladder">Template Ladder</button>
+            <button id="view-template-ladder">View Template Ladder</button>
         </div>
         <div id="elo-ratings" style="display: none;">
             <h2>Player ELO Ratings</h2>
@@ -77,6 +77,22 @@
                     <!-- ELO history will be populated here by JavaScript -->
                 </tbody>
             </table>
+        </div>
+        <div id="template-ladder" style="display: none;">
+            <h2>Template Ladder</h2>
+            <table id="template-table">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Username</th>
+                        <th>Rank</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Template ladder will be populated here -->
+                </tbody>
+            </table>
+            <button id="populate-test-ladder">Apply Template to Live Ladder</button>
         </div>
     </div>
 
