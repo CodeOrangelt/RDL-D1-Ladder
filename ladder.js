@@ -62,8 +62,7 @@ async function displayLadder() {
                 '; font-weight: bold;" title="' + rankStyle.name + 
                 '" data-rank-color="' + rankStyle.color + '">' +
                 (playerData.username || 'Unknown') +
-                '</td>' +
-                '<td>' + (playerData.eloRating || 1200) + '</td>';
+                '</td>';  
             
             tableBody.appendChild(row);
         });
