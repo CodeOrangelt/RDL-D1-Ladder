@@ -1,9 +1,5 @@
 // login.js
-
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+import { auth, db } from './firebase-config.js';
 
 // Register Form Submission
 document.getElementById('register-form').addEventListener('submit', function (e) {
