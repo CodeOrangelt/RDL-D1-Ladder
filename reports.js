@@ -1,58 +1,62 @@
 import { updateEloRatings, approveReport } from './ladderalgorithm.js';
+import { 
+    collection,
+    getDocs,
+    query,
+    where,
+    orderBy,
+    serverTimestamp,
+    doc,
+    setDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { auth, db } from './firebase-config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    let confirmationNotification; // Declare it here
-    let outstandingReportData = null; // Store outstanding report data
-    let currentUserEmail; // Store the current user's email
+    let confirmationNotification;
+    let outstandingReportData = null;
+    let currentUserEmail;
 
-    firebase.auth().onAuthStateChanged(function(user) {
-        console.log("Authentication state changed:", user); // Add this line
+    onAuthStateChanged(auth, async (user) => {
+        console.log("Authentication state changed:", user);
         if (user) {
             console.log('User signed in:', user.email || user.displayName);
             const authWarning = document.getElementById('auth-warning');
             if (authWarning) {
-                authWarning.style.display = 'none'; // Hide the warning
+                authWarning.style.display = 'none';
             }
 
-            currentUserEmail = user.email; // Store the current user's email
+            currentUserEmail = user.email;
 
             // Fetch the username from the players collection
-            db.collection('players')
-                .where('email', '==', user.email)
-                .get()
-                .then(querySnapshot => {
-                    if (!querySnapshot.empty) {
-                        // Get the username from the document
-                        const playerDoc = querySnapshot.docs[0];
-                        const username = playerDoc.data().username;
+            try {
+                const playersRef = collection(db, 'players');
+                const q = query(playersRef, where('email', '==', user.email));
+                const querySnapshot = await getDocs(q);
 
-                        // Display the username in the loser-username span
-                        const loserUsername = document.getElementById('loser-username');
-                        if (loserUsername) {
-                            loserUsername.textContent = username;
-                        }
-                    } else {
-                        console.error('No player found with email:', user.email);
-                        const loserUsername = document.getElementById('loser-username');
-                        if (loserUsername) {
-                            loserUsername.textContent = "Unknown User";
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching player:', error);
+                if (!querySnapshot.empty) {
+                    const playerDoc = querySnapshot.docs[0];
+                    const username = playerDoc.data().username;
+
                     const loserUsername = document.getElementById('loser-username');
                     if (loserUsername) {
-                        loserUsername.textContent = "Error Fetching Username";
+                        loserUsername.textContent = username;
                     }
-                });
+                } else {
+                    console.error('No player found with email:', user.email);
+                }
+            } catch (error) {
+                console.error('Error fetching player:', error);
+            }
 
             const reportForm = document.getElementById('report-form');
             if (reportForm) {
                 reportForm.style.display = 'block';
             }
-            populateWinnerDropdown(); // Move this line up
-            checkForOutstandingReports(user.email || user.displayName);
+            await populateWinnerDropdown();
+            checkForOutstandingReports(user.email);
         } else {
             console.log('No user signed in');
             const authWarning = document.getElementById('auth-warning');
@@ -74,88 +78,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const loserComment = document.getElementById('loser-comment');
 
     if (reportForm) {
-        reportForm.addEventListener('submit', function(event) {
+        reportForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const matchId = db.collection('pendingMatches').doc().id;
+            const pendingMatchesRef = collection(db, 'pendingMatches');
+            const newMatchRef = doc(pendingMatchesRef);
 
-            console.log("Winner Username Value:", winnerUsername.value); // ADD THIS LINE
+            try {
+                const playersRef = collection(db, 'players');
+                const q = query(playersRef, where('email', '==', winnerUsername.value));
+                const querySnapshot = await getDocs(q);
 
-            // Fetch the winner's username based on the email
-            db.collection('players')
-                .where('email', '==', winnerUsername.value)
-                .get()
-                .then(querySnapshot => {
-                    if (!querySnapshot.empty) {
-                        const winnerDoc = querySnapshot.docs[0];
-                        const winnerUsernameValue = winnerDoc.data().username;
+                if (!querySnapshot.empty) {
+                    const winnerDoc = querySnapshot.docs[0];
+                    const winnerUsernameValue = winnerDoc.data().username;
 
-                        const reportData = {
-                            matchId: matchId,
-                            loserUsername: document.getElementById('loser-username').textContent,
-                            winnerUsername: winnerUsernameValue, // Store the winner's username
-                            winnerEmail: winnerUsername.value, // Store the winner's email
-                            loserScore: loserScore.value,
-                            suicides: suicides.value,
-                            mapPlayed: mapPlayed.value,
-                            loserComment: loserComment.value,
-                            approved: false,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
+                    const reportData = {
+                        matchId: newMatchRef.id,
+                        loserUsername: document.getElementById('loser-username').textContent,
+                        winnerUsername: winnerUsernameValue,
+                        winnerEmail: winnerUsername.value,
+                        loserScore: loserScore.value,
+                        suicides: suicides.value,
+                        mapPlayed: mapPlayed.value,
+                        loserComment: loserComment.value,
+                        approved: false,
+                        createdAt: serverTimestamp()
+                    };
 
-                        console.log("Report data being written:", reportData); // ADD THIS LINE
-
-                        db.collection('pendingMatches').doc(matchId).set(reportData)
-                            .then(() => {
-                                console.log('Report successfully added to pendingMatches.');
-                                console.log("Report data after write:", reportData); // ADD THIS LINE
-                                reportForm.reset();
-                                alert('Game reported successfully.');
-
-                                // Check for outstanding reports for the LOSER (logged-in user)
-                                checkForOutstandingReports(document.getElementById('loser-username').textContent);
-                            })
-                            .catch((error) => {
-                                console.error('Error adding report to Firestore:', error);
-                                document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
-                            });
-                    } else {
-                        console.error('No player found with email:', winnerUsername.value);
-                        alert('Error: No player found with that email.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching winner:', error);
-                    alert('Error fetching winner. Please try again.');
-                });
+                    await setDoc(newMatchRef, reportData);
+                    console.log('Report successfully added to pendingMatches.');
+                    reportForm.reset();
+                    alert('Game reported successfully.');
+                    checkForOutstandingReports(document.getElementById('loser-username').textContent);
+                }
+            } catch (error) {
+                console.error('Error adding report:', error);
+                document.getElementById('report-error').textContent = 'Error reporting game. Please try again.';
+            }
         });
     }
 
-    function populateWinnerDropdown() {
-        db.collection('players').get().then(querySnapshot => {
-            // Clear existing options
+    async function populateWinnerDropdown() {
+        try {
+            const playersRef = collection(db, 'players');
+            const querySnapshot = await getDocs(playersRef);
+
             if (winnerUsername) {
                 winnerUsername.innerHTML = '<option value="">Select Winner</option>';
 
                 if (querySnapshot.empty) {
-                    // Display a message if no players are found
                     winnerUsername.innerHTML = '<option value="">No players found</option>';
                 } else {
                     querySnapshot.forEach(doc => {
                         const player = doc.data();
-                        // Exclude the current user from the dropdown
                         if (player.email !== currentUserEmail) {
                             const option = document.createElement('option');
-                            option.value = player.email; // Store the email address as the value
-                            option.textContent = player.username; // Display the username
+                            option.value = player.email;
+                            option.textContent = player.username;
                             winnerUsername.appendChild(option);
                         }
                     });
                 }
             }
-        }).catch(error => {
+        } catch (error) {
             console.error('Error fetching players:', error);
-        });
+        }
     }
 
     function checkForOutstandingReports(username) {
