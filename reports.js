@@ -144,64 +144,18 @@ async function submitReport(elements) {
 }
 
 function checkForOutstandingReports(username, elements) {
-    console.log("Checking for outstanding reports for username:", username);
-
-    if (!confirmationNotification) {
-        confirmationNotification = document.createElement('div');
-        confirmationNotification.id = 'confirmation-notification';
-        confirmationNotification.classList.add('notification-banner');
-        confirmationNotification.style.display = 'none';
-        confirmationNotification.style.marginTop = '10px';
-        const container = document.querySelector('.container');
-        if (container) {
-            container.prepend(confirmationNotification);
-        } else {
-            console.error('Container element not found.');
-            return;
-        }
-    }
-
+    console.log("Checking reports for email:", currentUserEmail);
+    
     db.collection('pendingMatches')
-        .where('winnerEmail', '==', currentUserEmail) // Use winnerEmail instead of winnerUsername
+        .where('winnerEmail', '==', currentUserEmail)
         .where('approved', '==', false)
-        .limit(1)
         .get()
         .then(snapshot => {
-            if (!snapshot.empty) {
-                snapshot.forEach(doc => {
-                    outstandingReportData = doc.data();
-                    outstandingReportData.id = doc.id;
-                    console.log("Outstanding report data:", outstandingReportData);
-
-                    // The loserUsername is already the username, so no need to fetch it
-                    const loserUsername = outstandingReportData.loserUsername;
-
-                    confirmationNotification.innerHTML = `
-                        <div>
-                            You have an outstanding report to confirm. <a href="#" id="auto-fill-report">Click here to review and approve</a>
-                        </div>
-                    `;
-                    confirmationNotification.style.display = 'block';
-                    console.log('Outstanding reports found');
-
-                    const autoFillReportLink = document.getElementById('auto-fill-report');
-                    if (autoFillReportLink) {
-                        autoFillReportLink.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            autoFillReportForm(outstandingReportData);
-                        });
-                    } else {
-                        console.error("auto-fill-report link not found");
-                    }
-                });
-            } else {
-                confirmationNotification.style.display = 'none';
-                console.log('No outstanding reports found');
-                outstandingReportData = null;
-            }
-        })
-        .catch(error => {
-            console.error('Error checking for outstanding reports:', error);
+            console.log("Query results:", snapshot.size, "matches found");
+            snapshot.forEach(doc => {
+                console.log("Report data:", doc.data());
+            });
+            // ... rest of the code
         });
 }
 
