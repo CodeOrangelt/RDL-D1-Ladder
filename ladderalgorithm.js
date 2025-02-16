@@ -12,6 +12,7 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
+import { recordEloChange } from './elo-history.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -155,6 +156,24 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
             const loserCurrentElo = loserDoc.data().eloRating || 1200;
             const { newWinnerRating, newLoserRating } = calculateElo(winnerCurrentElo, loserCurrentElo);
+
+            // Record ELO changes
+            await Promise.all([
+                recordEloChange(
+                    winnerDoc.data().username,
+                    winnerCurrentElo,
+                    newWinnerRating,
+                    loserDoc.data().username,
+                    'Won'
+                ),
+                recordEloChange(
+                    loserDoc.data().username,
+                    loserCurrentElo,
+                    newLoserRating,
+                    winnerDoc.data().username,
+                    'Lost'
+                )
+            ]);
 
             // Update ELO ratings and positions
             const batch = writeBatch(db);

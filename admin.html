@@ -42,7 +42,7 @@
         <h1>Admin Backend</h1>
         <div id="admin-actions">
             <button id="view-elo-ratings">View ELO Ratings</button>
-            <!-- Add more admin actions here -->
+            <button id="view-elo-history">View ELO History</button>
         </div>
         <div id="elo-ratings" style="display: none;">
             <h2>Player ELO Ratings</h2>
@@ -55,6 +55,25 @@
                 </thead>
                 <tbody>
                     <!-- ELO ratings will be populated here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div id="elo-history" style="display: none;">
+            <h2>ELO Rating History</h2>
+            <table id="elo-history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Player</th>
+                        <th>Previous ELO</th>
+                        <th>New ELO</th>
+                        <th>Change</th>
+                        <th>Opponent</th>
+                        <th>Match Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ELO history will be populated here by JavaScript -->
                 </tbody>
             </table>
         </div>

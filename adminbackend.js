@@ -1,5 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getEloHistory } from './elo-history.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is admin
@@ -20,6 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (viewEloButton) {
         viewEloButton.addEventListener('click', displayEloRatings);
     }
+
+    const viewEloHistoryBtn = document.getElementById('view-elo-history');
+    const eloHistoryDiv = document.getElementById('elo-history');
+    
+    viewEloHistoryBtn.addEventListener('click', async () => {
+        eloHistoryDiv.style.display = 'block';
+        await loadEloHistory();
+    });
 });
 
 async function displayEloRatings() {
@@ -43,5 +52,30 @@ async function displayEloRatings() {
         document.getElementById('elo-ratings').style.display = 'block';
     } catch (error) {
         console.error('Error fetching ELO ratings:', error);
+    }
+}
+
+async function loadEloHistory() {
+    const tableBody = document.querySelector('#elo-history-table tbody');
+    tableBody.innerHTML = ''; // Clear existing content
+
+    try {
+        const history = await getEloHistory();
+        
+        history.forEach(record => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.timestamp.toDate().toLocaleString()}</td>
+                <td>${record.player}</td>
+                <td>${record.previousElo}</td>
+                <td>${record.newElo}</td>
+                <td>${record.change > 0 ? '+' + record.change : record.change}</td>
+                <td>${record.opponent}</td>
+                <td>${record.matchResult}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error loading ELO history:", error);
     }
 }
