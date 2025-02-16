@@ -33,14 +33,15 @@
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
+    <script type="module" src="whosplaying.js"></script>
     <script>
-        // Load nav and footer
         Promise.all([
             fetch('nav.html').then(response => response.text()),
             fetch('footer.html').then(response => response.text())
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;
+            new RetroTrackerMonitor().initializeBannerOnly(); // Simplified initialization
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });
