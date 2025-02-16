@@ -43,9 +43,9 @@
     <div class="container">
         <h1>Admin Backend</h1>
         <div id="admin-actions">
-            <button id="view-elo-ratings">View ELO Ratings</button>
-            <button id="view-elo-history">View ELO History</button>
-            <button id="view-template-ladder">View Template Ladder</button>
+            <button class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
+            <button class="collapse-btn" data-target="elo-history">View ELO History</button>
+            <button class="collapse-btn" data-target="template-ladder">View Template Ladder</button>
         </div>
         <div id="elo-ratings" style="display: none;">
             <h2>Player ELO Ratings</h2>
@@ -63,22 +63,23 @@
         </div>
         <div id="elo-history" style="display: none;">
             <h2>ELO Rating History</h2>
-            <table id="elo-history-table">
+            <table id="elo-history">
                 <thead>
                     <tr>
-                        <th>Date</th>
+                        <th>Time</th>
                         <th>Player</th>
                         <th>Previous ELO</th>
                         <th>New ELO</th>
                         <th>Change</th>
                         <th>Opponent</th>
-                        <th>Match Result</th>
+                        <th>Result</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ELO history will be populated here by JavaScript -->
+                    <!-- ELO history will be populated here -->
                 </tbody>
             </table>
+            <div id="pagination"></div>
         </div>
         <div id="template-ladder" style="display: none;">
             <h2>Template Ladder</h2>

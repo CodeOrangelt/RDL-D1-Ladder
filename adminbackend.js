@@ -41,6 +41,38 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         }
     });
+
+    const buttons = document.querySelectorAll('.collapse-btn');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+            const targetDiv = document.getElementById(targetId);
+            
+            // Hide all sections first
+            document.querySelectorAll('#elo-ratings, #elo-history, #template-ladder').forEach(div => {
+                if (div.id !== targetId) {
+                    div.style.display = 'none';
+                }
+            });
+            
+            // Toggle the clicked section
+            if (targetDiv.style.display === 'none' || targetDiv.style.display === '') {
+                targetDiv.style.display = 'block';
+                button.classList.add('active');
+            } else {
+                targetDiv.style.display = 'none';
+                button.classList.remove('active');
+            }
+            
+            // Update button states
+            buttons.forEach(btn => {
+                if (btn !== button) {
+                    btn.classList.remove('active');
+                }
+            });
+        });
+    });
 });
 
 function setupAdminButtons() {
