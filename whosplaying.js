@@ -111,19 +111,23 @@ class RetroTrackerMonitor {
         const nodes = element.querySelectorAll('td');
         for (const node of nodes) {
             if (node.textContent.includes(label)) {
-                // Split on the label and get everything after it
                 const parts = node.textContent.split(label);
                 if (parts.length > 1) {
-                    // For game name, split before "Mission:"
-                    if (label === 'Game Name:') {
-                        return parts[1].split('Mission:')[0].trim();
+                    let value = parts[1].trim();
+                    
+                    // Handle specific fields
+                    switch(label) {
+                        case 'Game Name:':
+                            return value.split('Mission:')[0].trim();
+                        case 'Mission:':
+                            return value.split('Level Number:')[0].trim();
+                        case 'Players:':
+                            return value.split('Mode:')[0].trim();
+                        case 'Mode:':
+                            return value.split('\n')[0].trim();
+                        default:
+                            return value;
                     }
-                    // For mission/map, look for specific format
-                    if (label === 'Mission:') {
-                        const missionMatch = parts[1].match(/([^Level Number]+)/);
-                        return missionMatch ? missionMatch[1].trim() : parts[1].trim();
-                    }
-                    return parts[1].trim();
                 }
             }
         }
@@ -133,30 +137,24 @@ class RetroTrackerMonitor {
     findPlayers(detailsTable) {
         if (!detailsTable) return [];
         
-        // Find the Score Board section specifically
-        const tables = detailsTable.querySelectorAll('table');
-        let scoreBoard = null;
+        // Find the Score Board section
+        const scoreBoardLabel = Array.from(detailsTable.querySelectorAll('td')).find(
+            td => td.textContent.includes('Score Board') && td.getAttribute('bgcolor') === '#D0D0D0'
+        );
         
-        for (const table of tables) {
-            const prevElement = table.previousElementSibling;
-            if (prevElement && prevElement.textContent.includes('Score Board')) {
-                scoreBoard = table;
-                break;
-            }
-        }
+        if (!scoreBoardLabel) return [];
         
-        if (!scoreBoard) return [];
+        const scoreBoardTable = scoreBoardLabel.parentElement.nextElementSibling.querySelector('table');
+        if (!scoreBoardTable) return [];
 
-        // Get all rows except header row
-        const playerRows = Array.from(scoreBoard.querySelectorAll('tr')).slice(1);
+        // Get player rows (skip header row)
+        const playerRows = Array.from(scoreBoardTable.querySelectorAll('tr')).slice(1);
         
         return playerRows.map(row => {
             const cells = row.querySelectorAll('td');
-            if (!cells[0]) return null;
-            
-            // Check if this is a player row (has the blue color)
+            // Check for player row styling
             const isPlayerRow = row.getAttribute('style')?.includes('color:#7878B8');
-            if (!isPlayerRow) return null;
+            if (!isPlayerRow || !cells[0]) return null;
             
             return {
                 name: cells[0]?.textContent?.trim() || '',
@@ -211,21 +209,21 @@ class RetroTrackerMonitor {
             return;
         }
 
-        // Clear existing games before adding new ones
+        // Clear existing games
         this.activeGames.clear();
         
-        // Filter for active games
-        const activeGames = data.filter(game => 
-            game.status === 'active' && 
-            game.players && 
-            game.players.length > 0
-        );
+        // Filter active games with players
+        const activeGames = data.filter(game => {
+            const hasPlayers = game.players && game.players.length > 0;
+            const isActive = game.status === 'active';
+            console.log(`Game ${game.gameName}: Active=${isActive}, Players=${hasPlayers}, PlayerCount=${game.playerCount}`);
+            return isActive;
+        });
         
         console.log('Total games:', data.length);
         console.log('Active games found:', activeGames.length);
         
         activeGames.forEach(game => {
-            // Use game name as unique identifier instead of host
             const gameId = `${game.gameName}-${game.startTime}`;
             this.activeGames.set(gameId, game);
         });
