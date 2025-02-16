@@ -1,5 +1,5 @@
 // logout.js
-function initializeLogout() {
+export function initializeLogout() {
     const signOutLink = document.getElementById('sign-out');
 
     if (signOutLink) {
