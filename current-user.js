@@ -6,16 +6,15 @@ import { firebaseConfig } from './firebase-config.js';
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// current-user.js
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is signed in
-    onAuthStateChanged(auth, function(user) {
-        const currentUserSpan = document.getElementById('current-user');
-        const signOutLink = document.getElementById('sign-out');
-        const loginRegisterLink = document.getElementById('login-register');
-
+document.addEventListener('DOMContentLoaded', function () {
+    onAuthStateChanged(auth, user => {
         if (user) {
-            // User is signed in.
+            console.log('User is signed in:', user);
+            // Perform actions when the user is signed in
+            const currentUserSpan = document.getElementById('current-user');
+            const signOutLink = document.getElementById('sign-out');
+            const loginRegisterLink = document.getElementById('login-register');
+
             db.collection('players').doc(user.uid).get()
                 .then(doc => {
                     if (doc.exists) {
@@ -45,7 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginRegisterLink.style.display = 'none'; // Hide login/register
             }
         } else {
-            // No user is signed in.
+            console.log('No user is signed in.');
+            // Perform actions when no user is signed in
+            const currentUserSpan = document.getElementById('current-user');
+            const signOutLink = document.getElementById('sign-out');
+            const loginRegisterLink = document.getElementById('login-register');
+
             if (currentUserSpan) {
                 currentUserSpan.textContent = '';
                 currentUserSpan.style.display = 'none'; // Hide the username
