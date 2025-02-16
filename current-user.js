@@ -54,3 +54,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+onAuthStateChanged(auth, (user) => {
+    updateAuthSection(user);
+    // Show/hide admin link based on user email
+    const adminLink = document.querySelector('.admin-only');
+    if (adminLink) {
+        adminLink.style.display = user?.email === 'admin@ladder.com' ? 'block' : 'none';
+    }
+});
+
+function updateAuthSection(user) {
+    const authSection = document.getElementById('auth-section');
+    
+    if (user) {
+        // User is signed in - show username and dropdown
+        authSection.innerHTML = `
+            <div class="user-dropdown">
+                <span id="current-user">${user.email}</span>
+                <div class="dropdown-content">
+                    <a href="#" id="sign-out-link">Sign Out</a>
+                </div>
+            </div>
+        `;
+        
+        // Add event listener for sign out
+        const signOutLink = document.getElementById('sign-out-link');
+        if (signOutLink) {
+            signOutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    await auth.signOut();
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error signing out:', error);
+                }
+            });
+        }
+    } else {
+        // User is not signed in - show login/register links
+        authSection.innerHTML = `
+            <div class="auth-buttons">
+                <a href="login.html" class="auth-link">Login</a>
+                <a href="register.html" class="auth-link">Register</a>
+            </div>
+        `;
+    }
+}
