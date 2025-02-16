@@ -37,6 +37,7 @@ class RetroTrackerMonitor {
         }
     }
 
+    // Optimize game data extraction
     async fetchGameData() {
         try {
             const proxyUrl = 'https://api.allorigins.win/get?url=';
@@ -45,65 +46,109 @@ class RetroTrackerMonitor {
             const response = await fetch(`${proxyUrl}${targetUrl}`);
             if (!response.ok) throw new Error('Network response was not ok');
 
-            const data = await response.json();
-            const html = data.contents;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-
-            // Find all scoreboard games
+            const doc = new DOMParser().parseFromString((await response.json()).contents, 'text/html');
             const gamesList = doc.querySelectorAll('.scoreboard_game');
-            console.log('Found games elements:', gamesList.length); // Debug log
             
-            if (!gamesList || gamesList.length === 0) {
+            if (!gamesList.length) {
                 throw new Error('No games found');
             }
 
-            const games = Array.from(gamesList).map(game => {
-                // Get the game ID from the onclick attribute
-                const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
-                console.log('Processing game ID:', gameId); // Debug log
+            const games = Array.from(gamesList)
+                .map(game => {
+                    const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
+                    if (!gameId) return null;
 
-                // Get the detailed info table
-                const detailsTable = doc.querySelector(`#game${gameId}`);
-                
-                // Get game status
-                const statusText = this.findDetailText(detailsTable, 'Status:');
-                const isActive = statusText?.includes('Playing');
+                    const detailsTable = doc.querySelector(`#game${gameId}`);
+                    if (!detailsTable) return null;
 
-                const gameData = {
-                    gameVersion: detailsTable.querySelector('td[bgcolor="#D0D0D0"]')?.textContent?.trim().split('-')[0] || '',
-                    gameName: this.findDetailText(detailsTable, 'Game Name:'),
-                    map: this.findDetailText(detailsTable, 'Mission:'),
-                    players: this.findPlayers(detailsTable),
-                    scores: this.findScores(detailsTable),
-                    startTime: this.findDetailText(detailsTable, 'Start time:'),
-                    status: isActive ? 'active' : 'inactive',
-                    playerCount: this.findDetailText(detailsTable, 'Players:'), // Add player count
-                    gameMode: this.findDetailText(detailsTable, 'Mode:'), // Add game mode
-                    timestamp: new Date().toISOString()
-                };
-
-                console.log('Processed game data:', gameData); // Debug log
-                return gameData;
-            });
+                    return {
+                        gameVersion: this.getVersionInfo(detailsTable),
+                        gameName: this.findDetailText(detailsTable, 'Game Name:'),
+                        map: this.findDetailText(detailsTable, 'Mission:'),
+                        players: this.findPlayers(detailsTable),
+                        scores: this.findScores(detailsTable),
+                        startTime: this.findDetailText(detailsTable, 'Start time:'),
+                        status: this.findDetailText(detailsTable, 'Status:')?.includes('Playing') ? 'active' : 'inactive',
+                        playerCount: this.findDetailText(detailsTable, 'Players:'),
+                        gameMode: this.findDetailText(detailsTable, 'Mode:'),
+                        timestamp: new Date().toISOString()
+                    };
+                })
+                .filter(Boolean); // Remove null entries
 
             return this.processGameData(games);
         } catch (error) {
             console.error('Error fetching game data:', error);
-            this.displayError('Unable to fetch game data. Check console for details.');
+            this.displayError('Unable to fetch game data.');
             return null;
         }
     }
 
-    // Helper method to find text content using multiple possible selectors
-    findText(element, selectors) {
-        for (const selector of selectors) {
-            const el = element.querySelector(selector);
-            if (el && el.textContent) {
-                return el.textContent.trim();
-            }
+    // New helper method to get version info
+    getVersionInfo(detailsTable) {
+        const versionCell = detailsTable.querySelector('td[bgcolor="#D0D0D0"]');
+        return versionCell?.textContent?.split('-')[0]?.trim() || 'Unknown Version';
+    }
+
+    // Optimize player finding
+    findPlayers(detailsTable) {
+        const scoreBoardLabel = detailsTable.querySelector('td[bgcolor="#D0D0D0"]:contains("Score Board")');
+        if (!scoreBoardLabel) return [];
+
+        const scoreBoardTable = scoreBoardLabel.closest('tr').nextElementSibling?.querySelector('table');
+        if (!scoreBoardTable) return [];
+
+        return Array.from(scoreBoardTable.querySelectorAll('tr'))
+            .slice(1) // Skip header row
+            .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
+            .map(row => {
+                const [name, kills, deaths, suicides, kdr, timeInGame] = 
+                    Array.from(row.cells).map(cell => cell?.textContent?.trim() || '0');
+                return { name, kills, deaths, suicides, kdr, timeInGame };
+            });
+    }
+
+    // Optimize score finding
+    findScores(detailsTable) {
+        const detailedScoreTable = Array.from(detailsTable.querySelectorAll('table'))
+            .find(table => 
+                table.previousElementSibling?.textContent?.includes('Detailed Score Board')
+            );
+
+        if (!detailedScoreTable) return {};
+
+        return Object.fromEntries(
+            Array.from(detailedScoreTable.querySelectorAll('tr'))
+                .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
+                .map(row => {
+                    const cells = row.querySelectorAll('td');
+                    return [
+                        cells[0]?.textContent?.trim() || 'Unknown',
+                        cells[1]?.textContent?.trim() || '0'
+                    ];
+                })
+        );
+    }
+
+    // Optimize game data processing
+    processGameData(data) {
+        if (!data?.length) {
+            console.log('No games data received');
+            return;
         }
-        return '';
+
+        this.activeGames.clear();
+        
+        const activeGames = data.filter(game => 
+            game.status === 'active' && game.players?.length > 0
+        );
+        
+        activeGames.forEach(game => {
+            const gameId = `${game.gameName}-${game.startTime}`;
+            this.activeGames.set(gameId, game);
+        });
+
+        this.updateDisplay();
     }
 
     findDetailText(element, label) {
@@ -132,103 +177,6 @@ class RetroTrackerMonitor {
             }
         }
         return '';
-    }
-
-    findPlayers(detailsTable) {
-        if (!detailsTable) return [];
-        
-        // Find the Score Board section
-        const scoreBoardLabel = Array.from(detailsTable.querySelectorAll('td')).find(
-            td => td.textContent.includes('Score Board') && td.getAttribute('bgcolor') === '#D0D0D0'
-        );
-        
-        if (!scoreBoardLabel) return [];
-        
-        const scoreBoardTable = scoreBoardLabel.parentElement.nextElementSibling.querySelector('table');
-        if (!scoreBoardTable) return [];
-
-        // Get player rows (skip header row)
-        const playerRows = Array.from(scoreBoardTable.querySelectorAll('tr')).slice(1);
-        
-        return playerRows.map(row => {
-            const cells = row.querySelectorAll('td');
-            // Check for player row styling
-            const isPlayerRow = row.getAttribute('style')?.includes('color:#7878B8');
-            if (!isPlayerRow || !cells[0]) return null;
-            
-            return {
-                name: cells[0]?.textContent?.trim() || '',
-                kills: cells[1]?.textContent?.trim() || '0',
-                deaths: cells[2]?.textContent?.trim() || '0',
-                suicides: cells[3]?.textContent?.trim() || '0',
-                kdr: cells[4]?.textContent?.trim() || '0',
-                timeInGame: cells[5]?.textContent?.trim() || ''
-            };
-        }).filter(player => player !== null);
-    }
-
-    findScores(detailsTable) {
-        if (!detailsTable) return {};
-        
-        // Find the Detailed Score Board section
-        const tables = detailsTable.querySelectorAll('table');
-        let detailedScoreTable = null;
-        
-        for (const table of tables) {
-            const prevElement = table.previousElementSibling;
-            if (prevElement && prevElement.textContent.includes('Detailed Score Board')) {
-                detailedScoreTable = table;
-                break;
-            }
-        }
-        
-        if (!detailedScoreTable) return {};
-
-        const scores = {};
-        const rows = detailedScoreTable.querySelectorAll('tr');
-        rows.forEach(row => {
-            // Only process rows with the blue color style
-            const isPlayerRow = row.getAttribute('style')?.includes('color:#7878B8');
-            if (isPlayerRow) {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 2) {
-                    const playerName = cells[0]?.textContent?.trim();
-                    const score = cells[1]?.textContent?.trim();
-                    if (playerName && score) {
-                        scores[playerName] = score;
-                    }
-                }
-            }
-        });
-        return scores;
-    }
-
-    processGameData(data) {
-        if (!data || data.length === 0) {
-            console.log('No games data received');
-            return;
-        }
-
-        // Clear existing games
-        this.activeGames.clear();
-        
-        // Filter active games with players
-        const activeGames = data.filter(game => {
-            const hasPlayers = game.players && game.players.length > 0;
-            const isActive = game.status === 'active';
-            console.log(`Game ${game.gameName}: Active=${isActive}, Players=${hasPlayers}, PlayerCount=${game.playerCount}`);
-            return isActive;
-        });
-        
-        console.log('Total games:', data.length);
-        console.log('Active games found:', activeGames.length);
-        
-        activeGames.forEach(game => {
-            const gameId = `${game.gameName}-${game.startTime}`;
-            this.activeGames.set(gameId, game);
-        });
-
-        this.updateDisplay();
     }
 
     storeGameData(game) {
