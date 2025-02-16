@@ -43,57 +43,36 @@ class RetroTrackerMonitor {
             const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
             
             const response = await fetch(`${proxyUrl}${targetUrl}`);
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
 
             const data = await response.json();
-            console.log('Raw HTML received:', data.contents); // Debug raw HTML
-
             const html = data.contents;
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            // Try different possible selectors
-            const gamesListSelectors = [
-                '.game-list .game',
-                '#game-list .game',
-                '.game',
-                '[data-game-id]',
-                '.game-session'
-            ];
-
-            let gamesList = null;
-            for (const selector of gamesListSelectors) {
-                const elements = doc.querySelectorAll(selector);
-                if (elements.length > 0) {
-                    console.log(`Found games using selector: ${selector}`);
-                    gamesList = elements;
-                    break;
-                }
-            }
-
-            if (!gamesList) {
-                console.log('HTML structure:', doc.body.innerHTML); // Debug full HTML
-                throw new Error('Could not find game elements');
+            // Find all scoreboard games
+            const gamesList = doc.querySelectorAll('.scoreboard_game');
+            
+            if (!gamesList || gamesList.length === 0) {
+                throw new Error('No games found');
             }
 
             const games = Array.from(gamesList).map(game => {
-                // Log the game element structure
-                console.log('Game element HTML:', game.outerHTML);
+                // Get the game ID from the onclick attribute
+                const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
+                // Get the detailed info table
+                const detailsTable = doc.querySelector(`#game${gameId}`);
 
                 const gameData = {
-                    host: this.findText(game, ['.host', '.game-host', '.player-host']),
-                    status: 'active',
-                    type: this.findText(game, ['.type', '.game-type', '.game-mode']),
-                    gameName: this.findText(game, ['.title', '.game-title', '.game-name']),
-                    gameVersion: this.findText(game, ['.version', '.game-version']),
-                    startTime: new Date().toISOString(),
-                    players: this.findPlayers(game)
+                    gameVersion: this.findText(game, ['td b']), // "D1 ascend"
+                    gameName: this.findDetailText(detailsTable, 'Game Name:'),
+                    map: this.findDetailText(detailsTable, 'Mission:'),
+                    players: this.findPlayers(detailsTable),
+                    scores: this.findScores(detailsTable),
+                    startTime: this.findDetailText(detailsTable, 'Start time:'),
+                    timestamp: new Date().toISOString()
                 };
 
-                console.log('Processed game data:', gameData);
                 return gameData;
             });
 
@@ -116,33 +95,53 @@ class RetroTrackerMonitor {
         return '';
     }
 
-    // Helper method to find players
-    findPlayers(game) {
-        const playerSelectors = [
-            '.player',
-            '.player-item',
-            '[data-player]'
-        ];
-
-        let playerElements = null;
-        for (const selector of playerSelectors) {
-            const elements = game.querySelectorAll(selector);
-            if (elements.length > 0) {
-                playerElements = elements;
-                break;
+    findDetailText(element, label) {
+        if (!element) return '';
+        const nodes = element.querySelectorAll('td');
+        for (const node of nodes) {
+            if (node.textContent.includes(label)) {
+                return node.textContent.split(label)[1].trim();
             }
         }
+        return '';
+    }
 
-        if (!playerElements) {
-            return [];
-        }
+    findPlayers(detailsTable) {
+        if (!detailsTable) return [];
+        
+        const scoreBoard = detailsTable.querySelector('table:has(td:contains("Player"))');
+        if (!scoreBoard) return [];
 
-        return Array.from(playerElements).map(player => ({
-            name: this.findText(player, ['.name', '.player-name']),
-            score: this.findText(player, ['.score', '.player-score']),
-            character: this.findText(player, ['.character', '.player-char']),
-            wins: this.findText(player, ['.wins', '.player-wins'])
-        }));
+        return Array.from(scoreBoard.querySelectorAll('tr')).slice(1).map(row => {
+            const cells = row.querySelectorAll('td');
+            return {
+                name: cells[0]?.textContent?.trim() || '',
+                kills: cells[1]?.textContent?.trim() || '0',
+                deaths: cells[2]?.textContent?.trim() || '0',
+                timeInGame: cells[5]?.textContent?.trim() || ''
+            };
+        });
+    }
+
+    findScores(detailsTable) {
+        if (!detailsTable) return {};
+        
+        const detailedScoreTable = detailsTable.querySelector('table:has(td[style*="color:#7878B8"])');
+        if (!detailedScoreTable) return {};
+
+        const scores = {};
+        const rows = detailedScoreTable.querySelectorAll('tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) {
+                const playerName = cells[0]?.textContent?.trim();
+                const score = cells[1]?.textContent?.trim();
+                if (playerName && score) {
+                    scores[playerName] = score;
+                }
+            }
+        });
+        return scores;
     }
 
     processGameData(data) {
