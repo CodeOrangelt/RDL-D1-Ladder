@@ -1,5 +1,5 @@
 // firebase-config.js
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDMF-bq4tpLoZvUYep_G-igmHbK2h-e-Zs",
   authDomain: "rdladder.firebaseapp.com",
   projectId: "rdladder",

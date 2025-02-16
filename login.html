@@ -6,12 +6,25 @@
     <title>Login and Register</title>
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="login-style.css">
-    <!-- Load Firebase CDN scripts FIRST -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <!-- Then load firebase-config.js -->
-    <script src="firebase-config.js"></script>
+    <!-- Update Firebase SDK imports -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        // Your Firebase configuration will be imported from firebase-config.js
+        import { firebaseConfig } from './firebase-config.js';
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Make Firebase services available globally
+        window.auth = auth;
+        window.db = db;
+    </script>
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -45,7 +58,7 @@
         </div>
     </div>
     <!-- Load your custom scripts AFTER Firebase scripts -->
-    <script src="login.js"></script>
-    <script src="current-user.js"></script>
+    <script type="module" src="login.js"></script>
+    <script type="module" src="current-user.js"></script>
 </body>
 </html>
