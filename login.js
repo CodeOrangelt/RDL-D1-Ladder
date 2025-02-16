@@ -1,14 +1,9 @@
 // login.js
 
-// Initialize Firebase
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
-import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  // Your firebase config object goes here
-};
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { firebaseConfig } from './firebase-config.js'; // Import Firebase configuration
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -31,7 +26,9 @@ document.getElementById('register-form').addEventListener('submit', function (e)
             return setDoc(doc(db, 'players', user.uid), {
                 username: username,
                 email: email,
-                points: 0
+                points: 0,
+                eloRating: 1200, // Default ELO rating
+                position: 0 // Default position
             });
         })
         .then(() => {
@@ -41,7 +38,7 @@ document.getElementById('register-form').addEventListener('submit', function (e)
         })
         .catch(error => {
             console.error("Error registering user:", error);
-            registerErrorDiv.innerHTML = error.message;
+            registerErrorDiv.textContent = error.message; // Use textContent to prevent XSS
         });
 });
 
@@ -55,11 +52,14 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
 
     signInWithEmailAndPassword(auth, email, password)
         .then(() => {
+            console.log('Login successful!');
             alert('Login successful!');
             window.location.href = 'index.html';
         })
         .catch(error => {
             console.error("Error logging in user:", error);
-            loginErrorDiv.innerHTML = error.message;
+            loginErrorDiv.textContent = error.message; // Use textContent to prevent XSS
         });
 });
+
+export { auth, app };
