@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Backend</title>
-    <link rel="stylesheet" href="admin.css">
-    <!-- Add nav.css for consistency -->
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="admin.css">
     
     <!-- Initialize Firebase using ES modules -->
     <script type="module">
@@ -85,7 +85,6 @@
                     <tr>
                         <th>Position</th>
                         <th>Username</th>
-                        <th>Rank</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,11 +95,11 @@
         </div>
     </div>
 
-    <!-- Update script imports to use modules -->
+    <!-- Make sure these are loaded before adminbackend.js -->
     <script type="module" src="firebase-config.js"></script>
-    <script type="module" src="adminbackend.js"></script>
-    <script type="module" src="ladderalgorithm.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
+    <script type="module" src="adminbackend.js"></script>
+    <script type="module" src="ladderalgorithm.js"></script>
 </body>
 </html>

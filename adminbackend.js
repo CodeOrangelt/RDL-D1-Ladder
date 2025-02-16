@@ -1,6 +1,7 @@
 import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
+import { getRankStyle } from './ranks.js';
 
 // Test data array
 const testPlayers = [
@@ -19,10 +20,19 @@ const testPlayers = [
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is admin
     auth.onAuthStateChanged(async (user) => {
-        if (user && user.email === 'admin@ladder.com') {
+        console.log('Auth state changed:', user?.email); // Debug log
+        if (!user) {
+            console.log('No user logged in');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        if (user.email === 'admin@ladder.com') {
+            console.log('Admin access granted');
             setupAdminButtons();
         } else {
-            window.location.href = 'index.html'; // Redirect non-admins
+            console.log('Not an admin user');
+            window.location.href = 'index.html';
         }
     });
 });
@@ -47,6 +57,17 @@ function setupAdminButtons() {
     const populateButton = document.getElementById('populate-test-ladder');
     if (populateButton) {
         populateButton.addEventListener('click', populateTestLadder);
+    }
+
+    const viewTemplateBtn = document.getElementById('view-template-ladder');
+    if (viewTemplateBtn) {
+        viewTemplateBtn.addEventListener('click', () => {
+            const templateSection = document.getElementById('template-ladder');
+            templateSection.style.display = templateSection.style.display === 'none' ? 'block' : 'none';
+            if (templateSection.style.display === 'block') {
+                displayTemplateLadder();
+            }
+        });
     }
 }
 
@@ -120,4 +141,21 @@ async function loadEloHistory() {
     } catch (error) {
         console.error("Error loading ELO history:", error);
     }
+}
+
+function displayTemplateLadder() {
+    const tableBody = document.querySelector('#template-table tbody');
+    tableBody.innerHTML = '';
+
+    testPlayers.forEach(player => {
+        const row = document.createElement('tr');
+        const rankStyle = getRankStyle(player.eloRating);
+        row.innerHTML = `
+            <td>${player.position}</td>
+            <td style="color: ${rankStyle.color}; font-weight: bold;">${player.username}</td>
+            <td>${player.eloRating}</td>
+            <td>${rankStyle.name}</td>
+        `;
+        tableBody.appendChild(row);
+    });
 }
