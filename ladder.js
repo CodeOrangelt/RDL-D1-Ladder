@@ -34,15 +34,18 @@ async function displayLadder() {
             return;
         }
 
-        // Convert to array for sorting
+        // Convert to array for sorting and filter out test players
         const players = [];
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
+            // Skip test players
+            if (playerData.email && (playerData.email.includes('test4@') || playerData.email.includes('test5@'))) {
+                return;
+            }
             console.log('Player data:', playerData);
             players.push({
                 ...playerData,
                 position: playerData.position || Number.MAX_SAFE_INTEGER,
-                //eloRating: playerData.eloRating || 1200
             });
         });
 
