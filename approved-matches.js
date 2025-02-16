@@ -1,96 +1,47 @@
+import { 
+    collection, 
+    query, 
+    orderBy, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 // approved-matches.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    const approvedMatchesTable = document.getElementById('approved-matches-table').getElementsByTagName('tbody')[0];
+document.addEventListener('DOMContentLoaded', async () => {
+    const approvedMatchesRef = collection(window.db, 'approvedMatches');
+    const q = query(approvedMatchesRef, orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        const tableBody = document.querySelector('#approved-matches-table tbody');
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            
+            // Create and populate table cells
+            const cells = [
+                data.winnerUsername,
+                data.loserUsername,
+                data.winnerScore || 'N/A',
+                data.loserScore,
+                data.winnerSuicides || 'N/A',
+                data.suicides,
+                data.mapPlayed,
+                data.winnerComment || 'N/A',
+                data.loserComment,
+                data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A'
+            ];
 
-    db.collection('pendingMatches')
-        .where('approved', '==', true)
-        .orderBy('createdAt', 'desc') // Order by createdAt in descending order
-        .get()
-        .then(querySnapshot => {
-            querySnapshot.forEach(doc => {
-                const match = doc.data();
-                const row = approvedMatchesTable.insertRow();
-
-                // Fetch the winner's username
-                db.collection('players')
-                    .where('email', '==', match.winnerEmail)
-                    .get()
-                    .then(winnerQuerySnapshot => {
-                        let winnerUsername = "Unknown Player";
-                        if (!winnerQuerySnapshot.empty) {
-                            const winnerDoc = winnerQuerySnapshot.docs[0];
-                            winnerUsername = winnerDoc.data().username;
-                        }
-
-                        // Insert cells in the correct order
-                        const winnerCell = row.insertCell();
-                        winnerCell.textContent = winnerUsername;
-
-                        const loserCell = row.insertCell();
-                        loserCell.textContent = match.loserUsername;
-
-                        const winnerScoreCell = row.insertCell();
-                        winnerScoreCell.textContent = match.winnerScore;
-
-                        const loserScoreCell = row.insertCell();
-                        loserScoreCell.textContent = match.loserScore;
-
-                        const winnerSuicidesCell = row.insertCell();
-                        winnerSuicidesCell.textContent = match.winnerSuicides;
-
-                        const loserSuicidesCell = row.insertCell();
-                        loserSuicidesCell.textContent = match.suicides;
-
-                        const mapPlayedCell = row.insertCell();
-                        mapPlayedCell.textContent = match.mapPlayed;
-
-                        const winnerCommentCell = row.insertCell();
-                        winnerCommentCell.textContent = match.winnerComment;
-
-                        const loserCommentCell = row.insertCell();
-                        loserCommentCell.textContent = match.loserComment;
-
-                        const timeAcceptedCell = row.insertCell();
-                        timeAcceptedCell.textContent = new Date(match.createdAt.seconds * 1000).toLocaleString(); // Convert Firestore timestamp to readable format
-                    })
-                    .catch(error => {
-                        console.error('Error fetching winner:', error);
-
-                        // Insert cells with error message for winner
-                        const winnerCell = row.insertCell();
-                        winnerCell.textContent = "Error Fetching Username";
-
-                        const loserCell = row.insertCell();
-                        loserCell.textContent = match.loserUsername;
-
-                        const winnerScoreCell = row.insertCell();
-                        winnerScoreCell.textContent = match.winnerScore;
-
-                        const loserScoreCell = row.insertCell();
-                        loserScoreCell.textContent = match.loserScore;
-
-                        const winnerSuicidesCell = row.insertCell();
-                        winnerSuicidesCell.textContent = match.winnerSuicides;
-
-                        const loserSuicidesCell = row.insertCell();
-                        loserSuicidesCell.textContent = match.suicides;
-
-                        const mapPlayedCell = row.insertCell();
-                        mapPlayedCell.textContent = match.mapPlayed;
-
-                        const winnerCommentCell = row.insertCell();
-                        winnerCommentCell.textContent = match.winnerComment;
-
-                        const loserCommentCell = row.insertCell();
-                        loserCommentCell.textContent = match.loserComment;
-
-                        const timeAcceptedCell = row.insertCell();
-                        timeAcceptedCell.textContent = new Date(match.createdAt.seconds * 1000).toLocaleString(); // Convert Firestore timestamp to readable format
-                    });
+            cells.forEach(cellData => {
+                const cell = document.createElement('td');
+                cell.textContent = cellData;
+                row.appendChild(cell);
             });
-        })
-        .catch(error => {
-            console.error('Error fetching approved matches:', error);
+
+            tableBody.appendChild(row);
         });
+    } catch (error) {
+        console.error("Error fetching approved matches:", error);
+    }
 });
