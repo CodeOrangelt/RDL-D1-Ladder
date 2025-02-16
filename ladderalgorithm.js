@@ -2,9 +2,14 @@ import {
     collection,
     doc, 
     getDoc, 
+    getDocs,
     updateDoc, 
     setDoc, 
-    deleteDoc 
+    deleteDoc,
+    writeBatch,
+    query,
+    where,
+    serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
@@ -127,24 +132,77 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             winnerComment: winnerComment
         });
 
-        console.log('Report approved successfully.');
-
         // Get the complete report data
         const reportSnapshot = await getDoc(pendingMatchRef);
         
         if (reportSnapshot.exists()) {
             const reportData = reportSnapshot.data();
             
-            // Create reference for approved match document
-            const approvedMatchRef = doc(db, 'approvedMatches', reportId);
+            // Get both players' data
+            const playersRef = collection(db, 'players');
+            const winnerQuery = query(playersRef, where('username', '==', reportData.winnerUsername));
+            const loserQuery = query(playersRef, where('username', '==', reportData.loserUsername));
             
-            // Copy to approved matches collection
+            const [winnerDocs, loserDocs] = await Promise.all([
+                getDocs(winnerQuery),
+                getDocs(loserQuery)
+            ]);
+
+            const winnerDoc = winnerDocs.docs[0];
+            const loserDoc = loserDocs.docs[0];
+
+            // Calculate new ELO ratings
+            const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
+            const loserCurrentElo = loserDoc.data().eloRating || 1200;
+            const { newWinnerRating, newLoserRating } = calculateElo(winnerCurrentElo, loserCurrentElo);
+
+            // Update ELO ratings and positions
+            const batch = writeBatch(db);
+
+            // Update winner's ELO and position
+            batch.update(winnerDoc.ref, {
+                eloRating: newWinnerRating,
+                position: loserDoc.data().position
+            });
+
+            // Update loser's ELO and move them one position down
+            batch.update(loserDoc.ref, {
+                eloRating: newLoserRating,
+                position: loserDoc.data().position + 1
+            });
+
+            // Move all players between winner and loser up one position
+            const playersToUpdate = query(
+                playersRef,
+                where('position', '>', winnerDoc.data().position),
+                where('position', '<', loserDoc.data().position)
+            );
+
+            const playersBetween = await getDocs(playersToUpdate);
+            playersBetween.forEach(playerDoc => {
+                batch.update(playerDoc.ref, {
+                    position: playerDoc.data().position - 1
+                });
+            });
+
+            // Commit all updates
+            await batch.commit();
+
+            // Move report to approved matches
+            const approvedMatchRef = doc(db, 'approvedMatches', reportId);
             await setDoc(approvedMatchRef, {
                 ...reportData,
-                approvedAt: new Date()
+                winnerScore,
+                winnerSuicides,
+                winnerComment,
+                approvedAt: serverTimestamp(),
+                winnerOldElo: winnerCurrentElo,
+                winnerNewElo: newWinnerRating,
+                loserOldElo: loserCurrentElo,
+                loserNewElo: newLoserRating
             });
             
-            // Remove from pending matches
+            // Delete from pending matches
             await deleteDoc(pendingMatchRef);
             
             console.log('Report processed and moved to approved matches');
