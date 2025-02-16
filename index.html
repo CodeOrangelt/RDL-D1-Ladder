@@ -1,28 +1,11 @@
+/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RD Ladder</title>
-    <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Firebase SDK imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from './firebase-config.js';
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Make Firebase services available globally
-        window.auth = auth;
-        window.db = db;
-    </script>
+    <link rel="stylesheet" href="nav.css">
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -54,5 +37,6 @@
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
+    <script type="module" src="ladder.js"></script>
 </body>
 </html>
