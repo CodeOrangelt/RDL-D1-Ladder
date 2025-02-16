@@ -11,9 +11,15 @@ body {
     flex-direction: column;
 }
 
+#nav-placeholder {
+    width: 100%;
+    order: -1; /* Ensures nav always appears first */
+}
+
 /* Main content wrapper */
 main {
     flex: 1;  /* This will push the footer down */
+    width: 100%;
 }
 
 /* Remove .container styles and apply directly to table */
@@ -25,6 +31,10 @@ main table {
     background-color: rgba(255, 255, 255, 0.5);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(5px);
+}
+
+#footer-placeholder {
+    width: 100%;
 }
 
 h1 {
@@ -81,45 +91,29 @@ tr:nth-child(even) {
 }
 
 #ladder td[title] {
-    cursor: help;
     position: relative;
-    padding-right: 5px; /* Add space for hover box */
-}
-
-/* Player name and rank hover styling */
-.player-name {
-    position: relative;
-    display: inline-block;
     cursor: help;
 }
 
-.player-name::after {
-    visibility: hidden;
-    opacity: 0;
+#ladder td[title]:hover::after {
     content: attr(title);
     position: absolute;
-    left: 100%;  /* Position to the right of the username */
+    left: calc(100% - 10px);  /* Adjust this value to move left/right */
     top: 50%;
     transform: translateY(-50%);
     background: #333;
-    color: inherit;
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 0.9em;
+    z-index: 1000;
     white-space: nowrap;
-    margin-left: 10px;
+    color: inherit;
     border: 1px solid currentColor;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-    pointer-events: none;
 }
 
+/* Remove the newer hover styles */
+.player-name::after,
 .player-name:hover::after {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Remove any previous hover styles if they exist */
-#ladder td[title]:hover::after {
     display: none;
 }
