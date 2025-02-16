@@ -1,7 +1,6 @@
 // logout.js
 function initializeLogout() {
     const signOutLink = document.getElementById('sign-out');
-
     if (signOutLink) {
         signOutLink.addEventListener('click', function(e) {
             e.preventDefault();
