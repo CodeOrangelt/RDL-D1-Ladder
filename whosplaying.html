@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Who is Playing?</title>
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="footer.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,6 +24,8 @@
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
         });
     </script>
 </body>
