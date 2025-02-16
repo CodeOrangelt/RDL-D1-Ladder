@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background: url('images/descentspace.png');
+    background: url('images/backgroundrdl.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -42,34 +42,33 @@ tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-/* Shimmer effect for the #1 player */
+/* Replace shimmer with glow effect for #1 player */
 #ladder tr:first-child td:first-child {
-    background: linear-gradient(90deg, 
-        rgba(255, 215, 0, 0.2) 25%, 
-        rgba(255, 215, 0, 0.8) 50%, 
-        rgba(255, 215, 0, 0.2) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+    position: relative;
     font-weight: bold;
-    color: #000;
+    color: #FFD700;  /* Gold color */
+    text-shadow: 0 0 5px #FFD700;
+    animation: glow 2s ease-in-out infinite;
 }
 
-@keyframes shimmer {
+@keyframes glow {
     0% {
-        background-position: -200% 0;
+        text-shadow: 0 0 5px #FFD700;
+    }
+    50% {
+        text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
     }
     100% {
-        background-position: 200% 0;
+        text-shadow: 0 0 5px #FFD700;
     }
 }
 
-/* Make sure the shimmer is contained within the cell */
+/* Make sure the glow is contained within the cell */
 #ladder td:first-child {
     width: 50px;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    overflow: visible;  /* Changed from hidden to allow glow to show */
 }
 
 #ladder td[title] {
