@@ -77,27 +77,10 @@ function updateAuthSection(user) {
                 </div>
             </div>
         `;
-        
-        // Add event listener for sign out
-        const signOutLink = document.getElementById('sign-out-link');
-        if (signOutLink) {
-            signOutLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    await auth.signOut();
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error('Error signing out:', error);
-                }
-            });
-        }
     } else {
-        // User is not signed in - show login/register links
+        // User is not signed in - show single login button
         authSection.innerHTML = `
-            <div class="auth-buttons">
-                <a href="login.html" class="auth-link">Login</a>
-                <a href="register.html" class="auth-link">Register</a>
-            </div>
+            <a href="login.html" class="auth-link">Login</a>
         `;
     }
 }

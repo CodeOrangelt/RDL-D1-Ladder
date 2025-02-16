@@ -36,18 +36,7 @@
     <br>
     <br>
     <br>
-    <br>
-    <br>
-    <br>
-    <br>
-        <form id="report-form" style="display: none;">
-            <!-- ...form fields... -->
-        </form>
-
-        <div id="report-error"></div>
-        <div id="report-lightbox" class="lightbox">
-            <!-- ...lightbox content... -->
-        </div>
+    <div class="container">
         <table id="ladder">
             <thead>
                 <tr>
@@ -56,18 +45,14 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Ladder data will be inserted here -->
+                <!-- Ladder rankings will be populated here -->
             </tbody>
         </table>
     </div>
+
+    <!-- Update script imports to use modules -->
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
-    <script type="module" src="reports.js"></script>
-    <script type="module" src="ladder.js"></script>
-    <script type="module">
-        import { initializeLogout } from './logout.js';
-        initializeLogout();
-    </script>
     <script type="module" src="logout.js"></script>
 </body>
 </html>

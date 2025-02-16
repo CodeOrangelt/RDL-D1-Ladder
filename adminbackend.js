@@ -1,5 +1,5 @@
 import { auth, db } from './firebase-config.js';
-import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getEloHistory } from './elo-history.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const viewEloButton = document.getElementById('view-elo-ratings');
     if (viewEloButton) {
-        viewEloButton.addEventListener('click', displayEloRatings);
+        viewEloButton.addEventListener('click', async () => {
+            document.getElementById('elo-ratings').style.display = 'block';
+            await loadEloRatings();
+        });
     }
 
     const viewEloHistoryBtn = document.getElementById('view-elo-history');
@@ -31,27 +34,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-async function displayEloRatings() {
+async function loadEloRatings() {
+    const tableBody = document.querySelector('#elo-table tbody');
+    tableBody.innerHTML = ''; // Clear existing content
+
     try {
         const playersRef = collection(db, 'players');
-        const snapshot = await getDocs(playersRef);
-        const tableBody = document.querySelector('#elo-table tbody');
-        tableBody.innerHTML = '';
-
-        snapshot.forEach(doc => {
-            const player = doc.data();
-            const row = `
-                <tr>
-                    <td>${player.username}</td>
-                    <td>${player.eloRating || 1000}</td>
-                </tr>
+        const q = query(playersRef, orderBy('eloRating', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.username}</td>
+                <td>${data.eloRating || 1200}</td>
             `;
-            tableBody.innerHTML += row;
+            tableBody.appendChild(row);
         });
-
-        document.getElementById('elo-ratings').style.display = 'block';
     } catch (error) {
-        console.error('Error fetching ELO ratings:', error);
+        console.error("Error loading ELO ratings:", error);
     }
 }
 

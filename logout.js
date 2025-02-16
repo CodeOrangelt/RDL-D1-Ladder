@@ -1,7 +1,7 @@
 // logout.js
 import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-function initializeLogout() {
+export function initializeLogout() {
     const signOutLink = document.getElementById('sign-out-link');
     if (signOutLink) {
         signOutLink.addEventListener('click', async (e) => {
