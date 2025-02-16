@@ -34,16 +34,14 @@ async function handleRegister(e) {
             position: Number.MAX_SAFE_INTEGER
         });
 
-        // Show verification message
+        // Show success message
         document.getElementById('register-error').innerHTML = `
             <div class="success-message">
                 Registration successful! Please check your email to verify your account.
-                You will be signed out until you verify your email.
+                You will be redirected to login in 3 seconds.
             </div>`;
 
-        // Sign out until email is verified
-        await signOut(auth);
-        
+        // Redirect to login after 3 seconds
         setTimeout(() => {
             document.getElementById('register-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
@@ -60,21 +58,7 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
 
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        if (!user.emailVerified) {
-            await signOut(auth);
-            document.getElementById('login-error').innerHTML = `
-                <div class="error-message">
-                    Please verify your email before logging in.
-                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
-                        Resend verification email
-                    </button>
-                </div>`;
-            return;
-        }
-
+        await signInWithEmailAndPassword(auth, email, password);
         window.location.href = 'index.html';
     } catch (error) {
         document.getElementById('login-error').textContent = error.message;
