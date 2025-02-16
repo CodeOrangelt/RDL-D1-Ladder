@@ -1,21 +1,16 @@
 <nav>
-    <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="report.html">Report Game</a></li>
+    <ul class="nav-links">
+        <li><a href="index.html">Ladder</a></li>
+        <li><a href="report.html">Report Match</a></li>
         <li><a href="approved-matches.html">Recent Matches</a></li>
-        <li id="user-menu">
-            <span id="current-user" style="font-weight: bold;"></span>
-            <div id="sign-out-container">
-                <a href="#" id="sign-out">Sign Out</a>
-            </div>
-        </li>
-        <li id="admin-button" style="display: none;"><a href="admin.html">Admin</a></li>
-        <li id="login-register"><a href="login.html">Login/Register</a></li>
+        <li><a href="admin.html">Admin</a></li>
     </ul>
+    <div class="user-menu">
+        <div class="user-dropdown">
+            <span id="current-user">Not logged in</span>
+            <div class="dropdown-content">
+                <a href="#" id="sign-out-link">Sign Out</a>
+            </div>
+        </div>
+    </div>
 </nav>
-<script type="module" src="logout.js"></script>
-<script type="module">
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeLogout();
-    });
-</script>
