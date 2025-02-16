@@ -39,13 +39,8 @@ class RetroTrackerMonitor {
 
     async fetchGameData() {
         try {
-            // Use a CORS proxy service
             const proxyUrl = 'https://api.allorigins.win/get?url=';
             const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
-
-            // Alternative proxy URLs you can try:
-            const corsAnywhere = 'https://cors-anywhere.herokuapp.com/';
-            const corsProxy = 'https://api.codetabs.com/v1/proxy?quest=';
             
             const response = await fetch(`${proxyUrl}${targetUrl}`);
 
@@ -58,67 +53,71 @@ class RetroTrackerMonitor {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            // Rest of the scraping code remains the same
-            const gamesList = doc.querySelectorAll('.game-session');
+            // Update selectors based on actual RetroTracker HTML structure
+            const gamesList = doc.querySelectorAll('.game-list .game'); // Updated selector
+            console.log('Found games:', gamesList.length); // Debug log
+
             const games = Array.from(gamesList).map(game => {
-                return {
-                    host: game.querySelector('.host-name')?.textContent || 'Unknown Host',
-                    status: game.querySelector('.game-status')?.textContent || 'active',
-                    type: game.querySelector('.game-type')?.textContent,
-                    gameName: game.querySelector('.game-title')?.textContent,
-                    gameVersion: game.querySelector('.game-version')?.textContent,
-                    startTime: game.querySelector('.start-time')?.getAttribute('datetime'),
-                    players: Array.from(game.querySelectorAll('.player')).map(player => ({
-                        name: player.querySelector('.player-name')?.textContent,
-                        score: player.querySelector('.player-score')?.textContent,
-                        character: player.querySelector('.player-character')?.textContent,
-                        wins: player.querySelector('.player-wins')?.textContent
+                const gameData = {
+                    host: game.querySelector('.game-host')?.textContent?.trim() || 'Unknown Host',
+                    status: 'active', // Default to active since we're only scraping active games
+                    type: game.querySelector('.game-mode')?.textContent?.trim() || 'Unknown Type',
+                    gameName: game.querySelector('.game-name')?.textContent?.trim() || 'Unknown Game',
+                    gameVersion: game.querySelector('.game-version')?.textContent?.trim() || '',
+                    startTime: new Date().toISOString(), // Current time as fallback
+                    players: Array.from(game.querySelectorAll('.player-item')).map(player => ({
+                        name: player.querySelector('.player-name')?.textContent?.trim(),
+                        score: player.querySelector('.player-score')?.textContent?.trim(),
+                        character: player.querySelector('.player-char')?.textContent?.trim(),
+                        wins: player.querySelector('.player-wins')?.textContent?.trim()
                     }))
                 };
+                console.log('Processed game:', gameData); // Debug log
+                return gameData;
             });
 
             return this.processGameData(games);
         } catch (error) {
             console.error('Error fetching game data:', error);
-            this.displayError('Unable to fetch game data. Using proxy service...');
+            this.displayError('Unable to fetch game data. Check console for details.');
             return null;
         }
     }
 
     processGameData(data) {
-        // Process the game data and store relevant information
+        if (!data || data.length === 0) {
+            console.log('No games data received'); // Debug log
+            return;
+        }
+
+        // Clear existing games before adding new ones
+        this.activeGames.clear();
+        
         const activeGames = data.filter(game => game.status === 'active');
+        console.log('Active games found:', activeGames.length); // Debug log
+        
         activeGames.forEach(game => {
             this.storeGameData(game);
         });
-        this.updateDisplay();
     }
 
     storeGameData(game) {
-        // Ensure all required fields are present before storing
-        const gameData = {
-            host: game.host || 'Unknown Host',
-            players: game.players || [],
-            scores: game.scores || {},  // Use empty object if scores undefined
-            timestamp: new Date().toISOString(),
-            gameType: game.type || 'Unknown Type',
-            status: game.status || 'active',
-            gameName: game.gameName || 'Unknown Game',
-            gameVersion: game.gameVersion || '',
-            startTime: game.startTime || new Date().toISOString()
-        };
+        if (!game.host || !game.players) {
+            console.error('Invalid game data:', game);
+            return;
+        }
 
-        // Store in Firebase with error handling
-        addDoc(collection(db, 'retroTracker'), gameData)
-            .then(() => {
-                // Add game to local tracking
-                this.activeGames.set(game.host, gameData);
-                this.updateDisplay();
-            })
+        // Add directly to local tracking first
+        this.activeGames.set(game.host, game);
+        
+        // Then store in Firebase
+        addDoc(collection(db, 'retroTracker'), game)
             .catch(error => {
                 console.error('Error storing game data:', error);
-                this.displayError('Error saving game data');
+                // Don't display error to user, just log it
             });
+            
+        this.updateDisplay();
     }
 
     updateDisplay() {
