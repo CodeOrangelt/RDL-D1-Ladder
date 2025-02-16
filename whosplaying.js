@@ -35,6 +35,12 @@ class RetroTrackerMonitor {
         if (main) {
             main.appendChild(container);
         }
+
+        // Add banner
+        const banner = document.createElement('div');
+        banner.className = 'game-banner';
+        banner.innerHTML = '<div class="game-banner-content"><span class="game-banner-text"></span></div>';
+        document.body.appendChild(banner);
     }
 
     // Optimize game data extraction
@@ -270,6 +276,9 @@ class RetroTrackerMonitor {
 
         document.querySelector('.last-update').textContent = 
             `Last updated: ${new Date().toLocaleTimeString()}`;
+
+        // Update the banner at the end
+        this.updateBanner();
     }
 
     startMonitoring() {
@@ -287,6 +296,28 @@ class RetroTrackerMonitor {
                 </div>
             `;
         }
+    }
+
+    // Add new method to update banner
+    updateBanner() {
+        const banner = document.querySelector('.game-banner');
+        const bannerText = document.querySelector('.game-banner-text');
+        
+        if (!banner || !bannerText) return;
+
+        if (this.activeGames.size === 0) {
+            banner.style.display = 'none';
+            return;
+        }
+
+        // Get the first active game
+        const game = Array.from(this.activeGames.values())[0];
+        if (!game) return;
+
+        const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
+        const text = `${game.gameName} - ${game.gameVersion} - ${gameType}`;
+        bannerText.textContent = text;
+        banner.style.display = 'block';
     }
 }
 
@@ -410,6 +441,37 @@ const styles = `
         background: rgba(255, 0, 0, 0.1);
         border-radius: 4px;
         margin: 10px 0;
+    }
+
+    .game-banner {
+        width: 100%;
+        background: linear-gradient(90deg, #881e8e, #b026b9);
+        color: white;
+        padding: 10px 0;
+        overflow: hidden;
+        white-space: nowrap;
+        position: fixed;
+        bottom: 60px;
+        left: 0;
+        z-index: 1000;
+        display: none;
+    }
+
+    .game-banner-content {
+        display: inline-block;
+        animation: scroll-left 20s linear infinite;
+        padding-right: 50px;
+    }
+
+    @keyframes scroll-left {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+
+    .game-banner-text {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: bold;
     }
 `;
 

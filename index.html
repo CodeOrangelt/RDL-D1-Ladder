@@ -7,7 +7,14 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="footer.css">
-    
+    <style>
+        /* Banner positioning */
+        #footer-placeholder {
+            margin-bottom: 40px; /* Space for banner */
+            position: relative;
+            z-index: 1001;
+        }
+    </style>
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -26,6 +33,14 @@
             </table>
         </div>
     </main>
+    
+    <!-- Game Banner will be inserted here -->
+    <div class="game-banner">
+        <div class="game-banner-content">
+            <span class="game-banner-text"></span>
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
 
     <!-- Scripts -->
@@ -33,6 +48,7 @@
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
+    <script type="module" src="whosplaying.js"></script>
     <script>
         // Load nav and footer
         Promise.all([
@@ -41,6 +57,10 @@
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;
+            
+            // Initialize RetroTracker after DOM is loaded
+            const tracker = new RetroTrackerMonitor();
+            tracker.initialize();
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });
