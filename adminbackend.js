@@ -112,9 +112,12 @@ async function loadEloRatings() {
         
         querySnapshot.forEach(doc => {
             const data = doc.data();
+            const rankStyle = getRankStyle(data.eloRating);
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${data.username}</td>
+                <td style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}">
+                    ${data.username}
+                </td>
                 <td>${data.eloRating || 1200}</td>
             `;
             tableBody.appendChild(row);

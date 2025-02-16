@@ -58,7 +58,7 @@ async function displayLadder() {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}">
+                <td class="player-name" style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}" data-rank-color="${rankStyle.color}">
                     ${playerData.username || 'Unknown'}
                 </td>
             `;
