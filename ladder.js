@@ -54,7 +54,6 @@ async function displayLadder() {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${playerData.username || 'Unknown'}</td>
-                <td>${playerData.eloRating}</td>
             `;
             tableBody.appendChild(row);
         });
