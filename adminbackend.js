@@ -153,8 +153,6 @@ function displayTemplateLadder() {
         row.innerHTML = `
             <td>${player.position}</td>
             <td style="color: ${rankStyle.color}; font-weight: bold;">${player.username}</td>
-            <td>${player.eloRating}</td>
-            <td>${rankStyle.name}</td>
         `;
         tableBody.appendChild(row);
     });
