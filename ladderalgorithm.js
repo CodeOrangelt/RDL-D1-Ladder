@@ -152,79 +152,65 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             const winnerDoc = winnerDocs.docs[0];
             const loserDoc = loserDocs.docs[0];
 
+            // Get current positions or set defaults
+            const winnerPosition = winnerDoc.data().position || Number.MAX_SAFE_INTEGER;
+            const loserPosition = loserDoc.data().position || 1;
+
             // Calculate new ELO ratings
             const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
             const loserCurrentElo = loserDoc.data().eloRating || 1200;
             const { newWinnerRating, newLoserRating } = calculateElo(winnerCurrentElo, loserCurrentElo);
 
-            // Record ELO changes
-            await Promise.all([
-                recordEloChange(
-                    winnerDoc.data().username,
-                    winnerCurrentElo,
-                    newWinnerRating,
-                    loserDoc.data().username,
-                    'Won'
-                ),
-                recordEloChange(
-                    loserDoc.data().username,
-                    loserCurrentElo,
-                    newLoserRating,
-                    winnerDoc.data().username,
-                    'Lost'
-                )
-            ]);
-
-            // Update ELO ratings and positions
+            // Start batch update
             const batch = writeBatch(db);
 
             // Update winner's ELO and position
             batch.update(winnerDoc.ref, {
                 eloRating: newWinnerRating,
-                position: loserDoc.data().position
+                position: Math.min(winnerPosition, loserPosition)
             });
 
-            // Update loser's ELO and move them one position down
+            // Update loser's ELO and position
             batch.update(loserDoc.ref, {
                 eloRating: newLoserRating,
-                position: loserDoc.data().position + 1
+                position: Math.min(winnerPosition, loserPosition) + 1
             });
 
-            // Move all players between winner and loser up one position
+            // Get players between winner and loser to update their positions
             const playersToUpdate = query(
                 playersRef,
-                where('position', '>', winnerDoc.data().position),
-                where('position', '<', loserDoc.data().position)
+                where('position', '>', Math.min(winnerPosition, loserPosition)),
+                where('position', '<', Math.max(winnerPosition, loserPosition))
             );
 
             const playersBetween = await getDocs(playersToUpdate);
             playersBetween.forEach(playerDoc => {
-                batch.update(playerDoc.ref, {
-                    position: playerDoc.data().position - 1
-                });
+                const currentPosition = playerDoc.data().position;
+                if (currentPosition) {
+                    batch.update(playerDoc.ref, {
+                        position: currentPosition + 1
+                    });
+                }
             });
 
             // Commit all updates
             await batch.commit();
 
-            // Move report to approved matches
+            // Move to approved matches
             const approvedMatchRef = doc(db, 'approvedMatches', reportId);
             await setDoc(approvedMatchRef, {
                 ...reportData,
-                winnerScore,
-                winnerSuicides,
-                winnerComment,
-                approvedAt: serverTimestamp(),
                 winnerOldElo: winnerCurrentElo,
                 winnerNewElo: newWinnerRating,
                 loserOldElo: loserCurrentElo,
-                loserNewElo: newLoserRating
+                loserNewElo: newLoserRating,
+                approvedAt: serverTimestamp()
             });
             
             // Delete from pending matches
             await deleteDoc(pendingMatchRef);
             
-            console.log('Report processed and moved to approved matches');
+            console.log('Report processed successfully');
             return true;
         }
     } catch (error) {
@@ -232,6 +218,3 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         throw error;
     }
 }
-
-// Example usage: Call this function when a match is reported
-// updateEloRatings('winnerPlayerId', 'loserPlayerId');
