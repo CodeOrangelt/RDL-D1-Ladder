@@ -9,13 +9,18 @@
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <script>
+    <script type="module">
+        import { initializeLogout } from './logout.js';
+
         fetch('nav.html')
             .then(response => response.text())
             .then(data => {
                 document.getElementById('nav-placeholder').innerHTML = data;
                 // Call initializeLogout after nav.html is loaded
                 initializeLogout();
+            })
+            .catch(error => {
+                console.error("Error fetching nav.html:", error);
             });
     </script>
     <div class="container">
@@ -40,10 +45,7 @@
             <div id="login-error"></div>
         </div>
     </div>
-<!-- ... other HTML ... -->
-<script src="login.js" type="module"></script>
-<script src="current-user.js" type="module"></script>
-<script src="logout.js" type="module"></script>
-<!-- ... rest of your HTML ... -->
+    <script src="login.js" type="module"></script>
+    <script src="current-user.js" type="module"></script>
 </body>
 </html>
