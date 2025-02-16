@@ -10,7 +10,7 @@ nav {
     color: #fff;
     padding: 10px 0;
     width: 100%;
-    position: relative;
+    position: relative; /* Ensure nav has positioning context */
     z-index: 100;
     top: 0;      /* Ensure nav starts at the top */
     left: 0;
@@ -267,7 +267,7 @@ body {
     padding: 2px 0; /* Reduced from 5px */
     overflow: hidden;
     white-space: nowrap;
-    position: relative;
+    position: relative; /* Changed from fixed */
     z-index: 97; /* Below nav and nav::after */
     display: none;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -280,7 +280,7 @@ body {
     width: 100%;
     line-height: 20px; /* Match new height */
     text-align: center;
-    animation: slide-left 20s linear infinite;
+    animation: scroll-left 15s linear;
 }
 
 .game-banner-text {
@@ -295,4 +295,11 @@ body {
 @keyframes slide-left {
     0% { transform: translateX(100%); }
     100% { transform: translateX(-100%); }
+}
+
+@keyframes scroll-left {
+    0% { opacity: 0; transform: translateX(100%); }
+    10% { opacity: 1; transform: translateX(80%); }
+    90% { opacity: 1; transform: translateX(-80%); }
+    100% { opacity: 0; transform: translateX(-100%); }
 }

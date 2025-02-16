@@ -351,12 +351,10 @@ export class RetroTrackerMonitor {
             currentIndex = (currentIndex + 1) % games.length;
         };
 
-        // Initial update
         updateGameText();
 
-        // Set up rotation for multiple games
         if (games.length > 1) {
-            this.bannerInterval = setInterval(updateGameText, 16000); // Wait for full scroll + 1s
+            this.bannerInterval = setInterval(updateGameText, 16000);
         }
     }
 
@@ -487,44 +485,6 @@ const styles = `
         background: rgba(255, 0, 0, 0.1);
         border-radius: 4px;
         margin: 10px 0;
-    }
-
-    .game-banner {
-        width: 100%;
-        height: 30px;
-        background: linear-gradient(90deg, #881e8e, #b026b9);
-        color: white;
-        padding: 5px 0;
-        overflow: hidden;
-        white-space: nowrap;
-        position: fixed;
-        bottom: 60px;
-        left: 0;
-        z-index: 1000;
-        display: none;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    @keyframes scroll-left {
-        0% { opacity: 0; transform: translateX(100%); }
-        10% { opacity: 1; transform: translateX(80%); }
-        90% { opacity: 1; transform: translateX(-80%); }
-        100% { opacity: 0; transform: translateX(-100%); }
-    }
-
-    .game-banner-content {
-        display: inline-block;
-        animation: scroll-left 15s linear; /* Removed infinite, single run per text */
-        padding-right: 100%;
-        line-height: 30px;
-    }
-
-    .game-banner-text {
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        font-weight: bold;
-        white-space: nowrap;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
 `;
 
