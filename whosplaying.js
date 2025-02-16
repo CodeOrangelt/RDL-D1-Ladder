@@ -17,6 +17,14 @@ class RetroTrackerMonitor {
         this.startMonitoring();
     }
 
+    initializeBannerOnly() {
+        this.activeGames = new Map();
+        this.updateInterval = 30000; // 30 seconds
+        
+        // Don't create the game container
+        this.startMonitoring();
+    }
+
     createGameDisplay() {
         const container = document.createElement('div');
         container.id = 'retro-tracker-container';
@@ -319,27 +327,24 @@ class RetroTrackerMonitor {
         // Update banner text with first game
         this.updateBannerText(bannerText, games[0]);
 
+        // Clear any existing intervals
+        if (this.bannerInterval) {
+            clearInterval(this.bannerInterval);
+        }
+
         // Set up rotation for multiple games
         if (games.length > 1) {
-            setInterval(() => {
+            this.bannerInterval = setInterval(() => {
                 currentIndex = (currentIndex + 1) % games.length;
-                const bannerContent = document.querySelector('.game-banner-content');
-                
-                // Reset animation
-                bannerContent.style.animation = 'none';
-                bannerContent.offsetHeight; // Trigger reflow
-                bannerContent.style.animation = null;
-                
-                // Update text
                 this.updateBannerText(bannerText, games[currentIndex]);
-            }, 10000); // Change every 10 seconds
+            }, 10000);
         }
     }
 
     updateBannerText(element, game) {
+        if (!game) return;
         const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
-        const text = `LIVE-GAME: ${game.gameName} (${game.gameVersion}) - ${gameType} - Map: ${game.map}`;
-        element.textContent = text;
+        element.textContent = `LIVE-GAME: ${game.gameName} (${game.gameVersion}) - ${gameType} - Map: ${game.map}`;
     }
 }
 

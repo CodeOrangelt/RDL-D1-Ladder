@@ -29,9 +29,10 @@
             padding: 5px 0;
             overflow: hidden;
             white-space: nowrap;
-            position: relative; /* Changed from fixed */
-            margin-bottom: -30px; /* Negative margin to overlap with footer spacing */
-            z-index: 1000;
+            position: absolute; /* Changed to absolute */
+            bottom: 100%; /* Position right above footer */
+            left: 0;
+            z-index: 999; /* Below footer */
             display: none;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         }
@@ -41,7 +42,7 @@
             width: 100%;
             line-height: 30px;
             text-align: center;
-            animation: fade-and-scroll 10s infinite;
+            animation: slide-left 20s linear infinite;
         }
 
         .game-banner-text {
@@ -52,10 +53,9 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        @keyframes fade-and-scroll {
-            0%, 5% { opacity: 0; transform: translateX(100%); }
-            15%, 85% { opacity: 1; transform: translateX(0); }
-            95%, 100% { opacity: 0; transform: translateX(-100%); }
+        @keyframes slide-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
     </style>
 </head>
@@ -77,14 +77,13 @@
         </div>
     </main>
     
-    <!-- Game Banner -->
-    <div class="game-banner">
-        <div class="game-banner-content">
-            <span class="game-banner-text"></span>
+    <div id="footer-placeholder">
+        <div class="game-banner">
+            <div class="game-banner-content">
+                <span class="game-banner-text"></span>
+            </div>
         </div>
     </div>
-
-    <div id="footer-placeholder"></div>
 
     <!-- Scripts -->
     <script type="module" src="firebase-config.js"></script>
