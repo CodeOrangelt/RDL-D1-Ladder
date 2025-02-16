@@ -1,3 +1,12 @@
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    setDoc,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
     const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
@@ -105,7 +114,10 @@ export function updateEloRatings(winnerId, loserId) {
 }
 
 export function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
-    db.collection('pendingMatches').doc(reportId).update({
+    // Update to use the modular API syntax
+    const pendingMatchRef = doc(db, 'pendingMatches', reportId);
+    
+    updateDoc(pendingMatchRef, {
         approved: true,
         winnerScore: winnerScore,
         winnerSuicides: winnerSuicides,
@@ -114,94 +126,28 @@ export function approveReport(reportId, winnerScore, winnerSuicides, winnerComme
     .then(() => {
         console.log('Report approved successfully.');
         alert('Report approved!');
-        // Clean up the form
-        const reportForm = document.getElementById('report-form');
-        if (reportForm) {
-            reportForm.reset();
-        }
-        const winnerUsername = document.getElementById('winner-username');
-        if (winnerUsername) {
-            winnerUsername.disabled = false;
-        }
-        const loserScore = document.getElementById('loser-score');
-        if (loserScore) {
-            loserScore.disabled = false;
-        }
-
-        const approveReportElement = document.getElementById('approve-report');
-        if (approveReportElement) {
-            approveReportElement.remove();
-        }
-
-        const confirmationNotification = document.getElementById('confirmation-notification');
-        if (confirmationNotification) {
-            confirmationNotification.style.display = 'none';
-        }
-        outstandingReportData = null;
-
-        // Apply the ELO rating algorithm
-        db.collection('pendingMatches').doc(reportId).get().then(doc => {
-            if (doc.exists) {
+        
+        // Get the report data first
+        getDoc(pendingMatchRef).then(doc => {
+            if (doc.exists()) {
                 const reportData = doc.data();
-                const winnerEmail = reportData.winnerEmail;
-                const loserUsername = reportData.loserUsername;
+                const approvedMatchRef = doc(db, 'approvedMatches', reportId);
 
-                // Fetch the winner and loser IDs
-                Promise.all([
-                    db.collection('players').where('email', '==', winnerEmail).get(),
-                    db.collection('players').where('username', '==', loserUsername).get()
-                ]).then(([winnerSnapshot, loserSnapshot]) => {
-                    if (!winnerSnapshot.empty && !loserSnapshot.empty) {
-                        const winnerId = winnerSnapshot.docs[0].id;
-                        const loserId = loserSnapshot.docs[0].id;
-
-                        console.log(`Winner ID: ${winnerId}, Loser ID: ${loserId}`); // Debug statement
-
-                        // Update ELO ratings and swap positions
-                        updateEloRatings(winnerId, loserId);
-
-                        // Move the report to the approvedMatches collection
-                        db.collection('approvedMatches').doc(reportId).set(reportData)
+                // Copy to approved matches
+                setDoc(approvedMatchRef, reportData)
+                    .then(() => {
+                        // Delete from pending matches
+                        deleteDoc(pendingMatchRef)
                             .then(() => {
-                                console.log('Report successfully added to approvedMatches.');
-
-                                // Delete the report from the pendingMatches collection
-                                db.collection('pendingMatches').doc(reportId).delete()
-                                    .then(() => {
-                                        console.log('Report successfully deleted from pendingMatches.');
-                                        alert('Report confirmed successfully.');
-                                        const confirmForm = document.getElementById('confirm-form');
-                                        if (confirmForm) {
-                                            confirmForm.reset();
-                                            confirmForm.style.display = 'none';
-                                        }
-                                    })
-                                    .catch((error) => {
-                                        console.error('Error deleting report from pendingMatches:', error);
-                                        const confirmError = document.getElementById('confirm-error');
-                                        if (confirmError) {
-                                            confirmError.textContent = 'Error confirming report. Please try again.';
-                                        }
-                                    });
-                            })
-                            .catch((error) => {
-                                console.error('Error adding report to approvedMatches:', error);
-                                const confirmError = document.getElementById('confirm-error');
-                                if (confirmError) {
-                                    confirmError.textContent = 'Error confirming report. Please try again.';
+                                console.log('Report processed successfully');
+                                // Reset UI elements if needed
+                                const reportLightbox = document.getElementById('report-lightbox');
+                                if (reportLightbox) {
+                                    reportLightbox.style.display = 'none';
                                 }
                             });
-                    } else {
-                        console.error('Winner or loser not found in the database.');
-                    }
-                }).catch(error => {
-                    console.error('Error fetching winner or loser:', error);
-                });
-            } else {
-                console.error('Report not found.');
+                    });
             }
-        }).catch(error => {
-            console.error('Error fetching report:', error);
         });
     })
     .catch(error => {
