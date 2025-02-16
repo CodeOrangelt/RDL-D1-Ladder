@@ -13,6 +13,9 @@
         <li id="login-register"><a href="login.html">Login/Register</a></li>
     </ul>
 </nav>
-<script>
-    initializeLogout();
+<script type="module" src="logout.js"></script>
+<script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeLogout();
+    });
 </script>
