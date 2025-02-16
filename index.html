@@ -7,64 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="footer.css">
-    <style>
-        /* Banner positioning */
-        #footer-placeholder {
-            margin-bottom: 40px; /* Space for banner */
-            position: relative;
-            z-index: 1001; /* Keep footer above banner */
-        }
-        
-        main {
-            margin-bottom: 100px; /* Extra space for banner */
-            position: relative;
-            z-index: 1;
-        }
-
-        .game-banner {
-            width: 100%;
-            height: 30px;
-            background: linear-gradient(90deg, #881e8e, #b026b9);
-            color: white;
-            padding: 5px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative; /* Changed to relative */
-            z-index: 999;
-            display: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Shadow below instead of above */
-        }
-
-        .game-banner-content {
-            display: inline-flex;
-            width: 100%;
-            line-height: 30px;
-            text-align: center;
-            animation: slide-left 20s linear infinite;
-        }
-
-        .game-banner-text {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: bold;
-            white-space: nowrap;
-            padding: 0 50px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes slide-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-    </style>
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <div class="game-banner">
-        <div class="game-banner-content">
-            <span class="game-banner-text"></span>
-        </div>
-    </div>
     <main>
         <div class="container">
             <table id="ladder">
@@ -88,7 +33,6 @@
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
-    <script type="module" src="whosplaying.js"></script>
     <script>
         // Load nav and footer
         Promise.all([
@@ -97,10 +41,6 @@
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;
-            
-            // Initialize RetroTracker with banner-only mode
-            const tracker = new RetroTrackerMonitor();
-            tracker.initializeBannerOnly(); // We'll add this method to the RetroTracker class
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });
