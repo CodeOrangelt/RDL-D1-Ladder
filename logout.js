@@ -17,3 +17,5 @@ function initializeLogout() {
         console.error('Sign-out link not found.');
     }
 }
+
+export { initializeLogout };
