@@ -46,12 +46,12 @@ document.getElementById('register-form').addEventListener('submit', function (e)
                         console.error("Error registering user:", error);
                         registerErrorDiv.textContent = error.message; // Use textContent to prevent XSS
                     });
-            }
-        })
-        .catch(error => {
-            console.error("Error checking username:", error);
-            registerErrorDiv.textContent = 'Error checking username. Please try again.';
-        });
+        }
+    })
+    .catch(error => {
+        console.error("Error checking username:", error);
+        registerErrorDiv.textContent = 'Error checking username. Please try again.';
+    });
 });
 
 // Login Form Submission
