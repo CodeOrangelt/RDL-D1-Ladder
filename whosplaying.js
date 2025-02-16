@@ -5,7 +5,7 @@ import { firebaseConfig } from './firebase-config.js';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-class RetroTrackerMonitor {
+export class RetroTrackerMonitor {
     constructor() {
         this.lastUpdate = null;
         this.activeGames = new Map();
