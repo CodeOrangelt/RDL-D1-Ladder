@@ -1,6 +1,3 @@
-// ladder.js
-import { db } from './firebase-config.js';
-
 document.addEventListener('DOMContentLoaded', () => {
     const ladderTable = document.getElementById('ladder').getElementsByTagName('tbody')[0];
     const usernamesSet = new Set(); // Set to keep track of usernames
