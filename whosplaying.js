@@ -64,7 +64,7 @@ class RetroTrackerMonitor {
                 const detailsTable = doc.querySelector(`#game${gameId}`);
 
                 const gameData = {
-                    gameVersion: this.findText(game, ['td b']), // "D1 ascend"
+                    gameVersion: detailsTable.querySelector('td[bgcolor="#D0D0D0"]')?.textContent?.trim().split('-')[0] || '', // Gets "REDUX 1.1"
                     gameName: this.findDetailText(detailsTable, 'Game Name:'),
                     map: this.findDetailText(detailsTable, 'Mission:'),
                     players: this.findPlayers(detailsTable),
@@ -109,19 +109,16 @@ class RetroTrackerMonitor {
     findPlayers(detailsTable) {
         if (!detailsTable) return [];
         
-        // Find table with player information by looking for a table row containing "Player"
+        // Find the Score Board section specifically
         const tables = detailsTable.querySelectorAll('table');
         let scoreBoard = null;
         
         for (const table of tables) {
-            const rows = table.querySelectorAll('tr');
-            for (const row of rows) {
-                if (row.textContent.includes('Player')) {
-                    scoreBoard = table;
-                    break;
-                }
+            const prevElement = table.previousElementSibling;
+            if (prevElement && prevElement.textContent.includes('Score Board')) {
+                scoreBoard = table;
+                break;
             }
-            if (scoreBoard) break;
         }
         
         if (!scoreBoard) return [];
@@ -131,30 +128,53 @@ class RetroTrackerMonitor {
         
         return playerRows.map(row => {
             const cells = row.querySelectorAll('td');
+            if (!cells[0]) return null;
+            
+            // Check if this is a player row (has the blue color)
+            const isPlayerRow = row.getAttribute('style')?.includes('color:#7878B8');
+            if (!isPlayerRow) return null;
+            
             return {
                 name: cells[0]?.textContent?.trim() || '',
                 kills: cells[1]?.textContent?.trim() || '0',
                 deaths: cells[2]?.textContent?.trim() || '0',
+                suicides: cells[3]?.textContent?.trim() || '0',
+                kdr: cells[4]?.textContent?.trim() || '0',
                 timeInGame: cells[5]?.textContent?.trim() || ''
             };
-        });
+        }).filter(player => player !== null);
     }
 
     findScores(detailsTable) {
         if (!detailsTable) return {};
         
-        const detailedScoreTable = detailsTable.querySelector('table:has(td[style*="color:#7878B8"])');
+        // Find the Detailed Score Board section
+        const tables = detailsTable.querySelectorAll('table');
+        let detailedScoreTable = null;
+        
+        for (const table of tables) {
+            const prevElement = table.previousElementSibling;
+            if (prevElement && prevElement.textContent.includes('Detailed Score Board')) {
+                detailedScoreTable = table;
+                break;
+            }
+        }
+        
         if (!detailedScoreTable) return {};
 
         const scores = {};
         const rows = detailedScoreTable.querySelectorAll('tr');
         rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 2) {
-                const playerName = cells[0]?.textContent?.trim();
-                const score = cells[1]?.textContent?.trim();
-                if (playerName && score) {
-                    scores[playerName] = score;
+            // Only process rows with the blue color style
+            const isPlayerRow = row.getAttribute('style')?.includes('color:#7878B8');
+            if (isPlayerRow) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const playerName = cells[0]?.textContent?.trim();
+                    const score = cells[1]?.textContent?.trim();
+                    if (playerName && score) {
+                        scores[playerName] = score;
+                    }
                 }
             }
         });
