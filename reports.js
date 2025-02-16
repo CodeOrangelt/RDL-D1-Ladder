@@ -6,7 +6,7 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const elements = {
         authWarning: document.getElementById('auth-warning'),
         reportForm: document.getElementById('report-form'),
