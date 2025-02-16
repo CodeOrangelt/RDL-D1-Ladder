@@ -67,3 +67,22 @@ tr:nth-child(even) {
     width: 50px; /* Make rank column narrower */
     text-align: center; /* Center the rank numbers */
 }
+
+#ladder td[title] {
+    cursor: help;
+    position: relative;
+}
+
+#ladder td[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    z-index: 1000;
+    white-space: nowrap;
+}
