@@ -315,9 +315,10 @@ class RetroTrackerMonitor {
     // Add new method to update banner
     updateBanner() {
         const banner = document.querySelector('.game-banner');
+        const bannerContent = document.querySelector('.game-banner-content');
         const bannerText = document.querySelector('.game-banner-text');
         
-        if (!banner || !bannerText) return;
+        if (!banner || !bannerContent || !bannerText) return;
 
         if (this.activeGames.size === 0) {
             banner.style.display = 'none';
@@ -330,20 +331,32 @@ class RetroTrackerMonitor {
         const games = Array.from(this.activeGames.values());
         let currentIndex = 0;
 
-        // Update banner text with first game
-        this.updateBannerText(bannerText, games[0]);
-
         // Clear any existing intervals
         if (this.bannerInterval) {
             clearInterval(this.bannerInterval);
         }
 
+        const updateGameText = () => {
+            // Reset animation
+            bannerContent.style.animation = 'none';
+            bannerContent.offsetHeight; // Trigger reflow
+            
+            // Update text
+            this.updateBannerText(bannerText, games[currentIndex]);
+            
+            // Restart animation
+            bannerContent.style.animation = 'scroll-left 15s linear';
+            
+            // Update index for next time
+            currentIndex = (currentIndex + 1) % games.length;
+        };
+
+        // Initial update
+        updateGameText();
+
         // Set up rotation for multiple games
         if (games.length > 1) {
-            this.bannerInterval = setInterval(() => {
-                currentIndex = (currentIndex + 1) % games.length;
-                this.updateBannerText(bannerText, games[currentIndex]);
-            }, 10000);
+            this.bannerInterval = setInterval(updateGameText, 16000); // Wait for full scroll + 1s
         }
     }
 
@@ -493,13 +506,15 @@ const styles = `
     }
 
     @keyframes scroll-left {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
+        0% { opacity: 0; transform: translateX(100%); }
+        10% { opacity: 1; transform: translateX(80%); }
+        90% { opacity: 1; transform: translateX(-80%); }
+        100% { opacity: 0; transform: translateX(-100%); }
     }
 
     .game-banner-content {
         display: inline-block;
-        animation: scroll-left 20s linear infinite;
+        animation: scroll-left 15s linear; /* Removed infinite, single run per text */
         padding-right: 100%;
         line-height: 30px;
     }
