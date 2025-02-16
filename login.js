@@ -1,9 +1,14 @@
 // login.js
 
+// Initialize Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-import { firebaseConfig } from './firebase-config.js';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  // Your firebase config object goes here
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
