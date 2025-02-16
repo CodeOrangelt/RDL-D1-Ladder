@@ -77,7 +77,9 @@ class RetroTrackerMonitor {
                     players: this.findPlayers(detailsTable),
                     scores: this.findScores(detailsTable),
                     startTime: this.findDetailText(detailsTable, 'Start time:'),
-                    status: isActive ? 'active' : 'inactive', // Add status
+                    status: isActive ? 'active' : 'inactive',
+                    playerCount: this.findDetailText(detailsTable, 'Players:'), // Add player count
+                    gameMode: this.findDetailText(detailsTable, 'Mode:'), // Add game mode
                     timestamp: new Date().toISOString()
                 };
 
@@ -109,7 +111,20 @@ class RetroTrackerMonitor {
         const nodes = element.querySelectorAll('td');
         for (const node of nodes) {
             if (node.textContent.includes(label)) {
-                return node.textContent.split(label)[1].trim();
+                // Split on the label and get everything after it
+                const parts = node.textContent.split(label);
+                if (parts.length > 1) {
+                    // For game name, split before "Mission:"
+                    if (label === 'Game Name:') {
+                        return parts[1].split('Mission:')[0].trim();
+                    }
+                    // For mission/map, look for specific format
+                    if (label === 'Mission:') {
+                        const missionMatch = parts[1].match(/([^Level Number]+)/);
+                        return missionMatch ? missionMatch[1].trim() : parts[1].trim();
+                    }
+                    return parts[1].trim();
+                }
             }
         }
         return '';
