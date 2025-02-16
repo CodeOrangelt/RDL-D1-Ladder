@@ -1,4 +1,7 @@
-// login.js
+import { 
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
 
 // Register Form Submission
@@ -57,25 +60,15 @@ document.getElementById('register-form').addEventListener('submit', function (e)
 });
 
 // Login Form Submission
-document.getElementById('login-form').addEventListener('submit', function (e) {
+document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const loginErrorDiv = document.getElementById('login-error');
 
-    console.log("Login form submitted");
-    console.log("Email:", email);
-    console.log("Password:", password);
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-            console.log('Login successful!');
-            alert('Login successful!');
-            window.location.href = 'index.html';
-        })
-        .catch(error => {
-            console.error("Error logging in user:", error);
-            loginErrorDiv.textContent = error.message; // Use textContent to prevent XSS
-        });
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = 'index.html'; // Redirect after successful login
+    } catch (error) {
+        document.getElementById('login-error').textContent = error.message;
+    }
 });
