@@ -77,3 +77,36 @@ h1 {
     text-decoration: underline;
 }
 
+.success-message {
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #d6e9c6;
+    border-radius: 4px;
+}
+
+.error-message {
+    background-color: #f2dede;
+    color: #a94442;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #ebccd1;
+    border-radius: 4px;
+}
+
+.resend-button {
+    background-color: transparent;
+    border: none;
+    color: #337ab7;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    margin-left: 10px;
+}
+
+.resend-button:hover {
+    color: #23527c;
+}
+

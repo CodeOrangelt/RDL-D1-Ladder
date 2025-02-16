@@ -1,77 +1,110 @@
 import { 
+    createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
-    createUserWithEmailAndPassword 
+    sendEmailVerification,
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    doc, 
+    setDoc,
+    collection 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
-// Register Form Submission
-document.getElementById('register-form').addEventListener('submit', function (e) {
+async function handleRegister(e) {
     e.preventDefault();
-
-    const username = document.getElementById('register-username').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    const registerErrorDiv = document.getElementById('register-error');
+    const username = document.getElementById('register-username').value;
 
-    console.log("Register form submitted");
-    console.log("Username:", username);
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+        // Create user
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-    // Check if the username is already taken
-    db.collection('players')
-        .where('username', '==', username)
-        .get()
-        .then(querySnapshot => {
-            console.log("Query snapshot:", querySnapshot);
-            if (!querySnapshot.empty) {
-                // Username is already taken
-                registerErrorDiv.textContent = 'This username is already taken. Please choose a different one.';
-            } else {
-                // Username is available, proceed with registration
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then(userCredential => {
-                        const user = userCredential.user;
-                        console.log("User registered:", user);
-                        // Add user data to the 'players' collection in Firestore
-                        return db.collection('players').doc(user.uid).set({
-                            username: username,
-                            email: email,
-                            points: 0,
-                            eloRating: 1200, // Default ELO rating
-                            position: 0 // Default position
-                        });
-                    })
-                    .then(() => {
-                        console.log("User data saved to Firestore");
-                        alert('Registration successful! You can now log in.');
-                        document.getElementById('register-form').reset();
-                    })
-                    .catch(error => {
-                        console.error("Error registering user:", error);
-                        registerErrorDiv.textContent = error.message; // Use textContent to prevent XSS
-                    });
-            }
-        })
-        .catch(error => {
-            console.error("Error checking username:", error);
-            registerErrorDiv.textContent = 'Error checking username. Please try again.';
+        // Send verification email
+        await sendEmailVerification(user);
+
+        // Add user to Firestore using new modular syntax
+        const userDocRef = doc(db, "players", user.uid);
+        await setDoc(userDocRef, {
+            username: username,
+            email: email,
+            eloRating: 1200,
+            position: Number.MAX_SAFE_INTEGER
         });
-});
 
-// Login Form Submission
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+        // Show verification message
+        document.getElementById('register-error').innerHTML = `
+            <div class="success-message">
+                Registration successful! Please check your email to verify your account.
+                You will be signed out until you verify your email.
+            </div>`;
+
+        // Sign out until email is verified
+        await signOut(auth);
+        
+        setTimeout(() => {
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        }, 3000);
+
+    } catch (error) {
+        document.getElementById('register-error').textContent = error.message;
+    }
+}
+
+async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = 'index.html'; // Redirect after successful login
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+            await signOut(auth);
+            document.getElementById('login-error').innerHTML = `
+                <div class="error-message">
+                    Please verify your email before logging in.
+                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                        Resend verification email
+                    </button>
+                </div>`;
+            return;
+        }
+
+        window.location.href = 'index.html';
     } catch (error) {
         document.getElementById('login-error').textContent = error.message;
     }
-});
+}
+
+// Function to resend verification email
+async function resendVerificationEmail(email) {
+    try {
+        const user = auth.currentUser;
+        if (user) {
+            await sendEmailVerification(user);
+            document.getElementById('login-error').innerHTML = `
+                <div class="success-message">
+                    Verification email has been resent. Please check your inbox.
+                </div>`;
+        }
+    } catch (error) {
+        document.getElementById('login-error').textContent = error.message;
+    }
+}
+
+// Make resendVerificationEmail available globally
+window.resendVerificationEmail = resendVerificationEmail;
+
+// Register Form Submission
+document.getElementById('register-form').addEventListener('submit', handleRegister);
+
+// Login Form Submission
+document.getElementById('login-form').addEventListener('submit', handleLogin);
 
 document.addEventListener('DOMContentLoaded', () => {
     // Add form switching handlers
