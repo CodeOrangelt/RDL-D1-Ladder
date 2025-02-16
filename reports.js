@@ -6,6 +6,11 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
 
+// Move currentUserEmail to module scope
+let currentUserEmail = null;
+let confirmationNotification = null; // Also adding this to fix potential undefined error
+let outstandingReportData = null; // And this one
+
 document.addEventListener('DOMContentLoaded', async () => {
     const elements = {
         authWarning: document.getElementById('auth-warning'),
@@ -20,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         reportLightbox: document.getElementById('report-lightbox')
     };
 
-    let currentUserEmail;
     setupAuthStateListener(elements);
     setupReportForm(elements);
 });
@@ -38,7 +42,9 @@ function setupAuthStateListener(elements) {
 async function handleUserSignedIn(user, elements) {
     elements.authWarning.style.display = 'none';
     elements.reportForm.style.display = 'block';
-    currentUserEmail = user.email;
+    
+    // Set email first before any other operations
+    currentUserEmail = user.email || null;
 
     try {
         await updateUserDisplay(user.email, elements);
@@ -52,6 +58,7 @@ async function handleUserSignedIn(user, elements) {
 function handleUserSignedOut(elements) {
     elements.authWarning.style.display = 'block';
     elements.reportForm.style.display = 'none';
+    currentUserEmail = null; // Clear the email when user signs out
 }
 
 async function updateUserDisplay(userEmail, elements) {
@@ -66,21 +73,28 @@ async function updateUserDisplay(userEmail, elements) {
 }
 
 async function populateWinnerDropdown(winnerSelect) {
-    const playersRef = collection(db, 'players');
-    const querySnapshot = await getDocs(playersRef);
-    
-    winnerSelect.innerHTML = '<option value="">Select Winner</option>';
-    
-    if (!querySnapshot.empty) {
-        querySnapshot.forEach(doc => {
-            const player = doc.data();
-            if (player.email !== currentUserEmail) {
-                const option = document.createElement('option');
-                option.value = player.email;
-                option.textContent = player.username;
-                winnerSelect.appendChild(option);
-            }
-        });
+    try {
+        const playersRef = collection(db, 'players');
+        const querySnapshot = await getDocs(playersRef);
+        
+        // Clear existing options
+        winnerSelect.innerHTML = '<option value="">Select Winner</option>';
+        
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach(doc => {
+                const player = doc.data();
+                // Only add other players (not the current user)
+                if (player.email !== currentUserEmail) {
+                    const option = document.createElement('option');
+                    option.value = player.email;
+                    option.textContent = player.username;
+                    winnerSelect.appendChild(option);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error populating winner dropdown:', error);
+        throw error;
     }
 }
 
