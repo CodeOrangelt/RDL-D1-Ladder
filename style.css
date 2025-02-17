@@ -208,13 +208,12 @@ tr:nth-child(even) {
 }
 
 .promotion-banner {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     padding: 15px;
     border-radius: 8px;
     text-align: center;
     border: 1px solid #3498db;
-    max-width: 800px;
-    margin: 0 auto;
+    transition: opacity 0.3s ease;
 }
 
 .promotion-banner h3 {
@@ -224,8 +223,19 @@ tr:nth-child(even) {
 }
 
 .promotion-banner p {
+    transition: opacity 0.3s ease;
     color: white;
     margin: 0;
     font-size: 1.1em;
+}
+
+.new-promotion {
+    animation: highlight 3s ease-in-out;
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(52, 152, 219, 0.1); }
+    50% { background-color: rgba(52, 152, 219, 0.3); }
+    100% { background-color: rgba(0, 0, 0, 0.8); }
 }
 
