@@ -24,15 +24,31 @@ main {
     margin: 0;  /* Remove any top margin */
 }
 
-/* Remove .container styles and apply directly to table */
+/* New table container styles */
+.outer-container {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 85%;
+    padding: 20px;
+}
+
+.table-container {
+    width: 85%;
+    border-radius: 30px;
+    background-color: #efefef;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+/* Update table styles */
 main table {
-    width: 90%;  /* Increased from 95% to 90% for better spacing */
-    max-width: 1200px;  /* Added max-width to prevent too wide tables */
+    width: 100%;
     border-collapse: collapse;
-    margin: 20px auto;  /* 'auto' for horizontal margins centers the table */
-    background-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
+    margin: 0;
+    background-color: transparent;
+    box-shadow: none;
 }
 
 .container {
@@ -57,13 +73,16 @@ table, th, td {
 }
 
 th, td {
-    padding: 10px;
-    text-align: left;
+    border: 2px solid black;
+    border-radius: 15px;
+    padding: 8px;
+    text-align: center;
+    font-family: Tahoma, sans-serif;
 }
 
 th {
-    background-color: #881e8e;
-    color: white;
+    background-color: #f2f2f2;
+    color: black; /* Changed from white */
 }
 
 tr:nth-child(even) {
