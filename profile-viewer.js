@@ -196,55 +196,83 @@ class ProfileViewer {
                 profilePreview.style.opacity = '0.5';
             }
 
-            // Create a unique file path
-            const filePath = `profile-images/${user.uid}/${Date.now()}_${file.name}`;
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('File size too large. Maximum size is 5MB.');
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                throw new Error('Only image files are allowed.');
+            }
+
+            // Create a unique file path with timestamp and sanitized filename
+            const timestamp = Date.now();
+            const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const filePath = `profile-images/${user.uid}/${timestamp}_${sanitizedFilename}`;
             console.log('Storage path:', filePath);
             
             const storageRef = ref(storage, filePath);
-            console.log('Uploading file...');
+            console.log('Created storage reference, starting upload...');
             
-            // Upload file
-            await uploadBytes(storageRef, file);
-            console.log('Upload completed');
+            // Upload with metadata
+            const metadata = {
+                contentType: file.type,
+                customMetadata: {
+                    'originalFilename': file.name,
+                    'uploadedBy': user.uid,
+                    'timestamp': timestamp.toString()
+                }
+            };
+
+            // Upload file with progress tracking
+            const uploadTask = uploadBytes(storageRef, file, metadata);
+            console.log('Upload task created, awaiting completion...');
+
+            const uploadResult = await uploadTask;
+            console.log('Upload completed, result:', uploadResult);
 
             // Get the download URL
-            const downloadURL = await getDownloadURL(storageRef);
+            console.log('Getting download URL...');
+            const downloadURL = await getDownloadURL(uploadResult.ref);
             console.log('Download URL obtained:', downloadURL);
 
-            // Update profile data in Firestore with the download URL
+            // Update Firestore with new profile picture URL
+            console.log('Updating Firestore...');
             await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: downloadURL, // Store the actual URL, not the filepath
+                pfpUrl: downloadURL,
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
-            console.log('Profile updated in Firestore');
+            console.log('Firestore updated successfully');
 
-            // Update the image display immediately
+            // Update UI
             if (profilePreview) {
                 profilePreview.src = downloadURL;
                 profilePreview.style.opacity = '1';
-                console.log('Profile preview updated with new image');
+                console.log('Profile preview updated');
             }
 
             // Update current profile data
             if (this.currentProfileData) {
                 this.currentProfileData.pfpUrl = downloadURL;
-                console.log('Current profile data updated with new image URL');
+                console.log('Current profile data updated');
             }
 
         } catch (error) {
             console.error('Error in handleImageUpload:', error);
-            console.error('Error details:', {
-                code: error.code,
+            console.error('Full error details:', {
+                name: error.name,
                 message: error.message,
+                code: error.code,
                 stack: error.stack
             });
             
             // Reset the image on error
             if (profilePreview) {
-                profilePreview.src = 'images/shieldorb.png';  // Updated default image path
+                profilePreview.src = 'images/shieldorb.png';
                 profilePreview.style.opacity = '1';
             }
-            this.showError('Failed to upload image');
+            this.showError(`Failed to upload image: ${error.message}`);
         }
     }
 
