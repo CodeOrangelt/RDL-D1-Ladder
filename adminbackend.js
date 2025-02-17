@@ -17,12 +17,7 @@ import {
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
-
-// Add admin emails array at the top with other constants
-const ADMIN_EMAILS = [
-    'admin@ladder.com',
-    'Brian2af@outlook.com'
-];
+import { ADMIN_EMAILS } from './admin-config.js';
 
 // Test data array
 const testPlayers = [

@@ -1,4 +1,4 @@
-import { ADMIN_EMAILS } from './adminbackend.js';
+import { ADMIN_EMAILS } from './admin-config.js';
 
 export function isAdmin(email) {
     return ADMIN_EMAILS.includes(email);

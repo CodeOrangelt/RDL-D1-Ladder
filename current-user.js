@@ -31,6 +31,7 @@ async function updateAuthSection(user) {
                     <span id="current-user">${username}</span>
                     <div class="dropdown-content">
                         <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
+                        ${isAdmin(user.email) ? '<a href="admin.html" class="admin-only">Admin</a>' : ''}
                         <a href="#" id="sign-out-link">Sign Out</a>
                     </div>
                 </div>
