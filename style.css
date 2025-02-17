@@ -204,10 +204,15 @@ tr:nth-child(even) {
 /* Add rank colors */
 :root {
     --gold-color: #FFD700;
+    --gold-bg: rgba(255, 215, 0, 0.15);
     --silver-color: #C0C0C0;
+    --silver-bg: rgba(192, 192, 192, 0.15);
     --bronze-color: #CD7F32;
+    --bronze-bg: rgba(205, 127, 50, 0.15);
     --emerald-color: #50C878;
+    --emerald-bg: rgba(80, 200, 120, 0.15);
     --unranked-color: #808080;
+    --unranked-bg: rgba(128, 128, 128, 0.15);
 }
 
 .promotion-container {
@@ -227,28 +232,33 @@ tr:nth-child(even) {
     width: 100%;
 }
 
-/* Rank-specific banner styles */
+/* Updated rank-specific banner styles */
 .promotion-banner[data-rank="Gold"] {
+    background: var(--gold-bg);
     border-color: var(--gold-color);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .promotion-banner[data-rank="Silver"] {
+    background: var(--silver-bg);
     border-color: var(--silver-color);
     box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
 }
 
 .promotion-banner[data-rank="Bronze"] {
+    background: var(--bronze-bg);
     border-color: var(--bronze-color);
     box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
 }
 
 .promotion-banner[data-rank="Emerald"] {
+    background: var(--emerald-bg);
     border-color: var(--emerald-color);
     box-shadow: 0 0 15px rgba(80, 200, 120, 0.3);
 }
 
 .promotion-banner[data-rank="Unranked"] {
+    background: var(--unranked-bg);
     border-color: var(--unranked-color);
     box-shadow: 0 0 15px rgba(128, 128, 128, 0.3);
 }
@@ -265,5 +275,31 @@ tr:nth-child(even) {
 [data-rank="Bronze"] .rank-text { color: var(--bronze-color); }
 [data-rank="Emerald"] .rank-text { color: var(--emerald-color); }
 [data-rank="Unranked"] .rank-text { color: var(--unranked-color); }
+
+/* Update promotion text styles */
+#promotion-details {
+    color: white;
+    font-size: 1.2em;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+/* Updated rank-specific text styles */
+.promotion-banner[data-rank="Gold"] #promotion-details { color: var(--gold-color); }
+.promotion-banner[data-rank="Silver"] #promotion-details { color: var(--silver-color); }
+.promotion-banner[data-rank="Bronze"] #promotion-details { color: var(--bronze-color); }
+.promotion-banner[data-rank="Emerald"] #promotion-details { color: var(--emerald-color); }
+.promotion-banner[data-rank="Unranked"] #promotion-details { color: var(--unranked-color); }
+
+/* Animation for new promotions */
+@keyframes rankGlow {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+.new-promotion {
+    animation: rankGlow 2s ease-in-out infinite;
+}
 
 
