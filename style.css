@@ -51,6 +51,18 @@ main {
     z-index: 1; /* Place between background and table */
 }
 
+.ladder-backdrop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: auto;
+    opacity: 0.5;
+    z-index: 1;
+    pointer-events: none;
+}
+
 .table-container {
     position: relative;
     width: 85%;
@@ -69,7 +81,7 @@ main table {
     margin: 0;
     background-color: transparent;
     box-shadow: none;
-    z-index: 3; /* Ensure table is on top */
+    z-index: 2; /* Ensure table is on top */
 }
 
 .container {
