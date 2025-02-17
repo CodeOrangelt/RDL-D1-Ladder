@@ -207,8 +207,6 @@ tr:nth-child(even) {
     --silver-color: #C0C0C0;
     --bronze-color: #CD7F32;
     --emerald-color: #50C878;
-    --platinum-color: #E5E4E2;
-    --diamond-color: #B9F2FF;
     --unranked-color: #808080;
 }
 
@@ -268,9 +266,4 @@ tr:nth-child(even) {
 [data-rank="Emerald"] .rank-text { color: var(--emerald-color); }
 [data-rank="Unranked"] .rank-text { color: var(--unranked-color); }
 
-@keyframes highlight {
-    0% { background-color: rgba(0, 0, 0, 0.9); }
-    50% { background-color: rgba(0, 0, 0, 0.7); }
-    100% { background-color: rgba(0, 0, 0, 0.9); }
-}
 
