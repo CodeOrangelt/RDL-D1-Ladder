@@ -2,10 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 class ProfileViewer {
     constructor() {
@@ -160,26 +162,41 @@ class ProfileViewer {
                 return;
             }
 
-            // Create a preview
+            // Create a preview immediately
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('profile-preview').src = e.target.result;
             };
             reader.readAsDataURL(file);
 
-            // Here you would typically upload to your storage service
-            // For now, we'll just update the preview
-            console.log('Image file selected:', file.name);
-            
-            // Update the profile data
+            // Upload to Firebase Storage
+            const storageRef = ref(storage, `profile-images/${user.uid}`);
+            await uploadBytes(storageRef, file);
+
+            // Get the download URL
+            const downloadURL = await getDownloadURL(storageRef);
+            console.log('Image uploaded, URL:', downloadURL);
+
+            // Update the profile data in Firestore with the image URL
             await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: 'default-avatar.png', // Replace with actual uploaded URL
+                pfpUrl: downloadURL,
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
+
+            // Update the current profile data
+            if (this.currentProfileData) {
+                this.currentProfileData.pfpUrl = downloadURL;
+            }
 
         } catch (error) {
             console.error('Error uploading image:', error);
             this.showError('Failed to upload image');
+            // Revert preview to previous image if upload fails
+            if (this.currentProfileData && this.currentProfileData.pfpUrl) {
+                document.getElementById('profile-preview').src = this.currentProfileData.pfpUrl;
+            } else {
+                document.getElementById('profile-preview').src = 'default-avatar.png';
+            }
         }
     }
 
