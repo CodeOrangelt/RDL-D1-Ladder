@@ -291,10 +291,21 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
             return;
         }
 
-        // Add new player
+        // Get current highest position
+        const allPlayersQuery = await getDocs(playersRef);
+        let maxPosition = 0;
+        allPlayersQuery.forEach(doc => {
+            const playerData = doc.data();
+            if (playerData.position && playerData.position > maxPosition) {
+                maxPosition = playerData.position;
+            }
+        });
+
+        // Add new player with position at end of ladder
         const playerData = {
             username: username,
             eloRating: eloRating,
+            position: maxPosition + 1, // Set position to one more than current highest
             createdAt: serverTimestamp()
         };
 
