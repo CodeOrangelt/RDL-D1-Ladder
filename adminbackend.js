@@ -502,23 +502,69 @@ function setupPromotePlayerButton() {
 function setupManagePlayersSection() {
     const toggleManagePlayersBtn = document.getElementById('toggle-manage-players');
     const section = document.getElementById('manage-players-section');
+    const addPlayerBtn = document.getElementById('add-player-btn');
 
     if (toggleManagePlayersBtn && section) {
-        toggleManagePlayersBtn.addEventListener('click', async function() {
-            // Toggle other sections off
+        toggleManagePlayersBtn.addEventListener('click', async () => {
+            // Close all other sections first
             document.querySelectorAll('.admin-section').forEach(s => {
-                if (s !== section) s.style.display = 'none';
+                if (s !== section) {
+                    s.style.display = 'none';
+                }
             });
 
             // Toggle this section
             const isHidden = section.style.display === 'none';
             section.style.display = isHidden ? 'block' : 'none';
-            
+
             if (isHidden) {
-                this.classList.add('active');
-                await loadPlayers(); // Load players when showing section
-            } else {
-                this.classList.remove('active');
+                // Load players when showing the section
+                await loadPlayers();
+            }
+        });
+    }
+
+    // Setup add player functionality
+    if (addPlayerBtn) {
+        addPlayerBtn.addEventListener('click', async () => {
+            const usernameInput = document.getElementById('new-player-username');
+            const eloInput = document.getElementById('new-player-elo');
+
+            const username = usernameInput.value.trim();
+            const eloRating = parseInt(eloInput.value);
+
+            if (!username || isNaN(eloRating)) {
+                alert('Please enter both username and ELO rating');
+                return;
+            }
+
+            try {
+                // Check for existing username
+                const playersRef = collection(db, 'players');
+                const q = query(playersRef, where('username', '==', username));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    alert('Username already exists');
+                    return;
+                }
+
+                // Add the new player
+                await addDoc(playersRef, {
+                    username: username,
+                    eloRating: eloRating,
+                    createdAt: serverTimestamp()
+                });
+
+                // Clear inputs and refresh list
+                usernameInput.value = '';
+                eloInput.value = '';
+                await loadPlayers();
+                alert('Player added successfully!');
+
+            } catch (error) {
+                console.error('Error adding player:', error);
+                alert('Failed to add player: ' + error.message);
             }
         });
     }
