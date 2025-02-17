@@ -46,7 +46,6 @@ async function updateAuthSection(user) {
 
 // Initialize immediately and listen for auth state changes
 document.addEventListener('DOMContentLoaded', () => {
-    showLoadingState();
     onAuthStateChanged(auth, async (user) => {
         await updateAuthSection(user);
         // Show/hide admin link based on user email
