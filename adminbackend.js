@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (ADMIN_EMAILS.includes(user.email)) {
             setupCollapsibleButtons();
+            setupAdminButtons();
+            setupManagePlayersSection();
         } else {
             window.location.href = 'index.html';
         }
@@ -463,7 +465,8 @@ document.getElementById('promote-player-btn').addEventListener('click', async ()
     }
 });
 
-// Add these event listeners after your existing ones
+// Remove or comment out these individual event listeners since they're handled in setupCollapsibleButtons
+/*
 document.getElementById('promote-player').addEventListener('click', () => {
     document.getElementById('promote-dialog').style.display = 'block';
 });
@@ -474,57 +477,50 @@ document.getElementById('cancel-promote').addEventListener('click', () => {
 });
 
 document.getElementById('confirm-promote').addEventListener('click', async () => {
-    const username = document.getElementById('promote-username').value.trim();
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-
-    try {
-        const playersRef = collection(db, 'players');
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            alert('Player not found');
-            return;
-        }
-
-        const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const currentElo = playerData.eloRating || 1200;
-
-        // Define ELO thresholds
-        const thresholds = [
-            { name: 'Bronze', elo: 1400 },
-            { name: 'Silver', elo: 1600 },
-            { name: 'Gold', elo: 1800 },
-            { name: 'Emerald', elo: 2000 }
-        ];
-
-        // Find next threshold
-        const nextThreshold = thresholds.find(t => t.elo > currentElo);
-        
-        if (!nextThreshold) {
-            alert('Player is already at maximum rank (Emerald)');
-            return;
-        }
-
-        // Update player's ELO
-        await updateDoc(playerDoc.ref, {
-            ...playerData,
-            eloRating: nextThreshold.elo
-        });
-
-        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
-        document.getElementById('promote-dialog').style.display = 'none';
-        document.getElementById('promote-username').value = '';
-        
-        // Refresh the player list
-        await loadPlayers();
-
-    } catch (error) {
-        console.error('Error promoting player:', error);
-        alert('Failed to promote player');
-    }
+    // ... existing code ...
 });
+*/
+
+// Add a new function to handle the manage players section setup
+function setupManagePlayersSection() {
+    const toggleManagePlayersBtn = document.getElementById('toggle-manage-players');
+    const addPlayerBtn = document.getElementById('add-player-btn');
+
+    if (toggleManagePlayersBtn) {
+        toggleManagePlayersBtn.addEventListener('click', function() {
+            const section = document.getElementById('manage-players-section');
+            if (section) {
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                    this.classList.add('active');
+                    loadPlayers();
+                } else {
+                    section.style.display = 'none';
+                    this.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    if (addPlayerBtn) {
+        addPlayerBtn.addEventListener('click', async () => {
+            const usernameInput = document.getElementById('new-player-username');
+            const eloInput = document.getElementById('new-player-elo');
+            
+            if (!usernameInput || !eloInput) {
+                console.error('Player input fields not found');
+                return;
+            }
+
+            const username = usernameInput.value.trim();
+            const eloRating = parseInt(eloInput.value);
+
+            if (!username || isNaN(eloRating)) {
+                alert('Please enter both username and ELO rating');
+                return;
+            }
+
+            // ... rest of your add player logic ...
+        });
+    }
+}
