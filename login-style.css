@@ -162,3 +162,29 @@ h1 {
     /* Will inherit styles from .form-container input */
 }
 
+.resend-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.resend-button:hover {
+    background-color: #45a049;
+}
+
+.error-message {
+    color: #ff4444;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.success-message {
+    color: #4CAF50;
+    margin: 10px 0;
+    text-align: center;
+}

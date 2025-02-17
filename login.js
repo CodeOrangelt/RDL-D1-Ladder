@@ -10,7 +10,9 @@ import {
     collection,
     getDocs,
     query,
-    where  // Add this import
+    where,
+    getDoc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
@@ -52,52 +54,87 @@ async function handleRegister(e) {
         // Send verification email
         await sendEmailVerification(user);
 
-        // Get all players to determine next position
-        const playersRef = collection(db, "players");
-        const playersSnapshot = await getDocs(playersRef);
-        let maxPosition = 0;
-
-        playersSnapshot.forEach((doc) => {
-            const playerData = doc.data();
-            if (playerData.position && playerData.position > maxPosition) {
-                maxPosition = playerData.position;
-            }
-        });
-
-        // Add user to Firestore with next available position
-        const userDocRef = doc(db, "players", user.uid);
-        await setDoc(userDocRef, {
+        // Store pending registration in a separate collection
+        const pendingDocRef = doc(db, "pendingRegistrations", user.uid);
+        await setDoc(pendingDocRef, {
             username: username,
             email: email,
-            eloRating: 1200,
-            position: maxPosition + 1  // Set position to one more than current highest
+            createdAt: new Date(),
+            verified: false
         });
 
         // Show success message
         document.getElementById('register-error').innerHTML = `
             <div class="success-message">
-                Registration successful! Please check your email to verify your account.
-                You will be redirected to login in 3 seconds.
+                Registration pending! Please check your email to verify your account.
+                Your account will be activated after verification.
+                <br><br>
+                <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                    Resend Verification Email
+                </button>
             </div>`;
 
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-            document.getElementById('register-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
-        }, 3000);
+        // Sign out the user until they verify their email
+        await signOut(auth);
 
     } catch (error) {
         document.getElementById('register-error').textContent = error.message;
     }
 }
 
+// Modify the handleLogin function
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+            await signOut(auth);
+            document.getElementById('login-error').innerHTML = `
+                <div class="error-message">
+                    Please verify your email before logging in.
+                    <br><br>
+                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                        Resend Verification Email
+                    </button>
+                </div>`;
+            return;
+        }
+
+        // Check if this is their first login after verification
+        const pendingRef = doc(db, "pendingRegistrations", user.uid);
+        const pendingDoc = await getDoc(pendingRef);
+        
+        if (pendingDoc.exists() && !pendingDoc.data().verified) {
+            // Get all players to determine next position
+            const playersRef = collection(db, "players");
+            const playersSnapshot = await getDocs(playersRef);
+            let maxPosition = 0;
+
+            playersSnapshot.forEach((doc) => {
+                const playerData = doc.data();
+                if (playerData.position && playerData.position > maxPosition) {
+                    maxPosition = playerData.position;
+                }
+            });
+
+            // Create the verified player document
+            const userDocRef = doc(db, "players", user.uid);
+            await setDoc(userDocRef, {
+                username: pendingDoc.data().username,
+                email: pendingDoc.data().email,
+                eloRating: 1200,
+                position: maxPosition + 1
+            });
+
+            // Update pending registration
+            await updateDoc(pendingRef, { verified: true });
+        }
+
         window.location.href = 'index.html';
     } catch (error) {
         document.getElementById('login-error').textContent = error.message;
