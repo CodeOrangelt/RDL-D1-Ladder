@@ -16,6 +16,7 @@ async function updateAuthSection(user) {
                 <div class="user-dropdown">
                     <span id="current-user">${username}</span>
                     <div class="dropdown-content">
+                        <a href="profile.html">Profile</a>
                         <a href="#" id="sign-out-link">Sign Out</a>
                     </div>
                 </div>
@@ -26,6 +27,7 @@ async function updateAuthSection(user) {
                 <div class="user-dropdown">
                     <span id="current-user">${user.email}</span>
                     <div class="dropdown-content">
+                        <a href="profile.html">Profile</a>
                         <a href="#" id="sign-out-link">Sign Out</a>
                     </div>
                 </div>

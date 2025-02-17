@@ -1,0 +1,103 @@
+.container {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 75%;
+    padding: 20px;
+    min-height: 800px;
+    overflow: hidden;
+}
+
+.profile-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-section {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.pfp-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#profile-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid #881e8e;
+}
+
+#pfp-upload {
+    display: none;
+}
+
+.upload-btn {
+    background-color: #881e8e;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+    background-color: #b026b9;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.save-btn {
+    background-color: #881e8e;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.save-btn:hover {
+    background-color: #b026b9;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
