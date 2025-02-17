@@ -2,6 +2,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/fi
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
+// Add admin emails array at the top of the file
+const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outl99k.com'];
+
 // Add loading state function
 function showLoadingState() {
     const authSection = document.getElementById('auth-section');
@@ -48,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show/hide admin link based on user email
         const adminLink = document.querySelector('.admin-only');
         if (adminLink) {
-            adminLink.style.display = user?.email === 'admin@ladder.com' ? 'block' : 'none';
+            adminLink.style.display = ADMIN_EMAILS.includes(user?.email) ? 'block' : 'none';
         }
     });
 });
