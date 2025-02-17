@@ -49,7 +49,7 @@ main {
     transform: translate(-50%, -50%);
     width: 60%; /* Reduced from 80% to fit better inside */
     height: auto;
-    opacity: 0.15; /* Reduced opacity to make image barely visible */
+    opacity: 0.08; /* Reduced opacity to make image very faint */
     z-index: 1;
     pointer-events: none;
 }
