@@ -62,3 +62,15 @@ tr:nth-child(even) {
     z-index: 1;
     pointer-events: none;
 }
+
+.player-link {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.elo-emerald { color: #50C878; }
+.elo-gold { color: #FFD700; }
+.elo-silver { color: #C0C0C0; }
+.elo-bronze { color: #CD7F32; }
+.elo-unranked { color: #ffffff; }
+
