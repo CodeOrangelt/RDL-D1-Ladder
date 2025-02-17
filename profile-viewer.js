@@ -363,12 +363,19 @@ class ProfileViewer {
     }
 
     async displayMatchStats(username, matches) {
+        // Create container first
         const statsContainer = document.createElement('div');
         statsContainer.className = 'match-history-container';
         
         // Get current season number
         const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
         const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+        
+        // Insert container into DOM before adding content
+        const profileContainer = document.querySelector('.profile-container');
+        if (profileContainer) {
+            profileContainer.parentNode.insertBefore(statsContainer, profileContainer.nextSibling);
+        }
         
         statsContainer.innerHTML = `
             <div class="season-label">S${currentSeason}</div>
@@ -378,61 +385,87 @@ class ProfileViewer {
             </div>
         `;
 
-        // Process match data for the chart
+        // Process match data after container is in DOM
         const matchData = matches.map(match => ({
             date: new Date(match.createdAt.seconds * 1000),
             isWinner: match.winnerUsername === username,
-            score: match.isWinner ? match.winnerScore : match.loserScore
+            score: match.winnerUsername === username ? match.winnerScore : match.loserScore
         })).sort((a, b) => a.date - b.date);
 
-        // Create the chart
-        const ctx = document.getElementById('eloChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: matchData.map(match => match.date.toLocaleDateString()),
-                datasets: [{
-                    label: 'Score History',
-                    data: matchData.map(match => match.score),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: 'white'
-                        }
-                    }
+        // Get context after canvas is in DOM
+        const ctx = document.getElementById('eloChart')?.getContext('2d');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: matchData.map(match => match.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Score History',
+                        data: matchData.map(match => match.score),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        ticks: {
-                            color: 'white'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
                         }
                     },
-                    x: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
                         },
-                        ticks: {
-                            color: 'white'
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     async displayPlayerMatchups(username, matches) {
+        // Get matchups data first
+        const matchups = matches.reduce((acc, match) => {
+            const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+            const isWin = match.winnerUsername === username;
+            
+            if (!acc[opponent]) {
+                acc[opponent] = { wins: 0, losses: 0, total: 0 };
+            }
+            
+            acc[opponent].total++;
+            if (isWin) {
+                acc[opponent].wins++;
+            } else {
+                acc[opponent].losses++;
+            }
+            
+            return acc;
+        }, {});
+
+        // Sort matchups
+        const sortedMatchups = Object.entries(matchups)
+            .sort((a, b) => b[1].total - a[1].total);
+
+        // Create and insert container
         const matchupsContainer = document.createElement('div');
         matchupsContainer.className = 'match-history-container';
         
@@ -440,6 +473,7 @@ class ProfileViewer {
         const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
         const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
 
+        // Generate HTML with sorted matchups
         matchupsContainer.innerHTML = `
             <div class="season-label">S${currentSeason}</div>
             <h2>Player Matchups</h2>
@@ -454,83 +488,28 @@ class ProfileViewer {
                     </tr>
                 </thead>
                 <tbody>
-                    ${sortedMatchups.length === 0 ? 
-                        '<tr><td colspan="5">No matchups found</td></tr>' :
-                        sortedMatchups.map(([opponent, stats]) => {
-                            const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
-                            const eloClass = getEloClass(stats.eloRating);
-                            return `
-                                <tr>
-                                    <td>
-                                        <a href="profile.html?username=${encodeURIComponent(opponent)}"
-                                           class="player-link ${eloClass}">
-                                            ${opponent}
-                                        </a>
-                                    </td>
-                                    <td>${stats.total}</td>
-                                    <td class="wins">${stats.wins}</td>
-                                    <td class="losses">${stats.losses}</td>
-                                    <td>${winRate}%</td>
-                                </tr>
-                            `;
-                        }).join('')
-                    }
+                    ${sortedMatchups.map(([opponent, stats]) => {
+                        const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                        return `
+                            <tr>
+                                <td>
+                                    <a href="profile.html?username=${encodeURIComponent(opponent)}"
+                                       class="player-link">
+                                        ${opponent}
+                                    </a>
+                                </td>
+                                <td>${stats.total}</td>
+                                <td class="wins">${stats.wins}</td>
+                                <td class="losses">${stats.losses}</td>
+                                <td>${winRate}%</td>
+                            </tr>
+                        `;
+                    }).join('')}
                 </tbody>
             </table>
         `;
 
-        // Get player matchup statistics and ELO ratings
-        const matchups = {};
-        const playerElos = {};
-
-        // First pass to collect ELO ratings
-        for (const match of matches) {
-            if (!playerElos[match.winnerUsername]) {
-                const playerDoc = await this.getPlayerData(match.winnerUsername);
-                playerElos[match.winnerUsername] = playerDoc?.eloRating || 0;
-            }
-            if (!playerElos[match.loserUsername]) {
-                const playerDoc = await this.getPlayerData(match.loserUsername);
-                playerElos[match.loserUsername] = playerDoc?.eloRating || 0;
-            }
-        }
-
-        // Calculate matchup stats
-        matches.forEach(match => {
-            const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
-            const isWin = match.winnerUsername === username;
-            
-            if (!matchups[opponent]) {
-                matchups[opponent] = { 
-                    wins: 0, 
-                    losses: 0, 
-                    total: 0,
-                    eloRating: playerElos[opponent] || 0
-                };
-            }
-            
-            matchups[opponent].total++;
-            if (isWin) {
-                matchups[opponent].wins++;
-            } else {
-                matchups[opponent].losses++;
-            }
-        });
-
-        // Helper function to get ELO class
-        const getEloClass = (elo) => {
-            if (elo >= 2000) return 'elo-emerald';
-            if (elo >= 1800) return 'elo-gold';
-            if (elo >= 1600) return 'elo-silver';
-            if (elo >= 1400) return 'elo-bronze';
-            return 'elo-unranked';
-        };
-
-        // Sort matchups by total games played
-        const sortedMatchups = Object.entries(matchups)
-            .sort((a, b) => b[1].total - a[1].total);
-
-        // Insert after match stats container
+        // Insert after stats container
         const statsContainer = document.querySelector('.match-history-container');
         if (statsContainer) {
             statsContainer.parentNode.insertBefore(matchupsContainer, statsContainer.nextSibling);
