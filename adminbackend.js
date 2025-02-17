@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
@@ -210,3 +210,104 @@ function displayTemplateLadder() {
         tableBody.appendChild(row);
     });
 }
+
+document.getElementById('toggle-manage-players').addEventListener('click', function() {
+    const section = document.getElementById('manage-players-section');
+    const button = this;
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        button.classList.add('active');
+        loadPlayers(); // Load current players when section is opened
+    } else {
+        section.style.display = 'none';
+        button.classList.remove('active');
+    }
+});
+
+async function loadPlayers() {
+    const tableBody = document.querySelector('#players-table tbody');
+    tableBody.innerHTML = '';
+
+    try {
+        const playersRef = collection(db, 'players');
+        const playersSnapshot = await getDocs(playersRef);
+
+        playersSnapshot.forEach(doc => {
+            const player = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${player.username}</td>
+                <td>${player.eloRating || 'N/A'}</td>
+                <td>
+                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                if (confirm('Are you sure you want to remove this player?')) {
+                    const playerId = e.target.dataset.id;
+                    try {
+                        await deleteDoc(doc(db, 'players', playerId));
+                        loadPlayers(); // Refresh the list
+                    } catch (error) {
+                        console.error('Error removing player:', error);
+                        alert('Failed to remove player');
+                    }
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error loading players:', error);
+        alert('Failed to load players');
+    }
+}
+
+document.getElementById('add-player-btn').addEventListener('click', async () => {
+    const username = document.getElementById('new-player-username').value.trim();
+    const eloRating = parseInt(document.getElementById('new-player-elo').value);
+
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    if (isNaN(eloRating) || eloRating < 0 || eloRating > 3000) {
+        alert('Please enter a valid ELO rating between 0 and 3000');
+        return;
+    }
+
+    try {
+        // Check if username already exists
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            alert('Username already exists');
+            return;
+        }
+
+        // Add new player
+        const playerData = {
+            username: username,
+            eloRating: eloRating,
+            createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, 'players'), playerData);
+        alert('Player added successfully');
+
+        // Clear inputs and refresh player list
+        document.getElementById('new-player-username').value = '';
+        document.getElementById('new-player-elo').value = '';
+        loadPlayers();
+
+    } catch (error) {
+        console.error('Error adding player:', error);
+        alert('Failed to add player');
+    }
+});

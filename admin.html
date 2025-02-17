@@ -36,6 +36,7 @@
                 <button class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
                 <button class="collapse-btn" data-target="elo-history">View ELO History</button>
                 <button class="collapse-btn" data-target="template-ladder">View Template Ladder</button>
+                <button id="toggle-manage-players" class="collapse-btn">Manage Ladder Players</button>
             </div>
             <div id="elo-ratings" style="display: none;">
                 <h2>Player ELO Ratings</h2>
@@ -84,6 +85,26 @@
                         <!-- Template ladder will be populated here -->
                     </tbody>
                 </table>
+            </div>
+            <div id="manage-players-section" class="admin-section" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="new-player-username" placeholder="Enter username">
+                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000">
+                    <button id="add-player-btn" class="action-btn">Add Player</button>
+                </div>
+                <div id="players-list" class="players-table-container">
+                    <h3>Current Players</h3>
+                    <table id="players-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>ELO Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
