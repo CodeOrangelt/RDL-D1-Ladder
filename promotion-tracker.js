@@ -34,7 +34,7 @@ export function initializePromotionTracker() {
                     // Set the rank attribute for styling
                     bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
+                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by 'Admin'}`;
                     
                     promotionDetails.innerHTML = promotionText;
                     promotionDetails.classList.add('new-promotion');
