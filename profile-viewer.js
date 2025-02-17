@@ -181,6 +181,8 @@ class ProfileViewer {
             size: file.size
         });
 
+        const profilePreview = document.getElementById('profile-preview');
+        
         try {
             const user = auth.currentUser;
             if (!user) {
@@ -190,7 +192,6 @@ class ProfileViewer {
             }
 
             // Show loading state
-            const profilePreview = document.getElementById('profile-preview');
             if (profilePreview) {
                 profilePreview.style.opacity = '0.5';
             }
@@ -203,29 +204,31 @@ class ProfileViewer {
             console.log('Uploading file...');
             
             // Upload file
-            const uploadResult = await uploadBytes(storageRef, file);
-            console.log('Upload completed:', uploadResult);
+            await uploadBytes(storageRef, file);
+            console.log('Upload completed');
 
+            // Get the download URL
             const downloadURL = await getDownloadURL(storageRef);
             console.log('Download URL obtained:', downloadURL);
 
-            // Update profile data in Firestore
+            // Update profile data in Firestore with the download URL
             await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: filePath,
+                pfpUrl: downloadURL, // Store the actual URL, not the filepath
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
             console.log('Profile updated in Firestore');
 
-            // Update display
+            // Update the image display immediately
             if (profilePreview) {
                 profilePreview.src = downloadURL;
                 profilePreview.style.opacity = '1';
+                console.log('Profile preview updated with new image');
             }
 
             // Update current profile data
             if (this.currentProfileData) {
-                this.currentProfileData.pfpUrl = filePath;
-                console.log('Current profile data updated');
+                this.currentProfileData.pfpUrl = downloadURL;
+                console.log('Current profile data updated with new image URL');
             }
 
         } catch (error) {
@@ -235,9 +238,13 @@ class ProfileViewer {
                 message: error.message,
                 stack: error.stack
             });
+            
+            // Reset the image on error
+            if (profilePreview) {
+                profilePreview.src = 'images/shieldorb.png';  // Updated default image path
+                profilePreview.style.opacity = '1';
+            }
             this.showError('Failed to upload image');
-            document.getElementById('profile-preview').src = 'images/dogfightingtranscolor.png';
-            document.getElementById('profile-preview').style.opacity = '1';
         }
     }
 
@@ -247,20 +254,27 @@ class ProfileViewer {
         
         // Handle profile picture
         const profilePreview = document.getElementById('profile-preview');
-        const defaultPfp = 'images/dogfightingtranscolor.png';
+        const defaultPfp = 'images/shieldorb.png';  // Updated default image path
 
         if (profilePreview) {
-            if (data.pfpUrl && data.pfpUrl !== defaultPfp) {
-                // Load image from Firebase Storage
+            if (data.pfpUrl && data.pfpUrl.startsWith('http')) {
+                // If it's already a URL, use it directly
+                profilePreview.src = data.pfpUrl;
+                console.log('Using provided URL for profile picture:', data.pfpUrl);
+            } else if (data.pfpUrl && data.pfpUrl !== defaultPfp) {
+                // If it's a storage path, get the download URL
+                console.log('Fetching URL for storage path:', data.pfpUrl);
                 getDownloadURL(ref(storage, data.pfpUrl))
                     .then(url => {
                         profilePreview.src = url;
+                        console.log('Retrieved URL for profile picture:', url);
                     })
                     .catch(error => {
                         console.error('Error loading profile picture:', error);
                         profilePreview.src = defaultPfp;
                     });
             } else {
+                console.log('Using default profile picture');
                 profilePreview.src = defaultPfp;
             }
         }
