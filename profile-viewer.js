@@ -194,14 +194,27 @@ class ProfileViewer {
         document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not specified';
         document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not specified';
 
-        // Also populate edit fields if they exist
-        const mottoEdit = document.getElementById('motto-edit');
-        const mapEdit = document.getElementById('favorite-map-edit');
-        const weaponEdit = document.getElementById('favorite-weapon-edit');
+        // Check if current user is the profile owner
+        const currentUser = auth.currentUser;
+        const isOwner = currentUser && currentUser.uid === data.userId;
 
-        if (mottoEdit) mottoEdit.value = data.motto || '';
-        if (mapEdit) mapEdit.value = data.favoriteMap || '';
-        if (weaponEdit) weaponEdit.value = data.favoriteWeapon || '';
+        // Show/hide edit controls based on ownership
+        const editBtn = document.getElementById('edit-profile');
+        const imageUploadControls = document.querySelector('.image-upload-controls');
+        
+        if (editBtn) editBtn.style.display = isOwner ? 'block' : 'none';
+        if (imageUploadControls) imageUploadControls.style.display = isOwner ? 'block' : 'none';
+
+        // Only populate edit fields if user is the owner
+        if (isOwner) {
+            const mottoEdit = document.getElementById('motto-edit');
+            const mapEdit = document.getElementById('favorite-map-edit');
+            const weaponEdit = document.getElementById('favorite-weapon-edit');
+
+            if (mottoEdit) mottoEdit.value = data.motto || '';
+            if (mapEdit) mapEdit.value = data.favoriteMap || '';
+            if (weaponEdit) weaponEdit.value = data.favoriteWeapon || '';
+        }
     }
 
     // Modify the toggleEditMode method to populate form fields

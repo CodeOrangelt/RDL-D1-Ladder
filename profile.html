@@ -13,59 +13,61 @@
     <div id="nav-placeholder"></div>
     <main>
         <div class="container">
-            <div class="profile-container">
-                <div class="profile-content">
-                    <!-- Profile Image Section (Always Visible) -->
-                    <div class="profile-image-section">
-                        <img id="profile-preview" src="default-avatar.png" alt="Profile Picture">
-                        <div class="image-upload-controls">
-                            <input type="file" id="profile-image-upload" accept="image/*">
-                            <label for="profile-image-upload" class="upload-btn">Change Picture</label>
+            <div class="content">
+                <div class="profile-container">
+                    <div class="profile-content">
+                        <!-- Profile Image Section (Always Visible) -->
+                        <div class="profile-image-section">
+                            <img id="profile-preview" src="default-avatar.png" alt="Profile Picture">
+                            <div class="image-upload-controls">
+                                <input type="file" id="profile-image-upload" accept="image/*">
+                                <label for="profile-image-upload" class="upload-btn">Change Picture</label>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Username Section (Always Visible) -->
-                    <div class="username-section">
-                        <h2 id="nickname"></h2>
-                    </div>
+                        <!-- Username Section (Always Visible) -->
+                        <div class="username-section">
+                            <h2 id="nickname"></h2>
+                        </div>
 
-                    <!-- View Mode -->
-                    <div class="view-mode">
-                        <div class="profile-field">
-                            <label>Motto:</label>
-                            <div id="motto-view"></div>
-                        </div>
-                        <div class="profile-field">
-                            <label>Favorite Map:</label>
-                            <div id="favorite-map-view"></div>
-                        </div>
-                        <div class="profile-field">
-                            <label>Favorite Weapon:</label>
-                            <div id="favorite-weapon-view"></div>
-                        </div>
-                        <button id="edit-profile" class="edit-btn">Edit Profile</button>
-                    </div>
-
-                    <!-- Edit Mode -->
-                    <div class="edit-mode">
-                        <form id="profile-form">
+                        <!-- View Mode -->
+                        <div class="view-mode">
                             <div class="profile-field">
-                                <label for="motto-edit">Motto:</label>
-                                <input type="text" id="motto-edit" placeholder="Enter your motto">
+                                <label>Motto:</label>
+                                <div id="motto-view" class="view-text"></div>
                             </div>
                             <div class="profile-field">
-                                <label for="favorite-map-edit">Favorite Map:</label>
-                                <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
+                                <label>Favorite Map:</label>
+                                <div id="favorite-map-view" class="view-text"></div>
                             </div>
                             <div class="profile-field">
-                                <label for="favorite-weapon-edit">Favorite Weapon:</label>
-                                <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
+                                <label>Favorite Weapon:</label>
+                                <div id="favorite-weapon-view" class="view-text"></div>
                             </div>
-                            <div class="button-group">
-                                <button type="submit" class="save-btn">Save Changes</button>
-                                <button type="button" class="cancel-btn">Cancel</button>
-                            </div>
-                        </form>
+                            <button id="edit-profile" class="edit-btn">Edit Profile</button>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <div class="edit-mode">
+                            <form id="profile-form">
+                                <div class="profile-field">
+                                    <label for="motto-edit">Motto:</label>
+                                    <input type="text" id="motto-edit" placeholder="Enter your motto">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-map-edit">Favorite Map:</label>
+                                    <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-weapon-edit">Favorite Weapon:</label>
+                                    <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
+                                </div>
+                                <div class="button-group">
+                                    <button type="submit" class="save-btn">Save Changes</button>
+                                    <button type="button" class="cancel-btn">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

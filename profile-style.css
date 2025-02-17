@@ -1,8 +1,10 @@
 .profile-container {
-    max-width: 600px;
+    width: 100%;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
 }
 
 .profile-content {
@@ -10,6 +12,7 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    color: white;
 }
 
 .profile-image-section {
@@ -22,48 +25,40 @@
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 10px;
+    border: 3px solid #4CAF50;
 }
 
-.image-upload-controls {
-    margin-top: 10px;
-}
-
-#profile-image-upload {
-    display: none;
-}
-
-.upload-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: inline-block;
-}
-
-.username-section {
-    text-align: center;
-    margin-bottom: 20px;
+.username-section h2 {
+    color: #4CAF50;
+    margin: 0;
 }
 
 .profile-field {
     width: 100%;
     margin-bottom: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 5px;
 }
 
 .profile-field label {
-    display: block;
-    margin-bottom: 5px;
+    color: #4CAF50;
     font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.view-text {
+    color: white;
+    padding: 5px 0;
 }
 
 .profile-field input[type="text"] {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid #4CAF50;
     border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.5);
     color: white;
 }
 
@@ -74,26 +69,30 @@
     margin-top: 20px;
 }
 
-.edit-btn, .save-btn, .cancel-btn {
+.edit-btn, .save-btn, .cancel-btn, .upload-btn {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     border: none;
-}
-
-.edit-btn {
     background-color: #4CAF50;
     color: white;
-}
-
-.save-btn {
-    background-color: #4CAF50;
-    color: white;
+    transition: background-color 0.3s;
 }
 
 .cancel-btn {
     background-color: #f44336;
-    color: white;
+}
+
+.edit-btn:hover, .save-btn:hover, .upload-btn:hover {
+    background-color: #45a049;
+}
+
+.cancel-btn:hover {
+    background-color: #da190b;
+}
+
+#profile-image-upload {
+    display: none;
 }
 
 .edit-mode {
@@ -109,4 +108,16 @@
     color: #f44336;
     text-align: center;
     margin-top: 10px;
+    padding: 10px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 4px;
+}
+
+.image-upload-controls {
+    display: none; /* Hidden by default */
+    margin-top: 10px;
+}
+
+#edit-profile {
+    display: none; /* Hidden by default */
 }
