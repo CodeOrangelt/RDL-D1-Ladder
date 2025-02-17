@@ -212,8 +212,9 @@ tr:nth-child(even) {
     padding: 15px;
     border-radius: 8px;
     text-align: center;
-    border: 1px solid #3498db;
-    transition: opacity 0.3s ease;
+    border: 2px solid #3498db;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.25);
 }
 
 .promotion-banner h3 {
@@ -225,7 +226,6 @@ tr:nth-child(even) {
 .promotion-banner p {
     transition: opacity 0.3s ease;
     color: white;
-    margin: 0;
     font-size: 1.1em;
 }
 
@@ -234,8 +234,13 @@ tr:nth-child(even) {
 }
 
 @keyframes highlight {
-    0% { background-color: rgba(52, 152, 219, 0.1); }
-    50% { background-color: rgba(52, 152, 219, 0.3); }
-    100% { background-color: rgba(0, 0, 0, 0.8); }
+    0% { background-color: rgba(0, 0, 0, 0.9); }
+    50% { background-color: rgba(0, 0, 0, 0.7); }
+    100% { background-color: rgba(0, 0, 0, 0.9); }
+}
+
+.rank-text {
+    transition: color 0.3s ease;
+    text-shadow: 0 0 5px currentColor;
 }
 
