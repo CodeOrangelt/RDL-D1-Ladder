@@ -40,14 +40,17 @@ async function isUsernameAvailable(username) {
         return pendingSnapshot.empty;
     } catch (error) {
         console.error("Error checking username:", error);
-        // Return false on error to prevent registration with potentially duplicate username
-        return false;
+        // Show user-friendly error message
+        document.getElementById('register-error').textContent = 
+            'Unable to verify username availability. Please try again later.';
+        throw error; // Re-throw to prevent registration from continuing
     }
 }
 
 // Modify the handleRegister function
 async function handleRegister(e) {
     e.preventDefault();
+    document.getElementById('register-error').textContent = ''; // Clear previous errors
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     const username = document.getElementById('register-username').value;
@@ -99,7 +102,12 @@ async function handleRegister(e) {
         await signOut(auth);
 
     } catch (error) {
-        document.getElementById('register-error').textContent = error.message;
+        // Don't overwrite the error message from isUsernameAvailable
+        if (!document.getElementById('register-error').textContent) {
+            document.getElementById('register-error').textContent = 
+                'Registration failed. Please try again later.';
+        }
+        console.error('Registration error:', error);
     }
 }
 
