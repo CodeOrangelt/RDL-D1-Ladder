@@ -38,14 +38,14 @@ export function initializePromotionTracker() {
                     // Set the rank attribute for styling
                     bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    // Create promotion text with proper HTML escaping
-                    const promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by 'Admin'}`;
+                    // Create promotion text
+                    const promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
                     
                     promotionDetails.innerHTML = promotionText;
-                    promotionDetails.classList.add('new-promotion');
+                    bannerElement.classList.add('new-promotion');
                     
                     setTimeout(() => {
-                        promotionDetails.classList.remove('new-promotion');
+                        bannerElement.classList.remove('new-promotion');
                     }, 3000);
                 }
             }
