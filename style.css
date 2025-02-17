@@ -24,7 +24,7 @@ main {
     margin: 0;  /* Remove any top margin */
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 60px); /* Adjust based on your nav height */
+    min-height: calc(100vh - 120px); /* Adjust based on your nav/footer height */
     padding: 20px;
 }
 
@@ -201,20 +201,26 @@ tr:nth-child(even) {
     height: 35px; /* Increase row height */
 }
 
+.promotion-container {
+    width: 100%;
+    padding: 20px;
+    margin-top: auto;
+}
+
 .promotion-banner {
     background: rgba(0, 0, 0, 0.7);
     padding: 15px;
-    margin: 20px auto;
     border-radius: 8px;
     text-align: center;
     border: 1px solid #3498db;
     max-width: 800px;
-    width: 90%;
+    margin: 0 auto;
 }
 
 .promotion-banner h3 {
     color: #3498db;
     margin: 0 0 10px 0;
+    font-size: 1.2em;
 }
 
 .promotion-banner p {

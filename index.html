@@ -33,10 +33,12 @@
                 </table>
             </div>
         </div>
-        <!-- Moved promotion banner outside the outer-container -->
-        <div id="latest-promotion" class="promotion-banner">
-            <h3>Latest Promotion</h3>
-            <p id="promotion-details">No recent promotions</p>
+        <!-- Moved promotion banner outside outer-container but still inside main -->
+        <div class="promotion-container">
+            <div id="latest-promotion" class="promotion-banner">
+                <h3>Latest Promotion</h3>
+                <p id="promotion-details">No recent promotions</p>
+            </div>
         </div>
     </main>
     
@@ -44,30 +46,25 @@
 
     <!-- Scripts -->
     <script type="module">
-        import { initNav } from './nav.js';
-        import { initFooter } from './footer.js';
         import { RetroTrackerMonitor } from './whosplaying.js';
         import { initializePromotionTracker } from './promotion-tracker.js';
         
-        // Initialize nav and footer
-        initNav().then(() => {
-            console.log('Nav initialized');
+        Promise.all([
+            fetch('nav.html').then(response => response.text()),
+            fetch('footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+            
+            // Initialize after ensuring class is loaded
+            const tracker = new RetroTrackerMonitor();
+            tracker.initializeBannerOnly();
+            
+            // Initialize promotion tracker
+            initializePromotionTracker();
         }).catch(error => {
-            console.error('Error initializing nav:', error);
+            console.error('Error loading nav/footer:', error);
         });
-
-        initFooter().then(() => {
-            console.log('Footer initialized');
-        }).catch(error => {
-            console.error('Error initializing footer:', error);
-        });
-
-        // Initialize tracker and promotion banner
-        const tracker = new RetroTrackerMonitor();
-        tracker.initializeBannerOnly();
-        
-        // Initialize promotion tracker
-        initializePromotionTracker();
     </script>
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
