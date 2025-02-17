@@ -26,56 +26,50 @@ class ProfileViewer {
     async init() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            let userEmail = urlParams.get('email');
+            let username = urlParams.get('username');
 
-            // If no email provided but user is logged in, show their profile
-            if (!userEmail) {
+            if (!username) {
                 const currentUser = auth.currentUser;
                 if (currentUser) {
-                    userEmail = currentUser.email;
+                    // Get current user's profile
+                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                    username = userDoc.data().username;
                 } else {
-                    this.showError('Profile not found - No email provided');
+                    this.showError('Profile not found - No username provided');
                     return;
                 }
             }
 
-            // Query users collection by email
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('email', '==', userEmail));
-            const userSnapshot = await getDocs(q);
+            // Query players collection by username
+            const playersRef = collection(db, 'players');
+            const q = query(playersRef, where('username', '==', username));
+            const playerSnapshot = await getDocs(q);
 
-            if (userSnapshot.empty) {
+            if (playerSnapshot.empty) {
                 this.showError('User not found');
                 return;
             }
 
-            // Get the first (and should be only) user with this email
-            const userDoc = userSnapshot.docs[0];
-            const userId = userDoc.id;
+            // Get the player document
+            const playerDoc = playerSnapshot.docs[0];
+            const userId = playerDoc.id;
+            const playerData = playerDoc.data();
 
-            // Get profile and player data
-            const [playerDoc, profileDoc] = await Promise.all([
-                getDoc(doc(db, 'players', userId)),
-                getDoc(doc(db, 'userProfiles', userId))
-            ]);
-
-            // Combine data from all sources
-            const userData = userDoc.data();
-            const playerData = playerDoc.exists() ? playerDoc.data() : {};
+            // Get profile data
+            const profileDoc = await getDoc(doc(db, 'userProfiles', userId));
             const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
             // Display the combined profile data
             this.displayProfile({
                 ...profileData,
                 ...playerData,
-                username: userData.username || playerData.username || 'Anonymous',
-                email: userEmail,
+                username: playerData.username,
                 userId: userId
             });
 
-            // Only show edit controls if viewing own profile
+            // Show edit controls if viewing own profile
             const currentUser = auth.currentUser;
-            if (currentUser && currentUser.email === userEmail) {
+            if (currentUser && currentUser.uid === userId) {
                 document.getElementById('edit-profile').style.display = 'block';
                 const uploadBtn = document.querySelector('.upload-btn');
                 if (uploadBtn) uploadBtn.style.display = 'inline-block';
