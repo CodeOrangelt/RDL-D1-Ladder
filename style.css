@@ -76,10 +76,24 @@ table, th, td {
 th, td {
     border: none; /* Remove all borders */
     padding: 8px;
-    text-align: center;
+    text-align: center; /* Default center alignment */
     font-family: Tahoma, sans-serif;
     color: white;
     background-color: transparent;
+}
+
+/* Keep rank column (first column) centered */
+th:first-child,
+td:first-child {
+    text-align: center;
+    width: 50px;
+}
+
+/* Align username column (second column) to the left */
+th:nth-child(2),
+td:nth-child(2) {
+    text-align: left;
+    padding-left: 20px; /* Add padding for better spacing */
 }
 
 th {
@@ -101,6 +115,7 @@ tr:nth-child(even) {
     animation: glow 2s ease-in-out infinite;
     background-color: transparent;
     border: none;
+    text-align: center; /* Keep rank centered */
 }
 
 @keyframes glow {
