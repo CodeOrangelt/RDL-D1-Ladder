@@ -15,8 +15,39 @@ class SeasonManager {
             document.getElementById('reset-confirmation').style.display = 'block';
         });
 
-        confirmButton?.addEventListener('click', () => this.resetSeason());
+        confirmButton?.addEventListener('click', async () => {
+            const passwordInput = document.getElementById('reset-password');
+            const user = auth.currentUser;
+            
+            if (!user || !passwordInput.value) {
+                alert('Please enter your password');
+                return;
+            }
+
+            try {
+                // Reauthenticate user
+                const credential = EmailAuthProvider.credential(
+                    user.email,
+                    passwordInput.value
+                );
+                await reauthenticateWithCredential(user, credential);
+                
+                // If authentication successful, proceed with reset
+                await this.resetSeason();
+                
+                // Clear password and hide dialog
+                passwordInput.value = '';
+                document.getElementById('reset-confirmation').style.display = 'none';
+                
+            } catch (error) {
+                alert('Invalid password or authentication failed');
+                console.error('Authentication error:', error);
+            }
+        });
+
         cancelButton?.addEventListener('click', () => {
+            const passwordInput = document.getElementById('reset-password');
+            passwordInput.value = '';
             document.getElementById('reset-confirmation').style.display = 'none';
         });
     }
@@ -25,7 +56,11 @@ class SeasonManager {
         try {
             // Get current season number
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
-            const currentSeason = (seasonCountDoc.exists() ? seasonCountDoc.data().count : 0) + 1;
+            let currentSeason = 1;
+            
+            if (seasonCountDoc.exists()) {
+                currentSeason = seasonCountDoc.data().count + 1;
+            }
 
             // Get all players
             const playersSnapshot = await getDocs(collection(db, 'players'));
@@ -59,8 +94,8 @@ class SeasonManager {
             
             // Update season counter
             await setDoc(doc(db, 'metadata', 'seasonCount'), {
-                count: increment(1)
-            }, { merge: true });
+                count: currentSeason
+            });
 
             alert(`Season ${currentSeason} has been archived and players have been reset.`);
             location.reload();

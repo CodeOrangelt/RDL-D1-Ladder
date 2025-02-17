@@ -177,6 +177,7 @@
     background: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
     border: 1px solid white;
+    position: relative;  /* Add this to contain absolute positioned season label */
 }
 
 .match-history-container h2 {
@@ -275,4 +276,17 @@
 
 .match-history-container + .match-history-container {
     margin-top: 20px;
+}
+
+.season-label {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1;
 }

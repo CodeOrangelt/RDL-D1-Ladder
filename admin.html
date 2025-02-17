@@ -108,15 +108,14 @@
             </div>
             <div class="admin-section">
                 <button id="reset-season" class="danger-button">Reset Season</button>
-                <div id="reset-confirmation" class="confirmation-dialog" style="display: none;">
-                    <p>Are you sure you want to reset the season? This will:</p>
-                    <ul>
-                        <li>Archive current rankings</li>
-                        <li>Reset all players to default ELO</li>
-                        <li>Create a new season record</li>
-                    </ul>
-                    <button id="confirm-reset" class="danger-button">Confirm Reset</button>
-                    <button id="cancel-reset" class="secondary-button">Cancel</button>
+                <div id="reset-confirmation" class="confirmation-dialog">
+                    <p>⚠️ Warning: This will reset all player rankings and start a new season.</p>
+                    <p>Please enter your password to confirm:</p>
+                    <input type="password" id="reset-password" class="password-input" placeholder="Enter your password">
+                    <div class="button-group">
+                        <button id="confirm-reset" class="danger-button">Reset Season</button>
+                        <button id="cancel-reset" class="secondary-button">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>

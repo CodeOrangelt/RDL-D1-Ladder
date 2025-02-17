@@ -366,13 +366,12 @@ class ProfileViewer {
         const statsContainer = document.createElement('div');
         statsContainer.className = 'match-history-container';
         
-        // Insert after profile container instead of match history
-        const profileContainer = document.querySelector('.profile-container');
-        if (profileContainer) {
-            profileContainer.parentNode.insertBefore(statsContainer, profileContainer.nextSibling);
-        }
-
+        // Get current season number
+        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+        
         statsContainer.innerHTML = `
+            <div class="season-label">S${currentSeason}</div>
             <h2>Match Statistics</h2>
             <div class="stats-content">
                 <canvas id="eloChart"></canvas>
@@ -437,6 +436,49 @@ class ProfileViewer {
         const matchupsContainer = document.createElement('div');
         matchupsContainer.className = 'match-history-container';
         
+        // Get current season number
+        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+
+        matchupsContainer.innerHTML = `
+            <div class="season-label">S${currentSeason}</div>
+            <h2>Player Matchups</h2>
+            <table class="match-history-table">
+                <thead>
+                    <tr>
+                        <th>Opponent</th>
+                        <th>Games Played</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sortedMatchups.length === 0 ? 
+                        '<tr><td colspan="5">No matchups found</td></tr>' :
+                        sortedMatchups.map(([opponent, stats]) => {
+                            const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                            const eloClass = getEloClass(stats.eloRating);
+                            return `
+                                <tr>
+                                    <td>
+                                        <a href="profile.html?username=${encodeURIComponent(opponent)}"
+                                           class="player-link ${eloClass}">
+                                            ${opponent}
+                                        </a>
+                                    </td>
+                                    <td>${stats.total}</td>
+                                    <td class="wins">${stats.wins}</td>
+                                    <td class="losses">${stats.losses}</td>
+                                    <td>${winRate}%</td>
+                                </tr>
+                            `;
+                        }).join('')
+                    }
+                </tbody>
+            </table>
+        `;
+
         // Get player matchup statistics and ELO ratings
         const matchups = {};
         const playerElos = {};
@@ -487,44 +529,6 @@ class ProfileViewer {
         // Sort matchups by total games played
         const sortedMatchups = Object.entries(matchups)
             .sort((a, b) => b[1].total - a[1].total);
-
-        matchupsContainer.innerHTML = `
-            <h2>Player Matchups</h2>
-            <table class="match-history-table">
-                <thead>
-                    <tr>
-                        <th>Opponent</th>
-                        <th>Games Played</th>
-                        <th>Wins</th>
-                        <th>Losses</th>
-                        <th>Win Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sortedMatchups.length === 0 ? 
-                        '<tr><td colspan="5">No matchups found</td></tr>' :
-                        sortedMatchups.map(([opponent, stats]) => {
-                            const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
-                            const eloClass = getEloClass(stats.eloRating);
-                            return `
-                                <tr>
-                                    <td>
-                                        <a href="profile.html?username=${encodeURIComponent(opponent)}"
-                                           class="player-link ${eloClass}">
-                                            ${opponent}
-                                        </a>
-                                    </td>
-                                    <td>${stats.total}</td>
-                                    <td class="wins">${stats.wins}</td>
-                                    <td class="losses">${stats.losses}</td>
-                                    <td>${winRate}%</td>
-                                </tr>
-                            `;
-                        }).join('')
-                    }
-                </tbody>
-            </table>
-        `;
 
         // Insert after match stats container
         const statsContainer = document.querySelector('.match-history-container');
