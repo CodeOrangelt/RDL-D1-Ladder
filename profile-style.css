@@ -158,3 +158,54 @@ h1 {
 .editing .view-mode {
     display: none;
 }
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-btn, .cancel-btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.save-btn {
+    background-color: #881e8e;
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: #b026b9;
+}
+
+.cancel-btn {
+    background-color: #666;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #888;
+}
+
+.info-item input,
+.info-item textarea,
+.info-item select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+
+.info-item textarea {
+    height: 100px;
+    resize: vertical;
+}
