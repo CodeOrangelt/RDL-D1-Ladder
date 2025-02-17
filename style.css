@@ -26,29 +26,49 @@ main {
 
 /* New table container styles */
 .outer-container {
-    background-color: rgba(0, 0, 0, 0.5);
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75); /* Dark semi-transparent background */
     border: 5px solid white;
     margin: 0 auto;
     border-radius: 15px;
     width: 85%;
     padding: 20px;
+    overflow: hidden; /* Contain the backdrop image */
+}
+
+/* Add backdrop image */
+.outer-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('image_2024=04-24_2017.......') no-repeat center center;
+    background-size: cover;
+    opacity: 0.25; /* 75% transparent */
+    z-index: 0;
 }
 
 .table-container {
+    position: relative;
     width: 85%;
     border-radius: 30px;
     background-color: transparent; /* Changed from #efefef */
     margin: 0 auto;
     overflow: hidden;
+    z-index: 1; /* Place above backdrop */
 }
 
 /* Update table styles */
 main table {
+    position: relative;
     width: 100%;
     border-collapse: collapse;
     margin: 0;
     background-color: transparent;
     box-shadow: none;
+    z-index: 2;
 }
 
 .container {
