@@ -49,15 +49,22 @@
             <div class="form-container" id="register-container" style="display: none;">
                 <h2>Create Account</h2>
                 <form id="register-form">
-                    <input type="text" id="register-username" placeholder="Username" required>
-                    <input type="email" id="register-email" placeholder="Email" required>
-                    <input type="password" id="register-password" placeholder="Password" required>
+                    <div class="form-group">
+                        <input type="text" id="register-username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="register-email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="register-password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="verification-answer" placeholder="What color is a fusion cannon?" required>
+                    </div>
+                    <div id="register-error" class="error-message"></div>
                     <button type="submit">Register</button>
+                    <p>Already have an account? <a href="#" id="show-login">Login</a></p>
                 </form>
-                <div id="register-error"></div>
-                <p class="switch-form">
-                    Already have an account? <a href="#" id="show-login">Login here</a>
-                </p>
             </div>
         </div>
     </main>
