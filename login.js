@@ -124,7 +124,7 @@ async function handleRegister(e) {
     }
 }
 
-// Modify handleLogin function
+// Modify handleLogin function to remove email verification check
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -134,20 +134,6 @@ async function handleLogin(e) {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
-        // Check email verification
-        if (!user.emailVerified) {
-            await signOut(auth);
-            errorElement.innerHTML = `
-                <div class="error-message">
-                    Please verify your email before logging in.
-                    <br><br>
-                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
-                        Resend Verification Email
-                    </button>
-                </div>`;
-            return;
-        }
 
         // Check if user exists in players collection
         const userDocRef = doc(db, "players", user.uid);
@@ -175,7 +161,6 @@ async function handleLogin(e) {
                     position: nextPosition,
                     createdAt: serverTimestamp(),
                     isAdmin: false,
-                    verified: true,
                     matches: 0,
                     wins: 0,
                     losses: 0
@@ -185,11 +170,6 @@ async function handleLogin(e) {
                 await deleteDoc(pendingRef);
 
                 console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
-            } else {
-                console.error('No pending registration found for verified user');
-                errorElement.textContent = 'Account setup incomplete. Please contact an administrator.';
-                await signOut(auth);
-                return;
             }
         }
 
