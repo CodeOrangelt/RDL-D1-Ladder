@@ -24,47 +24,54 @@ class ProfileViewer {
     }
 
     async init() {
-        onAuthStateChanged(auth, async (user) => {
+        try {
             const urlParams = new URLSearchParams(window.location.search);
             let userId = urlParams.get('id');
 
-            try {
-                if (!userId && user) {
-                    userId = user.uid;
-                }
-
-                if (!userId) {
+            // If no ID provided but user is logged in, show their profile
+            if (!userId) {
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    userId = currentUser.uid;
+                } else {
                     this.showError('Profile not found - No user ID provided');
                     return;
                 }
+            }
 
-                // Get user data from userProfiles collection
-                const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
-                const userDoc = await getDoc(doc(db, 'users', userId));
+            // Get basic user data - this should always be readable
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            if (!userDoc.exists()) {
+                this.showError('User not found');
+                return;
+            }
 
-                if (!userDoc.exists()) {
-                    this.showError(`User not found for ID: ${userId}`);
-                    return;
-                }
+            // Get profile data - this should also be readable
+            const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
+            
+            const userData = userDoc.data();
+            const profileData = userProfileDoc.exists() ? userProfileDoc.data() : {};
 
-                const userData = userDoc.data();
-                const profileData = userProfileDoc.exists() ? userProfileDoc.data() : {};
+            // Display the profile data
+            this.displayProfile({
+                ...profileData,
+                username: userData.username,
+                userId: userId
+            });
 
-                this.displayProfile({
-                    ...profileData,
-                    username: userData.username,
-                    userId: userId
-                });
-
+            // Only show edit controls if viewing own profile
+            onAuthStateChanged(auth, (user) => {
                 if (user && user.uid === userId) {
                     document.getElementById('edit-profile').style.display = 'block';
-                    document.querySelector('.upload-btn').style.display = 'inline-block';
+                    const uploadBtn = document.querySelector('.upload-btn');
+                    if (uploadBtn) uploadBtn.style.display = 'inline-block';
                 }
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                this.showError(`Error loading profile: ${error.message}`);
-            }
-        });
+            });
+
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            this.showError('Error loading profile data');
+        }
     }
 
     async handleSubmit(event) {
