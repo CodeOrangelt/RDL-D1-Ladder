@@ -177,11 +177,10 @@ class ProfileViewer {
             profilePreview.src = 'images/shieldorb.png';
         }
 
-        // Rest of the display logic...
+        // ...existing code...
         document.getElementById('nickname').textContent = data.username;
         document.getElementById('motto-view').textContent = data.motto || 'No motto set';
-        document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not specified';
-        document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not specified';
+        // ...rest of the display logic...
 
         // Check if current user is the profile owner
         const currentUser = auth.currentUser;

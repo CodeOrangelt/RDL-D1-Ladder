@@ -28,9 +28,22 @@
     object-fit: cover;
 }
 
+.username-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .username-section h2 {
-    color: #4CAF50;
     margin: 0;
+    margin-bottom: 5px;
+}
+
+.motto-text {
+    font-weight: bold;
+    font-style: italic;
+    margin: 0;
+    color: inherit;
+    opacity: 0.9;
 }
 
 .profile-field {
