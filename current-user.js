@@ -1,6 +1,7 @@
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
+import { isAdmin } from './admin-check.js';
 
 // Add admin emails array at the top of the file
 const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
@@ -50,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateAuthSection(user);
         // Show/hide admin link based on user email
         const adminLink = document.querySelector('.admin-only');
-        if (adminLink) {
-            adminLink.style.display = ADMIN_EMAILS.includes(user?.email) ? 'block' : 'none';
+        if (adminLink && user) {
+            adminLink.style.display = isAdmin(user.email) ? 'block' : 'none';
         }
     });
 });
