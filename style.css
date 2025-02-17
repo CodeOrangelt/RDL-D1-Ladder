@@ -195,3 +195,14 @@ tr:nth-child(even) {
 #ladder tr {
     height: 35px; /* Increase row height */
 }
+
+.player-link {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.elo-emerald { color: #50C878; }
+.elo-gold { color: #FFD700; }
+.elo-silver { color: #C0C0C0; }
+.elo-bronze { color: #CD7F32; }
+.elo-unranked { color: #ffffff; }
