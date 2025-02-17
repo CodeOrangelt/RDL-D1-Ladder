@@ -25,27 +25,45 @@ class ProfileViewer {
 
     async init() {
         try {
+            console.log('Starting profile initialization...');
             const urlParams = new URLSearchParams(window.location.search);
             let username = urlParams.get('username');
+            console.log('URL username parameter:', username);
 
             if (!username) {
                 const currentUser = auth.currentUser;
+                console.log('No username in URL, checking current user:', currentUser);
+                
                 if (currentUser) {
                     // Get current user's profile
+                    console.log('Getting current user document for ID:', currentUser.uid);
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                    username = userDoc.data().username;
+                    if (userDoc.exists()) {
+                        console.log('User document found:', userDoc.data());
+                        username = userDoc.data().username;
+                    } else {
+                        console.log('No user document found for current user');
+                    }
                 } else {
+                    console.log('No current user and no username provided');
                     this.showError('Profile not found - No username provided');
                     return;
                 }
             }
 
             // Query players collection by username
+            console.log('Querying players collection for username:', username);
             const playersRef = collection(db, 'players');
             const q = query(playersRef, where('username', '==', username));
             const playerSnapshot = await getDocs(q);
 
+            console.log('Player query results:', {
+                empty: playerSnapshot.empty,
+                size: playerSnapshot.size
+            });
+
             if (playerSnapshot.empty) {
+                console.log('No player found with username:', username);
                 this.showError('User not found');
                 return;
             }
@@ -54,21 +72,35 @@ class ProfileViewer {
             const playerDoc = playerSnapshot.docs[0];
             const userId = playerDoc.id;
             const playerData = playerDoc.data();
+            console.log('Player data found:', {
+                userId: userId,
+                playerData: playerData
+            });
 
             // Get profile data
+            console.log('Fetching profile data for userId:', userId);
             const profileDoc = await getDoc(doc(db, 'userProfiles', userId));
             const profileData = profileDoc.exists() ? profileDoc.data() : {};
+            console.log('Profile data:', profileData);
 
             // Display the combined profile data
-            this.displayProfile({
+            const combinedData = {
                 ...profileData,
                 ...playerData,
                 username: playerData.username,
                 userId: userId
-            });
+            };
+            console.log('Combined profile data:', combinedData);
+            this.displayProfile(combinedData);
 
             // Show edit controls if viewing own profile
             const currentUser = auth.currentUser;
+            console.log('Checking edit permissions:', {
+                currentUser: currentUser?.uid,
+                profileUserId: userId,
+                canEdit: currentUser && currentUser.uid === userId
+            });
+
             if (currentUser && currentUser.uid === userId) {
                 document.getElementById('edit-profile').style.display = 'block';
                 const uploadBtn = document.querySelector('.upload-btn');
@@ -76,7 +108,8 @@ class ProfileViewer {
             }
 
         } catch (error) {
-            console.error('Error loading profile:', error);
+            console.error('Profile initialization error:', error);
+            console.error('Error stack:', error.stack);
             this.showError(`Error loading profile: ${error.message}`);
         }
     }
