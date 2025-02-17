@@ -111,16 +111,27 @@ h1 {
 }
 
 #verification-answer {
-    margin-bottom: 15px;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
+    /* This input will now inherit all styles from .form-group input */
 }
 
-#verification-answer::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+/* Update the form-group and input styling */
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-group input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
