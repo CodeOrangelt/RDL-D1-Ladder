@@ -1,229 +1,112 @@
-.container {
-    position: relative;
-    background-color: rgba(0, 0, 0, 0.75);
-    border: 5px solid white;
-    margin: 0 auto;
-    border-radius: 15px;
-    width: 75%;
-    padding: 40px;
-    min-height: 800px;
-    overflow: hidden;
-}
-
-.profile-form {
+.profile-container {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
+    color: white;
 }
 
-.profile-section {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 10px;
+.profile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
-.pfp-container {
+.profile-image-section {
     text-align: center;
     margin-bottom: 20px;
 }
 
 #profile-preview {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 20px;
-    border: 3px solid #881e8e;
+    margin-bottom: 10px;
 }
 
-#pfp-upload {
-    display: none;
-}
-
-.upload-btn {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    margin: 10px 0;
-}
-
-.upload-btn:hover {
-    background-color: #b026b9;
+.image-upload-controls {
+    margin-top: 10px;
 }
 
 #profile-image-upload {
     display: none;
 }
 
-.form-group {
+.upload-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.username-section {
+    text-align: center;
     margin-bottom: 20px;
 }
 
-.form-group label {
-    display: block;
-    color: white;
-    margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
+.profile-field {
     width: 100%;
-    padding: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: black;
-}
-
-.form-group textarea {
-    height: 100px;
-    resize: vertical;
-}
-
-.save-btn {
-    background-color: #881e8e;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.save-btn:hover {
-    background-color: #b026b9;
-}
-
-h1 {
-    color: white;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.profile-content {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 40px;
-    color: white;
-}
-
-.profile-left {
-    text-align: center;
-}
-
-.profile-info {
-    margin-top: 20px;
-}
-
-.profile-info h2 {
-    color: white;
-    margin-bottom: 10px;
-}
-
-.info-item {
     margin-bottom: 15px;
 }
 
-.info-label {
-    color: #b026b9;
+.profile-field label {
+    display: block;
+    margin-bottom: 5px;
     font-weight: bold;
 }
 
-.edit-btn {
-    background-color: #881e8e;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    border: none;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-}
-
-.edit-btn:hover {
-    background-color: #b026b9;
-}
-
-/* Only show these elements when editing */
-.edit-mode {
-    display: none;
-}
-
-.editing .edit-mode {
-    display: block;
-}
-
-.editing .view-mode {
-    display: none;
-}
-
-.edit-mode, .view-mode {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.edit-mode input[type="text"] {
+.profile-field input[type="text"] {
     width: 100%;
     padding: 8px;
-    margin: 8px 0;
-    display: block;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .button-group {
     display: flex;
     gap: 10px;
+    justify-content: center;
     margin-top: 20px;
 }
 
-.save-btn, .cancel-btn {
-    flex: 1;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
+.edit-btn, .save-btn, .cancel-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
+    border: none;
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
 }
 
 .save-btn {
-    background-color: #881e8e;
+    background-color: #4CAF50;
     color: white;
-}
-
-.save-btn:hover {
-    background-color: #b026b9;
 }
 
 .cancel-btn {
-    background-color: #666;
+    background-color: #f44336;
     color: white;
 }
 
-.cancel-btn:hover {
-    background-color: #888;
-}
-
-.info-item input,
-.info-item textarea,
-.info-item select {
+.edit-mode {
+    display: none;
     width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: black;
 }
 
-.info-item textarea {
-    height: 100px;
-    resize: vertical;
+.view-mode {
+    width: 100%;
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    margin-top: 10px;
 }

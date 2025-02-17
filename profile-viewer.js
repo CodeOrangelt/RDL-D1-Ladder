@@ -209,23 +209,17 @@ class ProfileViewer {
         const viewMode = document.querySelector('.view-mode');
         const editMode = document.querySelector('.edit-mode');
         
-        if (isEditing) {
-            if (this.currentProfileData) {
-                // Use stored profile data instead of reading from view elements
-                const mottoEdit = document.getElementById('motto-edit');
-                const mapEdit = document.getElementById('favorite-map-edit');
-                const weaponEdit = document.getElementById('favorite-weapon-edit');
-
-                if (mottoEdit) mottoEdit.value = this.currentProfileData.motto || '';
-                if (mapEdit) mapEdit.value = this.currentProfileData.favoriteMap || '';
-                if (weaponEdit) weaponEdit.value = this.currentProfileData.favoriteWeapon || '';
-            }
+        if (isEditing && this.currentProfileData) {
+            // Populate edit fields
+            document.getElementById('motto-edit').value = this.currentProfileData.motto || '';
+            document.getElementById('favorite-map-edit').value = this.currentProfileData.favoriteMap || '';
+            document.getElementById('favorite-weapon-edit').value = this.currentProfileData.favoriteWeapon || '';
             
-            if (viewMode) viewMode.style.display = 'none';
-            if (editMode) editMode.style.display = 'block';
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
         } else {
-            if (viewMode) viewMode.style.display = 'block';
-            if (editMode) editMode.style.display = 'none';
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
         }
     }
 
