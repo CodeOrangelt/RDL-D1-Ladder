@@ -5,6 +5,7 @@
     padding: 20px;
     background: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
+    border: 1px solid white; /* Add white border to match report.html */
 }
 
 .profile-content {
@@ -25,7 +26,6 @@
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #4CAF50;
 }
 
 .username-section h2 {
@@ -120,4 +120,33 @@
 
 #edit-profile {
     display: none; /* Hidden by default */
+}
+
+/* ELO Rating Color Classes */
+.elo-unranked {
+    color: #808080 !important; /* Gray */
+}
+
+.elo-bronze {
+    color: #CD7F32 !important; /* Bronze */
+}
+
+.elo-silver {
+    color: #C0C0C0 !important; /* Silver */
+}
+
+.elo-gold {
+    color: #FFD700 !important; /* Gold */
+}
+
+.elo-emerald {
+    color: #50C878 !important; /* Emerald */
+}
+
+/* Update text elements to inherit color */
+.username-section h2,
+.profile-field label,
+.view-text,
+.profile-field input[type="text"] {
+    color: inherit;
 }

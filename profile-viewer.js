@@ -151,6 +151,26 @@ class ProfileViewer {
     displayProfile(data) {
         this.currentProfileData = data;
         
+        // Set ELO rating class
+        const container = document.querySelector('.profile-content');
+        const eloRating = data.eloRating || 0;
+        
+        // Remove any existing elo classes
+        container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+        
+        // Add appropriate elo class based on rating
+        if (eloRating >= 2000) {
+            container.classList.add('elo-emerald');
+        } else if (eloRating >= 1800) {
+            container.classList.add('elo-gold');
+        } else if (eloRating >= 1600) {
+            container.classList.add('elo-silver');
+        } else if (eloRating >= 1400) {
+            container.classList.add('elo-bronze');
+        } else {
+            container.classList.add('elo-unranked');
+        }
+
         // Always use default profile picture
         const profilePreview = document.getElementById('profile-preview');
         if (profilePreview) {
