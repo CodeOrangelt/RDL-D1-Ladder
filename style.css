@@ -37,7 +37,7 @@ main {
 .table-container {
     width: 85%;
     border-radius: 30px;
-    background-color: #efefef;
+    background-color: transparent; /* Changed from #efefef */
     margin: 0 auto;
     overflow: hidden;
 }
@@ -73,29 +73,33 @@ table, th, td {
 }
 
 th, td {
-    border: 2px solid black;
+    border: 2px solid white; /* Changed from black */
     border-radius: 15px;
     padding: 8px;
     text-align: center;
     font-family: Tahoma, sans-serif;
+    color: white; /* Added white text color */
+    background-color: transparent; /* Ensure cells are transparent */
 }
 
 th {
-    background-color: #f2f2f2;
-    color: black; /* Changed from white */
+    background-color: transparent; /* Changed from #f2f2f2 */
+    color: white; /* Changed from black */
+    font-weight: bold;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f276;
+    background-color: transparent; /* Remove alternating row color */
 }
 
-/* Replace shimmer with glow effect for #1 player */
+/* Update glow effect for #1 player */
 #ladder tr:first-child td:first-child {
     position: relative;
     font-weight: bold;
     color: #FFD700;  /* Gold color */
     text-shadow: 0 0 5px #FFD700;
     animation: glow 2s ease-in-out infinite;
+    background-color: transparent;
 }
 
 @keyframes glow {
