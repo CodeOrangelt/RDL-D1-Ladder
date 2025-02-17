@@ -45,7 +45,7 @@ export function initializePromotionTracker() {
                     if (data.promotionType === 'threshold') {
                         promotionText = `${data.player} reached <span class="rank-text">${data.rankAchieved}</span> rank through match performance!`;
                     } else {
-                        promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by Admins`;
+                        promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by RDL Admins`;
                     }
 
                     // Update banner text with animation and color
