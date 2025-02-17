@@ -18,7 +18,6 @@ async function updateAuthSection(user) {
     const authSection = document.getElementById('auth-section');
     if (!authSection) return;
     
-    // Show loading state while fetching data
     showLoadingState();
     
     if (user) {
@@ -26,18 +25,21 @@ async function updateAuthSection(user) {
             const userDoc = await getDoc(doc(db, 'players', user.uid));
             const username = userDoc.exists() ? userDoc.data().username : user.email;
             
+            // Check if user is admin
+            const isUserAdmin = isAdmin(user.email);
+            
             authSection.innerHTML = `
                 <div class="user-dropdown">
                     <span id="current-user">${username}</span>
                     <div class="dropdown-content">
                         <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
-                        ${isAdmin(user.email) ? '<a href="admin.html" class="admin-only">Admin</a>' : ''}
+                        ${isUserAdmin ? '<a href="admin.html" class="admin-only">Admin</a>' : ''}
                         <a href="#" id="sign-out-link">Sign Out</a>
                     </div>
                 </div>
             `;
         } catch (error) {
-            console.error("Error fetching user data:", error);
+            console.error('Error updating auth section:', error);
             authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
         }
     } else {

@@ -18,6 +18,7 @@ import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
 import { ADMIN_EMAILS } from './admin-config.js';
+import { isAdmin } from './admin-check.js';
 
 // Test data array
 const testPlayers = [
@@ -40,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        if (ADMIN_EMAILS.includes(user.email)) {
+        if (isAdmin(user.email)) {
             setupCollapsibleButtons();
             setupPromotePlayerButton();
-            setupDemotePlayerButton(); // Add this line
+            setupDemotePlayerButton();
             setupManagePlayersSection();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
@@ -575,7 +576,7 @@ async function demotePlayer(username) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        if (!user || !isAdmin(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
