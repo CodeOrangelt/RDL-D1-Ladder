@@ -344,14 +344,18 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
 // Add this function to handle promotions
 async function promotePlayer(username) {
     try {
-        // Get player's current data
+        // First check if current user is admin
+        const user = auth.currentUser;
+        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
         const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            alert('Player not found');
-            return;
+            throw new Error('Player not found');
         }
 
         const playerDoc = querySnapshot.docs[0];
@@ -370,46 +374,44 @@ async function promotePlayer(username) {
         let nextThreshold = thresholds.find(t => t.elo > currentElo);
         
         if (!nextThreshold) {
-            alert('Player is already at maximum rank (Emerald)');
-            return;
+            throw new Error('Player is already at maximum rank (Emerald)');
         }
 
-        // Update player's ELO and add promotion history
         const batch = writeBatch(db);
         
         // Update player document
-        const playerRef = doc(db, 'players', playerDoc.id);
-        batch.update(playerRef, {
+        batch.update(doc(db, 'players', playerDoc.id), {
             eloRating: nextThreshold.elo,
-            lastPromotedAt: serverTimestamp()
+            lastPromotedAt: serverTimestamp(),
+            promotedBy: user.email
         });
 
-        // Add promotion history
-        const historyRef = doc(collection(db, 'eloHistory'));
-        batch.set(historyRef, {
+        // Record promotion in history
+        batch.set(doc(collection(db, 'eloHistory')), {
             player: username,
             previousElo: currentElo,
             newElo: nextThreshold.elo,
             timestamp: serverTimestamp(),
             type: 'promotion',
-            rankAchieved: nextThreshold.name
+            rankAchieved: nextThreshold.name,
+            promotedBy: user.email
         });
 
-        // Commit the batch
         await batch.commit();
 
         // Update UI
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
         
         // Refresh displays
-        loadPlayers();
-        loadEloRatings();
-        loadEloHistory();
+        await Promise.all([
+            loadPlayers(),
+            loadEloRatings(),
+            loadEloHistory()
+        ]);
 
     } catch (error) {
         console.error('Error promoting player:', error);
-        alert('Failed to promote player: ' + error.message);
-        throw error; // Re-throw to handle in the calling function
+        throw error;
     }
 }
 
