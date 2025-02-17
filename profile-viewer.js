@@ -21,10 +21,26 @@ class ProfileViewer {
         const profileForm = document.getElementById('profile-form');
         const imageUpload = document.getElementById('profile-image-upload');
 
+        console.log('Setting up event listeners:', {
+            editBtn: !!editBtn,
+            cancelBtn: !!cancelBtn,
+            profileForm: !!profileForm,
+            imageUpload: !!imageUpload
+        });
+
+        if (imageUpload) {
+            imageUpload.addEventListener('change', (e) => {
+                console.log('Image upload change event triggered');
+                console.log('Selected file:', e.target.files[0]);
+                this.handleImageUpload(e);
+            });
+        } else {
+            console.error('Image upload element not found');
+        }
+
         editBtn?.addEventListener('click', () => this.toggleEditMode(true));
         cancelBtn?.addEventListener('click', () => this.toggleEditMode(false));
         profileForm?.addEventListener('submit', (e) => this.handleSubmit(e));
-        imageUpload?.addEventListener('change', (e) => this.handleImageUpload(e));
     }
 
     async init() {
@@ -152,44 +168,75 @@ class ProfileViewer {
     }
 
     async handleImageUpload(event) {
+        console.log('handleImageUpload started');
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('No file selected');
+            return;
+        }
+
+        console.log('File selected:', {
+            name: file.name,
+            type: file.type,
+            size: file.size
+        });
 
         try {
             const user = auth.currentUser;
             if (!user) {
+                console.error('No authenticated user');
                 this.showError('You must be logged in to change your profile picture');
                 return;
             }
 
+            // Show loading state
+            const profilePreview = document.getElementById('profile-preview');
+            if (profilePreview) {
+                profilePreview.style.opacity = '0.5';
+            }
+
             // Create a unique file path
             const filePath = `profile-images/${user.uid}/${Date.now()}_${file.name}`;
+            console.log('Storage path:', filePath);
+            
             const storageRef = ref(storage, filePath);
-
-            // Show loading state
-            document.getElementById('profile-preview').style.opacity = '0.5';
-
+            console.log('Uploading file...');
+            
             // Upload file
-            await uploadBytes(storageRef, file);
+            const uploadResult = await uploadBytes(storageRef, file);
+            console.log('Upload completed:', uploadResult);
+
             const downloadURL = await getDownloadURL(storageRef);
+            console.log('Download URL obtained:', downloadURL);
 
             // Update profile data in Firestore
             await setDoc(doc(db, 'userProfiles', user.uid), {
                 pfpUrl: filePath,
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
+            console.log('Profile updated in Firestore');
 
             // Update display
-            document.getElementById('profile-preview').src = downloadURL;
-            document.getElementById('profile-preview').style.opacity = '1';
+            if (profilePreview) {
+                profilePreview.src = downloadURL;
+                profilePreview.style.opacity = '1';
+            }
 
+            // Update current profile data
             if (this.currentProfileData) {
                 this.currentProfileData.pfpUrl = filePath;
+                console.log('Current profile data updated');
             }
 
         } catch (error) {
-            console.error('Error uploading image:', error);
+            console.error('Error in handleImageUpload:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
             this.showError('Failed to upload image');
+            document.getElementById('profile-preview').src = 'images/dogfightingtranscolor.png';
             document.getElementById('profile-preview').style.opacity = '1';
         }
     }
@@ -200,8 +247,10 @@ class ProfileViewer {
         
         // Handle profile picture
         const profilePreview = document.getElementById('profile-preview');
+        const defaultPfp = 'images/dogfightingtranscolor.png';
+
         if (profilePreview) {
-            if (data.pfpUrl && data.pfpUrl !== 'default-avatar.png') {
+            if (data.pfpUrl && data.pfpUrl !== defaultPfp) {
                 // Load image from Firebase Storage
                 getDownloadURL(ref(storage, data.pfpUrl))
                     .then(url => {
@@ -209,10 +258,10 @@ class ProfileViewer {
                     })
                     .catch(error => {
                         console.error('Error loading profile picture:', error);
-                        profilePreview.src = 'default-avatar.png';
+                        profilePreview.src = defaultPfp;
                     });
             } else {
-                profilePreview.src = 'default-avatar.png';
+                profilePreview.src = defaultPfp;
             }
         }
 
