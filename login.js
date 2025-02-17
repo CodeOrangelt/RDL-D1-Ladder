@@ -8,10 +8,21 @@ import {
     doc, 
     setDoc,
     collection,
-    getDocs
+    getDocs,
+    query,
+    where  // Add this import
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
+// Add this function at the top of the file
+async function isUsernameAvailable(username) {
+    const playersRef = collection(db, "players");
+    const q = query(playersRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.empty;
+}
+
+// Modify the handleRegister function
 async function handleRegister(e) {
     e.preventDefault();
     const email = document.getElementById('register-email').value;
@@ -27,6 +38,13 @@ async function handleRegister(e) {
     }
 
     try {
+        // Check if username is available
+        const usernameAvailable = await isUsernameAvailable(username);
+        if (!usernameAvailable) {
+            document.getElementById('register-error').textContent = 'Username is already taken. Please choose another.';
+            return;
+        }
+
         // Create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
