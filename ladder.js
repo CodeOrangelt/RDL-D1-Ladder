@@ -8,7 +8,6 @@ import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 
 async function displayLadder() {
-    console.log('Loading ladder...');
     const tableBody = document.querySelector('#ladder tbody');
     if (!tableBody) {
         console.error('Ladder table body not found');
@@ -181,15 +180,18 @@ async function loadPlayers() {
     }
 }
 
-// Add validation for ELO input
-document.getElementById('new-player-elo').addEventListener('input', function() {
-    const value = parseInt(this.value);
-    if (value > 3000) {
-        this.value = 3000;
-    } else if (value < 0) {
-        this.value = 0;
-    }
-});
+// Add validation for ELO input if element exists
+const eloInput = document.getElementById('new-player-elo');
+if (eloInput) {
+    eloInput.addEventListener('input', function() {
+        const value = parseInt(this.value);
+        if (value > 3000) {
+            this.value = 3000;
+        } else if (value < 0) {
+            this.value = 0;
+        }
+    });
+}
 
 // Initialize ladder when DOM is loaded
 document.addEventListener('DOMContentLoaded', displayLadder);
