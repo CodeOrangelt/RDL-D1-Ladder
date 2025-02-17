@@ -16,6 +16,14 @@ async function handleRegister(e) {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     const username = document.getElementById('register-username').value;
+    const verificationAnswer = document.getElementById('verification-answer').value.toLowerCase();
+
+    // Check the verification answer
+    const validAnswers = ['purple', 'magenta'];
+    if (!validAnswers.includes(verificationAnswer)) {
+        document.getElementById('register-error').textContent = 'Incorrect answer to verification question';
+        return;
+    }
 
     try {
         // Create user

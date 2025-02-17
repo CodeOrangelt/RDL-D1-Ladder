@@ -110,3 +110,17 @@ h1 {
     color: #23527c;
 }
 
+#verification-answer {
+    margin-bottom: 15px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+#verification-answer::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
