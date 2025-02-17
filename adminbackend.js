@@ -502,38 +502,43 @@ function setupPromotePlayerButton() {
     const cancelPromoteBtn = document.getElementById('cancel-promote');
     const promoteUsernameInput = document.getElementById('promote-username');
 
-    if (promoteBtn && promoteDialog) {
-        promoteBtn.addEventListener('click', () => {
-            promoteDialog.style.display = 'block';
-        });
+    if (!promoteBtn || !promoteDialog || !confirmPromoteBtn || !cancelPromoteBtn || !promoteUsernameInput) {
+        console.error('Missing promote dialog elements');
+        return;
     }
 
-    if (cancelPromoteBtn && promoteDialog) {
-        cancelPromoteBtn.addEventListener('click', () => {
+    promoteBtn.addEventListener('click', () => {
+        promoteDialog.style.display = 'block';
+    });
+
+    cancelPromoteBtn.addEventListener('click', () => {
+        promoteDialog.style.display = 'none';
+        promoteUsernameInput.value = '';
+    });
+
+    // Close modal if clicked outside
+    promoteDialog.addEventListener('click', (e) => {
+        if (e.target === promoteDialog) {
             promoteDialog.style.display = 'none';
-            if (promoteUsernameInput) {
-                promoteUsernameInput.value = '';
-            }
-        });
-    }
+            promoteUsernameInput.value = '';
+        }
+    });
 
-    if (confirmPromoteBtn && promoteUsernameInput) {
-        confirmPromoteBtn.addEventListener('click', async () => {
-            const username = promoteUsernameInput.value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            try {
-                await promotePlayer(username);
-                promoteDialog.style.display = 'none';
-                promoteUsernameInput.value = '';
-            } catch (error) {
-                console.error('Error promoting player:', error);
-                alert('Failed to promote player: ' + error.message);
-            }
-        });
-    }
+    confirmPromoteBtn.addEventListener('click', async () => {
+        const username = promoteUsernameInput.value.trim();
+        if (!username) {
+            alert('Please enter a username');
+            return;
+        }
+        try {
+            await promotePlayer(username);
+            promoteDialog.style.display = 'none';
+            promoteUsernameInput.value = '';
+        } catch (error) {
+            console.error('Error promoting player:', error);
+            alert('Failed to promote player: ' + error.message);
+        }
+    });
 }
 
 // Add a new function to handle the manage players section setup
@@ -656,36 +661,41 @@ function setupDemotePlayerButton() {
     const cancelDemoteBtn = document.getElementById('cancel-demote');
     const demoteUsernameInput = document.getElementById('demote-username');
 
-    if (demoteBtn && demoteDialog) {
-        demoteBtn.addEventListener('click', () => {
-            demoteDialog.style.display = 'block';
-        });
+    if (!demoteBtn || !demoteDialog || !confirmDemoteBtn || !cancelDemoteBtn || !demoteUsernameInput) {
+        console.error('Missing demote dialog elements');
+        return;
     }
 
-    if (cancelDemoteBtn && demoteDialog) {
-        cancelDemoteBtn.addEventListener('click', () => {
+    demoteBtn.addEventListener('click', () => {
+        demoteDialog.style.display = 'block';
+    });
+
+    cancelDemoteBtn.addEventListener('click', () => {
+        demoteDialog.style.display = 'none';
+        demoteUsernameInput.value = '';
+    });
+
+    // Close modal if clicked outside
+    demoteDialog.addEventListener('click', (e) => {
+        if (e.target === demoteDialog) {
             demoteDialog.style.display = 'none';
-            if (demoteUsernameInput) {
-                demoteUsernameInput.value = '';
-            }
-        });
-    }
+            demoteUsernameInput.value = '';
+        }
+    });
 
-    if (confirmDemoteBtn && demoteUsernameInput) {
-        confirmDemoteBtn.addEventListener('click', async () => {
-            const username = demoteUsernameInput.value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            try {
-                await demotePlayer(username);
-                demoteDialog.style.display = 'none';
-                demoteUsernameInput.value = '';
-            } catch (error) {
-                console.error('Error demoting player:', error);
-                alert('Failed to demote player: ' + error.message);
-            }
-        });
-    }
+    confirmDemoteBtn.addEventListener('click', async () => {
+        const username = demoteUsernameInput.value.trim();
+        if (!username) {
+            alert('Please enter a username');
+            return;
+        }
+        try {
+            await demotePlayer(username);
+            demoteDialog.style.display = 'none';
+            demoteUsernameInput.value = '';
+        } catch (error) {
+            console.error('Error demoting player:', error);
+            alert('Failed to demote player: ' + error.message);
+        }
+    });
 }
