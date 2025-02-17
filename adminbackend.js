@@ -376,3 +376,69 @@ document.getElementById('promote-player-btn').addEventListener('click', async ()
         await promotePlayer(username.trim());
     }
 });
+
+// Add these event listeners after your existing ones
+document.getElementById('promote-player').addEventListener('click', () => {
+    document.getElementById('promote-dialog').style.display = 'block';
+});
+
+document.getElementById('cancel-promote').addEventListener('click', () => {
+    document.getElementById('promote-dialog').style.display = 'none';
+    document.getElementById('promote-username').value = '';
+});
+
+document.getElementById('confirm-promote').addEventListener('click', async () => {
+    const username = document.getElementById('promote-username').value.trim();
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+
+    try {
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            alert('Player not found');
+            return;
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+
+        // Define ELO thresholds
+        const thresholds = [
+            { name: 'Bronze', elo: 1400 },
+            { name: 'Silver', elo: 1600 },
+            { name: 'Gold', elo: 1800 },
+            { name: 'Emerald', elo: 2000 }
+        ];
+
+        // Find next threshold
+        const nextThreshold = thresholds.find(t => t.elo > currentElo);
+        
+        if (!nextThreshold) {
+            alert('Player is already at maximum rank (Emerald)');
+            return;
+        }
+
+        // Update player's ELO
+        await updateDoc(playerDoc.ref, {
+            ...playerData,
+            eloRating: nextThreshold.elo
+        });
+
+        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
+        document.getElementById('promote-dialog').style.display = 'none';
+        document.getElementById('promote-username').value = '';
+        
+        // Refresh the player list
+        await loadPlayers();
+
+    } catch (error) {
+        console.error('Error promoting player:', error);
+        alert('Failed to promote player');
+    }
+});
