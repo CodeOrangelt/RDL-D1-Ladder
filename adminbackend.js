@@ -252,28 +252,42 @@ async function loadEloRatings() {
 }
 
 async function loadEloHistory() {
-    const tableBody = document.querySelector('#elo-history-table tbody'); // Updated selector
-    tableBody.innerHTML = ''; // Clear existing content
+    const tableBody = document.querySelector('#elo-history-table tbody');
+    if (!tableBody) {
+        console.error('ELO history table not found');
+        return;
+    }
+
+    tableBody.innerHTML = '<tr><td colspan="7">Loading ELO history...</td></tr>';
 
     try {
         const { entries } = await getEloHistory();
         
+        if (entries.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7">No ELO history found</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
         entries.forEach(record => {
             const row = document.createElement('tr');
+            const eloChange = record.change;
+            const changeColor = eloChange > 0 ? 'color: green;' : eloChange < 0 ? 'color: red;' : '';
+            
             row.innerHTML = `
                 <td>${record.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
-                <td>${record.player}</td>
-                <td>${record.previousElo}</td>
-                <td>${record.newElo}</td>
-                <td>${record.change > 0 ? '+' + record.change : record.change}</td>
-                <td>${record.opponent}</td>
-                <td>${record.matchResult}</td>
+                <td>${record.player || 'N/A'}</td>
+                <td>${record.previousElo || 'N/A'}</td>
+                <td>${record.newElo || 'N/A'}</td>
+                <td style="${changeColor}">${eloChange > 0 ? '+' + eloChange : eloChange}</td>
+                <td>${record.opponent || 'N/A'}</td>
+                <td>${record.matchResult || 'N/A'}</td>
             `;
             tableBody.appendChild(row);
         });
     } catch (error) {
         console.error("Error loading ELO history:", error);
-        tableBody.innerHTML = '<tr><td colspan="7">Error loading ELO history</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7">Error loading ELO history: ' + error.message + '</td></tr>';
     }
 }
 
