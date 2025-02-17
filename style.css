@@ -44,7 +44,7 @@ main {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('image_2024=04-24_2017.......') no-repeat center center;
+    background: url('ladderbackdrop.png') no-repeat center center;
     background-size: cover;
     opacity: 0.25; /* 75% transparent */
     z-index: 0;
