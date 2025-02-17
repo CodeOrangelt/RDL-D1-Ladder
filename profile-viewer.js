@@ -17,10 +17,12 @@ class ProfileViewer {
         const editBtn = document.getElementById('edit-profile');
         const cancelBtn = document.querySelector('.cancel-btn');
         const profileForm = document.getElementById('profile-form');
+        const imageUpload = document.getElementById('profile-image-upload');
 
         editBtn?.addEventListener('click', () => this.toggleEditMode(true));
         cancelBtn?.addEventListener('click', () => this.toggleEditMode(false));
         profileForm?.addEventListener('submit', (e) => this.handleSubmit(e));
+        imageUpload?.addEventListener('change', (e) => this.handleImageUpload(e));
     }
 
     async init() {
@@ -147,6 +149,40 @@ class ProfileViewer {
         }
     }
 
+    async handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                this.showError('You must be logged in to change your profile picture');
+                return;
+            }
+
+            // Create a preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('profile-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Here you would typically upload to your storage service
+            // For now, we'll just update the preview
+            console.log('Image file selected:', file.name);
+            
+            // Update the profile data
+            await setDoc(doc(db, 'userProfiles', user.uid), {
+                pfpUrl: 'default-avatar.png', // Replace with actual uploaded URL
+                lastUpdated: new Date().toISOString()
+            }, { merge: true });
+
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            this.showError('Failed to upload image');
+        }
+    }
+
     // Also modify the displayProfile method to store the data
     displayProfile(data) {
         // Store the data for later use
@@ -174,19 +210,22 @@ class ProfileViewer {
         const editMode = document.querySelector('.edit-mode');
         
         if (isEditing) {
-            // Populate edit form fields with current values
-            document.getElementById('motto-edit').value = 
-                document.getElementById('motto-view').textContent.replace('No motto set', '');
-            document.getElementById('favorite-map-edit').value = 
-                document.getElementById('favorite-map-view').textContent.replace('Not specified', '');
-            document.getElementById('favorite-weapon-edit').value = 
-                document.getElementById('favorite-weapon-view').textContent.replace('Not specified', '');
+            if (this.currentProfileData) {
+                // Use stored profile data instead of reading from view elements
+                const mottoEdit = document.getElementById('motto-edit');
+                const mapEdit = document.getElementById('favorite-map-edit');
+                const weaponEdit = document.getElementById('favorite-weapon-edit');
+
+                if (mottoEdit) mottoEdit.value = this.currentProfileData.motto || '';
+                if (mapEdit) mapEdit.value = this.currentProfileData.favoriteMap || '';
+                if (weaponEdit) weaponEdit.value = this.currentProfileData.favoriteWeapon || '';
+            }
             
-            viewMode.style.display = 'none';
-            editMode.style.display = 'block';
+            if (viewMode) viewMode.style.display = 'none';
+            if (editMode) editMode.style.display = 'block';
         } else {
-            viewMode.style.display = 'block';
-            editMode.style.display = 'none';
+            if (viewMode) viewMode.style.display = 'block';
+            if (editMode) editMode.style.display = 'none';
         }
     }
 

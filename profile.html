@@ -25,28 +25,25 @@
                 <div class="profile-info">
                     <!-- View Mode -->
                     <div class="view-mode">
-                        <div class="info-item">
-                            <span class="info-label">Motto:</span>
-                            <p id="motto-view"></p>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Favorite Map:</span>
-                            <p id="favorite-map-view"></p>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Favorite Weapon:</span>
-                            <p id="favorite-weapon-view"></p>
-                        </div>
+                        <img id="profile-preview" src="default-avatar.png" alt="Profile Picture">
+                        <div id="nickname"></div>
+                        <div id="motto-view"></div>
+                        <div id="favorite-map-view"></div>
+                        <div id="favorite-weapon-view"></div>
                         <button id="edit-profile" class="edit-btn">Edit Profile</button>
                     </div>
 
                     <!-- Edit Mode -->
                     <div class="edit-mode" style="display: none;">
                         <form id="profile-form">
+                            <div class="profile-image-container">
+                                <input type="file" id="profile-image-upload" accept="image/*">
+                                <label for="profile-image-upload" class="upload-btn">Change Picture</label>
+                            </div>
                             <input type="text" id="motto-edit" placeholder="Enter your motto">
                             <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
                             <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
-                            <button type="submit">Save</button>
+                            <button type="submit">Save Changes</button>
                             <button type="button" class="cancel-btn">Cancel</button>
                         </form>
                     </div>
