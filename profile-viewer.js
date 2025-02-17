@@ -234,77 +234,97 @@ class ProfileViewer {
     }
 
     async displayMatchHistory(username) {
-        // Create match history container
         const matchHistoryContainer = document.createElement('div');
         matchHistoryContainer.className = 'match-history-container';
-        matchHistoryContainer.innerHTML = `
-            <h2>Match History</h2>
-            <table class="match-history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Winner</th>
-                        <th>Loser</th>
-                        <th>Score</th>
-                        <th>Map</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        `;
-
-        // Add container after profile container
-        const profileContainer = document.querySelector('.profile-container');
-        profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
-
+        
         try {
-            // Query approved matches where user was either winner or loser
+            // Add loading state
+            matchHistoryContainer.innerHTML = '<p class="loading-text">Loading match history...</p>';
+            const profileContainer = document.querySelector('.profile-container');
+            profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
+
+            // Query matches where user is either winner or loser instead of using participants
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const matchesQuery = query(
                 approvedMatchesRef,
-                where('participants', 'array-contains', username),
+                where('winnerUsername', '==', username),
                 orderBy('createdAt', 'desc')
             );
-            
-            const matchesSnapshot = await getDocs(matchesQuery);
-            const tbody = matchHistoryContainer.querySelector('tbody');
 
-            if (matchesSnapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="5">No matches found</td></tr>';
-                return;
-            }
+            const loserMatchesQuery = query(
+                approvedMatchesRef,
+                where('loserUsername', '==', username),
+                orderBy('createdAt', 'desc')
+            );
 
-            matchesSnapshot.forEach(doc => {
-                const match = doc.data();
-                const row = document.createElement('tr');
-                const date = match.createdAt ? new Date(match.createdAt.seconds * 1000) : new Date();
-                
-                const isWinner = match.winnerUsername === username;
-                row.className = isWinner ? 'match-won' : 'match-lost';
+            // Get both winner and loser matches
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(matchesQuery),
+                getDocs(loserMatchesQuery)
+            ]);
 
-                row.innerHTML = `
-                    <td>${date.toLocaleDateString()}</td>
-                    <td>
-                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                           class="player-link ${match.winnerUsername === username ? 'current-user' : ''}">
-                            ${match.winnerUsername}
-                        </a>
-                    </td>
-                    <td>
-                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                           class="player-link ${match.loserUsername === username ? 'current-user' : ''}">
-                            ${match.loserUsername}
-                        </a>
-                    </td>
-                    <td>${match.winnerScore} - ${match.loserScore}</td>
-                    <td>${match.mapPlayed}</td>
-                `;
-                tbody.appendChild(row);
-            });
+            // Combine and sort matches
+            const matches = [...winnerMatches.docs, ...loserMatches.docs]
+                .map(doc => ({
+                    ...doc.data(),
+                    id: doc.id
+                }))
+                .sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+
+            // Update container with match data
+            matchHistoryContainer.innerHTML = `
+                <h2>Match History</h2>
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Winner</th>
+                            <th>Loser</th>
+                            <th>Score</th>
+                            <th>Map</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${matches.length === 0 ? 
+                            '<tr><td colspan="5">No matches found</td></tr>' :
+                            matches.map(match => {
+                                const date = match.createdAt ? 
+                                    new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
+                                    'N/A';
+                                const isWinner = match.winnerUsername === username;
+                                
+                                return `
+                                    <tr class="${isWinner ? 'match-won' : 'match-lost'}">
+                                        <td>${date}</td>
+                                        <td>
+                                            <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
+                                               class="player-link ${match.winnerUsername === username ? 'current-user' : ''}">
+                                                ${match.winnerUsername}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
+                                               class="player-link ${match.loserUsername === username ? 'current-user' : ''}">
+                                                ${match.loserUsername}
+                                            </a>
+                                        </td>
+                                        <td>${match.winnerScore} - ${match.loserScore}</td>
+                                        <td>${match.mapPlayed}</td>
+                                    </tr>
+                                `;
+                            }).join('')
+                        }
+                    </tbody>
+                </table>
+            `;
+
+            console.log(`Loaded ${matches.length} matches for ${username}`);
         } catch (error) {
             console.error('Error loading match history:', error);
             matchHistoryContainer.innerHTML = `
-                <div class="error-message">Error loading match history: ${error.message}</div>
+                <div class="error-message">
+                    Error loading match history. Please try refreshing the page.
+                </div>
             `;
         }
     }
