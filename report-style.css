@@ -39,7 +39,7 @@ nav ul li a:hover {
     border: 5px solid white;
     margin: 0 auto;
     border-radius: 15px;
-    width: 85%;
+    width: 75%; /* Reduced from 85% */
     padding: 20px;
     min-height: 800px;
     overflow: hidden;
@@ -116,10 +116,17 @@ textarea {
 
 .form-group select {
     height: 40px;
+    color: black; /* Changed text color to black */
+    background-color: rgba(255, 255, 255, 0.9); /* Made background more opaque */
+}
+
+.form-group select option {
+    color: black; /* Ensure dropdown options are also black */
+    background-color: white; /* White background for dropdown */
 }
 
 .btn {
-    background-color: #5cb85c;
+    background-color: #881e8e; /* Changed to match nav purple */
     color: white;
     padding: 12px 20px;
     border: none;
@@ -132,7 +139,7 @@ textarea {
 }
 
 .btn:hover {
-    background-color: #4cae4c;
+    background-color: #b026b9; /* Lighter purple on hover */
 }
 
 .error {
