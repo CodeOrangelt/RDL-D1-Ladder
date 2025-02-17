@@ -412,6 +412,18 @@ footer {
     background: #34495e;
 }
 
+#players-table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#players-table th,
+#players-table td {
+    padding: 12px;
+    text-align: left;
+    color: white;
+}
+
 #players-table td {
     vertical-align: middle;
 }

@@ -33,9 +33,11 @@
         <div class="container">
             <h1>Admin Backend</h1>
             <div id="admin-actions" class="admin-buttons">
+                <button id="toggle-manage-players" class="collapse-btn" data-target="manage-players-section">
+                    Manage Players
+                </button>
                 <button id="view-elo-ratings" class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
                 <button id="view-elo-history" class="collapse-btn" data-target="elo-history">View ELO History</button>
-                <button id="toggle-manage-players" class="collapse-btn" data-target="manage-players-section">Manage Players</button>
                 <button id="reset-season" class="danger-button">Reset Season</button>
                 <button id="promote-player" class="danger-button">Promote Player</button>
                 <button id="demote-player" class="danger-button">Demote Player</button>
@@ -88,7 +90,7 @@
                     </tbody>
                 </table>
             </div>
-            <div id="manage-players-section" class="admin-section" style="display: none;">
+            <div id="manage-players-section" class="admin-section">
                 <h2>Manage Ladder Players</h2>
                 <div class="players-table-container">
                     <table id="players-table" class="admin-table">

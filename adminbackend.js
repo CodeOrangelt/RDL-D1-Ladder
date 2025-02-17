@@ -61,32 +61,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupCollapsibleButtons() {
     const buttons = document.querySelectorAll('.collapse-btn');
-    const adminSections = document.querySelectorAll('.admin-section');
     
     buttons.forEach(button => {
         button.addEventListener('click', async () => {
             const targetId = button.getAttribute('data-target');
             
-            // Hide all sections first
-            adminSections.forEach(section => {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(section => {
                 section.style.display = 'none';
             });
 
-            // Show target section and load appropriate data
             const targetSection = document.getElementById(targetId);
             if (targetSection) {
                 targetSection.style.display = 'block';
-                
-                switch(targetId) {
-                    case 'manage-players-section':
-                        await loadPlayers();
-                        break;
-                    case 'elo-history':
-                        await loadEloHistory();
-                        break;
-                    case 'elo-ratings':
-                        await loadEloRatings();
-                        break;
+                if (targetId === 'manage-players-section') {
+                    await loadPlayers();
                 }
             }
         });
@@ -254,11 +243,10 @@ async function loadPlayers() {
 
     try {
         const playersRef = collection(db, 'players');
-        // Order by position for ladder view
-        const q = query(playersRef, orderBy('position', 'asc'));
-        const playersSnapshot = await getDocs(q);
+        const q = query(playersRef, orderBy('username'));
+        const querySnapshot = await getDocs(q);
 
-        if (playersSnapshot.empty) {
+        if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="4">No players found</td></tr>';
             return;
         }
@@ -266,7 +254,7 @@ async function loadPlayers() {
         tableBody.innerHTML = '';
         let position = 1;
 
-        playersSnapshot.forEach(doc => {
+        querySnapshot.forEach(doc => {
             const player = doc.data();
             const row = document.createElement('tr');
             const rankStyle = getRankStyle(player.eloRating || 1200);
@@ -274,25 +262,25 @@ async function loadPlayers() {
             row.innerHTML = `
                 <td>${position}</td>
                 <td style="color: ${rankStyle.color}; font-weight: bold;">
-                    ${player.username}
+                    ${player.username || 'Unknown'}
                 </td>
                 <td>${player.eloRating || 1200}</td>
                 <td>
-                    ${position > 1 ? `<button class="move-btn" data-direction="up" data-id="${doc.id}" data-pos="${position}">↑</button>` : ''}
-                    ${position < playersSnapshot.size ? `<button class="move-btn" data-direction="down" data-id="${doc.id}" data-pos="${position}">↓</button>` : ''}
-                    <button class="remove-btn danger-button" data-id="${doc.id}">Remove</button>
+                    <button class="move-btn" data-direction="up" data-id="${doc.id}">↑</button>
+                    <button class="move-btn" data-direction="down" data-id="${doc.id}">↓</button>
+                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
                 </td>
             `;
             tableBody.appendChild(row);
             position++;
         });
 
-        // Add event listeners for move and remove buttons
-        setupLadderControls();
+        // Add event listeners for buttons
+        setupPlayerControls();
 
     } catch (error) {
         console.error('Error loading players:', error);
-        tableBody.innerHTML = '<tr><td colspan="4">Error loading players: ' + error.message + '</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4">Error loading players</td></tr>';
     }
 }
 
