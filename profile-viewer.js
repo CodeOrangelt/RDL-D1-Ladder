@@ -147,19 +147,41 @@ class ProfileViewer {
         }
     }
 
+    // Also modify the displayProfile method to store the data
     displayProfile(data) {
+        // Store the data for later use
+        this.currentProfileData = data;
+        
         document.getElementById('profile-preview').src = data.pfpUrl || 'default-avatar.png';
-        document.getElementById('nickname').textContent = data.username; // Show username
+        document.getElementById('nickname').textContent = data.username;
         document.getElementById('motto-view').textContent = data.motto || 'No motto set';
         document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not specified';
         document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not specified';
-        // Email is used for identification but not displayed
+
+        // Also populate edit fields if they exist
+        const mottoEdit = document.getElementById('motto-edit');
+        const mapEdit = document.getElementById('favorite-map-edit');
+        const weaponEdit = document.getElementById('favorite-weapon-edit');
+
+        if (mottoEdit) mottoEdit.value = data.motto || '';
+        if (mapEdit) mapEdit.value = data.favoriteMap || '';
+        if (weaponEdit) weaponEdit.value = data.favoriteWeapon || '';
     }
 
+    // Modify the toggleEditMode method to populate form fields
     toggleEditMode(isEditing) {
         const viewMode = document.querySelector('.view-mode');
         const editMode = document.querySelector('.edit-mode');
+        
         if (isEditing) {
+            // Populate edit form fields with current values
+            document.getElementById('motto-edit').value = 
+                document.getElementById('motto-view').textContent.replace('No motto set', '');
+            document.getElementById('favorite-map-edit').value = 
+                document.getElementById('favorite-map-view').textContent.replace('Not specified', '');
+            document.getElementById('favorite-weapon-edit').value = 
+                document.getElementById('favorite-weapon-view').textContent.replace('Not specified', '');
+            
             viewMode.style.display = 'none';
             editMode.style.display = 'block';
         } else {

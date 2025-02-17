@@ -41,38 +41,15 @@
                     </div>
 
                     <!-- Edit Mode -->
-                    <form id="profile-form" class="edit-mode" style="display: none;">
-                        <div class="info-item">
-                            <span class="info-label">Nickname:</span>
-                            <input type="text" id="nickname-edit" maxlength="20">
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Motto:</span>
-                            <textarea id="motto-edit" maxlength="100"></textarea>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Favorite Map:</span>
-                            <select id="favorite-map-edit">
-                                <option value="">Select a map</option>
-                                <option value="Containment">Containment</option>
-                                <option value="The Hive">The Hive</option>
-                                <option value="Warehouse">Warehouse</option>
-                            </select>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Favorite Weapon:</span>
-                            <select id="favorite-weapon-edit">
-                                <option value="">Select a weapon</option>
-                                <option value="Assault Rifle">Assault Rifle</option>
-                                <option value="Shotgun">Shotgun</option>
-                                <option value="Sniper">Sniper</option>
-                            </select>
-                        </div>
-                        <div class="button-group">
-                            <button type="submit" class="save-btn">Save Changes</button>
+                    <div class="edit-mode" style="display: none;">
+                        <form id="profile-form">
+                            <input type="text" id="motto-edit" placeholder="Enter your motto">
+                            <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
+                            <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
+                            <button type="submit">Save</button>
                             <button type="button" class="cancel-btn">Cancel</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
