@@ -19,35 +19,24 @@ async function updateAuthSection(user) {
     
     if (user) {
         try {
-            const userDoc = doc(db, 'players', user.uid);
-            const docSnap = await getDoc(userDoc);
-            const username = docSnap.exists() ? docSnap.data().username : user.email;
+            const userDoc = await getDoc(doc(db, 'players', user.uid));
+            const username = userDoc.exists() ? userDoc.data().username : user.email;
             
             authSection.innerHTML = `
                 <div class="user-dropdown">
                     <span id="current-user">${username}</span>
                     <div class="dropdown-content">
-                        <a href="profile.html">Profile</a>
+                        <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
                         <a href="#" id="sign-out-link">Sign Out</a>
                     </div>
                 </div>
             `;
         } catch (error) {
             console.error("Error fetching user data:", error);
-            authSection.innerHTML = `
-                <div class="user-dropdown">
-                    <span id="current-user">${user.email}</span>
-                    <div class="dropdown-content">
-                        <a href="profile.html">Profile</a>
-                        <a href="#" id="sign-out-link">Sign Out</a>
-                    </div>
-                </div>
-            `;
+            authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
         }
     } else {
-        authSection.innerHTML = `
-            <a href="login.html" class="auth-link">Login</a>
-        `;
+        authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
     }
 }
 
