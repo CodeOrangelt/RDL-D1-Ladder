@@ -40,18 +40,15 @@ async function displayLadder() {
         const players = [];
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
-            // Skip test players
-            if (playerData.email && (playerData.email.includes('test4@') || playerData.email.includes('test5@'))) {
-                return;
-            }
-            console.log('Player data:', playerData);
             players.push({
                 ...playerData,
-                position: playerData.position || Number.MAX_SAFE_INTEGER,
+                id: doc.id,
+                elo: playerData.eloRating || 0,
+                position: playerData.position || players.length + 1 // Default to end of ladder
             });
         });
 
-        // Sort players by position
+        // Sort players by position (lowest number first)
         players.sort((a, b) => a.position - b.position);
 
         // Display sorted players
@@ -74,35 +71,35 @@ function updateLadderDisplay(ladderData) {
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
-    let rank = 1;
     ladderData.forEach(player => {
         const row = document.createElement('tr');
         
-        // Create rank cell
+        // Create rank cell based on position
         const rankCell = document.createElement('td');
-        rankCell.textContent = rank;
+        rankCell.textContent = player.position;
         
-        // Create username cell with clickable link
+        // Rest of the display logic remains the same...
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
-        // Use username in URL instead of email
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
         usernameLink.textContent = player.username;
         
         // Set color based on ELO
         const elo = parseFloat(player.elo) || 0;
-        if (elo >= 2100) {
+        if (elo >= 2000) {
             usernameLink.style.color = '#50C878'; // Emerald Green
-            if (rank === 1) {
+            if (player.position === 1) { // Changed from rank to position
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
             }
         } else if (elo >= 1800) {
+            usernameLink.style.color = '#FFD700'; // Gold
+        } else if (elo >= 1600) {
             usernameLink.style.color = '#C0C0C0'; // Silver
         } else if (elo >= 1400) {
             usernameLink.style.color = '#CD7F32'; // Bronze
         } else {
-            usernameLink.style.color = 'gray'; // default color
+            usernameLink.style.color = 'gray'; // Unranked
         }
         
         usernameLink.style.textDecoration = 'none';
@@ -124,8 +121,6 @@ function updateLadderDisplay(ladderData) {
         row.appendChild(rankCell);
         row.appendChild(usernameCell);
         tbody.appendChild(row);
-        
-        rank++;
     });
 }
 
