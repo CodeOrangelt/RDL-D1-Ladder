@@ -2,17 +2,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
-
-const STORAGE_RETRY_CONFIG = {
-    maxRetries: 3,
-    timeout: 30000 // 30 seconds
-};
 
 class ProfileViewer {
     constructor() {
@@ -24,24 +17,6 @@ class ProfileViewer {
         const editBtn = document.getElementById('edit-profile');
         const cancelBtn = document.querySelector('.cancel-btn');
         const profileForm = document.getElementById('profile-form');
-        const imageUpload = document.getElementById('profile-image-upload');
-
-        console.log('Setting up event listeners:', {
-            editBtn: !!editBtn,
-            cancelBtn: !!cancelBtn,
-            profileForm: !!profileForm,
-            imageUpload: !!imageUpload
-        });
-
-        if (imageUpload) {
-            imageUpload.addEventListener('change', (e) => {
-                console.log('Image upload change event triggered');
-                console.log('Selected file:', e.target.files[0]);
-                this.handleImageUpload(e);
-            });
-        } else {
-            console.error('Image upload element not found');
-        }
 
         editBtn?.addEventListener('click', () => this.toggleEditMode(true));
         cancelBtn?.addEventListener('click', () => this.toggleEditMode(false));
@@ -172,135 +147,14 @@ class ProfileViewer {
         }
     }
 
-    async handleImageUpload(event) {
-        console.log('handleImageUpload started');
-        const file = event.target.files[0];
-        if (!file) {
-            console.log('No file selected');
-            return;
-        }
-
-        const profilePreview = document.getElementById('profile-preview');
-        
-        try {
-            const user = auth.currentUser;
-            if (!user) {
-                throw new Error('You must be logged in to change your profile picture');
-            }
-
-            // Show loading state
-            if (profilePreview) {
-                profilePreview.style.opacity = '0.5';
-            }
-
-            // Validate file
-            if (file.size > 24 * 1024 * 1024) { // 24MB limit for postimages
-                throw new Error('File size too large. Maximum size is 24MB.');
-            }
-            if (!file.type.startsWith('image/')) {
-                throw new Error('Only image files are allowed.');
-            }
-
-            // Create form data
-            const formData = new FormData();
-            formData.append('upload', file);
-            formData.append('adult', 'no');
-            formData.append('ui', 'web');
-
-            // Upload to postimages.org
-            const response = await fetch('https://postimages.org/json/rr', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload image');
-            }
-
-            const data = await response.json();
-            if (!data.url) {
-                throw new Error('Invalid response from image host');
-            }
-
-            const imageUrl = data.url;
-            console.log('Image uploaded successfully:', imageUrl);
-
-            // Update Firestore with the image URL
-            await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: imageUrl,
-                lastUpdated: new Date().toISOString()
-            }, { merge: true });
-
-            // Update UI
-            if (profilePreview) {
-                profilePreview.src = imageUrl;
-                profilePreview.style.opacity = '1';
-            }
-
-            // Update current profile data
-            if (this.currentProfileData) {
-                this.currentProfileData.pfpUrl = imageUrl;
-            }
-
-            console.log('Profile picture update completed successfully');
-
-        } catch (error) {
-            console.error('Error in handleImageUpload:', error);
-            if (profilePreview) {
-                profilePreview.src = 'images/shieldorb.png';
-                profilePreview.style.opacity = '1';
-            }
-            this.showError(`Failed to upload image: ${error.message}`);
-        }
-    }
-
     // Also modify the displayProfile method to store the data
     displayProfile(data) {
         this.currentProfileData = data;
         
-        // Handle profile picture
+        // Always use default profile picture
         const profilePreview = document.getElementById('profile-preview');
-        const defaultPfp = 'images/shieldorb.png';  // Updated default image path
-
         if (profilePreview) {
-            if (data.pfpUrl && data.pfpUrl.startsWith('http')) {
-                // If it's already a URL, use it directly
-                profilePreview.src = data.pfpUrl;
-                console.log('Using provided URL for profile picture:', data.pfpUrl);
-            } else if (data.pfpUrl && data.pfpUrl !== defaultPfp) {
-                // If it's a storage path, get the download URL
-                console.log('Fetching URL for storage path:', data.pfpUrl);
-                
-                // Add retry logic for getDownloadURL
-                let retryCount = 0;
-                const tryFetchURL = () => {
-                    getDownloadURL(ref(storage, data.pfpUrl))
-                        .then(url => {
-                            profilePreview.src = url;
-                            console.log('Retrieved URL for profile picture:', url);
-                        })
-                        .catch(error => {
-                            console.error(`Error loading profile picture (attempt ${retryCount + 1}):`, error);
-                            
-                            if (retryCount < STORAGE_RETRY_CONFIG.maxRetries) {
-                                retryCount++;
-                                console.log(`Retrying... Attempt ${retryCount} of ${STORAGE_RETRY_CONFIG.maxRetries}`);
-                                setTimeout(tryFetchURL, 1000 * retryCount); // Exponential backoff
-                            } else {
-                                console.error('Max retries reached, using default picture');
-                                profilePreview.src = defaultPfp;
-                            }
-                        });
-                };
-                
-                tryFetchURL();
-            } else {
-                console.log('Using default profile picture');
-                profilePreview.src = defaultPfp;
-            }
+            profilePreview.src = 'images/shieldorb.png';
         }
 
         // Rest of the display logic...
