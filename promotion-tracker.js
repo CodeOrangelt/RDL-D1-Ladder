@@ -3,7 +3,7 @@ import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstat
 
 // Add rank color mapping
 const RANK_COLORS = {
-    'Emerald' '50C878',
+    'Emerald': '#50C878',
     'Gold': '#FFD700',
     'Silver': '#C0C0C0',
     'Bronze': '#CD7F32',
@@ -34,7 +34,7 @@ export function initializePromotionTracker() {
                     // Set the rank attribute for styling
                     bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by 'Admin'}`;
+                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by Admin`;
                     
                     promotionDetails.innerHTML = promotionText;
                     promotionDetails.classList.add('new-promotion');
