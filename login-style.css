@@ -31,8 +31,9 @@ h1 {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Style all inputs in the form container */
-.form-container input {
+/* Style all inputs in both forms */
+.form-container input,
+.form-group input {
     width: calc(100% - 24px);  /* Account for padding */
     padding: 12px;
     margin: 10px 12px;  /* Added horizontal margin */
@@ -53,11 +54,13 @@ h1 {
 }
 
 .form-container h2 {
-    margin-bottom: 15px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .form-container button {
-    width: 100%;
+    width: calc(100% - 24px);
+    margin: 10px 12px;
     padding: 10px;
     background-color: #4CAF50;
     color: white;
@@ -85,6 +88,7 @@ h1 {
 .switch-form {
     text-align: center;
     margin-top: 20px;
+    padding: 0 12px;
     color: #666;
 }
 
@@ -142,32 +146,19 @@ h1 {
 }
 
 #verification-answer {
-    /* This input will now inherit all styles from .form-group input */
-}
-
-/* Update the form-group and input styling */
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: none;
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 16px;
-}
-
-.form-group input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.form-group input:focus {
-    outline: none;
-    background-color: rgba(255, 255, 255, 0.2);
+    /* Will inherit styles from .form-container input */
 }
 
 /* Update form group styles */
 .form-group {
     margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Update the form-group and input styling */
+.form-group input {
+    /* Will inherit styles from .form-container input */
 }
 
