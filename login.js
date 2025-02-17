@@ -16,12 +16,28 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
-// Add this function at the top of the file
+// Modify isUsernameAvailable to check both pending and active players
 async function isUsernameAvailable(username) {
-    const playersRef = collection(db, "players");
-    const q = query(playersRef, where("username", "==", username));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.empty;
+    try {
+        // Check active players
+        const playersRef = collection(db, "players");
+        const playersQuery = query(playersRef, where("username", "==", username));
+        const playersSnapshot = await getDocs(playersQuery);
+        
+        if (!playersSnapshot.empty) {
+            return false;
+        }
+
+        // Check pending registrations
+        const pendingRef = collection(db, "pendingRegistrations");
+        const pendingQuery = query(pendingRef, where("username", "==", username));
+        const pendingSnapshot = await getDocs(pendingQuery);
+        
+        return pendingSnapshot.empty;
+    } catch (error) {
+        console.error("Error checking username:", error);
+        throw error;
+    }
 }
 
 // Modify the handleRegister function
@@ -82,7 +98,7 @@ async function handleRegister(e) {
     }
 }
 
-// Modify the handleLogin function
+// Modify handleLogin function
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -98,41 +114,56 @@ async function handleLogin(e) {
                 <div class="error-message">
                     Please verify your email before logging in.
                     <br><br>
-                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                    <button onclick="resendVerificationEmail()" class="resend-button">
                         Resend Verification Email
                     </button>
                 </div>`;
             return;
         }
 
-        // Check if this is their first login after verification
-        const pendingRef = doc(db, "pendingRegistrations", user.uid);
-        const pendingDoc = await getDoc(pendingRef);
+        // Check if user is already in players collection
+        const userDocRef = doc(db, "players", user.uid);
+        const userDoc = await getDoc(userDocRef);
         
-        if (pendingDoc.exists() && !pendingDoc.data().verified) {
-            // Get all players to determine next position
-            const playersRef = collection(db, "players");
-            const playersSnapshot = await getDocs(playersRef);
-            let maxPosition = 0;
+        if (!userDoc.exists()) {
+            // Check pending registration
+            const pendingRef = doc(db, "pendingRegistrations", user.uid);
+            const pendingDoc = await getDoc(pendingRef);
+            
+            if (pendingDoc.exists() && !pendingDoc.data().verified) {
+                // Get all players to determine next position
+                const playersRef = collection(db, "players");
+                const playersSnapshot = await getDocs(playersRef);
+                let maxPosition = 0;
 
-            playersSnapshot.forEach((doc) => {
-                const playerData = doc.data();
-                if (playerData.position && playerData.position > maxPosition) {
-                    maxPosition = playerData.position;
+                playersSnapshot.forEach((doc) => {
+                    const playerData = doc.data();
+                    if (playerData.position && playerData.position > maxPosition) {
+                        maxPosition = playerData.position;
+                    }
+                });
+
+                // Do one final username check before creating player
+                const isStillAvailable = await isUsernameAvailable(pendingDoc.data().username);
+                if (!isStillAvailable) {
+                    await signOut(auth);
+                    document.getElementById('login-error').textContent = 
+                        'Username is no longer available. Please contact an administrator.';
+                    return;
                 }
-            });
 
-            // Create the verified player document
-            const userDocRef = doc(db, "players", user.uid);
-            await setDoc(userDocRef, {
-                username: pendingDoc.data().username,
-                email: pendingDoc.data().email,
-                eloRating: 1200,
-                position: maxPosition + 1
-            });
+                // Create the verified player document
+                await setDoc(userDocRef, {
+                    username: pendingDoc.data().username,
+                    email: pendingDoc.data().email,
+                    eloRating: 1200,
+                    position: maxPosition + 1,
+                    createdAt: new Date()
+                });
 
-            // Update pending registration
-            await updateDoc(pendingRef, { verified: true });
+                // Update pending registration
+                await updateDoc(pendingRef, { verified: true });
+            }
         }
 
         window.location.href = 'index.html';
