@@ -68,23 +68,23 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Update table border styles */
 table, th, td {
-    border: 1px solid #ddd;
+    border: none; /* Remove default borders */
 }
 
 th, td {
-    border: 2px solid white; /* Changed from black */
-    border-radius: 15px;
+    border: none; /* Remove all borders */
     padding: 8px;
     text-align: center;
     font-family: Tahoma, sans-serif;
-    color: white; /* Added white text color */
-    background-color: transparent; /* Ensure cells are transparent */
+    color: white;
+    background-color: transparent;
 }
 
 th {
-    background-color: transparent; /* Changed from #f2f2f2 */
-    color: white; /* Changed from black */
+    background-color: transparent;
+    color: white;
     font-weight: bold;
 }
 
@@ -100,6 +100,7 @@ tr:nth-child(even) {
     text-shadow: 0 0 5px #FFD700;
     animation: glow 2s ease-in-out infinite;
     background-color: transparent;
+    border: none;
 }
 
 @keyframes glow {
