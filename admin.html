@@ -32,11 +32,13 @@
     <main>
         <div class="container">
             <h1>Admin Backend</h1>
-            <div id="admin-actions">
-                <button class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
-                <button class="collapse-btn" data-target="elo-history">View ELO History</button>
-                <button class="collapse-btn" data-target="template-ladder">View Template Ladder</button>
+            <div id="admin-actions" class="admin-buttons">
+                <button id="view-elo-ratings" class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
+                <button id="view-elo-history" class="collapse-btn" data-target="elo-history">View ELO History</button>
                 <button id="toggle-manage-players" class="collapse-btn" data-target="manage-players-section">Manage Players</button>
+                <button id="reset-season" class="danger-button">Reset Season</button>
+                <button id="promote-player" class="danger-button">Promote Player</button>
+                <button id="demote-player" class="danger-button">Demote Player</button>
             </div>
             <div id="elo-ratings" style="display: none;">
                 <h2>Player ELO Ratings</h2>
@@ -108,11 +110,6 @@
                 </div>
             </div>
             <div class="admin-section">
-                <button id="reset-season" class="danger-button">Reset Season</button>
-                <button id="promote-player" class="danger-button">Promote Player</button>
-                <button id="demote-player" class="danger-button">Demote Player</button>
-                
-                <!-- Promotion Dialog -->
                 <div id="promote-dialog" class="confirmation-dialog" style="display: none;">
                     <h3>Promote Player</h3>
                     <input type="text" id="promote-username" placeholder="Enter username" class="admin-input">
@@ -130,7 +127,6 @@
                         <button id="cancel-reset" class="secondary-button">Cancel</button>
                     </div>
                 </div>
-                <!-- Add Demotion Dialog -->
                 <div id="demote-dialog" class="confirmation-dialog" style="display: none;">
                     <h3>Demote Player</h3>
                     <input type="text" id="demote-username" placeholder="Enter username" class="admin-input">

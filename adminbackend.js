@@ -47,10 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (ADMIN_EMAILS.includes(user.email)) {
             setupCollapsibleButtons();
-            setupPromotePlayerButton();
-            setupDemotePlayerButton(); // Add this line
+            setupPromotePlayerButton();  // Make sure this is called
+            setupDemotePlayerButton();   // Make sure this is called
             setupManagePlayersSection();
-            // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
             }
