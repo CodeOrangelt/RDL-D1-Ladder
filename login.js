@@ -12,7 +12,10 @@ import {
     query,
     where,
     getDoc,
-    updateDoc
+    updateDoc,
+    deleteDoc,
+    orderBy,
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
@@ -125,6 +128,7 @@ async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    const errorElement = document.getElementById('login-error');
 
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -132,7 +136,7 @@ async function handleLogin(e) {
 
         if (!user.emailVerified) {
             await signOut(auth);
-            document.getElementById('login-error').innerHTML = `
+            errorElement.innerHTML = `
                 <div class="error-message">
                     Please verify your email before logging in.
                     <br><br>
@@ -148,49 +152,47 @@ async function handleLogin(e) {
         const userDoc = await getDoc(userDocRef);
         
         if (!userDoc.exists()) {
-            // Check pending registration
+            // Get pending registration data
             const pendingRef = doc(db, "pendingRegistrations", user.uid);
             const pendingDoc = await getDoc(pendingRef);
             
-            if (pendingDoc.exists() && !pendingDoc.data().verified) {
-                // Get all players to determine next position
+            if (pendingDoc.exists()) {
+                const pendingData = pendingDoc.data();
+                
+                // Get current highest position
                 const playersRef = collection(db, "players");
-                const playersSnapshot = await getDocs(playersRef);
-                let maxPosition = 0;
+                const playersSnapshot = await getDocs(query(playersRef, orderBy("position", "desc"), limit(1)));
+                const maxPosition = !playersSnapshot.empty ? 
+                    playersSnapshot.docs[0].data().position : 0;
 
-                playersSnapshot.forEach((doc) => {
-                    const playerData = doc.data();
-                    if (playerData.position && playerData.position > maxPosition) {
-                        maxPosition = playerData.position;
-                    }
-                });
-
-                // Do one final username check before creating player
-                const isStillAvailable = await isUsernameAvailable(pendingDoc.data().username);
-                if (!isStillAvailable) {
-                    await signOut(auth);
-                    document.getElementById('login-error').textContent = 
-                        'Username is no longer available. Please contact an administrator.';
-                    return;
-                }
-
-                // Create the verified player document
+                // Create the player document
                 await setDoc(userDocRef, {
-                    username: pendingDoc.data().username,
-                    email: pendingDoc.data().email,
-                    eloRating: 1200,
+                    username: pendingData.username,
+                    email: pendingData.email,
+                    eloRating: 1200, // Starting ELO
                     position: maxPosition + 1,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    verified: true,
+                    isAdmin: false
                 });
 
-                // Update pending registration
-                await updateDoc(pendingRef, { verified: true });
+                // Update or delete pending registration
+                await deleteDoc(pendingRef);
+
+                console.log('Successfully added new player to ladder');
+            } else {
+                console.error('No pending registration found');
+                errorElement.textContent = 'Registration data not found. Please contact an administrator.';
+                await signOut(auth);
+                return;
             }
         }
 
+        // Redirect to home page
         window.location.href = 'index.html';
     } catch (error) {
-        document.getElementById('login-error').textContent = error.message;
+        console.error('Login error:', error);
+        errorElement.textContent = error.message;
     }
 }
 
