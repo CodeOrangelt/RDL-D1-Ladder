@@ -32,6 +32,11 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Add this new section -->
+            <div id="latest-promotion" class="promotion-banner">
+                <h3>Latest Promotion</h3>
+                <p id="promotion-details">No recent promotions</p>
+            </div>
         </div>
     </main>
     
@@ -40,6 +45,7 @@
     <!-- Scripts -->
     <script type="module">
         import { RetroTrackerMonitor } from './whosplaying.js';
+        import { initializePromotionTracker } from './promotion-tracker.js';
         
         Promise.all([
             fetch('nav.html').then(response => response.text()),
@@ -51,6 +57,9 @@
             // Initialize after ensuring class is loaded
             const tracker = new RetroTrackerMonitor();
             tracker.initializeBannerOnly();
+            
+            // Initialize promotion tracker
+            initializePromotionTracker();
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });

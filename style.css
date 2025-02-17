@@ -196,3 +196,23 @@ tr:nth-child(even) {
     height: 35px; /* Increase row height */
 }
 
+.promotion-banner {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #3498db;
+}
+
+.promotion-banner h3 {
+    color: #3498db;
+    margin: 0 0 10px 0;
+}
+
+.promotion-banner p {
+    color: white;
+    margin: 0;
+    font-size: 1.1em;
+}
+
