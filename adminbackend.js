@@ -246,36 +246,47 @@ function displayTemplateLadder() {
     });
 }
 
-document.getElementById('toggle-manage-players').addEventListener('click', function() {
-    const section = document.getElementById('manage-players-section');
-    const button = this;
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        button.classList.add('active');
-        loadPlayers(); // Load current players when section is opened
-    } else {
-        section.style.display = 'none';
-        button.classList.remove('active');
-    }
-});
-
+// Update loadPlayers function to prevent duplicates and handle visibility
 async function loadPlayers() {
     const tableBody = document.querySelector('#players-table tbody');
-    tableBody.innerHTML = '';
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
 
     try {
         const playersRef = collection(db, 'players');
-        const playersSnapshot = await getDocs(playersRef);
+        // Add orderBy to ensure consistent ordering and prevent duplicates
+        const q = query(playersRef, orderBy('username'));
+        const playersSnapshot = await getDocs(q);
+
+        if (playersSnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="3">No players found</td></tr>';
+            return;
+        }
+
+        // Clear existing content
+        tableBody.innerHTML = '';
+
+        // Use a Set to track unique usernames
+        const seenUsernames = new Set();
 
         playersSnapshot.forEach(doc => {
             const player = doc.data();
+            
+            // Skip if we've already seen this username
+            if (seenUsernames.has(player.username)) return;
+            seenUsernames.add(player.username);
+
             const row = document.createElement('tr');
+            const rankStyle = getRankStyle(player.eloRating || 1200);
+            
             row.innerHTML = `
-                <td>${player.username}</td>
-                <td>${player.eloRating || 'N/A'}</td>
+                <td style="color: ${rankStyle.color}; font-weight: bold;">
+                    ${player.username}
+                </td>
+                <td>${player.eloRating || 1200}</td>
                 <td>
-                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
+                    <button class="remove-btn danger-button" data-id="${doc.id}">Remove</button>
                 </td>
             `;
             tableBody.appendChild(row);
@@ -285,20 +296,19 @@ async function loadPlayers() {
         document.querySelectorAll('.remove-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 if (confirm('Are you sure you want to remove this player?')) {
-                    const playerId = e.target.dataset.id;
                     try {
-                        await deleteDoc(doc(db, 'players', playerId));
-                        loadPlayers(); // Refresh the list
+                        await deleteDoc(doc(db, 'players', e.target.dataset.id));
+                        await loadPlayers(); // Refresh the list
                     } catch (error) {
                         console.error('Error removing player:', error);
-                        alert('Failed to remove player');
+                        alert('Failed to remove player: ' + error.message);
                     }
                 }
             });
         });
     } catch (error) {
         console.error('Error loading players:', error);
-        alert('Failed to load players');
+        tableBody.innerHTML = '<tr><td colspan="3">Error loading players: ' + error.message + '</td></tr>';
     }
 }
 
@@ -491,43 +501,25 @@ function setupPromotePlayerButton() {
 // Add a new function to handle the manage players section setup
 function setupManagePlayersSection() {
     const toggleManagePlayersBtn = document.getElementById('toggle-manage-players');
-    const addPlayerBtn = document.getElementById('add-player-btn');
+    const section = document.getElementById('manage-players-section');
 
-    if (toggleManagePlayersBtn) {
-        toggleManagePlayersBtn.addEventListener('click', function() {
-            const section = document.getElementById('manage-players-section');
-            if (section) {
-                if (section.style.display === 'none') {
-                    section.style.display = 'block';
-                    this.classList.add('active');
-                    loadPlayers();
-                } else {
-                    section.style.display = 'none';
-                    this.classList.remove('active');
-                }
-            }
-        });
-    }
+    if (toggleManagePlayersBtn && section) {
+        toggleManagePlayersBtn.addEventListener('click', async function() {
+            // Toggle other sections off
+            document.querySelectorAll('.admin-section').forEach(s => {
+                if (s !== section) s.style.display = 'none';
+            });
 
-    if (addPlayerBtn) {
-        addPlayerBtn.addEventListener('click', async () => {
-            const usernameInput = document.getElementById('new-player-username');
-            const eloInput = document.getElementById('new-player-elo');
+            // Toggle this section
+            const isHidden = section.style.display === 'none';
+            section.style.display = isHidden ? 'block' : 'none';
             
-            if (!usernameInput || !eloInput) {
-                console.error('Player input fields not found');
-                return;
+            if (isHidden) {
+                this.classList.add('active');
+                await loadPlayers(); // Load players when showing section
+            } else {
+                this.classList.remove('active');
             }
-
-            const username = usernameInput.value.trim();
-            const eloRating = parseInt(eloInput.value);
-
-            if (!username || isNaN(eloRating)) {
-                alert('Please enter both username and ELO rating');
-                return;
-            }
-
-            // ... rest of your add player logic ...
         });
     }
 }
