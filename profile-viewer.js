@@ -194,8 +194,8 @@ class ProfileViewer {
             }
 
             // Validate file
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
-                throw new Error('File size too large. Maximum size is 10MB.');
+            if (file.size > 24 * 1024 * 1024) { // 24MB limit for postimages
+                throw new Error('File size too large. Maximum size is 24MB.');
             }
             if (!file.type.startsWith('image/')) {
                 throw new Error('Only image files are allowed.');
@@ -203,12 +203,17 @@ class ProfileViewer {
 
             // Create form data
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('upload', file);
+            formData.append('adult', 'no');
+            formData.append('ui', 'web');
 
-            // Upload to imgpush
-            const response = await fetch('https://imgpush.com/api/upload', {
+            // Upload to postimages.org
+            const response = await fetch('https://postimages.org/json/rr', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
 
             if (!response.ok) {
@@ -216,6 +221,10 @@ class ProfileViewer {
             }
 
             const data = await response.json();
+            if (!data.url) {
+                throw new Error('Invalid response from image host');
+            }
+
             const imageUrl = data.url;
             console.log('Image uploaded successfully:', imageUrl);
 
@@ -244,7 +253,7 @@ class ProfileViewer {
                 profilePreview.src = 'images/shieldorb.png';
                 profilePreview.style.opacity = '1';
             }
-            this.showError(error.message);
+            this.showError(`Failed to upload image: ${error.message}`);
         }
     }
 
