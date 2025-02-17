@@ -153,10 +153,7 @@ class ProfileViewer {
 
     async handleImageUpload(event) {
         const file = event.target.files[0];
-        if (!file) {
-            console.log('No file selected');
-            return;
-        }
+        if (!file) return;
 
         try {
             const user = auth.currentUser;
@@ -165,74 +162,61 @@ class ProfileViewer {
                 return;
             }
 
-            console.log('Starting image upload process for file:', file.name);
+            // Create a unique file path
+            const filePath = `profile-images/${user.uid}/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, filePath);
 
-            // Create a preview immediately
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('profile-preview').src = e.target.result;
-                console.log('Preview image loaded');
-            };
-            reader.readAsDataURL(file);
+            // Show loading state
+            document.getElementById('profile-preview').style.opacity = '0.5';
 
-            // Upload to Firebase Storage
-            console.log('Creating storage reference for user:', user.uid);
-            const storageRef = ref(storage, `profile-images/${user.uid}`);
-            
-            console.log('Uploading file to Firebase Storage...');
-            const uploadTask = await uploadBytes(storageRef, file);
-            console.log('Upload successful:', uploadTask);
-
-            // Get the download URL
-            console.log('Getting download URL...');
+            // Upload file
+            await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(storageRef);
-            console.log('Image uploaded successfully, URL:', downloadURL);
 
-            // Update the profile data in Firestore
-            console.log('Updating profile data in Firestore...');
+            // Update profile data in Firestore
             await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: downloadURL,
+                pfpUrl: filePath,
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
-            console.log('Profile data updated in Firestore');
 
-            // Update the current profile data
+            // Update display
+            document.getElementById('profile-preview').src = downloadURL;
+            document.getElementById('profile-preview').style.opacity = '1';
+
             if (this.currentProfileData) {
-                this.currentProfileData.pfpUrl = downloadURL;
-                console.log('Updated current profile data with new image URL');
+                this.currentProfileData.pfpUrl = filePath;
             }
-
-            // Refresh the display to show the updated image
-            this.displayProfile({
-                ...this.currentProfileData,
-                pfpUrl: downloadURL
-            });
-            console.log('Profile display refreshed with new image');
 
         } catch (error) {
             console.error('Error uploading image:', error);
-            console.error('Error details:', {
-                code: error.code,
-                message: error.message,
-                stack: error.stack
-            });
-            this.showError(`Failed to upload image: ${error.message}`);
-            
-            // Revert preview to previous image if upload fails
-            if (this.currentProfileData && this.currentProfileData.pfpUrl) {
-                document.getElementById('profile-preview').src = this.currentProfileData.pfpUrl;
-            } else {
-                document.getElementById('profile-preview').src = 'default-avatar.png';
-            }
+            this.showError('Failed to upload image');
+            document.getElementById('profile-preview').style.opacity = '1';
         }
     }
 
     // Also modify the displayProfile method to store the data
     displayProfile(data) {
-        // Store the data for later use
         this.currentProfileData = data;
         
-        document.getElementById('profile-preview').src = data.pfpUrl || 'default-avatar.png';
+        // Handle profile picture
+        const profilePreview = document.getElementById('profile-preview');
+        if (profilePreview) {
+            if (data.pfpUrl && data.pfpUrl !== 'default-avatar.png') {
+                // Load image from Firebase Storage
+                getDownloadURL(ref(storage, data.pfpUrl))
+                    .then(url => {
+                        profilePreview.src = url;
+                    })
+                    .catch(error => {
+                        console.error('Error loading profile picture:', error);
+                        profilePreview.src = 'default-avatar.png';
+                    });
+            } else {
+                profilePreview.src = 'default-avatar.png';
+            }
+        }
+
+        // Rest of the display logic...
         document.getElementById('nickname').textContent = data.username;
         document.getElementById('motto-view').textContent = data.motto || 'No motto set';
         document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not specified';
