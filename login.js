@@ -7,7 +7,8 @@ import {
 import { 
     doc, 
     setDoc,
-    collection 
+    collection,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
@@ -33,13 +34,25 @@ async function handleRegister(e) {
         // Send verification email
         await sendEmailVerification(user);
 
-        // Add user to Firestore using new modular syntax
+        // Get all players to determine next position
+        const playersRef = collection(db, "players");
+        const playersSnapshot = await getDocs(playersRef);
+        let maxPosition = 0;
+
+        playersSnapshot.forEach((doc) => {
+            const playerData = doc.data();
+            if (playerData.position && playerData.position > maxPosition) {
+                maxPosition = playerData.position;
+            }
+        });
+
+        // Add user to Firestore with next available position
         const userDocRef = doc(db, "players", user.uid);
         await setDoc(userDocRef, {
             username: username,
             email: email,
             eloRating: 1200,
-            position: Number.MAX_SAFE_INTEGER
+            position: maxPosition + 1  // Set position to one more than current highest
         });
 
         // Show success message
