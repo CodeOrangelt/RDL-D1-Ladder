@@ -194,70 +194,52 @@ class ProfileViewer {
             }
 
             // Validate file
-            if (file.size > 5 * 1024 * 1024) {
-                throw new Error('File size too large. Maximum size is 5MB.');
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                throw new Error('File size too large. Maximum size is 10MB.');
             }
             if (!file.type.startsWith('image/')) {
                 throw new Error('Only image files are allowed.');
             }
 
-            // Create storage reference
-            const timestamp = Date.now();
-            const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-            const filePath = `profile-images/${user.uid}/${timestamp}_${sanitizedFilename}`;
-            const storageRef = ref(storage, filePath);
+            // Create form data
+            const formData = new FormData();
+            formData.append('image', file);
 
-            console.log('Starting upload process...');
-            
-            try {
-                const snapshot = await Promise.race([
-                    uploadBytes(storageRef, file),
-                    new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Upload timed out')), 
-                        STORAGE_RETRY_CONFIG.timeout)
-                    )
-                ]);
+            // Upload to imgpush
+            const response = await fetch('https://imgpush.com/api/upload', {
+                method: 'POST',
+                body: formData
+            });
 
-                console.log('Upload completed:', snapshot);
-
-                const downloadURL = await Promise.race([
-                    getDownloadURL(snapshot.ref),
-                    new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Getting download URL timed out')), 
-                        STORAGE_RETRY_CONFIG.timeout)
-                    )
-                ]);
-
-                console.log('Download URL obtained:', downloadURL);
-
-                // Update Firestore
-                await setDoc(doc(db, 'userProfiles', user.uid), {
-                    pfpUrl: downloadURL,
-                    lastUpdated: new Date().toISOString()
-                }, { merge: true });
-
-                // Update UI
-                if (profilePreview) {
-                    profilePreview.src = downloadURL;
-                    profilePreview.style.opacity = '1';
-                }
-
-                // Update current profile data
-                if (this.currentProfileData) {
-                    this.currentProfileData.pfpUrl = downloadURL;
-                }
-
-                console.log('Profile picture update completed successfully');
-
-            } catch (uploadError) {
-                console.error('Upload error:', uploadError);
-                throw new Error(`Upload failed: ${uploadError.message}`);
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
             }
+
+            const data = await response.json();
+            const imageUrl = data.url;
+            console.log('Image uploaded successfully:', imageUrl);
+
+            // Update Firestore with the image URL
+            await setDoc(doc(db, 'userProfiles', user.uid), {
+                pfpUrl: imageUrl,
+                lastUpdated: new Date().toISOString()
+            }, { merge: true });
+
+            // Update UI
+            if (profilePreview) {
+                profilePreview.src = imageUrl;
+                profilePreview.style.opacity = '1';
+            }
+
+            // Update current profile data
+            if (this.currentProfileData) {
+                this.currentProfileData.pfpUrl = imageUrl;
+            }
+
+            console.log('Profile picture update completed successfully');
 
         } catch (error) {
             console.error('Error in handleImageUpload:', error);
-            
-            // Reset the image on error
             if (profilePreview) {
                 profilePreview.src = 'images/shieldorb.png';
                 profilePreview.style.opacity = '1';
