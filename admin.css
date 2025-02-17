@@ -209,6 +209,9 @@ footer {
 .players-table-container {
     margin-top: 20px;
     overflow-x: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 15px;
 }
 
 .players-table-container h3 {
@@ -223,6 +226,7 @@ footer {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin-left: 5px;
 }
 
 .remove-btn:hover {
@@ -387,4 +391,26 @@ footer {
 
 #manage-players-section .form-group {
     margin-bottom: 20px;
+}
+
+.move-btn {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin: 0 2px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.move-btn:hover {
+    background: #34495e;
+}
+
+#players-table td {
+    vertical-align: middle;
+}
+
+#players-table td:last-child {
+    white-space: nowrap;
 }

@@ -251,65 +251,107 @@ async function loadPlayers() {
     const tableBody = document.querySelector('#players-table tbody');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
 
     try {
         const playersRef = collection(db, 'players');
-        // Add orderBy to ensure consistent ordering and prevent duplicates
-        const q = query(playersRef, orderBy('username'));
+        // Order by position for ladder view
+        const q = query(playersRef, orderBy('position', 'asc'));
         const playersSnapshot = await getDocs(q);
 
         if (playersSnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="3">No players found</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="4">No players found</td></tr>';
             return;
         }
 
-        // Clear existing content
         tableBody.innerHTML = '';
-
-        // Use a Set to track unique usernames
-        const seenUsernames = new Set();
+        let position = 1;
 
         playersSnapshot.forEach(doc => {
             const player = doc.data();
-            
-            // Skip if we've already seen this username
-            if (seenUsernames.has(player.username)) return;
-            seenUsernames.add(player.username);
-
             const row = document.createElement('tr');
             const rankStyle = getRankStyle(player.eloRating || 1200);
             
             row.innerHTML = `
+                <td>${position}</td>
                 <td style="color: ${rankStyle.color}; font-weight: bold;">
                     ${player.username}
                 </td>
                 <td>${player.eloRating || 1200}</td>
                 <td>
+                    ${position > 1 ? `<button class="move-btn" data-direction="up" data-id="${doc.id}" data-pos="${position}">↑</button>` : ''}
+                    ${position < playersSnapshot.size ? `<button class="move-btn" data-direction="down" data-id="${doc.id}" data-pos="${position}">↓</button>` : ''}
                     <button class="remove-btn danger-button" data-id="${doc.id}">Remove</button>
                 </td>
             `;
             tableBody.appendChild(row);
+            position++;
         });
 
-        // Add event listeners to remove buttons
-        document.querySelectorAll('.remove-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                if (confirm('Are you sure you want to remove this player?')) {
-                    try {
-                        await deleteDoc(doc(db, 'players', e.target.dataset.id));
-                        await loadPlayers(); // Refresh the list
-                    } catch (error) {
-                        console.error('Error removing player:', error);
-                        alert('Failed to remove player: ' + error.message);
-                    }
-                }
-            });
-        });
+        // Add event listeners for move and remove buttons
+        setupLadderControls();
+
     } catch (error) {
         console.error('Error loading players:', error);
-        tableBody.innerHTML = '<tr><td colspan="3">Error loading players: ' + error.message + '</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4">Error loading players: ' + error.message + '</td></tr>';
     }
+}
+
+async function setupLadderControls() {
+    // Handle move buttons
+    document.querySelectorAll('.move-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const direction = e.target.dataset.direction;
+            const playerId = e.target.dataset.id;
+            const currentPos = parseInt(e.target.dataset.pos);
+            
+            try {
+                const batch = writeBatch(db);
+                const playersRef = collection(db, 'players');
+                
+                // Get current player
+                const currentPlayerDoc = await getDoc(doc(playersRef, playerId));
+                
+                // Get adjacent player
+                const targetPos = direction === 'up' ? currentPos - 1 : currentPos + 1;
+                const targetQuery = query(playersRef, where('position', '==', targetPos));
+                const targetSnapshot = await getDocs(targetQuery);
+                
+                if (!targetSnapshot.empty) {
+                    const targetDoc = targetSnapshot.docs[0];
+                    
+                    // Swap positions
+                    batch.update(doc(playersRef, playerId), {
+                        position: targetPos
+                    });
+                    batch.update(doc(playersRef, targetDoc.id), {
+                        position: currentPos
+                    });
+                    
+                    await batch.commit();
+                    await loadPlayers(); // Refresh the display
+                }
+            } catch (error) {
+                console.error('Error moving player:', error);
+                alert('Failed to move player: ' + error.message);
+            }
+        });
+    });
+
+    // Handle remove buttons
+    document.querySelectorAll('.remove-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            if (confirm('Are you sure you want to remove this player?')) {
+                try {
+                    await deleteDoc(doc(db, 'players', e.target.dataset.id));
+                    await loadPlayers(); // Refresh the list
+                } catch (error) {
+                    console.error('Error removing player:', error);
+                    alert('Failed to remove player: ' + error.message);
+                }
+            }
+        });
+    });
 }
 
 document.getElementById('add-player-btn').addEventListener('click', async () => {
