@@ -24,7 +24,6 @@ const testPlayers = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is admin
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
             window.location.href = 'login.html';
@@ -33,127 +32,44 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (ADMIN_EMAILS.includes(user.email)) {
             setupCollapsibleButtons();
-            setupAdminButtons();
+            setupPromotePlayerButton();
             setupManagePlayersSection();
-            setupPromotePlayerButton(); // Add this line
         } else {
             window.location.href = 'index.html';
         }
     });
-
-    // Promote player functionality
-    const promoteBtn = document.getElementById('promote-player');
-    const promoteDialog = document.getElementById('promote-dialog');
-    const confirmPromoteBtn = document.getElementById('confirm-promote');
-    const cancelPromoteBtn = document.getElementById('cancel-promote');
-    const promoteUsernameInput = document.getElementById('promote-username');
-
-    if (promoteBtn) {
-        promoteBtn.addEventListener('click', () => {
-            promoteDialog.style.display = 'block';
-        });
-    }
-
-    if (cancelPromoteBtn) {
-        cancelPromoteBtn.addEventListener('click', () => {
-            promoteDialog.style.display = 'none';
-            promoteUsernameInput.value = '';
-        });
-    }
-
-    if (confirmPromoteBtn) {
-        confirmPromoteBtn.addEventListener('click', async () => {
-            const username = promoteUsernameInput.value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-
-            try {
-                const playersRef = collection(db, 'players');
-                const q = query(playersRef, where('username', '==', username));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    alert('Player not found');
-                    return;
-                }
-
-                const playerDoc = querySnapshot.docs[0];
-                const playerData = playerDoc.data();
-                const currentElo = playerData.eloRating || 1200;
-
-                const thresholds = [
-                    { name: 'Bronze', elo: 1400 },
-                    { name: 'Silver', elo: 1600 },
-                    { name: 'Gold', elo: 1800 },
-                    { name: 'Emerald', elo: 2000 }
-                ];
-
-                const nextThreshold = thresholds.find(t => t.elo > currentElo);
-                
-                if (!nextThreshold) {
-                    alert('Player is already at maximum rank (Emerald)');
-                    return;
-                }
-
-                await updateDoc(playerDoc.ref, {
-                    eloRating: nextThreshold.elo
-                });
-
-                alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
-                promoteDialog.style.display = 'none';
-                promoteUsernameInput.value = '';
-                
-                // Refresh the player list
-                await loadPlayers();
-
-            } catch (error) {
-                console.error('Error promoting player:', error);
-                alert('Failed to promote player: ' + error.message);
-            }
-        });
-    }
 });
 
 function setupCollapsibleButtons() {
-    // Promote player functionality
-    const promoteBtn = document.getElementById('promote-player');
-    const promoteDialog = document.getElementById('promote-dialog');
-    const cancelPromoteBtn = document.getElementById('cancel-promote');
-    const confirmPromoteBtn = document.getElementById('confirm-promote');
-    const promoteUsernameInput = document.getElementById('promote-username');
-
-    if (promoteBtn && promoteDialog) {
-        promoteBtn.addEventListener('click', () => {
-            promoteDialog.style.display = promoteDialog.style.display === 'none' ? 'block' : 'none';
-        });
-    }
-
-    if (cancelPromoteBtn && promoteDialog && promoteUsernameInput) {
-        cancelPromoteBtn.addEventListener('click', () => {
-            promoteDialog.style.display = 'none';
-            promoteUsernameInput.value = '';
-        });
-    }
-
-    if (confirmPromoteBtn && promoteUsernameInput) {
-        confirmPromoteBtn.addEventListener('click', async () => {
-            const username = promoteUsernameInput.value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            try {
-                await promotePlayer(username);
-                promoteDialog.style.display = 'none';
-                promoteUsernameInput.value = '';
-            } catch (error) {
-                console.error('Error promoting player:', error);
-                alert('Failed to promote player: ' + error.message);
+    const buttons = document.querySelectorAll('.collapse-btn');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+            if (targetId) {
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    // Close all other sections first
+                    document.querySelectorAll('[id$="-ratings"], [id$="-history"], [id$="-ladder"], #manage-players-section')
+                        .forEach(section => {
+                            if (section.id !== targetId) {
+                                section.style.display = 'none';
+                            }
+                        });
+                    
+                    // Toggle the clicked section
+                    targetSection.style.display = 
+                        targetSection.style.display === 'none' ? 'block' : 'none';
+                }
+            } else if (button.id === 'toggle-manage-players') {
+                const section = document.getElementById('manage-players-section');
+                if (section) {
+                    section.style.display = 
+                        section.style.display === 'none' ? 'block' : 'none';
+                }
             }
         });
-    }
+    });
 }
 
 async function setupAdminButtons() {
