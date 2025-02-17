@@ -39,38 +39,43 @@ class ProfileViewer {
                 }
             }
 
-            // Get basic user data - this should always be readable
-            const userDoc = await getDoc(doc(db, 'users', userId));
-            if (!userDoc.exists()) {
+            // Try to get user data from both collections
+            const [userDoc, playerDoc, profileDoc] = await Promise.all([
+                getDoc(doc(db, 'users', userId)),
+                getDoc(doc(db, 'players', userId)),
+                getDoc(doc(db, 'userProfiles', userId))
+            ]);
+
+            // Check if user exists in either collection
+            if (!userDoc.exists() && !playerDoc.exists()) {
                 this.showError('User not found');
                 return;
             }
 
-            // Get profile data - this should also be readable
-            const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
-            
-            const userData = userDoc.data();
-            const profileData = userProfileDoc.exists() ? userProfileDoc.data() : {};
+            // Combine data from all sources
+            const userData = userDoc.exists() ? userDoc.data() : {};
+            const playerData = playerDoc.exists() ? playerDoc.data() : {};
+            const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
-            // Display the profile data
+            // Display the combined profile data
             this.displayProfile({
                 ...profileData,
-                username: userData.username,
+                ...playerData,
+                username: userData.username || playerData.username || 'Anonymous',
                 userId: userId
             });
 
             // Only show edit controls if viewing own profile
-            onAuthStateChanged(auth, (user) => {
-                if (user && user.uid === userId) {
-                    document.getElementById('edit-profile').style.display = 'block';
-                    const uploadBtn = document.querySelector('.upload-btn');
-                    if (uploadBtn) uploadBtn.style.display = 'inline-block';
-                }
-            });
+            const currentUser = auth.currentUser;
+            if (currentUser && currentUser.uid === userId) {
+                document.getElementById('edit-profile').style.display = 'block';
+                const uploadBtn = document.querySelector('.upload-btn');
+                if (uploadBtn) uploadBtn.style.display = 'inline-block';
+            }
 
         } catch (error) {
             console.error('Error loading profile:', error);
-            this.showError('Error loading profile data');
+            this.showError(`Error loading profile: ${error.message}`);
         }
     }
 
