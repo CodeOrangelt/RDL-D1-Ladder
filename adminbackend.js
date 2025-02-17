@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ADMIN_EMAILS.includes(user.email)) {
             setupCollapsibleButtons();
             setupPromotePlayerButton();
+            setupDemotePlayerButton(); // Add this line
             setupManagePlayersSection();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
@@ -527,6 +528,126 @@ function setupManagePlayersSection() {
             }
 
             // ... rest of your add player logic ...
+        });
+    }
+}
+
+// Add demote player function
+async function demotePlayer(username) {
+    try {
+        // Check if current user is admin
+        const user = auth.currentUser;
+        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Get player data
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            throw new Error('Player not found');
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+
+        // Define ELO thresholds (in reverse order for demotion)
+        const thresholds = [
+            { name: 'Gold', elo: 1800 },
+            { name: 'Silver', elo: 1600 },
+            { name: 'Bronze', elo: 1400 },
+            { name: 'Unranked', elo: 1200 }
+        ];
+
+        // Find previous threshold
+        let prevThreshold = thresholds.find(t => t.elo < currentElo);
+        
+        if (!prevThreshold) {
+            throw new Error('Player is already at minimum rank (Unranked)');
+        }
+
+        // Use batch write
+        const batch = writeBatch(db);
+        
+        // Update player document
+        batch.update(doc(db, 'players', playerDoc.id), {
+            eloRating: prevThreshold.elo,
+            lastDemotedAt: serverTimestamp(),
+            demotedBy: user.email
+        });
+
+        // Add demotion history
+        const historyRef = doc(collection(db, 'eloHistory'));
+        batch.set(historyRef, {
+            player: username,
+            previousElo: currentElo,
+            newElo: prevThreshold.elo,
+            timestamp: serverTimestamp(),
+            type: 'demotion',
+            rankAchieved: prevThreshold.name,
+            demotedBy: user.email
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        // Update UI
+        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
+        
+        // Refresh displays
+        await Promise.all([
+            loadPlayers(),
+            loadEloRatings(),
+            loadEloHistory()
+        ]);
+
+    } catch (error) {
+        console.error('Error demoting player:', error);
+        throw error;
+    }
+}
+
+// Add setup for demote button
+function setupDemotePlayerButton() {
+    const demoteBtn = document.getElementById('demote-player');
+    const demoteDialog = document.getElementById('demote-dialog');
+    const confirmDemoteBtn = document.getElementById('confirm-demote');
+    const cancelDemoteBtn = document.getElementById('cancel-demote');
+    const demoteUsernameInput = document.getElementById('demote-username');
+
+    if (demoteBtn && demoteDialog) {
+        demoteBtn.addEventListener('click', () => {
+            demoteDialog.style.display = 'block';
+        });
+    }
+
+    if (cancelDemoteBtn && demoteDialog) {
+        cancelDemoteBtn.addEventListener('click', () => {
+            demoteDialog.style.display = 'none';
+            if (demoteUsernameInput) {
+                demoteUsernameInput.value = '';
+            }
+        });
+    }
+
+    if (confirmDemoteBtn && demoteUsernameInput) {
+        confirmDemoteBtn.addEventListener('click', async () => {
+            const username = demoteUsernameInput.value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            try {
+                await demotePlayer(username);
+                demoteDialog.style.display = 'none';
+                demoteUsernameInput.value = '';
+            } catch (error) {
+                console.error('Error demoting player:', error);
+                alert('Failed to demote player: ' + error.message);
+            }
         });
     }
 }

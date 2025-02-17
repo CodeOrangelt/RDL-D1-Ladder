@@ -371,3 +371,14 @@ footer {
 #elo-history-table td:nth-child(5) {
     font-weight: bold;
 }
+
+#demote-dialog {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+#demote-player {
+    margin-left: 10px;
+}

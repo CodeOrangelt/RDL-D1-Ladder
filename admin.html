@@ -109,6 +109,7 @@
             <div class="admin-section">
                 <button id="reset-season" class="danger-button">Reset Season</button>
                 <button id="promote-player" class="danger-button">Promote Player</button>
+                <button id="demote-player" class="danger-button">Demote Player</button>
                 
                 <!-- Promotion Dialog -->
                 <div id="promote-dialog" class="confirmation-dialog" style="display: none;">
@@ -126,6 +127,15 @@
                     <div class="button-group">
                         <button id="confirm-reset" class="danger-button">Reset Season</button>
                         <button id="cancel-reset" class="secondary-button">Cancel</button>
+                    </div>
+                </div>
+                <!-- Add Demotion Dialog -->
+                <div id="demote-dialog" class="confirmation-dialog" style="display: none;">
+                    <h3>Demote Player</h3>
+                    <input type="text" id="demote-username" placeholder="Enter username" class="admin-input">
+                    <div class="button-group">
+                        <button id="confirm-demote" class="danger-button">Demote</button>
+                        <button id="cancel-demote" class="secondary-button">Cancel</button>
                     </div>
                 </div>
             </div>
