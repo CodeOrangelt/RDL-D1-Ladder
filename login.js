@@ -18,96 +18,105 @@ import { auth, db } from './firebase-config.js';
 
 // Modify isUsernameAvailable to check both pending and active players
 async function isUsernameAvailable(username) {
-    if (!username || typeof username !== 'string') {
+    if (!username || typeof username !== 'string' || username.trim().length < 3) {
+        document.getElementById('register-error').textContent = 
+            'Username must be at least 3 characters long';
         return false;
     }
 
+    const trimmedUsername = username.trim();
+
     try {
-        // Check active players
-        const playersRef = collection(db, "players");
-        const playersQuery = query(playersRef, where("username", "==", username.trim()));
-        const playersSnapshot = await getDocs(playersQuery);
-        
-        if (!playersSnapshot.empty) {
+        // Check format first
+        const validUsernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+        if (!validUsernameRegex.test(trimmedUsername)) {
+            document.getElementById('register-error').textContent = 
+                'Username can only contain letters, numbers, underscores and hyphens';
             return false;
         }
 
-        // Check pending registrations
-        const pendingRef = collection(db, "pendingRegistrations");
-        const pendingQuery = query(pendingRef, where("username", "==", username.trim()));
-        const pendingSnapshot = await getDocs(pendingQuery);
-        
-        return pendingSnapshot.empty;
+        // Check existing players
+        const [playersSnapshot, pendingSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "players"), 
+                where("username", "==", trimmedUsername))),
+            getDocs(query(collection(db, "pendingRegistrations"), 
+                where("username", "==", trimmedUsername)))
+        ]);
+
+        if (!playersSnapshot.empty || !pendingSnapshot.empty) {
+            document.getElementById('register-error').textContent = 
+                'Username is already taken';
+            return false;
+        }
+
+        return true;
     } catch (error) {
         console.error("Error checking username:", error);
-        // Show user-friendly error message
         document.getElementById('register-error').textContent = 
             'Unable to verify username availability. Please try again later.';
-        throw error; // Re-throw to prevent registration from continuing
+        return false;
     }
 }
 
 // Modify the handleRegister function
 async function handleRegister(e) {
     e.preventDefault();
-    document.getElementById('register-error').textContent = ''; // Clear previous errors
+
+    const errorElement = document.getElementById('register-error');
+    errorElement.textContent = '';
+
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     const username = document.getElementById('register-username').value;
     const verificationAnswer = document.getElementById('verification-answer').value.toLowerCase();
 
-    // Check the verification answer
-    const validAnswers = ['purple', 'magenta'];
-    if (!validAnswers.includes(verificationAnswer)) {
-        document.getElementById('register-error').textContent = 'Incorrect answer to verification question';
-        return;
-    }
-
     try {
-        // Check if username is available
-        const usernameAvailable = await isUsernameAvailable(username);
-        if (!usernameAvailable) {
-            document.getElementById('register-error').textContent = 'Username is already taken. Please choose another.';
+        // Verify answer first
+        const validAnswers = ['purple', 'magenta'];
+        if (!validAnswers.includes(verificationAnswer)) {
+            errorElement.textContent = 'Incorrect answer to verification question';
             return;
         }
 
-        // Create user
+        // Check username availability
+        const isAvailable = await isUsernameAvailable(username);
+        if (!isAvailable) {
+            return; // Error message already set by isUsernameAvailable
+        }
+
+        // Create user account
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         // Send verification email
         await sendEmailVerification(user);
 
-        // Store pending registration in a separate collection
-        const pendingDocRef = doc(db, "pendingRegistrations", user.uid);
-        await setDoc(pendingDocRef, {
-            username: username,
+        // Create pending registration
+        await setDoc(doc(db, "pendingRegistrations", user.uid), {
+            username: username.trim(),
             email: email,
             createdAt: new Date(),
             verified: false
         });
 
         // Show success message
-        document.getElementById('register-error').innerHTML = `
+        errorElement.innerHTML = `
             <div class="success-message">
                 Registration pending! Please check your email to verify your account.
-                Your account will be activated after verification.
                 <br><br>
                 <button onclick="resendVerificationEmail('${email}')" class="resend-button">
                     Resend Verification Email
                 </button>
             </div>`;
 
-        // Sign out the user until they verify their email
+        // Sign out until email is verified
         await signOut(auth);
 
     } catch (error) {
-        // Don't overwrite the error message from isUsernameAvailable
-        if (!document.getElementById('register-error').textContent) {
-            document.getElementById('register-error').textContent = 
-                'Registration failed. Please try again later.';
-        }
         console.error('Registration error:', error);
+        errorElement.textContent = error.code === 'auth/email-already-in-use' 
+            ? 'Email address is already registered'
+            : 'Registration failed. Please try again later.';
     }
 }
 
