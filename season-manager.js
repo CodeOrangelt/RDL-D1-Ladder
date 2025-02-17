@@ -1,5 +1,9 @@
 import { db } from './firebase-config.js';
 import { collection, getDocs, setDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    EmailAuthProvider, 
+    reauthenticateWithCredential 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 class SeasonManager {
     constructor() {
