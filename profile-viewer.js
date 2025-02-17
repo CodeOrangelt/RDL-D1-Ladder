@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
@@ -26,34 +26,41 @@ class ProfileViewer {
     async init() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            let userId = urlParams.get('id');
+            let userEmail = urlParams.get('email');
 
-            // If no ID provided but user is logged in, show their profile
-            if (!userId) {
+            // If no email provided but user is logged in, show their profile
+            if (!userEmail) {
                 const currentUser = auth.currentUser;
                 if (currentUser) {
-                    userId = currentUser.uid;
+                    userEmail = currentUser.email;
                 } else {
-                    this.showError('Profile not found - No user ID provided');
+                    this.showError('Profile not found - No email provided');
                     return;
                 }
             }
 
-            // Try to get user data from both collections
-            const [userDoc, playerDoc, profileDoc] = await Promise.all([
-                getDoc(doc(db, 'users', userId)),
-                getDoc(doc(db, 'players', userId)),
-                getDoc(doc(db, 'userProfiles', userId))
-            ]);
+            // Query users collection by email
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('email', '==', userEmail));
+            const userSnapshot = await getDocs(q);
 
-            // Check if user exists in either collection
-            if (!userDoc.exists() && !playerDoc.exists()) {
+            if (userSnapshot.empty) {
                 this.showError('User not found');
                 return;
             }
 
+            // Get the first (and should be only) user with this email
+            const userDoc = userSnapshot.docs[0];
+            const userId = userDoc.id;
+
+            // Get profile and player data
+            const [playerDoc, profileDoc] = await Promise.all([
+                getDoc(doc(db, 'players', userId)),
+                getDoc(doc(db, 'userProfiles', userId))
+            ]);
+
             // Combine data from all sources
-            const userData = userDoc.exists() ? userDoc.data() : {};
+            const userData = userDoc.data();
             const playerData = playerDoc.exists() ? playerDoc.data() : {};
             const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
@@ -62,12 +69,13 @@ class ProfileViewer {
                 ...profileData,
                 ...playerData,
                 username: userData.username || playerData.username || 'Anonymous',
+                email: userEmail,
                 userId: userId
             });
 
             // Only show edit controls if viewing own profile
             const currentUser = auth.currentUser;
-            if (currentUser && currentUser.uid === userId) {
+            if (currentUser && currentUser.email === userEmail) {
                 document.getElementById('edit-profile').style.display = 'block';
                 const uploadBtn = document.querySelector('.upload-btn');
                 if (uploadBtn) uploadBtn.style.display = 'inline-block';
@@ -114,10 +122,11 @@ class ProfileViewer {
 
     displayProfile(data) {
         document.getElementById('profile-preview').src = data.pfpUrl || 'default-avatar.png';
-        document.getElementById('nickname').textContent = data.username;
+        document.getElementById('nickname').textContent = data.username; // Show username
         document.getElementById('motto-view').textContent = data.motto || 'No motto set';
         document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not specified';
         document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not specified';
+        // Email is used for identification but not displayed
     }
 
     toggleEditMode(isEditing) {

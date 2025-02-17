@@ -83,8 +83,9 @@ function updateLadderDisplay(ladderData) {
         // Create username cell with clickable link
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
-        usernameLink.href = `profile.html?id=${player.id}`; // Changed from uid to id
-        usernameLink.textContent = player.username;
+        // Store email as a data attribute and use username for display
+        usernameLink.href = `profile.html?email=${encodeURIComponent(player.email)}`;
+        usernameLink.textContent = player.username; // Only show username
         
         // Set color based on ELO
         const elo = parseFloat(player.elo) || 0;
