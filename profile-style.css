@@ -5,7 +5,7 @@
     margin: 0 auto;
     border-radius: 15px;
     width: 75%;
-    padding: 20px;
+    padding: 40px;
     min-height: 800px;
     overflow: hidden;
 }
@@ -28,11 +28,11 @@
 }
 
 #profile-preview {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     border: 3px solid #881e8e;
 }
 
@@ -100,4 +100,61 @@ h1 {
     color: white;
     text-align: center;
     margin-bottom: 30px;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 40px;
+    color: white;
+}
+
+.profile-left {
+    text-align: center;
+}
+
+.profile-info {
+    margin-top: 20px;
+}
+
+.profile-info h2 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+}
+
+.info-label {
+    color: #b026b9;
+    font-weight: bold;
+}
+
+.edit-btn {
+    background-color: #881e8e;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.edit-btn:hover {
+    background-color: #b026b9;
+}
+
+/* Only show these elements when editing */
+.edit-mode {
+    display: none;
+}
+
+.editing .edit-mode {
+    display: block;
+}
+
+.editing .view-mode {
+    display: none;
 }

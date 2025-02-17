@@ -13,54 +13,31 @@
     <div id="nav-placeholder"></div>
     <main>
         <div class="container">
-            <h1>Profile Settings</h1>
-            <form id="profile-form" class="profile-form">
-                <div class="profile-section">
-                    <div class="pfp-container">
-                        <img id="profile-preview" src="default-avatar.png" alt="Profile Picture">
-                        <input type="file" id="pfp-upload" accept="image/*">
-                        <label for="pfp-upload" class="upload-btn">Change Picture</label>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nickname">Nickname</label>
-                        <input type="text" id="nickname" name="nickname" maxlength="20" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="motto">Motto</label>
-                        <textarea id="motto" name="motto" maxlength="100"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="favorite-map">Favorite Map</label>
-                        <select id="favorite-map" name="favorite-map">
-                            <option value="">Select a map</option>
-                            <option value="Containment">Containment</option>
-                            <option value="The Hive">The Hive</option>
-                            <option value="Warehouse">Warehouse</option>
-                            <!-- Add more maps as needed -->
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="favorite-weapon">Favorite Weapon</label>
-                        <select id="favorite-weapon" name="favorite-weapon">
-                            <option value="">Select a weapon</option>
-                            <option value="Assault Rifle">Assault Rifle</option>
-                            <option value="Shotgun">Shotgun</option>
-                            <option value="Sniper">Sniper</option>
-                            <!-- Add more weapons as needed -->
-                        </select>
-                    </div>
-
-                    <button type="submit" class="save-btn">Save Profile</button>
+            <div class="profile-content">
+                <div class="profile-left">
+                    <img id="profile-preview" src="default-avatar.png" alt="Profile Picture">
+                    <h2 id="nickname">Loading...</h2>
                 </div>
-            </form>
+                <div class="profile-info">
+                    <div class="info-item">
+                        <span class="info-label">Motto:</span>
+                        <p id="motto"></p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Favorite Map:</span>
+                        <p id="favorite-map"></p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Favorite Weapon:</span>
+                        <p id="favorite-weapon"></p>
+                    </div>
+                    <button id="edit-profile" class="edit-btn" style="display: none;">Edit Profile</button>
+                </div>
+            </div>
         </div>
     </main>
     <div id="footer-placeholder"></div>
     
-    <script type="module" src="profile.js"></script>
+    <script type="module" src="profile-viewer.js"></script>
 </body>
 </html>

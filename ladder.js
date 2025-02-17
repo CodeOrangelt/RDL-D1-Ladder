@@ -53,19 +53,7 @@ async function displayLadder() {
         players.sort((a, b) => a.position - b.position);
 
         // Display sorted players
-        players.forEach((playerData, index) => {
-            const rankStyle = getRankStyle(playerData.eloRating);
-            const row = document.createElement('tr');
-            row.innerHTML = 
-                '<td>' + (index + 1) + '</td>' +
-                '<td class="player-name" style="color: ' + rankStyle.color + 
-                '; font-weight: bold;" title="' + rankStyle.name + 
-                '" data-rank-color="' + rankStyle.color + '">' +
-                (playerData.username || 'Unknown') +
-                '</td>';  
-            
-            tableBody.appendChild(row);
-        });
+        updateLadderDisplay(players);
 
         console.log(`Successfully loaded ${players.length} players into ladder`);
     } catch (error) {
@@ -78,6 +66,48 @@ async function displayLadder() {
             </tr>
         `;
     }
+}
+
+function updateLadderDisplay(ladderData) {
+    const tbody = document.querySelector('#ladder tbody');
+    tbody.innerHTML = '';
+    
+    let rank = 1;
+    ladderData.forEach(player => {
+        const row = document.createElement('tr');
+        
+        // Create rank cell
+        const rankCell = document.createElement('td');
+        rankCell.textContent = rank;
+        
+        // Create username cell with clickable link
+        const usernameCell = document.createElement('td');
+        const usernameLink = document.createElement('a');
+        usernameLink.href = `profile.html?id=${player.uid}`; // Link to player's profile
+        usernameLink.textContent = player.username;
+        usernameLink.style.color = 'white'; // Match existing text color
+        usernameLink.style.textDecoration = 'none'; // Remove default underline
+        
+        // Add hover effect
+        usernameLink.addEventListener('mouseenter', () => {
+            usernameLink.style.textDecoration = 'underline';
+            usernameLink.style.color = '#b026b9'; // Purple hover color
+        });
+        
+        usernameLink.addEventListener('mouseleave', () => {
+            usernameLink.style.textDecoration = 'none';
+            usernameLink.style.color = 'white';
+        });
+        
+        usernameCell.appendChild(usernameLink);
+        
+        // Add cells to row
+        row.appendChild(rankCell);
+        row.appendChild(usernameCell);
+        tbody.appendChild(row);
+        
+        rank++;
+    });
 }
 
 // Initialize ladder when DOM is loaded
