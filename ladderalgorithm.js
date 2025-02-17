@@ -13,6 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
+import { PromotionHandler } from './promotion-handler.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -217,4 +218,15 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         console.error('Error in approveReport:', error);
         throw error;
     }
+}
+
+async function updatePlayerElo(userId, oldElo, newElo) {
+    // Update player's ELO in database
+    await setDoc(doc(db, 'players', userId), {
+        ...playerData,
+        eloRating: newElo
+    });
+
+    // Check for promotion
+    await PromotionHandler.checkPromotion(userId, newElo, oldElo);
 }

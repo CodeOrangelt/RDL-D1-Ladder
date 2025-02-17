@@ -1,0 +1,51 @@
+
+.promotion-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.promotion-content {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    color: white;
+    max-width: 500px;
+    animation: fadeIn 0.5s;
+}
+
+.promotion-title {
+    color: #4CAF50;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.promotion-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+}
+
+.promotion-button:hover {
+    background: #45a049;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
