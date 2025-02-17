@@ -153,7 +153,10 @@ class ProfileViewer {
 
     async handleImageUpload(event) {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('No file selected');
+            return;
+        }
 
         try {
             const user = auth.currentUser;
@@ -162,35 +165,59 @@ class ProfileViewer {
                 return;
             }
 
+            console.log('Starting image upload process for file:', file.name);
+
             // Create a preview immediately
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('profile-preview').src = e.target.result;
+                console.log('Preview image loaded');
             };
             reader.readAsDataURL(file);
 
             // Upload to Firebase Storage
+            console.log('Creating storage reference for user:', user.uid);
             const storageRef = ref(storage, `profile-images/${user.uid}`);
-            await uploadBytes(storageRef, file);
+            
+            console.log('Uploading file to Firebase Storage...');
+            const uploadTask = await uploadBytes(storageRef, file);
+            console.log('Upload successful:', uploadTask);
 
             // Get the download URL
+            console.log('Getting download URL...');
             const downloadURL = await getDownloadURL(storageRef);
-            console.log('Image uploaded, URL:', downloadURL);
+            console.log('Image uploaded successfully, URL:', downloadURL);
 
-            // Update the profile data in Firestore with the image URL
+            // Update the profile data in Firestore
+            console.log('Updating profile data in Firestore...');
             await setDoc(doc(db, 'userProfiles', user.uid), {
                 pfpUrl: downloadURL,
                 lastUpdated: new Date().toISOString()
             }, { merge: true });
+            console.log('Profile data updated in Firestore');
 
             // Update the current profile data
             if (this.currentProfileData) {
                 this.currentProfileData.pfpUrl = downloadURL;
+                console.log('Updated current profile data with new image URL');
             }
+
+            // Refresh the display to show the updated image
+            this.displayProfile({
+                ...this.currentProfileData,
+                pfpUrl: downloadURL
+            });
+            console.log('Profile display refreshed with new image');
 
         } catch (error) {
             console.error('Error uploading image:', error);
-            this.showError('Failed to upload image');
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
+            this.showError(`Failed to upload image: ${error.message}`);
+            
             // Revert preview to previous image if upload fails
             if (this.currentProfileData && this.currentProfileData.pfpUrl) {
                 document.getElementById('profile-preview').src = this.currentProfileData.pfpUrl;
