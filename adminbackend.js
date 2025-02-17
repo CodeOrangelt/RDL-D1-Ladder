@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setupCollapsibleButtons();
             setupPromotePlayerButton();
             setupManagePlayersSection();
+            // Initial load of ELO ratings if the section is visible
+            if (document.getElementById('elo-ratings').style.display !== 'none') {
+                loadEloRatings();
+            }
         } else {
             window.location.href = 'index.html';
         }
@@ -49,7 +53,7 @@ function setupCollapsibleButtons() {
             if (targetId) {
                 const targetSection = document.getElementById(targetId);
                 if (targetSection) {
-                    // Close all other sections first
+                    // Toggle all sections
                     document.querySelectorAll('[id$="-ratings"], [id$="-history"], [id$="-ladder"], #manage-players-section')
                         .forEach(section => {
                             if (section.id !== targetId) {
@@ -58,8 +62,13 @@ function setupCollapsibleButtons() {
                         });
                     
                     // Toggle the clicked section
-                    targetSection.style.display = 
-                        targetSection.style.display === 'none' ? 'block' : 'none';
+                    const isDisplayed = targetSection.style.display !== 'none';
+                    targetSection.style.display = isDisplayed ? 'none' : 'block';
+                    
+                    // Load data if showing ELO ratings
+                    if (targetId === 'elo-ratings' && !isDisplayed) {
+                        loadEloRatings();
+                    }
                 }
             } else if (button.id === 'toggle-manage-players') {
                 const section = document.getElementById('manage-players-section');
@@ -132,20 +141,29 @@ async function populateTestLadder() {
 
 async function loadEloRatings() {
     const tableBody = document.querySelector('#elo-table tbody');
-    tableBody.innerHTML = ''; // Clear existing content
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
 
     try {
         const playersRef = collection(db, 'players');
         const q = query(playersRef, orderBy('eloRating', 'desc'));
         const querySnapshot = await getDocs(q);
         
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="2">No players found</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
         querySnapshot.forEach(doc => {
             const data = doc.data();
-            const rankStyle = getRankStyle(data.eloRating);
             const row = document.createElement('tr');
+            const rankStyle = getRankStyle(data.eloRating);
+            
             row.innerHTML = `
                 <td style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}">
-                    ${data.username}
+                    ${data.username || 'Unknown'}
                 </td>
                 <td>${data.eloRating || 1200}</td>
             `;
@@ -153,6 +171,7 @@ async function loadEloRatings() {
         });
     } catch (error) {
         console.error("Error loading ELO ratings:", error);
+        tableBody.innerHTML = '<tr><td colspan="2">Error loading ratings</td></tr>';
     }
 }
 

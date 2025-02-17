@@ -311,3 +311,35 @@ footer {
 .admin-table tr:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
+#elo-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#elo-table th,
+#elo-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#elo-table th {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    color: #ffffff;
+}
+
+#elo-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#elo-table td:first-child {
+    font-weight: bold;
+}
+
+#elo-table td:last-child {
+    text-align: right;
+}
