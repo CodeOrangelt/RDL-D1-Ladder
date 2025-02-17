@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
@@ -92,6 +92,7 @@ class ProfileViewer {
             };
             console.log('Combined profile data:', combinedData);
             this.displayProfile(combinedData);
+            await this.displayMatchHistory(username); // Add this line
 
             // Show edit controls if viewing own profile
             const currentUser = auth.currentUser;
@@ -106,6 +107,9 @@ class ProfileViewer {
                 const uploadBtn = document.querySelector('.upload-btn');
                 if (uploadBtn) uploadBtn.style.display = 'inline-block';
             }
+
+            // Display match history
+            this.displayMatchHistory(username);
 
         } catch (error) {
             console.error('Profile initialization error:', error);
@@ -227,6 +231,82 @@ class ProfileViewer {
     showError(message) {
         const container = document.querySelector('.profile-content');
         container.innerHTML = `<div class="error-message" style="color: white; text-align: center; padding: 20px;">${message}</div>`;
+    }
+
+    async displayMatchHistory(username) {
+        // Create match history container
+        const matchHistoryContainer = document.createElement('div');
+        matchHistoryContainer.className = 'match-history-container';
+        matchHistoryContainer.innerHTML = `
+            <h2>Match History</h2>
+            <table class="match-history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Winner</th>
+                        <th>Loser</th>
+                        <th>Score</th>
+                        <th>Map</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        `;
+
+        // Add container after profile container
+        const profileContainer = document.querySelector('.profile-container');
+        profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
+
+        try {
+            // Query approved matches where user was either winner or loser
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const matchesQuery = query(
+                approvedMatchesRef,
+                where('participants', 'array-contains', username),
+                orderBy('createdAt', 'desc')
+            );
+            
+            const matchesSnapshot = await getDocs(matchesQuery);
+            const tbody = matchHistoryContainer.querySelector('tbody');
+
+            if (matchesSnapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="5">No matches found</td></tr>';
+                return;
+            }
+
+            matchesSnapshot.forEach(doc => {
+                const match = doc.data();
+                const row = document.createElement('tr');
+                const date = match.createdAt ? new Date(match.createdAt.seconds * 1000) : new Date();
+                
+                const isWinner = match.winnerUsername === username;
+                row.className = isWinner ? 'match-won' : 'match-lost';
+
+                row.innerHTML = `
+                    <td>${date.toLocaleDateString()}</td>
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
+                           class="player-link ${match.winnerUsername === username ? 'current-user' : ''}">
+                            ${match.winnerUsername}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
+                           class="player-link ${match.loserUsername === username ? 'current-user' : ''}">
+                            ${match.loserUsername}
+                        </a>
+                    </td>
+                    <td>${match.winnerScore} - ${match.loserScore}</td>
+                    <td>${match.mapPlayed}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error loading match history:', error);
+            matchHistoryContainer.innerHTML = `
+                <div class="error-message">Error loading match history: ${error.message}</div>
+            `;
+        }
     }
 }
 
