@@ -46,24 +46,32 @@
 
     <!-- Scripts -->
     <script type="module">
-        import { RetroTrackerMonitor } from './whosplaying.js';
-        import { initializePromotionTracker } from './promotion-tracker.js';
-        
-        Promise.all([
-            fetch('nav.html').then(response => response.text()),
-            fetch('footer.html').then(response => response.text())
-        ]).then(([navData, footerData]) => {
-            document.getElementById('nav-placeholder').innerHTML = navData;
-            document.getElementById('footer-placeholder').innerHTML = footerData;
-            
-            // Initialize after ensuring class is loaded
-            const tracker = new RetroTrackerMonitor();
-            tracker.initializeBannerOnly();
-            
-            // Initialize promotion tracker
-            initializePromotionTracker();
-        }).catch(error => {
-            console.error('Error loading nav/footer:', error);
+        // Load nav and footer first
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Load nav
+                const navResponse = await fetch('nav.html');
+                if (!navResponse.ok) throw new Error('Failed to load nav');
+                const navHtml = await navResponse.text();
+                document.getElementById('nav-placeholder').innerHTML = navHtml;
+
+                // Load footer
+                const footerResponse = await fetch('footer.html');
+                if (!footerResponse.ok) throw new Error('Failed to load footer');
+                const footerHtml = await footerResponse.text();
+                document.getElementById('footer-placeholder').innerHTML = footerHtml;
+
+                // After nav/footer are loaded, initialize other components
+                const { RetroTrackerMonitor } = await import('./whosplaying.js');
+                const { initializePromotionTracker } = await import('./promotion-tracker.js');
+
+                const tracker = new RetroTrackerMonitor();
+                tracker.initializeBannerOnly();
+                initializePromotionTracker();
+
+            } catch (error) {
+                console.error('Error initializing page:', error);
+            }
         });
     </script>
     <script type="module" src="firebase-config.js"></script>
