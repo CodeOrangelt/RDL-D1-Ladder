@@ -47,9 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (ADMIN_EMAILS.includes(user.email)) {
             setupCollapsibleButtons();
-            setupPromotePlayerButton();  // Make sure this is called
-            setupDemotePlayerButton();   // Make sure this is called
+            setupPromotePlayerButton();
+            setupDemotePlayerButton(); // Add this line
             setupManagePlayersSection();
+            // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
             }
@@ -61,21 +62,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupCollapsibleButtons() {
     const buttons = document.querySelectorAll('.collapse-btn');
+    const adminSections = document.querySelectorAll('.admin-section');
     
     buttons.forEach(button => {
         button.addEventListener('click', async () => {
             const targetId = button.getAttribute('data-target');
             
-            // Hide all sections
-            document.querySelectorAll('.admin-section').forEach(section => {
+            // Hide all sections first
+            adminSections.forEach(section => {
                 section.style.display = 'none';
             });
 
+            // Show target section and load appropriate data
             const targetSection = document.getElementById(targetId);
             if (targetSection) {
                 targetSection.style.display = 'block';
-                if (targetId === 'manage-players-section') {
-                    await loadPlayers();
+                
+                switch(targetId) {
+                    case 'manage-players-section':
+                        await loadPlayers();
+                        break;
+                    case 'elo-history':
+                        await loadEloHistory();
+                        break;
+                    case 'elo-ratings':
+                        await loadEloRatings();
+                        break;
                 }
             }
         });
@@ -266,8 +278,8 @@ async function loadPlayers() {
                 </td>
                 <td>${player.eloRating || 1200}</td>
                 <td>
-                    <button class="move-btn" data-direction="up" data-id="${doc.id}">↑</button>
-                    <button class="move-btn" data-direction="down" data-id="${doc.id}">↓</button>
+                    <button class="move-btn" data-direction="up" data-id="${doc.id}" data-pos="${position}">↑</button>
+                    <button class="move-btn" data-direction="down" data-id="${doc.id}" data-pos="${position}">↓</button>
                     <button class="remove-btn" data-id="${doc.id}">Remove</button>
                 </td>
             `;
@@ -275,8 +287,8 @@ async function loadPlayers() {
             position++;
         });
 
-        // Add event listeners for buttons
-        setupPlayerControls();
+        // Use setupLadderControls instead of setupPlayerControls
+        setupLadderControls();
 
     } catch (error) {
         console.error('Error loading players:', error);
