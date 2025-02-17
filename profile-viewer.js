@@ -175,20 +175,12 @@ class ProfileViewer {
             return;
         }
 
-        console.log('File selected:', {
-            name: file.name,
-            type: file.type,
-            size: file.size
-        });
-
         const profilePreview = document.getElementById('profile-preview');
         
         try {
             const user = auth.currentUser;
             if (!user) {
-                console.error('No authenticated user');
-                this.showError('You must be logged in to change your profile picture');
-                return;
+                throw new Error('You must be logged in to change your profile picture');
             }
 
             // Show loading state
@@ -196,83 +188,63 @@ class ProfileViewer {
                 profilePreview.style.opacity = '0.5';
             }
 
-            // Validate file size (max 5MB)
+            // Validate file
             if (file.size > 5 * 1024 * 1024) {
                 throw new Error('File size too large. Maximum size is 5MB.');
             }
-
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 throw new Error('Only image files are allowed.');
             }
 
-            // Create a unique file path with timestamp and sanitized filename
+            // Create storage reference
             const timestamp = Date.now();
             const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const filePath = `profile-images/${user.uid}/${timestamp}_${sanitizedFilename}`;
-            console.log('Storage path:', filePath);
-            
             const storageRef = ref(storage, filePath);
-            console.log('Created storage reference, starting upload...');
+
+            console.log('Starting upload process...');
             
-            // Upload with metadata
-            const metadata = {
-                contentType: file.type,
-                customMetadata: {
-                    'originalFilename': file.name,
-                    'uploadedBy': user.uid,
-                    'timestamp': timestamp.toString()
+            try {
+                // Direct upload without metadata first
+                const snapshot = await uploadBytes(storageRef, file);
+                console.log('Upload completed:', snapshot);
+
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                console.log('Download URL obtained:', downloadURL);
+
+                // Update Firestore
+                await setDoc(doc(db, 'userProfiles', user.uid), {
+                    pfpUrl: downloadURL,
+                    lastUpdated: new Date().toISOString()
+                }, { merge: true });
+
+                // Update UI
+                if (profilePreview) {
+                    profilePreview.src = downloadURL;
+                    profilePreview.style.opacity = '1';
                 }
-            };
 
-            // Upload file with progress tracking
-            const uploadTask = uploadBytes(storageRef, file, metadata);
-            console.log('Upload task created, awaiting completion...');
+                // Update current profile data
+                if (this.currentProfileData) {
+                    this.currentProfileData.pfpUrl = downloadURL;
+                }
 
-            const uploadResult = await uploadTask;
-            console.log('Upload completed, result:', uploadResult);
+                console.log('Profile picture update completed successfully');
 
-            // Get the download URL
-            console.log('Getting download URL...');
-            const downloadURL = await getDownloadURL(uploadResult.ref);
-            console.log('Download URL obtained:', downloadURL);
-
-            // Update Firestore with new profile picture URL
-            console.log('Updating Firestore...');
-            await setDoc(doc(db, 'userProfiles', user.uid), {
-                pfpUrl: downloadURL,
-                lastUpdated: new Date().toISOString()
-            }, { merge: true });
-            console.log('Firestore updated successfully');
-
-            // Update UI
-            if (profilePreview) {
-                profilePreview.src = downloadURL;
-                profilePreview.style.opacity = '1';
-                console.log('Profile preview updated');
-            }
-
-            // Update current profile data
-            if (this.currentProfileData) {
-                this.currentProfileData.pfpUrl = downloadURL;
-                console.log('Current profile data updated');
+            } catch (uploadError) {
+                console.error('Upload error:', uploadError);
+                throw new Error(`Upload failed: ${uploadError.message}`);
             }
 
         } catch (error) {
             console.error('Error in handleImageUpload:', error);
-            console.error('Full error details:', {
-                name: error.name,
-                message: error.message,
-                code: error.code,
-                stack: error.stack
-            });
             
             // Reset the image on error
             if (profilePreview) {
                 profilePreview.src = 'images/shieldorb.png';
                 profilePreview.style.opacity = '1';
             }
-            this.showError(`Failed to upload image: ${error.message}`);
+            this.showError(error.message);
         }
     }
 
