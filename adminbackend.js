@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
@@ -122,29 +122,16 @@ function setupCollapsibleButtons() {
             const targetDiv = document.getElementById(targetId);
             
             // Hide all sections first
-            document.querySelectorAll('#elo-ratings, #elo-history, #template-ladder').forEach(div => {
+            document.querySelectorAll('.collapsible-section').forEach(div => {
                 if (div.id !== targetId) {
                     div.style.display = 'none';
                 }
             });
             
-            // Toggle the clicked section and load data
+            // Toggle the clicked section
             if (targetDiv.style.display === 'none' || targetDiv.style.display === '') {
                 targetDiv.style.display = 'block';
                 button.classList.add('active');
-                
-                // Load appropriate data based on button clicked
-                switch(targetId) {
-                    case 'elo-ratings':
-                        await loadEloRatings();
-                        break;
-                    case 'elo-history':
-                        await loadEloHistory();
-                        break;
-                    case 'template-ladder':
-                        displayTemplateLadder();
-                        break;
-                }
             } else {
                 targetDiv.style.display = 'none';
                 button.classList.remove('active');
@@ -158,6 +145,26 @@ function setupCollapsibleButtons() {
             });
         });
     });
+
+    // Add handlers for promote dialog
+    const cancelPromoteBtn = document.getElementById('cancel-promote');
+    const confirmPromoteBtn = document.getElementById('confirm-promote');
+    const promoteUsernameInput = document.getElementById('promote-username');
+
+    if (cancelPromoteBtn) {
+        cancelPromoteBtn.addEventListener('click', () => {
+            document.getElementById('promote-player-section').style.display = 'none';
+            document.getElementById('toggle-promote-player').classList.remove('active');
+            promoteUsernameInput.value = '';
+        });
+    }
+
+    if (confirmPromoteBtn) {
+        confirmPromoteBtn.addEventListener('click', async () => {
+            const username = promoteUsernameInput.value.trim();
+            // ... rest of your promote logic ...
+        });
+    }
 }
 
 async function setupAdminButtons() {
