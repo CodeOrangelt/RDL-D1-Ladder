@@ -17,7 +17,11 @@ function getRankStyle(rankName) {
 export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
     const bannerElement = document.getElementById('latest-promotion');
-    if (!promotionDetails || !bannerElement) return;
+    
+    if (!promotionDetails || !bannerElement) {
+        console.error('Promotion elements not found');
+        return;
+    }
 
     const historyRef = collection(db, 'eloHistory');
     const q = query(
@@ -34,7 +38,8 @@ export function initializePromotionTracker() {
                     // Set the rank attribute for styling
                     bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by Admin`;
+                    // Create promotion text with proper HTML escaping
+                    const promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by 'Admin'}`;
                     
                     promotionDetails.innerHTML = promotionText;
                     promotionDetails.classList.add('new-promotion');
