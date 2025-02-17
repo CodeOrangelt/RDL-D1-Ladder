@@ -68,9 +68,37 @@ tr:nth-child(even) {
     font-weight: bold;
 }
 
-.elo-emerald { color: #50C878; }
-.elo-gold { color: #FFD700; }
-.elo-silver { color: #C0C0C0; }
-.elo-bronze { color: #CD7F32; }
-.elo-unranked { color: #ffffff; }
+/* ELO rank colors */
+.elo-emerald { 
+    color: #50C878 !important; 
+    text-shadow: 0 0 5px rgba(80, 200, 120, 0.5);
+}
 
+.elo-gold { 
+    color: #FFD700 !important; 
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.elo-silver { 
+    color: #C0C0C0 !important; 
+    text-shadow: 0 0 5px rgba(192, 192, 192, 0.5);
+}
+
+.elo-bronze { 
+    color: #CD7F32 !important; 
+    text-shadow: 0 0 5px rgba(205, 127, 50, 0.5);
+}
+
+.elo-unranked { 
+    color: #ffffff !important; 
+}
+
+.player-link {
+    text-decoration: none;
+    font-weight: bold;
+    transition: opacity 0.2s ease;
+}
+
+.player-link:hover {
+    opacity: 0.8;
+}
