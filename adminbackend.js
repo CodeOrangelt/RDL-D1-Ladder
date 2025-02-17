@@ -62,34 +62,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupCollapsibleButtons() {
     const buttons = document.querySelectorAll('.collapse-btn');
+    const adminSections = document.querySelectorAll('.admin-section');
     
     buttons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
             const targetId = button.getAttribute('data-target');
-            const sections = document.querySelectorAll('.admin-section');
             
             // Hide all sections first
-            sections.forEach(section => {
+            adminSections.forEach(section => {
                 section.style.display = 'none';
             });
 
-            if (targetId === 'manage-players-section') {
-                const section = document.getElementById('manage-players-section');
-                if (section) {
-                    section.style.display = 'block';
-                    loadPlayers(); // Load players when showing section
-                }
-            } else if (targetId) {
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.style.display = 'block';
-                    
-                    // Load appropriate data
-                    if (targetId === 'elo-history') {
-                        loadEloHistory();
-                    } else if (targetId === 'elo-ratings') {
-                        loadEloRatings();
-                    }
+            // Show target section and load appropriate data
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                
+                switch(targetId) {
+                    case 'manage-players-section':
+                        await loadPlayers();
+                        break;
+                    case 'elo-history':
+                        await loadEloHistory();
+                        break;
+                    case 'elo-ratings':
+                        await loadEloRatings();
+                        break;
                 }
             }
         });
