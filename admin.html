@@ -106,6 +106,19 @@
                     </table>
                 </div>
             </div>
+            <div class="admin-section">
+                <button id="reset-season" class="danger-button">Reset Season</button>
+                <div id="reset-confirmation" class="confirmation-dialog" style="display: none;">
+                    <p>Are you sure you want to reset the season? This will:</p>
+                    <ul>
+                        <li>Archive current rankings</li>
+                        <li>Reset all players to default ELO</li>
+                        <li>Create a new season record</li>
+                    </ul>
+                    <button id="confirm-reset" class="danger-button">Confirm Reset</button>
+                    <button id="cancel-reset" class="secondary-button">Cancel</button>
+                </div>
+            </div>
         </div>
     </main>
     <div id="footer-placeholder"></div>
