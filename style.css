@@ -33,6 +33,7 @@ main {
     border-radius: 15px;
     width: 85%;
     padding: 20px;
+    min-height: 600px; /* Make the container taller */
     overflow: hidden; /* Contain the backdrop image */
 }
 
@@ -56,9 +57,9 @@ main {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
+    width: 60%; /* Reduced from 80% to fit better inside */
     height: auto;
-    opacity: 0.5;
+    opacity: 0.25; /* Reduced from 0.5 for more transparency */
     z-index: 1;
     pointer-events: none;
 }
@@ -69,6 +70,7 @@ main {
     border-radius: 30px;
     background-color: transparent; /* Changed from #efefef */
     margin: 0 auto;
+    padding: 20px 0;
     overflow: visible; /* Changed from hidden to show backdrop */
     z-index: 2; /* Place above backdrop */
 }
@@ -197,4 +199,9 @@ tr:nth-child(even) {
 .player-name::after,
 .player-name:hover::after {
     display: none;
+}
+
+/* Add some spacing between table rows */
+#ladder tr {
+    height: 35px; /* Increase row height */
 }
