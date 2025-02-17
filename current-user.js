@@ -2,9 +2,20 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/fi
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
+// Add loading state function
+function showLoadingState() {
+    const authSection = document.getElementById('auth-section');
+    if (authSection) {
+        authSection.innerHTML = '<span class="loading">Loading...</span>';
+    }
+}
+
 async function updateAuthSection(user) {
     const authSection = document.getElementById('auth-section');
     if (!authSection) return;
+    
+    // Show loading state while fetching data
+    showLoadingState();
     
     if (user) {
         try {
@@ -40,12 +51,15 @@ async function updateAuthSection(user) {
     }
 }
 
-// Listen for auth state changes
-onAuthStateChanged(auth, async (user) => {
-    await updateAuthSection(user);
-    // Show/hide admin link based on user email
-    const adminLink = document.querySelector('.admin-only');
-    if (adminLink) {
-        adminLink.style.display = user?.email === 'admin@ladder.com' ? 'block' : 'none';
-    }
+// Initialize immediately and listen for auth state changes
+document.addEventListener('DOMContentLoaded', () => {
+    showLoadingState();
+    onAuthStateChanged(auth, async (user) => {
+        await updateAuthSection(user);
+        // Show/hide admin link based on user email
+        const adminLink = document.querySelector('.admin-only');
+        if (adminLink) {
+            adminLink.style.display = user?.email === 'admin@ladder.com' ? 'block' : 'none';
+        }
+    });
 });
