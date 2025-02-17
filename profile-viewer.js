@@ -92,7 +92,9 @@ class ProfileViewer {
             };
             console.log('Combined profile data:', combinedData);
             this.displayProfile(combinedData);
-            await this.displayMatchHistory(username); // Add this line
+            
+            // Call displayMatchHistory only once
+            await this.displayMatchHistory(username);
 
             // Show edit controls if viewing own profile
             const currentUser = auth.currentUser;
@@ -107,9 +109,6 @@ class ProfileViewer {
                 const uploadBtn = document.querySelector('.upload-btn');
                 if (uploadBtn) uploadBtn.style.display = 'inline-block';
             }
-
-            // Display match history
-            this.displayMatchHistory(username);
 
         } catch (error) {
             console.error('Profile initialization error:', error);
