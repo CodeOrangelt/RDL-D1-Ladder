@@ -114,58 +114,49 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupCollapsibleButtons() {
-    const buttons = document.querySelectorAll('.collapse-btn');
-    
-    buttons.forEach(button => {
-        button.addEventListener('click', async () => {
-            const targetId = button.getAttribute('data-target');
-            const targetDiv = document.getElementById(targetId);
-            
-            // Hide all sections first
-            document.querySelectorAll('.collapsible-section').forEach(div => {
-                if (div.id !== targetId) {
-                    div.style.display = 'none';
-                }
-            });
-            
-            // Toggle the clicked section
-            if (targetDiv.style.display === 'none' || targetDiv.style.display === '') {
-                targetDiv.style.display = 'block';
-                button.classList.add('active');
-            } else {
-                targetDiv.style.display = 'none';
-                button.classList.remove('active');
-            }
-            
-            // Update other button states
-            buttons.forEach(btn => {
-                if (btn !== button) {
-                    btn.classList.remove('active');
-                }
-            });
-        });
-    });
-
-    // Add handlers for promote dialog
+    // Promote player functionality
+    const promoteBtn = document.getElementById('promote-player');
+    const promoteDialog = document.getElementById('promote-dialog');
     const cancelPromoteBtn = document.getElementById('cancel-promote');
     const confirmPromoteBtn = document.getElementById('confirm-promote');
     const promoteUsernameInput = document.getElementById('promote-username');
 
-    if (cancelPromoteBtn) {
+    if (promoteBtn && promoteDialog) {
+        promoteBtn.addEventListener('click', () => {
+            promoteDialog.style.display = promoteDialog.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+
+    if (cancelPromoteBtn && promoteDialog && promoteUsernameInput) {
         cancelPromoteBtn.addEventListener('click', () => {
-            document.getElementById('promote-player-section').style.display = 'none';
-            document.getElementById('toggle-promote-player').classList.remove('active');
+            promoteDialog.style.display = 'none';
             promoteUsernameInput.value = '';
         });
     }
 
-    if (confirmPromoteBtn) {
+    if (confirmPromoteBtn && promoteUsernameInput) {
         confirmPromoteBtn.addEventListener('click', async () => {
             const username = promoteUsernameInput.value.trim();
-            // ... rest of your promote logic ...
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            try {
+                await promotePlayer(username);
+                promoteDialog.style.display = 'none';
+                promoteUsernameInput.value = '';
+            } catch (error) {
+                console.error('Error promoting player:', error);
+                alert('Failed to promote player: ' + error.message);
+            }
         });
     }
 }
+
+// Make sure DOM is loaded before running setup
+document.addEventListener('DOMContentLoaded', () => {
+    setupCollapsibleButtons();
+});
 
 async function setupAdminButtons() {
     const viewEloButton = document.getElementById('view-elo-ratings');

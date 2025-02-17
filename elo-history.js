@@ -27,47 +27,30 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
     }
 }
 
-let lastVisible = null;
-const ENTRIES_PER_PAGE = 10;
-
-export async function getEloHistory(nextPage = false) {
+export async function getEloHistory() {
     try {
         const eloHistoryRef = collection(db, 'eloHistory');
-        let q;
+        const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
 
-        if (nextPage && lastVisible) {
-            q = query(
-                eloHistoryRef,
-                orderBy('timestamp', 'desc'),
-                startAfter(lastVisible),
-                limit(ENTRIES_PER_PAGE)
-            );
-        } else {
-            q = query(
-                eloHistoryRef,
-                orderBy('timestamp', 'desc'),
-                limit(ENTRIES_PER_PAGE)
-            );
-        }
+        const entries = [];
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            entries.push({
+                timestamp: data.timestamp,
+                player: data.player,
+                previousElo: data.previousElo,
+                newElo: data.newElo,
+                change: data.newElo - data.previousElo,
+                opponent: data.opponent,
+                matchResult: data.matchResult
+            });
+        });
 
-        const snapshot = await getDocs(q);
-        
-        if (!snapshot.empty) {
-            lastVisible = snapshot.docs[snapshot.docs.length - 1];
-        }
-
-        const hasMore = snapshot.docs.length === ENTRIES_PER_PAGE;
-
-        return {
-            entries: snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })),
-            hasMore
-        };
+        return { entries };
     } catch (error) {
-        console.error("Error getting ELO history:", error);
-        return { entries: [], hasMore: false };
+        console.error("Error fetching ELO history:", error);
+        throw error;
     }
 }
 
