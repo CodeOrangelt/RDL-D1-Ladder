@@ -1,6 +1,8 @@
 import { 
     collection, 
-    getDocs 
+    getDocs,
+    deleteDoc,
+    doc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -126,6 +128,73 @@ function updateLadderDisplay(ladderData) {
         rank++;
     });
 }
+
+async function loadPlayers() {
+    const tableBody = document.querySelector('#players-table tbody');
+    tableBody.innerHTML = '';
+
+    try {
+        const playersRef = collection(db, 'players');
+        const playersSnapshot = await getDocs(playersRef);
+
+        playersSnapshot.forEach(doc => {
+            const player = doc.data();
+            const row = document.createElement('tr');
+            
+            // Apply color based on ELO rating
+            const elo = parseFloat(player.eloRating) || 0;
+            let usernameColor = 'gray'; // default color for unranked
+
+            if (elo >= 2000) {
+                usernameColor = '#50C878'; // Emerald Green
+            } else if (elo >= 1800) {
+                usernameColor = '#FFD700'; // Gold
+            } else if (elo >= 1600) {
+                usernameColor = '#C0C0C0'; // Silver
+            } else if (elo >= 1400) {
+                usernameColor = '#CD7F32'; // Bronze
+            }
+
+            row.innerHTML = `
+                <td style="color: ${usernameColor}">${player.username}</td>
+                <td style="color: ${usernameColor}">${player.eloRating || 'N/A'}</td>
+                <td>
+                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                if (confirm('Are you sure you want to remove this player?')) {
+                    const playerId = e.target.dataset.id;
+                    try {
+                        await deleteDoc(doc(db, 'players', playerId));
+                        loadPlayers(); // Refresh the list
+                    } catch (error) {
+                        console.error('Error removing player:', error);
+                        alert('Failed to remove player');
+                    }
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error loading players:', error);
+        alert('Failed to load players');
+    }
+}
+
+// Add validation for ELO input
+document.getElementById('new-player-elo').addEventListener('input', function() {
+    const value = parseInt(this.value);
+    if (value > 3000) {
+        this.value = 3000;
+    } else if (value < 0) {
+        this.value = 0;
+    }
+});
 
 // Initialize ladder when DOM is loaded
 document.addEventListener('DOMContentLoaded', displayLadder);
