@@ -271,17 +271,13 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
     const username = document.getElementById('new-player-username').value.trim();
     const eloRating = parseInt(document.getElementById('new-player-elo').value);
 
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-    if (isNaN(eloRating) || eloRating < 0 || eloRating > 3000) {
-        alert('Please enter a valid ELO rating between 0 and 3000');
+    if (!username || isNaN(eloRating)) {
+        alert('Please enter both username and ELO rating');
         return;
     }
 
     try {
-        // Check if username already exists
+        // Check if username exists
         const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
@@ -291,28 +287,31 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
             return;
         }
 
-        // Get current highest position
-        const allPlayersQuery = await getDocs(playersRef);
-        let maxPosition = 0;
-        allPlayersQuery.forEach(doc => {
+        // Get all players to determine next position
+        const allPlayersSnapshot = await getDocs(playersRef);
+        const positions = [];
+        allPlayersSnapshot.forEach(doc => {
             const playerData = doc.data();
-            if (playerData.position && playerData.position > maxPosition) {
-                maxPosition = playerData.position;
+            if (playerData.position) {
+                positions.push(playerData.position);
             }
         });
 
-        // Add new player with position at end of ladder
+        // Calculate next position
+        const nextPosition = positions.length > 0 ? Math.max(...positions) + 1 : 1;
+
+        // Add new player with calculated position
         const playerData = {
             username: username,
             eloRating: eloRating,
-            position: maxPosition + 1, // Set position to one more than current highest
+            position: nextPosition,
             createdAt: serverTimestamp()
         };
 
         await addDoc(collection(db, 'players'), playerData);
-        alert('Player added successfully');
+        alert('Player added successfully at position ' + nextPosition);
 
-        // Clear inputs and refresh player list
+        // Clear inputs and refresh
         document.getElementById('new-player-username').value = '';
         document.getElementById('new-player-elo').value = '';
         loadPlayers();

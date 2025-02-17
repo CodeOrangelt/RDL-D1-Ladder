@@ -43,7 +43,7 @@ async function displayLadder() {
                 ...playerData,
                 id: doc.id,
                 elo: playerData.eloRating || 0,
-                position: playerData.position || players.length + 1 // Default to end of ladder
+                position: playerData.position || getNextAvailablePosition(players) // Changed this line
             });
         });
 
@@ -64,6 +64,17 @@ async function displayLadder() {
             </tr>
         `;
     }
+}
+
+function getNextAvailablePosition(players) {
+    if (players.length === 0) return 1;
+    
+    // Get all existing positions
+    const positions = players.map(p => p.position).sort((a, b) => a - b);
+    const maxPosition = positions[positions.length - 1] || 0;
+    
+    // Return the next position
+    return maxPosition + 1;
 }
 
 function updateLadderDisplay(ladderData) {
