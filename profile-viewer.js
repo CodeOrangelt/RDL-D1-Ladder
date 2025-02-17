@@ -9,6 +9,11 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+const STORAGE_RETRY_CONFIG = {
+    maxRetries: 3,
+    timeout: 30000 // 30 seconds
+};
+
 class ProfileViewer {
     constructor() {
         this.init();
@@ -205,11 +210,24 @@ class ProfileViewer {
             console.log('Starting upload process...');
             
             try {
-                // Direct upload without metadata first
-                const snapshot = await uploadBytes(storageRef, file);
+                const snapshot = await Promise.race([
+                    uploadBytes(storageRef, file),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Upload timed out')), 
+                        STORAGE_RETRY_CONFIG.timeout)
+                    )
+                ]);
+
                 console.log('Upload completed:', snapshot);
 
-                const downloadURL = await getDownloadURL(snapshot.ref);
+                const downloadURL = await Promise.race([
+                    getDownloadURL(snapshot.ref),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Getting download URL timed out')), 
+                        STORAGE_RETRY_CONFIG.timeout)
+                    )
+                ]);
+
                 console.log('Download URL obtained:', downloadURL);
 
                 // Update Firestore
@@ -264,15 +282,30 @@ class ProfileViewer {
             } else if (data.pfpUrl && data.pfpUrl !== defaultPfp) {
                 // If it's a storage path, get the download URL
                 console.log('Fetching URL for storage path:', data.pfpUrl);
-                getDownloadURL(ref(storage, data.pfpUrl))
-                    .then(url => {
-                        profilePreview.src = url;
-                        console.log('Retrieved URL for profile picture:', url);
-                    })
-                    .catch(error => {
-                        console.error('Error loading profile picture:', error);
-                        profilePreview.src = defaultPfp;
-                    });
+                
+                // Add retry logic for getDownloadURL
+                let retryCount = 0;
+                const tryFetchURL = () => {
+                    getDownloadURL(ref(storage, data.pfpUrl))
+                        .then(url => {
+                            profilePreview.src = url;
+                            console.log('Retrieved URL for profile picture:', url);
+                        })
+                        .catch(error => {
+                            console.error(`Error loading profile picture (attempt ${retryCount + 1}):`, error);
+                            
+                            if (retryCount < STORAGE_RETRY_CONFIG.maxRetries) {
+                                retryCount++;
+                                console.log(`Retrying... Attempt ${retryCount} of ${STORAGE_RETRY_CONFIG.maxRetries}`);
+                                setTimeout(tryFetchURL, 1000 * retryCount); // Exponential backoff
+                            } else {
+                                console.error('Max retries reached, using default picture');
+                                profilePreview.src = defaultPfp;
+                            }
+                        });
+                };
+                
+                tryFetchURL();
             } else {
                 console.log('Using default profile picture');
                 profilePreview.src = defaultPfp;
