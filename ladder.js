@@ -83,20 +83,31 @@ function updateLadderDisplay(ladderData) {
         // Create username cell with clickable link
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
-        usernameLink.href = `profile.html?id=${player.uid}`; // Link to player's profile
+        usernameLink.href = `profile.html?id=${player.uid}`;
         usernameLink.textContent = player.username;
-        usernameLink.style.color = 'white'; // Match existing text color
-        usernameLink.style.textDecoration = 'none'; // Remove default underline
         
-        // Add hover effect
+        // Set color based on ELO rank
+        let rankColor = 'white'; // default color
+        if (player.elo >= 2200) {
+            rankColor = '#FFD700'; // Gold
+        } else if (player.elo >= 1800) {
+            rankColor = '#C0C0C0'; // Silver
+        } else if (player.elo >= 1400) {
+            rankColor = '#CD7F32'; // Bronze
+        }
+        
+        usernameLink.style.color = rankColor;
+        usernameLink.style.textDecoration = 'none';
+        
+        // Add hover effect while maintaining rank color
         usernameLink.addEventListener('mouseenter', () => {
             usernameLink.style.textDecoration = 'underline';
-            usernameLink.style.color = '#b026b9'; // Purple hover color
+            usernameLink.style.opacity = '0.8';
         });
         
         usernameLink.addEventListener('mouseleave', () => {
             usernameLink.style.textDecoration = 'none';
-            usernameLink.style.color = 'white';
+            usernameLink.style.opacity = '1';
         });
         
         usernameCell.appendChild(usernameLink);
@@ -105,6 +116,12 @@ function updateLadderDisplay(ladderData) {
         row.appendChild(rankCell);
         row.appendChild(usernameCell);
         tbody.appendChild(row);
+        
+        // Add glow effect for top player
+        if (rank === 1) {
+            usernameLink.style.textShadow = '0 0 5px #FFD700';
+            usernameLink.style.animation = 'glow 2s ease-in-out infinite';
+        }
         
         rank++;
     });
