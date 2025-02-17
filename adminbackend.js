@@ -1,4 +1,19 @@
-import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp, setDoc, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    orderBy, 
+    addDoc, 
+    deleteDoc, 
+    where, 
+    doc, 
+    getDoc,
+    serverTimestamp, 
+    setDoc, 
+    updateDoc, 
+    writeBatch,
+    runTransaction 
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
@@ -344,12 +359,21 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
 // Add this function to handle promotions
 async function promotePlayer(username) {
     try {
-        // First check if current user is admin
+        // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        if (!user) {
+            throw new Error('No user logged in');
+        }
+
+        // Get admin status from Firestore
+        const adminDoc = await getDoc(doc(db, 'players', user.uid));
+        const isAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
+
+        if (!isAdmin && !ADMIN_EMAILS.includes(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
+        // Rest of the promotion logic
         const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
@@ -377,27 +401,27 @@ async function promotePlayer(username) {
             throw new Error('Player is already at maximum rank (Emerald)');
         }
 
-        const batch = writeBatch(db);
-        
-        // Update player document
-        batch.update(doc(db, 'players', playerDoc.id), {
-            eloRating: nextThreshold.elo,
-            lastPromotedAt: serverTimestamp(),
-            promotedBy: user.email
-        });
+        // Update player and create history entry
+        await runTransaction(db, async (transaction) => {
+            // Update player's ELO
+            transaction.update(doc(db, 'players', playerDoc.id), {
+                eloRating: nextThreshold.elo,
+                lastPromotedAt: serverTimestamp(),
+                promotedBy: user.email
+            });
 
-        // Record promotion in history
-        batch.set(doc(collection(db, 'eloHistory')), {
-            player: username,
-            previousElo: currentElo,
-            newElo: nextThreshold.elo,
-            timestamp: serverTimestamp(),
-            type: 'promotion',
-            rankAchieved: nextThreshold.name,
-            promotedBy: user.email
+            // Create history entry
+            const historyRef = doc(collection(db, 'eloHistory'));
+            transaction.set(historyRef, {
+                player: username,
+                previousElo: currentElo,
+                newElo: nextThreshold.elo,
+                timestamp: serverTimestamp(),
+                type: 'promotion',
+                rankAchieved: nextThreshold.name,
+                promotedBy: user.email
+            });
         });
-
-        await batch.commit();
 
         // Update UI
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
