@@ -18,10 +18,14 @@ import { auth, db } from './firebase-config.js';
 
 // Modify isUsernameAvailable to check both pending and active players
 async function isUsernameAvailable(username) {
+    if (!username || typeof username !== 'string') {
+        return false;
+    }
+
     try {
         // Check active players
         const playersRef = collection(db, "players");
-        const playersQuery = query(playersRef, where("username", "==", username));
+        const playersQuery = query(playersRef, where("username", "==", username.trim()));
         const playersSnapshot = await getDocs(playersQuery);
         
         if (!playersSnapshot.empty) {
@@ -30,13 +34,14 @@ async function isUsernameAvailable(username) {
 
         // Check pending registrations
         const pendingRef = collection(db, "pendingRegistrations");
-        const pendingQuery = query(pendingRef, where("username", "==", username));
+        const pendingQuery = query(pendingRef, where("username", "==", username.trim()));
         const pendingSnapshot = await getDocs(pendingQuery);
         
         return pendingSnapshot.empty;
     } catch (error) {
         console.error("Error checking username:", error);
-        throw error;
+        // Return false on error to prevent registration with potentially duplicate username
+        return false;
     }
 }
 
