@@ -13,7 +13,7 @@
 
 .promotion-content {
     background: rgba(0, 0, 0, 0.9);
-    border: 2px solid #4CAF50;
+    border: 2px solid #FFD700;
     border-radius: 10px;
     padding: 30px;
     text-align: center;
@@ -23,30 +23,39 @@
 }
 
 .promotion-title {
-    color: #4CAF50;
+    color: #FFD700;
     font-size: 24px;
     margin-bottom: 20px;
 }
 
+.rank-name {
+    font-size: 32px;
+    color: #FFD700;
+    margin: 20px 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
 .promotion-button {
-    background: #4CAF50;
-    color: white;
+    background: #FFD700;
+    color: black;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 30px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
     margin-top: 20px;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .promotion-button:hover {
-    background: #45a049;
+    background: #FFF;
+    transform: scale(1.05);
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .promotion-banner {
