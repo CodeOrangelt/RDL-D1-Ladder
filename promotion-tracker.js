@@ -3,6 +3,7 @@ import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstat
 
 // Add rank color mapping
 const RANK_COLORS = {
+    'Emerald' '50C878',
     'Gold': '#FFD700',
     'Silver': '#C0C0C0',
     'Bronze': '#CD7F32',
