@@ -15,7 +15,8 @@ import {
     updateDoc,
     deleteDoc,
     orderBy,
-    limit
+    limit,
+    serverTimestamp  // Add this import
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
@@ -134,65 +135,70 @@ async function handleLogin(e) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // Check email verification
         if (!user.emailVerified) {
             await signOut(auth);
             errorElement.innerHTML = `
                 <div class="error-message">
                     Please verify your email before logging in.
                     <br><br>
-                    <button onclick="resendVerificationEmail()" class="resend-button">
+                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
                         Resend Verification Email
                     </button>
                 </div>`;
             return;
         }
 
-        // Check if user is already in players collection
+        // Check if user exists in players collection
         const userDocRef = doc(db, "players", user.uid);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (!userDoc.exists()) {
-            // Get pending registration data
+            // Get pending registration
             const pendingRef = doc(db, "pendingRegistrations", user.uid);
             const pendingDoc = await getDoc(pendingRef);
-            
+
             if (pendingDoc.exists()) {
                 const pendingData = pendingDoc.data();
-                
-                // Get current highest position
-                const playersRef = collection(db, "players");
-                const playersSnapshot = await getDocs(query(playersRef, orderBy("position", "desc"), limit(1)));
-                const maxPosition = !playersSnapshot.empty ? 
-                    playersSnapshot.docs[0].data().position : 0;
 
-                // Create the player document
+                // Get next position on ladder
+                const playersRef = collection(db, "players");
+                const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
+                const playersSnapshot = await getDocs(playersQuery);
+                const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+
+                // Create player document
                 await setDoc(userDocRef, {
                     username: pendingData.username,
-                    email: pendingData.email,
-                    eloRating: 1200, // Starting ELO
-                    position: maxPosition + 1,
-                    createdAt: new Date(),
+                    email: user.email,
+                    eloRating: 1200,
+                    position: nextPosition,
+                    createdAt: serverTimestamp(),
+                    isAdmin: false,
                     verified: true,
-                    isAdmin: false
+                    matches: 0,
+                    wins: 0,
+                    losses: 0
                 });
 
-                // Update or delete pending registration
+                // Clean up pending registration
                 await deleteDoc(pendingRef);
 
-                console.log('Successfully added new player to ladder');
+                console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
             } else {
-                console.error('No pending registration found');
-                errorElement.textContent = 'Registration data not found. Please contact an administrator.';
+                console.error('No pending registration found for verified user');
+                errorElement.textContent = 'Account setup incomplete. Please contact an administrator.';
                 await signOut(auth);
                 return;
             }
         }
 
-        // Redirect to home page
+        // Successful login - redirect to home
         window.location.href = 'index.html';
+
     } catch (error) {
         console.error('Login error:', error);
-        errorElement.textContent = error.message;
+        errorElement.textContent = 'Login failed: ' + error.message;
     }
 }
 
