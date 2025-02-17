@@ -17,8 +17,15 @@ export function initializePromotionTracker() {
             if (change.type === "added") {
                 const data = change.doc.data();
                 if (data.type === 'promotion') {
-                    const promotionText = `${data.player} promoted to ${data.rankAchieved} by ${data.promotedBy}`;
+                    // Format the promotion text with promoter info
+                    const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
                     promotionDetails.textContent = promotionText;
+                    
+                    // Add visual feedback
+                    promotionDetails.classList.add('new-promotion');
+                    setTimeout(() => {
+                        promotionDetails.classList.remove('new-promotion');
+                    }, 3000);
                 }
             }
         });
