@@ -318,6 +318,10 @@ class ProfileViewer {
             `;
 
             console.log(`Loaded ${matches.length} matches for ${username}`);
+            
+            // Call displayMatchStats to show match statistics
+            await this.displayMatchStats(username, matches);
+
         } catch (error) {
             console.error('Error loading match history:', error);
             matchHistoryContainer.innerHTML = `
@@ -326,6 +330,78 @@ class ProfileViewer {
                 </div>
             `;
         }
+    }
+
+    async displayMatchStats(username, matches) {
+        // Create container with same styling as match history
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'match-history-container';
+        
+        statsContainer.innerHTML = `
+            <h2>Match Statistics</h2>
+            <div class="stats-content">
+                <canvas id="eloChart"></canvas>
+            </div>
+        `;
+
+        // Insert after match history
+        const matchHistoryContainer = document.querySelector('.match-history-container');
+        if (matchHistoryContainer) {
+            matchHistoryContainer.parentNode.insertBefore(statsContainer, matchHistoryContainer.nextSibling);
+        }
+
+        // Process match data for the chart
+        const matchData = matches.map(match => ({
+            date: new Date(match.createdAt.seconds * 1000),
+            isWinner: match.winnerUsername === username,
+            score: match.isWinner ? match.winnerScore : match.loserScore
+        })).sort((a, b) => a.date - b.date);
+
+        // Create the chart
+        const ctx = document.getElementById('eloChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: matchData.map(match => match.date.toLocaleDateString()),
+                datasets: [{
+                    label: 'Score History',
+                    data: matchData.map(match => match.score),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
     }
 }
 
