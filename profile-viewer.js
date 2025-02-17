@@ -1,4 +1,3 @@
-js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -15,45 +14,51 @@ class ProfileViewer {
 
     async init() {
         // Wait for auth state to be determined
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             // Get userId from URL parameter
             const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('id') || (user ? user.uid : null);
+            let userId = urlParams.get('id');
 
-            if (!userId) {
-                this.showError('Profile not found');
-                return;
-            }
+            try {
+                // If no ID in URL, try to get current user's profile
+                if (!userId && user) {
+                    userId = user.uid;
+                }
 
-            this.loadProfile(userId);
-        });
-    }
+                if (!userId) {
+                    this.showError('Profile not found - No user ID provided');
+                    return;
+                }
 
-    async loadProfile(userId) {
-        try {
-            const profileDoc = await getDoc(doc(db, 'profiles', userId));
-            const userDoc = await getDoc(doc(db, 'users', userId));
+                // Load profile data
+                const profileDoc = await getDoc(doc(db, 'profiles', userId));
+                const userDoc = await getDoc(doc(db, 'users', userId));
 
-            if (profileDoc.exists() || userDoc.exists()) {
+                if (!profileDoc.exists() && !userDoc.exists()) {
+                    this.showError(`Profile not found for ID: ${userId}`);
+                    return;
+                }
+
                 const profileData = profileDoc.exists() ? profileDoc.data() : {};
                 const userData = userDoc.exists() ? userDoc.data() : {};
 
                 this.displayProfile({
                     ...profileData,
+                    ...userData,
+                    userId: userId,
                     username: userData.username || profileData.nickname || 'Anonymous'
                 });
 
                 // Show edit button if viewing own profile
-                if (auth.currentUser && auth.currentUser.uid === userId) {
+                if (user && user.uid === userId) {
                     document.getElementById('edit-profile').style.display = 'block';
                 }
-            } else {
-                this.showError('Profile not found');
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                this.showError(`Error loading profile: ${error.message}`);
             }
-        } catch (error) {
-            console.error('Error loading profile:', error);
-            this.showError('Error loading profile');
-        }
+        });
     }
 
     displayProfile(data) {
