@@ -2,14 +2,18 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: transparent;
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background-image: url('images/bg.jpg');
+    background: url('images/bg.jpg') no-repeat center center fixed;
     background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
 }
 
 .container {
@@ -161,4 +165,13 @@ tr:hover {
 #admin-actions {
     margin-bottom: 20px;
     text-align: center;
+}
+
+footer {
+    margin-top: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    width: 100%;
 }
