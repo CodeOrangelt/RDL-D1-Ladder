@@ -233,10 +233,14 @@ class ProfileViewer {
     }
 
     async displayMatchHistory(username) {
-        const matchHistoryContainer = document.createElement('div');
-        matchHistoryContainer.className = 'match-history-container';
-        
         try {
+            // First display stats
+            await this.displayMatchStats(username, matches);
+
+            // Then create match history container below stats
+            const matchHistoryContainer = document.createElement('div');
+            matchHistoryContainer.className = 'match-history-container';
+            
             // Add loading state
             matchHistoryContainer.innerHTML = '<p class="loading-text">Loading match history...</p>';
             const profileContainer = document.querySelector('.profile-container');
@@ -270,7 +274,28 @@ class ProfileViewer {
                 }))
                 .sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
-            // Update container with match data
+            // Get ELO ratings for all players in matches
+            const playerElos = {};
+            for (const match of matches) {
+                if (!playerElos[match.winnerUsername]) {
+                    const playerDoc = await this.getPlayerData(match.winnerUsername);
+                    playerElos[match.winnerUsername] = playerDoc?.eloRating || 0;
+                }
+                if (!playerElos[match.loserUsername]) {
+                    const playerDoc = await this.getPlayerData(match.loserUsername);
+                    playerElos[match.loserUsername] = playerDoc?.eloRating || 0;
+                }
+            }
+
+            // Helper function to get ELO class
+            const getEloClass = (elo) => {
+                if (elo >= 2000) return 'elo-emerald';
+                if (elo >= 1800) return 'elo-gold';
+                if (elo >= 1600) return 'elo-silver';
+                if (elo >= 1400) return 'elo-bronze';
+                return 'elo-unranked';
+            };
+
             matchHistoryContainer.innerHTML = `
                 <h2>Match History</h2>
                 <table class="match-history-table">
@@ -291,19 +316,21 @@ class ProfileViewer {
                                     new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
                                     'N/A';
                                 const isWinner = match.winnerUsername === username;
+                                const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
+                                const loserEloClass = getEloClass(playerElos[match.loserUsername]);
                                 
                                 return `
                                     <tr class="${isWinner ? 'match-won' : 'match-lost'}">
                                         <td>${date}</td>
                                         <td>
                                             <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                                               class="player-link ${match.winnerUsername === username ? 'current-user' : ''}">
+                                               class="player-link ${winnerEloClass} ${match.winnerUsername === username ? 'current-user' : ''}">
                                                 ${match.winnerUsername}
                                             </a>
                                         </td>
                                         <td>
                                             <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                                               class="player-link ${match.loserUsername === username ? 'current-user' : ''}">
+                                               class="player-link ${loserEloClass} ${match.loserUsername === username ? 'current-user' : ''}">
                                                 ${match.loserUsername}
                                             </a>
                                         </td>
@@ -319,11 +346,13 @@ class ProfileViewer {
 
             console.log(`Loaded ${matches.length} matches for ${username}`);
             
-            // Call displayMatchStats to show match statistics
+            // After matches are loaded, display all statistics
             await this.displayMatchStats(username, matches);
+            await this.displayPlayerMatchups(username, matches);
 
         } catch (error) {
             console.error('Error loading match history:', error);
+            const matchHistoryContainer = document.querySelector('.match-history-container');
             matchHistoryContainer.innerHTML = `
                 <div class="error-message">
                     Error loading match history. Please try refreshing the page.
@@ -333,22 +362,21 @@ class ProfileViewer {
     }
 
     async displayMatchStats(username, matches) {
-        // Create container with same styling as match history
         const statsContainer = document.createElement('div');
         statsContainer.className = 'match-history-container';
         
+        // Insert after profile container instead of match history
+        const profileContainer = document.querySelector('.profile-container');
+        if (profileContainer) {
+            profileContainer.parentNode.insertBefore(statsContainer, profileContainer.nextSibling);
+        }
+
         statsContainer.innerHTML = `
             <h2>Match Statistics</h2>
             <div class="stats-content">
                 <canvas id="eloChart"></canvas>
             </div>
         `;
-
-        // Insert after match history
-        const matchHistoryContainer = document.querySelector('.match-history-container');
-        if (matchHistoryContainer) {
-            matchHistoryContainer.parentNode.insertBefore(statsContainer, matchHistoryContainer.nextSibling);
-        }
 
         // Process match data for the chart
         const matchData = matches.map(match => ({
@@ -402,6 +430,114 @@ class ProfileViewer {
                 }
             }
         });
+    }
+
+    async displayPlayerMatchups(username, matches) {
+        const matchupsContainer = document.createElement('div');
+        matchupsContainer.className = 'match-history-container';
+        
+        // Get player matchup statistics and ELO ratings
+        const matchups = {};
+        const playerElos = {};
+
+        // First pass to collect ELO ratings
+        for (const match of matches) {
+            if (!playerElos[match.winnerUsername]) {
+                const playerDoc = await this.getPlayerData(match.winnerUsername);
+                playerElos[match.winnerUsername] = playerDoc?.eloRating || 0;
+            }
+            if (!playerElos[match.loserUsername]) {
+                const playerDoc = await this.getPlayerData(match.loserUsername);
+                playerElos[match.loserUsername] = playerDoc?.eloRating || 0;
+            }
+        }
+
+        // Calculate matchup stats
+        matches.forEach(match => {
+            const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+            const isWin = match.winnerUsername === username;
+            
+            if (!matchups[opponent]) {
+                matchups[opponent] = { 
+                    wins: 0, 
+                    losses: 0, 
+                    total: 0,
+                    eloRating: playerElos[opponent] || 0
+                };
+            }
+            
+            matchups[opponent].total++;
+            if (isWin) {
+                matchups[opponent].wins++;
+            } else {
+                matchups[opponent].losses++;
+            }
+        });
+
+        // Helper function to get ELO class
+        const getEloClass = (elo) => {
+            if (elo >= 2000) return 'elo-emerald';
+            if (elo >= 1800) return 'elo-gold';
+            if (elo >= 1600) return 'elo-silver';
+            if (elo >= 1400) return 'elo-bronze';
+            return 'elo-unranked';
+        };
+
+        // Sort matchups by total games played
+        const sortedMatchups = Object.entries(matchups)
+            .sort((a, b) => b[1].total - a[1].total);
+
+        matchupsContainer.innerHTML = `
+            <h2>Player Matchups</h2>
+            <table class="match-history-table">
+                <thead>
+                    <tr>
+                        <th>Opponent</th>
+                        <th>Games Played</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sortedMatchups.length === 0 ? 
+                        '<tr><td colspan="5">No matchups found</td></tr>' :
+                        sortedMatchups.map(([opponent, stats]) => {
+                            const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                            const eloClass = getEloClass(stats.eloRating);
+                            return `
+                                <tr>
+                                    <td>
+                                        <a href="profile.html?username=${encodeURIComponent(opponent)}"
+                                           class="player-link ${eloClass}">
+                                            ${opponent}
+                                        </a>
+                                    </td>
+                                    <td>${stats.total}</td>
+                                    <td class="wins">${stats.wins}</td>
+                                    <td class="losses">${stats.losses}</td>
+                                    <td>${winRate}%</td>
+                                </tr>
+                            `;
+                        }).join('')
+                    }
+                </tbody>
+            </table>
+        `;
+
+        // Insert after match stats container
+        const statsContainer = document.querySelector('.match-history-container');
+        if (statsContainer) {
+            statsContainer.parentNode.insertBefore(matchupsContainer, statsContainer.nextSibling);
+        }
+    }
+
+    // Helper method to get player data
+    async getPlayerData(username) {
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs[0]?.data();
     }
 }
 

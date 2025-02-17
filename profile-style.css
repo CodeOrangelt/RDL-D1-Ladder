@@ -52,17 +52,22 @@
     background: rgba(0, 0, 0, 0.3);
     padding: 15px;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
 }
 
 .profile-field label {
-    color: #4CAF50;
+    color: white;  /* Make labels visible */
+    opacity: 0.9;
+    margin-right: 10px;
     font-weight: bold;
     margin-bottom: 8px;
     display: block;
 }
 
 .view-text {
-    color: white;
+    color: white;  /* Make text visible */
+    opacity: 0.9;  /* Slight transparency */
     padding: 5px 0;
 }
 
@@ -251,6 +256,14 @@
 .match-history-table th {
     padding: 12px;
     background-color: rgba(0, 0, 0, 0.3);
+}
+
+.match-history-table td.wins {
+    color: #4CAF50;
+}
+
+.match-history-table td.losses {
+    color: #f44336;
 }
 
 .stats-content {
