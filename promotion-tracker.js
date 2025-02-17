@@ -15,7 +15,8 @@ function getRankStyle(rankName) {
 
 export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
-    if (!promotionDetails) return;
+    const bannerElement = document.getElementById('latest-promotion');
+    if (!promotionDetails || !bannerElement) return;
 
     const historyRef = collection(db, 'eloHistory');
     const q = query(
@@ -29,50 +30,17 @@ export function initializePromotionTracker() {
             if (change.type === "added") {
                 const data = change.doc.data();
                 if (data.type === 'promotion') {
-                    const rankColor = getRankStyle(data.rankAchieved);
-                    const bannerElement = document.getElementById('latest-promotion');
-                    const ladderContainer = document.querySelector('.table-container');
+                    // Set the rank attribute for styling
+                    bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    // Match the width of the ladder container
-                    if (ladderContainer) {
-                        const containerWidth = ladderContainer.offsetWidth;
-                        bannerElement.style.width = `${containerWidth}px`;
-                        bannerElement.style.margin = '20px auto';  // Center the banner
-                    }
+                    let promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
                     
-                    let promotionText;
-                    
-                    if (data.promotionType === 'threshold') {
-                        promotionText = `${data.player} reached <span class="rank-text">${data.rankAchieved}</span> rank through match performance!`;
-                    } else {
-                        promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by RDL Admins`;
-                    }
-
-                    // Update banner text with animation and color
-                    promotionDetails.style.opacity = '0';
+                    promotionDetails.innerHTML = promotionText;
+                    promotionDetails.classList.add('new-promotion');
                     
                     setTimeout(() => {
-                        // Update text and colors
-                        promotionDetails.innerHTML = promotionText;
-                        bannerElement.style.borderColor = rankColor;
-                        
-                        // Style the rank text
-                        const rankSpan = promotionDetails.querySelector('.rank-text');
-                        if (rankSpan) {
-                            rankSpan.style.color = rankColor;
-                            rankSpan.style.fontWeight = 'bold';
-                        }
-
-                        promotionDetails.style.opacity = '1';
-                        promotionDetails.classList.add('new-promotion');
-                        
-                        // Add rank-specific glow
-                        bannerElement.style.boxShadow = `0 0 10px ${rankColor}40`;
-                        
-                        setTimeout(() => {
-                            promotionDetails.classList.remove('new-promotion');
-                        }, 3000);
-                    }, 300);
+                        promotionDetails.classList.remove('new-promotion');
+                    }, 3000);
                 }
             }
         });
