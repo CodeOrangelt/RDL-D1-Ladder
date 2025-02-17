@@ -361,19 +361,11 @@ async function promotePlayer(username) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user) {
-            throw new Error('No user logged in');
-        }
-
-        // Get admin status from Firestore
-        const adminDoc = await getDoc(doc(db, 'players', user.uid));
-        const isAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
-
-        if (!isAdmin && !ADMIN_EMAILS.includes(user.email)) {
+        if (!user || !ADMIN_EMAILS.includes(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
-        // Rest of the promotion logic
+        // Get player data
         const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
@@ -401,27 +393,30 @@ async function promotePlayer(username) {
             throw new Error('Player is already at maximum rank (Emerald)');
         }
 
-        // Update player and create history entry
-        await runTransaction(db, async (transaction) => {
-            // Update player's ELO
-            transaction.update(doc(db, 'players', playerDoc.id), {
-                eloRating: nextThreshold.elo,
-                lastPromotedAt: serverTimestamp(),
-                promotedBy: user.email
-            });
-
-            // Create history entry
-            const historyRef = doc(collection(db, 'eloHistory'));
-            transaction.set(historyRef, {
-                player: username,
-                previousElo: currentElo,
-                newElo: nextThreshold.elo,
-                timestamp: serverTimestamp(),
-                type: 'promotion',
-                rankAchieved: nextThreshold.name,
-                promotedBy: user.email
-            });
+        // Use batch write instead of transaction
+        const batch = writeBatch(db);
+        
+        // Update player document
+        batch.update(doc(db, 'players', playerDoc.id), {
+            eloRating: nextThreshold.elo,
+            lastPromotedAt: serverTimestamp(),
+            promotedBy: user.email
         });
+
+        // Add promotion history
+        const historyRef = doc(collection(db, 'eloHistory'));
+        batch.set(historyRef, {
+            player: username,
+            previousElo: currentElo,
+            newElo: nextThreshold.elo,
+            timestamp: serverTimestamp(),
+            type: 'promotion',
+            rankAchieved: nextThreshold.name,
+            promotedBy: user.email
+        });
+
+        // Commit the batch
+        await batch.commit();
 
         // Update UI
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
