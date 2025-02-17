@@ -148,17 +148,6 @@ tr:nth-child(even) {
     text-align: center; /* Keep rank centered */
 }
 
-@keyframes glow {
-    0% {
-        text-shadow: 0 0 5px #FFD700;
-    }
-    50% {
-        text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
-    }
-    100% {
-        text-shadow: 0 0 5px #FFD700;
-    }
-}
 
 /* Make sure the glow is contained within the cell */
 #ladder td:first-child {
