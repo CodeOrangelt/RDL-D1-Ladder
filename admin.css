@@ -343,3 +343,31 @@ footer {
 #elo-table td:last-child {
     text-align: right;
 }
+
+#elo-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#elo-history-table th,
+#elo-history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+#elo-history-table th {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+}
+
+#elo-history-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#elo-history-table td:nth-child(5) {
+    font-weight: bold;
+}

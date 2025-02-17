@@ -53,20 +53,17 @@ function setupCollapsibleButtons() {
             if (targetId) {
                 const targetSection = document.getElementById(targetId);
                 if (targetSection) {
-                    // Toggle all sections
-                    document.querySelectorAll('[id$="-ratings"], [id$="-history"], [id$="-ladder"], #manage-players-section')
-                        .forEach(section => {
-                            if (section.id !== targetId) {
-                                section.style.display = 'none';
-                            }
-                        });
+                    // Toggle sections
+                    document.querySelectorAll('.admin-section').forEach(section => {
+                        section.style.display = 'none';
+                    });
                     
-                    // Toggle the clicked section
-                    const isDisplayed = targetSection.style.display !== 'none';
-                    targetSection.style.display = isDisplayed ? 'none' : 'block';
+                    targetSection.style.display = 'block';
                     
-                    // Load data if showing ELO ratings
-                    if (targetId === 'elo-ratings' && !isDisplayed) {
+                    // Load appropriate data
+                    if (targetId === 'elo-history') {
+                        loadEloHistory();
+                    } else if (targetId === 'elo-ratings') {
                         loadEloRatings();
                     }
                 }
@@ -182,36 +179,39 @@ async function loadEloHistory() {
         return;
     }
 
-    tableBody.innerHTML = '<tr><td colspan="7">Loading ELO history...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="7">Loading history...</td></tr>';
 
     try {
-        const { entries } = await getEloHistory();
-        
-        if (entries.length === 0) {
+        const eloHistoryRef = collection(db, 'eloHistory');
+        const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="7">No ELO history found</td></tr>';
             return;
         }
 
         tableBody.innerHTML = '';
-        entries.forEach(record => {
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
             const row = document.createElement('tr');
-            const eloChange = record.change;
-            const changeColor = eloChange > 0 ? 'color: green;' : eloChange < 0 ? 'color: red;' : '';
+            const eloChange = data.newElo - data.previousElo;
+            const changeColor = eloChange > 0 ? 'color: #4CAF50;' : eloChange < 0 ? 'color: #f44336;' : '';
             
             row.innerHTML = `
-                <td>${record.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
-                <td>${record.player || 'N/A'}</td>
-                <td>${record.previousElo || 'N/A'}</td>
-                <td>${record.newElo || 'N/A'}</td>
+                <td>${data.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
+                <td>${data.player || 'N/A'}</td>
+                <td>${data.previousElo || 'N/A'}</td>
+                <td>${data.newElo || 'N/A'}</td>
                 <td style="${changeColor}">${eloChange > 0 ? '+' + eloChange : eloChange}</td>
-                <td>${record.opponent || 'N/A'}</td>
-                <td>${record.matchResult || 'N/A'}</td>
+                <td>${data.opponent || 'N/A'}</td>
+                <td>${data.matchResult || 'N/A'}</td>
             `;
             tableBody.appendChild(row);
         });
     } catch (error) {
         console.error("Error loading ELO history:", error);
-        tableBody.innerHTML = '<tr><td colspan="7">Error loading ELO history: ' + error.message + '</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7">Error loading history: ' + error.message + '</td></tr>';
     }
 }
 
