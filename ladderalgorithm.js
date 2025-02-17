@@ -153,31 +153,48 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             const winnerDoc = winnerDocs.docs[0];
             const loserDoc = loserDocs.docs[0];
 
-            // Get current positions or set defaults
+            // Get current ELO and positions
+            const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
+            const loserCurrentElo = loserDoc.data().eloRating || 1200;
             const winnerPosition = winnerDoc.data().position || Number.MAX_SAFE_INTEGER;
             const loserPosition = loserDoc.data().position || 1;
 
             // Calculate new ELO ratings
-            const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
-            const loserCurrentElo = loserDoc.data().eloRating || 1200;
             const { newWinnerRating, newLoserRating } = calculateElo(winnerCurrentElo, loserCurrentElo);
 
             // Start batch update
             const batch = writeBatch(db);
 
-            // Update winner's ELO and position
+            // Update winner's data
             batch.update(winnerDoc.ref, {
                 eloRating: newWinnerRating,
                 position: Math.min(winnerPosition, loserPosition)
             });
 
-            // Update loser's ELO and position
+            // Update loser's data
             batch.update(loserDoc.ref, {
                 eloRating: newLoserRating,
-                position: Math.min(winnerPosition, loserPosition) + 1
+                position: Math.max(winnerPosition, loserPosition)
             });
 
-            // Get players between winner and loser to update their positions
+            // Record ELO changes in history
+            await recordEloChange(
+                reportData.winnerUsername,
+                winnerCurrentElo,
+                newWinnerRating,
+                reportData.loserUsername,
+                'win'
+            );
+
+            await recordEloChange(
+                reportData.loserUsername,
+                loserCurrentElo,
+                newLoserRating,
+                reportData.winnerUsername,
+                'loss'
+            );
+
+            // Update positions for players between winner and loser
             const playersToUpdate = query(
                 playersRef,
                 where('position', '>', Math.min(winnerPosition, loserPosition)),
@@ -196,6 +213,12 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
             // Commit all updates
             await batch.commit();
+
+            // Check for promotions after ELO updates
+            await Promise.all([
+                PromotionHandler.checkPromotion(winnerDoc.id, newWinnerRating, winnerCurrentElo),
+                PromotionHandler.checkPromotion(loserDoc.id, newLoserRating, loserCurrentElo)
+            ]);
 
             // Move to approved matches
             const approvedMatchRef = doc(db, 'approvedMatches', reportId);
