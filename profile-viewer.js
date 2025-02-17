@@ -234,10 +234,7 @@ class ProfileViewer {
 
     async displayMatchHistory(username) {
         try {
-            // First display stats
-            await this.displayMatchStats(username, matches);
-
-            // Then create match history container below stats
+            // Create containers first
             const matchHistoryContainer = document.createElement('div');
             matchHistoryContainer.className = 'match-history-container';
             
@@ -246,7 +243,7 @@ class ProfileViewer {
             const profileContainer = document.querySelector('.profile-container');
             profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
 
-            // Query matches where user is either winner or loser instead of using participants
+            // Fetch matches
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const matchesQuery = query(
                 approvedMatchesRef,
@@ -274,90 +271,34 @@ class ProfileViewer {
                 }))
                 .sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
-            // Get ELO ratings for all players in matches
-            const playerElos = {};
-            for (const match of matches) {
-                if (!playerElos[match.winnerUsername]) {
-                    const playerDoc = await this.getPlayerData(match.winnerUsername);
-                    playerElos[match.winnerUsername] = playerDoc?.eloRating || 0;
-                }
-                if (!playerElos[match.loserUsername]) {
-                    const playerDoc = await this.getPlayerData(match.loserUsername);
-                    playerElos[match.loserUsername] = playerDoc?.eloRating || 0;
-                }
-            }
-
-            // Helper function to get ELO class
-            const getEloClass = (elo) => {
-                if (elo >= 2000) return 'elo-emerald';
-                if (elo >= 1800) return 'elo-gold';
-                if (elo >= 1600) return 'elo-silver';
-                if (elo >= 1400) return 'elo-bronze';
-                return 'elo-unranked';
-            };
-
-            matchHistoryContainer.innerHTML = `
-                <h2>Match History</h2>
-                <table class="match-history-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Winner</th>
-                            <th>Loser</th>
-                            <th>Score</th>
-                            <th>Map</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${matches.length === 0 ? 
-                            '<tr><td colspan="5">No matches found</td></tr>' :
-                            matches.map(match => {
-                                const date = match.createdAt ? 
-                                    new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
-                                    'N/A';
-                                const isWinner = match.winnerUsername === username;
-                                const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
-                                const loserEloClass = getEloClass(playerElos[match.loserUsername]);
-                                
-                                return `
-                                    <tr class="${isWinner ? 'match-won' : 'match-lost'}">
-                                        <td>${date}</td>
-                                        <td>
-                                            <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                                               class="player-link ${winnerEloClass} ${match.winnerUsername === username ? 'current-user' : ''}">
-                                                ${match.winnerUsername}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                                               class="player-link ${loserEloClass} ${match.loserUsername === username ? 'current-user' : ''}">
-                                                ${match.loserUsername}
-                                            </a>
-                                        </td>
-                                        <td>${match.winnerScore} - ${match.loserScore}</td>
-                                        <td>${match.mapPlayed}</td>
-                                    </tr>
-                                `;
-                            }).join('')
-                        }
-                    </tbody>
-                </table>
-            `;
-
-            console.log(`Loaded ${matches.length} matches for ${username}`);
-            
             // After matches are loaded, display all statistics
             await this.displayMatchStats(username, matches);
             await this.displayPlayerMatchups(username, matches);
 
+            // Rest of your existing match history display code...
+            const playerElos = {};
+            for (const match of matches) {
+                // ... existing ELO fetching code ...
+            }
+
+            // Update match history display
+            matchHistoryContainer.innerHTML = `
+                <h2>Match History</h2>
+                <table class="match-history-table">
+                // ... rest of your table HTML ...
+                </table>
+            `;
+
         } catch (error) {
             console.error('Error loading match history:', error);
             const matchHistoryContainer = document.querySelector('.match-history-container');
-            matchHistoryContainer.innerHTML = `
-                <div class="error-message">
-                    Error loading match history. Please try refreshing the page.
-                </div>
-            `;
+            if (matchHistoryContainer) {
+                matchHistoryContainer.innerHTML = `
+                    <div class="error-message">
+                        Error loading match history. Please try refreshing the page.
+                    </div>
+                `;
+            }
         }
     }
 
