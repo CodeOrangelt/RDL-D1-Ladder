@@ -2,25 +2,25 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
     margin: 0;
     padding: 0;
 }
 
 .container {
-    width: 90%; /* Increase the width of the container */
-    max-width: 1200px; /* Increase the max-width of the container */
-    margin: auto;
-    overflow: hidden;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 75%;
     padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    min-height: 800px;
+    overflow: hidden;
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    color: white;
     margin-bottom: 20px;
 }
 
@@ -28,19 +28,37 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    position: relative;
+    z-index: 2;
 }
 
 th, td {
     padding: 10px;
-    border: 1px solid #ddd;
+    border: none;
     text-align: left;
+    color: white;
+    background-color: transparent;
 }
 
 th {
-    background-color: #4CAF50;
+    background-color: transparent;
     color: white;
+    font-weight: bold;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: transparent;
+}
+
+/* Add backdrop image styling if needed */
+.matches-backdrop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: auto;
+    opacity: 0.08;
+    z-index: 1;
+    pointer-events: none;
 }
