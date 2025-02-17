@@ -271,3 +271,13 @@ footer {
     gap: 10px;
     margin-top: 15px;
 }
+
+.admin-input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+}
