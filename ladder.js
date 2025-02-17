@@ -39,11 +39,13 @@ async function displayLadder() {
         const players = [];
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
+            const position = playerData.position || getNextAvailablePosition(players);
+            
             players.push({
                 ...playerData,
                 id: doc.id,
                 elo: playerData.eloRating || 0,
-                position: playerData.position || getNextAvailablePosition(players) // Changed this line
+                position: position
             });
         });
 
@@ -66,14 +68,18 @@ async function displayLadder() {
     }
 }
 
+// Modify the getNextAvailablePosition function
 function getNextAvailablePosition(players) {
     if (players.length === 0) return 1;
     
-    // Get all existing positions
-    const positions = players.map(p => p.position).sort((a, b) => a - b);
-    const maxPosition = positions[positions.length - 1] || 0;
+    // Find the highest position number
+    let maxPosition = 0;
+    players.forEach(player => {
+        if (player.position && typeof player.position === 'number' && player.position > maxPosition) {
+            maxPosition = player.position;
+        }
+    });
     
-    // Return the next position
     return maxPosition + 1;
 }
 
