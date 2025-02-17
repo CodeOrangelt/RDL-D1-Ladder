@@ -3,7 +3,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-
 import { auth, db } from './firebase-config.js';
 
 // Add admin emails array at the top of the file
-const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outl99k.com'];
+const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
 
 // Add loading state function
 function showLoadingState() {
