@@ -47,9 +47,9 @@ main {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60%; /* Reduced from 80% to fit better inside */
+    width: 80%; /* Increased from 60% to 80% */
     height: auto;
-    opacity: 0.08; /* Reduced opacity to make image very faint */
+    opacity: 0.08;
     z-index: 1;
     pointer-events: none;
 }
