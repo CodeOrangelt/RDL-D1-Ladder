@@ -218,3 +218,37 @@
 .player-link.current-user {
     font-weight: bold;
 }
+
+/* Match history table styling */
+.match-history-table tr.match-won {
+    background-color: rgba(76, 175, 80, 0.2); /* Semi-transparent green */
+}
+
+.match-history-table tr.match-won:hover {
+    background-color: rgba(76, 175, 80, 0.3); /* Slightly more opaque on hover */
+}
+
+.match-history-table tr.match-lost {
+    background-color: rgba(255, 59, 48, 0.2); /* Semi-transparent red */
+}
+
+.match-history-table tr.match-lost:hover {
+    background-color: rgba(255, 59, 48, 0.3); /* Slightly more opaque on hover */
+}
+
+/* Add border between rows */
+.match-history-table tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+/* Make text more visible on colored backgrounds */
+.match-history-table td {
+    color: white;
+    padding: 12px;
+}
+
+.match-history-table th {
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
