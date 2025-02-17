@@ -1,4 +1,4 @@
-import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, serverTimestamp, setDoc, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
@@ -374,17 +374,42 @@ async function promotePlayer(username) {
             return;
         }
 
-        // Update player's ELO
-        await setDoc(playerDoc.ref, {
-            ...playerData,
-            eloRating: nextThreshold.elo
+        // Update player's ELO and add promotion history
+        const batch = writeBatch(db);
+        
+        // Update player document
+        const playerRef = doc(db, 'players', playerDoc.id);
+        batch.update(playerRef, {
+            eloRating: nextThreshold.elo,
+            lastPromotedAt: serverTimestamp()
         });
 
+        // Add promotion history
+        const historyRef = doc(collection(db, 'eloHistory'));
+        batch.set(historyRef, {
+            player: username,
+            previousElo: currentElo,
+            newElo: nextThreshold.elo,
+            timestamp: serverTimestamp(),
+            type: 'promotion',
+            rankAchieved: nextThreshold.name
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        // Update UI
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
-        loadPlayers(); // Refresh the display
+        
+        // Refresh displays
+        loadPlayers();
+        loadEloRatings();
+        loadEloHistory();
+
     } catch (error) {
         console.error('Error promoting player:', error);
-        alert('Failed to promote player');
+        alert('Failed to promote player: ' + error.message);
+        throw error; // Re-throw to handle in the calling function
     }
 }
 
