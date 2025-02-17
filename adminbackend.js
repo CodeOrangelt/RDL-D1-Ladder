@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupCollapsibleButtons();
             setupAdminButtons();
             setupManagePlayersSection();
+            setupPromotePlayerButton(); // Add this line
         } else {
             window.location.href = 'index.html';
         }
@@ -154,11 +155,6 @@ function setupCollapsibleButtons() {
         });
     }
 }
-
-// Make sure DOM is loaded before running setup
-document.addEventListener('DOMContentLoaded', () => {
-    setupCollapsibleButtons();
-});
 
 async function setupAdminButtons() {
     const viewEloButton = document.getElementById('view-elo-ratings');
@@ -458,28 +454,57 @@ async function promotePlayer(username) {
 }
 
 // Add the button click handler
+// Remove this standalone event listener
+/*
 document.getElementById('promote-player-btn').addEventListener('click', async () => {
     const username = prompt('Enter the username of the player to promote:');
     if (username) {
         await promotePlayer(username.trim());
     }
 });
-
-// Remove or comment out these individual event listeners since they're handled in setupCollapsibleButtons
-/*
-document.getElementById('promote-player').addEventListener('click', () => {
-    document.getElementById('promote-dialog').style.display = 'block';
-});
-
-document.getElementById('cancel-promote').addEventListener('click', () => {
-    document.getElementById('promote-dialog').style.display = 'none';
-    document.getElementById('promote-username').value = '';
-});
-
-document.getElementById('confirm-promote').addEventListener('click', async () => {
-    // ... existing code ...
-});
 */
+
+// Add this new function to handle promote player button setup
+function setupPromotePlayerButton() {
+    const promoteBtn = document.getElementById('promote-player');
+    const promoteDialog = document.getElementById('promote-dialog');
+    const confirmPromoteBtn = document.getElementById('confirm-promote');
+    const cancelPromoteBtn = document.getElementById('cancel-promote');
+    const promoteUsernameInput = document.getElementById('promote-username');
+
+    if (promoteBtn && promoteDialog) {
+        promoteBtn.addEventListener('click', () => {
+            promoteDialog.style.display = 'block';
+        });
+    }
+
+    if (cancelPromoteBtn && promoteDialog) {
+        cancelPromoteBtn.addEventListener('click', () => {
+            promoteDialog.style.display = 'none';
+            if (promoteUsernameInput) {
+                promoteUsernameInput.value = '';
+            }
+        });
+    }
+
+    if (confirmPromoteBtn && promoteUsernameInput) {
+        confirmPromoteBtn.addEventListener('click', async () => {
+            const username = promoteUsernameInput.value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            try {
+                await promotePlayer(username);
+                promoteDialog.style.display = 'none';
+                promoteUsernameInput.value = '';
+            } catch (error) {
+                console.error('Error promoting player:', error);
+                alert('Failed to promote player: ' + error.message);
+            }
+        });
+    }
+}
 
 // Add a new function to handle the manage players section setup
 function setupManagePlayersSection() {
