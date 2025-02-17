@@ -88,11 +88,6 @@
             </div>
             <div id="manage-players-section" class="admin-section" style="display: none;">
                 <h2>Manage Ladder Players</h2>
-                <div class="form-group">
-                    <input type="text" id="new-player-username" placeholder="Enter username" class="admin-input">
-                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000" class="admin-input">
-                    <button id="add-player-btn" class="action-btn">Add Player</button>
-                </div>
                 <div class="players-table-container">
                     <table id="players-table" class="admin-table">
                         <thead>
@@ -105,6 +100,11 @@
                         </thead>
                         <tbody></tbody>
                     </table>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="new-player-username" placeholder="Enter username" class="admin-input">
+                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000" class="admin-input">
+                    <button id="add-player-btn" class="action-btn">Add Player</button>
                 </div>
             </div>
             <div class="admin-section">

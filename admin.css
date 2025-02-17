@@ -177,12 +177,15 @@ footer {
 }
 
 .admin-section {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    margin-bottom: 20px;
+    display: none;
     margin: 20px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.admin-section.active {
+    display: block;
 }
 
 .form-group {
@@ -387,6 +390,12 @@ footer {
 
 #demote-player {
     margin-left: 10px;
+}
+
+#manage-players-section {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 #manage-players-section .form-group {

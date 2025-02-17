@@ -66,14 +66,22 @@ function setupCollapsibleButtons() {
     buttons.forEach(button => {
         button.addEventListener('click', () => {
             const targetId = button.getAttribute('data-target');
-            if (targetId) {
+            const sections = document.querySelectorAll('.admin-section');
+            
+            // Hide all sections first
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            if (targetId === 'manage-players-section') {
+                const section = document.getElementById('manage-players-section');
+                if (section) {
+                    section.style.display = 'block';
+                    loadPlayers(); // Load players when showing section
+                }
+            } else if (targetId) {
                 const targetSection = document.getElementById(targetId);
                 if (targetSection) {
-                    // Toggle sections
-                    document.querySelectorAll('.admin-section').forEach(section => {
-                        section.style.display = 'none';
-                    });
-                    
                     targetSection.style.display = 'block';
                     
                     // Load appropriate data
@@ -82,12 +90,6 @@ function setupCollapsibleButtons() {
                     } else if (targetId === 'elo-ratings') {
                         loadEloRatings();
                     }
-                }
-            } else if (button.id === 'toggle-manage-players') {
-                const section = document.getElementById('manage-players-section');
-                if (section) {
-                    section.style.display = 
-                        section.style.display === 'none' ? 'block' : 'none';
                 }
             }
         });
