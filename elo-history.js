@@ -21,20 +21,17 @@ const ELO_THRESHOLDS = [
 export async function recordEloChange(player, oldElo, newElo, opponent, matchResult) {
     try {
         // Ensure numeric values for ELO ratings
-        const previousElo = Number(oldElo) || 1200;
-        const currentElo = Number(newElo) || 1200;
+        const previousElo = Number(oldElo);
+        const currentElo = Number(newElo);
 
-        // Check for rank changes
-        const oldRank = ELO_THRESHOLDS.find(t => previousElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
-        const newRank = ELO_THRESHOLDS.find(t => currentElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
-        
-        // Explicitly calculate promotion/demotion status
-        const isPromotion = Boolean(newRank.elo > oldRank.elo);
-        const isDemotion = Boolean(newRank.elo < oldRank.elo);
+        if (isNaN(previousElo) || isNaN(currentElo)) {
+            throw new Error('Invalid ELO ratings provided');
+        }
 
-        const eloHistoryRef = collection(db, 'eloHistory');
+        // Check for rank changes using reversed array to find highest applicable rank
+        const oldRank = [...ELO_THRESHOLDS].reverse().find(t => previousElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
+        const newRank = [...ELO_THRESHOLDS].reverse().find(t => currentElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
         
-        // Create document with validated data
         const historyEntry = {
             timestamp: serverTimestamp(),
             player: String(player),
@@ -45,12 +42,12 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
             matchResult: String(matchResult),
             previousRank: oldRank.name,
             newRank: newRank.name,
-            isPromotion: isPromotion,
-            isDemotion: isDemotion,
+            isPromotion: Boolean(newRank.elo > oldRank.elo),
+            isDemotion: Boolean(newRank.elo < oldRank.elo),
             type: 'match'
         };
 
-        // Add the document to Firestore
+        const eloHistoryRef = collection(db, 'eloHistory');
         await addDoc(eloHistoryRef, historyEntry);
 
     } catch (error) {
