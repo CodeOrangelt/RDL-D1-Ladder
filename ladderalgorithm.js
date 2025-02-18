@@ -135,8 +135,12 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
                 throw new Error('You must be logged in to report matches');
             }
 
-            const isParticipant = currentUser.email === reportData.player1Email || 
-                                currentUser.email === reportData.player2Email;
+            // Updated participant check to use player usernames
+            const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
+            const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+
+            const isParticipant = currentUsername === reportData.winnerUsername || 
+                                 currentUsername === reportData.loserUsername;
             const userIsAdmin = isAdmin(currentUser.email);
 
             if (!isParticipant && !userIsAdmin) {
