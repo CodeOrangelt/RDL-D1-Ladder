@@ -11,9 +11,10 @@ import {
     where,
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { PromotionHandler } from './promotion-handler.js';
+import { isAdmin } from './admin-check.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -123,6 +124,12 @@ export function updateEloRatings(winnerId, loserId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
+        // Check if current user is admin
+        const currentUser = auth.currentUser;
+        if (!currentUser || !isAdmin(currentUser.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
         // Get reference to the pending match document
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         
