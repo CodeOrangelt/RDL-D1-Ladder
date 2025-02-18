@@ -159,7 +159,43 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             throw new Error('Only match participants or admins can approve matches');
         }
 
-        // Continue with existing approve logic...
+        // Add winner details to report data
+        const updatedReportData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
+            winnerComment: winnerComment,
+            approved: true,
+            approvedAt: serverTimestamp()
+        };
+
+        // Move to approved matches collection
+        const batch = writeBatch(db);
+        const approvedMatchRef = doc(db, 'approvedMatches', reportId);
+        batch.set(approvedMatchRef, updatedReportData);
+        batch.delete(pendingMatchRef);
+
+        // Get player documents for ELO updates
+        const winnerQuery = query(collection(db, 'players'), where('username', '==', reportData.winnerUsername));
+        const loserQuery = query(collection(db, 'players'), where('username', '==', reportData.loserUsername));
+        
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(winnerQuery),
+            getDocs(loserQuery)
+        ]);
+
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
+
+        // Commit the batch
+        await batch.commit();
+
+        // Update ELO ratings after match is approved
+        await updateEloRatings(winnerId, loserId);
+
+        console.log('Match successfully approved');
+        return true;
+
     } catch (error) {
         console.error('Error in approveReport:', error);
         throw error;
