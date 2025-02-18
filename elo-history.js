@@ -20,29 +20,38 @@ const ELO_THRESHOLDS = [
 
 export async function recordEloChange(player, oldElo, newElo, opponent, matchResult) {
     try {
+        // Ensure numeric values for ELO ratings
+        const previousElo = Number(oldElo) || 1200;
+        const currentElo = Number(newElo) || 1200;
+
         // Check for rank changes
-        const oldRank = ELO_THRESHOLDS.find(t => oldElo >= t.elo);
-        const newRank = ELO_THRESHOLDS.find(t => newElo >= t.elo);
-        const isPromotion = newRank && oldRank && newRank.elo > oldRank.elo;
-        const isDemotion = newRank && oldRank && newRank.elo < oldRank.elo;
+        const oldRank = ELO_THRESHOLDS.find(t => previousElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
+        const newRank = ELO_THRESHOLDS.find(t => currentElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
+        
+        // Explicitly calculate promotion/demotion status
+        const isPromotion = Boolean(newRank.elo > oldRank.elo);
+        const isDemotion = Boolean(newRank.elo < oldRank.elo);
 
         const eloHistoryRef = collection(db, 'eloHistory');
         
-        // Record match result with ELO changes
-        await addDoc(eloHistoryRef, {
+        // Create document with validated data
+        const historyEntry = {
             timestamp: serverTimestamp(),
-            player: player,
-            previousElo: oldElo,
-            newElo: newElo,
-            change: newElo - oldElo,
-            opponent: opponent,
-            matchResult: matchResult,
-            previousRank: oldRank?.name || 'Unranked',
-            newRank: newRank?.name || 'Unranked',
-            isPromotion: isPromotion || false,  // Ensure boolean value
-            isDemotion: isDemotion || false,    // Ensure boolean value
-            type: 'match'                       // Specify type for security rules
-        });
+            player: String(player),
+            previousElo: previousElo,
+            newElo: currentElo,
+            change: currentElo - previousElo,
+            opponent: String(opponent),
+            matchResult: String(matchResult),
+            previousRank: oldRank.name,
+            newRank: newRank.name,
+            isPromotion: isPromotion,
+            isDemotion: isDemotion,
+            type: 'match'
+        };
+
+        // Add the document to Firestore
+        await addDoc(eloHistoryRef, historyEntry);
 
     } catch (error) {
         console.error("Error recording ELO history:", error);
