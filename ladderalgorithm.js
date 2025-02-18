@@ -43,83 +43,65 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
-export function updateEloRatings(winnerId, loserId) {
-    const playersRef = db.collection('players');
+export async function updateEloRatings(winnerId, loserId) {
+    try {
+        // Get the current ratings and positions of the winner and loser
+        const winnerRef = doc(db, 'players', winnerId);
+        const loserRef = doc(db, 'players', loserId);
+        
+        const [winnerDoc, loserDoc] = await Promise.all([
+            getDoc(winnerRef),
+            getDoc(loserRef)
+        ]);
 
-    // Get the current ratings and positions of the winner and loser
-    Promise.all([
-        playersRef.doc(winnerId).get(),
-        playersRef.doc(loserId).get()
-    ]).then(([winnerDoc, loserDoc]) => {
-        if (winnerDoc.exists && loserDoc.exists) {
-            const winnerData = winnerDoc.data();
-            const loserData = loserDoc.data();
-
-            console.log(`Current winner data: ${JSON.stringify(winnerData)}`);
-            console.log(`Current loser data: ${JSON.stringify(loserData)}`);
-
-            // Assign default ELO rating if not present
-            assignDefaultEloRating(winnerId, winnerData);
-            assignDefaultEloRating(loserId, loserData);
-
-            const winnerRating = winnerData.eloRating || 1200; // Default ELO rating is 1200
-            const loserRating = loserData.eloRating || 1200;
-
-            // Calculate new ELO ratings
-            const { newWinnerRating, newLoserRating } = calculateElo(winnerRating, loserRating);
-
-            console.log(`New ELO ratings: Winner (${winnerId}) - ${newWinnerRating}, Loser (${loserId}) - ${newLoserRating}`);
-
-            // Update the ratings in the database
-            playersRef.doc(winnerId).update({ eloRating: newWinnerRating })
-                .then(() => {
-                    console.log(`Updated winner's ELO rating to ${newWinnerRating}`);
-                })
-                .catch(error => {
-                    console.error('Error updating winner\'s ELO rating:', error);
-                });
-
-            playersRef.doc(loserId).update({ eloRating: newLoserRating })
-                .then(() => {
-                    console.log(`Updated loser's ELO rating to ${newLoserRating}`);
-                })
-                .catch(error => {
-                    console.error('Error updating loser\'s ELO rating:', error);
-                });
-
-            // Swap positions in the ladder only if the winner's position is lower (higher number) than the loser's position
-            const winnerPosition = winnerData.position;
-            const loserPosition = loserData.position;
-
-            if (winnerPosition > loserPosition) {
-                console.log(`Swapping positions: Winner (${winnerId}) from position ${winnerPosition} to ${loserPosition}, Loser (${loserId}) from position ${loserPosition} to ${winnerPosition}`);
-
-                playersRef.doc(winnerId).update({ position: loserPosition })
-                    .then(() => {
-                        console.log(`Updated winner's position to ${loserPosition}`);
-                    })
-                    .catch(error => {
-                        console.error('Error updating winner\'s position:', error);
-                    });
-
-                playersRef.doc(loserId).update({ position: winnerPosition })
-                    .then(() => {
-                        console.log(`Updated loser's position to ${winnerPosition}`);
-                    })
-                    .catch(error => {
-                        console.error('Error updating loser\'s position:', error);
-                    });
-
-                console.log(`Swapped positions: Winner (${winnerId}) is now at position ${loserPosition}, Loser (${loserId}) is now at position ${winnerPosition}`);
-            } else {
-                console.log(`No position swap needed: Winner (${winnerId}) is already higher ranked than Loser (${loserId})`);
-            }
-        } else {
-            console.error('One or both players not found in the database.');
+        if (!winnerDoc.exists() || !loserDoc.exists()) {
+            throw new Error('One or both players not found in the database.');
         }
-    }).catch(error => {
-        console.error('Error updating ELO ratings and positions:', error);
-    });
+
+        const winnerData = winnerDoc.data();
+        const loserData = loserDoc.data();
+
+        console.log('Current ratings:', {
+            winner: winnerData.eloRating,
+            loser: loserData.eloRating
+        });
+
+        // Calculate new ELO ratings
+        const { newWinnerRating, newLoserRating } = calculateElo(
+            winnerData.eloRating || 1200,
+            loserData.eloRating || 1200
+        );
+
+        // Create batch for atomic updates
+        const batch = writeBatch(db);
+
+        // Update ELO ratings
+        batch.update(winnerRef, { eloRating: newWinnerRating });
+        batch.update(loserRef, { eloRating: newLoserRating });
+
+        // Handle position swapping if needed
+        if (winnerData.position > loserData.position) {
+            batch.update(winnerRef, { position: loserData.position });
+            batch.update(loserRef, { position: winnerData.position });
+            console.log('Positions swapped');
+        }
+
+        // Commit all updates atomically
+        await batch.commit();
+
+        // Record ELO changes
+        await Promise.all([
+            recordEloChange(winnerId, winnerData.eloRating, newWinnerRating, loserId, 'win'),
+            recordEloChange(loserId, loserData.eloRating, newLoserRating, winnerId, 'loss')
+        ]);
+
+        console.log('ELO ratings updated successfully');
+        return true;
+
+    } catch (error) {
+        console.error('Error in updateEloRatings:', error);
+        throw error;
+    }
 }
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
@@ -166,34 +148,33 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             winnerSuicides: winnerSuicides,
             winnerComment: winnerComment,
             approved: true,
-            approvedAt: serverTimestamp()
+            approvedAt: serverTimestamp(),
+            approvedBy: currentUsername
         };
 
-        // Move to approved matches collection
-        const batch = writeBatch(db);
-        const approvedMatchRef = doc(db, 'approvedMatches', reportId);
-        batch.set(approvedMatchRef, updatedReportData);
-        batch.delete(pendingMatchRef);
+        // Move match to approved collection first
+        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
+        await deleteDoc(pendingMatchRef);
 
-        // Get player documents for ELO updates
-        const winnerQuery = query(collection(db, 'players'), where('username', '==', reportData.winnerUsername));
-        const loserQuery = query(collection(db, 'players'), where('username', '==', reportData.loserUsername));
-        
+        console.log('Match moved to approved collection');
+
+        // Get player IDs
         const [winnerDocs, loserDocs] = await Promise.all([
-            getDocs(winnerQuery),
-            getDocs(loserQuery)
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
         ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            throw new Error('Could not find player documents');
+        }
 
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
 
-        // Commit the batch
-        await batch.commit();
-
-        // Update ELO ratings after match is approved
+        // Update ELO ratings
         await updateEloRatings(winnerId, loserId);
 
-        console.log('Match successfully approved');
+        console.log('Match successfully approved and ELO updated');
         return true;
 
     } catch (error) {
