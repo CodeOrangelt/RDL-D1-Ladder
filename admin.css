@@ -476,6 +476,7 @@ footer {
     border-radius: 4px;
     cursor: pointer;
     margin: 10px;
+    font-size: 14px;
 }
 
 #test-report-btn:hover {

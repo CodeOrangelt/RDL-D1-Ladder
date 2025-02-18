@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupPromotePlayerButton();
             setupDemotePlayerButton();
             setupManagePlayersSection();
+            setupTestReportButton();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
@@ -698,18 +699,11 @@ function setupDemotePlayerButton() {
 
 // Add to your setupManagePlayersSection function or where other admin buttons are initialized
 function setupTestReportButton() {
-    const testReportBtn = document.createElement('button');
-    testReportBtn.id = 'test-report-btn';
-    testReportBtn.className = 'admin-button';
-    testReportBtn.textContent = 'Create Test Report';
-    
-    // Add button to admin panel
-    const adminPanel = document.querySelector('.admin-panel');
-    adminPanel.appendChild(testReportBtn);
+    const testReportBtn = document.getElementById('test-report-btn');
+    if (!testReportBtn) return;
 
     testReportBtn.addEventListener('click', async () => {
         try {
-            // Create a test match report
             const testReport = {
                 winnerEmail: 'test5@email.com',
                 winnerUsername: 'test5',
@@ -728,7 +722,6 @@ function setupTestReportButton() {
                 matchId: Date.now().toString()
             };
 
-            // Add to pendingMatches collection
             await addDoc(collection(db, 'pendingMatches'), testReport);
             alert('Test report created! Login as test5 to approve it.');
 
@@ -737,10 +730,4 @@ function setupTestReportButton() {
             alert('Failed to create test report: ' + error.message);
         }
     });
-}
-
-// Add this line to your DOMContentLoaded event listener where other admin functions are called
-if (isAdmin(user.email)) {
-    // ...existing setup calls...
-    setupTestReportButton();
 }
