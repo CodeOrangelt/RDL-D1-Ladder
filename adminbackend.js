@@ -695,3 +695,52 @@ function setupDemotePlayerButton() {
         }
     });
 }
+
+// Add to your setupManagePlayersSection function or where other admin buttons are initialized
+function setupTestReportButton() {
+    const testReportBtn = document.createElement('button');
+    testReportBtn.id = 'test-report-btn';
+    testReportBtn.className = 'admin-button';
+    testReportBtn.textContent = 'Create Test Report';
+    
+    // Add button to admin panel
+    const adminPanel = document.querySelector('.admin-panel');
+    adminPanel.appendChild(testReportBtn);
+
+    testReportBtn.addEventListener('click', async () => {
+        try {
+            // Create a test match report
+            const testReport = {
+                winnerEmail: 'test5@email.com',
+                winnerUsername: 'test5',
+                loserEmail: 'code@email.com',
+                loserUsername: 'Code',
+                winnerScore: '21',
+                loserScore: '18',
+                mapPlayed: '1',
+                winnerSuicides: '0',
+                loserSuicides: '0',
+                winnerComment: 'Test match',
+                loserComment: 'Test match',
+                approved: false,
+                createdAt: serverTimestamp(),
+                reportedBy: 'Admin (Test)',
+                matchId: Date.now().toString()
+            };
+
+            // Add to pendingMatches collection
+            await addDoc(collection(db, 'pendingMatches'), testReport);
+            alert('Test report created! Login as test5 to approve it.');
+
+        } catch (error) {
+            console.error('Error creating test report:', error);
+            alert('Failed to create test report: ' + error.message);
+        }
+    });
+}
+
+// Add this line to your DOMContentLoaded event listener where other admin functions are called
+if (isAdmin(user.email)) {
+    // ...existing setup calls...
+    setupTestReportButton();
+}
