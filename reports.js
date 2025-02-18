@@ -228,14 +228,20 @@ function autoFillReportForm(reportData) {
 
                             // Add event listener to the Approve button
                             const approveButton = document.getElementById('approve-button');
-                            const approveReportHandler = function() {
-                                const winnerScore = document.getElementById('winner-score').value;
-                                const winnerSuicides = document.getElementById('winner-suicides').value;
-                                const winnerComment = document.getElementById('winner-comment').value;
+                            const approveReportHandler = async function() {
+                                try {
+                                    const winnerScore = document.getElementById('winner-score').value;
+                                    const winnerSuicides = document.getElementById('winner-suicides').value;
+                                    const winnerComment = document.getElementById('winner-comment').value;
 
-                                approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
-                                document.getElementById('report-lightbox').style.display = 'none';
-                                approveButton.removeEventListener('click', approveReportHandler);
+                                    await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                                    document.getElementById('report-lightbox').style.display = 'none';
+                                    alert('Match approved successfully');
+                                    location.reload(); // Refresh to update the UI
+                                } catch (error) {
+                                    console.error('Error approving report:', error);
+                                    alert('Error approving match: ' + error.message);
+                                }
                             };
                             approveButton.addEventListener('click', approveReportHandler);
 
