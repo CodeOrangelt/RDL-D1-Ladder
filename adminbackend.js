@@ -699,10 +699,10 @@ function setupDemotePlayerButton() {
 
 // Add to your setupManagePlayersSection function or where other admin buttons are initialized
 function setupTestReportButton() {
-    const testReportBtn = document.getElementById('test-report-btn');
-    if (!testReportBtn) return;
+    const createTestReportBtn = document.getElementById('create-test-report');
+    if (!createTestReportBtn) return;
 
-    testReportBtn.addEventListener('click', async () => {
+    createTestReportBtn.addEventListener('click', async () => {
         try {
             const testReport = {
                 winnerEmail: 'test5@email.com',
@@ -731,3 +731,9 @@ function setupTestReportButton() {
         }
     });
 }
+
+// Add this to your initialization code
+document.addEventListener('DOMContentLoaded', () => {
+    // ...existing initialization code...
+    setupTestReportButton();
+});
