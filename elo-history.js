@@ -24,10 +24,11 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
         const oldRank = ELO_THRESHOLDS.find(t => oldElo >= t.elo);
         const newRank = ELO_THRESHOLDS.find(t => newElo >= t.elo);
         const isPromotion = newRank && oldRank && newRank.elo > oldRank.elo;
+        const isDemotion = newRank && oldRank && newRank.elo < oldRank.elo;
 
         const eloHistoryRef = collection(db, 'eloHistory');
         
-        // Record match result
+        // Record match result with ELO changes
         await addDoc(eloHistoryRef, {
             timestamp: serverTimestamp(),
             player: player,
@@ -39,10 +40,12 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
             previousRank: oldRank?.name || 'Unranked',
             newRank: newRank?.name || 'Unranked',
             isPromotion: isPromotion,
-            type: 'match'
+            isDemotion: isDemotion,
+            type: 'match',
+            source: 'match_result'
         });
 
-        // If promoted, create a separate promotion entry
+        // If promoted through match, create promotion entry
         if (isPromotion) {
             await addDoc(eloHistoryRef, {
                 timestamp: serverTimestamp(),
@@ -54,8 +57,25 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
                 promotedBy: 'System (Match Result)',
                 previousRank: oldRank.name,
                 promotionType: 'threshold',
-                matchId: opponent ? `${player}_vs_${opponent}` : null,
-                description: `Promoted to ${newRank.name} after match against ${opponent}`
+                matchId: `${player}_vs_${opponent}`,
+                description: `Promoted to ${newRank.name} after ${matchResult} against ${opponent}`
+            });
+        }
+
+        // If demoted through match, create demotion entry
+        if (isDemotion) {
+            await addDoc(eloHistoryRef, {
+                timestamp: serverTimestamp(),
+                player: player,
+                previousElo: oldElo,
+                newElo: newElo,
+                type: 'demotion',
+                rankDemotedTo: newRank.name,
+                demotedBy: 'System (Match Result)',
+                previousRank: oldRank.name,
+                demotionType: 'threshold',
+                matchId: `${player}_vs_${opponent}`,
+                description: `Demoted to ${newRank.name} after ${matchResult} against ${opponent}`
             });
         }
 
