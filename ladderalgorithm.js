@@ -43,7 +43,7 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
-export async function updateEloRatings(winnerId, loserId) {
+export async function updateEloRatings(winnerId, loserId, matchId) {
     try {
         console.log('Starting ELO update for winner:', winnerId, 'and loser:', loserId);
         
@@ -80,17 +80,21 @@ export async function updateEloRatings(winnerId, loserId) {
         // Check if winner should take loser's position
         const shouldSwapPositions = loserPosition < winnerPosition;
 
-        // Prepare updates
+        // Prepare updates with participant IDs
         const winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: shouldSwapPositions ? loserPosition : winnerPosition
+            position: shouldSwapPositions ? loserPosition : winnerPosition,
+            participantIds: [winnerId, loserId],
+            matchId: matchId
         };
 
         const loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: shouldSwapPositions ? winnerPosition : loserPosition
+            position: shouldSwapPositions ? winnerPosition : loserPosition,
+            participantIds: [winnerId, loserId],
+            matchId: matchId
         };
 
         // Add updates to batch
@@ -104,24 +108,11 @@ export async function updateEloRatings(winnerId, loserId) {
 
         // Record ELO history
         await Promise.all([
-            recordEloChange(
-                winnerId,
-                winnerData.eloRating,
-                newWinnerRating,
-                loserId,
-                'win'
-            ),
-            recordEloChange(
-                loserId,
-                loserData.eloRating,
-                newLoserRating,
-                winnerId,
-                'loss'
-            )
+            recordEloChange(winnerId, winnerData.eloRating, newWinnerRating, loserId, 'win'),
+            recordEloChange(loserId, loserData.eloRating, newLoserRating, winnerId, 'loss')
         ]);
 
         return true;
-
     } catch (error) {
         console.error('Error in updateEloRatings:', error);
         throw error;
@@ -196,7 +187,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         const loserId = loserDocs.docs[0].id;
 
         // Update ELO ratings
-        await updateEloRatings(winnerId, loserId);
+        await updateEloRatings(winnerId, loserId, reportId);
 
         console.log('Match successfully approved and ELO updated');
         return true;
