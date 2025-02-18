@@ -28,10 +28,11 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
             throw new Error('Invalid ELO ratings provided');
         }
 
-        // Check for rank changes using reversed array to find highest applicable rank
+        // Calculate rank changes
         const oldRank = [...ELO_THRESHOLDS].reverse().find(t => previousElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
         const newRank = [...ELO_THRESHOLDS].reverse().find(t => currentElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
         
+        // Create history entry with all required fields
         const historyEntry = {
             timestamp: serverTimestamp(),
             player: String(player),
@@ -44,9 +45,11 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
             newRank: newRank.name,
             isPromotion: Boolean(newRank.elo > oldRank.elo),
             isDemotion: Boolean(newRank.elo < oldRank.elo),
-            type: 'match'
+            type: 'match',
+            participantIds: [player, opponent].filter(Boolean) // Add participant IDs for security rules
         };
 
+        // Add to Firestore
         const eloHistoryRef = collection(db, 'eloHistory');
         await addDoc(eloHistoryRef, historyEntry);
 
