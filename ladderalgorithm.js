@@ -57,12 +57,16 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         ]);
 
         if (!winnerDoc.exists() || !loserDoc.exists()) {
-            console.error('Player documents not found');
             throw new Error('One or both players not found in the database.');
         }
 
         const winnerData = winnerDoc.data();
         const loserData = loserDoc.data();
+        
+        console.log('Current ratings:', {
+            winner: winnerData.eloRating,
+            loser: loserData.eloRating
+        });
 
         // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
@@ -73,46 +77,31 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         // Create batch for atomic updates
         const batch = writeBatch(db);
 
-        // Get current positions
-        const winnerPosition = winnerData.position || 999999;
-        const loserPosition = loserData.position || 999999;
-
-        // Check if winner should take loser's position
-        const shouldSwapPositions = loserPosition < winnerPosition;
-
-        // Prepare updates with participant IDs
+        // Prepare updates with matchId for security rules
         const winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: shouldSwapPositions ? loserPosition : winnerPosition,
-            participantIds: [winnerId, loserId],
-            matchId: matchId
+            matchId: matchId,
+            participantIds: [winnerId, loserId]
         };
 
         const loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: shouldSwapPositions ? winnerPosition : loserPosition,
-            participantIds: [winnerId, loserId],
-            matchId: matchId
+            matchId: matchId,
+            participantIds: [winnerId, loserId]
         };
 
         // Add updates to batch
         batch.update(winnerRef, winnerUpdates);
         batch.update(loserRef, loserUpdates);
 
-        // Commit the batch
+        // Commit all updates atomically
         await batch.commit();
-        console.log('Position swap:', shouldSwapPositions ? 'Yes' : 'No');
-        console.log('Updates committed successfully');
 
-        // Record ELO history
-        await Promise.all([
-            recordEloChange(winnerId, winnerData.eloRating, newWinnerRating, loserId, 'win'),
-            recordEloChange(loserId, loserData.eloRating, newLoserRating, winnerId, 'loss')
-        ]);
-
+        console.log('ELO ratings updated successfully');
         return true;
+
     } catch (error) {
         console.error('Error in updateEloRatings:', error);
         throw error;

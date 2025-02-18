@@ -11,8 +11,9 @@ function isVerifiedUser() {
   return request.auth != null;
 }
 
-function isOwner(userId) {
-  return request.auth != null && request.auth.uid == userId;
+function isMatchParticipant(matchData) {
+  return request.auth != null &&
+    matchData.participantIds.hasAny([request.auth.uid]);
 }
 
 service cloud.firestore {
@@ -21,55 +22,37 @@ service cloud.firestore {
     match /players/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      // Allow updates from match participants or admins
       allow update: if request.auth != null && (
         isAdmin() ||
         request.auth.uid == playerId ||
-        resource.data.participantIds.hasAny([request.auth.uid]) ||
-        (get(/databases/$(database)/documents/pendingMatches/$(request.resource.data.matchId)).data.participantIds.hasAny([request.auth.uid]))
+        // Allow updates from match participants
+        exists(/databases/$(database)/documents/pendingMatches/$(request.resource.data.matchId)) ||
+        exists(/databases/$(database)/documents/approvedMatches/$(request.resource.data.matchId))
       );
       allow delete: if isAdmin();
-    }
-
-    // User Profiles
-    match /userProfiles/{userId} {
-      allow read: if true;
-      allow write: if isVerifiedUser() && isOwner(userId);
-    }
-
-    // Pending Registrations
-    match /pendingRegistrations/{userId} {
-      allow read: if true;
-      allow create: if isVerifiedUser();
-      allow delete: if isAdmin() || isOwner(userId);
     }
 
     // Match Management
     match /pendingMatches/{matchId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if request.auth != null && (
-        request.auth.uid in resource.data.participantIds ||
-        isAdmin()
-      );
-      allow delete: if request.auth != null && (
-        request.auth.uid in resource.data.participantIds ||
-        isAdmin()
-      );
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if isAdmin() || isMatchParticipant(resource.data);
     }
 
     match /approvedMatches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin();
+      allow delete: if false;
     }
 
     match /eloHistory/{historyId} {
-    allow read: if true;
-    // Allow any authenticated user to create match history
-    allow create: if request.auth != null && isMatchHistoryValid();
-    allow update, delete: if false;  // Keep history immutable
+      allow read: if true;
+      allow create: if isVerifiedUser() && isMatchHistoryValid();
+      allow update, delete: if false;
 
-    function isMatchHistoryValid() {
+      function isMatchHistoryValid() {
         let incoming = request.resource.data;
         return incoming.type == 'match' &&
                incoming.player is string &&
@@ -79,32 +62,12 @@ service cloud.firestore {
                incoming.change is number &&
                incoming.timestamp is timestamp &&
                incoming.matchResult is string &&
+               incoming.previousRank is string &&
+               incoming.newRank is string &&
                incoming.isPromotion is bool &&
-               incoming.isDemotion is bool;
-          }
+               incoming.isDemotion is bool &&
+               incoming.participantIds is list;
       }
-
-    // RetroTracker (for game banner)
-    match /retroTracker/{docId} {
-      allow read: if true;
-      allow write: if isVerifiedUser();
-    }
-
-    // Season Management
-    match /metadata/seasonCount {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /seasons/{seasonId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Global metadata
-    match /metadata/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
     }
 
     // Default deny all other collections
