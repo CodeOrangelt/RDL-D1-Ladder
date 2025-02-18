@@ -39,45 +39,10 @@ export async function recordEloChange(player, oldElo, newElo, opponent, matchRes
             matchResult: matchResult,
             previousRank: oldRank?.name || 'Unranked',
             newRank: newRank?.name || 'Unranked',
-            isPromotion: isPromotion,
-            isDemotion: isDemotion,
-            type: 'match',
-            source: 'match_result'
+            isPromotion: isPromotion || false,  // Ensure boolean value
+            isDemotion: isDemotion || false,    // Ensure boolean value
+            type: 'match'                       // Specify type for security rules
         });
-
-        // If promoted through match, create promotion entry
-        if (isPromotion) {
-            await addDoc(eloHistoryRef, {
-                timestamp: serverTimestamp(),
-                player: player,
-                previousElo: oldElo,
-                newElo: newElo,
-                type: 'promotion',
-                rankAchieved: newRank.name,
-                promotedBy: 'System (Match Result)',
-                previousRank: oldRank.name,
-                promotionType: 'threshold',
-                matchId: `${player}_vs_${opponent}`,
-                description: `Promoted to ${newRank.name} after ${matchResult} against ${opponent}`
-            });
-        }
-
-        // If demoted through match, create demotion entry
-        if (isDemotion) {
-            await addDoc(eloHistoryRef, {
-                timestamp: serverTimestamp(),
-                player: player,
-                previousElo: oldElo,
-                newElo: newElo,
-                type: 'demotion',
-                rankDemotedTo: newRank.name,
-                demotedBy: 'System (Match Result)',
-                previousRank: oldRank.name,
-                demotionType: 'threshold',
-                matchId: `${player}_vs_${opponent}`,
-                description: `Demoted to ${newRank.name} after ${matchResult} against ${opponent}`
-            });
-        }
 
     } catch (error) {
         console.error("Error recording ELO history:", error);
