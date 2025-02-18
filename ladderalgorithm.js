@@ -76,26 +76,26 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         // Create batch for atomic updates
         const batch = writeBatch(db);
 
-        // If winner was lower ranked (higher position number), swap positions
+        let winnerUpdates = {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            matchId: matchId
+        };
+
+        let loserUpdates = {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            matchId: matchId
+        };
+
+        // Handle position swapping
         if (winnerPosition > loserPosition) {
-            // Winner takes loser's spot, loser moves down one
-            const winnerUpdates = {
-                eloRating: newWinnerRating,
-                lastMatchDate: serverTimestamp(),
-                position: loserPosition,
-                matchId: matchId,
-                participantIds: [winnerId, loserId]
-            };
+            console.log('Position swap needed - winner was lower ranked');
+            
+            winnerUpdates.position = loserPosition;
+            loserUpdates.position = loserPosition + 1;
 
-            const loserUpdates = {
-                eloRating: newLoserRating,
-                lastMatchDate: serverTimestamp(),
-                position: loserPosition + 1,
-                matchId: matchId,
-                participantIds: [winnerId, loserId]
-            };
-
-            // Move everyone else down one position if needed
+            // Move everyone else down one position
             const playersToUpdate = query(
                 collection(db, 'players'),
                 where('position', '>', loserPosition),
@@ -110,27 +110,35 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                     });
                 }
             });
-
-            batch.update(winnerRef, winnerUpdates);
-            batch.update(loserRef, loserUpdates);
         }
 
-        // Record ELO history
+        batch.update(winnerRef, winnerUpdates);
+        batch.update(loserRef, loserUpdates);
+
+        // Record ELO history with position changes
         await Promise.all([
-            recordEloChange(
-                winnerId,
-                winnerData.eloRating || 1200,
-                newWinnerRating,
-                loserId,
-                'win'
-            ),
-            recordEloChange(
-                loserId,
-                loserData.eloRating || 1200,
-                newLoserRating,
-                winnerId,
-                'loss'
-            )
+            recordEloChange({
+                playerId: winnerId,
+                previousElo: winnerData.eloRating || 1200,
+                newElo: newWinnerRating,
+                opponentId: loserId,
+                matchResult: 'win',
+                previousPosition: winnerPosition,
+                newPosition: winnerUpdates.position || winnerPosition,
+                isPromotion: winnerUpdates.position < winnerPosition,
+                timestamp: serverTimestamp()
+            }),
+            recordEloChange({
+                playerId: loserId,
+                previousElo: loserData.eloRating || 1200,
+                newElo: newLoserRating,
+                opponentId: winnerId,
+                matchResult: 'loss',
+                previousPosition: loserPosition,
+                newPosition: loserUpdates.position || loserPosition,
+                isDemotion: loserUpdates.position > loserPosition,
+                timestamp: serverTimestamp()
+            })
         ]);
 
         // Commit all updates atomically

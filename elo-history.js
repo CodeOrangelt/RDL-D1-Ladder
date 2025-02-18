@@ -6,7 +6,9 @@ import {
     orderBy, 
     getDocs,
     limit,
-    startAfter
+    startAfter,
+    doc,
+    setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
@@ -18,43 +20,40 @@ const ELO_THRESHOLDS = [
     { name: 'Unranked', elo: 1200 }
 ];
 
-export async function recordEloChange(player, oldElo, newElo, opponent, matchResult) {
+export async function recordEloChange({
+    playerId,
+    previousElo,
+    newElo,
+    opponentId,
+    matchResult,
+    previousPosition,
+    newPosition,
+    isPromotion = false,
+    isDemotion = false,
+    timestamp
+}) {
     try {
-        // Ensure numeric values for ELO ratings
-        const previousElo = Number(oldElo);
-        const currentElo = Number(newElo);
-
-        if (isNaN(previousElo) || isNaN(currentElo)) {
-            throw new Error('Invalid ELO ratings provided');
-        }
-
-        // Calculate rank changes
-        const oldRank = [...ELO_THRESHOLDS].reverse().find(t => previousElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
-        const newRank = [...ELO_THRESHOLDS].reverse().find(t => currentElo >= t.elo) || ELO_THRESHOLDS[ELO_THRESHOLDS.length - 1];
+        const historyRef = doc(collection(db, 'eloHistory'));
         
-        // Create history entry with all required fields
-        const historyEntry = {
-            timestamp: serverTimestamp(),
-            player: String(player),
-            previousElo: previousElo,
-            newElo: currentElo,
-            change: currentElo - previousElo,
-            opponent: String(opponent),
-            matchResult: String(matchResult),
-            previousRank: oldRank.name,
-            newRank: newRank.name,
-            isPromotion: Boolean(newRank.elo > oldRank.elo),
-            isDemotion: Boolean(newRank.elo < oldRank.elo),
+        await setDoc(historyRef, {
             type: 'match',
-            participantIds: [player, opponent].filter(Boolean) // Add participant IDs for security rules
-        };
+            player: playerId,
+            opponent: opponentId,
+            previousElo,
+            newElo,
+            change: newElo - previousElo,
+            matchResult,
+            previousPosition,
+            newPosition,
+            isPromotion,
+            isDemotion,
+            timestamp
+        });
 
-        // Add to Firestore
-        const eloHistoryRef = collection(db, 'eloHistory');
-        await addDoc(eloHistoryRef, historyEntry);
-
+        console.log(`ELO history recorded for ${playerId}`);
+        return true;
     } catch (error) {
-        console.error("Error recording ELO history:", error);
+        console.error('Error recording ELO history:', error);
         throw error;
     }
 }
