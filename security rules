@@ -1,0 +1,128 @@
+rules_version = '2';
+
+// Helper functions
+function isAdmin() {
+  let adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
+  return request.auth != null && 
+    adminEmails.hasAny([request.auth.token.email.lower()]);
+}
+
+function isVerifiedUser() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return request.auth != null && request.auth.uid == userId;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Players collection
+    match /players/{playerId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || isOwner(playerId);
+      allow delete: if isAdmin();
+    }
+
+    // User Profiles
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow write: if isVerifiedUser() && isOwner(userId);
+    }
+
+    // Pending Registrations
+    match /pendingRegistrations/{userId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow delete: if isAdmin() || isOwner(userId);
+    }
+
+    // Match Management
+    match /pendingMatches/{matchId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update, delete: if isAdmin();
+    }
+
+    match /approvedMatches/{matchId} {
+      allow read: if true;
+      allow write;
+    }
+
+    match /eloHistory/{historyId} {
+    allow read: if true;
+    // Allow any authenticated user to create match history
+    allow create: if request.auth != null && isMatchHistoryValid();
+    allow update, delete: if false;  // Keep history immutable
+
+    function isMatchHistoryValid() {
+        let incoming = request.resource.data;
+        return incoming.type == 'match' &&
+               incoming.player is string &&
+               incoming.opponent is string &&
+               incoming.previousElo is number &&
+               incoming.newElo is number &&
+               incoming.change is number &&
+               incoming.timestamp is timestamp &&
+               incoming.matchResult is string &&
+               incoming.isPromotion is bool &&
+               incoming.isDemotion is bool;
+          }
+      }
+
+      match /pendingMatches/{matchId} {
+          allow read: if true;
+          allow create: if request.auth != null;
+          // Allow participants and admins to update
+          allow update: if request.auth != null && (
+              request.auth.uid in resource.data.participantIds ||
+              isAdmin()
+          );
+          allow delete: if isAdmin();
+      }
+
+    // RetroTracker (for game banner)
+    match /retroTracker/{docId} {
+      allow read: if true;
+      allow write: if isVerifiedUser();
+    }
+
+    // Season Management
+    match /metadata/seasonCount {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /seasons/{seasonId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Global metadata
+    match /metadata/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Profile Pictures
+    match /profile-pictures/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isVerifiedUser() && isOwner(userId);
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

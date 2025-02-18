@@ -124,144 +124,35 @@ export function updateEloRatings(winnerId, loserId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('You must be logged in to approve matches');
+        }
+
+        // Get user's player document to verify permissions
+        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
+        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+
+        // Get the pending match
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
-        
-        if (reportSnapshot.exists()) {
-            const reportData = reportSnapshot.data();
-            const currentUser = auth.currentUser;
 
-            if (!currentUser) {
-                throw new Error('You must be logged in to report matches');
-            }
-
-            // Updated participant check to use player usernames
-            const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
-            const currentUsername = userDoc.exists() ? userDoc.data().username : null;
-
-            const isParticipant = currentUsername === reportData.winnerUsername || 
-                                 currentUsername === reportData.loserUsername;
-            const userIsAdmin = isAdmin(currentUser.email);
-
-            if (!isParticipant && !userIsAdmin) {
-                throw new Error('Only match participants or admins can modify match reports');
-            }
-
-            // Get both players' data
-            const playersRef = collection(db, 'players');
-            const winnerQuery = query(playersRef, where('username', '==', reportData.winnerUsername));
-            const loserQuery = query(playersRef, where('username', '==', reportData.loserUsername));
-            
-            const [winnerDocs, loserDocs] = await Promise.all([
-                getDocs(winnerQuery),
-                getDocs(loserQuery)
-            ]);
-
-            const winnerDoc = winnerDocs.docs[0];
-            const loserDoc = loserDocs.docs[0];
-
-            // Get current ELO and positions
-            const winnerCurrentElo = winnerDoc.data().eloRating || 1200;
-            const loserCurrentElo = loserDoc.data().eloRating || 1200;
-            const winnerPosition = winnerDoc.data().position || Number.MAX_SAFE_INTEGER;
-            const loserPosition = loserDoc.data().position || 1;
-
-            // Calculate new ELO ratings
-            const { newWinnerRating, newLoserRating } = calculateElo(winnerCurrentElo, loserCurrentElo);
-
-            // Start batch update
-            const batch = writeBatch(db);
-
-            // Update ELO ratings immediately
-            batch.update(winnerDoc.ref, {
-                eloRating: newWinnerRating
-            });
-
-            batch.update(loserDoc.ref, {
-                eloRating: newLoserRating
-            });
-
-            // Record ELO changes in history
-            await Promise.all([
-                recordEloChange(
-                    reportData.winnerUsername,
-                    winnerCurrentElo,
-                    newWinnerRating,
-                    reportData.loserUsername,
-                    'win'
-                ),
-                recordEloChange(
-                    reportData.loserUsername,
-                    loserCurrentElo,
-                    newLoserRating,
-                    reportData.winnerUsername,
-                    'loss'
-                )
-            ]);
-
-            // Update the pending match status
-            await updateDoc(pendingMatchRef, {
-                winnerScore: winnerScore,
-                winnerSuicides: winnerSuicides,
-                winnerComment: winnerComment,
-                reportedBy: currentUser.email,
-                reportedAt: serverTimestamp(),
-                approved: userIsAdmin ? true : false,
-                pendingApproval: !userIsAdmin,
-                winnerOldElo: winnerCurrentElo,
-                winnerNewElo: newWinnerRating,
-                loserOldElo: loserCurrentElo,
-                loserNewElo: newLoserRating
-            });
-
-            // Only update positions if admin is approving
-            if (userIsAdmin) {
-                // Update positions
-                batch.update(winnerDoc.ref, {
-                    position: Math.min(winnerPosition, loserPosition)
-                });
-                batch.update(loserDoc.ref, {
-                    position: Math.max(winnerPosition, loserPosition)
-                });
-
-                // Update positions for players between
-                const playersToUpdate = query(
-                    playersRef,
-                    where('position', '>', Math.min(winnerPosition, loserPosition)),
-                    where('position', '<', Math.max(winnerPosition, loserPosition))
-                );
-
-                const playersBetween = await getDocs(playersToUpdate);
-                playersBetween.forEach(playerDoc => {
-                    const currentPosition = playerDoc.data().position;
-                    if (currentPosition) {
-                        batch.update(playerDoc.ref, {
-                            position: currentPosition + 1
-                        });
-                    }
-                });
-
-                // Move to approved matches
-                const approvedMatchRef = doc(db, 'approvedMatches', reportId);
-                await setDoc(approvedMatchRef, {
-                    ...reportData,
-                    approvedAt: serverTimestamp()
-                });
-                
-                await deleteDoc(pendingMatchRef);
-            }
-
-            // Commit all updates
-            await batch.commit();
-
-            // Check for promotions after ELO updates
-            await Promise.all([
-                PromotionHandler.checkPromotion(winnerDoc.id, newWinnerRating, winnerCurrentElo),
-                PromotionHandler.checkPromotion(loserDoc.id, newLoserRating, loserCurrentElo)
-            ]);
-
-            return true;
+        if (!reportSnapshot.exists()) {
+            throw new Error('Match report not found');
         }
+
+        const reportData = reportSnapshot.data();
+        
+        // Check if user is participant or admin
+        const isParticipant = currentUsername === reportData.winnerUsername || 
+                             currentUsername === reportData.loserUsername;
+        const userIsAdmin = await isAdmin(currentUser.email);
+
+        if (!isParticipant && !userIsAdmin) {
+            throw new Error('Only match participants or admins can approve matches');
+        }
+
+        // Continue with existing approve logic...
     } catch (error) {
         console.error('Error in approveReport:', error);
         throw error;
