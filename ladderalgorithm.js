@@ -124,24 +124,31 @@ export function updateEloRatings(winnerId, loserId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
+        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+        
         const currentUser = auth.currentUser;
         if (!currentUser) {
+            console.log('No user logged in');
             throw new Error('You must be logged in to approve matches');
         }
+        console.log('Current user:', currentUser.email);
 
         // Get user's player document to verify permissions
         const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
         const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+        console.log('Current username:', currentUsername);
 
         // Get the pending match
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
         if (!reportSnapshot.exists()) {
+            console.log('Report not found with ID:', reportId);
             throw new Error('Match report not found');
         }
 
         const reportData = reportSnapshot.data();
+        console.log('Report data:', reportData);
         
         // Check if user is participant or admin
         const isParticipant = currentUsername === reportData.winnerUsername || 
