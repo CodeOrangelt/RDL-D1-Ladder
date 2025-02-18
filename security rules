@@ -1,6 +1,5 @@
 rules_version = '2';
 
-// Helper functions
 function isAdmin() {
   let adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
   return request.auth != null && 
@@ -14,8 +13,16 @@ function isVerifiedUser() {
 function isMatchParticipant(matchData) {
   return request.auth != null && (
     matchData.winnerEmail == request.auth.token.email ||
-    matchData.loserUsername in get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+    matchData.loserEmail == request.auth.token.email ||
+    matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+    matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
   );
+}
+
+function isValidEloUpdate(incomingData) {
+  return incomingData.eloRating is number &&
+         incomingData.lastMatchDate is timestamp &&
+         incomingData.position is number;
 }
 
 service cloud.firestore {
@@ -27,8 +34,17 @@ service cloud.firestore {
       allow update: if isAdmin() || 
                    request.auth.uid == playerId || 
                    // Allow ELO updates from matches
-                   (request.resource.data.keys().hasAll(['eloRating', 'matchId']) &&
-                    exists(/databases/$(database)/documents/pendingMatches/$(request.resource.data.matchId)));
+                   (request.resource.data.keys().hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(request.resource.data) &&
+                    request.auth != null);
+      allow delete: if isAdmin();
+    }
+
+    // User Profiles
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && 
+                           (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
 
@@ -36,57 +52,45 @@ service cloud.firestore {
     match /pendingMatches/{matchId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if isAdmin() || isMatchParticipant(resource.data);
     }
 
     match /approvedMatches/{matchId} {
       allow read: if true;
-      allow create, update: if isAdmin() || 
-                           isMatchParticipant(get(/databases/$(database)/documents/pendingMatches/$(matchId)).data);
+      allow create: if request.auth != null;
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
       allow delete: if false;
     }
 
+    // ELO History
     match /eloHistory/{historyId} {
       allow read: if true;
-      allow create: if isVerifiedUser() && isMatchHistoryValid();
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'player', 'previousElo', 'newElo', 'change',
+                     'opponent', 'matchResult', 'timestamp',
+                     'previousRank', 'newRank',
+                     'isPromotion', 'isDemotion'
+                   ]);
       allow update, delete: if false;
-
-      function isMatchHistoryValid() {
-        let incoming = request.resource.data;
-        return incoming.type == 'match' &&
-               incoming.player is string &&
-               incoming.opponent is string &&
-               incoming.previousElo is number &&
-               incoming.newElo is number &&
-               incoming.change is number &&
-               incoming.timestamp is timestamp &&
-               incoming.matchResult is string &&
-               incoming.previousRank is string &&
-               incoming.newRank is string &&
-               incoming.isPromotion is bool &&
-               incoming.isDemotion is bool &&
-               incoming.participantIds is list;
-      }
     }
 
-    // Default deny all other collections
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Profile Pictures
-    match /profile-pictures/{userId}/{allPaths=**} {
+    // RetroTracker
+    match /retroTracker/{docId} {
       allow read: if true;
-      allow write: if isVerifiedUser() && isOwner(userId);
+      allow write: if request.auth != null;
     }
 
-    // Default deny
-    match /{allPaths=**} {
-      allow read, write: if false;
+    // Season Management
+    match /metadata/seasonCount {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /seasons/{seasonId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
