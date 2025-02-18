@@ -21,9 +21,13 @@ service cloud.firestore {
     match /players/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if request.auth != null && 
-        (request.auth.uid == playerId || 
-         isAdmin());
+      // Allow updates from match participants or admins
+      allow update: if request.auth != null && (
+        isAdmin() ||
+        request.auth.uid == playerId ||
+        resource.data.participantIds.hasAny([request.auth.uid]) ||
+        (get(/databases/$(database)/documents/pendingMatches/$(request.resource.data.matchId)).data.participantIds.hasAny([request.auth.uid]))
+      );
       allow delete: if isAdmin();
     }
 
@@ -44,7 +48,14 @@ service cloud.firestore {
     match /pendingMatches/{matchId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update, delete: if isAdmin();
+      allow update: if request.auth != null && (
+        request.auth.uid in resource.data.participantIds ||
+        isAdmin()
+      );
+      allow delete: if request.auth != null && (
+        request.auth.uid in resource.data.participantIds ||
+        isAdmin()
+      );
     }
 
     match /approvedMatches/{matchId} {
@@ -71,17 +82,6 @@ service cloud.firestore {
                incoming.isPromotion is bool &&
                incoming.isDemotion is bool;
           }
-      }
-
-      match /pendingMatches/{matchId} {
-          allow read: if true;
-          allow create: if request.auth != null;
-          // Allow participants and admins to update
-          allow update: if request.auth != null && (
-              request.auth.uid in resource.data.participantIds ||
-              isAdmin()
-          );
-          allow delete: if request.auth != null;
       }
 
     // RetroTracker (for game banner)
