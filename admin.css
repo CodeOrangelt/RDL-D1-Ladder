@@ -468,17 +468,19 @@ footer {
     background-color: #7f8c8d;
 }
 
-#test-report-btn {
+#create-test-report {
     background-color: #ff9800;
     color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 10px;
-    font-size: 14px;
 }
 
-#test-report-btn:hover {
+#create-test-report:hover {
     background-color: #f57c00;
+}
+
+#test-report-section {
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 20px;
 }

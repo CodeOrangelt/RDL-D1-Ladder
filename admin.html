@@ -41,6 +41,8 @@
                 <button id="reset-season" class="danger-button">Reset Season</button>
                 <button id="promote-player" class="danger-button">Promote Player</button>
                 <button id="demote-player" class="danger-button">Demote Player</button>
+                <!-- Add the test report button here -->
+                <button id="test-report-btn" class="collapse-btn" data-target="test-report-section">Test Report</button>
             </div>
             <!-- Add these dialog elements right after your admin-actions div -->
             <div id="promote-dialog" class="modal">
@@ -162,6 +164,13 @@
             </div>
             <div class="admin-section">
                 <button id="test-report-btn" class="admin-button">Create Test Report</button>
+            </div>
+            <!-- Add the collapsible section after your other sections -->
+            <div id="test-report-section" class="admin-section" style="display: none;">
+                <h2>Create Test Report</h2>
+                <div class="form-group">
+                    <button id="create-test-report" class="action-btn">Generate Test Report for Test5</button>
+                </div>
             </div>
         </div>
     </main>
