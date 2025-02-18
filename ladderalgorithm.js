@@ -124,29 +124,25 @@ export function updateEloRatings(winnerId, loserId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
-        // Check if current user is admin
-        const currentUser = auth.currentUser;
-        if (!currentUser || !isAdmin(currentUser.email)) {
-            throw new Error('Unauthorized: Admin access required');
-        }
-
-        // Get reference to the pending match document
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
-        
-        // Update the pending match with winner's data
-        await updateDoc(pendingMatchRef, {
-            approved: true,
-            winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides,
-            winnerComment: winnerComment
-        });
-
-        // Get the complete report data
         const reportSnapshot = await getDoc(pendingMatchRef);
         
         if (reportSnapshot.exists()) {
             const reportData = reportSnapshot.data();
-            
+            const currentUser = auth.currentUser;
+
+            if (!currentUser) {
+                throw new Error('You must be logged in to report matches');
+            }
+
+            const isParticipant = currentUser.email === reportData.player1Email || 
+                                currentUser.email === reportData.player2Email;
+            const userIsAdmin = isAdmin(currentUser.email);
+
+            if (!isParticipant && !userIsAdmin) {
+                throw new Error('Only match participants or admins can modify match reports');
+            }
+
             // Get both players' data
             const playersRef = collection(db, 'players');
             const winnerQuery = query(playersRef, where('username', '==', reportData.winnerUsername));
@@ -172,51 +168,84 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             // Start batch update
             const batch = writeBatch(db);
 
-            // Update winner's data
+            // Update ELO ratings immediately
             batch.update(winnerDoc.ref, {
-                eloRating: newWinnerRating,
-                position: Math.min(winnerPosition, loserPosition)
+                eloRating: newWinnerRating
             });
 
-            // Update loser's data
             batch.update(loserDoc.ref, {
-                eloRating: newLoserRating,
-                position: Math.max(winnerPosition, loserPosition)
+                eloRating: newLoserRating
             });
 
             // Record ELO changes in history
-            await recordEloChange(
-                reportData.winnerUsername,
-                winnerCurrentElo,
-                newWinnerRating,
-                reportData.loserUsername,
-                'win'
-            );
+            await Promise.all([
+                recordEloChange(
+                    reportData.winnerUsername,
+                    winnerCurrentElo,
+                    newWinnerRating,
+                    reportData.loserUsername,
+                    'win'
+                ),
+                recordEloChange(
+                    reportData.loserUsername,
+                    loserCurrentElo,
+                    newLoserRating,
+                    reportData.winnerUsername,
+                    'loss'
+                )
+            ]);
 
-            await recordEloChange(
-                reportData.loserUsername,
-                loserCurrentElo,
-                newLoserRating,
-                reportData.winnerUsername,
-                'loss'
-            );
-
-            // Update positions for players between winner and loser
-            const playersToUpdate = query(
-                playersRef,
-                where('position', '>', Math.min(winnerPosition, loserPosition)),
-                where('position', '<', Math.max(winnerPosition, loserPosition))
-            );
-
-            const playersBetween = await getDocs(playersToUpdate);
-            playersBetween.forEach(playerDoc => {
-                const currentPosition = playerDoc.data().position;
-                if (currentPosition) {
-                    batch.update(playerDoc.ref, {
-                        position: currentPosition + 1
-                    });
-                }
+            // Update the pending match status
+            await updateDoc(pendingMatchRef, {
+                winnerScore: winnerScore,
+                winnerSuicides: winnerSuicides,
+                winnerComment: winnerComment,
+                reportedBy: currentUser.email,
+                reportedAt: serverTimestamp(),
+                approved: userIsAdmin ? true : false,
+                pendingApproval: !userIsAdmin,
+                winnerOldElo: winnerCurrentElo,
+                winnerNewElo: newWinnerRating,
+                loserOldElo: loserCurrentElo,
+                loserNewElo: newLoserRating
             });
+
+            // Only update positions if admin is approving
+            if (userIsAdmin) {
+                // Update positions
+                batch.update(winnerDoc.ref, {
+                    position: Math.min(winnerPosition, loserPosition)
+                });
+                batch.update(loserDoc.ref, {
+                    position: Math.max(winnerPosition, loserPosition)
+                });
+
+                // Update positions for players between
+                const playersToUpdate = query(
+                    playersRef,
+                    where('position', '>', Math.min(winnerPosition, loserPosition)),
+                    where('position', '<', Math.max(winnerPosition, loserPosition))
+                );
+
+                const playersBetween = await getDocs(playersToUpdate);
+                playersBetween.forEach(playerDoc => {
+                    const currentPosition = playerDoc.data().position;
+                    if (currentPosition) {
+                        batch.update(playerDoc.ref, {
+                            position: currentPosition + 1
+                        });
+                    }
+                });
+
+                // Move to approved matches
+                const approvedMatchRef = doc(db, 'approvedMatches', reportId);
+                await setDoc(approvedMatchRef, {
+                    ...reportData,
+                    approvedAt: serverTimestamp()
+                });
+                
+                await deleteDoc(pendingMatchRef);
+            }
 
             // Commit all updates
             await batch.commit();
@@ -227,21 +256,6 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
                 PromotionHandler.checkPromotion(loserDoc.id, newLoserRating, loserCurrentElo)
             ]);
 
-            // Move to approved matches
-            const approvedMatchRef = doc(db, 'approvedMatches', reportId);
-            await setDoc(approvedMatchRef, {
-                ...reportData,
-                winnerOldElo: winnerCurrentElo,
-                winnerNewElo: newWinnerRating,
-                loserOldElo: loserCurrentElo,
-                loserNewElo: newLoserRating,
-                approvedAt: serverTimestamp()
-            });
-            
-            // Delete from pending matches
-            await deleteDoc(pendingMatchRef);
-            
-            console.log('Report processed successfully');
             return true;
         }
     } catch (error) {
