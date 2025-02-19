@@ -483,4 +483,15 @@ footer {
     background-color: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-top: 20px;
+
+}
+
+.positive-change {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.negative-change {
+    color: #f44336;
+    font-weight: bold;
 }

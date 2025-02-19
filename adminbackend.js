@@ -749,13 +749,15 @@ async function displayEloHistory() {
 
         entries.forEach(entry => {
             const row = document.createElement('tr');
+            const changeClass = entry.change > 0 ? 'positive-change' : entry.change < 0 ? 'negative-change' : '';
+            
             row.innerHTML = `
-                <td>${entry.timestamp.toDate().toLocaleString()}</td>
+                <td>${entry.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
                 <td>${entry.playerUsername}</td>
                 <td>${entry.previousElo}</td>
                 <td>${entry.newElo}</td>
-                <td class="${entry.change >= 0 ? 'positive' : 'negative'}">
-                    ${entry.change >= 0 ? '+' : ''}${entry.change}
+                <td class="${changeClass}">
+                    ${entry.change > 0 ? '+' : ''}${entry.change}
                 </td>
                 <td>${entry.opponentUsername}</td>
                 <td>${entry.matchResult}</td>
@@ -764,6 +766,7 @@ async function displayEloHistory() {
         });
     } catch (error) {
         console.error('Error displaying ELO history:', error);
+        historyContainer.innerHTML = '<tr><td colspan="7">Error loading history</td></tr>';
     }
 }
 

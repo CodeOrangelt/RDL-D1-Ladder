@@ -23,11 +23,10 @@ const ELO_THRESHOLDS = [
 
 async function getUsernameById(userId) {
     try {
+        if (!userId) return 'Unknown Player';
+        
         const playerDoc = await getDoc(doc(db, 'players', userId));
-        if (playerDoc.exists()) {
-            return playerDoc.data().username;
-        }
-        return 'Unknown Player';
+        return playerDoc.exists() ? playerDoc.data().username : 'Unknown Player';
     } catch (error) {
         console.error('Error fetching username:', error);
         return 'Unknown Player';
@@ -90,7 +89,8 @@ export async function getEloHistory() {
                 ...data,
                 playerUsername,
                 opponentUsername,
-                change: data.newElo - data.previousElo
+                change: data.newElo - data.previousElo,
+                timestamp: data.timestamp
             };
         });
 
