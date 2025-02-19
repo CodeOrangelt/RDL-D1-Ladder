@@ -1,5 +1,32 @@
 import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+const MAX_VIEWS = 5;
+
+async function checkPromotionViews(promotionId, userId) {
+    try {
+        const viewsRef = doc(db, 'promotionViews', `${promotionId}_${userId}`);
+        const viewsDoc = await getDoc(viewsRef);
+        
+        if (!viewsDoc.exists()) {
+            // First view
+            await setDoc(viewsRef, { views: 1 });
+            return true;
+        }
+        
+        const views = viewsDoc.data().views;
+        if (views < MAX_VIEWS) {
+            // Increment views
+            await setDoc(viewsRef, { views: views + 1 }, { merge: true });
+            return true;
+        }
+        
+        return false; // Max views reached
+    } catch (error) {
+        console.error('Error checking promotion views:', error);
+        return false;
+    }
+}
 
 export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
@@ -7,64 +34,59 @@ export function initializePromotionTracker() {
     
     console.log('Promotion tracker initializing...');
 
-    // Ensure the banner starts hidden
-    if (promotionContainer) {
-        promotionContainer.style.display = 'none';
-        console.log('Banner hidden on initialization');
-    } else {
+    if (!promotionContainer) {
         console.warn('Promotion container not found in DOM');
         return;
     }
+
+    promotionContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
-    const q = query(
-        historyRef, 
-        orderBy('timestamp', 'desc'),
-        limit(1)
-    );
+    const q = query(historyRef, orderBy('timestamp', 'desc'), limit(1));
 
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(q, async (snapshot) => {
         console.log('Checking for new history entries...');
         
-        snapshot.docChanges().forEach((change) => {
+        for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
                 console.log('New history entry:', data);
-                console.log('Entry type:', data.type);
                 
-                // Check if this is a promotion event
                 if (data.type === 'promotion' && data.rankAchieved) {
-                    console.log('Found promotion event:', {
-                        player: data.player,
-                        rank: data.rankAchieved
-                    });
-                    
-                    // Update and show the banner
-                    promotionContainer.style.display = 'block';
-                    const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
-                    promotionDetails.textContent = promotionText;
-                    promotionDetails.classList.add('new-promotion');
-                    
-                    // Auto-hide after delay
-                    setTimeout(() => {
-                        console.log('Hiding promotion banner');
-                        promotionDetails.classList.remove('new-promotion');
-                        setTimeout(() => {
-                            promotionContainer.style.display = 'none';
-                        }, 5000); // Hide after 5 seconds
-                    }, 3000);
-
-                    // Show personal lightbox if it's the current user
                     const currentUser = auth.currentUser;
-                    if (currentUser && data.player === currentUser.displayName) {
-                        showPromotionLightbox(data.rankAchieved);
+                    if (!currentUser) {
+                        console.log('No user logged in, skipping promotion banner');
+                        return;
                     }
-                } else {
-                    console.log('Not a promotion event, keeping banner hidden');
-                    promotionContainer.style.display = 'none';
+
+                    // Check if user should see this promotion
+                    const promotionId = change.doc.id;
+                    const shouldShow = await checkPromotionViews(promotionId, currentUser.uid);
+                    
+                    if (shouldShow) {
+                        console.log('Showing promotion banner (view count not exceeded)');
+                        promotionContainer.style.display = 'block';
+                        const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
+                        promotionDetails.textContent = promotionText;
+                        promotionDetails.classList.add('new-promotion');
+                        
+                        setTimeout(() => {
+                            promotionDetails.classList.remove('new-promotion');
+                            setTimeout(() => {
+                                promotionContainer.style.display = 'none';
+                            }, 5000);
+                        }, 3000);
+
+                        // Personal lightbox for promoted user
+                        if (data.player === currentUser.displayName) {
+                            showPromotionLightbox(data.rankAchieved);
+                        }
+                    } else {
+                        console.log('Max views reached for this promotion, not showing banner');
+                    }
                 }
             }
-        });
+        }
     });
 }
 

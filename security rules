@@ -19,9 +19,23 @@ function isMatchParticipant(matchData) {
   );
 }
 
+function isValidEloUpdate(currentData, newData) {
+  return newData.eloRating is number &&
+         currentData.eloRating is number &&
+         (newData.eloRating - currentData.eloRating) <= 32 &&
+         (newData.eloRating - currentData.eloRating) >= -32;
+}
+
+function isValidPromotion(currentData, newData) {
+  return newData.eloRating is number &&
+         currentData.eloRating is number &&
+         // Allow larger ELO changes for promotions
+         (newData.eloRating - currentData.eloRating) <= 400;
+}
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Players collection
+    // Players collection - Used in ladderalgorithm.js and ladder.js
     match /players/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
@@ -29,60 +43,73 @@ service cloud.firestore {
                    request.auth.uid == playerId || 
                    // Allow ELO updates from matches
                    (request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastMatchDate', 'position']));
+                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                   // Allow promotions from admin
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAll(['eloRating', 'lastPromotedAt']) &&
+                    isValidPromotion(resource.data, request.resource.data));
       allow delete: if isAdmin();
     }
 
-    // User Profiles
-    match /userProfiles/{userId} {
-      allow read: if true;
-      allow create, update: if request.auth != null && 
-                           (request.auth.uid == userId || isAdmin());
-      allow delete: if isAdmin();
-    }
-
-    // Match Management
+    // Match Management - Used in reports.js and ladderalgorithm.js
     match /pendingMatches/{matchId} {
       allow read: if true;
-      allow create: if isVerifiedUser();
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerUsername', 'loserUsername', 'loserScore',
+                     'mapPlayed', 'loserComment', 'createdAt'
+                   ]);
       allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
     }
 
     match /approvedMatches/{matchId} {
       allow read: if true;
-      allow create: if isVerifiedUser();
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerScore', 'winnerComment', 'approved',
+                     'approvedAt', 'approvedBy'
+                   ]);
       allow update: if isAdmin() || isMatchParticipant(resource.data);
-      allow delete: if false;
+      allow delete: if false;  // Keep match history immutable
     }
 
-    // ELO History - Matches elo-history.js implementation
+    // ELO History - Used in elo-history.js and ladderalgorithm.js
     match /eloHistory/{historyId} {
       allow read: if true;
       allow create: if request.auth != null && 
-                   request.resource.data.keys().hasAll([
-                     'type',
-                     'player',
-                     'opponent',
-                     'previousElo',
-                     'newElo',
-                     'change',
-                     'matchResult',
-                     'previousPosition',
-                     'newPosition',
-                     'isPromotion',
-                     'isDemotion',
-                     'timestamp'
-                   ]);
-      allow update, delete: if false;
+                   (
+                     // Regular match history
+                     (request.resource.data.type == 'match' &&
+                      request.resource.data.keys().hasAll([
+                        'type', 'player', 'opponent',
+                        'previousElo', 'newElo', 'change',
+                        'matchResult', 'previousPosition', 'newPosition',
+                        'timestamp'
+                      ])) ||
+                     // Promotion history
+                     (request.resource.data.type == 'promotion' &&
+                      request.resource.data.keys().hasAll([
+                        'type', 'player', 'previousElo', 'newElo',
+                        'rankAchieved', 'promotedBy', 'timestamp'
+                      ]) &&
+                      isAdmin())
+                   );
+      allow update, delete: if false;  // Keep history immutable
     }
 
-    // RetroTracker
+    // RetroTracker - Used in whosplaying.js
     match /retroTracker/{docId} {
       allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'gameName', 'players', 'timestamp'
+                   ]);
       allow write: if request.auth != null;
     }
 
-    // Season Management
+    // Season Management - Used in season-manager.js
     match /metadata/seasonCount {
       allow read: if true;
       allow write: if isAdmin();
@@ -91,6 +118,24 @@ service cloud.firestore {
     match /seasons/{seasonId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // User Profiles - Used in profile-viewer.js
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && 
+                           (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Promotion views tracking
+    match /promotionViews/{viewId} {
+      allow read: if request.auth != null && 
+                 viewId.matches('^.*_' + request.auth.uid + '$');
+      allow create, update: if request.auth != null && 
+                          viewId.matches('^.*_' + request.auth.uid + '$') &&
+                          request.resource.data.keys().hasOnly(['views']) &&
+                          request.resource.data.views <= 5;
     }
   }
 }
