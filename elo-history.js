@@ -8,7 +8,8 @@ import {
     limit,
     startAfter,
     doc,
-    setDoc
+    setDoc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
@@ -19,6 +20,19 @@ const ELO_THRESHOLDS = [
     { name: 'Bronze', elo: 1400 },
     { name: 'Unranked', elo: 1200 }
 ];
+
+async function getUsernameById(userId) {
+    try {
+        const playerDoc = await getDoc(doc(db, 'players', userId));
+        if (playerDoc.exists()) {
+            return playerDoc.data().username;
+        }
+        return 'Unknown Player';
+    } catch (error) {
+        console.error('Error fetching username:', error);
+        return 'Unknown Player';
+    }
+}
 
 export async function recordEloChange({
     playerId,
@@ -65,25 +79,34 @@ export async function getEloHistory() {
         const querySnapshot = await getDocs(q);
 
         const entries = [];
-        querySnapshot.forEach(doc => {
+        
+        // Use Promise.all to fetch all usernames concurrently
+        const entryPromises = querySnapshot.docs.map(async doc => {
             const data = doc.data();
-            entries.push({
+            const [playerUsername, opponentUsername] = await Promise.all([
+                getUsernameById(data.player),
+                getUsernameById(data.opponent)
+            ]);
+
+            return {
                 ...data,
                 timestamp: data.timestamp,
-                player: data.player,
+                playerUsername: playerUsername,  // Add username
+                opponentUsername: opponentUsername,  // Add opponent username
                 previousElo: data.previousElo,
                 newElo: data.newElo,
                 change: data.newElo - data.previousElo,
-                opponent: data.opponent,
                 matchResult: data.matchResult,
                 isPromotion: data.isPromotion || false,
                 previousRank: data.previousRank,
                 newRank: data.newRank,
                 type: data.type || 'match'
-            });
+            };
         });
 
+        const entries = await Promise.all(entryPromises);
         return { entries };
+
     } catch (error) {
         console.error("Error fetching ELO history:", error);
         throw error;
