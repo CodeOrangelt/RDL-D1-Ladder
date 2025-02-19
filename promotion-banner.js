@@ -99,7 +99,6 @@ export function initializePromotionTracker() {
 function showPromotionBanner(data, container) {
     // Check if we already have 3 banners
     if (container.children.length >= 3) {
-        // Remove the oldest banner
         container.removeChild(container.firstChild);
     }
 
@@ -107,7 +106,7 @@ function showPromotionBanner(data, container) {
     bannerDiv.className = 'promotion-banner';
     bannerDiv.setAttribute('data-rank', data.rankAchieved);
     bannerDiv.innerHTML = `
-        <p class="promotion-text">${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}</p>
+        <p>${data.player} was promoted to <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}</p>
     `;
     container.appendChild(bannerDiv);
     container.style.display = 'block';
