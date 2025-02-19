@@ -1,0 +1,196 @@
+
+   html, body {
+            height: 100%;
+            width: 100%;
+            margin: auto;
+            padding: 0;
+		    font-family: Helvetica, sans-serif;
+        }
+
+        body {
+            background-image: url('./backgroundrdl.png');
+            background-size: 100%;
+            background-position: center;
+            background-repeat: cover;
+            
+        }
+        
+.outer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Set the desired tinted black color and opacity */
+    padding: 50px;
+    border: 2px solid gray; /* Set the desired border style */
+    border-radius: 10px; /* Adjust the border radius value as needed */
+    width: 25%;
+
+}
+
+
+.table-container {
+    width: 85%;
+    border-radius: 30px; /* Adjust the border radius value as needed */
+    background-color: #efefef; /* Set the desired background color */
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 2px solid black;
+      border-radius: 15px; /* Adjust the border radius value as needed */
+    padding: 8px;
+    text-align: center;
+    font-family: Tahoma, sans-serif;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+
+  /* Navigation bar styling */
+       nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #333;
+            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 2.0)), url("image.png");
+            height: 80px;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+        }
+
+        nav::before {
+            content: "";
+            position: absolute;
+            top: 90%;
+            left: 0;
+            right: 0;
+            height: 10px; /* Adjust the height of the gray bar as needed */
+            background-color: gray; /* Set the desired background color */
+        }
+  
+
+  /* Menu styling */
+  ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    margin-left: 40px;
+  }
+
+  a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 0 0 0 transparent;
+  }
+
+  a:hover {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 1);
+  }
+
+  accountbutton:hover {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 1);
+  }
+
+.hero-title {
+   font-family: Helvetica;
+   color: purple;
+   text-align: left;
+}
+  
+.footer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  margin: 0;
+  background-color: #333;
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 2.0)), url("image.png");
+  color: white;
+  text-align: center;
+  height: 80px;
+  justify-content: center;
+  font-family: tahoma;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.footer::before {
+  content: "";
+  position: absolute;
+  top: -10px; /* Adjust the distance from the footer as needed */
+  left: 0;
+  right: 0;
+  height: 10px; /* Adjust the height of the gray bar as needed */
+  background-color: gray; /* Set the desired background color */
+}
+
+
+.button:hover {
+    text-shadow: 0 0 10px #000000;
+}
+
+.outer-container {
+ background-color: rgba(0, 0, 0, 0.5); /* Set the desired tinted black color and opacity */
+    border: 5px solid white; /* Set the desired border style */
+    margin: 0 auto; /* Center horizontally */
+	border-radius: 15px; /* Adjust the border radius value as needed */
+    width: 65%;
+}
+
+    .hrcontainer {
+    		  position: relative;
+    	}
+		      
+		      .hrbutton {
+		            position: absolute;
+		            top: -120px; /* Adjust the value as needed */
+		            left: 50%;
+		            transform: translateX(-50%);
+		            border: 5px solid transparent; /* Increased border width to 2px */
+		            border-top-color: white;
+		            border-left-color: white;
+		            border-right-color: white;
+		            border-bottom: none; /* Remove the bottom border */
+		            background-color: white;
+		            color: black; /* Added white font color */
+		            padding: 3px 30px; /* Adjust the padding values as needed */
+		            cursor: pointer;
+		            font-family: Tahoma, Arial, sans-serif;
+		            font-size: 18px;
+		            border-radius: 8px 8px 0 0; /* Set the border radius for each corner */
+		          }     
+	
+	     .ribbon-1 {
+          position: fixed;
+          background: white;
+          box-shadow: 0 0 0 999px white;
+          clip-path: inset(0 -100%);
+          color: black;
+          z-index: 2;
+        }
+        .left {
+          inset: 0 auto auto 0;
+          transform-origin: 100% 0;
+          transform: translate(-29.3%) rotate(-45deg);
+        }
+        .right {
+          inset: 0 0 auto auto;
+          transform-origin: 0 0;
+          transform: translate(29.3%) rotate(45deg);
+        }
