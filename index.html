@@ -81,6 +81,17 @@
                 await tracker.initializeBannerOnly();
                 await initializePromotionTracker();
 
+                // Discord widget toggle
+                const toggleButton = document.getElementById('toggle-discord');
+                const discordWidget = document.getElementById('discord-widget');
+                
+                toggleButton.addEventListener('click', () => {
+                    discordWidget.classList.toggle('collapsed');
+                    toggleButton.textContent = discordWidget.classList.contains('collapsed') 
+                        ? 'RDL Server' 
+                        : 'Hide Discord';
+                });
+
             } catch (error) {
                 console.error('Error initializing page:', error);
             }
