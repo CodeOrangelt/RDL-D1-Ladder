@@ -230,22 +230,33 @@ accountbutton:hover {
     color: white;
 }
 
+/* Update rule-content styles */
 .rule-content {
+    position: absolute;
     opacity: 0;
+    visibility: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 25px;
     margin-top: 25px;
-    display: none;
     color: white;
     display: flex;
     gap: 30px;
     align-items: flex-start;
+    width: calc(100% - 50px); /* Account for padding */
 }
 
 .rule-content.active {
+    position: relative;
     opacity: 1;
-    display: flex;
+    visibility: visible;
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add container for content */
+.content-container {
+    position: relative;
+    min-height: 400px; /* Adjust based on your content */
+    width: 100%;
 }
 
 .rules-section {
@@ -284,13 +295,14 @@ accountbutton:hover {
     }
 }
 
+/* Update animation */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateX(20px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
     }
 }
