@@ -234,14 +234,9 @@ accountbutton:hover {
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 25px;
-    background: rgba(20, 20, 20, 0.7);
-    border-radius: 12px;
     margin-top: 25px;
     display: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
     color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     display: flex;
     gap: 30px;
     align-items: flex-start;
@@ -249,7 +244,7 @@ accountbutton:hover {
 
 .rule-content.active {
     opacity: 1;
-    display: block;
+    display: flex;
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -273,9 +268,9 @@ accountbutton:hover {
     width: 300px;
     height: auto;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 768px) {
