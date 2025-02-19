@@ -1,11 +1,12 @@
-// Update import statement to use named import
 import { 
     getAuth, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { auth, db } from './firebase-config.js';
+import { 
+    doc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
 
 // Add debugging for imports
@@ -18,12 +19,14 @@ const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
 function showLoadingState() {
     const authSection = document.getElementById('auth-section');
     if (authSection) {
-        authSection.innerHTML = '<span class="loading">Loading...</span>';
+        authSection.innerHTML = '<span>Loading...</span>';
     }
 }
 
 async function updateAuthSection(user) {
     const authSection = document.getElementById('auth-section');
+    console.log('Looking for auth section...', !!authSection);
+    
     if (!authSection) {
         console.log('Auth section element not found in DOM');
         return;
@@ -61,16 +64,13 @@ async function updateAuthSection(user) {
     console.log('Auth section update complete. Current HTML:', authSection.innerHTML);
 }
 
-// Initialize immediately and listen for auth state changes
+// Initialize auth state listener
+const auth = getAuth();
+console.log('Auth object initialized:', !!auth);
+
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, checking auth dependencies');
+    console.log('DOM loaded, setting up auth state listener');
     
-    if (!onAuthStateChanged) {
-        console.error('onAuthStateChanged is not defined!');
-        return;
-    }
-    
-    console.log('Setting up auth state listener');
     try {
         onAuthStateChanged(auth, async (user) => {
             console.log('Auth state changed:', {
@@ -90,3 +90,5 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error in auth state listener setup:', error);
     }
 });
+
+export { updateAuthSection };
