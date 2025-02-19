@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="nav.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="footer.css">
+    <style>
+        .rule-content {
+            display: none;
+        }
+        .rule-content.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -17,31 +25,56 @@
         
         <div class="outer-container">
             <div class="hrcontainer">
-                <div class="button-group">
-                    <button class="hrbutton active" onclick="window.location.href='rules.html'">RULES</button>
-                    <button class="hrbutton" onclick="window.location.href='rules-solo.html'">SOLO</button>
-                    <button class="hrbutton" onclick="window.location.href='rules-duos.html'">DUO'S</button>
-                    <button class="hrbutton" onclick="window.location.href='coming-soon.html'">CTF</button>
+                <div class="button-container">
+                    <button class="rule-button active" data-content="general">General</button>
+                    <button class="rule-button" data-content="solo">Solo</button>
+                    <button class="rule-button" data-content="duos">Duos</button>
+                    <button class="rule-button" data-content="ctf">CTF</button>
                 </div>
 
-                <h1 class="hero-title purple">RDL Expectations, and Rules</h1>
-                
-                <section class="rules-section">
-                    <h2 class="hero-title">Cheating</h2>
-                    <p class="rules-text">
-                        Because the competitive nature of a 1v1 Ladder, alongside trackers, and demo/streams, there are a few precautions that may take place to prevent cheating. 
-                        Do know, that the majority of this community is familiar with the common methods of cheating and rarely go unnoticed by seasoned veterans. You will eventually be caught. 
-                        Cheating warrants an admin-based discretion response, but expect nothing less than a ban. Also, amenable to all participants.
-                    </p>
-                </section>
+                <!-- General Rules Content -->
+                <div id="general" class="rule-content active">
+                    <section class="rules-section">
+                        <h2 class="hero-title">Cheating</h2>
+                        <p class="rules-text">
+                            Because the competitive nature of a 1v1 Ladder, alongside trackers, and demo/streams, there are a few precautions that may take place to prevent cheating. 
+                            Do know, that the majority of this community is familiar with the common methods of cheating and rarely go unnoticed by seasoned veterans. You will eventually be caught. 
+                            Cheating warrants an admin-based discretion response, but expect nothing less than a ban. Also, amenable to all participants.
+                        </p>
+                    </section>
 
-                <section class="rules-section">
-                    <h2 class="hero-title">Descent Version</h2>
-                    <p class="rules-text">
-                        While you play on this Ladder, it will primarily use the port Descent Redux, due to the current development, modern features it offers in contrast to older ports like Rebirth,
-                        and Retro. The use of other versions will not be tolerated unless approved by admins. The file size of your .EXE should ALWAYS match your opponents.
-                    </p>
-                </section>
+                    <section class="rules-section">
+                        <h2 class="hero-title">Descent Version</h2>
+                        <p class="rules-text">
+                            While you play on this Ladder, it will primarily use the port Descent Redux, due to the current development, modern features it offers in contrast to older ports like Rebirth,
+                            and Retro. The use of other versions will not be tolerated unless approved by admins. The file size of your .EXE should ALWAYS match your opponents.
+                        </p>
+                    </section>
+                </div>
+
+                <!-- Solo Rules Content -->
+                <div id="solo" class="rule-content">
+                    <section class="rules-section">
+                        <h2 class="hero-title">Solo Rules</h2>
+                        <p class="rules-text">Solo game specific rules content here...</p>
+                    </section>
+                </div>
+
+                <!-- Duos Rules Content -->
+                <div id="duos" class="rule-content">
+                    <section class="rules-section">
+                        <h2 class="hero-title">Duos Rules</h2>
+                        <p class="rules-text">Duos game specific rules content here...</p>
+                    </section>
+                </div>
+
+                <!-- CTF Rules Content -->
+                <div id="ctf" class="rule-content">
+                    <section class="rules-section">
+                        <h2 class="hero-title">CTF Rules</h2>
+                        <p class="rules-text">CTF game specific rules content here...</p>
+                    </section>
+                </div>
             </div>
         </div>
     </main>
@@ -54,6 +87,16 @@
         $(document).ready(function() {
             $("#nav-placeholder").load("nav.html");
             $("#footer-placeholder").load("footer.html");
+
+            // Rule button click handler
+            $('.rule-button').click(function() {
+                // Remove active class from all buttons and contents
+                $('.rule-button').removeClass('active');
+                $('.rule-content').removeClass('active');
+                // Add active class to clicked button and corresponding content
+                $(this).addClass('active');
+                $('#' + $(this).data('content')).addClass('active');
+            });
         });
     </script>
     <script type="module" src="firebase-config.js"></script>
