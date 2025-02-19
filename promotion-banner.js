@@ -3,6 +3,12 @@ import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstat
 
 export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
+    const promotionContainer = document.querySelector('.promotion-container');
+    
+    // Hide promotion container initially
+    if (promotionContainer) {
+        promotionContainer.style.display = 'none';
+    }
     
     // Listen for changes in eloHistory
     const historyRef = collection(db, 'eloHistory');
@@ -17,13 +23,25 @@ export function initializePromotionTracker() {
             if (change.type === "added") {
                 const data = change.doc.data();
                 if (data.type === 'promotion') {
-                    // Update global banner
+                    // Show container and update banner
+                    if (promotionContainer) {
+                        promotionContainer.style.display = 'block';
+                    }
+                    
                     const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
                     if (promotionDetails) {
                         promotionDetails.textContent = promotionText;
                         promotionDetails.classList.add('new-promotion');
+                        
+                        // Hide banner after animation
                         setTimeout(() => {
                             promotionDetails.classList.remove('new-promotion');
+                            // Hide container after delay
+                            setTimeout(() => {
+                                if (promotionContainer) {
+                                    promotionContainer.style.display = 'none';
+                                }
+                            }, 5000); // Hide after 5 seconds
                         }, 3000);
                     }
 

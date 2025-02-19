@@ -209,6 +209,15 @@ tr:nth-child(even) {
     padding: 20px;
     margin-top: auto;
     margin: 20px auto;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.promotion-container[style*="display: none"] {
+    opacity: 0;
+}
+
+.promotion-container[style*="display: block"] {
+    opacity: 1;
 }
 
 .promotion-banner {
