@@ -51,30 +51,6 @@ th {
     background-color: #f2f2f2;
 }
 
-/* Navigation bar styling */
-nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background-color: #333;
-    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 2.0)), url("image.png");
-    height: 80px;
-    padding: 0 20px;
-    font-family: Arial, sans-serif;
-    font-size: 18px;
-}
-
-nav::before {
-    content: "";
-    position: absolute;
-    top: 90%;
-    left: 0;
-    right: 0;
-    height: 10px; /* Adjust the height of the gray bar as needed */
-    background-color: gray; /* Set the desired background color */
-}
-
 /* Menu styling */
 ul {
     display: flex;
@@ -266,6 +242,9 @@ accountbutton:hover {
     backdrop-filter: blur(10px);
     color: white;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
 }
 
 .rule-content.active {
@@ -276,6 +255,7 @@ accountbutton:hover {
 
 .rules-section {
     margin-bottom: 2rem;
+    flex: 1;
 }
 
 .rules-section:last-child {
@@ -287,6 +267,26 @@ accountbutton:hover {
     color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
     margin-bottom: 1.5rem;
+}
+
+.rule-image {
+    width: 300px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    .rule-content {
+        flex-direction: column;
+    }
+    
+    .rule-image {
+        width: 100%;
+        margin-top: 20px;
+    }
 }
 
 @keyframes fadeIn {
