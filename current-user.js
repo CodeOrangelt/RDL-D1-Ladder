@@ -16,17 +16,21 @@ function showLoadingState() {
 
 async function updateAuthSection(user) {
     const authSection = document.getElementById('auth-section');
-    if (!authSection) return;
+    if (!authSection) {
+        console.log('Auth section element not found in DOM');
+        return;
+    }
     
+    console.log('Updating auth section. Current user:', user ? 'logged in' : 'not logged in');
     showLoadingState();
     
     if (user) {
         try {
             const userDoc = await getDoc(doc(db, 'players', user.uid));
             const username = userDoc.exists() ? userDoc.data().username : user.email;
-            
-            // Check if user is admin
             const isUserAdmin = isAdmin(user.email);
+            
+            console.log('User data loaded:', { username, isAdmin: isUserAdmin });
             
             authSection.innerHTML = `
                 <div class="user-dropdown">
@@ -43,13 +47,17 @@ async function updateAuthSection(user) {
             authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
         }
     } else {
+        console.log('No user logged in, showing login link');
         authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
     }
+    console.log('Auth section update complete. Current HTML:', authSection.innerHTML);
 }
 
 // Initialize immediately and listen for auth state changes
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, setting up auth state listener');
     onAuthStateChanged(auth, async (user) => {
+        console.log('Auth state changed:', user ? 'user logged in' : 'user logged out');
         await updateAuthSection(user);
         // Show/hide admin link based on user email
         const adminLink = document.querySelector('.admin-only');

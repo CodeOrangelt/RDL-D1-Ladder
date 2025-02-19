@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Add these security headers -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <!-- Your existing meta tags -->
+    <title>Redux Descent League</title>
     <link rel="icon" type="image/x-icon" href="cloak.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
@@ -117,6 +122,60 @@
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('Page loaded, initializing promotion tracker...');
             await initializePromotionTracker();
+        });
+    </script>
+    <script type="module">
+        async function updateAuthSection(user) {
+            const authSection = document.getElementById('auth-section');
+            if (!authSection) {
+                console.log('Auth section element not found in DOM');
+                return;
+            }
+            
+            console.log('Updating auth section. Current user:', user ? 'logged in' : 'not logged in');
+            showLoadingState();
+            
+            if (user) {
+                try {
+                    const userDoc = await getDoc(doc(db, 'players', user.uid));
+                    const username = userDoc.exists() ? userDoc.data().username : user.email;
+                    const isUserAdmin = isAdmin(user.email);
+                    
+                    console.log('User data loaded:', { username, isAdmin: isUserAdmin });
+                    
+                    authSection.innerHTML = `
+                        <div class="user-dropdown">
+                            <span id="current-user">${username}</span>
+                            <div class="dropdown-content">
+                                <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
+                                ${isUserAdmin ? '<a href="admin.html" class="admin-only">Admin</a>' : ''}
+                                <a href="#" id="sign-out-link">Sign Out</a>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('Error updating auth section:', error);
+                    authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
+                }
+            } else {
+                console.log('No user logged in, showing login link');
+                authSection.innerHTML = `<a href="login.html" class="auth-link">Login</a>`;
+            }
+            console.log('Auth section update complete. Current HTML:', authSection.innerHTML);
+        }
+
+        // Initialize immediately and listen for auth state changes
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, setting up auth state listener');
+            onAuthStateChanged(auth, async (user) => {
+                console.log('Auth state changed:', user ? 'user logged in' : 'user logged out');
+                await updateAuthSection(user);
+                // Show/hide admin link based on user email
+                const adminLink = document.querySelector('.admin-only');
+                if (adminLink && user) {
+                    adminLink.style.display = isAdmin(user.email) ? 'block' : 'none';
+                }
+            });
         });
     </script>
 </body>
