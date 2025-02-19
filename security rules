@@ -26,11 +26,15 @@ function isValidEloUpdate(currentData, newData) {
          (newData.eloRating - currentData.eloRating) >= -32;
 }
 
+// Update isValidPromotion and isValidDemotion to be more permissive
 function isValidPromotion(currentData, newData) {
   return newData.eloRating is number &&
-         currentData.eloRating is number &&
-         // Allow larger ELO changes for promotions
-         (newData.eloRating - currentData.eloRating) <= 400;
+         currentData.eloRating is number;
+}
+
+function isValidDemotion(currentData, newData) {
+  return newData.eloRating is number &&
+         currentData.eloRating is number;
 }
 
 service cloud.firestore {
@@ -48,8 +52,11 @@ service cloud.firestore {
                    // Allow promotions from admin
                    (isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastPromotedAt']) &&
-                    isValidPromotion(resource.data, request.resource.data));
+                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy'])) ||
+                   // Allow demotions from admin
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastDemotedAt', 'demotedBy']));
       allow delete: if isAdmin();
     }
 
@@ -88,11 +95,15 @@ service cloud.firestore {
                         'matchResult', 'previousPosition', 'newPosition',
                         'timestamp'
                       ])) ||
-                     // Promotion history
-                     (request.resource.data.type == 'promotion' &&
+                     // Simplified promotion/demotion rules
+                     ((request.resource.data.type == 'promotion' ||
+                       request.resource.data.type == 'demotion') &&
                       request.resource.data.keys().hasAll([
-                        'type', 'player', 'previousElo', 'newElo',
-                        'rankAchieved', 'promotedBy', 'timestamp'
+                        'type',
+                        'player',
+                        'previousElo',
+                        'newElo',
+                        'timestamp'
                       ]) &&
                       isAdmin())
                    );

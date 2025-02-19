@@ -1,5 +1,5 @@
 import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 const MAX_VIEWS = 5;
 
@@ -28,6 +28,7 @@ async function checkPromotionViews(promotionId, userId) {
     }
 }
 
+// Update the query to get more recent promotions
 export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
     const promotionContainer = document.querySelector('.promotion-container');
@@ -42,7 +43,13 @@ export function initializePromotionTracker() {
     promotionContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
-    const q = query(historyRef, orderBy('timestamp', 'desc'), limit(1));
+    // Get last 5 promotions instead of just 1
+    const q = query(
+        historyRef, 
+        where('type', '==', 'promotion'),
+        orderBy('timestamp', 'desc'), 
+        limit(5)
+    );
 
     onSnapshot(q, async (snapshot) => {
         console.log('Checking for new history entries...');
@@ -50,44 +57,57 @@ export function initializePromotionTracker() {
         for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
-                console.log('New history entry:', data);
+                console.log('New promotion entry:', data);
                 
-                if (data.type === 'promotion' && data.rankAchieved) {
+                if (data.rankAchieved) {
                     const currentUser = auth.currentUser;
                     if (!currentUser) {
                         console.log('No user logged in, skipping promotion banner');
-                        return;
+                        continue; // Use continue instead of return to check other promotions
                     }
 
-                    // Check if user should see this promotion
                     const promotionId = change.doc.id;
                     const shouldShow = await checkPromotionViews(promotionId, currentUser.uid);
                     
                     if (shouldShow) {
-                        console.log('Showing promotion banner (view count not exceeded)');
-                        promotionContainer.style.display = 'block';
-                        const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
-                        promotionDetails.textContent = promotionText;
-                        promotionDetails.classList.add('new-promotion');
-                        
-                        setTimeout(() => {
-                            promotionDetails.classList.remove('new-promotion');
-                            setTimeout(() => {
-                                promotionContainer.style.display = 'none';
-                            }, 5000);
-                        }, 3000);
+                        console.log('Showing promotion banner for:', data.player);
+                        showPromotionBanner(data, promotionContainer, promotionDetails);
 
                         // Personal lightbox for promoted user
                         if (data.player === currentUser.displayName) {
                             showPromotionLightbox(data.rankAchieved);
                         }
                     } else {
-                        console.log('Max views reached for this promotion, not showing banner');
+                        console.log('Max views reached for promotion:', promotionId);
                     }
                 }
             }
         }
     });
+}
+
+// New function to handle showing promotion banners
+function showPromotionBanner(data, container, detailsElement) {
+    // Create a new banner for this promotion
+    const bannerDiv = document.createElement('div');
+    bannerDiv.className = 'promotion-banner new-promotion';
+    bannerDiv.innerHTML = `
+        <p>${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}</p>
+    `;
+    container.appendChild(bannerDiv);
+    container.style.display = 'block';
+
+    // Remove banner after animation
+    setTimeout(() => {
+        bannerDiv.classList.remove('new-promotion');
+        setTimeout(() => {
+            bannerDiv.remove();
+            // Hide container if no more banners
+            if (container.children.length === 0) {
+                container.style.display = 'none';
+            }
+        }, 5000);
+    }, 3000);
 }
 
 function showPromotionLightbox(rankName) {
