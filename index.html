@@ -111,5 +111,13 @@
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
+    <script type="module">
+        import { initializePromotionTracker } from './promotion-banner.js';
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Page loaded, initializing promotion tracker...');
+            await initializePromotionTracker();
+        });
+    </script>
 </body>
 </html>

@@ -5,14 +5,17 @@ export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
     const promotionContainer = document.querySelector('.promotion-container');
     
-    // Hide promotion container initially and log state
-    console.log('Initializing promotion tracker');
+    console.log('Promotion tracker initializing...');
+
+    // Ensure the banner starts hidden
     if (promotionContainer) {
         promotionContainer.style.display = 'none';
-        console.log('Promotion container hidden initially');
+        console.log('Banner hidden on initialization');
+    } else {
+        console.warn('Promotion container not found in DOM');
+        return;
     }
     
-    // Listen for changes in eloHistory
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef, 
@@ -21,43 +24,35 @@ export function initializePromotionTracker() {
     );
 
     onSnapshot(q, (snapshot) => {
+        console.log('Checking for new history entries...');
+        
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                console.log('New history entry detected:', data);
+                console.log('New history entry:', data);
+                console.log('Entry type:', data.type);
                 
-                // Only show for actual promotions
+                // Check if this is a promotion event
                 if (data.type === 'promotion' && data.rankAchieved) {
-                    console.log('Promotion detected:', {
+                    console.log('Found promotion event:', {
                         player: data.player,
-                        rank: data.rankAchieved,
-                        promotedBy: data.promotedBy
+                        rank: data.rankAchieved
                     });
                     
-                    // Show container and update banner
-                    if (promotionContainer) {
-                        promotionContainer.style.display = 'block';
-                        console.log('Showing promotion banner');
-                    }
-                    
+                    // Update and show the banner
+                    promotionContainer.style.display = 'block';
                     const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
-                    if (promotionDetails) {
-                        promotionDetails.textContent = promotionText;
-                        promotionDetails.classList.add('new-promotion');
-                        
-                        // Hide banner after animation
+                    promotionDetails.textContent = promotionText;
+                    promotionDetails.classList.add('new-promotion');
+                    
+                    // Auto-hide after delay
+                    setTimeout(() => {
+                        console.log('Hiding promotion banner');
+                        promotionDetails.classList.remove('new-promotion');
                         setTimeout(() => {
-                            console.log('Removing promotion animation');
-                            promotionDetails.classList.remove('new-promotion');
-                            // Hide container after delay
-                            setTimeout(() => {
-                                if (promotionContainer) {
-                                    console.log('Hiding promotion banner');
-                                    promotionContainer.style.display = 'none';
-                                }
-                            }, 5000); // Hide after 5 seconds
-                        }, 3000);
-                    }
+                            promotionContainer.style.display = 'none';
+                        }, 5000); // Hide after 5 seconds
+                    }, 3000);
 
                     // Show personal lightbox if it's the current user
                     const currentUser = auth.currentUser;
@@ -66,9 +61,7 @@ export function initializePromotionTracker() {
                     }
                 } else {
                     console.log('Not a promotion event, keeping banner hidden');
-                    if (promotionContainer) {
-                        promotionContainer.style.display = 'none';
-                    }
+                    promotionContainer.style.display = 'none';
                 }
             }
         });
