@@ -5,9 +5,11 @@ export function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
     const promotionContainer = document.querySelector('.promotion-container');
     
-    // Hide promotion container initially
+    // Hide promotion container initially and log state
+    console.log('Initializing promotion tracker');
     if (promotionContainer) {
         promotionContainer.style.display = 'none';
+        console.log('Promotion container hidden initially');
     }
     
     // Listen for changes in eloHistory
@@ -22,10 +24,20 @@ export function initializePromotionTracker() {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                if (data.type === 'promotion') {
+                console.log('New history entry detected:', data);
+                
+                // Only show for actual promotions
+                if (data.type === 'promotion' && data.rankAchieved) {
+                    console.log('Promotion detected:', {
+                        player: data.player,
+                        rank: data.rankAchieved,
+                        promotedBy: data.promotedBy
+                    });
+                    
                     // Show container and update banner
                     if (promotionContainer) {
                         promotionContainer.style.display = 'block';
+                        console.log('Showing promotion banner');
                     }
                     
                     const promotionText = `${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}`;
@@ -35,10 +47,12 @@ export function initializePromotionTracker() {
                         
                         // Hide banner after animation
                         setTimeout(() => {
+                            console.log('Removing promotion animation');
                             promotionDetails.classList.remove('new-promotion');
                             // Hide container after delay
                             setTimeout(() => {
                                 if (promotionContainer) {
+                                    console.log('Hiding promotion banner');
                                     promotionContainer.style.display = 'none';
                                 }
                             }, 5000); // Hide after 5 seconds
@@ -49,6 +63,11 @@ export function initializePromotionTracker() {
                     const currentUser = auth.currentUser;
                     if (currentUser && data.player === currentUser.displayName) {
                         showPromotionLightbox(data.rankAchieved);
+                    }
+                } else {
+                    console.log('Not a promotion event, keeping banner hidden');
+                    if (promotionContainer) {
+                        promotionContainer.style.display = 'none';
                     }
                 }
             }
