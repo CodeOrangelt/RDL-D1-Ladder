@@ -195,6 +195,24 @@
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });
+
+        // In your view code where you display ELO history entries
+        entries.forEach(entry => {
+            const historyEntry = document.createElement('div');
+            historyEntry.className = 'history-entry';
+            historyEntry.innerHTML = `
+                <div class="match-result ${entry.matchResult}">
+                    ${entry.playerUsername} vs ${entry.opponentUsername}
+                    <span class="elo-change ${entry.change >= 0 ? 'positive' : 'negative'}">
+                        ${entry.change >= 0 ? '+' : ''}${entry.change}
+                    </span>
+                </div>
+                <div class="elo-details">
+                    ELO: ${entry.previousElo} → ${entry.newElo}
+                </div>
+            `;
+            historyContainer.appendChild(historyEntry);
+        });
     </script>
 </body>
 </html>

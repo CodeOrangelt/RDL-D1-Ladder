@@ -77,8 +77,6 @@ export async function getEloHistory() {
         const eloHistoryRef = collection(db, 'eloHistory');
         const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
         const querySnapshot = await getDocs(q);
-
-        const entries = [];
         
         // Use Promise.all to fetch all usernames concurrently
         const entryPromises = querySnapshot.docs.map(async doc => {
@@ -91,8 +89,8 @@ export async function getEloHistory() {
             return {
                 ...data,
                 timestamp: data.timestamp,
-                playerUsername: playerUsername,  // Add username
-                opponentUsername: opponentUsername,  // Add opponent username
+                playerUsername: playerUsername,
+                opponentUsername: opponentUsername,
                 previousElo: data.previousElo,
                 newElo: data.newElo,
                 change: data.newElo - data.previousElo,
@@ -104,8 +102,9 @@ export async function getEloHistory() {
             };
         });
 
-        const entries = await Promise.all(entryPromises);
-        return { entries };
+        // Changed this line to avoid duplicate declaration
+        const resolvedEntries = await Promise.all(entryPromises);
+        return { entries: resolvedEntries };
 
     } catch (error) {
         console.error("Error fetching ELO history:", error);
