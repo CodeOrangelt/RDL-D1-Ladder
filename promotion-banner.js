@@ -30,7 +30,6 @@ async function checkPromotionViews(promotionId, userId) {
 
 // Update the query to get more recent promotions
 export function initializePromotionTracker() {
-    const promotionDetails = document.getElementById('promotion-details');
     const promotionContainer = document.querySelector('.promotion-container');
     
     console.log('Promotion tracker initializing...');
@@ -40,10 +39,11 @@ export function initializePromotionTracker() {
         return;
     }
 
+    // Clear existing banners and ensure container is ready
+    promotionContainer.innerHTML = '';
     promotionContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
-    // Get last 5 promotions instead of just 1
     const q = query(
         historyRef, 
         where('type', '==', 'promotion'),
@@ -54,31 +54,41 @@ export function initializePromotionTracker() {
     onSnapshot(q, async (snapshot) => {
         console.log('Checking for new history entries...');
         
+        // Process promotions in order
+        const promotions = [];
         for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
-                console.log('New promotion entry:', data);
+                promotions.push({ id: change.doc.id, ...data });
+            }
+        }
+
+        // Sort by timestamp to show newest first
+        promotions.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+
+        // Show promotions with delay between each
+        for (let i = 0; i < promotions.length; i++) {
+            const promotion = promotions[i];
+            
+            if (promotion.rankAchieved) {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    console.log('No user logged in, skipping promotion banner');
+                    continue;
+                }
+
+                const shouldShow = await checkPromotionViews(promotion.id, currentUser.uid);
                 
-                if (data.rankAchieved) {
-                    const currentUser = auth.currentUser;
-                    if (!currentUser) {
-                        console.log('No user logged in, skipping promotion banner');
-                        continue; // Use continue instead of return to check other promotions
-                    }
+                if (shouldShow) {
+                    console.log('Showing promotion banner for:', promotion.player);
+                    // Add delay between banners
+                    setTimeout(() => {
+                        showPromotionBanner(promotion, promotionContainer);
+                    }, i * 1000); // 1 second delay between each banner
 
-                    const promotionId = change.doc.id;
-                    const shouldShow = await checkPromotionViews(promotionId, currentUser.uid);
-                    
-                    if (shouldShow) {
-                        console.log('Showing promotion banner for:', data.player);
-                        showPromotionBanner(data, promotionContainer, promotionDetails);
-
-                        // Personal lightbox for promoted user
-                        if (data.player === currentUser.displayName) {
-                            showPromotionLightbox(data.rankAchieved);
-                        }
-                    } else {
-                        console.log('Max views reached for promotion:', promotionId);
+                    // Personal lightbox for promoted user
+                    if (promotion.player === currentUser.displayName) {
+                        showPromotionLightbox(promotion.rankAchieved);
                     }
                 }
             }
@@ -86,18 +96,22 @@ export function initializePromotionTracker() {
     });
 }
 
-// New function to handle showing promotion banners
-function showPromotionBanner(data, container, detailsElement) {
-    // Create a new banner for this promotion
+function showPromotionBanner(data, container) {
     const bannerDiv = document.createElement('div');
-    bannerDiv.className = 'promotion-banner new-promotion';
+    bannerDiv.className = 'promotion-banner';
+    bannerDiv.setAttribute('data-rank', data.rankAchieved);
     bannerDiv.innerHTML = `
-        <p>${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}</p>
+        <p class="promotion-text">${data.player} was promoted to ${data.rankAchieved} by ${data.promotedBy || 'Admin'}</p>
     `;
     container.appendChild(bannerDiv);
     container.style.display = 'block';
 
-    // Remove banner after animation
+    // Add animation class after a brief delay
+    setTimeout(() => {
+        bannerDiv.classList.add('new-promotion');
+    }, 100);
+
+    // Remove banner after display time
     setTimeout(() => {
         bannerDiv.classList.remove('new-promotion');
         setTimeout(() => {
@@ -107,7 +121,7 @@ function showPromotionBanner(data, container, detailsElement) {
                 container.style.display = 'none';
             }
         }, 5000);
-    }, 3000);
+    }, 8000);
 }
 
 function showPromotionLightbox(rankName) {
