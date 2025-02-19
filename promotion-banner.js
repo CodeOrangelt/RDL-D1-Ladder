@@ -97,6 +97,12 @@ export function initializePromotionTracker() {
 }
 
 function showPromotionBanner(data, container) {
+    // Check if we already have 3 banners
+    if (container.children.length >= 3) {
+        // Remove the oldest banner
+        container.removeChild(container.firstChild);
+    }
+
     const bannerDiv = document.createElement('div');
     bannerDiv.className = 'promotion-banner';
     bannerDiv.setAttribute('data-rank', data.rankAchieved);
