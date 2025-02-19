@@ -407,4 +407,16 @@ tr:nth-child(even) {
     flex-shrink: 0;
 }
 
-
+.ribbon-1 {
+    position: absolute;
+    background: white;
+    box-shadow: 0 0 0 999px white;
+    clip-path: inset(0 -100%);
+    color: black;
+    z-index: 2;
+  }
+  .left {
+    inset: 0 auto auto 0;
+    transform-origin: 100% 0;
+    transform: translate(-29.3%) rotate(-45deg);
+  }
