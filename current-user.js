@@ -1,7 +1,15 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Update import statement to use named import
+import { 
+    getAuth, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
+
+// Add debugging for imports
+console.log('Auth imports loaded:', { onAuthStateChanged: !!onAuthStateChanged });
 
 // Add admin emails array at the top of the file
 const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
@@ -55,14 +63,30 @@ async function updateAuthSection(user) {
 
 // Initialize immediately and listen for auth state changes
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, setting up auth state listener');
-    onAuthStateChanged(auth, async (user) => {
-        console.log('Auth state changed:', user ? 'user logged in' : 'user logged out');
-        await updateAuthSection(user);
-        // Show/hide admin link based on user email
-        const adminLink = document.querySelector('.admin-only');
-        if (adminLink && user) {
-            adminLink.style.display = isAdmin(user.email) ? 'block' : 'none';
-        }
-    });
+    console.log('DOM loaded, checking auth dependencies');
+    
+    if (!onAuthStateChanged) {
+        console.error('onAuthStateChanged is not defined!');
+        return;
+    }
+    
+    console.log('Setting up auth state listener');
+    try {
+        onAuthStateChanged(auth, async (user) => {
+            console.log('Auth state changed:', {
+                userExists: !!user,
+                authObject: !!auth,
+                timestamp: new Date().toISOString()
+            });
+            await updateAuthSection(user);
+            
+            const adminLink = document.querySelector('.admin-only');
+            if (adminLink && user) {
+                console.log('Updating admin link visibility');
+                adminLink.style.display = isAdmin(user.email) ? 'block' : 'none';
+            }
+        });
+    } catch (error) {
+        console.error('Error in auth state listener setup:', error);
+    }
 });
