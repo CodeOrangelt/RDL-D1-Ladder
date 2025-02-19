@@ -737,3 +737,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // ...existing initialization code...
     setupTestReportButton();
 });
+
+// Add this function to handle ELO history display
+async function displayEloHistory() {
+    const historyContainer = document.querySelector('#elo-history-table tbody');
+    if (!historyContainer) return;
+
+    try {
+        const { entries } = await getEloHistory();
+        historyContainer.innerHTML = ''; // Clear existing entries
+
+        entries.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entry.timestamp.toDate().toLocaleString()}</td>
+                <td>${entry.playerUsername}</td>
+                <td>${entry.previousElo}</td>
+                <td>${entry.newElo}</td>
+                <td class="${entry.change >= 0 ? 'positive' : 'negative'}">
+                    ${entry.change >= 0 ? '+' : ''}${entry.change}
+                </td>
+                <td>${entry.opponentUsername}</td>
+                <td>${entry.matchResult}</td>
+            `;
+            historyContainer.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error displaying ELO history:', error);
+    }
+}
+
+// Add this to your initialization code
+document.getElementById('view-elo-history').addEventListener('click', () => {
+    displayEloHistory();
+});

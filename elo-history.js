@@ -88,21 +88,12 @@ export async function getEloHistory() {
 
             return {
                 ...data,
-                timestamp: data.timestamp,
-                playerUsername: playerUsername,
-                opponentUsername: opponentUsername,
-                previousElo: data.previousElo,
-                newElo: data.newElo,
-                change: data.newElo - data.previousElo,
-                matchResult: data.matchResult,
-                isPromotion: data.isPromotion || false,
-                previousRank: data.previousRank,
-                newRank: data.newRank,
-                type: data.type || 'match'
+                playerUsername,
+                opponentUsername,
+                change: data.newElo - data.previousElo
             };
         });
 
-        // Changed this line to avoid duplicate declaration
         const resolvedEntries = await Promise.all(entryPromises);
         return { entries: resolvedEntries };
 
