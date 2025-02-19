@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDL - Solo Rules</title>
+    <link rel="icon" type="image/x-icon" href="cloak.ico">
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    
+    <main>
+        <div class="ribbon-1 left">RDL - Beta Release</div>
+        
+        <div class="outer-container">
+            <div class="hrcontainer">
+                <div class="button-group">
+                    <button class="hrbutton active" onclick="window.location.href='rules.html'">RULES</button>
+                    <button class="hrbutton" onclick="window.location.href='rules-solo.html'">SOLO</button>
+                    <button class="hrbutton" onclick="window.location.href='rules-duos.html'">DUO'S</button>
+                    <button class="hrbutton" onclick="window.location.href='coming-soon.html'">CTF</button>
+                </div>
+
+                <h1 class="hero-title purple">RDL Expectations, and Rules</h1>
+                
+                <section class="rules-section">
+                    <h2 class="hero-title">Cheating</h2>
+                    <p class="rules-text">
+                        Because the competitive nature of a 1v1 Ladder, alongside trackers, and demo/streams, there are a few precautions that may take place to prevent cheating. 
+                        Do know, that the majority of this community is familiar with the common methods of cheating and rarely go unnoticed by seasoned veterans. You will eventually be caught. 
+                        Cheating warrants an admin-based discretion response, but expect nothing less than a ban. Also, amenable to all participants.
+                    </p>
+                </section>
+
+                <section class="rules-section">
+                    <h2 class="hero-title">Descent Version</h2>
+                    <p class="rules-text">
+                        While you play on this Ladder, it will primarily use the port Descent Redux, due to the current development, modern features it offers in contrast to older ports like Rebirth,
+                        and Retro. The use of other versions will not be tolerated unless approved by admins. The file size of your .EXE should ALWAYS match your opponents.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#nav-placeholder").load("nav.html");
+            $("#footer-placeholder").load("footer.html");
+        });
+    </script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="current-user.js"></script>
+    <script type="module" src="logout.js"></script>
+</body>
+</html>
