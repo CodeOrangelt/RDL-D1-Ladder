@@ -51,20 +51,28 @@
                 <!-- Solo Rules Content -->
                 <div id="solo" class="rule-content">
                     <section class="rules-section">
-                        <h2 class="hero-title">1. Winning</h2>
-                        <p class="rules-text">
-                            To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are not prohibited.
-                        </p>
-                        <h2 class="hero-title">2. Map Angling</h2>
-                        <p class="rules-text">
-                            With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players abstaining from choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
-                        </p>
-                        <h2 class="hero-title">3. Game Settings</h2>
-                        <p class="rules-text">
-                            To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
-                        </p>
+                        <!-- Normal content -->
+                        <div class="regular-content">
+                            <h2 class="hero-title">1. Winning</h2>
+                            <p class="rules-text">
+                                To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are not prohibited.
+                            </p>
+                            <h2 class="hero-title">2. Map Angling</h2>
+                            <p class="rules-text">
+                                With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players abstaining from choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
+                            </p>
+                            <h2 class="hero-title">3. Game Settings</h2>
+                            <p class="rules-text">
+                                To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
+                            </p>
+                        </div>
+
+                        <!-- Settings button -->
                         <button class="collapsible">View Game Settings</button>
+
+                        <!-- Settings content that will overlay -->
                         <div class="content">
+                            <button class="close-settings" onclick="closeSettings()">&times;</button>
                             <ul class="game-settings-list">
                                 <li>· Game Settings: Matches must be played with the standard game settings. Much like the Observatory the settings.</li>
                                 <li>o Do NOT set "Open Game"</li>
@@ -209,6 +217,37 @@
             });
         });
     });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsible = document.querySelector('.collapsible');
+        const content = document.querySelector('.content');
+        const regularContent = document.querySelector('.regular-content');
+
+        collapsible.addEventListener('click', function() {
+            this.classList.toggle('active');
+            content.classList.toggle('active');
+            
+            if (content.classList.contains('active')) {
+                regularContent.style.opacity = '0';
+                regularContent.style.visibility = 'hidden';
+            } else {
+                regularContent.style.opacity = '1';
+                regularContent.style.visibility = 'visible';
+            }
+        });
+    });
+
+    function closeSettings() {
+        const content = document.querySelector('.content');
+        const collapsible = document.querySelector('.collapsible');
+        const regularContent = document.querySelector('.regular-content');
+        
+        content.classList.remove('active');
+        collapsible.classList.remove('active');
+        regularContent.style.opacity = '1';
+        regularContent.style.visibility = 'visible';
+    }
     </script>
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
