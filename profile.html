@@ -25,35 +25,32 @@
                             <p id="motto-view" class="motto-text"></p>
                         </div>
                         
-                        <!-- Replace the existing stats-section div with this simpler version -->
+                        <!-- Replace the existing stats-section div with this updated version -->
                         <div class="stats-section">
                             <span class="stat-item">
-                                <span class="stat-label">W</span>
+                                <span class="stat-label">Matches</span>
+                                <span id="stats-matches">0</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Wins</span>
                                 <span id="stats-wins">0</span>
                             </span>
                             <span class="stat-item">
-                                <span class="stat-label">L</span>
+                                <span class="stat-label">Losses</span>
                                 <span id="stats-losses">0</span>
                             </span>
                             <span class="stat-item">
-                                <span class="stat-label">K</span>
-                                <span id="stats-kills">0</span>
+                                <span class="stat-label">KDA</span>
+                                <span id="stats-kda">0</span>
                             </span>
                             <span class="stat-item">
-                                <span class="stat-label">D</span>
-                                <span id="stats-deaths">0</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="stat-label">WR%</span>
-                                <span id="stats-winrate">0</span>
+                                <span class="stat-label">Win Rate</span>
+                                <span id="stats-winrate">0%</span>
                             </span>
                         </div>
                         
-                        <div id="player-stats" class="profile-section">
-                            <!-- Stats will be loaded here dynamically -->
-                        </div>
+                        <!-- Remove the redundant player-stats div since we're using the stats-section above -->
                         
-                        <!-- View Mode -->
                         <div class="view-mode">
                             <div class="profile-field">
                                 <label>Favorite Map:</label>
