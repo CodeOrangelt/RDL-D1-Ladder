@@ -25,31 +25,27 @@
                             <p id="motto-view" class="motto-text"></p>
                         </div>
                         
-                        <!-- Replace the existing stats-section div with this updated version -->
+                        <!-- Simplified stats section -->
                         <div class="stats-section">
-                            <span class="stat-item">
-                                <span class="stat-label">Matches</span>
-                                <span id="stats-matches">0</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="stat-label">Wins</span>
-                                <span id="stats-wins">0</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="stat-label">Losses</span>
-                                <span id="stats-losses">0</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="stat-label">KDA</span>
-                                <span id="stats-kda">0</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="stat-label">Win Rate</span>
-                                <span id="stats-winrate">0%</span>
-                            </span>
+                            <div class="stat-row">
+                                <span class="stat-item">
+                                    <span class="stat-label">Matches:</span>
+                                    <span id="stats-matches" class="stat-value">-</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">W/L:</span>
+                                    <span id="stats-wl" class="stat-value">-/-</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">KDA:</span>
+                                    <span id="stats-kda" class="stat-value">-</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">Win Rate:</span>
+                                    <span id="stats-winrate" class="stat-value">-%</span>
+                                </span>
+                            </div>
                         </div>
-                        
-                        <!-- Remove the redundant player-stats div since we're using the stats-section above -->
                         
                         <div class="view-mode">
                             <div class="profile-field">
