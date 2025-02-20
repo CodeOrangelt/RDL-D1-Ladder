@@ -329,19 +329,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 50px; /* Reduced gap */
+    gap: 5px; /* Reduced from 50px to bring numbers closer to letters */
 }
 
 .stat-label {
-    font-size: 20px; /* Increased from 28px (30% larger) */
+    font-size: 28px; /* Made letters larger */
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
 }
 
 #stats-wins, #stats-losses, #stats-kills, #stats-deaths, #stats-winrate {
-    font-size: 15px; /* Decreased from 24px */
+    font-size: 15px;
     font-weight: bold;
+    margin-top: -2px; /* Added small negative margin to pull numbers up closer to letters */
 }
 
 /* ELO-based stat label colors */
