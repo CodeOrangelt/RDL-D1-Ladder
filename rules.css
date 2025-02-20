@@ -290,6 +290,7 @@ accountbutton:hover {
     font-size: 14px;
     transition: 0.3s;
     margin: 10px 0;
+    width: 100%;
 }
 
 .collapsible:hover {
@@ -311,18 +312,27 @@ accountbutton:hover {
 .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 0.5s ease-out;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
 }
 
-.game-settings-list {
+.content.active {
+    max-height: 1000px; /* Adjust this value based on content height */
     padding: 20px;
+}
+
+.game-settings-list {
+    display: block;
+    margin: 0;
+    padding: 0 20px;
     color: white;
     list-style-type: none;
 }
 
 .game-settings-list li {
-    margin-bottom: 10px;
+    margin: 10px 0;
+    display: block;
+    text-align: left;
     line-height: 1.4;
 }

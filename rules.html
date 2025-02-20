@@ -168,6 +168,48 @@
             });
         }
     </script>
+    <script>
+    // Collapsible functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsibles = document.querySelectorAll('.collapsible');
+        
+        collapsibles.forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                content.classList.toggle('active');
+                
+                if (content.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                } else {
+                    content.style.maxHeight = "0";
+                }
+            });
+        });
+
+        // Rule button functionality
+        const ruleButtons = document.querySelectorAll('.rule-button');
+        const ruleContents = document.querySelectorAll('.rule-content');
+        
+        ruleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                ruleButtons.forEach(b => b.classList.remove('active'));
+                ruleContents.forEach(c => {
+                    c.classList.remove('active');
+                    c.style.maxHeight = "0";
+                });
+                
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                const contentId = button.getAttribute('data-content');
+                const content = document.getElementById(contentId);
+                content.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            });
+        });
+    });
+    </script>
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
