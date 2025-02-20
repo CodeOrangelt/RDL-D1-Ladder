@@ -2,7 +2,8 @@ import {
     collection, 
     getDocs,
     deleteDoc,
-    doc
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -29,7 +30,7 @@ async function displayLadder() {
             console.log('No players found in the database.');
             const emptyRow = document.createElement('tr');
             emptyRow.innerHTML = `
-                <td colspan="3" style="text-align: center;">No players found</td>
+                <td colspan="7" style="text-align: center;">No players found</td>
             `;
             tableBody.appendChild(emptyRow);
             return;
@@ -60,7 +61,7 @@ async function displayLadder() {
         console.error("Error loading ladder:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="3" style="text-align: center; color: red;">
+                <td colspan="7" style="text-align: center; color: red;">
                     Error loading ladder data: ${error.message}
                 </td>
             </tr>
@@ -83,61 +84,95 @@ function getNextAvailablePosition(players) {
     return maxPosition + 1;
 }
 
-function updateLadderDisplay(ladderData) {
+async function updateLadderDisplay(ladderData) {
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
-    ladderData.forEach(player => {
+    // Update the table header first
+    const thead = document.querySelector('#ladder thead tr');
+    thead.innerHTML = `
+        <th>Rank</th>
+        <th>Username</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Kills</th>
+        <th>Deaths</th>
+        <th>Win Rate</th>
+    `;
+    
+    // Fetch player stats for each player
+    for (const player of ladderData) {
         const row = document.createElement('tr');
         
-        // Create rank cell based on position
+        // Create rank cell
         const rankCell = document.createElement('td');
         rankCell.textContent = player.position;
         
-        // Rest of the display logic remains the same...
+        // Create username cell with existing styling
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
         usernameLink.textContent = player.username;
         
-        // Set color based on ELO
+        // Set ELO-based colors (keeping existing color logic)
         const elo = parseFloat(player.elo) || 0;
         if (elo >= 2000) {
-            usernameLink.style.color = '#50C878'; // Emerald Green
-            if (player.position === 1) { // Changed from rank to position
+            usernameLink.style.color = '#50C878';
+            if (player.position === 1) {
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
             }
         } else if (elo >= 1800) {
-            usernameLink.style.color = '#FFD700'; // Gold
+            usernameLink.style.color = '#FFD700';
         } else if (elo >= 1600) {
-            usernameLink.style.color = '#C0C0C0'; // Silver
+            usernameLink.style.color = '#C0C0C0';
         } else if (elo >= 1400) {
-            usernameLink.style.color = '#CD7F32'; // Bronze
+            usernameLink.style.color = '#CD7F32';
         } else {
-            usernameLink.style.color = 'gray'; // Unranked
+            usernameLink.style.color = 'gray';
         }
         
         usernameLink.style.textDecoration = 'none';
-        
-        // Add hover effect while maintaining rank color
-        usernameLink.addEventListener('mouseenter', () => {
-            usernameLink.style.textDecoration = 'underline';
-            usernameLink.style.opacity = '0.8';
-        });
-        
-        usernameLink.addEventListener('mouseleave', () => {
-            usernameLink.style.textDecoration = 'none';
-            usernameLink.style.opacity = '1';
-        });
-        
         usernameCell.appendChild(usernameLink);
+
+        // Get player stats
+        const statsRef = doc(db, 'playerStats', player.id);
+        const statsDoc = await getDoc(statsRef);
+        const stats = statsDoc.exists() ? statsDoc.data() : {
+            wins: 0,
+            losses: 0,
+            totalKills: 0,
+            totalDeaths: 0,
+            winRate: 0
+        };
+
+        // Create stats cells
+        const winsCell = document.createElement('td');
+        winsCell.textContent = stats.wins || 0;
         
-        // Add cells to row
+        const lossesCell = document.createElement('td');
+        lossesCell.textContent = stats.losses || 0;
+        
+        const killsCell = document.createElement('td');
+        killsCell.textContent = stats.totalKills || 0;
+        
+        const deathsCell = document.createElement('td');
+        deathsCell.textContent = stats.totalDeaths || 0;
+        
+        const winRateCell = document.createElement('td');
+        winRateCell.textContent = `${stats.winRate || 0}%`;
+
+        // Add all cells to row
         row.appendChild(rankCell);
         row.appendChild(usernameCell);
+        row.appendChild(winsCell);
+        row.appendChild(lossesCell);
+        row.appendChild(killsCell);
+        row.appendChild(deathsCell);
+        row.appendChild(winRateCell);
+        
         tbody.appendChild(row);
-    });
+    }
 }
 
 async function loadPlayers() {
