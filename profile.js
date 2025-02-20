@@ -21,7 +21,8 @@ class ProfileManager {
             losses: 0,
             totalKills: 0,
             totalDeaths: 0,
-            winRate: 0
+            winRate: 0,
+            rank: 'Unranked'
         };
         this.loadProfile();
         this.loadStats();
@@ -110,22 +111,27 @@ class ProfileManager {
                 if (!playerDoc.exists()) return;
 
                 const username = playerDoc.data().username;
+                const eloRating = playerDoc.data().eloRating || 0;
 
-                // Query matches where user was winner
-                const wonMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('winnerUsername', '==', username)
-                );
-                
-                // Query matches where user was loser
-                const lostMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('loserUsername', '==', username)
-                );
+                // Determine rank based on ELO
+                if (eloRating >= 2100) {
+                    this.stats.rank = 'Emerald';
+                } else if (eloRating >= 1800) {
+                    this.stats.rank = 'Gold';
+                } else if (eloRating >= 1600) {
+                    this.stats.rank = 'Silver';
+                } else if (eloRating >= 1400) {
+                    this.stats.rank = 'Bronze';
+                } else {
+                    this.stats.rank = 'Unranked';
+                }
 
+                // Query matches
                 const [wonMatches, lostMatches] = await Promise.all([
-                    getDocs(wonMatchesQuery),
-                    getDocs(lostMatchesQuery)
+                    getDocs(query(collection(db, 'approvedMatches'), 
+                        where('winnerUsername', '==', username))),
+                    getDocs(query(collection(db, 'approvedMatches'), 
+                        where('loserUsername', '==', username)))
                 ]);
 
                 // Calculate stats
@@ -134,15 +140,16 @@ class ProfileManager {
                 this.stats.totalKills = 0;
                 this.stats.totalDeaths = 0;
 
-                // Calculate kills and deaths
                 wonMatches.forEach(match => {
-                    this.stats.totalKills += parseInt(match.data().winnerScore || 0);
-                    this.stats.totalDeaths += parseInt(match.data().loserScore || 0);
+                    const data = match.data();
+                    this.stats.totalKills += parseInt(data.winnerScore || 0);
+                    this.stats.totalDeaths += parseInt(data.loserScore || 0);
                 });
 
                 lostMatches.forEach(match => {
-                    this.stats.totalKills += parseInt(match.data().loserScore || 0);
-                    this.stats.totalDeaths += parseInt(match.data().winnerScore || 0);
+                    const data = match.data();
+                    this.stats.totalKills += parseInt(data.loserScore || 0);
+                    this.stats.totalDeaths += parseInt(data.winnerScore || 0);
                 });
 
                 // Calculate win rate
@@ -150,8 +157,8 @@ class ProfileManager {
                 this.stats.winRate = totalGames > 0 ? 
                     ((this.stats.wins / totalGames) * 100).toFixed(1) : 0;
 
-                // Update stats display
                 this.updateStatsDisplay();
+
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
@@ -161,11 +168,30 @@ class ProfileManager {
     updateStatsDisplay() {
         const statsHTML = `
             <div class="stats-container">
-                <p>Wins: ${this.stats.wins}</p>
-                <p>Losses: ${this.stats.losses}</p>
-                <p>Total Kills: ${this.stats.totalKills}</p>
-                <p>Total Deaths: ${this.stats.totalDeaths}</p>
-                <p>Win Rate: ${this.stats.winRate}%</p>
+                <div class="stat-item">
+                    <span class="stat-label">Rank</span>
+                    <span class="stat-value elo-${this.stats.rank.toLowerCase()}">${this.stats.rank}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Wins</span>
+                    <span class="stat-value">${this.stats.wins}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Losses</span>
+                    <span class="stat-value">${this.stats.losses}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Kills</span>
+                    <span class="stat-value">${this.stats.totalKills}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Deaths</span>
+                    <span class="stat-value">${this.stats.totalDeaths}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value">${this.stats.winRate}%</span>
+                </div>
             </div>
         `;
 
