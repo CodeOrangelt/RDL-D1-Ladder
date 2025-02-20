@@ -107,11 +107,12 @@ class ProfileManager {
             if (!user) return;
 
             try {
+                // Get username from players collection
                 const playerDoc = await getDoc(doc(db, 'players', user.uid));
                 if (!playerDoc.exists()) return;
 
                 const username = playerDoc.data().username;
-                const eloRating = playerDoc.data().eloRating || 0;
+const eloRating = playerDoc.data().eloRating || 0;
 
                 // Determine rank based on ELO
                 if (eloRating >= 2100) {
@@ -128,10 +129,8 @@ class ProfileManager {
 
                 // Query matches
                 const [wonMatches, lostMatches] = await Promise.all([
-                    getDocs(query(collection(db, 'approvedMatches'), 
-                        where('winnerUsername', '==', username))),
-                    getDocs(query(collection(db, 'approvedMatches'), 
-                        where('loserUsername', '==', username)))
+                    getDocs(wonMatchesQuery),
+                    getDocs(lostMatchesQuery)
                 ]);
 
                 // Calculate stats
@@ -140,12 +139,14 @@ class ProfileManager {
                 this.stats.totalKills = 0;
                 this.stats.totalDeaths = 0;
 
+                // Calculate kills and deaths from won matches
                 wonMatches.forEach(match => {
                     const data = match.data();
                     this.stats.totalKills += parseInt(data.winnerScore || 0);
                     this.stats.totalDeaths += parseInt(data.loserScore || 0);
                 });
 
+                // Calculate kills and deaths from lost matches
                 lostMatches.forEach(match => {
                     const data = match.data();
                     this.stats.totalKills += parseInt(data.loserScore || 0);
@@ -157,7 +158,12 @@ class ProfileManager {
                 this.stats.winRate = totalGames > 0 ? 
                     ((this.stats.wins / totalGames) * 100).toFixed(1) : 0;
 
-                this.updateStatsDisplay();
+                // Update display
+                document.getElementById('stats-wins').textContent = this.stats.wins;
+                document.getElementById('stats-losses').textContent = this.stats.losses;
+                document.getElementById('stats-kills').textContent = this.stats.totalKills;
+                document.getElementById('stats-deaths').textContent = this.stats.totalDeaths;
+                document.getElementById('stats-winrate').textContent = `${this.stats.winRate}`;
 
             } catch (error) {
                 console.error('Error loading stats:', error);
