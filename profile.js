@@ -126,36 +126,30 @@ class ProfileManager {
                     this.stats.rank = 'Unranked';
                 }
 
-                // Query matches
-                const [wonMatches, lostMatches] = await Promise.all([
-                    getDocs(query(collection(db, 'approvedMatches'), 
-                        where('winnerUsername', '==', username))),
-                    getDocs(query(collection(db, 'approvedMatches'), 
-                        where('loserUsername', '==', username)))
-                ]);
-
-                // Calculate stats
-                this.stats.wins = wonMatches.size;
-                this.stats.losses = lostMatches.size;
-                this.stats.totalKills = 0;
-                this.stats.totalDeaths = 0;
-
-                wonMatches.forEach(match => {
-                    const data = match.data();
-                    this.stats.totalKills += parseInt(data.winnerScore || 0);
-                    this.stats.totalDeaths += parseInt(data.loserScore || 0);
-                });
-
-                lostMatches.forEach(match => {
-                    const data = match.data();
-                    this.stats.totalKills += parseInt(data.loserScore || 0);
-                    this.stats.totalDeaths += parseInt(data.winnerScore || 0);
-                });
-
-                // Calculate win rate
-                const totalGames = this.stats.wins + this.stats.losses;
-                this.stats.winRate = totalGames > 0 ? 
-                    ((this.stats.wins / totalGames) * 100).toFixed(1) : 0;
+                // Get player stats from new playerStats collection
+                const statsDoc = await getDoc(doc(db, 'playerStats', user.uid));
+                
+                if (statsDoc.exists()) {
+                    const statsData = statsDoc.data();
+                    this.stats = {
+                        ...this.stats,
+                        wins: statsData.wins || 0,
+                        losses: statsData.losses || 0,
+                        totalKills: statsData.totalKills || 0,
+                        totalDeaths: statsData.totalDeaths || 0,
+                        winRate: statsData.winRate || 0
+                    };
+                } else {
+                    // Create new stats document if it doesn't exist
+                    await setDoc(doc(db, 'playerStats', user.uid), {
+                        wins: 0,
+                        losses: 0,
+                        totalKills: 0,
+                        totalDeaths: 0,
+                        winRate: 0,
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
 
                 this.updateStatsDisplay();
 

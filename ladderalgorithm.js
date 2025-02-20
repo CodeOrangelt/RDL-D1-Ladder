@@ -248,3 +248,32 @@ async function updatePlayerElo(userId, oldElo, newElo) {
     // Check for promotion
     await PromotionHandler.checkPromotion(userId, newElo, oldElo);
 }
+
+async function updatePlayerStats(playerId, matchData, isWinner) {
+    const statsRef = doc(db, 'playerStats', playerId);
+    const statsDoc = await getDoc(statsRef);
+    let stats = statsDoc.exists() ? statsDoc.data() : {
+        wins: 0,
+        losses: 0,
+        totalKills: 0,
+        totalDeaths: 0,
+        winRate: 0
+    };
+
+    if (isWinner) {
+        stats.wins++;
+        stats.totalKills += parseInt(matchData.winnerScore || 0);
+        stats.totalDeaths += parseInt(matchData.loserScore || 0);
+    } else {
+        stats.losses++;
+        stats.totalKills += parseInt(matchData.loserScore || 0);
+        stats.totalDeaths += parseInt(matchData.winnerScore || 0);
+    }
+
+    // Calculate win rate
+    const totalGames = stats.wins + stats.losses;
+    stats.winRate = totalGames > 0 ? ((stats.wins / totalGames) * 100).toFixed(1) : 0;
+    stats.lastUpdated = new Date().toISOString();
+
+    await setDoc(statsRef, stats, { merge: true });
+}
