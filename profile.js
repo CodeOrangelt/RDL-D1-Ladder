@@ -111,64 +111,89 @@ class ProfileManager {
 
             try {
                 console.log('Loading stats for user:', user.uid);
-                const playerDoc = await getDoc(doc(db, 'players', user.uid));
-                if (!playerDoc.exists()) {
+                
+                // Add error handling and retry logic
+                let retries = 3;
+                let playerDoc;
+                
+                while (retries > 0) {
+                    try {
+                        playerDoc = await getDoc(doc(db, 'players', user.uid));
+                        break;
+                    } catch (error) {
+                        console.warn(`Attempt ${4-retries}/3 failed:`, error);
+                        retries--;
+                        if (retries === 0) throw error;
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+
+                if (!playerDoc || !playerDoc.exists()) {
                     console.log('Player document not found');
+                    this.updateStatsDisplay(); // Update with default values
                     return;
                 }
 
-                const username = playerDoc.data().username;
-                console.log('Username:', username);
+                const username = playerDoc.data()?.username;
+                if (!username) {
+                    console.error('Username not found in player document');
+                    return;
+                }
 
-                // Query approved matches
-                const wonMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('winnerUsername', '==', username)
-                );
-                const lostMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('loserUsername', '==', username)
-                );
-
-                const [wonMatches, lostMatches] = await Promise.all([
-                    getDocs(wonMatchesQuery),
-                    getDocs(lostMatchesQuery)
+                // Use transaction to ensure consistent reads
+                const [wonMatchesSnap, lostMatchesSnap] = await Promise.all([
+                    getDocs(query(
+                        collection(db, 'approvedMatches'),
+                        where('winnerUsername', '==', username)
+                    )).catch(err => {
+                        console.error('Error fetching won matches:', err);
+                        return { docs: [] };
+                    }),
+                    getDocs(query(
+                        collection(db, 'approvedMatches'),
+                        where('loserUsername', '==', username)
+                    )).catch(err => {
+                        console.error('Error fetching lost matches:', err);
+                        return { docs: [] };
+                    })
                 ]);
 
-                console.log('Won matches:', wonMatches.size);
-                console.log('Lost matches:', lostMatches.size);
+                // Calculate stats with null checks
+                const stats = {
+                    wins: wonMatchesSnap.docs?.length || 0,
+                    losses: lostMatchesSnap.docs?.length || 0,
+                    totalKills: 0,
+                    totalDeaths: 0
+                };
 
-                // Calculate stats
-                let totalKills = 0;
-                let totalDeaths = 0;
-
-                wonMatches.forEach(match => {
+                wonMatchesSnap.docs?.forEach(match => {
                     const data = match.data();
-                    totalKills += parseInt(data.winnerScore || 0);
-                    totalDeaths += parseInt(data.loserScore || 0);
+                    stats.totalKills += parseInt(data.winnerScore || '0');
+                    stats.totalDeaths += parseInt(data.loserScore || '0');
                 });
 
-                lostMatches.forEach(match => {
+                lostMatchesSnap.docs?.forEach(match => {
                     const data = match.data();
-                    totalKills += parseInt(data.loserScore || 0);
-                    totalDeaths += parseInt(data.winnerScore || 0);
+                    stats.totalKills += parseInt(data.loserScore || '0');
+                    stats.totalDeaths += parseInt(data.winnerScore || '0');
                 });
 
-                const wins = wonMatches.size;
-                const losses = lostMatches.size;
-                const winRate = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : 0;
+                stats.winRate = stats.wins + stats.losses > 0 
+                    ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(1) 
+                    : '0.0';
 
-                console.log('Stats calculated:', { wins, losses, totalKills, totalDeaths, winRate });
+                // Update instance stats
+                this.stats = {
+                    ...stats,
+                    rank: this.calculateRank(stats.winRate)
+                };
 
-                // Update display
-                document.getElementById('stats-wins').textContent = wins;
-                document.getElementById('stats-losses').textContent = losses;
-                document.getElementById('stats-kills').textContent = totalKills;
-                document.getElementById('stats-deaths').textContent = totalDeaths;
-                document.getElementById('stats-winrate').textContent = winRate;
+                this.updateStatsDisplay();
 
             } catch (error) {
                 console.error('Error loading stats:', error);
+                // Update UI with error state
+                this.updateStatsDisplay();
             }
         });
     }
