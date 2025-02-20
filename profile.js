@@ -24,27 +24,8 @@ class ProfileManager {
             winRate: 0,
             rank: 'Unranked'
         };
-        this.initializeStats();
         this.loadProfile();
         this.loadStats();
-    }
-
-    initializeStats() {
-        // Get all stat elements
-        this.statElements = {
-            wins: document.getElementById('stats-wins'),
-            losses: document.getElementById('stats-losses'),
-            kills: document.getElementById('stats-kills'),
-            deaths: document.getElementById('stats-deaths'),
-            winrate: document.getElementById('stats-winrate')
-        };
-
-        // Verify all elements exist
-        Object.entries(this.statElements).forEach(([key, element]) => {
-            if (!element) {
-                console.error(`Stats element not found: stats-${key}`);
-            }
-        });
     }
 
     setupEventListeners() {
@@ -127,27 +108,30 @@ class ProfileManager {
 
             try {
                 const playerDoc = await getDoc(doc(db, 'players', user.uid));
-                if (!playerDoc.exists()) {
-                    console.error('Player document not found');
-                    return;
-                }
+                if (!playerDoc.exists()) return;
 
                 const username = playerDoc.data().username;
-                console.log('Loading stats for user:', username); // Debug log
+                const eloRating = playerDoc.data().eloRating || 0;
 
-                // Query approved matches
-                const wonMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('winnerUsername', '==', username)
-                );
-                const lostMatchesQuery = query(
-                    collection(db, 'approvedMatches'),
-                    where('loserUsername', '==', username)
-                );
+                // Determine rank based on ELO
+                if (eloRating >= 2100) {
+                    this.stats.rank = 'Emerald';
+                } else if (eloRating >= 1800) {
+                    this.stats.rank = 'Gold';
+                } else if (eloRating >= 1600) {
+                    this.stats.rank = 'Silver';
+                } else if (eloRating >= 1400) {
+                    this.stats.rank = 'Bronze';
+                } else {
+                    this.stats.rank = 'Unranked';
+                }
 
+                // Query matches
                 const [wonMatches, lostMatches] = await Promise.all([
-                    getDocs(wonMatchesQuery),
-                    getDocs(lostMatchesQuery)
+                    getDocs(query(collection(db, 'approvedMatches'), 
+                        where('winnerUsername', '==', username))),
+                    getDocs(query(collection(db, 'approvedMatches'), 
+                        where('loserUsername', '==', username)))
                 ]);
 
                 // Calculate stats
@@ -156,7 +140,6 @@ class ProfileManager {
                 this.stats.totalKills = 0;
                 this.stats.totalDeaths = 0;
 
-                // Process matches
                 wonMatches.forEach(match => {
                     const data = match.data();
                     this.stats.totalKills += parseInt(data.winnerScore || 0);
@@ -174,14 +157,7 @@ class ProfileManager {
                 this.stats.winRate = totalGames > 0 ? 
                     ((this.stats.wins / totalGames) * 100).toFixed(1) : 0;
 
-                console.log('Updated stats:', this.stats); // Debug log
-
-                // Update display
-                if (this.statElements.wins) this.statElements.wins.textContent = this.stats.wins;
-                if (this.statElements.losses) this.statElements.losses.textContent = this.stats.losses;
-                if (this.statElements.kills) this.statElements.kills.textContent = this.stats.totalKills;
-                if (this.statElements.deaths) this.statElements.deaths.textContent = this.stats.totalDeaths;
-                if (this.statElements.winrate) this.statElements.winrate.textContent = this.stats.winRate;
+                this.updateStatsDisplay();
 
             } catch (error) {
                 console.error('Error loading stats:', error);
