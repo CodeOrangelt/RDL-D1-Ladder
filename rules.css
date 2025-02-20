@@ -207,7 +207,7 @@ accountbutton:hover {
 }
 
 .rule-image {
-    width: 400px;
+    width: 450px; /* Increased from previous size */
     height: auto;
     object-fit: cover;
 }
@@ -458,12 +458,13 @@ accountbutton:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
+    margin-top: 20px;
 }
 
 .download-icon {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
     transition: transform 0.3s ease;
 }
