@@ -99,6 +99,7 @@ class ProfileManager {
         if (!username) return;
 
         try {
+            // Get matches where player was winner or loser
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
@@ -108,10 +109,11 @@ class ProfileManager {
             // Calculate stats
             const wins = winnerMatches.size;
             const losses = loserMatches.size;
-            const matches = wins + losses;
+            const totalMatches = wins + losses;
             let totalKills = 0;
             let totalDeaths = 0;
 
+            // Sum up kills and deaths
             winnerMatches.forEach(doc => {
                 const match = doc.data();
                 totalKills += parseInt(match.winnerScore) || 0;
@@ -124,16 +126,23 @@ class ProfileManager {
                 totalDeaths += parseInt(match.winnerScore) || 0;
             });
 
-            // Update stats display
-            document.getElementById('stats-matches').textContent = matches;
-            document.getElementById('stats-wl').textContent = `${wins}/${losses}`;
-            document.getElementById('stats-kda').textContent = 
-                totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills;
-            document.getElementById('stats-winrate').textContent = 
-                matches > 0 ? `${((wins / matches) * 100).toFixed(1)}%` : '0%';
+            // Calculate KDA and win rate
+            const kda = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
+            const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0';
+
+            // Update DOM elements
+            document.getElementById('stats-matches').textContent = totalMatches;
+            document.getElementById('stats-wins').textContent = wins;
+            document.getElementById('stats-losses').textContent = losses;
+            document.getElementById('stats-kda').textContent = kda;
+            document.getElementById('stats-winrate').textContent = `${winRate}%`;
 
         } catch (error) {
             console.error('Error loading player stats:', error);
+            // Set default values on error
+            ['matches', 'wins', 'losses', 'kda', 'winrate'].forEach(stat => {
+                document.getElementById(`stats-${stat}`).textContent = '-';
+            });
         }
     }
 }
