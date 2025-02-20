@@ -331,7 +331,7 @@
 }
 
 .stat-label {
-    font-size: 28px; /* Increased from 20px */
+    font-size: 35px; /* Increased from 20px */
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     margin-right: 6px;
