@@ -26,6 +26,7 @@ body {
     width: 85%;
     margin: 20px auto;
     backdrop-filter: blur(10px);
+    overflow: visible; /* Allow content to flow outside */
 }
 
 .table-container {
@@ -229,6 +230,7 @@ accountbutton:hover {
     position: relative;
     opacity: 1;
     visibility: visible;
+    height: auto; /* Allow content to determine height */
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -237,6 +239,7 @@ accountbutton:hover {
     position: relative;
     min-height: 400px; /* Adjust based on your content */
     width: 100%;
+    overflow: visible; /* Allow content to flow outside */
 }
 
 .rules-section {
@@ -327,10 +330,11 @@ accountbutton:hover {
     border-radius: 8px;
     margin: 0 -30px; /* Extend beyond container */
     padding: 0 30px;
+    width: calc(100% + 60px); /* Account for negative margins */
 }
 
 .content.active {
-    max-height: 2000px; /* Increased for longer content */
+    max-height: none; /* Remove fixed height limitation */
     padding: 20px 30px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
