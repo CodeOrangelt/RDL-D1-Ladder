@@ -486,4 +486,6 @@ accountbutton:hover {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin-top: 10px; /* Add space between icon and text */
+    text-align: center; /* Ensure text is centered */
 }
