@@ -104,54 +104,68 @@ class ProfileManager {
 
     async loadStats() {
         onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
+            if (!user) {
+                console.log('No user logged in');
+                return;
+            }
 
             try {
+                console.log('Loading stats for user:', user.uid);
                 const playerDoc = await getDoc(doc(db, 'players', user.uid));
-                if (!playerDoc.exists()) return;
+                if (!playerDoc.exists()) {
+                    console.log('Player document not found');
+                    return;
+                }
 
                 const username = playerDoc.data().username;
-                const eloRating = playerDoc.data().eloRating || 0;
+                console.log('Username:', username);
 
-                // Determine rank based on ELO
-                if (eloRating >= 2100) {
-                    this.stats.rank = 'Emerald';
-                } else if (eloRating >= 1800) {
-                    this.stats.rank = 'Gold';
-                } else if (eloRating >= 1600) {
-                    this.stats.rank = 'Silver';
-                } else if (eloRating >= 1400) {
-                    this.stats.rank = 'Bronze';
-                } else {
-                    this.stats.rank = 'Unranked';
-                }
+                // Query approved matches
+                const wonMatchesQuery = query(
+                    collection(db, 'approvedMatches'),
+                    where('winnerUsername', '==', username)
+                );
+                const lostMatchesQuery = query(
+                    collection(db, 'approvedMatches'),
+                    where('loserUsername', '==', username)
+                );
 
-                // Get player stats from new playerStats collection
-                const statsDoc = await getDoc(doc(db, 'playerStats', user.uid));
-                
-                if (statsDoc.exists()) {
-                    const statsData = statsDoc.data();
-                    this.stats = {
-                        ...this.stats,
-                        wins: statsData.wins || 0,
-                        losses: statsData.losses || 0,
-                        totalKills: statsData.totalKills || 0,
-                        totalDeaths: statsData.totalDeaths || 0,
-                        winRate: statsData.winRate || 0
-                    };
-                } else {
-                    // Create new stats document if it doesn't exist
-                    await setDoc(doc(db, 'playerStats', user.uid), {
-                        wins: 0,
-                        losses: 0,
-                        totalKills: 0,
-                        totalDeaths: 0,
-                        winRate: 0,
-                        lastUpdated: new Date().toISOString()
-                    });
-                }
+                const [wonMatches, lostMatches] = await Promise.all([
+                    getDocs(wonMatchesQuery),
+                    getDocs(lostMatchesQuery)
+                ]);
 
-                this.updateStatsDisplay();
+                console.log('Won matches:', wonMatches.size);
+                console.log('Lost matches:', lostMatches.size);
+
+                // Calculate stats
+                let totalKills = 0;
+                let totalDeaths = 0;
+
+                wonMatches.forEach(match => {
+                    const data = match.data();
+                    totalKills += parseInt(data.winnerScore || 0);
+                    totalDeaths += parseInt(data.loserScore || 0);
+                });
+
+                lostMatches.forEach(match => {
+                    const data = match.data();
+                    totalKills += parseInt(data.loserScore || 0);
+                    totalDeaths += parseInt(data.winnerScore || 0);
+                });
+
+                const wins = wonMatches.size;
+                const losses = lostMatches.size;
+                const winRate = wins + losses > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : 0;
+
+                console.log('Stats calculated:', { wins, losses, totalKills, totalDeaths, winRate });
+
+                // Update display
+                document.getElementById('stats-wins').textContent = wins;
+                document.getElementById('stats-losses').textContent = losses;
+                document.getElementById('stats-kills').textContent = totalKills;
+                document.getElementById('stats-deaths').textContent = totalDeaths;
+                document.getElementById('stats-winrate').textContent = winRate;
 
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -197,5 +211,6 @@ class ProfileManager {
 
 // Initialize profile manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new ProfileManager();
+    console.log('Initializing ProfileManager');
+    const profileManager = new ProfileManager();
 });
