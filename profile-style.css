@@ -330,7 +330,6 @@
     flex-direction: column;
     align-items: center;
     gap: 50px; /* Reduced gap */
-    padding: 5px; /* Reduced padding */
 }
 
 .stat-label {
@@ -343,7 +342,6 @@
 #stats-wins, #stats-losses, #stats-kills, #stats-deaths, #stats-winrate {
     font-size: 15px; /* Decreased from 24px */
     font-weight: bold;
-    margin-top: 2px; /* Added small top margin again */
 }
 
 /* ELO-based stat label colors */
