@@ -306,11 +306,11 @@
 }
 
 .stats-section {
-    width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 10px 20px;
+    gap: 15px;
+    padding: 5px 0;
     margin: 10px 0;
 }
 
@@ -321,6 +321,25 @@
     flex-wrap: wrap;
     gap: 1rem;
     padding: 0.5rem;
+}
+
+.stat-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    padding: 0;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 12px;
+}
+
+.stat-value {
+    color: #fff;
+    font-size: 12px;
+    font-weight: normal;
 }
 
 .stat-item {
@@ -434,4 +453,13 @@
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+#stats-matches,
+#stats-wins,
+#stats-losses,
+#stats-kda,
+#stats-winrate {
+    color: #fff;
+    font-size: 12px;
 }
