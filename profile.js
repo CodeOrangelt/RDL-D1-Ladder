@@ -24,8 +24,27 @@ class ProfileManager {
             winRate: 0,
             rank: 'Unranked'
         };
+        this.initializeStats();
         this.loadProfile();
         this.loadStats();
+    }
+
+    initializeStats() {
+        // Get all stat elements
+        this.statElements = {
+            wins: document.getElementById('stats-wins'),
+            losses: document.getElementById('stats-losses'),
+            kills: document.getElementById('stats-kills'),
+            deaths: document.getElementById('stats-deaths'),
+            winrate: document.getElementById('stats-winrate')
+        };
+
+        // Verify all elements exist
+        Object.entries(this.statElements).forEach(([key, element]) => {
+            if (!element) {
+                console.error(`Stats element not found: stats-${key}`);
+            }
+        });
     }
 
     setupEventListeners() {
@@ -107,13 +126,16 @@ class ProfileManager {
             if (!user) return;
 
             try {
-                // Get username from players collection
                 const playerDoc = await getDoc(doc(db, 'players', user.uid));
-                if (!playerDoc.exists()) return;
+                if (!playerDoc.exists()) {
+                    console.error('Player document not found');
+                    return;
+                }
 
                 const username = playerDoc.data().username;
+                console.log('Loading stats for user:', username); // Debug log
 
-                // Query approved matches where user was winner or loser
+                // Query approved matches
                 const wonMatchesQuery = query(
                     collection(db, 'approvedMatches'),
                     where('winnerUsername', '==', username)
@@ -134,14 +156,13 @@ class ProfileManager {
                 this.stats.totalKills = 0;
                 this.stats.totalDeaths = 0;
 
-                // Calculate kills and deaths from won matches
+                // Process matches
                 wonMatches.forEach(match => {
                     const data = match.data();
                     this.stats.totalKills += parseInt(data.winnerScore || 0);
                     this.stats.totalDeaths += parseInt(data.loserScore || 0);
                 });
 
-                // Calculate kills and deaths from lost matches
                 lostMatches.forEach(match => {
                     const data = match.data();
                     this.stats.totalKills += parseInt(data.loserScore || 0);
@@ -153,12 +174,14 @@ class ProfileManager {
                 this.stats.winRate = totalGames > 0 ? 
                     ((this.stats.wins / totalGames) * 100).toFixed(1) : 0;
 
+                console.log('Updated stats:', this.stats); // Debug log
+
                 // Update display
-                document.getElementById('stats-wins').textContent = this.stats.wins;
-                document.getElementById('stats-losses').textContent = this.stats.losses;
-                document.getElementById('stats-kills').textContent = this.stats.totalKills;
-                document.getElementById('stats-deaths').textContent = this.stats.totalDeaths;
-                document.getElementById('stats-winrate').textContent = `${this.stats.winRate}`;
+                if (this.statElements.wins) this.statElements.wins.textContent = this.stats.wins;
+                if (this.statElements.losses) this.statElements.losses.textContent = this.stats.losses;
+                if (this.statElements.kills) this.statElements.kills.textContent = this.stats.totalKills;
+                if (this.statElements.deaths) this.statElements.deaths.textContent = this.stats.totalDeaths;
+                if (this.statElements.winrate) this.statElements.winrate.textContent = this.stats.winRate;
 
             } catch (error) {
                 console.error('Error loading stats:', error);
