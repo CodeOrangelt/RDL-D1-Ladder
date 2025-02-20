@@ -326,11 +326,11 @@ accountbutton:hover {
     width: 100%;
     background: rgba(0, 0, 0, 0.95);
     border-radius: 8px;
-    padding: 20px;
+    padding: 30px;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    min-height: 300px; /* Added minimum height */
+    min-height: 500px; /* Increased from 300px */
 }
 
 .content.active {
@@ -342,13 +342,13 @@ accountbutton:hover {
 
 .game-settings-list {
     list-style: none;
-    padding: 0;
+    padding: 20px;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    max-height: 70vh; /* Increased from 60vh */
-    min-height: 250px; /* Added minimum height */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    max-height: 80vh;
+    min-height: 400px; /* Increased from 250px */
     overflow-y: auto;
 }
 
@@ -367,19 +367,24 @@ accountbutton:hover {
 }
 
 .game-settings-list li {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px 15px;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 15px 20px;
+    border-radius: 8px;
     text-align: center;
     transition: background 0.3s ease;
+    color: white;
+    font-size: 15px;
+    line-height: 1.4;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-settings-list li:first-child {
     grid-column: 1 / -1;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     font-weight: 600;
-    padding: 15px;
-    margin-bottom: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    font-size: 16px;
 }
 
 /* Hide image when settings are active */
