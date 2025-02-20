@@ -335,7 +335,7 @@
 }
 
 .stat-label {
-    font-size: 36px; /* Increased from 28px (30% larger) */
+    font-size: 30px; /* Increased from 28px (30% larger) */
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
