@@ -112,22 +112,17 @@ class ProfileManager {
                 if (!playerDoc.exists()) return;
 
                 const username = playerDoc.data().username;
-const eloRating = playerDoc.data().eloRating || 0;
 
-                // Determine rank based on ELO
-                if (eloRating >= 2100) {
-                    this.stats.rank = 'Emerald';
-                } else if (eloRating >= 1800) {
-                    this.stats.rank = 'Gold';
-                } else if (eloRating >= 1600) {
-                    this.stats.rank = 'Silver';
-                } else if (eloRating >= 1400) {
-                    this.stats.rank = 'Bronze';
-                } else {
-                    this.stats.rank = 'Unranked';
-                }
+                // Query approved matches where user was winner or loser
+                const wonMatchesQuery = query(
+                    collection(db, 'approvedMatches'),
+                    where('winnerUsername', '==', username)
+                );
+                const lostMatchesQuery = query(
+                    collection(db, 'approvedMatches'),
+                    where('loserUsername', '==', username)
+                );
 
-                // Query matches
                 const [wonMatches, lostMatches] = await Promise.all([
                     getDocs(wonMatchesQuery),
                     getDocs(lostMatchesQuery)
