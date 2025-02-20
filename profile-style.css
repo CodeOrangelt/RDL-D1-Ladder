@@ -329,7 +329,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* Reduced from 50px to bring numbers closer to letters */
+    gap: 10px; /* Reduced from 50px to bring numbers closer to letters */
 }
 
 .stat-label {
