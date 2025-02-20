@@ -243,6 +243,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         const collapsible = document.querySelector('.collapsible');
         const content = document.querySelector('.content');
+        const regularContent = document.querySelector('.regular-content');
+        const ruleSection = document.querySelector('.rules-section');
+
+        collapsible.addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            if (!this.classList.contains('active')) {
+                // Show regular content
+                content.style.position = 'absolute';
+                content.style.opacity = '0';
+                content.style.visibility = 'hidden';
+                regularContent.style.position = 'relative';
+                regularContent.style.opacity = '1';
+                regularContent.style.visibility = 'visible';
+            } else {
+                // Show settings content
+                content.style.position = 'relative';
+                content.style.opacity = '1';
+                content.style.visibility = 'visible';
+                regularContent.style.position = 'absolute';
+                regularContent.style.opacity = '0';
                 regularContent.style.visibility = 'hidden';
             }
         });
@@ -265,5 +286,34 @@
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching
+        const ruleButtons = document.querySelectorAll('.rule-button');
+        const ruleContents = document.querySelectorAll('.rule-content');
+        
+        ruleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-content');
+                
+                ruleButtons.forEach(btn => btn.classList.remove('active'));
+                ruleContents.forEach(content => content.classList.remove('active'));
+                
+                button.classList.add('active');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // Settings toggle
+        const collapsible = document.querySelector('.collapsible');
+        const content = document.querySelector('.content');
+        const regularContent = document.querySelector('.regular-content');
+
+        collapsible.addEventListener('click', function() {
+            this.classList.toggle('active');
+            content.classList.toggle('active');
+        });
+    });
+    </script>
 </body>
 </html>

@@ -213,27 +213,28 @@ accountbutton:hover {
 }
 
 .rule-content {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
+    opacity: 0;
+    visibility: hidden;
     display: flex;
     gap: 30px;
     align-items: flex-start;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .rule-content.active {
     position: relative;
     opacity: 1;
     visibility: visible;
-    height: auto; /* Allow content to determine height */
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Add container for content */
 .content-container {
     position: relative;
-    min-height: 400px; /* Adjust based on your content */
     width: 100%;
-    overflow: visible; /* Allow content to flow outside */
+    min-height: 400px;
 }
 
 .rules-section {
@@ -322,7 +323,7 @@ accountbutton:hover {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    width: 100%;
     background: rgba(0, 0, 0, 0.95);
     border-radius: 8px;
     padding: 20px;
