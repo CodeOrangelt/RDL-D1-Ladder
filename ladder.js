@@ -3,7 +3,9 @@ import {
     getDocs,
     deleteDoc,
     doc,
-    getDoc
+    getDoc,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -88,7 +90,7 @@ async function updateLadderDisplay(ladderData) {
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
-    // Update the table header first
+    // Update the table header
     const thead = document.querySelector('#ladder thead tr');
     thead.innerHTML = `
         <th>Rank</th>
@@ -100,7 +102,6 @@ async function updateLadderDisplay(ladderData) {
         <th>Win Rate</th>
     `;
     
-    // Fetch player stats for each player
     for (const player of ladderData) {
         const row = document.createElement('tr');
         
@@ -108,13 +109,13 @@ async function updateLadderDisplay(ladderData) {
         const rankCell = document.createElement('td');
         rankCell.textContent = player.position;
         
-        // Create username cell with existing styling
+        // Create username cell with styling
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
         usernameLink.textContent = player.username;
         
-        // Set ELO-based colors (keeping existing color logic)
+        // Set ELO-based colors
         const elo = parseFloat(player.elo) || 0;
         if (elo >= 2000) {
             usernameLink.style.color = '#50C878';
@@ -135,16 +136,38 @@ async function updateLadderDisplay(ladderData) {
         usernameLink.style.textDecoration = 'none';
         usernameCell.appendChild(usernameLink);
 
-        // Get player stats
-        const statsRef = doc(db, 'playerStats', player.id);
-        const statsDoc = await getDoc(statsRef);
-        const stats = statsDoc.exists() ? statsDoc.data() : {
-            wins: 0,
-            losses: 0,
+        // Get match history for the player
+        const approvedMatchesRef = collection(db, 'approvedMatches');
+        const [winnerMatches, loserMatches] = await Promise.all([
+            getDocs(query(approvedMatchesRef, where('winnerUsername', '==', player.username))),
+            getDocs(query(approvedMatchesRef, where('loserUsername', '==', player.username)))
+        ]);
+
+        // Calculate stats from matches
+        let stats = {
+            wins: winnerMatches.size,
+            losses: loserMatches.size,
             totalKills: 0,
             totalDeaths: 0,
             winRate: 0
         };
+
+        // Sum up kills and deaths
+        winnerMatches.forEach(doc => {
+            const match = doc.data();
+            stats.totalKills += match.winnerKills || 0;
+            stats.totalDeaths += match.winnerDeaths || 0;
+        });
+
+        loserMatches.forEach(doc => {
+            const match = doc.data();
+            stats.totalKills += match.loserKills || 0;
+            stats.totalDeaths += match.loserDeaths || 0;
+        });
+
+        // Calculate win rate
+        const totalMatches = stats.wins + stats.losses;
+        stats.winRate = totalMatches > 0 ? ((stats.wins / totalMatches) * 100).toFixed(2) : 0;
 
         // Create stats cells
         const winsCell = document.createElement('td');
