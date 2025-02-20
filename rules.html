@@ -59,6 +59,44 @@
                         <p class="rules-text">
                             With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players abstaining from choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
                         </p>
+                        <h2 class="hero-title">3. Game Settings</h2>
+                        <p class="rules-text">
+                            To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
+                        </p>
+                        <button class="collapsible">View Game Settings</button>
+                        <div class="content">
+                            <ul class="game-settings-list">
+                                <li>· Game Settings: Matches must be played with the standard game settings. Much like the Observatory the settings.</li>
+                                <li>o Do NOT set "Open Game"</li>
+                                <li>o Maximum Observers at least 4</li>
+                                <li>o Broadcast Delay 15 Seconds OFF (I don't think it works, if it does please let me know)</li>
+                                <li>o Minimal Observer Info OFF</li>
+                                <li>o Difficulty MAX (Insane)</li>
+                                <li>o Reactor life 50 MINUTES</li>
+                                <li>o Max time 0 MINUTES</li>
+                                <li>o Kill goal 0 KILLS</li>
+                                <li>o Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7 players</li>
+                                <li>o Extra secondaries NONE</li>
+                                <li>o Cap secondaries UNCAPPED</li>
+                                <li>o Low vulcan ammo OFF</li>
+                                <li>o Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</li>
+                                <li>o Spawn style 2 second INVULN</li>
+                                <li>o Vulcan ammo style ORIGINAL (DEPLETING)</li>
+                                <li>o All players blue ON for 2 players, OFF for 3-7 players</li>
+                                <li>o Allow colored dynamic lighting OFF</li>
+                                <li>o Allow players to choose their colors ON (observers see this, even when all players are blue)</li>
+                                <li>o Packets per second 40 for 2 players, 30 for 3 or higher (can be reduced if there are severe connection issues, but no lower than 20)</li>
+                                <li>o Track this game ON</li>
+                                <li>o Retro protocol ON</li>
+                                <li>o Show all players on automap OFF</li>
+                                <li>o Bright player ships ON</li>
+                                <li>o Show enemy names on HUD OFF</li>
+                                <li>o Homing update rate 25</li>
+                                <li>o DXX-Retro homing speed OFF</li>
+                                <li>o Allow custom models and textures ON or OFF (Both players must agree on this setting)</li>
+                                <li>o Reduced flash ON or OFF (Both players must agree on this setting)</li>
+                            </ul>
+                        </div>
                     </section>
                     <img src="images/1v1.png" alt="Solo Rules" class="rule-image">
                 </div>
@@ -115,6 +153,20 @@
                 $('#' + $(this).data('content')).addClass('active');
             });
         });
+    </script>
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
     </script>
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
