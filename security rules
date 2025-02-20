@@ -37,6 +37,13 @@ function isValidDemotion(currentData, newData) {
          currentData.eloRating is number;
 }
 
+   // Player Stats collection
+   match /playerStats/{userId} {
+    allow read: if true;
+    allow write: if isSignedIn() && 
+      (request.auth.uid == userId || isAdmin());
+  }
+
 service cloud.firestore {
   match /databases/{database}/documents {
     // Players collection - Used in ladderalgorithm.js and ladder.js
