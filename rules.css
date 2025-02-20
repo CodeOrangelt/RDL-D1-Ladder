@@ -464,8 +464,8 @@ accountbutton:hover {
 }
 
 .download-icon {
-    width: 32px;
-    height: 32px;
+    width: 150px;
+    height: 150px;
     cursor: pointer;
 }
 
@@ -474,5 +474,5 @@ accountbutton:hover {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 5px;
+    margin-top: 15px;
 }
