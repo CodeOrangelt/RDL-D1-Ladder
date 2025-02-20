@@ -306,10 +306,14 @@
 }
 
 .stats-section {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 15px 30px;
     margin: 10px 0;
-    padding: 10px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
+    min-width: 300px;
 }
 
 .stats-container {
@@ -317,6 +321,25 @@
     justify-content: space-around;
     align-items: center;
     color: white;
+}
+
+.stat-item {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    color: white;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 4px;
+}
+
+#stats-wins, #stats-losses, #stats-kills, #stats-deaths, #stats-winrate {
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .stat-item {
@@ -332,9 +355,4 @@
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
-}
-
-#stats-wins, #stats-losses, #stats-kills, #stats-deaths, #stats-winrate {
-    font-size: 16px;
-    font-weight: bold;
 }
