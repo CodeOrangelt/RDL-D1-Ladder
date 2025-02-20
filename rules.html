@@ -223,26 +223,26 @@
         const collapsible = document.querySelector('.collapsible');
         const content = document.querySelector('.content');
         const regularContent = document.querySelector('.regular-content');
-        const ruleSection = document.querySelector('.rules-section');
-
+        
         collapsible.addEventListener('click', function() {
             this.classList.toggle('active');
+            content.classList.toggle('active');
             
-            if (!this.classList.contains('active')) {
-                // Show regular content
-                content.style.position = 'absolute';
-                content.style.opacity = '0';
-                content.style.visibility = 'hidden';
-                regularContent.style.position = 'relative';
-                regularContent.style.opacity = '1';
-                regularContent.style.visibility = 'visible';
-            } else {
-                // Show settings content
-                content.style.position = 'relative';
-                content.style.opacity = '1';
-                content.style.visibility = 'visible';
-                regularContent.style.position = 'absolute';
+            // Toggle regular content visibility
+            if (content.classList.contains('active')) {
                 regularContent.style.opacity = '0';
+                regularContent.style.pointerEvents = 'none';
+            } else {
+                regularContent.style.opacity = '1';
+                regularContent.style.pointerEvents = 'auto';
+            }
+        });
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsible = document.querySelector('.collapsible');
+        const content = document.querySelector('.content');
                 regularContent.style.visibility = 'hidden';
             }
         });
