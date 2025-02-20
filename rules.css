@@ -278,23 +278,30 @@ accountbutton:hover {
     }
 }
 
+/* Game Settings specific styles */
 .collapsible {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15));
     color: white;
     cursor: pointer;
-    padding: 12px 20px;
+    padding: 15px 25px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
     text-align: left;
     outline: none;
-    font-size: 14px;
-    transition: 0.3s;
-    margin: 10px 0;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    margin: 15px 0;
     width: 100%;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .collapsible:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.2));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .collapsible:after {
@@ -303,36 +310,78 @@ accountbutton:hover {
     font-weight: bold;
     float: right;
     margin-left: 5px;
+    font-size: 18px;
+    transition: transform 0.3s ease;
 }
 
 .collapsible.active:after {
     content: "\2212";
+    transform: rotate(180deg);
 }
 
 .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.5s ease-out;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin: 0 -30px; /* Extend beyond container */
+    padding: 0 30px;
 }
 
 .content.active {
-    max-height: 1000px; /* Adjust this value based on content height */
-    padding: 20px;
+    max-height: 2000px; /* Increased for longer content */
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-settings-list {
-    display: block;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
     margin: 0;
-    padding: 0 20px;
-    color: white;
+    padding: 0;
     list-style-type: none;
 }
 
 .game-settings-list li {
-    margin: 10px 0;
-    display: block;
-    text-align: left;
-    line-height: 1.4;
+    margin: 0;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+}
+
+.game-settings-list li:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+/* Category headers in settings */
+.game-settings-list li:first-child {
+    grid-column: 1 / -1;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15));
+    font-weight: 600;
+    font-size: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .content {
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+    
+    .content.active {
+        padding: 15px;
+    }
+    
+    .game-settings-list {
+        grid-template-columns: 1fr;
+    }
 }
