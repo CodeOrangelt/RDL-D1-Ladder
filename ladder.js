@@ -90,15 +90,15 @@ async function updateLadderDisplay(ladderData) {
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
-    // Update the table header
+    // Update the table header with new columns
     const thead = document.querySelector('#ladder thead tr');
     thead.innerHTML = `
         <th>Rank</th>
         <th>Username</th>
+        <th>Matches</th>
         <th>Wins</th>
         <th>Losses</th>
-        <th>Kills</th>
-        <th>Deaths</th>
+        <th>KDA</th>
         <th>Win Rate</th>
     `;
     
@@ -149,49 +149,56 @@ async function updateLadderDisplay(ladderData) {
             losses: loserMatches.size,
             totalKills: 0,
             totalDeaths: 0,
+            totalMatches: winnerMatches.size + loserMatches.size,
+            kda: 0,
             winRate: 0
         };
 
-        // Sum up kills and deaths
+        // Calculate kills and deaths from matches
         winnerMatches.forEach(doc => {
             const match = doc.data();
-            stats.totalKills += match.winnerKills || 0;
-            stats.totalDeaths += match.winnerDeaths || 0;
+            stats.totalKills += parseInt(match.winnerScore) || 0;
+            stats.totalDeaths += parseInt(match.loserScore) || 0;
         });
 
         loserMatches.forEach(doc => {
             const match = doc.data();
-            stats.totalKills += match.loserKills || 0;
-            stats.totalDeaths += match.loserDeaths || 0;
+            stats.totalKills += parseInt(match.loserScore) || 0;
+            stats.totalDeaths += parseInt(match.winnerScore) || 0;
         });
 
-        // Calculate win rate
-        const totalMatches = stats.wins + stats.losses;
-        stats.winRate = totalMatches > 0 ? ((stats.wins / totalMatches) * 100).toFixed(2) : 0;
+        // Calculate KDA ratio
+        stats.kda = stats.totalDeaths > 0 ? 
+            (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+            stats.totalKills;
 
-        // Create stats cells
+        // Calculate win rate
+        stats.winRate = stats.totalMatches > 0 ? 
+            ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+
+        // Create cells with new stats
+        const matchesCell = document.createElement('td');
+        matchesCell.textContent = stats.totalMatches;
+
         const winsCell = document.createElement('td');
-        winsCell.textContent = stats.wins || 0;
+        winsCell.textContent = stats.wins;
         
         const lossesCell = document.createElement('td');
-        lossesCell.textContent = stats.losses || 0;
+        lossesCell.textContent = stats.losses;
         
-        const killsCell = document.createElement('td');
-        killsCell.textContent = stats.totalKills || 0;
-        
-        const deathsCell = document.createElement('td');
-        deathsCell.textContent = stats.totalDeaths || 0;
+        const kdaCell = document.createElement('td');
+        kdaCell.textContent = stats.kda;
         
         const winRateCell = document.createElement('td');
-        winRateCell.textContent = `${stats.winRate || 0}%`;
+        winRateCell.textContent = `${stats.winRate}%`;
 
         // Add all cells to row
         row.appendChild(rankCell);
         row.appendChild(usernameCell);
+        row.appendChild(matchesCell);
         row.appendChild(winsCell);
         row.appendChild(lossesCell);
-        row.appendChild(killsCell);
-        row.appendChild(deathsCell);
+        row.appendChild(kdaCell);
         row.appendChild(winRateCell);
         
         tbody.appendChild(row);
