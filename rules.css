@@ -463,14 +463,14 @@ accountbutton:hover {
 }
 
 .download-icon {
-    width: 24px;
-    height: 24px;
+    width: 256px;
+    height: 256px;
     cursor: pointer;
     transition: transform 0.3s ease;
 }
 
 .download-icon:hover {
-    transform: translateY(-2px);
+    transform: translateY(-8px);
 }
 
 .download-text {
