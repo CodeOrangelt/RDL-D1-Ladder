@@ -99,7 +99,6 @@ class ProfileManager {
         if (!username) return;
 
         try {
-            // Get match history for the player
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
@@ -107,64 +106,34 @@ class ProfileManager {
             ]);
 
             // Calculate stats
-            let stats = {
-                wins: winnerMatches.size,
-                losses: loserMatches.size,
-                totalKills: 0,
-                totalDeaths: 0,
-                totalMatches: winnerMatches.size + loserMatches.size,
-                kda: 0,
-                winRate: 0
-            };
+            const wins = winnerMatches.size;
+            const losses = loserMatches.size;
+            const matches = wins + losses;
+            let totalKills = 0;
+            let totalDeaths = 0;
 
-            // Calculate kills and deaths
             winnerMatches.forEach(doc => {
                 const match = doc.data();
-                stats.totalKills += parseInt(match.winnerScore) || 0;
-                stats.totalDeaths += parseInt(match.loserScore) || 0;
+                totalKills += parseInt(match.winnerScore) || 0;
+                totalDeaths += parseInt(match.loserScore) || 0;
             });
 
             loserMatches.forEach(doc => {
                 const match = doc.data();
-                stats.totalKills += parseInt(match.loserScore) || 0;
-                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+                totalKills += parseInt(match.loserScore) || 0;
+                totalDeaths += parseInt(match.winnerScore) || 0;
             });
 
-            // Calculate KDA and win rate
-            stats.kda = stats.totalDeaths > 0 ? 
-                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
-                stats.totalKills;
-            stats.winRate = stats.totalMatches > 0 ? 
-                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
-
             // Update stats display
-            this.statsContainer.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <h3>Matches</h3>
-                        <p>${stats.totalMatches}</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Wins</h3>
-                        <p>${stats.wins}</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Losses</h3>
-                        <p>${stats.losses}</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>KDA</h3>
-                        <p>${stats.kda}</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Win Rate</h3>
-                        <p>${stats.winRate}%</p>
-                    </div>
-                </div>
-            `;
+            document.getElementById('stats-matches').textContent = matches;
+            document.getElementById('stats-wl').textContent = `${wins}/${losses}`;
+            document.getElementById('stats-kda').textContent = 
+                totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills;
+            document.getElementById('stats-winrate').textContent = 
+                matches > 0 ? `${((wins / matches) * 100).toFixed(1)}%` : '0%';
+
         } catch (error) {
             console.error('Error loading player stats:', error);
-            this.statsContainer.innerHTML = '<p class="error">Error loading stats</p>';
         }
     }
 }
