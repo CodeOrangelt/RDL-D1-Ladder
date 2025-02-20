@@ -246,6 +246,7 @@ accountbutton:hover {
     margin-bottom: 2rem;
     flex: 1;
     position: relative; /* Add this to contain absolute positioned content */
+    width: 100%;
 }
 
 .rules-section:last-child {
@@ -335,21 +336,19 @@ accountbutton:hover {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
     z-index: 10;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    background: rgba(0, 0, 0, 0.95);
+    padding: 20px;
 }
 
 .content.active {
     height: auto;
     opacity: 1;
     visibility: visible;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.content.active {
-    max-height: none; /* Remove fixed height limitation */
     padding: 20px 30px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
 }
 
 .game-settings-list {
@@ -359,6 +358,10 @@ accountbutton:hover {
     margin: 0;
     padding: 0;
     list-style-type: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: white;
 }
 
 .game-settings-list li {
@@ -370,6 +373,8 @@ accountbutton:hover {
     font-size: 14px;
     line-height: 1.5;
     transition: all 0.3s ease;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-settings-list li:hover {
@@ -413,6 +418,7 @@ accountbutton:hover {
     cursor: pointer;
     padding: 5px 10px;
     transition: all 0.3s ease;
+    padding: 5px;
 }
 
 .close-settings:hover {
@@ -422,4 +428,7 @@ accountbutton:hover {
 
 .regular-content {
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    position: relative;
+    opacity: 1;
+    visibility: visible;
 }
