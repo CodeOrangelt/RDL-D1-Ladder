@@ -188,16 +188,17 @@ class ProfileViewer {
             container.classList.add('elo-unranked');
         }
 
-        // Always use default profile picture
+        // Update all profile fields
+        document.getElementById('nickname').textContent = data.username;
+        document.getElementById('motto-view').textContent = data.motto || 'No motto set';
+        document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not set';
+        document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not set';
+
+        // Update profile image
         const profilePreview = document.getElementById('profile-preview');
         if (profilePreview) {
             profilePreview.src = 'images/shieldorb.png';
         }
-
-        // ...existing code...
-        document.getElementById('nickname').textContent = data.username;
-        document.getElementById('motto-view').textContent = data.motto || 'No motto set';
-        // ...rest of the display logic...
 
         // Check if current user is the profile owner
         const currentUser = auth.currentUser;
