@@ -13,11 +13,17 @@ function isVerifiedUser() {
   return request.auth != null;
 }
 
+// Update isMatchParticipant function to fix typo and add winner check
 function isMatchParticipant(matchData) {
   return request.auth != null && (
-    matchData.wwinnerEmail == request.auth.token.email ||
+    matchData.winnerEmail == request.auth.token.email ||
     matchData.loserEmail == request.auth.token.email
   );
+}
+
+function isMatchWinner(matchData) {
+  return request.auth != null && 
+    matchData.winnerEmail == request.auth.token.email;
 }
 
 function isValidEloUpdate(currentData, newData) {
@@ -77,8 +83,9 @@ service cloud.firestore {
                    request.resource.data.keys().hasAll([
                      'winnerScore', 'winnerComment', 'approved',
                      'approvedAt', 'approvedBy'
-                   ]);
-      allow update: if isAdmin() || isMatchParticipant(resource.data);
+                   ]) && 
+                   request.auth.token.email == request.resource.data.winnerEmail;
+      allow update: if isMatchParticipant(resource.data);
       allow delete: if false;  // Keep match history immutable
     }
 

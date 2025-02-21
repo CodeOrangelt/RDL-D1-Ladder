@@ -101,12 +101,6 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             throw new Error('You must be logged in to approve matches');
         }
 
-        // Verify admin status
-        const adminStatus = await isAdmin(currentUser.email);
-        if (!adminStatus) {
-            throw new Error('Admin privileges required to approve matches');
-        }
-
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
@@ -116,10 +110,17 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         const reportData = reportSnapshot.data();
         
+        // Check if current user is the winner
+        if (currentUser.email !== reportData.winnerEmail) {
+            throw new Error('Only the winner can approve matches');
+        }
+
         // Get players with complete error handling
         const [winnerQuery, loserQuery] = await Promise.all([
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
+            getDocs(query(collection(db, 'players'), 
+                where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'players'), 
+                where('username', '==', reportData.loserUsername)))
         ]);
 
         if (winnerQuery.empty || loserQuery.empty) {
