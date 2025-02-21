@@ -51,28 +51,35 @@ export async function updateEloRatings(winner, loser, matchId) {
             loser.eloRating || 1200
         );
 
-        // Create batch with all required fields per security rules
+        // Create batch
         const batch = writeBatch(db);
 
-        // Winner update must include all required fields
+        // Winner update with ONLY the fields allowed by security rules
         const winnerUpdate = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: winner.position || 1,
-            matchId: matchId // Required by security rules
+            position: winner.position || 1
         };
 
-        // Loser update must include all required fields
+        // Loser update with ONLY the fields allowed by security rules
         const loserUpdate = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: loser.position || 2,
-            matchId: matchId // Required by security rules
+            position: loser.position || 2
         };
 
-        // ELO history updates
+        // Update player documents
+        const winnerRef = doc(db, 'players', winner.id);
+        const loserRef = doc(db, 'players', loser.id);
+
+        batch.update(winnerRef, winnerUpdate);
+        batch.update(loserRef, loserUpdate);
+
+        // Add ELO history entries separately after player updates
+        const historyBatch = writeBatch(db);
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        batch.set(winnerHistoryRef, {
+        
+        historyBatch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
             opponent: loser.username,
@@ -82,17 +89,14 @@ export async function updateEloRatings(winner, loser, matchId) {
             matchResult: 'win',
             previousPosition: winner.position || 1,
             newPosition: winnerUpdate.position,
-            timestamp: serverTimestamp(),
-            matchId: matchId // Required by security rules
+            timestamp: serverTimestamp()
         });
 
-        // Then update player documents with batched writes
-        batch.update(doc(db, 'players', winner.id), winnerUpdate);
-        batch.update(doc(db, 'players', loser.id), loserUpdate);
-
+        // Commit updates in order
         await batch.commit();
-        return true;
+        await historyBatch.commit();
 
+        return true;
     } catch (error) {
         console.error("Error in updateEloRatings:", error);
         throw error;
