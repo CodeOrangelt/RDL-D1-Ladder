@@ -451,96 +451,41 @@
 
 /* Stats display styling */
 .stats-section span[id^="stats-"] {
-    color: #fff !important; /* Force white color for all stat values */
     font-size: 1.2em;
     font-weight: bold;
+    color: inherit; /* Allow color inheritance from parent */
 }
 
 /* Remove any existing color classes that might affect the K/D ratio */
 #stats-kd {
-    color: #fff !important;
+    color: inherit;
 }
 
 .stat-label {
     font-size: 0.8em;
-    color: #888;
     text-transform: uppercase;
     font-weight: normal;
+    /* Color will be inherited from ELO classes */
 }
 
-/* ELO-specific text colors for profile fields */
-.elo-unranked .profile-field .view-text {
+/* ELO color classes will now affect both labels and values */
+.elo-unranked .stats-section {
     color: #808080; /* Gray */
 }
 
-.elo-bronze .profile-field .view-text {
+.elo-bronze .stats-section {
     color: #CD7F32; /* Bronze */
 }
 
-.elo-silver .profile-field .view-text {
+.elo-silver .stats-section {
     color: #C0C0C0; /* Silver */
 }
 
-.elo-gold .profile-field .view-text {
+.elo-gold .stats-section {
     color: #FFD700; /* Gold */
 }
 
-.elo-emerald .profile-field .view-text {
+.elo-emerald .stats-section {
     color: #50C878; /* Emerald */
 }
 
-/* Remove !important from ELO color classes */
-.elo-unranked .view-text {
-    color: #808080; /* Gray */
-}
-
-.elo-bronze .view-text {
-    color: #CD7F32; /* Bronze */
-}
-
-.elo-silver .view-text {
-    color: #C0C0C0; /* Silver */
-}
-
-.elo-gold .view-text {
-    color: #FFD700; /* Gold */
-}
-
-.elo-emerald .view-text {
-    color: #50C878; /* Emerald */
-}
-
-/* Override any conflicting color rules */
-.profile-field .view-text {
-    color: inherit; /* This will inherit from the ELO class */
-}
-
-/* Make sure the ELO class is applied to the correct parent element */
-.profile-content.elo-unranked .view-text,
-.profile-content.elo-bronze .view-text,
-.profile-content.elo-silver .view-text,
-.profile-content.elo-gold .view-text,
-.profile-content.elo-emerald .view-text {
-    color: inherit;
-}
-
-/* Update the view-text styles to use direct ELO colors */
-.elo-unranked .view-text {
-    color: #808080 !important; /* Gray */
-}
-
-.elo-bronze .view-text {
-    color: #CD7F32 !important; /* Bronze */
-}
-
-.elo-silver .view-text {
-    color: #C0C0C0 !important; /* Silver */
-}
-
-.elo-gold .view-text {
-    color: #FFD700 !important; /* Gold */
-}
-
-.elo-emerald .view-text {
-    color: #50C878 !important; /* Emerald */
-}
