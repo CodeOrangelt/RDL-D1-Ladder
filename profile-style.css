@@ -51,7 +51,6 @@
     width: 100%;
     margin-bottom: 15px;
     background: rgba(0, 0, 0, 0.3);
-    color: white;
     padding: 15px;
     border-radius: 5px;
     display: flex;
@@ -71,7 +70,6 @@
 
 /* Ensure view text is white */
 .view-text {
-    color: #fff !important;
     opacity: 0.9;
     padding: 5px 0;
 }
@@ -463,4 +461,25 @@
     color: #888;
     text-transform: uppercase;
     font-weight: normal;
+}
+
+/* ELO-specific text colors for profile fields */
+.elo-unranked .profile-field .view-text {
+    color: #808080; /* Gray */
+}
+
+.elo-bronze .profile-field .view-text {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-silver .profile-field .view-text {
+    color: #C0C0C0; /* Silver */
+}
+
+.elo-gold .profile-field .view-text {
+    color: #FFD700; /* Gold */
+}
+
+.elo-emerald .profile-field .view-text {
+    color: #50C878; /* Emerald */
 }
