@@ -66,8 +66,9 @@
     display: block;
 }
 
+/* Ensure view text is white */
 .view-text {
-    color: #fff !important;  /* Force white text */
+    color: #fff !important;
     opacity: 0.9;
     padding: 5px 0;
 }
