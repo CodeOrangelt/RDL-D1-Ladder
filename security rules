@@ -44,21 +44,24 @@ function isValidDemotion(currentData, newData) {
          currentData.eloRating is number;
 }
 
+// Remove admin checks from match-related operations
 service cloud.firestore {
   match /databases/{database}/documents {
     // Players collection - Used in ladderalgorithm.js and ladder.js
     match /players/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if isAdmin() || 
-                   request.auth.uid == playerId || 
-                   (request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
-                    isValidEloUpdate(resource.data, request.resource.data));
-      allow delete: if isAdmin();
+      allow update: if request.auth != null && (
+                     request.auth.uid == playerId || 
+                     // Allow ELO and position updates from matches
+                     (request.resource.data.diff(resource.data).affectedKeys()
+                      .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                      isValidEloUpdate(resource.data, request.resource.data))
+                   );
+      allow delete: if false; // No deleting players
     }
 
-    // Match Management - Used in reports.js and ladderalgorithm.js
+    // Match Management
     match /pendingMatches/{matchId} {
       allow read: if true;
       allow create: if request.auth != null && 
@@ -66,14 +69,8 @@ service cloud.firestore {
                      'winnerUsername', 'loserUsername', 'winnerEmail', 'loserEmail',
                      'reportedBy', 'createdAt'
                    ]) &&
-                   (
-                     // Either winner or loser can create the match report
-                     request.auth.token.email == request.resource.data.winnerEmail ||
-                     request.auth.token.email == request.resource.data.loserEmail
-                   );
-      // Allow participants to update their own match details
+                   isMatchParticipant(request.resource.data);
       allow update: if isMatchParticipant(resource.data);
-      // Only participants can delete their pending matches
       allow delete: if isMatchParticipant(resource.data);
     }
 
@@ -84,37 +81,23 @@ service cloud.firestore {
                      'winnerScore', 'winnerComment', 'approved',
                      'approvedAt', 'approvedBy'
                    ]) && 
-                   request.auth.token.email == request.resource.data.winnerEmail;
-      allow update: if isMatchParticipant(resource.data);
-      allow delete: if false;  // Keep match history immutable
+                   isMatchWinner(request.resource.data);
+      allow update: if false; // Keep approved matches immutable
+      allow delete: if false; // Keep match history immutable
     }
 
-    // ELO History - Used in elo-history.js and ladderalgorithm.js
+    // ELO History
     match /eloHistory/{historyId} {
       allow read: if true;
       allow create: if request.auth != null && 
-                   (
-                     // Regular match history
-                     (request.resource.data.type == 'match' &&
-                      request.resource.data.keys().hasAll([
-                        'type', 'player', 'opponent',
-                        'previousElo', 'newElo', 'change',
-                        'matchResult', 'previousPosition', 'newPosition',
-                        'timestamp'
-                      ])) ||
-                     // Simplified promotion/demotion rules
-                     ((request.resource.data.type == 'promotion' ||
-                       request.resource.data.type == 'demotion') &&
-                      request.resource.data.keys().hasAll([
-                        'type',
-                        'player',
-                        'previousElo',
-                        'newElo',
-                        'timestamp'
-                      ]) &&
-                      isAdmin())
-                   );
-      allow update, delete: if false;  // Keep history immutable
+                   request.resource.data.keys().hasAll([
+                     'type', 'player', 'opponent',
+                     'previousElo', 'newElo', 'change',
+                     'matchResult', 'previousPosition', 'newPosition',
+                     'timestamp'
+                   ]) &&
+                   isMatchParticipant(request.resource.data);
+      allow update, delete: if false; // Keep history immutable
     }
 
     // RetroTracker - Used in whosplaying.js
@@ -159,8 +142,8 @@ service cloud.firestore {
     // Player Stats collection
     match /playerStats/{userId} {
       allow read: if true;
-      allow write: if isSignedIn() && 
-        (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && 
+                  request.auth.uid == userId;
     }
   }
 }

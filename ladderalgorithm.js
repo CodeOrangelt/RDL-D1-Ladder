@@ -52,45 +52,30 @@ export async function updateEloRatings(winner, loser, matchId) {
             loser.eloRating || 1200
         );
 
-        // Store old positions for history
-        const oldWinnerPosition = winner.position;
-        const oldLoserPosition = loser.position;
-
-        // Create a batch for atomic updates
+        // Create batch for atomic updates
         const batch = writeBatch(db);
+
+        // Store original positions for history
+        const originalWinnerPos = winner.position;
+        const originalLoserPos = loser.position;
         
-        // Update winner's ELO and position
+        // Update winner to take loser's position
         batch.update(doc(db, 'players', winner.id), {
             eloRating: newWinnerRating,
-            position: loser.position,
+            position: originalLoserPos,
             lastMatchDate: serverTimestamp()
         });
 
-        // Update loser's ELO and position
+        // Move loser down one position
         batch.update(doc(db, 'players', loser.id), {
             eloRating: newLoserRating,
-            position: loser.position + 1,
+            position: originalLoserPos + 1,
             lastMatchDate: serverTimestamp()
         });
 
-        // Update positions for other players
-        const playersRef = collection(db, 'players');
-        const impactedPlayers = await getDocs(
-            query(playersRef, 
-                where('position', '>', loser.position),
-                where('position', '<', winner.position)
-            )
-        );
-
-        // Move everyone down one position
-        impactedPlayers.forEach(playerDoc => {
-            batch.update(doc(db, 'players', playerDoc.id), {
-                position: playerDoc.data().position + 1
-            });
-        });
-
-        // Record ELO history changes
-        const winnerHistory = {
+        // Add ELO history records with correct position tracking
+        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
+        batch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
             opponent: loser.username,
@@ -98,13 +83,14 @@ export async function updateEloRatings(winner, loser, matchId) {
             newElo: newWinnerRating,
             change: newWinnerRating - (winner.eloRating || 1200),
             matchResult: 'win',
-            previousPosition: oldWinnerPosition,
-            newPosition: loser.position,
+            previousPosition: originalWinnerPos,
+            newPosition: originalLoserPos,
             timestamp: serverTimestamp(),
             matchId: matchId
-        };
+        });
 
-        const loserHistory = {
+        const loserHistoryRef = doc(collection(db, 'eloHistory'));
+        batch.set(loserHistoryRef, {
             type: 'match',
             player: loser.username,
             opponent: winner.username,
@@ -112,27 +98,26 @@ export async function updateEloRatings(winner, loser, matchId) {
             newElo: newLoserRating,
             change: newLoserRating - (loser.eloRating || 1200),
             matchResult: 'loss',
-            previousPosition: oldLoserPosition,
-            newPosition: loser.position + 1,
+            previousPosition: originalLoserPos,
+            newPosition: originalLoserPos + 1,
             timestamp: serverTimestamp(),
             matchId: matchId
-        };
+        });
 
-        // Add history records to batch
-        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        const loserHistoryRef = doc(collection(db, 'eloHistory'));
-        batch.set(winnerHistoryRef, winnerHistory);
-        batch.set(loserHistoryRef, loserHistory);
-
-        // Commit all changes
         await batch.commit();
 
-        // Update player stats after successful batch commit
+        // Update player stats after successful ELO update
         await Promise.all([
-            updatePlayerStats(winner.id, { winnerScore: 0, loserScore: 0 }, true),
-            updatePlayerStats(loser.id, { winnerScore: 0, loserScore: 0 }, false)
+            updatePlayerStats(winner.id, { 
+                winnerScore: winner.winnerScore || 0, 
+                loserScore: loser.loserScore || 0 
+            }, true),
+            updatePlayerStats(loser.id, { 
+                winnerScore: winner.winnerScore || 0, 
+                loserScore: loser.loserScore || 0 
+            }, false)
         ]);
-        
+
         return true;
     } catch (error) {
         console.error("Error in updateEloRatings:", error);
@@ -175,18 +160,20 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         const winner = {
             id: winnerQuery.docs[0].id,
-            ...winnerQuery.docs[0].data()
+            ...winnerQuery.docs[0].data(),
+            winnerScore
         };
 
         const loser = {
             id: loserQuery.docs[0].id,
-            ...loserQuery.docs[0].data()
+            ...loserQuery.docs[0].data(),
+            loserScore: reportData.loserScore
         };
 
-        // Update ELO ratings first
+        // Update ELO ratings and positions first
         await updateEloRatings(winner, loser, reportId);
 
-        // Create approved match with all required fields
+        // Create approved match document with all required fields
         await setDoc(doc(db, 'approvedMatches', reportId), {
             ...reportData,
             winnerScore,
@@ -194,7 +181,11 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             winnerSuicides,
             approved: true,
             approvedAt: serverTimestamp(),
-            approvedBy: currentUser.email
+            approvedBy: currentUser.email,
+            winnerUsername: winner.username,
+            loserUsername: loser.username,
+            winnerEmail: currentUser.email,
+            loserEmail: reportData.loserEmail
         });
 
         // Delete pending match after successful approval
