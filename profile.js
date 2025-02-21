@@ -99,48 +99,59 @@ class ProfileManager {
         if (!username) return;
 
         try {
-            // Get matches where player was winner or loser
+            // Get matches from Firebase
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
                 getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
             ]);
 
-            // Calculate stats
+            // Calculate basic stats
             const wins = winnerMatches.size;
             const losses = loserMatches.size;
             const totalMatches = wins + losses;
             let totalKills = 0;
             let totalDeaths = 0;
 
-            // Sum up kills and deaths
+            // Calculate kills and deaths from winner matches
             winnerMatches.forEach(doc => {
                 const match = doc.data();
-                totalKills += parseInt(match.winnerScore) || 0;
-                totalDeaths += parseInt(match.loserScore) || 0;
+                if (match.winnerScore) totalKills += parseInt(match.winnerScore);
+                if (match.loserScore) totalDeaths += parseInt(match.loserScore);
             });
 
+            // Calculate kills and deaths from loser matches
             loserMatches.forEach(doc => {
                 const match = doc.data();
-                totalKills += parseInt(match.loserScore) || 0;
-                totalDeaths += parseInt(match.winnerScore) || 0;
+                if (match.loserScore) totalKills += parseInt(match.loserScore);
+                if (match.winnerScore) totalDeaths += parseInt(match.winnerScore);
             });
 
-            // Calculate K/D ratio
-            const kdRatio = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
-            const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0';
+            // Calculate K/D ratio and win rate
+            const kdRatio = totalDeaths === 0 ? totalKills.toFixed(2) : (totalKills / totalDeaths).toFixed(2);
+            const winRate = totalMatches === 0 ? '0' : ((wins / totalMatches) * 100).toFixed(1);
+
+            console.log('Stats calculated:', {
+                totalMatches,
+                wins,
+                losses,
+                totalKills,
+                totalDeaths,
+                kdRatio,
+                winRate
+            });
 
             // Update DOM elements
             document.getElementById('stats-matches').textContent = totalMatches;
             document.getElementById('stats-wins').textContent = wins;
             document.getElementById('stats-losses').textContent = losses;
-            document.getElementById('stats-kd').textContent = kdRatio;  // Changed from stats-kda to stats-kd
+            document.getElementById('stats-kd').textContent = kdRatio;
             document.getElementById('stats-winrate').textContent = `${winRate}%`;
 
         } catch (error) {
             console.error('Error loading player stats:', error);
             // Set default values on error
-            ['matches', 'wins', 'losses', 'kd', 'winrate'].forEach(stat => {  // Changed kda to kd
+            ['matches', 'wins', 'losses', 'kd', 'winrate'].forEach(stat => {
                 document.getElementById(`stats-${stat}`).textContent = '-';
             });
         }
