@@ -46,17 +46,17 @@
     opacity: 0.9;
 }
 
-/* Update profile field styling for inline layout */
+/* Update profile field styling for tighter inline layout */
 .profile-field {
     width: 100%;
     margin-bottom: 15px;
     background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
+    padding: 10px 15px; /* Reduced padding top/bottom */
     border-radius: 5px;
     display: flex;
-    flex-direction: row; /* Change to row for inline layout */
-    align-items: center; /* Center items vertically */
-    justify-content: space-between; /* Space between label and text */
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* Add small gap between label and text */
 }
 
 /* Update label styling */
@@ -64,29 +64,28 @@
     color: inherit;
     opacity: 0.9;
     font-weight: bold;
-    margin: 0; /* Remove margins */
-    flex: 0 0 auto; /* Prevent label from growing */
+    flex: 0 0 auto;
+    white-space: nowrap; /* Prevent label from wrapping */
 }
 
 /* Update view text styling */
 .view-text {
     opacity: 1;
-    padding: 5px 0;
-    color: white !important; /* Force white color for user input */
-    text-align: right; /* Align text to the right */
-    flex: 1; /* Allow text to take remaining space */
-    margin-left: 15px; /* Add space between label and text */
+    color: white !important;
+    text-align: left; /* Change to left alignment */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
 }
 
-/* Keep input text white when editing */
+/* Update input styling */
 .profile-field input[type="text"] {
-    width: 100%;
-    padding: 8px;
+    flex: 1;
+    margin: 0; /* Remove margin */
+    padding: 4px 8px; /* Reduce padding */
     border: 1px solid #4CAF50;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.5);
     color: #fff !important;
-    margin-top: 5px;
 }
 
 .button-group {
