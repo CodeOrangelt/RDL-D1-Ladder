@@ -406,7 +406,7 @@
 }
 
 .stat-label {
-    font-size: 28px; /* Made letters larger */
+    font-size: 18px; /* Made letters larger */
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
