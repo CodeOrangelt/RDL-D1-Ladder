@@ -70,9 +70,11 @@
 
 /* Ensure view text is white */
 .view-text {
-    opacity: 0.9;
+    opacity: 1; /* Changed from 0.9 to ensure visibility */
     padding: 5px 0;
     color: inherit;
+    display: block; /* Ensure it's displayed */
+    width: 100%; /* Take full width */
 }
 
 /* Keep input text white when editing */
@@ -126,6 +128,7 @@
 
 .view-mode {
     width: 100%;
+    display: block; /* Ensure view mode is visible */
 }
 
 .error-message {
@@ -479,5 +482,10 @@
 
 .elo-emerald .view-text {
     color: #50C878; /* Emerald */
+}
+
+/* Remove any conflicting display: none */
+.profile-field .view-text {
+    display: block !important;
 }
 
