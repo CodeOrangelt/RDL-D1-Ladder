@@ -43,155 +43,195 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
-// In ladderalgorithm.js
-export async function updateEloRatings(winner, loser, matchId) {
+export async function updateEloRatings(winnerId, loserId, matchId) {
     try {
-        // Calculate new ratings
+        console.log('Starting ELO update for winner:', winnerId, 'and loser:', loserId);
+        
+        // Get the current ratings and positions of both players
+        const winnerRef = doc(db, 'players', winnerId);
+        const loserRef = doc(db, 'players', loserId);
+        
+        const [winnerDoc, loserDoc] = await Promise.all([
+            getDoc(winnerRef),
+            getDoc(loserRef)
+        ]);
+
+        if (!winnerDoc.exists() || !loserDoc.exists()) {
+            throw new Error('One or both players not found in the database.');
+        }
+
+        const winnerData = winnerDoc.data();
+        const loserData = loserDoc.data();
+        
+        // Store original positions
+        const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
+        const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
+        
+        // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
-            winner.eloRating || 1200, 
-            loser.eloRating || 1200
+            winnerData.eloRating || 1200,
+            loserData.eloRating || 1200
         );
 
         // Create batch for atomic updates
         const batch = writeBatch(db);
 
-        // Store original positions for history
-        const originalWinnerPos = winner.position;
-        const originalLoserPos = loser.position;
-        
-        // Update winner to take loser's position
-        batch.update(doc(db, 'players', winner.id), {
+        let winnerUpdates = {
             eloRating: newWinnerRating,
-            position: originalLoserPos,
-            lastMatchDate: serverTimestamp()
-        });
+            lastMatchDate: serverTimestamp(),
+            matchId: matchId,
+            participantIds: [winnerId, loserId]  // Add participant IDs
+        };
 
-        // Move loser down one position
-        batch.update(doc(db, 'players', loser.id), {
+        let loserUpdates = {
             eloRating: newLoserRating,
-            position: originalLoserPos + 1,
-            lastMatchDate: serverTimestamp()
-        });
+            lastMatchDate: serverTimestamp(),
+            matchId: matchId,
+            participantIds: [winnerId, loserId]  // Add participant IDs
+        };
 
-        // Add ELO history records with correct position tracking
-        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        batch.set(winnerHistoryRef, {
-            type: 'match',
-            player: winner.username,
-            opponent: loser.username,
-            previousElo: winner.eloRating || 1200,
-            newElo: newWinnerRating,
-            change: newWinnerRating - (winner.eloRating || 1200),
-            matchResult: 'win',
-            previousPosition: originalWinnerPos,
-            newPosition: originalLoserPos,
-            timestamp: serverTimestamp(),
-            matchId: matchId
-        });
+        // Handle position swapping
+        if (winnerPosition > loserPosition) {
+            console.log('Position swap needed - winner was lower ranked');
+            
+            winnerUpdates.position = loserPosition;
+            loserUpdates.position = loserPosition + 1;
 
-        const loserHistoryRef = doc(collection(db, 'eloHistory'));
-        batch.set(loserHistoryRef, {
-            type: 'match',
-            player: loser.username,
-            opponent: winner.username,
-            previousElo: loser.eloRating || 1200,
-            newElo: newLoserRating,
-            change: newLoserRating - (loser.eloRating || 1200),
-            matchResult: 'loss',
-            previousPosition: originalLoserPos,
-            newPosition: originalLoserPos + 1,
-            timestamp: serverTimestamp(),
-            matchId: matchId
-        });
+            // Move everyone else down one position
+            const playersToUpdate = query(
+                collection(db, 'players'),
+                where('position', '>', loserPosition),
+                where('position', '<=', winnerPosition)
+            );
+            
+            const playersSnapshot = await getDocs(playersToUpdate);
+            playersSnapshot.forEach(playerDoc => {
+                if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
+                    batch.update(doc(db, 'players', playerDoc.id), {
+                        position: playerDoc.data().position + 1,
+                        matchId: matchId  // Add matchId for security rules
+                    });
+                }
+            });
+        }
 
-        await batch.commit();
+        // Add updates to batch
+        batch.update(winnerRef, winnerUpdates);
+        batch.update(loserRef, loserUpdates);
 
-        // Update player stats after successful ELO update
+        // Record ELO history first
         await Promise.all([
-            updatePlayerStats(winner.id, { 
-                winnerScore: winner.winnerScore || 0, 
-                loserScore: loser.loserScore || 0 
-            }, true),
-            updatePlayerStats(loser.id, { 
-                winnerScore: winner.winnerScore || 0, 
-                loserScore: loser.loserScore || 0 
-            }, false)
+            recordEloChange({
+                playerId: winnerId,
+                previousElo: winnerData.eloRating || 1200,
+                newElo: newWinnerRating,
+                opponentId: loserId,
+                matchResult: 'win',
+                previousPosition: winnerPosition,
+                newPosition: winnerUpdates.position || winnerPosition,
+                isPromotion: winnerUpdates.position < winnerPosition,
+                matchId: matchId,  // Add matchId
+                timestamp: serverTimestamp()
+            }),
+            recordEloChange({
+                playerId: loserId,
+                previousElo: loserData.eloRating || 1200,
+                newElo: newLoserRating,
+                opponentId: winnerId,
+                matchResult: 'loss',
+                previousPosition: loserPosition,
+                newPosition: loserUpdates.position || loserPosition,
+                isDemotion: loserUpdates.position > loserPosition,
+                matchId: matchId,  // Add matchId
+                timestamp: serverTimestamp()
+            })
         ]);
 
+        // Commit batch after history is recorded
+        await batch.commit();
+
+        console.log('ELO ratings and positions updated successfully');
         return true;
+
     } catch (error) {
-        console.error("Error in updateEloRatings:", error);
+        console.error('Error in updateEloRatings:', error);
         throw error;
     }
 }
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
+        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+        
         const currentUser = auth.currentUser;
         if (!currentUser) {
+            console.log('No user logged in');
             throw new Error('You must be logged in to approve matches');
         }
+        console.log('Current user:', currentUser.email);
 
+        // Get user's player document to verify permissions
+        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
+        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+        console.log('Current username:', currentUsername);
+
+        // Get the pending match
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
         if (!reportSnapshot.exists()) {
+            console.log('Report not found with ID:', reportId);
             throw new Error('Match report not found');
         }
 
         const reportData = reportSnapshot.data();
+        console.log('Report data:', reportData);
         
-        // Check if current user is the winner
-        if (currentUser.email !== reportData.winnerEmail) {
-            throw new Error('Only the winner can approve matches');
+        // Check if user is participant or admin
+        const isParticipant = currentUsername === reportData.winnerUsername || 
+                             currentUsername === reportData.loserUsername;
+        const userIsAdmin = await isAdmin(currentUser.email);
+
+        if (!isParticipant && !userIsAdmin) {
+            throw new Error('Only match participants or admins can approve matches');
         }
 
-        // Get players with complete error handling
-        const [winnerQuery, loserQuery] = await Promise.all([
-            getDocs(query(collection(db, 'players'), 
-                where('username', '==', reportData.winnerUsername))),
-            getDocs(query(collection(db, 'players'), 
-                where('username', '==', reportData.loserUsername)))
+        // Add winner details to report data
+        const updatedReportData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
+            winnerComment: winnerComment,
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: currentUsername
+        };
+
+        // Move match to approved collection first
+        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
+        await deleteDoc(pendingMatchRef);
+
+        console.log('Match moved to approved collection');
+
+        // Get player IDs
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
         ]);
 
-        if (winnerQuery.empty || loserQuery.empty) {
+        if (winnerDocs.empty || loserDocs.empty) {
             throw new Error('Could not find player documents');
         }
 
-        const winner = {
-            id: winnerQuery.docs[0].id,
-            ...winnerQuery.docs[0].data(),
-            winnerScore
-        };
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
 
-        const loser = {
-            id: loserQuery.docs[0].id,
-            ...loserQuery.docs[0].data(),
-            loserScore: reportData.loserScore
-        };
+        // Update ELO ratings
+        await updateEloRatings(winnerId, loserId, reportId);
 
-        // Update ELO ratings and positions first
-        await updateEloRatings(winner, loser, reportId);
-
-        // Create approved match document with all required fields
-        await setDoc(doc(db, 'approvedMatches', reportId), {
-            ...reportData,
-            winnerScore,
-            winnerComment,
-            winnerSuicides,
-            approved: true,
-            approvedAt: serverTimestamp(),
-            approvedBy: currentUser.email,
-            winnerUsername: winner.username,
-            loserUsername: loser.username,
-            winnerEmail: currentUser.email,
-            loserEmail: reportData.loserEmail
-        });
-
-        // Delete pending match after successful approval
-        await deleteDoc(pendingMatchRef);
-        
+        console.log('Match successfully approved and ELO updated');
         return true;
+
     } catch (error) {
         console.error('Error in approveReport:', error);
         throw error;
@@ -236,11 +276,4 @@ async function updatePlayerStats(playerId, matchData, isWinner) {
     stats.lastUpdated = new Date().toISOString();
 
     await setDoc(statsRef, stats, { merge: true });
-}
-
-function isValidEloUpdate(currentData, newData) {
-  return typeof newData.eloRating === 'number' &&
-         typeof currentData.eloRating === 'number' &&
-         (newData.eloRating - currentData.eloRating) <= 32 &&
-         (newData.eloRating - currentData.eloRating) >= -32;
 }
