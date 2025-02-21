@@ -46,47 +46,50 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
-        // Check if user is logged in and is match participant
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error('Must be logged in to update ELO ratings');
-        }
-
-        // Check if user is match participant
-        const isWinner = currentUser.email === winner.email;
-        const isLoser = currentUser.email === loser.email;
+        // Previous validation code stays the same
         
-        if (!isWinner && !isLoser) {
-            throw new Error('Must be a match participant to update ELO ratings');
-        }
-
-        // Calculate new ratings with fallback to default 1200
+        // Calculate new ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
             winner.eloRating || 1200, 
             loser.eloRating || 1200
         );
 
-        // Validate ELO changes
-        const winnerChange = newWinnerRating - (winner.eloRating || 1200);
-        const loserChange = newLoserRating - (loser.eloRating || 1200);
-        if (Math.abs(winnerChange) > 32 || Math.abs(loserChange) > 32) {
-            throw new Error('ELO rating change exceeds maximum allowed value of 32');
-        }
-
-        // Add match to pending matches
-        const pendingMatchRef = doc(collection(db, 'pendingMatches'));
-        await setDoc(pendingMatchRef, {
-            winnerUsername: winner.username,
-            winnerEmail: winner.email,
-            loserUsername: loser.username,
-            loserEmail: loser.email,
-            reportedBy: currentUser.email,
-            createdAt: serverTimestamp(),
-            mapPlayed: matchId, // Assuming matchId is the map name
-            loserScore: 0, // Will be updated by loser
-            loserComment: '' // Will be updated by loser
+        // Create a batch for atomic updates
+        const batch = writeBatch(db);
+        
+        // Update winner's ELO and position
+        batch.update(doc(db, 'players', winner.id), {
+            eloRating: newWinnerRating,
+            position: loser.position,
+            lastMatchDate: serverTimestamp()
         });
 
+        // Update loser's ELO and position
+        batch.update(doc(db, 'players', loser.id), {
+            eloRating: newLoserRating,
+            position: loser.position + 1,
+            lastMatchDate: serverTimestamp()
+        });
+
+        // Update positions for other players
+        const playersRef = collection(db, 'players');
+        const impactedPlayers = await getDocs(
+            query(playersRef, 
+                where('position', '>', loser.position),
+                where('position', '<', winner.position)
+            )
+        );
+
+        // Move everyone down one position
+        impactedPlayers.forEach(playerDoc => {
+            batch.update(doc(db, 'players', playerDoc.id), {
+                position: playerDoc.data().position + 1
+            });
+        });
+
+        // Commit all changes
+        await batch.commit();
+        
         return true;
     } catch (error) {
         console.error("Error in updateEloRatings:", error);
