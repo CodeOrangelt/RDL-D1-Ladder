@@ -525,6 +525,9 @@ class ProfileViewer {
     }
 
     async loadPlayerStats(username) {
+        if (!username) {
+            username = localStorage.getItem('nickname'); // Fallback to stored nickname
+        }
         if (!username) return;
     
         try {
@@ -540,28 +543,29 @@ class ProfileViewer {
                 losses: loserMatches.size,
                 totalKills: 0,
                 totalDeaths: 0,
-                totalMatches: winnerMatches.size + loserMatches.size,
-                kda: 0,
-                winRate: 0
+                totalAssists: 0,
+                totalMatches: winnerMatches.size + loserMatches.size
             };
     
-            // Calculate kills and deaths from matches
+            // Calculate kills, deaths, and assists from matches
             winnerMatches.forEach(doc => {
                 const match = doc.data();
                 stats.totalKills += parseInt(match.winnerScore) || 0;
                 stats.totalDeaths += parseInt(match.loserScore) || 0;
+                stats.totalAssists += parseInt(match.winnerAssists) || 0;
             });
     
             loserMatches.forEach(doc => {
                 const match = doc.data();
                 stats.totalKills += parseInt(match.loserScore) || 0;
                 stats.totalDeaths += parseInt(match.winnerScore) || 0;
+                stats.totalAssists += parseInt(match.loserAssists) || 0;
             });
     
             // Calculate KDA ratio
             stats.kda = stats.totalDeaths > 0 ? 
-                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
-                stats.totalKills;
+                ((stats.totalKills + stats.totalAssists) / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
     
             // Calculate win rate
             stats.winRate = stats.totalMatches > 0 ? 
@@ -576,66 +580,21 @@ class ProfileViewer {
     
         } catch (error) {
             console.error('Error loading player stats:', error);
+            // Set default values if there's an error
+            document.getElementById('stats-matches').textContent = '0';
+            document.getElementById('stats-wins').textContent = '0';
+            document.getElementById('stats-losses').textContent = '0';
+            document.getElementById('stats-kda').textContent = '0.00';
+            document.getElementById('stats-winrate').textContent = '0%';
         }
-    }
-}
-
-async function loadPlayerStats() {
-    try {
-        const response = await fetch('approved-matches.json');
-        const matches = await response.json();
-        
-        // Filter matches for the current user
-        const currentUser = localStorage.getItem('nickname');
-        const userMatches = matches.filter(match => 
-            match.players.some(player => player.name === currentUser)
-        );
-
-        // Calculate stats
-        const totalMatches = userMatches.length;
-        let wins = 0;
-        let kills = 0;
-        let deaths = 0;
-        let assists = 0;
-
-        userMatches.forEach(match => {
-            const playerStats = match.players.find(player => player.name === currentUser);
-            if (playerStats) {
-                if (playerStats.team === match.winningTeam) wins++;
-                kills += playerStats.kills || 0;
-                deaths += playerStats.deaths || 0;
-                assists += playerStats.assists || 0;
-            }
-        });
-
-        const losses = totalMatches - wins;
-        const kda = deaths === 0 ? 
-            ((kills + assists) / 1).toFixed(2) : 
-            ((kills + assists) / deaths).toFixed(2);
-        const winRate = totalMatches === 0 ? 
-            "0%" : 
-            `${((wins / totalMatches) * 100).toFixed(1)}%`;
-
-        // Update the stats in the DOM
-        document.getElementById('stats-matches').textContent = totalMatches;
-        document.getElementById('stats-wins').textContent = wins;
-        document.getElementById('stats-losses').textContent = losses;
-        document.getElementById('stats-kda').textContent = kda;
-        document.getElementById('stats-winrate').textContent = winRate;
-
-    } catch (error) {
-        console.error('Error loading player stats:', error);
-        // Set default values if there's an error
-        document.getElementById('stats-matches').textContent = '0';
-        document.getElementById('stats-wins').textContent = '0';
-        document.getElementById('stats-losses').textContent = '0';
-        document.getElementById('stats-kda').textContent = '0.00';
-        document.getElementById('stats-winrate').textContent = '0%';
     }
 }
 
 // Make sure to call this function when the profile page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new ProfileViewer();
-    loadPlayerStats();
+    const profileViewer = new ProfileViewer();
+    const username = localStorage.getItem('nickname');
+    if (username) {
+        profileViewer.loadPlayerStats(username);
+    }
 });
