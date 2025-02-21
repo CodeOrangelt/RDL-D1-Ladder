@@ -129,6 +129,10 @@
 }
 
 .view-mode .profile-field {
+    /* Remove color: #fff; */
+}
+
+.view-mode .profile-field {
     color: #fff;
 }
 
@@ -518,4 +522,25 @@
 .profile-content.elo-gold .view-text,
 .profile-content.elo-emerald .view-text {
     color: inherit;
+}
+
+/* Update the view-text styles to use direct ELO colors */
+.elo-unranked .view-text {
+    color: #808080 !important; /* Gray */
+}
+
+.elo-bronze .view-text {
+    color: #CD7F32 !important; /* Bronze */
+}
+
+.elo-silver .view-text {
+    color: #C0C0C0 !important; /* Silver */
+}
+
+.elo-gold .view-text {
+    color: #FFD700 !important; /* Gold */
+}
+
+.elo-emerald .view-text {
+    color: #50C878 !important; /* Emerald */
 }
