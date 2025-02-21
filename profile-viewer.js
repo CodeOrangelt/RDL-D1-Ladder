@@ -592,7 +592,7 @@ class ProfileViewer {
                 'stats-matches': stats.totalMatches,
                 'stats-wins': stats.wins,
                 'stats-losses': stats.losses,
-                'stats-kda': stats.kda,
+                'stats-kd': stats.kda,  // Changed from stats-kda to stats-kd
                 'stats-winrate': `${stats.winRate}%`
             };
 
@@ -617,7 +617,7 @@ class ProfileViewer {
             'stats-matches': '0',
             'stats-wins': '0',
             'stats-losses': '0',
-            'stats-kda': '0.00',
+            'stats-kd': '0.00',  // Changed from stats-kda to stats-kd
             'stats-winrate': '0%'
         };
 
