@@ -15,7 +15,7 @@ function isVerifiedUser() {
 
 function isMatchParticipant(matchData) {
   return request.auth != null && (
-    matchData.winnerEmail == request.auth.token.email ||
+    matchData.wwinnerEmail == request.auth.token.email ||
     matchData.loserEmail == request.auth.token.email
   );
 }
