@@ -151,7 +151,27 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             throw new Error('Only match participants or admins can approve matches');
         }
 
-        // Add winner details to report data
+        // Get player documents with their full data
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
+        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            throw new Error('Could not find player documents');
+        }
+
+        const winner = {
+            id: winnerDocs.docs[0].id,
+            ...winnerDocs.docs[0].data()
+        };
+
+        const loser = {
+            id: loserDocs.docs[0].id,
+            ...loserDocs.docs[0].data()
+        };
+
+        // Move match to approved collection
         const updatedReportData = {
             ...reportData,
             winnerScore: winnerScore,
@@ -162,27 +182,20 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             approvedBy: currentUsername
         };
 
-        // Move match to approved collection first
-        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
-        await deleteDoc(pendingMatchRef);
+        // Use batch write for consistency
+        const batch = writeBatch(db);
+        
+        // Add to approved matches
+        batch.set(doc(db, 'approvedMatches', reportId), updatedReportData);
+        
+        // Remove from pending matches
+        batch.delete(pendingMatchRef);
+        
+        // Commit these changes first
+        await batch.commit();
 
-        console.log('Match moved to approved collection');
-
-        // Get player IDs
-        const [winnerDocs, loserDocs] = await Promise.all([
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
-        ]);
-
-        if (winnerDocs.empty || loserDocs.empty) {
-            throw new Error('Could not find player documents');
-        }
-
-        const winnerId = winnerDocs.docs[0].id;
-        const loserId = loserDocs.docs[0].id;
-
-        // Update ELO ratings
-        await updateEloRatings(winnerId, loserId, reportId);
+        // Update ELO ratings with full player objects
+        await updateEloRatings(winner, loser, reportId);
 
         console.log('Match successfully approved and ELO updated');
         return true;
