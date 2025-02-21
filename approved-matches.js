@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Format date
             const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A';
             
+            // Check both loserSuicides and suicides fields
+            const loserSuicidesValue = data.loserSuicides || data.suicides || 'N/A';
+            
             row.innerHTML = `
                 <td>
                     <a href="profile.html?username=${encodeURIComponent(data.winnerUsername)}" 
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${data.winnerScore}</td>
                 <td>${data.loserScore}</td>
                 <td>${data.winnerSuicides || 'N/A'}</td>
-                <td>${data.loserSuicides || 'N/A'}</td>
+                <td>${loserSuicidesValue}</td>
                 <td>${data.mapPlayed || 'N/A'}</td>
                 <td>${data.winnerComment || 'N/A'}</td>
                 <td>${data.loserComment || 'N/A'}</td>
