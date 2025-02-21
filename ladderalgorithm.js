@@ -43,64 +43,46 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
+// In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
         // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
-            winner.eloRating, 
-            loser.eloRating
+            winner.eloRating || 1200, 
+            loser.eloRating || 1200
         );
-
-        // Create the update objects first
-        const winnerUpdates = {
-            eloRating: newWinnerRating,
-            lastMatchDate: serverTimestamp(),
-            position: winner.position
-        };
-
-        const loserUpdates = {
-            eloRating: newLoserRating,
-            lastMatchDate: serverTimestamp(),
-            position: loser.position
-        };
 
         // Create batch updates
         const batch = writeBatch(db);
 
-        // Update winner document
-        batch.update(doc(db, 'players', winner.id), winnerUpdates);
+        // Update winner document with required fields
+        batch.update(doc(db, 'players', winner.id), {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            position: winner.position,
+            matchId: matchId // Add required matchId field
+        });
 
-        // Update loser document
-        batch.update(doc(db, 'players', loser.id), loserUpdates);
+        // Update loser document with required fields
+        batch.update(doc(db, 'players', loser.id), {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            position: loser.position,
+            matchId: matchId // Add required matchId field
+        });
 
-        // Add ELO history entries
+        // Add ELO history entries with all required fields
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        const loserHistoryRef = doc(collection(db, 'eloHistory'));
-
         batch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
             opponent: loser.username,
-            previousElo: winner.eloRating,
+            previousElo: winner.eloRating || 1200,
             newElo: newWinnerRating,
-            change: newWinnerRating - winner.eloRating,
+            change: newWinnerRating - (winner.eloRating || 1200),
             matchResult: 'win',
             previousPosition: winner.position,
-            newPosition: winnerUpdates.position,
-            timestamp: serverTimestamp(),
-            matchId: matchId
-        });
-
-        batch.set(loserHistoryRef, {
-            type: 'match',
-            player: loser.username,
-            opponent: winner.username,
-            previousElo: loser.eloRating,
-            newElo: newLoserRating,
-            change: newLoserRating - loser.eloRating,
-            matchResult: 'loss',
-            previousPosition: loser.position,
-            newPosition: loserUpdates.position,
+            newPosition: winner.position,
             timestamp: serverTimestamp(),
             matchId: matchId
         });
