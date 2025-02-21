@@ -72,6 +72,7 @@
 .view-text {
     opacity: 0.9;
     padding: 5px 0;
+    /* Remove color: inherit if it exists */
 }
 
 /* Keep input text white when editing */
@@ -151,23 +152,23 @@
 
 /* ELO Rating Color Classes */
 .elo-unranked {
-    color: #808080 !important; /* Gray */
+    color: #808080; /* Gray */
 }
 
 .elo-bronze {
-    color: #CD7F32 !important; /* Bronze */
+    color: #CD7F32; /* Bronze */
 }
 
 .elo-silver {
-    color: #C0C0C0 !important; /* Silver */
+    color: #C0C0C0; /* Silver */
 }
 
 .elo-gold {
-    color: #FFD700 !important; /* Gold */
+    color: #FFD700; /* Gold */
 }
 
 .elo-emerald {
-    color: #50C878 !important; /* Emerald */
+    color: #50C878; /* Emerald */
 }
 
 /* Update text elements to inherit color */
@@ -482,4 +483,39 @@
 
 .elo-emerald .profile-field .view-text {
     color: #50C878; /* Emerald */
+}
+
+/* Remove !important from ELO color classes */
+.elo-unranked .view-text {
+    color: #808080; /* Gray */
+}
+
+.elo-bronze .view-text {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-silver .view-text {
+    color: #C0C0C0; /* Silver */
+}
+
+.elo-gold .view-text {
+    color: #FFD700; /* Gold */
+}
+
+.elo-emerald .view-text {
+    color: #50C878; /* Emerald */
+}
+
+/* Override any conflicting color rules */
+.profile-field .view-text {
+    color: inherit; /* This will inherit from the ELO class */
+}
+
+/* Make sure the ELO class is applied to the correct parent element */
+.profile-content.elo-unranked .view-text,
+.profile-content.elo-bronze .view-text,
+.profile-content.elo-silver .view-text,
+.profile-content.elo-gold .view-text,
+.profile-content.elo-emerald .view-text {
+    color: inherit;
 }
