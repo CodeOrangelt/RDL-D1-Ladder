@@ -79,21 +79,21 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         let winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: loserPosition // Required field
+            position: loserPosition // Winner takes loser's spot
         };
 
         let loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: loserPosition + 1 // Required field
+            position: loserPosition === 1 ? 2 : loserPosition + 1 // If loser was #1, they move to #2
         };
 
         // Handle position swapping
         if (winnerPosition > loserPosition) {
             console.log('Position swap needed - winner was lower ranked');
             
-            winnerUpdates.position = loserPosition;
-            loserUpdates.position = loserPosition + 1;
+            winnerUpdates.position = loserPosition; // Winner takes loser's spot
+            loserUpdates.position = loserPosition === 1 ? 2 : loserPosition + 1; // Protect position 1
 
             // Move everyone else down one position
             const playersToUpdate = query(
