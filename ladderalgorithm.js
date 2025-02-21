@@ -46,7 +46,6 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
-        // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
             winner.eloRating || 1200, 
             loser.eloRating || 1200
@@ -55,23 +54,25 @@ export async function updateEloRatings(winner, loser, matchId) {
         // Create batch updates
         const batch = writeBatch(db);
 
-        // Update winner document with required fields
-        batch.update(doc(db, 'players', winner.id), {
+        // Update winner document with EXACTLY the required fields from security rules
+        const winnerUpdate = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: winner.position,
-            matchId: matchId // Add required matchId field
-        });
+            position: winner.position || 1
+        };
 
-        // Update loser document with required fields
-        batch.update(doc(db, 'players', loser.id), {
+        // Update loser document with EXACTLY the required fields from security rules
+        const loserUpdate = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: loser.position,
-            matchId: matchId // Add required matchId field
-        });
+            position: loser.position || 2
+        };
 
-        // Add ELO history entries with all required fields
+        // Apply updates
+        batch.update(doc(db, 'players', winner.id), winnerUpdate);
+        batch.update(doc(db, 'players', loser.id), loserUpdate);
+
+        // Add ELO history entry with all required fields
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
         batch.set(winnerHistoryRef, {
             type: 'match',
@@ -81,13 +82,12 @@ export async function updateEloRatings(winner, loser, matchId) {
             newElo: newWinnerRating,
             change: newWinnerRating - (winner.eloRating || 1200),
             matchResult: 'win',
-            previousPosition: winner.position,
-            newPosition: winner.position,
-            timestamp: serverTimestamp(),
-            matchId: matchId
+            previousPosition: winner.position || 1,
+            newPosition: winner.position || 1,
+            timestamp: serverTimestamp()
         });
 
-        // Commit the batch
+        // Commit all changes
         await batch.commit();
 
     } catch (error) {
