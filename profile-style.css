@@ -54,8 +54,8 @@
     padding: 15px;
     border-radius: 5px;
     display: flex;
-    flex-direction: column; /* Changed to column layout */
-    align-items: flex-start; /* Align items to the start */
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* Keep label color based on ELO but make view text white */
@@ -72,7 +72,7 @@
 .view-text {
     opacity: 0.9;
     padding: 5px 0;
-    /* Remove color: inherit if it exists */
+    color: inherit;
 }
 
 /* Keep input text white when editing */
@@ -126,14 +126,6 @@
 
 .view-mode {
     width: 100%;
-}
-
-.view-mode .profile-field {
-    /* Remove color: #fff; */
-}
-
-.view-mode .profile-field {
-    color: #fff;
 }
 
 .error-message {
@@ -451,41 +443,41 @@
 
 /* Stats display styling */
 .stats-section span[id^="stats-"] {
+    color: #fff !important; /* Force white color for all stat values */
     font-size: 1.2em;
     font-weight: bold;
-    color: inherit; /* Allow color inheritance from parent */
 }
 
 /* Remove any existing color classes that might affect the K/D ratio */
 #stats-kd {
-    color: inherit;
+    color: #fff !important;
 }
 
 .stat-label {
     font-size: 0.8em;
+    color: #888;
     text-transform: uppercase;
     font-weight: normal;
-    /* Color will be inherited from ELO classes */
 }
 
-/* ELO color classes will now affect both labels and values */
-.elo-unranked .stats-section {
+/* ELO color classes */
+.elo-unranked .view-text {
     color: #808080; /* Gray */
 }
 
-.elo-bronze .stats-section {
+.elo-bronze .view-text {
     color: #CD7F32; /* Bronze */
 }
 
-.elo-silver .stats-section {
+.elo-silver .view-text {
     color: #C0C0C0; /* Silver */
 }
 
-.elo-gold .stats-section {
+.elo-gold .view-text {
     color: #FFD700; /* Gold */
 }
 
-.elo-emerald .stats-section {
+.elo-emerald .view-text {
     color: #50C878; /* Emerald */
 }
 
