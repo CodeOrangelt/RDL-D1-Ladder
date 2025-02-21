@@ -19,47 +19,36 @@ async function displayLadder() {
     }
 
     try {
-        console.log('Fetching players from Firestore...');
         const playersRef = collection(db, 'players');
-        
-        console.log('Executing query...');
         const querySnapshot = await getDocs(playersRef);
-        console.log('Query complete. Number of documents:', querySnapshot.size);
         
-        // Clear existing content
-        tableBody.innerHTML = '';
-
-        if (querySnapshot.empty) {
-            console.log('No players found in the database.');
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `
-                <td colspan="7" style="text-align: center;">No players found</td>
-            `;
-            tableBody.appendChild(emptyRow);
-            return;
-        }
-
-        // Convert to array for sorting and filter out test players
+        // Convert to array and filter out test players
         const players = [];
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
-            const position = playerData.position || getNextAvailablePosition(players);
-            
             players.push({
                 ...playerData,
                 id: doc.id,
                 elo: playerData.eloRating || 0,
-                position: position
+                position: playerData.position || Number.MAX_SAFE_INTEGER // Use existing position
             });
         });
 
-        // Sort players by position (lowest number first)
-        players.sort((a, b) => a.position - b.position);
+        // Sort players by position
+        players.sort((a, b) => {
+            if (!a.position) return 1;
+            if (!b.position) return -1;
+            return a.position - b.position;
+        });
 
-        // Display sorted players
+        // Reassign positions sequentially
+        players.forEach((player, index) => {
+            player.position = index + 1;
+        });
+
+        // Update the display
         updateLadderDisplay(players);
 
-        console.log(`Successfully loaded ${players.length} players into ladder`);
     } catch (error) {
         console.error("Error loading ladder:", error);
         tableBody.innerHTML = `
