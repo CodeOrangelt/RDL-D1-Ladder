@@ -126,15 +126,15 @@ class ProfileManager {
                 totalDeaths += parseInt(match.winnerScore) || 0;
             });
 
-            // Calculate KDA and win rate
-            const kda = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
+            // Calculate K/D ratio
+            const kdRatio = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
             const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0';
 
             // Update DOM elements
             document.getElementById('stats-matches').textContent = totalMatches;
             document.getElementById('stats-wins').textContent = wins;
             document.getElementById('stats-losses').textContent = losses;
-            document.getElementById('stats-kda').textContent = kda;
+            document.getElementById('stats-kda').textContent = kdRatio;
             document.getElementById('stats-winrate').textContent = `${winRate}%`;
 
         } catch (error) {
