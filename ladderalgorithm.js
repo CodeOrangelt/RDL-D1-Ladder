@@ -46,39 +46,18 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
+        // Calculate new ratings with fallback to default 1200
         const { newWinnerRating, newLoserRating } = calculateElo(
             winner.eloRating || 1200, 
             loser.eloRating || 1200
         );
 
-        // Create batch
-        const batch = writeBatch(db);
-
-        // Winner update with ONLY the fields allowed by security rules
-        const winnerUpdate = {
-            eloRating: newWinnerRating,
-            lastMatchDate: serverTimestamp(),
-            position: winner.position || 1
-        };
-
-        // Loser update with ONLY the fields allowed by security rules
-        const loserUpdate = {
-            eloRating: newLoserRating,
-            lastMatchDate: serverTimestamp(),
-            position: loser.position || 2
-        };
-
-        // Update player documents
-        const winnerRef = doc(db, 'players', winner.id);
-        const loserRef = doc(db, 'players', loser.id);
-
-        batch.update(winnerRef, winnerUpdate);
-        batch.update(loserRef, loserUpdate);
-
-        // Add ELO history entries separately after player updates
+        // First update ELO history since it has less restrictive rules
         const historyBatch = writeBatch(db);
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        
+        const loserHistoryRef = doc(collection(db, 'eloHistory'));
+
+        // Add winner history entry
         historyBatch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
@@ -88,13 +67,46 @@ export async function updateEloRatings(winner, loser, matchId) {
             change: newWinnerRating - (winner.eloRating || 1200),
             matchResult: 'win',
             previousPosition: winner.position || 1,
-            newPosition: winnerUpdate.position,
+            newPosition: winner.position || 1,
             timestamp: serverTimestamp()
         });
 
-        // Commit updates in order
-        await batch.commit();
+        // Add loser history entry
+        historyBatch.set(loserHistoryRef, {
+            type: 'match',
+            player: loser.username,
+            opponent: winner.username,
+            previousElo: loser.eloRating || 1200,
+            newElo: newLoserRating,
+            change: newLoserRating - (loser.eloRating || 1200),
+            matchResult: 'loss',
+            previousPosition: loser.position || 2,
+            newPosition: loser.position || 2,
+            timestamp: serverTimestamp()
+        });
+
+        // Commit history updates first
         await historyBatch.commit();
+
+        // Then update player documents with EXACTLY the fields required by security rules
+        const playerBatch = writeBatch(db);
+
+        // Winner update
+        playerBatch.update(doc(db, 'players', winner.id), {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            position: winner.position || 1
+        });
+
+        // Loser update
+        playerBatch.update(doc(db, 'players', loser.id), {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            position: loser.position || 2
+        });
+
+        // Commit player updates
+        await playerBatch.commit();
 
         return true;
     } catch (error) {
@@ -152,8 +164,8 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         batch.set(doc(db, 'approvedMatches', reportId), {
             ...reportData,
             winnerScore,
-            winnerSuicides,
             winnerComment,
+            winnerSuicides,
             approved: true,
             approvedAt: serverTimestamp(),
             approvedBy: currentUser.email
@@ -208,4 +220,11 @@ async function updatePlayerStats(playerId, matchData, isWinner) {
     stats.lastUpdated = new Date().toISOString();
 
     await setDoc(statsRef, stats, { merge: true });
+}
+
+function isValidEloUpdate(currentData, newData) {
+  return newData.eloRating is number &&
+         currentData.eloRating is number &&
+         (newData.eloRating - currentData.eloRating) <= 32 &&
+         (newData.eloRating - currentData.eloRating) >= -32;
 }
