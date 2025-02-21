@@ -526,7 +526,7 @@ class ProfileViewer {
 
     async loadPlayerStats(username) {
         if (!username) {
-            username = localStorage.getItem('nickname'); // Fallback to stored nickname
+            username = localStorage.getItem('nickname'); 
         }
         if (!username) return;
     
@@ -537,37 +537,36 @@ class ProfileViewer {
                 getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
             ]);
     
-            // Calculate stats from matches
+            // Calculate stats using same logic as ladder.js
             let stats = {
                 wins: winnerMatches.size,
                 losses: loserMatches.size,
                 totalKills: 0,
                 totalDeaths: 0,
-                totalAssists: 0,
-                totalMatches: winnerMatches.size + loserMatches.size
+                totalMatches: winnerMatches.size + loserMatches.size,
+                kda: 0,
+                winRate: 0
             };
     
-            // Calculate kills, deaths, and assists from matches
+            // Calculate kills and deaths using same logic as ladder
             winnerMatches.forEach(doc => {
                 const match = doc.data();
                 stats.totalKills += parseInt(match.winnerScore) || 0;
                 stats.totalDeaths += parseInt(match.loserScore) || 0;
-                stats.totalAssists += parseInt(match.winnerAssists) || 0;
             });
     
             loserMatches.forEach(doc => {
                 const match = doc.data();
                 stats.totalKills += parseInt(match.loserScore) || 0;
                 stats.totalDeaths += parseInt(match.winnerScore) || 0;
-                stats.totalAssists += parseInt(match.loserAssists) || 0;
             });
     
-            // Calculate KDA ratio
+            // Calculate KDA ratio same as ladder
             stats.kda = stats.totalDeaths > 0 ? 
-                ((stats.totalKills + stats.totalAssists) / stats.totalDeaths).toFixed(2) : 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
                 stats.totalKills.toFixed(2);
     
-            // Calculate win rate
+            // Calculate win rate same as ladder
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
     
@@ -582,7 +581,7 @@ class ProfileViewer {
             console.error('Error loading player stats:', error);
             // Set default values if there's an error
             document.getElementById('stats-matches').textContent = '0';
-            document.getElementById('stats-wins').textContent = '0';
+            document.getElementById('stats-wins').textContent = '0'; 
             document.getElementById('stats-losses').textContent = '0';
             document.getElementById('stats-kda').textContent = '0.00';
             document.getElementById('stats-winrate').textContent = '0%';
