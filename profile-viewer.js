@@ -145,7 +145,9 @@ class ProfileViewer {
                 motto: document.getElementById('motto-edit').value,
                 favoriteMap: document.getElementById('favorite-map-edit').value,
                 favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
-                lastUpdated: new Date().toISOString()
+                lastUpdated: new Date().toISOString(),
+                timezone: document.getElementById('timezone-edit').value,
+                division: document.getElementById('division-edit').value
             };
 
             // Save to userProfiles collection
@@ -193,6 +195,8 @@ class ProfileViewer {
         document.getElementById('motto-view').textContent = data.motto || 'No motto set';
         document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not set';
         document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not set';
+        document.getElementById('timezone-view').textContent = data.timezone || 'Not set';
+        document.getElementById('division-view').textContent = data.division || 'Not set';
 
         // Update profile image
         const profilePreview = document.getElementById('profile-preview');

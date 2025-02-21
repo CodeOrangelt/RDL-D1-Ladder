@@ -88,6 +88,23 @@
     color: #fff !important;
 }
 
+/* Add select styling to match inputs */
+.profile-field select {
+    flex: 1;
+    margin: 0;
+    padding: 4px 8px;
+    border: 1px solid #4CAF50;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+}
+
+.profile-field select option {
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
 .button-group {
     display: flex;
     gap: 10px;
