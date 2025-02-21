@@ -46,14 +46,18 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
-        // Ensure admin status first
+        // Check if user is logged in and is match participant
         const currentUser = auth.currentUser;
         if (!currentUser) {
             throw new Error('Must be logged in to update ELO ratings');
         }
-        const adminStatus = await isAdmin(currentUser.email);
-        if (!adminStatus) {
-            throw new Error('Admin privileges required to update ELO ratings');
+
+        // Check if user is match participant
+        const isWinner = currentUser.email === winner.email;
+        const isLoser = currentUser.email === loser.email;
+        
+        if (!isWinner && !isLoser) {
+            throw new Error('Must be a match participant to update ELO ratings');
         }
 
         // Calculate new ratings with fallback to default 1200
@@ -62,59 +66,25 @@ export async function updateEloRatings(winner, loser, matchId) {
             loser.eloRating || 1200
         );
 
-        // Validate ELO changes according to security rules
+        // Validate ELO changes
         const winnerChange = newWinnerRating - (winner.eloRating || 1200);
         const loserChange = newLoserRating - (loser.eloRating || 1200);
         if (Math.abs(winnerChange) > 32 || Math.abs(loserChange) > 32) {
             throw new Error('ELO rating change exceeds maximum allowed value of 32');
         }
 
-        // First update ELO history
-        const historyBatch = writeBatch(db);
-        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
-        const loserHistoryRef = doc(collection(db, 'eloHistory'));
-
-        // Add history entries with all required fields from security rules
-        historyBatch.set(winnerHistoryRef, {
-            type: 'match',
-            player: winner.username,
-            opponent: loser.username,
-            previousElo: winner.eloRating || 1200,
-            newElo: newWinnerRating,
-            change: winnerChange,
-            matchResult: 'win',
-            previousPosition: winner.position || 1,
-            newPosition: winner.position || 1,
-            timestamp: serverTimestamp()
-        });
-
-        historyBatch.set(loserHistoryRef, {
-            type: 'match',
-            player: loser.username,
-            opponent: winner.username,
-            previousElo: loser.eloRating || 1200,
-            newElo: newLoserRating,
-            change: loserChange,
-            matchResult: 'loss',
-            previousPosition: loser.position || 2,
-            newPosition: loser.position || 2,
-            timestamp: serverTimestamp()
-        });
-
-        // Commit history first
-        await historyBatch.commit();
-
-        // Update players with exact required fields from security rules
-        await updateDoc(doc(db, 'players', winner.id), {
-            eloRating: newWinnerRating,
-            lastMatchDate: serverTimestamp(),
-            position: winner.position || 1
-        });
-
-        await updateDoc(doc(db, 'players', loser.id), {
-            eloRating: newLoserRating,
-            lastMatchDate: serverTimestamp(),
-            position: loser.position || 2
+        // Add match to pending matches
+        const pendingMatchRef = doc(collection(db, 'pendingMatches'));
+        await setDoc(pendingMatchRef, {
+            winnerUsername: winner.username,
+            winnerEmail: winner.email,
+            loserUsername: loser.username,
+            loserEmail: loser.email,
+            reportedBy: currentUser.email,
+            createdAt: serverTimestamp(),
+            mapPlayed: matchId, // Assuming matchId is the map name
+            loserScore: 0, // Will be updated by loser
+            loserComment: '' // Will be updated by loser
         });
 
         return true;
