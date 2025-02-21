@@ -51,6 +51,7 @@
     width: 100%;
     margin-bottom: 15px;
     background: rgba(0, 0, 0, 0.3);
+    color: white;
     padding: 15px;
     border-radius: 5px;
     display: flex;
@@ -462,10 +463,4 @@
     color: #888;
     text-transform: uppercase;
     font-weight: normal;
-}
-
-/* Remove the !important override for these views */
-#favorite-map-view,
-#favorite-weapon-view {
-    color: inherit; /* This will inherit the ELO color instead of forcing white */
 }
