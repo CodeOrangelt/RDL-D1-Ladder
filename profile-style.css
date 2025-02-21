@@ -46,7 +46,7 @@
     opacity: 0.9;
 }
 
-/* Update profile field styling */
+/* Update profile field styling for inline layout */
 .profile-field {
     width: 100%;
     margin-bottom: 15px;
@@ -54,27 +54,28 @@
     padding: 15px;
     border-radius: 5px;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row; /* Change to row for inline layout */
+    align-items: center; /* Center items vertically */
+    justify-content: space-between; /* Space between label and text */
 }
 
-/* Keep label color based on ELO but make view text white */
+/* Update label styling */
 .profile-field label {
-    color: inherit; /* This will inherit the ELO color */
+    color: inherit;
     opacity: 0.9;
-    margin-right: 10px;
     font-weight: bold;
-    margin-bottom: 8px;
-    display: block;
+    margin: 0; /* Remove margins */
+    flex: 0 0 auto; /* Prevent label from growing */
 }
 
-/* Ensure view text is white */
+/* Update view text styling */
 .view-text {
-    opacity: 1; /* Changed from 0.9 to ensure visibility */
+    opacity: 1;
     padding: 5px 0;
-    color: inherit;
-    display: block; /* Ensure it's displayed */
-    width: 100%; /* Take full width */
+    color: white !important; /* Force white color for user input */
+    text-align: right; /* Align text to the right */
+    flex: 1; /* Allow text to take remaining space */
+    margin-left: 15px; /* Add space between label and text */
 }
 
 /* Keep input text white when editing */
