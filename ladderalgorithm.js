@@ -79,15 +79,15 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         let winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            matchId: matchId,
-            participantIds: [winnerId, loserId]  // Add participant IDs
+            position: winnerUpdates.position,
+            matchId: matchId
         };
 
         let loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            matchId: matchId,
-            participantIds: [winnerId, loserId]  // Add participant IDs
+            position: loserUpdates.position,
+            matchId: matchId
         };
 
         // Handle position swapping
