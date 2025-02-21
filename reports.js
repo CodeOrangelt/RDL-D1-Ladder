@@ -135,56 +135,31 @@ function setupReportForm(elements) {
 }
 
 async function submitReport(elements) {
-    const pendingMatchesRef = collection(db, 'players');
-    const newMatchRef = doc(collection(db, 'pendingMatches'));
+    const pendingMatchesRef = collection(db, 'pendingMatches');
+    const newMatchRef = doc(pendingMatchesRef);
     
-    try {
-        // Get winner data
-        const winnerQuery = query(
-            collection(db, 'players'), 
-            where('email', '==', elements.winnerUsername.value)
-        );
-        const winnerSnapshot = await getDocs(winnerQuery);
+    const winnerQuery = query(
+        collection(db, 'players'), 
+        where('email', '==', elements.winnerUsername.value)
+    );
+    const winnerSnapshot = await getDocs(winnerQuery);
+    
+    if (!winnerSnapshot.empty) {
+        const winnerData = winnerSnapshot.docs[0].data();
+        const reportData = {
+            matchId: newMatchRef.id,
+            loserUsername: elements.loserUsername.textContent,
+            winnerUsername: winnerData.username,
+            winnerEmail: elements.winnerUsername.value,
+            loserScore: elements.loserScore.value,
+            suicides: elements.suicides.value,
+            mapPlayed: elements.mapPlayed.value,
+            loserComment: elements.loserComment.value,
+            approved: false,
+            createdAt: serverTimestamp()
+        };
         
-        if (!winnerSnapshot.empty) {
-            const winnerData = winnerSnapshot.docs[0].data();
-            
-            // Create report data matching security rules requirements
-            const reportData = {
-                matchId: newMatchRef.id,
-                winnerUsername: winnerData.username,
-                loserUsername: elements.loserUsername.textContent,
-                winnerEmail: elements.winnerUsername.value,
-                loserEmail: currentUserEmail, // Add loser email
-                reportedBy: currentUserEmail,  // Add who reported
-                loserScore: elements.loserScore.value,
-                suicides: elements.suicides.value,
-                mapPlayed: elements.mapPlayed.value,
-                loserComment: elements.loserComment.value,
-                approved: false,
-                createdAt: serverTimestamp()
-            };
-
-            // Verify all required fields are present according to security rules
-            const requiredFields = [
-                'winnerUsername', 
-                'loserUsername', 
-                'winnerEmail', 
-                'loserEmail',
-                'reportedBy', 
-                'createdAt'
-            ];
-
-            if (requiredFields.every(field => reportData.hasOwnProperty(field))) {
-                await setDoc(newMatchRef, reportData);
-                return true;
-            } else {
-                throw new Error('Missing required fields for report');
-            }
-        }
-    } catch (error) {
-        console.error('Error submitting report:', error);
-        throw error;
+        await setDoc(newMatchRef, reportData);
     }
 }
 
