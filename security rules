@@ -55,15 +55,7 @@ service cloud.firestore {
                    // Allow ELO updates from matches
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
-                    isValidEloUpdate(resource.data, request.resource.data)) ||
-                   // Allow promotions from admin
-                   (isAdmin() &&
-                    request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy'])) ||
-                   // Allow demotions from admin
-                   (isAdmin() &&
-                    request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastDemotedAt', 'demotedBy']));
+                    isValidEloUpdate(resource.data, request.resource.data));
       allow delete: if isAdmin();
     }
 
