@@ -46,67 +46,76 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
+        // Ensure admin status first
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('Must be logged in to update ELO ratings');
+        }
+        const adminStatus = await isAdmin(currentUser.email);
+        if (!adminStatus) {
+            throw new Error('Admin privileges required to update ELO ratings');
+        }
+
         // Calculate new ratings with fallback to default 1200
         const { newWinnerRating, newLoserRating } = calculateElo(
             winner.eloRating || 1200, 
             loser.eloRating || 1200
         );
 
-        // First update ELO history since it has less restrictive rules
+        // Validate ELO changes according to security rules
+        const winnerChange = newWinnerRating - (winner.eloRating || 1200);
+        const loserChange = newLoserRating - (loser.eloRating || 1200);
+        if (Math.abs(winnerChange) > 32 || Math.abs(loserChange) > 32) {
+            throw new Error('ELO rating change exceeds maximum allowed value of 32');
+        }
+
+        // First update ELO history
         const historyBatch = writeBatch(db);
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
         const loserHistoryRef = doc(collection(db, 'eloHistory'));
 
-        // Add winner history entry
+        // Add history entries with all required fields from security rules
         historyBatch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
             opponent: loser.username,
             previousElo: winner.eloRating || 1200,
             newElo: newWinnerRating,
-            change: newWinnerRating - (winner.eloRating || 1200),
+            change: winnerChange,
             matchResult: 'win',
             previousPosition: winner.position || 1,
             newPosition: winner.position || 1,
             timestamp: serverTimestamp()
         });
 
-        // Add loser history entry
         historyBatch.set(loserHistoryRef, {
             type: 'match',
             player: loser.username,
             opponent: winner.username,
             previousElo: loser.eloRating || 1200,
             newElo: newLoserRating,
-            change: newLoserRating - (loser.eloRating || 1200),
+            change: loserChange,
             matchResult: 'loss',
             previousPosition: loser.position || 2,
             newPosition: loser.position || 2,
             timestamp: serverTimestamp()
         });
 
-        // Commit history updates first
+        // Commit history first
         await historyBatch.commit();
 
-        // Then update player documents with EXACTLY the fields required by security rules
-        const playerBatch = writeBatch(db);
-
-        // Winner update
-        playerBatch.update(doc(db, 'players', winner.id), {
+        // Update players with exact required fields from security rules
+        await updateDoc(doc(db, 'players', winner.id), {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
             position: winner.position || 1
         });
 
-        // Loser update
-        playerBatch.update(doc(db, 'players', loser.id), {
+        await updateDoc(doc(db, 'players', loser.id), {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
             position: loser.position || 2
         });
-
-        // Commit player updates
-        await playerBatch.commit();
 
         return true;
     } catch (error) {
@@ -117,25 +126,27 @@ export async function updateEloRatings(winner, loser, matchId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
-        console.log('Starting approveReport with ID:', reportId);
-        
         const currentUser = auth.currentUser;
         if (!currentUser) {
             throw new Error('You must be logged in to approve matches');
         }
 
-        // Get the pending match first
+        // Verify admin status
+        const adminStatus = await isAdmin(currentUser.email);
+        if (!adminStatus) {
+            throw new Error('Admin privileges required to approve matches');
+        }
+
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
         if (!reportSnapshot.exists()) {
-            console.error('Report not found:', reportId);
             throw new Error('Match report not found');
         }
 
         const reportData = reportSnapshot.data();
         
-        // Get player documents
+        // Get players with complete error handling
         const [winnerQuery, loserQuery] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
@@ -155,13 +166,11 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             ...loserQuery.docs[0].data()
         };
 
-        // First update ELO ratings
+        // Update ELO ratings first
         await updateEloRatings(winner, loser, reportId);
 
-        // Then move the match to approved collection
-        const batch = writeBatch(db);
-        
-        batch.set(doc(db, 'approvedMatches', reportId), {
+        // Create approved match with all required fields
+        await setDoc(doc(db, 'approvedMatches', reportId), {
             ...reportData,
             winnerScore,
             winnerComment,
@@ -170,10 +179,9 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             approvedAt: serverTimestamp(),
             approvedBy: currentUser.email
         });
-        
-        batch.delete(pendingMatchRef);
-        
-        await batch.commit();
+
+        // Delete pending match after successful approval
+        await deleteDoc(pendingMatchRef);
         
         return true;
     } catch (error) {
