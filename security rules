@@ -16,9 +16,7 @@ function isVerifiedUser() {
 function isMatchParticipant(matchData) {
   return request.auth != null && (
     matchData.winnerEmail == request.auth.token.email ||
-    matchData.loserEmail == request.auth.token.email ||
-    matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
-    matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+    matchData.loserEmail == request.auth.token.email
   );
 }
 
@@ -59,10 +57,18 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null && 
                    request.resource.data.keys().hasAll([
-                     'winnerUsername', 'loserUsername', 'loserScore',
-                     'mapPlayed', 'loserComment', 'createdAt'
-                   ]);
-      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+                     'winnerUsername', 'loserUsername', 'winnerEmail', 'loserEmail',
+                     'reportedBy', 'createdAt'
+                   ]) &&
+                   (
+                     // Either winner or loser can create the match report
+                     request.auth.token.email == request.resource.data.winnerEmail ||
+                     request.auth.token.email == request.resource.data.loserEmail
+                   );
+      // Allow participants to update their own match details
+      allow update: if isMatchParticipant(resource.data);
+      // Only participants can delete their pending matches
+      allow delete: if isMatchParticipant(resource.data);
     }
 
     match /approvedMatches/{matchId} {
