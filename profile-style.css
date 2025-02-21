@@ -56,8 +56,9 @@
     align-items: center;
 }
 
+/* Keep label color based on ELO but make view text white */
 .profile-field label {
-    color: #fff !important;  /* Force white text */
+    color: inherit; /* This will inherit the ELO color */
     opacity: 0.9;
     margin-right: 10px;
     font-weight: bold;
@@ -71,13 +72,14 @@
     padding: 5px 0;
 }
 
+/* Keep input text white when editing */
 .profile-field input[type="text"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #4CAF50;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.5);
-    color: white;
+    color: #fff !important;
 }
 
 .button-group {
