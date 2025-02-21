@@ -188,3 +188,75 @@ h1 {
     margin: 10px 0;
     text-align: center;
 }
+
+/* Lightbox styling */
+.confirm-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-content {
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    color: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-content h3 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.confirm-content p {
+    margin-bottom: 25px;
+    font-size: 1.1rem;
+    line-height: 1.4;
+}
+
+.confirm-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.confirm-buttons button {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.confirm-yes {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.confirm-no {
+    background-color: #ff4444;
+    color: white;
+}
+
+.confirm-yes:hover {
+    background-color: #45a049;
+}
+
+.confirm-no:hover {
+    background-color: #ff3333;
+}
