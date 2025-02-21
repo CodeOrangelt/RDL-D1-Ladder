@@ -79,6 +79,7 @@ main table {
     background-color: transparent;
     box-shadow: none;
     z-index: 2; /* Ensure table is on top */
+    font-size: 1.2rem; /* Increased font size */
 }
 
 .container {
@@ -105,18 +106,20 @@ table, th, td {
 
 th, td {
     border: none; /* Remove all borders */
-    padding: 6px 8px; /* Reduced padding */
+    padding: 16px; /* Increased padding */
     text-align: center; /* Default center alignment */
     font-family: Tahoma, sans-serif;
     color: white;
     background-color: transparent;
+    line-height: 1.4; /* Better line height */
 }
 
-/* Keep rank column (first column) centered */
+/* Keep rank column (first column) centered but larger */
 th:first-child,
 td:first-child {
     text-align: center;
-    width: 50px;
+    width: 60px; /* Slightly wider for larger font */
+    font-size: 1.25rem; /* Larger rank numbers */
 }
 
 /* Align username column (second column) to the left */
@@ -124,6 +127,7 @@ th:nth-child(2),
 td:nth-child(2) {
     text-align: left;
     padding-left: 20px; /* Add padding for better spacing */
+    font-size: 1.25rem; /* Larger usernames */
 }
 
 th {
@@ -187,7 +191,7 @@ tr:nth-child(even) {
 
 /* Add some spacing between table rows */
 #ladder tr {
-    height: 30px; /* Reduced row height */
+    height: 40px; /* Increased row height */
 }
 
 /* Add rank colors */
@@ -420,3 +424,15 @@ tr:nth-child(even) {
     transform-origin: 100% 0;
     transform: translate(-29.3%) rotate(-45deg);
   }
+
+/* Hover effect for better row distinction */
+#ladder tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+/* Keep stats columns readable */
+#ladder td:nth-child(n+3) {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
