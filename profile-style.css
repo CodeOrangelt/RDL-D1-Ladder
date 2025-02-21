@@ -268,10 +268,7 @@
 }
 
 .stats-content {
-    width: 100%;
-    height: 300px;
-    padding: 20px;
-    box-sizing: border-box;
+    display: none;
 }
 
 .match-history-container + .match-history-container {
@@ -292,11 +289,7 @@
 }
 
 .stats-container {
-    margin-top: 10px;
-    padding: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
+    display: none;
 }
 
 .stats-container p {
@@ -308,49 +301,28 @@
 .stats-section {
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 15px;
-    padding: 5px 0;
-    margin: 10px 0;
+    gap: 20px;
+    margin: 15px 0;
+    flex-wrap: wrap;
 }
 
 .stat-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 0.5rem;
-}
-
-.stat-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: none;
-    padding: 0;
-}
-
-.stat-label {
-    color: #888;
-    font-size: 12px;
-}
-
-.stat-value {
-    color: #fff;
-    font-size: 12px;
-    font-weight: normal;
+    display: none;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
     gap: 5px;
+    background: none;
+    padding: 0;
 }
 
 .stat-label {
+    font-size: 0.8em;
     color: #888;
-    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: normal;
 }
 
 .stat-value {
@@ -375,11 +347,8 @@
     font-size: 1rem;
 }
 
-.stats-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    color: white;
+.stats-grid {
+    display: none;
 }
 
 .stat-item {
@@ -425,34 +394,21 @@
 
 /* Stats Grid Layout */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
+    display: none;
 }
 
 .stat-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    transition: transform 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Reduced from 50px to bring numbers closer to letters */
 }
 
-.stat-item:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.stat-item h3 {
-    margin: 0;
-    color: #888;
-    font-size: 0.9rem;
+.stat-label {
+    font-size: 28px; /* Made letters larger */
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 #stats-matches,
@@ -460,6 +416,7 @@
 #stats-losses,
 #stats-kda,
 #stats-winrate {
+    font-size: 1.2em;
+    font-weight: bold;
     color: #fff;
-    font-size: 12px;
 }
