@@ -223,8 +223,8 @@ async function updatePlayerStats(playerId, matchData, isWinner) {
 }
 
 function isValidEloUpdate(currentData, newData) {
-  return newData.eloRating is number &&
-         currentData.eloRating is number &&
+  return typeof newData.eloRating === 'number' &&
+         typeof currentData.eloRating === 'number' &&
          (newData.eloRating - currentData.eloRating) <= 32 &&
          (newData.eloRating - currentData.eloRating) >= -32;
 }

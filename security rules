@@ -48,7 +48,6 @@ service cloud.firestore {
       allow create: if isVerifiedUser();
       allow update: if isAdmin() || 
                    request.auth.uid == playerId || 
-                   // Allow ELO updates from matches
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
                     isValidEloUpdate(resource.data, request.resource.data));
