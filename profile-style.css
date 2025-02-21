@@ -46,6 +46,7 @@
     opacity: 0.9;
 }
 
+/* Update profile field styling */
 .profile-field {
     width: 100%;
     margin-bottom: 15px;
@@ -53,7 +54,8 @@
     padding: 15px;
     border-radius: 5px;
     display: flex;
-    align-items: center;
+    flex-direction: column; /* Changed to column layout */
+    align-items: flex-start; /* Align items to the start */
 }
 
 /* Keep label color based on ELO but make view text white */
@@ -81,6 +83,7 @@
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.5);
     color: #fff !important;
+    margin-top: 5px;
 }
 
 .button-group {
@@ -461,7 +464,8 @@
     font-weight: normal;
 }
 
+/* Remove the !important override for these views */
 #favorite-map-view,
 #favorite-weapon-view {
-    color: #fff !important;  /* Force white text specifically for these elements */
+    color: inherit; /* This will inherit the ELO color instead of forcing white */
 }
