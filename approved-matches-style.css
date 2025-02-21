@@ -102,3 +102,28 @@ tr:nth-child(even) {
 .player-link:hover {
     opacity: 0.8;
 }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+}
+
+.pagination button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background: #eee;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    font-weight: bold;
+}
