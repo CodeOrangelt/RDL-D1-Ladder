@@ -31,6 +31,20 @@ class ProfileViewer {
             console.log('URL username parameter:', username);
 
             if (!username) {
+                username = localStorage.getItem('nickname');
+                console.log('Using nickname from localStorage:', username);
+            }
+
+            if (!username) {
+                console.log('No username found');
+                this.showError('Profile not found - No username provided');
+                return;
+            }
+
+            // Load player stats first
+            await this.loadPlayerStats(username);
+
+            if (!username) {
                 const currentUser = auth.currentUser;
                 console.log('No username in URL, checking current user:', currentUser);
                 
@@ -525,19 +539,21 @@ class ProfileViewer {
     }
 
     async loadPlayerStats(username) {
-        if (!username) {
-            username = localStorage.getItem('nickname'); 
-        }
         if (!username) return;
     
         try {
+            console.log('Loading stats for user:', username);
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
                 getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
             ]);
     
-            // Calculate stats using same logic as ladder.js
+            console.log('Matches found:', {
+                winnerMatches: winnerMatches.size,
+                loserMatches: loserMatches.size
+            });
+
             let stats = {
                 wins: winnerMatches.size,
                 losses: loserMatches.size,
@@ -548,7 +564,7 @@ class ProfileViewer {
                 winRate: 0
             };
     
-            // Calculate kills and deaths using same logic as ladder
+            // Calculate kills and deaths
             winnerMatches.forEach(doc => {
                 const match = doc.data();
                 stats.totalKills += parseInt(match.winnerScore) || 0;
@@ -561,39 +577,59 @@ class ProfileViewer {
                 stats.totalDeaths += parseInt(match.winnerScore) || 0;
             });
     
-            // Calculate KDA ratio same as ladder
+            console.log('Calculated stats:', stats);
+
+            // Calculate KDA and win rate
             stats.kda = stats.totalDeaths > 0 ? 
                 (stats.totalKills / stats.totalDeaths).toFixed(2) : 
                 stats.totalKills.toFixed(2);
     
-            // Calculate win rate same as ladder
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
     
             // Update stats display
-            document.getElementById('stats-matches').textContent = stats.totalMatches;
-            document.getElementById('stats-wins').textContent = stats.wins;
-            document.getElementById('stats-losses').textContent = stats.losses;
-            document.getElementById('stats-kda').textContent = stats.kda;
-            document.getElementById('stats-winrate').textContent = `${stats.winRate}%`;
+            const elements = {
+                'stats-matches': stats.totalMatches,
+                'stats-wins': stats.wins,
+                'stats-losses': stats.losses,
+                'stats-kda': stats.kda,
+                'stats-winrate': `${stats.winRate}%`
+            };
+
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                    console.log(`Updated ${id} with value:`, value);
+                } else {
+                    console.warn(`Element with id ${id} not found`);
+                }
+            }
     
         } catch (error) {
             console.error('Error loading player stats:', error);
-            // Set default values if there's an error
-            document.getElementById('stats-matches').textContent = '0';
-            document.getElementById('stats-wins').textContent = '0'; 
-            document.getElementById('stats-losses').textContent = '0';
-            document.getElementById('stats-kda').textContent = '0.00';
-            document.getElementById('stats-winrate').textContent = '0%';
+            this.setDefaultStats();
+        }
+    }
+
+    setDefaultStats() {
+        const defaultStats = {
+            'stats-matches': '0',
+            'stats-wins': '0',
+            'stats-losses': '0',
+            'stats-kda': '0.00',
+            'stats-winrate': '0%'
+        };
+
+        for (const [id, value] of Object.entries(defaultStats)) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
         }
     }
 }
 
-// Make sure to call this function when the profile page loads
-document.addEventListener('DOMContentLoaded', () => {
-    const profileViewer = new ProfileViewer();
-    const username = localStorage.getItem('nickname');
-    if (username) {
-        profileViewer.loadPlayerStats(username);
-    }
-});
+// Remove the separate DOMContentLoaded event listener
+// since we're handling initialization in the constructor
+new ProfileViewer();
