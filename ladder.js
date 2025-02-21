@@ -5,7 +5,8 @@ import {
     doc,
     getDoc,
     query,
-    where
+    where,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -86,7 +87,54 @@ function getNextAvailablePosition(players) {
     return maxPosition + 1;
 }
 
+// Add this new function
+async function updatePlayerPositions(winnerUsername, loserUsername) {
+    try {
+        // Get all players
+        const playersRef = collection(db, 'players');
+        const querySnapshot = await getDocs(playersRef);
+        const players = [];
+        
+        querySnapshot.forEach((doc) => {
+            players.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        // Get winner and loser positions
+        const winner = players.find(p => p.username === winnerUsername);
+        const loser = players.find(p => p.username === loserUsername);
+
+        // Only update positions if winner is below loser
+        if (winner.position > loser.position) {
+            const winnerNewPosition = loser.position;
+            
+            // Update positions for players between winner and loser
+            for (const player of players) {
+                if (player.position >= loser.position && player.position < winner.position) {
+                    // Move everyone down one position
+                    await updateDoc(doc(db, 'players', player.id), {
+                        position: player.position + 1
+                    });
+                }
+            }
+
+            // Update winner's position
+            await updateDoc(doc(db, 'players', winner.id), {
+                position: winnerNewPosition
+            });
+        }
+    } catch (error) {
+        console.error("Error updating player positions:", error);
+    }
+}
+
+// Modify your existing updateLadderDisplay function to sort by position
 async function updateLadderDisplay(ladderData) {
+    // Sort by position before displaying
+    ladderData.sort((a, b) => a.position - b.position);
+    
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
@@ -98,7 +146,7 @@ async function updateLadderDisplay(ladderData) {
         <th>Matches</th>
         <th>Wins</th>
         <th>Losses</th>
-        <th>KDA</th>
+        <th>K/D</th>
         <th>Win Rate</th>
     `;
     
