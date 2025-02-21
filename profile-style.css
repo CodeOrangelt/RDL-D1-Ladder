@@ -56,8 +56,9 @@
     align-items: center;
 }
 
+/* Keep label color based on ELO but make view text white */
 .profile-field label {
-    color: white;  /* Make labels visible */
+    color: inherit; /* This will inherit the ELO color */
     opacity: 0.9;
     margin-right: 10px;
     font-weight: bold;
@@ -65,19 +66,21 @@
     display: block;
 }
 
+/* Ensure view text is white */
 .view-text {
-    color: white;  /* Make text visible */
-    opacity: 0.9;  /* Slight transparency */
+    color: #fff !important;
+    opacity: 0.9;
     padding: 5px 0;
 }
 
+/* Keep input text white when editing */
 .profile-field input[type="text"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #4CAF50;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.5);
-    color: white;
+    color: #fff !important;
 }
 
 .button-group {
@@ -120,6 +123,10 @@
 
 .view-mode {
     width: 100%;
+}
+
+.view-mode .profile-field {
+    color: #fff;
 }
 
 .error-message {
@@ -406,7 +413,7 @@
 }
 
 .stat-label {
-    font-size: 2px; /* Made letters larger */
+    font-size: 18px; /* Made letters larger */
     font-weight: bold;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
@@ -420,4 +427,28 @@
     font-size: 1.2em;
     font-weight: bold;
     color: #fff;
+}
+
+/* Stats display styling */
+.stats-section span[id^="stats-"] {
+    color: #fff !important; /* Force white color for all stat values */
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Remove any existing color classes that might affect the K/D ratio */
+#stats-kd {
+    color: #fff !important;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+#favorite-map-view,
+#favorite-weapon-view {
+    color: #fff !important;  /* Force white text specifically for these elements */
 }
