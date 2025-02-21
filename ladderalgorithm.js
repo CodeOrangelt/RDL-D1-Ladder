@@ -43,118 +43,73 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
-export async function updateEloRatings(winnerId, loserId, matchId) {
+export async function updateEloRatings(winner, loser, matchId) {
     try {
-        console.log('Starting ELO update for winner:', winnerId, 'and loser:', loserId);
-        
-        // Get the current ratings and positions of both players
-        const winnerRef = doc(db, 'players', winnerId);
-        const loserRef = doc(db, 'players', loserId);
-        
-        const [winnerDoc, loserDoc] = await Promise.all([
-            getDoc(winnerRef),
-            getDoc(loserRef)
-        ]);
-
-        if (!winnerDoc.exists() || !loserDoc.exists()) {
-            throw new Error('One or both players not found in the database.');
-        }
-
-        const winnerData = winnerDoc.data();
-        const loserData = loserDoc.data();
-        
-        // Store original positions
-        const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
-        const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
-        
         // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
-            winnerData.eloRating || 1200,
-            loserData.eloRating || 1200
+            winner.eloRating, 
+            loser.eloRating
         );
 
-        // Create batch for atomic updates
-        const batch = writeBatch(db);
-
-        let winnerUpdates = {
+        // Create the update objects first
+        const winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            position: winnerUpdates.position,
-            matchId: matchId
+            position: winner.position
         };
 
-        let loserUpdates = {
+        const loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            position: loserUpdates.position,
-            matchId: matchId
+            position: loser.position
         };
 
-        // Handle position swapping
-        if (winnerPosition > loserPosition) {
-            console.log('Position swap needed - winner was lower ranked');
-            
-            winnerUpdates.position = loserPosition;
-            loserUpdates.position = loserPosition + 1;
+        // Create batch updates
+        const batch = writeBatch(db);
 
-            // Move everyone else down one position
-            const playersToUpdate = query(
-                collection(db, 'players'),
-                where('position', '>', loserPosition),
-                where('position', '<=', winnerPosition)
-            );
-            
-            const playersSnapshot = await getDocs(playersToUpdate);
-            playersSnapshot.forEach(playerDoc => {
-                if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
-                    batch.update(doc(db, 'players', playerDoc.id), {
-                        position: playerDoc.data().position + 1,
-                        matchId: matchId  // Add matchId for security rules
-                    });
-                }
-            });
-        }
+        // Update winner document
+        batch.update(doc(db, 'players', winner.id), winnerUpdates);
 
-        // Add updates to batch
-        batch.update(winnerRef, winnerUpdates);
-        batch.update(loserRef, loserUpdates);
+        // Update loser document
+        batch.update(doc(db, 'players', loser.id), loserUpdates);
 
-        // Record ELO history first
-        await Promise.all([
-            recordEloChange({
-                playerId: winnerId,
-                previousElo: winnerData.eloRating || 1200,
-                newElo: newWinnerRating,
-                opponentId: loserId,
-                matchResult: 'win',
-                previousPosition: winnerPosition,
-                newPosition: winnerUpdates.position || winnerPosition,
-                isPromotion: winnerUpdates.position < winnerPosition,
-                matchId: matchId,  // Add matchId
-                timestamp: serverTimestamp()
-            }),
-            recordEloChange({
-                playerId: loserId,
-                previousElo: loserData.eloRating || 1200,
-                newElo: newLoserRating,
-                opponentId: winnerId,
-                matchResult: 'loss',
-                previousPosition: loserPosition,
-                newPosition: loserUpdates.position || loserPosition,
-                isDemotion: loserUpdates.position > loserPosition,
-                matchId: matchId,  // Add matchId
-                timestamp: serverTimestamp()
-            })
-        ]);
+        // Add ELO history entries
+        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
+        const loserHistoryRef = doc(collection(db, 'eloHistory'));
 
-        // Commit batch after history is recorded
+        batch.set(winnerHistoryRef, {
+            type: 'match',
+            player: winner.username,
+            opponent: loser.username,
+            previousElo: winner.eloRating,
+            newElo: newWinnerRating,
+            change: newWinnerRating - winner.eloRating,
+            matchResult: 'win',
+            previousPosition: winner.position,
+            newPosition: winnerUpdates.position,
+            timestamp: serverTimestamp(),
+            matchId: matchId
+        });
+
+        batch.set(loserHistoryRef, {
+            type: 'match',
+            player: loser.username,
+            opponent: winner.username,
+            previousElo: loser.eloRating,
+            newElo: newLoserRating,
+            change: newLoserRating - loser.eloRating,
+            matchResult: 'loss',
+            previousPosition: loser.position,
+            newPosition: loserUpdates.position,
+            timestamp: serverTimestamp(),
+            matchId: matchId
+        });
+
+        // Commit the batch
         await batch.commit();
 
-        console.log('ELO ratings and positions updated successfully');
-        return true;
-
     } catch (error) {
-        console.error('Error in updateEloRatings:', error);
+        console.error("Error in updateEloRatings:", error);
         throw error;
     }
 }
