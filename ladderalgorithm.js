@@ -54,26 +54,24 @@ export async function updateEloRatings(winner, loser, matchId) {
         // Create batch updates
         const batch = writeBatch(db);
 
-        // Update winner document with EXACTLY the required fields from security rules
+        // Update winner document with EXACTLY the required fields
         const winnerUpdate = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
             position: winner.position || 1
         };
 
-        // Update loser document with EXACTLY the required fields from security rules
+        // Update loser document with EXACTLY the required fields
         const loserUpdate = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
             position: loser.position || 2
         };
 
-        // Apply updates
-        batch.update(doc(db, 'players', winner.id), winnerUpdate);
-        batch.update(doc(db, 'players', loser.id), loserUpdate);
-
-        // Add ELO history entry with all required fields
+        // Add ELO history first
         const winnerHistoryRef = doc(collection(db, 'eloHistory'));
+        const loserHistoryRef = doc(collection(db, 'eloHistory'));
+
         batch.set(winnerHistoryRef, {
             type: 'match',
             player: winner.username,
@@ -83,13 +81,31 @@ export async function updateEloRatings(winner, loser, matchId) {
             change: newWinnerRating - (winner.eloRating || 1200),
             matchResult: 'win',
             previousPosition: winner.position || 1,
-            newPosition: winner.position || 1,
+            newPosition: winnerUpdate.position,
             timestamp: serverTimestamp()
         });
 
-        // Commit all changes
-        await batch.commit();
+        batch.set(loserHistoryRef, {
+            type: 'match',
+            player: loser.username,
+            opponent: winner.username,
+            previousElo: loser.eloRating || 1200,
+            newElo: newLoserRating,
+            change: newLoserRating - (loser.eloRating || 1200),
+            matchResult: 'loss',
+            previousPosition: loser.position || 2,
+            newPosition: loserUpdate.position,
+            timestamp: serverTimestamp()
+        });
 
+        // Then update player documents
+        batch.update(doc(db, 'players', winner.id), winnerUpdate);
+        batch.update(doc(db, 'players', loser.id), loserUpdate);
+
+        // Commit all changes in one batch
+        await batch.commit();
+        
+        return true;
     } catch (error) {
         console.error("Error in updateEloRatings:", error);
         throw error;
@@ -98,90 +114,65 @@ export async function updateEloRatings(winner, loser, matchId) {
 
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
-        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+        console.log('Starting approveReport with ID:', reportId);
         
         const currentUser = auth.currentUser;
         if (!currentUser) {
-            console.log('No user logged in');
             throw new Error('You must be logged in to approve matches');
         }
-        console.log('Current user:', currentUser.email);
 
-        // Get user's player document to verify permissions
-        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
-        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
-        console.log('Current username:', currentUsername);
-
-        // Get the pending match
+        // Get the pending match first
         const pendingMatchRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
         if (!reportSnapshot.exists()) {
-            console.log('Report not found with ID:', reportId);
+            console.error('Report not found:', reportId);
             throw new Error('Match report not found');
         }
 
         const reportData = reportSnapshot.data();
-        console.log('Report data:', reportData);
         
-        // Check if user is participant or admin
-        const isParticipant = currentUsername === reportData.winnerUsername || 
-                             currentUsername === reportData.loserUsername;
-        const userIsAdmin = await isAdmin(currentUser.email);
-
-        if (!isParticipant && !userIsAdmin) {
-            throw new Error('Only match participants or admins can approve matches');
-        }
-
-        // Get player documents with their full data
-        const [winnerDocs, loserDocs] = await Promise.all([
+        // Get player documents
+        const [winnerQuery, loserQuery] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
         ]);
 
-        if (winnerDocs.empty || loserDocs.empty) {
+        if (winnerQuery.empty || loserQuery.empty) {
             throw new Error('Could not find player documents');
         }
 
         const winner = {
-            id: winnerDocs.docs[0].id,
-            ...winnerDocs.docs[0].data()
+            id: winnerQuery.docs[0].id,
+            ...winnerQuery.docs[0].data()
         };
 
         const loser = {
-            id: loserDocs.docs[0].id,
-            ...loserDocs.docs[0].data()
+            id: loserQuery.docs[0].id,
+            ...loserQuery.docs[0].data()
         };
 
-        // Move match to approved collection
-        const updatedReportData = {
-            ...reportData,
-            winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides,
-            winnerComment: winnerComment,
-            approved: true,
-            approvedAt: serverTimestamp(),
-            approvedBy: currentUsername
-        };
-
-        // Use batch write for consistency
-        const batch = writeBatch(db);
-        
-        // Add to approved matches
-        batch.set(doc(db, 'approvedMatches', reportId), updatedReportData);
-        
-        // Remove from pending matches
-        batch.delete(pendingMatchRef);
-        
-        // Commit these changes first
-        await batch.commit();
-
-        // Update ELO ratings with full player objects
+        // First update ELO ratings
         await updateEloRatings(winner, loser, reportId);
 
-        console.log('Match successfully approved and ELO updated');
+        // Then move the match to approved collection
+        const batch = writeBatch(db);
+        
+        batch.set(doc(db, 'approvedMatches', reportId), {
+            ...reportData,
+            winnerScore,
+            winnerSuicides,
+            winnerComment,
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: currentUser.email
+        });
+        
+        batch.delete(pendingMatchRef);
+        
+        await batch.commit();
+        
         return true;
-
     } catch (error) {
         console.error('Error in approveReport:', error);
         throw error;
