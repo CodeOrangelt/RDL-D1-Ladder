@@ -1,9 +1,12 @@
 rules_version = '2';
+function isSignedIn() {
+  return request.auth != null;
+}
 
 function isAdmin() {
   let adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
   return request.auth != null && 
-    adminEmails.hasAny([request.auth.token.email.lower()]);
+    adminEmails.hasAny([request.auth.token.email.toLowerCase()]);
 }
 
 function isVerifiedUser() {
@@ -36,13 +39,6 @@ function isValidDemotion(currentData, newData) {
   return newData.eloRating is number &&
          currentData.eloRating is number;
 }
-
-   // Player Stats collection
-   match /playerStats/{userId} {
-    allow read: if true;
-    allow write: if isSignedIn() && 
-      (request.auth.uid == userId || isAdmin());
-  }
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -146,6 +142,13 @@ service cloud.firestore {
                           viewId.matches('^.*_' + request.auth.uid + '$') &&
                           request.resource.data.keys().hasOnly(['views']) &&
                           request.resource.data.views <= 5;
+    }
+
+    // Player Stats collection
+    match /playerStats/{userId} {
+      allow read: if true;
+      allow write: if isSignedIn() && 
+        (request.auth.uid == userId || isAdmin());
     }
   }
 }
