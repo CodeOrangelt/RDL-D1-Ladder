@@ -134,13 +134,13 @@ class ProfileManager {
             document.getElementById('stats-matches').textContent = totalMatches;
             document.getElementById('stats-wins').textContent = wins;
             document.getElementById('stats-losses').textContent = losses;
-            document.getElementById('stats-kda').textContent = kdRatio;
+            document.getElementById('stats-kd').textContent = kdRatio;  // Changed from stats-kda to stats-kd
             document.getElementById('stats-winrate').textContent = `${winRate}%`;
 
         } catch (error) {
             console.error('Error loading player stats:', error);
             // Set default values on error
-            ['matches', 'wins', 'losses', 'kda', 'winrate'].forEach(stat => {
+            ['matches', 'wins', 'losses', 'kd', 'winrate'].forEach(stat => {  // Changed kda to kd
                 document.getElementById(`stats-${stat}`).textContent = '-';
             });
         }
