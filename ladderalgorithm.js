@@ -46,13 +46,15 @@ export function assignDefaultEloRating(playerId, playerData) {
 // In ladderalgorithm.js
 export async function updateEloRatings(winner, loser, matchId) {
     try {
-        // Previous validation code stays the same
-        
         // Calculate new ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
             winner.eloRating || 1200, 
             loser.eloRating || 1200
         );
+
+        // Store old positions for history
+        const oldWinnerPosition = winner.position;
+        const oldLoserPosition = loser.position;
 
         // Create a batch for atomic updates
         const batch = writeBatch(db);
@@ -87,8 +89,49 @@ export async function updateEloRatings(winner, loser, matchId) {
             });
         });
 
+        // Record ELO history changes
+        const winnerHistory = {
+            type: 'match',
+            player: winner.username,
+            opponent: loser.username,
+            previousElo: winner.eloRating || 1200,
+            newElo: newWinnerRating,
+            change: newWinnerRating - (winner.eloRating || 1200),
+            matchResult: 'win',
+            previousPosition: oldWinnerPosition,
+            newPosition: loser.position,
+            timestamp: serverTimestamp(),
+            matchId: matchId
+        };
+
+        const loserHistory = {
+            type: 'match',
+            player: loser.username,
+            opponent: winner.username,
+            previousElo: loser.eloRating || 1200,
+            newElo: newLoserRating,
+            change: newLoserRating - (loser.eloRating || 1200),
+            matchResult: 'loss',
+            previousPosition: oldLoserPosition,
+            newPosition: loser.position + 1,
+            timestamp: serverTimestamp(),
+            matchId: matchId
+        };
+
+        // Add history records to batch
+        const winnerHistoryRef = doc(collection(db, 'eloHistory'));
+        const loserHistoryRef = doc(collection(db, 'eloHistory'));
+        batch.set(winnerHistoryRef, winnerHistory);
+        batch.set(loserHistoryRef, loserHistory);
+
         // Commit all changes
         await batch.commit();
+
+        // Update player stats after successful batch commit
+        await Promise.all([
+            updatePlayerStats(winner.id, { winnerScore: 0, loserScore: 0 }, true),
+            updatePlayerStats(loser.id, { winnerScore: 0, loserScore: 0 }, false)
+        ]);
         
         return true;
     } catch (error) {
