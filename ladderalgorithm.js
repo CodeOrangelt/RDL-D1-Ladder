@@ -79,15 +79,13 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         let winnerUpdates = {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
-            matchId: matchId,
-            participantIds: [winnerId, loserId]  // Add participant IDs
+            position: loserPosition // Required field
         };
 
         let loserUpdates = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
-            matchId: matchId,
-            participantIds: [winnerId, loserId]  // Add participant IDs
+            position: loserPosition + 1 // Required field
         };
 
         // Handle position swapping
@@ -108,8 +106,9 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             playersSnapshot.forEach(playerDoc => {
                 if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
                     batch.update(doc(db, 'players', playerDoc.id), {
-                        position: playerDoc.data().position + 1,
-                        matchId: matchId  // Add matchId for security rules
+                        eloRating: playerDoc.data().eloRating, // Keep existing ELO
+                        lastMatchDate: serverTimestamp(),
+                        position: playerDoc.data().position + 1
                     });
                 }
             });
@@ -170,7 +169,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         }
         console.log('Current user:', currentUser.email);
 
-        // Get user's player document to verify permissions
+        // Get user's player document
         const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
         const currentUsername = userDoc.exists() ? userDoc.data().username : null;
         console.log('Current username:', currentUsername);
@@ -187,13 +186,9 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         const reportData = reportSnapshot.data();
         console.log('Report data:', reportData);
         
-        // Check if user is participant or admin
-        const isParticipant = currentUsername === reportData.winnerUsername || 
-                             currentUsername === reportData.loserUsername;
-        const userIsAdmin = await isAdmin(currentUser.email);
-
-        if (!isParticipant && !userIsAdmin) {
-            throw new Error('Only match participants or admins can approve matches');
+        // Check if user is the winner
+        if (currentUsername !== reportData.winnerUsername) {
+            throw new Error('Only the winner can approve matches');
         }
 
         // Add winner details to report data
