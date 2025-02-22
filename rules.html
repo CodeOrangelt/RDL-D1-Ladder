@@ -160,6 +160,24 @@
                         <img src="images/ladderbackdrop.png" alt="CTF Rules" class="rule-image">
                     </div>
                 </div>
+
+                <!-- Game Settings Content -->
+                <div class="rule-content" id="gameSettings">
+                    <div class="text-content">
+                        <!-- Your existing text content -->
+                        <div class="game-settings">
+                            <div class="settings-header">
+                                Game Settings
+                            </div>
+                            <div class="settings-content">
+                                <!-- Your game settings content -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="image-content">
+                        <!-- Your images -->
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -334,6 +352,15 @@
         collapsible.addEventListener('click', function() {
             this.classList.toggle('active');
             content.classList.toggle('active');
+        });
+    });
+    </script>
+    <script>
+    document.querySelectorAll('.settings-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            header.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
         });
     });
     </script>

@@ -85,10 +85,11 @@ body {
 
 .rule-content.active {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: var(--spacing);
     opacity: 1;
     visibility: visible;
+    align-items: start;
 }
 
 .text-content {
@@ -126,6 +127,14 @@ body {
     .rule-image[src*="fubot"] {
         min-width: 280px;
     }
+
+    .rule-content.active {
+        grid-template-columns: 1fr;
+    }
+
+    .game-settings {
+        grid-column: 1;
+    }
 }
 
 /* ===== Animations ===== */
@@ -142,4 +151,42 @@ body {
 
 .fade-in {
     animation: fadeIn var(--transition) forwards;
+}
+
+/* Add styles for the game settings collapsible container */
+.game-settings {
+    grid-column: 1 / -1;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.settings-header {
+    padding: var(--spacing);
+    background: var(--secondary-bg);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings-header::after {
+    content: '▼';
+    transition: transform var(--transition);
+}
+
+.settings-header.collapsed::after {
+    transform: rotate(-90deg);
+}
+
+.settings-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition);
+    padding: 0 var(--spacing);
+}
+
+.settings-content.expanded {
+    max-height: 1000px;
+    padding: var(--spacing);
 }
