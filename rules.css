@@ -34,14 +34,71 @@ body {
     --spacing: 20px;
 }
 
+/* =========================================
+   Core Variables
+   ========================================= */
+:root {
+    /* Colors */
+    --primary-bg: rgba(0, 0, 0, 0.75);
+    --secondary-bg: rgba(255, 255, 255, 0.1);
+    --text-primary: rgba(255, 255, 255, 0.9);
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --border-light: rgba(255, 255, 255, 0.2);
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 20px;
+    --spacing-lg: 30px;
+    --spacing-xl: 40px;
+    
+    /* Animation */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Layout */
+    --container-width: 90%;
+    --max-width: 1400px;
+    --border-radius: 8px;
+    --border-radius-lg: 15px;
+}
+
+/* =========================================
+   Reset & Base Styles
+   ========================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-image: url('./images/backgroundrdl.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
 /* Layout containers */
 .outer-container {
-    width: 90%;
-    max-width: 1400px;
-    margin: 20px auto;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 15px;
-    padding: 30px;
+    width: var(--container-width);
+    max-width: var(--max-width);
+    margin: var(--spacing-md) auto;
+    padding: var(--spacing-lg);
+    background-color: var(--primary-bg);
+    border-radius: var(--border-radius-lg);
     min-height: calc(100vh - 200px);
 }
 
@@ -49,11 +106,11 @@ body {
     position: relative;
     display: grid;
     grid-template-columns: 3fr 1fr;
-    gap: 25px;
-    background-color: var(--container-bg);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
+    gap: var(--spacing-md);
+    background-color: var(--primary-bg);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
     min-height: 500px;
 }
 
@@ -199,19 +256,19 @@ accountbutton:hover {
 .button-container {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    margin-bottom: 30px;
-    padding: 20px;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
 }
 
 .rule-button {
     padding: 12px 28px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
     cursor: pointer;
-    transition: all var(--transition-speed) ease;
+    transition: all var(--transition-normal);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -226,25 +283,48 @@ accountbutton:hover {
 .rule-button.active {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(1px);
-    border-color: rgba(255, 255, 255, 0.3);
 }
 
-.rule-button::before {
+/* Content sections */
+.rule-content {
     display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal),
+                visibility var(--transition-normal);
 }
 
-.rule-image {
+.rule-content.active {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    opacity: 1;
+    visibility: visible;
     width: 100%;
-    height: auto;
-    max-height: 500px; /* Increased from 400px */
-    object-fit: contain;
-    margin: 20px auto; /* Changed to auto for horizontal centering */
+    height: 100%;
+    align-items: flex-start;
+}
+
+.text-content {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 700px;
+    width: 100%;
+}
+
+.image-content {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--spacing-md) 0;
 }
 
 /* Add specific styling for fubot image */
 .rule-image[src*="fubot"] {
     min-width: 350px; /* Minimum width for fubot */
-    padding: 20px;
+    padding: var(--spacing-md);
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1)); /* Optional: adds subtle glow */
 }
 
@@ -759,4 +839,70 @@ footer {
     .rule-image[src*="fubot"] {
         min-width: 280px;
     }
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.rules-section {
+    animation: fadeIn var(--transition-normal) forwards;
+}
+
+/* =========================================
+   Media Queries
+   ========================================= */
+@media (max-width: 1200px) {
+    .outer-container {
+        width: 95%;
+    }
+    
+    .content-container {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        grid-template-columns: 1fr;
+    }
+
+    .rule-content {
+        flex-direction: column;
+    }
+    
+    .text-content {
+        padding-right: 0;
+        max-height: none;
+    }
+
+    .image-content {
+        max-width: 100%;
+    }
+
+    .rule-image[src*="fubot"] {
+        min-width: 280px;
+    }
+}
+
+/* =========================================
+   Utility Classes
+   ========================================= */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    visibility: visible !important;
+    opacity: 1 !important;
 }
