@@ -304,7 +304,8 @@ accountbutton:hover {
     border-radius: 8px;
     text-align: left;
     outline: none;
-    font-size: 15px;
+    font-size: 0.95rem;
+    /* Slightly smaller font for the button */
     transition: all 0.3s ease;
     margin: 15px 0;
     width: 100%;
@@ -347,6 +348,8 @@ accountbutton:hover {
     visibility: hidden;
     transition: all 0.3s ease;
     min-height: 500px;
+    font-size: 0.9rem;
+    /* Overall content font size */
 }
 
 .content.active {
@@ -363,6 +366,10 @@ accountbutton:hover {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
+    font-size: 0.9rem;
+    /* Smaller font size for the list items */
+    line-height: 1.4;
+    inline-size: 1.4;
     max-height: 80vh;
     min-height: 400px;
     overflow-y: auto;
@@ -392,6 +399,8 @@ accountbutton:hover {
     font-size: 15px;
     line-height: 1.4;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 8px;
+    padding-left: 10px;
 }
 
 .game-settings-list li:first-child {
