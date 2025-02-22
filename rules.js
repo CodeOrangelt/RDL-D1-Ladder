@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const regularContent = document.querySelector('.regular-content');
     const ruleButtons = document.querySelectorAll('.rule-button');
     const ruleContents = document.querySelectorAll('.rule-content');
+    const outerContainer = document.querySelector('.outer-container');
 
     // Rule button click handler
     ruleButtons.forEach(button => {
@@ -32,12 +33,14 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.toggle('active');
             content.classList.toggle('active');
 
-            // Toggle regular content visibility
+            // Toggle regular content visibility and adjust positioning
             if (regularContent) {
                 if (content.classList.contains('active')) {
                     content.style.position = 'relative';
                     content.style.opacity = '1';
                     content.style.visibility = 'visible';
+                    content.style.maxHeight = `${outerContainer.clientHeight - 40}px`; // Account for padding
+                    content.style.overflow = 'auto';
                     regularContent.style.position = 'absolute';
                     regularContent.style.opacity = '0';
                     regularContent.style.visibility = 'hidden';
@@ -55,6 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Prevent closing when clicking inside content
         content.addEventListener('click', function(e) {
             e.stopPropagation();
+        });
+
+        // Adjust content height on window resize
+        window.addEventListener('resize', function() {
+            if (content.classList.contains('active')) {
+                content.style.maxHeight = `${outerContainer.clientHeight - 40}px`;
+            }
         });
     }
 });

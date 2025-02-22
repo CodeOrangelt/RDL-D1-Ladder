@@ -27,6 +27,9 @@ body {
     margin: 20px auto;
     backdrop-filter: blur(10px);
     overflow: visible; /* Allow content to flow outside */
+    position: relative;
+    min-height: 600px;
+    overflow: hidden;
 }
 
 .table-container {
@@ -332,17 +335,15 @@ accountbutton:hover {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    max-height: 90vh; /* Increased max height */
     overflow-y: auto;
     z-index: 1000;
-    pointer-events: none; /* Add this */
 }
 
 .content.active {
     opacity: 1;
     visibility: visible;
     position: relative;
-    pointer-events: auto; /* Add this */
+    height: auto;
 }
 
 .game-settings-list {
@@ -352,8 +353,7 @@ accountbutton:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
-    max-height: none; /* Remove max-height limitation */
-    overflow-y: visible; /* Allow content to flow naturally */
+    height: auto;
 }
 
 .rules-section {
