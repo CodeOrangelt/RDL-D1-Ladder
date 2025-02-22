@@ -265,3 +265,15 @@ function autoFillReportForm(reportData) {
             });
     }
 }
+
+// Show lightbox
+function showLightbox() {
+    const lightbox = document.getElementById('report-lightbox');
+    lightbox.classList.add('show');
+}
+
+// Hide lightbox
+function hideLightbox() {
+    const lightbox = document.getElementById('report-lightbox');
+    lightbox.classList.remove('show');
+}

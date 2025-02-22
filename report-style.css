@@ -185,9 +185,16 @@ textarea {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none; /* Hidden by default */
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    visibility: hidden; /* Changed from display: none */
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+}
+
+#report-lightbox.show {
+    visibility: visible;
+    opacity: 1;
 }
 
 #report-lightbox .lightbox-content {
@@ -195,55 +202,63 @@ textarea {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
+    background-color: rgba(20, 20, 20, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     width: 80%;
     max-width: 600px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    color: white;
 }
 
 #report-lightbox h2 {
     text-align: center;
     margin-bottom: 20px;
-    color: #333;
+    color: white;
+    font-size: 1.4rem;
 }
 
 #report-lightbox p {
     margin-bottom: 15px;
-    color: #555;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
 }
 
 #report-lightbox span {
     font-weight: bold;
+    color: white;
 }
 
 #report-lightbox textarea {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     box-sizing: border-box;
-    margin-top: 5px;
-    font-size: 16px;
+    margin-top: 10px;
+    font-size: 1rem;
+    color: white;
     resize: vertical;
-    height: 100px;
+    height: 120px;
 }
 
 #report-lightbox button {
-    background-color: #5cb85c;
+    background-color: #881e8e;
     color: white;
-    padding: 12px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 18px;
-    transition: background-color 0.3s ease;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
     margin-top: 20px;
 }
 
 #report-lightbox button:hover {
-    background-color: #4cae4c;
+    background-color: #b026b9;
+    transform: translateY(-2px);
 }
 
 .table {
