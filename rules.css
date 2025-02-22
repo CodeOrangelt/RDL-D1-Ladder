@@ -326,31 +326,38 @@ accountbutton:hover {
     left: 0;
     width: 100%;
     background: rgba(0, 0, 0, 0.95);
+    padding: 20px;
     border-radius: 8px;
-    padding: 30px;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    min-height: 500px; /* Increased from 300px */
+    max-height: 80vh; /* Increase max height */
+    overflow-y: auto;
+    z-index: 1000;
 }
 
 .content.active {
     opacity: 1;
     visibility: visible;
     position: relative;
-    height: auto; /* Allow content to expand */
 }
 
 .game-settings-list {
     list-style: none;
-    padding: 15px;
+    padding: 20px;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Smaller minimum width */
-    gap: 10px; /* Reduced gap between items */
-    max-height: 80vh;
-    min-height: 400px;
-    overflow-y: auto;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    max-height: none; /* Remove max-height limitation */
+    overflow-y: visible; /* Allow content to flow naturally */
+}
+
+.rules-section {
+    position: relative;
+    width: 100%;
+    min-height: 600px; /* Ensure enough space for content */
+    padding-bottom: 40px; /* Add padding at bottom */
 }
 
 .game-settings-list::-webkit-scrollbar {
