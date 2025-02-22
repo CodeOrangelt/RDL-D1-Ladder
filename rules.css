@@ -35,15 +35,18 @@ body {
     background-attachment: fixed;
 }
 
-/* ===== Main Container ===== */
+/* ===== Rules Container Styles ===== */
 .rules-container {
     width: var(--container-width);
     max-width: var(--max-width);
     margin: var(--spacing) auto;
-    padding: var(--spacing);
+    padding: calc(var(--spacing) * 1.5);
     background: var(--primary-bg);
     border-radius: var(--border-radius);
     min-height: calc(100vh - 100px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
 }
 
 /* ===== Navigation ===== */
@@ -75,21 +78,25 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* ===== Content Sections ===== */
+/* ===== Rules Content Layout ===== */
 .rule-content {
     display: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity var(--transition);
+    transition: all var(--transition);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--spacing);
 }
 
 .rule-content.active {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: var(--spacing);
+    gap: calc(var(--spacing) * 1.5);
     opacity: 1;
     visibility: visible;
     align-items: start;
+    animation: fadeIn var(--transition) ease-out;
 }
 
 .text-content {
