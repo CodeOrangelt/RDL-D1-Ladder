@@ -51,7 +51,7 @@ body {
 
 /* ===== Navigation ===== */
 .rules-nav {
-    display: flex;
+    display: center;
     justify-content: center;
     gap: var(--spacing);
     margin-bottom: var(--spacing);
