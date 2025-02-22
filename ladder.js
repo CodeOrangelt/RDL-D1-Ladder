@@ -142,14 +142,6 @@ async function updateLadderDisplay(ladderData) {
     for (const player of ladderData) {
         const row = document.createElement('tr');
         
-        // Add scaling for #1 position
-        if (player.position === 1) {
-            row.style.transform = 'scale(1.2)';
-            row.style.transformOrigin = 'left center';
-            row.style.height = '120%'; // Ensure enough space for scaled content
-            row.style.zIndex = '1'; // Ensure the scaled row appears above others
-        }
-
         // Create rank cell
         const rankCell = document.createElement('td');
         rankCell.textContent = player.position;
@@ -160,13 +152,14 @@ async function updateLadderDisplay(ladderData) {
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
         usernameLink.textContent = player.username;
         
-        // Set ELO-based colors
+        // Set ELO-based colors and special styling for #1 position
         const elo = parseFloat(player.elo) || 0;
         if (elo >= 2000) {
             usernameLink.style.color = '#50C878';
             if (player.position === 1) {
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
+                usernameLink.style.fontSize = '120%'; // Only increase font size for #1 position
             }
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';
