@@ -207,19 +207,20 @@
         const collapsible = document.querySelector('.collapsible');
         const content = document.querySelector('.content');
         
-        collapsible.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent any default behavior
-            e.stopPropagation(); // Prevent event bubbling
-            
-            this.classList.toggle('active');
-            content.classList.toggle('active');
-            
-            if (content.classList.contains('active')) {
-                content.style.maxHeight = content.scrollHeight + "px";
-            } else {
-                content.style.maxHeight = "0";
-            }
-        });
+        if (collapsible && content) {
+            collapsible.addEventListener('click', function() {
+                // Toggle active class
+                this.classList.toggle('active');
+                content.classList.toggle('active');
+                
+                // Reset transitions if closing
+                if (!content.classList.contains('active')) {
+                    content.style.maxHeight = '0';
+                    content.style.padding = '0';
+                    content.style.borderWidth = '0';
+                }
+            });
+        }
     });
     </script>
     <script type="module" src="firebase-config.js"></script>
