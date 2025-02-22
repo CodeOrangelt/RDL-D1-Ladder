@@ -343,13 +343,13 @@ accountbutton:hover {
 
 .game-settings-list {
     list-style: none;
-    padding: 20px;
+    padding: 15px;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Smaller minimum width */
+    gap: 10px; /* Reduced gap between items */
     max-height: 80vh;
-    min-height: 400px; /* Increased from 250px */
+    min-height: 400px;
     overflow-y: auto;
 }
 
@@ -369,23 +369,28 @@ accountbutton:hover {
 
 .game-settings-list li {
     background: rgba(255, 255, 255, 0.08);
-    padding: 15px 20px;
-    border-radius: 8px;
-    text-align: center;
+    padding: 10px 15px; /* Reduced padding */
+    border-radius: 6px; /* Slightly smaller border radius */
+    text-align: left; /* Align text to left */
     transition: background 0.3s ease;
     color: white;
-    font-size: 15px;
-    line-height: 1.4;
+    font-size: 14px; /* Slightly smaller font */
+    line-height: 1.3;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: fit-content; /* Make width fit content */
+    min-width: 200px; /* Minimum width */
+    justify-self: center; /* Center in grid cell */
 }
 
 .game-settings-list li:first-child {
     grid-column: 1 / -1;
     background: rgba(255, 255, 255, 0.15);
     font-weight: 600;
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 15px; /* Reduced padding for header */
+    margin-bottom: 10px;
     font-size: 16px;
+    text-align: center; /* Keep header centered */
+    width: 100%; /* Full width for header */
 }
 
 /* Hide image when settings are active */
@@ -488,4 +493,23 @@ accountbutton:hover {
     letter-spacing: 1px;
     margin-top: 10px; /* Add space between icon and text */
     text-align: center; /* Ensure text is centered */
+}
+
+.beta-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.centered-image {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.centered-image .rule-image {
+    max-width: 80%;
+    height: auto;
 }
