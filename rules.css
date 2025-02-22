@@ -80,13 +80,20 @@ body {
 
 /* ===== Content Layout ===== */
 .rule-content {
-    display: grid;
+    display: none; /* Hide all content by default */
     grid-template-columns: 2fr 1fr;
     gap: calc(var(--spacing) * 1.5);
-    opacity: 1;
-    visibility: visible;
+    opacity: 0;
+    visibility: hidden;
     align-items: start;
     padding: var(--spacing);
+    transition: opacity var(--transition);
+}
+
+.rule-content.active {
+    display: grid;
+    opacity: 1;
+    visibility: visible;
 }
 
 .text-content {
@@ -265,4 +272,13 @@ body {
     position: absolute;
     left: 0;
     color: var(--text-primary);
+}
+
+/* Navigation Styles */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing);
+    margin-bottom: var(--spacing);
+    padding: var(--spacing);
 }
