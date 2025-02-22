@@ -152,21 +152,13 @@ async function updateLadderDisplay(ladderData) {
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
         usernameLink.textContent = player.username;
         
-        // Set ELO-based colors and special styling for #1 position
+        // Set ELO-based colors
         const elo = parseFloat(player.elo) || 0;
         if (elo >= 2000) {
             usernameLink.style.color = '#50C878';
             if (player.position === 1) {
-                // Apply styles to both the link and cell
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
-                usernameLink.style.fontSize = '32px'; // Increased size
-                usernameLink.style.display = 'inline-block'; // Ensure block-level styling
-                
-                // Style the container cell
-                usernameCell.style.height = '48px'; // Ensure cell height accommodates larger text
-                usernameCell.style.lineHeight = '48px'; // Match height for vertical centering
-                usernameCell.style.verticalAlign = 'middle';
             }
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';
