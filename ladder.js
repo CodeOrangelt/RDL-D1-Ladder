@@ -159,7 +159,9 @@ async function updateLadderDisplay(ladderData) {
             if (player.position === 1) {
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
-                usernameLink.style.fontSize = '120%'; // Only increase font size for #1 position
+                usernameLink.style.fontSize = '24px'; // Use absolute size instead of percentage
+                usernameCell.style.lineHeight = '1.2'; // Maintain alignment
+                usernameCell.style.verticalAlign = 'middle'; // Keep vertically centered
             }
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';
