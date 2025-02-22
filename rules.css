@@ -211,6 +211,8 @@ accountbutton:hover {
     height: auto;
     object-fit: cover;
     margin-bottom: 20px;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .rule-content {
@@ -236,6 +238,29 @@ accountbutton:hover {
     position: relative;
     width: 100%;
     min-height: 400px;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 20px;
+    min-height: 600px;
+    overflow: hidden;
+}
+
+.text-content {
+    flex: 1;
+    padding-right: 30px;
+    overflow-y: auto;
+}
+
+.image-content {
+    width: 40%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 20px;
 }
 
 .rules-section {
@@ -264,6 +289,20 @@ accountbutton:hover {
     .rule-image {
         width: 100%;
         margin-top: 20px;
+    }
+    
+    .content-container {
+        flex-direction: column;
+    }
+
+    .text-content {
+        padding-right: 0;
+        padding-bottom: 20px;
+    }
+
+    .image-content {
+        width: 100%;
+        padding-left: 0;
     }
 }
 
@@ -488,4 +527,12 @@ accountbutton:hover {
     letter-spacing: 1px;
     margin-top: 10px; /* Add space between icon and text */
     text-align: center; /* Ensure text is centered */
+}
+
+footer {
+    position: relative;
+    width: 100%;
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
 }
