@@ -192,6 +192,10 @@ async function checkForOutstandingReports(username, elements) {
 function autoFillReportForm(reportData) {
     console.log("Report Data in autoFillReportForm:", reportData);
     if (reportData) {
+        // Calculate winner score based on loser score
+        const loserScore = parseInt(reportData.loserScore);
+        const winnerScore = loserScore < 18 ? 20 : loserScore + 2;
+
         // Fetch the winner's username
         const winnerQuery = query(
             collection(db, 'players'),
@@ -222,6 +226,12 @@ function autoFillReportForm(reportData) {
                             document.getElementById('lightbox-suicides').textContent = reportData.suicides;
                             document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
                             document.getElementById('lightbox-comment').textContent = reportData.loserComment;
+
+                            // Set and disable winner score input
+                            const winnerScoreInput = document.getElementById('winner-score');
+                            winnerScoreInput.value = winnerScore;
+                            winnerScoreInput.readOnly = true; // Make it read-only
+                            winnerScoreInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; // Visual indication it's readonly
 
                             // Show the lightbox
                             showLightbox();
