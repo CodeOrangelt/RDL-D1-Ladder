@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     height: 100%;
     width: 100%;
     margin: auto;
@@ -20,19 +21,23 @@ body {
     display: flex;
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.7);
+    margin: 20px auto;
     padding: 30px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    width: 85%;
-    margin: 20px auto;
+    width: 90%;
+    max-width: 1200px;
+    box-sizing: border-box;
     backdrop-filter: blur(10px);
-    overflow: visible; /* Allow content to flow outside */
+    min-height: auto;
+    position: relative;
+    overflow-y: auto;
 }
 
 .table-container {
     width: 85%;
-    border-radius: 30px; /* Adjust the border radius value as needed */
-    background-color: #efefef; /* Set the desired background color */
+    border-radius: 30px;
+    background-color: #efefef;
 }
 
 table {
@@ -40,9 +45,10 @@ table {
     width: 100%;
 }
 
-th, td {
+th,
+td {
     border: 2px solid black;
-    border-radius: 15px; /* Adjust the border radius value as needed */
+    border-radius: 15px;
     padding: 8px;
     text-align: center;
     font-family: Tahoma, sans-serif;
@@ -88,7 +94,7 @@ accountbutton:hover {
     margin-bottom: 1.5rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .footer {
@@ -112,11 +118,11 @@ accountbutton:hover {
 .footer::before {
     content: "";
     position: absolute;
-    top: -10px; /* Adjust the distance from the footer as needed */
+    top: -10px;
     left: 0;
     right: 0;
-    height: 10px; /* Adjust the height of the gray bar as needed */
-    background-color: gray; /* Set the desired background color */
+    height: 10px;
+    background-color: gray;
 }
 
 .button:hover {
@@ -129,21 +135,21 @@ accountbutton:hover {
 
 .hrbutton {
     position: absolute;
-    top: -120px; /* Adjust the value as needed */
+    top: -120px;
     left: 50%;
     transform: translateX(-50%);
-    border: 5px solid transparent; /* Increased border width to 2px */
+    border: 5px solid transparent;
     border-top-color: white;
     border-left-color: white;
     border-right-color: white;
-    border-bottom: none; /* Remove the bottom border */
+    border-bottom: none;
     background-color: white;
-    color: black; /* Added white font color */
-    padding: 3px 30px; /* Adjust the padding values as needed */
+    color: black;
+    padding: 3px 30px;
     cursor: pointer;
     font-family: Tahoma, Arial, sans-serif;
     font-size: 18px;
-    border-radius: 8px 8px 0 0; /* Set the border radius for each corner */
+    border-radius: 8px 8px 0 0;
 }
 
 .ribbon-1 {
@@ -207,16 +213,14 @@ accountbutton:hover {
 }
 
 .rule-image {
-    width: 450px; /* Increased from previous size */
+    width: 450px;
     height: auto;
     object-fit: cover;
     margin-bottom: 20px;
 }
 
 .rule-content {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100%;
     opacity: 0;
     visibility: hidden;
@@ -235,14 +239,20 @@ accountbutton:hover {
 .content-container {
     position: relative;
     width: 100%;
-    min-height: 400px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+    flex: 1;
 }
 
 .rules-section {
     margin-bottom: 2rem;
     flex: 1;
-    position: relative; /* Add this to contain absolute positioned content */
+    position: relative;
     width: 100%;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .rules-section:last-child {
@@ -254,13 +264,17 @@ accountbutton:hover {
     color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
     margin-bottom: 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 20px;
+    width: 100%;
 }
 
 @media (max-width: 768px) {
     .rule-content {
         flex-direction: column;
     }
-    
+
     .rule-image {
         width: 100%;
         margin-top: 20px;
@@ -273,6 +287,7 @@ accountbutton:hover {
         opacity: 0;
         transform: translateX(20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -331,14 +346,14 @@ accountbutton:hover {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    min-height: 500px; /* Increased from 300px */
+    min-height: 500px;
 }
 
 .content.active {
     opacity: 1;
     visibility: visible;
     position: relative;
-    height: auto; /* Allow content to expand */
+    height: auto;
 }
 
 .game-settings-list {
@@ -349,7 +364,7 @@ accountbutton:hover {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
     max-height: 80vh;
-    min-height: 400px; /* Increased from 250px */
+    min-height: 400px;
     overflow-y: auto;
 }
 
@@ -389,7 +404,7 @@ accountbutton:hover {
 }
 
 /* Hide image when settings are active */
-.content.active ~ .rule-image {
+.content.active~.rule-image {
     display: none;
 }
 
@@ -398,7 +413,7 @@ accountbutton:hover {
     transition: opacity 0.3s ease;
 }
 
-.content.active + .regular-content {
+.content.active+.regular-content {
     opacity: 0;
     pointer-events: none;
 }
@@ -419,11 +434,11 @@ accountbutton:hover {
         margin: 0 -15px;
         padding: 0 15px;
     }
-    
+
     .content.active {
         padding: 15px;
     }
-    
+
     .game-settings-list {
         grid-template-columns: 1fr;
     }
@@ -486,6 +501,14 @@ accountbutton:hover {
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 10px; /* Add space between icon and text */
-    text-align: center; /* Ensure text is centered */
+    margin-top: 10px;
+    text-align: center;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-bottom: 60px;
+    overflow-y: auto;
 }

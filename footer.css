@@ -1,7 +1,7 @@
 footer {
     background: linear-gradient(to top,
-        rgba(0, 0, 0, 0.7),
-        rgba(0, 0, 0, 0.5)),
+            rgba(0, 0, 0, 0.7),
+            rgba(0, 0, 0, 0.5)),
         url('images/image.png');
     background-size: 100px;
     background-position: center;
@@ -9,10 +9,14 @@ footer {
     color: #fff;
     padding: 10px 0;
     width: 100%;
-    position: relative;  /* Changed from fixed to relative */
-    bottom: auto;  /* Remove fixed positioning */
-    left: auto;
+    position: fixed;
+    /* Changed from relative to fixed */
+    bottom: 0;
+    /* Added fixed positioning */
+    left: 0;
     z-index: 100;
+    background-color: var(--background-color);
+    /* Added background color */
 }
 
 footer::before {
@@ -27,10 +31,32 @@ footer::before {
 }
 
 .footer-content {
-    max-width: 1200px;
+    max-width: 100%;
+    /* Changed from 1200px to 100% */
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 10px 20px;
+    /* Changed padding */
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
+    /* Added text-align */
+    box-sizing: border-box;
+    /* Added box-sizing */
+}
+
+/* Add this to ensure content above footer is visible */
+body {
+    margin-bottom: 60px;
+    /* Adjust this value based on your footer height */
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Ensure footer text stays within bounds when zooming */
+.footer-content p {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
