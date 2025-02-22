@@ -78,32 +78,25 @@ body {
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* ===== Rules Content Layout ===== */
+/* ===== Content Layout ===== */
 .rule-content {
-    display: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition);
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: var(--border-radius);
-    padding: var(--spacing);
-}
-
-.rule-content.active {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: calc(var(--spacing) * 1.5);
     opacity: 1;
     visibility: visible;
     align-items: start;
-    animation: fadeIn var(--transition) ease-out;
+    padding: var(--spacing);
 }
 
 .text-content {
     color: var(--text-primary);
     max-height: 700px;
     overflow-y: auto;
-    padding-right: var(--spacing);
+    padding: var(--spacing);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
 }
 
 /* ===== Images ===== */
