@@ -228,11 +228,16 @@ accountbutton:hover {
 .rule-image {
     width: 100%;
     height: auto;
-    max-height: 400px;
+    max-height: 500px; /* Increased from 400px */
     object-fit: contain;
-    margin-bottom: 20px;
-    max-width: 100%;
-    object-fit: contain;
+    margin: 20px auto; /* Changed to auto for horizontal centering */
+}
+
+/* Add specific styling for fubot image */
+.rule-image[src*="fubot"] {
+    min-width: 350px; /* Minimum width for fubot */
+    padding: 20px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1)); /* Optional: adds subtle glow */
 }
 
 /* Rule content sections */
@@ -268,8 +273,9 @@ accountbutton:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start; /* Changed from default */
     padding-left: 20px;
-    max-width: 300px;
+    max-width: 400px; /* Increased from 300px */
 }
 
 /* Rule sections */
@@ -313,7 +319,7 @@ accountbutton:hover {
     }
 
     .image-content {
-        width: 100%;
+        max-width: 100%;
         position: relative;
         top: 0;
         padding-left: 0;
@@ -322,6 +328,10 @@ accountbutton:hover {
 
     .rule-image {
         max-height: none;
+    }
+
+    .rule-image[src*="fubot"] {
+        min-width: 280px; /* Smaller minimum width on mobile */
     }
 }
 
