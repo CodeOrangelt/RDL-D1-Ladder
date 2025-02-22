@@ -28,109 +28,142 @@
                 <!-- General Rules Content -->
                 <div id="general" class="rule-content active">
                     <section class="rules-section">
-                        <h2 class="hero-title">1. Customs and courtesies.</h2>
-                        <p class="rules-text">
-                            Repect other pilots, no matter your history, no matter your arguments, no matter your opinions, respect your opponent. Obviously you're allowed to dislike certain individuals, but disrespect does not have a place on this ladder. Getting headed is normal, and expected in this community, but once the barrier is crossed where what you are doing is no longer competitively respectable, you could expect demotions, or a ban from the any one if not all ladders on the RDL.
-                        </p>
-                        <h2 class="hero-title">2. Participation</h2>
-                        <p class="rules-text">
-                            Part of being on a ladder is competing for your rank, dominance, and position. Intentionally or neglectfully avoiding matches can result in warnings, or ultimately demotions. Camping is a massive deterance to dynamic and refreshing play. (Camping defined as: Ingoring matches while #1 for a pro-longed amount of time)
-                        </p>
-                        <h2 class="hero-title">3. Registration</h2>
-                        <p class="rules-text">
-                            You are not allowed to have multiple accounts on one ladder. You are also not allowed to have Aliases designed to deceive or guise as other players with a malicious or deceptive intent. (Fun aliases are most definetly allowed as long as you define your commonly-known alias in the box found on your profile.)
-                        </p>
-                        <h2 class="hero-title">4. Arugments & Disputes</h2>
-                        <p class="rules-text">
-                            If rule #1 didn't make it clear enough, you're arguments, and disputes are to be kept private. If you have a dispute with another player, please contact an admin, or a moderator to help resolve the issue. Please exercise all methods of working towards either letting it go or resolving the argument before getting the ladder admins involved.
-                        </p>
+                        <div class="rules-flex-container">
+                            <div class="rules-text-container">
+                                <h2 class="hero-title">1. Customs and courtesies.</h2>
+                                <p class="rules-text">
+                                    Repect other pilots, no matter your history, no matter your arguments, no matter your opinions, respect your opponent. Obviously you're allowed to dislike certain individuals, but disrespect does not have a place on this ladder. Getting headed is normal, and expected in this community, but once the barrier is crossed where what you are doing is no longer competitively respectable, you could expect demotions, or a ban from the any one if not all ladders on the RDL.
+                                </p>
+                                <h2 class="hero-title">2. Participation</h2>
+                                <p class="rules-text">
+                                    Part of being on a ladder is competing for your rank, dominance, and position. Intentionally or neglectfully avoiding matches can result in warnings, or ultimately demotions. Camping is a massive deterance to dynamic and refreshing play. (Camping defined as: Ingoring matches while #1 for a pro-longed amount of time)
+                                </p>
+                                <h2 class="hero-title">3. Registration</h2>
+                                <p class="rules-text">
+                                    You are not allowed to have multiple accounts on one ladder. You are also not allowed to have Aliases designed to deceive or guise as other players with a malicious or deceptive intent. (Fun aliases are most definetly allowed as long as you define your commonly-known alias in the box found on your profile.)
+                                </p>
+                                <h2 class="hero-title">4. Arugments & Disputes</h2>
+                                <p class="rules-text">
+                                    If rule #1 didn't make it clear enough, you're arguments, and disputes are to be kept private. If you have a dispute with another player, please contact an admin, or a moderator to help resolve the issue. Please exercise all methods of working towards either letting it go or resolving the argument before getting the ladder admins involved.
+                                </p>
+                            </div>
+                            <div class="rules-image-container">
+                                <img src="images/fusbot.png" alt="General Rules" class="rule-image">
+                            </div>
+                        </div>
                     </section>
-                    <img src="images/fusbot.png" alt="General Rules" class="rule-image">
                 </div>
 
                 <!-- Solo Rules Content -->
                 <div id="solo" class="rule-content">
                     <section class="rules-section">
-                        <!-- Normal content -->
-                        <div class="regular-content">
-                            <h2 class="hero-title">1. Winning</h2>
-                            <p class="rules-text">
-                                To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are not prohibited.
-                            </p>
-                            <h2 class="hero-title">2. Map Angling</h2>
-                            <p class="rules-text">
-                                With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players from reliably choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
-                            </p>
-                            <h2 class="hero-title">3. Game Settings</h2>
-                            <p class="rules-text">
-                                To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
-                            </p>
-                        </div>
-
-                        <!-- Settings button -->
-                        <button class="collapsible">View Game Settings</button>
-
-                        <!-- Settings content that will overlay -->
-                        <div class="content">
-                            <button class="close-settings" onclick="closeSettings()">&times;</button>
-                            <ul class="game-settings-list">
-                                <li>Game Settings: Matches must be played with the standard game settings. Much like the Observatory the settings.</li>
-                                <li>Do NOT set "Open Game"</li>
-                                <li>Maximum Observers at least 4</li>
-                                <li>Broadcast Delay 15 Seconds OFF (I don't think it works, if it does please let me know)</li>
-                                <li>Minimal Observer Info OFF</li>
-                                <li>Difficulty MAX (Insane)</li>
-                                <li>Reactor life 50 MINUTES</li>
-                                <li>Max time 0 MINUTES</li>
-                                <li>Kill goal 0 KILLS</li>
-                                <li>Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7 players</li>
-                                <li>Extra secondaries NONE</li>
-                                <li>Cap secondaries UNCAPPED</li>
-                                <li>Low vulcan ammo OFF</li>
-                                <li>Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</li>
-                                <li>Spawn style 2 second INVULN</li>
-                                <li>Vulcan ammo style ORIGINAL (DEPLETING)</li>
-                                <li>All players blue ON for 2 players, OFF for 3-7 players</li>
-                                <li>Allow colored dynamic lighting OFF</li>
-                                <li>Allow players to choose their colors ON (observers see this, even when all players are blue)</li>
-                                <li>Packets per second 40 for 2 players, 30 for 3 or higher (can be reduced if there are severe connection issues, but no lower than 20)</li>
-                                <li>Track this game ON</li>
-                                <li>Retro protocol ON</li>
-                                <li>Show all players on automap OFF</li>
-                                <li>Bright player ships ON</li>
-                                <li>Show enemy names on HUD OFF</li>
-                                <li>Homing update rate 25</li>
-                                <li>DXX-Retro homing speed OFF</li>
-                                <li>Show confirmed hitsparsk ONLY</li>
-                                <li>Allow custom models and textures ON or OFF (Both players must agree on this setting)</li>
-                                <li>Reduced flash ON or OFF (Both players must agree on this setting)</li>
-                            </ul>
+                        <div class="rules-flex-container">
+                            <div class="rules-text-container">
+                                <div class="regular-content">
+                                    <h2 class="hero-title">1. Winning</h2>
+                                    <p class="rules-text">
+                                        To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are not prohibited.
+                                    </p>
+                                    <h2 class="hero-title">2. Map Angling</h2>
+                                    <p class="rules-text">
+                                        With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players from reliably choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
+                                    </p>
+                                    <h2 class="hero-title">3. Game Settings</h2>
+                                    <p class="rules-text">
+                                        To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
+                                    </p>
+                                    <button class="collapsible">View Game Settings</button>
+                                    <div class="content">
+                                        <button class="close-settings" onclick="closeSettings()">&times;</button>
+                                        <ul class="game-settings-list">
+                                            <li>Game Settings: Matches must be played with the standard game settings. Much like the Observatory the settings.</li>
+                                            <li>Do NOT set "Open Game"</li>
+                                            <li>Maximum Observers at least 4</li>
+                                            <li>Broadcast Delay 15 Seconds OFF (I don't think it works, if it does please let me know)</li>
+                                            <li>Minimal Observer Info OFF</li>
+                                            <li>Difficulty MAX (Insane)</li>
+                                            <li>Reactor life 50 MINUTES</li>
+                                            <li>Max time 0 MINUTES</li>
+                                            <li>Kill goal 0 KILLS</li>
+                                            <li>Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7 players</li>
+                                            <li>Extra secondaries NONE</li>
+                                            <li>Cap secondaries UNCAPPED</li>
+                                            <li>Low vulcan ammo OFF</li>
+                                            <li>Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</li>
+                                            <li>Spawn style 2 second INVULN</li>
+                                            <li>Vulcan ammo style ORIGINAL (DEPLETING)</li>
+                                            <li>All players blue ON for 2 players, OFF for 3-7 players</li>
+                                            <li>Allow colored dynamic lighting OFF</li>
+                                            <li>Allow players to choose their colors ON (observers see this, even when all players are blue)</li>
+                                            <li>Packets per second 40 for 2 players, 30 for 3 or higher (can be reduced if there are severe connection issues, but no lower than 20)</li>
+                                            <li>Track this game ON</li>
+                                            <li>Retro protocol ON</li>
+                                            <li>Show all players on automap OFF</li>
+                                            <li>Bright player ships ON</li>
+                                            <li>Show enemy names on HUD OFF</li>
+                                            <li>Homing update rate 25</li>
+                                            <li>DXX-Retro homing speed OFF</li>
+                                            <li>Show confirmed hitsparsk ONLY</li>
+                                            <li>Allow custom models and textures ON or OFF (Both players must agree on this setting)</li>
+                                            <li>Reduced flash ON or OFF (Both players must agree on this setting)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rules-image-container">
+                                <img src="images/1v1.png" alt="Solo Rules" class="rule-image">
+                                <a href="Files/rdltemplate.ngs" download class="download-wrapper">
+                                    <img src="images/download.png" class="download-icon" alt="Download Icon">
+                                    <span class="download-text">Game Template</span>
+                                </a>
+                            </div>
                         </div>
                     </section>
-                    <div class="download-section">
-                        <img src="images/1v1.png" alt="Solo Rules" class="rule-image">
-                        <a href="Files/rdltemplate.ngs" download>
-                            <div class="download-wrapper">
-                                <img src="images/download.png" class="download-icon" alt="Download Icon">
-                                <span class="download-text">Game Template</span>
-                            </div>
-                        </a>
-                    </div>
                 </div>
 
                 <!-- Duos Rules Content -->
                 <div id="duos" class="rule-content">
                     <section class="rules-section">
-                        <h2 class="hero-title beta-notice">MORE AFTER BETA</h2>
-                        <img src="images/duo.png" alt="Duos Rules" class="rule-image">
+                        <div class="rules-flex-container">
+                            <div class="rules-text-container">
+                                <h2 class="hero-title beta-notice">MORE AFTER BETA</h2>
+                                <div class="beta-description">
+                                    <p>Duos ladder competition coming soon!</p>
+                                    <p>Features will include:</p>
+                                    <ul>
+                                        <li>Team-based matchmaking</li>
+                                        <li>Duo-specific rankings</li>
+                                        <li>Special tournament events</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="rules-image-container">
+                                <img src="images/duo.png" alt="Duos Rules" class="rule-image">
+                            </div>
+                        </div>
                     </section>
                 </div>
 
                 <!-- CTF Rules Content -->
                 <div id="ctf" class="rule-content">
                     <section class="rules-section">
-                        <h2 class="hero-title beta-notice">MORE AFTER BETA</h2>
-                        <img src="images/ladderbackdrop.png" alt="CTF Rules" class="rule-image">
+                        <div class="rules-flex-container">
+                            <div class="rules-text-container">
+                                <h2 class="hero-title beta-notice">MORE AFTER BETA</h2>
+                                <div class="beta-description">
+                                    <p>CTF competition ladder coming soon!</p>
+                                    <p>Features will include:</p>
+                                    <ul>
+                                        <li>Team rankings</li>
+                                        <li>Flag capture statistics</li>
+                                        <li>CTF-specific tournaments</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="rules-image-container">
+                                <img src="images/ladderbackdrop.png" alt="CTF Rules" class="rule-image">
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
