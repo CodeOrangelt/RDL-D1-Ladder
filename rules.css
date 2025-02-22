@@ -26,7 +26,8 @@ body {
     width: 85%;
     margin: 20px auto;
     backdrop-filter: blur(10px);
-    overflow: visible; /* Allow content to flow outside */
+    min-height: calc(100vh - 160px); /* Account for margins and footer */
+    overflow: hidden; /* Changed from visible to hidden */
 }
 
 .table-container {
@@ -207,25 +208,22 @@ accountbutton:hover {
 }
 
 .rule-image {
-    width: 450px; /* Increased from previous size */
+    width: 100%;
     height: auto;
-    object-fit: cover;
+    max-height: calc(100vh - 300px);
+    object-fit: contain;
     margin-bottom: 20px;
     max-width: 100%;
     object-fit: contain;
 }
 
 .rule-content {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative; /* Changed from absolute */
     width: 100%;
-    opacity: 0;
-    visibility: hidden;
+    height: 100%;
     display: flex;
     gap: 30px;
     align-items: flex-start;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .rule-content.active {
@@ -237,7 +235,7 @@ accountbutton:hover {
 .content-container {
     position: relative;
     width: 100%;
-    min-height: 400px;
+    flex: 1;
     display: flex;
     flex-direction: row;
     background-color: rgba(0, 0, 0, 0.75);
@@ -245,7 +243,7 @@ accountbutton:hover {
     border-radius: 15px;
     padding: 30px;
     margin-top: 20px;
-    min-height: 600px;
+    margin-bottom: 20px;
     overflow: hidden;
 }
 
@@ -253,13 +251,14 @@ accountbutton:hover {
     flex: 1;
     padding-right: 30px;
     overflow-y: auto;
+    max-height: calc(100vh - 300px); /* Account for header, footer, and margins */
 }
 
 .image-content {
     width: 40%;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    position: sticky;
+    top: 30px;
+    align-self: flex-start;
     padding-left: 20px;
 }
 
@@ -298,11 +297,19 @@ accountbutton:hover {
     .text-content {
         padding-right: 0;
         padding-bottom: 20px;
+        max-height: none;
     }
 
     .image-content {
         width: 100%;
+        position: relative;
+        top: 0;
         padding-left: 0;
+        margin-top: 20px;
+    }
+
+    .rule-image {
+        max-height: none;
     }
 }
 
@@ -532,7 +539,7 @@ accountbutton:hover {
 footer {
     position: relative;
     width: 100%;
-    margin-top: 40px;
+    margin-top: auto; /* Push footer to bottom */
     padding: 20px;
     text-align: center;
 }
