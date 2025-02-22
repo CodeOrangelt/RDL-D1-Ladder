@@ -226,18 +226,22 @@ body {
     transform: translateY(-2px);
 }
 
-/* Settings content styles */
+/* Update the content styles */
 .content {
     padding: 0 20px;
     max-height: 0;
     overflow: hidden;
-    transition: max-height var(--transition);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition);
     background: var(--primary-bg);
     border-radius: var(--border-radius);
 }
 
 .content.active {
     max-height: 1000px;
+    opacity: 1;
+    visibility: visible;
     padding: 20px;
     border: 1px solid var(--border-color);
 }
