@@ -179,7 +179,7 @@
 
             ruleButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    const targetId = button.getAttribute('data-target');
+                    const targetId = button.getAttribute('data-content'); // Changed from data-target to data-content
                     
                     // Remove active classes
                     ruleButtons.forEach(btn => btn.classList.remove('active'));
@@ -187,7 +187,10 @@
                     
                     // Add active classes
                     button.classList.add('active');
-                    document.getElementById(targetId).classList.add('active');
+                    const targetContent = document.getElementById(targetId);
+                    if (targetContent) { // Add null check
+                        targetContent.classList.add('active');
+                    }
                 });
             });
 
