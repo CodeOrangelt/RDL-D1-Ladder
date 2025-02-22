@@ -152,7 +152,7 @@ accountbutton:hover {
     box-shadow: 0 0 0 999px white;
     clip-path: inset(0 -100%);
     color: black;
-    z-index: 2;
+    z-index: 999;
 }
 
 .left {
