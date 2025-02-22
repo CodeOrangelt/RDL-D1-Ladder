@@ -23,11 +23,12 @@ body {
     padding: 30px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    width: 85%;
+    width: 90%;
+    max-width: 1400px;
     margin: 20px auto;
     backdrop-filter: blur(10px);
-    min-height: calc(100vh - 160px); /* Account for margins and footer */
-    overflow: hidden; /* Changed from visible to hidden */
+    min-height: calc(100vh - 200px);
+    overflow: hidden;
 }
 
 .table-container {
@@ -210,7 +211,7 @@ accountbutton:hover {
 .rule-image {
     width: 100%;
     height: auto;
-    max-height: calc(100vh - 300px);
+    max-height: 400px;
     object-fit: contain;
     margin-bottom: 20px;
     max-width: 100%;
@@ -239,31 +240,31 @@ accountbutton:hover {
 .content-container {
     position: relative;
     width: 100%;
-    flex: 1;
     display: flex;
     flex-direction: row;
     background-color: rgba(0, 0, 0, 0.75);
     border: 5px solid white;
     border-radius: 15px;
-    padding: 30px;
+    padding: 25px;
     margin: 20px 0;
-    min-height: 600px;
+    min-height: 500px;
     overflow: hidden;
 }
 
 .text-content {
-    flex: 1;
-    padding-right: 30px;
+    flex: 3;
+    padding-right: 25px;
     overflow-y: auto;
-    max-height: calc(100vh - 300px); /* Account for header, footer, and margins */
+    max-height: 700px;
 }
 
 .image-content {
-    width: 40%;
-    position: sticky;
-    top: 30px;
-    align-self: flex-start;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding-left: 20px;
+    max-width: 300px;
 }
 
 /* Rule sections */
@@ -293,6 +294,7 @@ accountbutton:hover {
     .rule-image {
         width: 100%;
         margin-top: 20px;
+        max-height: 300px;
     }
     
     .content-container {
@@ -547,4 +549,39 @@ footer {
     margin-top: auto; /* Push footer to bottom */
     padding: 20px;
     text-align: center;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+    .outer-container {
+        width: 95%;
+    }
+    
+    .content-container {
+        padding: 20px;
+    }
+
+    .image-content {
+        max-width: 250px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .text-content {
+        padding-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .image-content {
+        max-width: 100%;
+        padding-left: 0;
+    }
+
+    .rule-image {
+        max-height: 300px;
+    }
 }
