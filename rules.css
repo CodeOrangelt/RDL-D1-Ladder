@@ -1,82 +1,26 @@
-html, body {
-    height: 100%;
-    width: 100%;
-    margin: auto;
-    padding: 0;
-    font-family: Helvetica, sans-serif;
-}
-
-body {
-    background-image: url('./images/backgroundrdl.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    min-height: 100vh;
-    margin: 0;
-}
-
-/* Base styles */
-:root {
-    --container-bg: rgba(0, 0, 0, 0.75);
-    --border-color: rgba(255, 255, 255, 0.8);
-    --text-color: rgba(255, 255, 255, 0.9);
-    --transition-speed: 0.3s;
-}
-
-/* Base Variables */
-:root {
-    --primary-bg: rgba(0, 0, 0, 0.75);
-    --text-color: rgba(255, 255, 255, 0.9);
-    --border-color: rgba(255, 255, 255, 0.2);
-    --hover-color: rgba(255, 255, 255, 0.2);
-    --transition: 0.3s ease;
-    --spacing: 20px;
-}
-
-/* =========================================
-   Core Variables
-   ========================================= */
+/* ===== Core Variables ===== */
 :root {
     /* Colors */
     --primary-bg: rgba(0, 0, 0, 0.75);
     --secondary-bg: rgba(255, 255, 255, 0.1);
     --text-primary: rgba(255, 255, 255, 0.9);
-    --text-secondary: rgba(255, 255, 255, 0.8);
-    --border-light: rgba(255, 255, 255, 0.2);
-    --shadow-color: rgba(0, 0, 0, 0.2);
+    --border-color: rgba(255, 255, 255, 0.2);
     
-    /* Spacing */
-    --spacing-xs: 5px;
-    --spacing-sm: 10px;
-    --spacing-md: 20px;
-    --spacing-lg: 30px;
-    --spacing-xl: 40px;
-    
-    /* Animation */
-    --transition-fast: 0.2s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    
-    /* Layout */
+    /* Spacing & Layout */
     --container-width: 90%;
     --max-width: 1400px;
+    --spacing: 20px;
     --border-radius: 8px;
-    --border-radius-lg: 15px;
+    
+    /* Transitions */
+    --transition: 0.3s ease;
 }
 
-/* =========================================
-   Reset & Base Styles
-   ========================================= */
+/* ===== Reset & Base Styles ===== */
 *, *::before, *::after {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
-}
-
-html {
-    font-size: 16px;
-    scroll-behavior: smooth;
+    box-sizing: border-box;
 }
 
 body {
@@ -91,674 +35,39 @@ body {
     background-attachment: fixed;
 }
 
-/* Layout containers */
-.outer-container {
+/* ===== Main Container ===== */
+.rules-container {
     width: var(--container-width);
     max-width: var(--max-width);
-    margin: var(--spacing-md) auto;
-    padding: var(--spacing-lg);
-    background-color: var(--primary-bg);
-    border-radius: var(--border-radius-lg);
-    min-height: calc(100vh - 200px);
-}
-
-.content-container {
-    position: relative;
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: var(--spacing-md);
-    background-color: var(--primary-bg);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
-    margin: var(--spacing-md) 0;
-    min-height: 500px;
-}
-
-.table-container {
-    width: 85%;
-    border-radius: 30px; /* Adjust the border radius value as needed */
-    background-color: #efefef; /* Set the desired background color */
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th, td {
-    border: 2px solid black;
-    border-radius: 15px; /* Adjust the border radius value as needed */
-    padding: 8px;
-    text-align: center;
-    font-family: Tahoma, sans-serif;
-}
-
-th {
-    background-color: #f2f2f2;
-}
-
-/* Menu styling */
-ul {
-    display: flex;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-li {
-    margin-left: 40px;
-}
-
-a {
-    color: #fff;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-shadow: 0 0 0 transparent;
-}
-
-a:hover {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 1);
-}
-
-accountbutton:hover {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 1);
-}
-
-.hero-title {
-    font-family: Helvetica;
-    color: white;
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.footer {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    margin: 0;
-    background-color: #333;
-    background-image: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 2.0)), url("image.png");
-    color: white;
-    text-align: center;
-    height: 80px;
-    justify-content: center;
-    font-family: tahoma;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-}
-
-.footer::before {
-    content: "";
-    position: absolute;
-    top: -10px; /* Adjust the distance from the footer as needed */
-    left: 0;
-    right: 0;
-    height: 10px; /* Adjust the height of the gray bar as needed */
-    background-color: gray; /* Set the desired background color */
-}
-
-.button:hover {
-    text-shadow: 0 0 10px #000000;
-}
-
-.hrcontainer {
-    position: relative;
-}
-
-.hrbutton {
-    position: absolute;
-    top: -120px; /* Adjust the value as needed */
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent; /* Increased border width to 2px */
-    border-top-color: white;
-    border-left-color: white;
-    border-right-color: white;
-    border-bottom: none; /* Remove the bottom border */
-    background-color: white;
-    color: black; /* Added white font color */
-    padding: 3px 30px; /* Adjust the padding values as needed */
-    cursor: pointer;
-    font-family: Tahoma, Arial, sans-serif;
-    font-size: 18px;
-    border-radius: 8px 8px 0 0; /* Set the border radius for each corner */
-}
-
-.ribbon-1 {
-    position: fixed;
-    background: white;
-    box-shadow: 0 0 0 999px white;
-    clip-path: inset(0 -100%);
-    color: black;
-    z-index: 999;
-}
-
-.left {
-    inset: 0 auto auto 0;
-    transform-origin: 100% 0;
-    transform: translate(-29.3%) rotate(-45deg);
-}
-
-.right {
-    inset: 0 0 auto auto;
-    transform-origin: 0 0;
-    transform: translate(29.3%) rotate(45deg);
-}
-
-/* Navigation buttons */
-.button-container {
-    display: flex;
-    justify-content: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-    padding: var(--spacing-md);
-}
-
-.rule-button {
-    padding: 12px 28px;
-    background: var(--secondary-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 14px;
-}
-
-.rule-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.rule-button.active {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(1px);
-}
-
-/* Content sections */
-.rule-content {
-    display: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-normal),
-                visibility var(--transition-normal);
-}
-
-.rule-content.active {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
-    opacity: 1;
-    visibility: visible;
-    width: 100%;
-    height: 100%;
-    align-items: flex-start;
-}
-
-.text-content {
-    flex: 1;
-    overflow-y: auto;
-    max-height: 700px;
-    width: 100%;
-}
-
-.image-content {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: var(--spacing-md) 0;
-}
-
-/* Add specific styling for fubot image */
-.rule-image[src*="fubot"] {
-    min-width: 350px; /* Minimum width for fubot */
-    padding: var(--spacing-md);
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1)); /* Optional: adds subtle glow */
-}
-
-/* Rule content sections */
-.rule-content {
-    display: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-speed) ease, 
-                visibility var(--transition-speed) ease;
-}
-
-.rule-content.active {
-    display: grid;
-    grid-template-columns: 1fr; /* Changed from 3fr 1fr to full width */
-    gap: 30px;
-    opacity: 1;
-    visibility: visible;
-    width: 100%;
-    height: 100%;
-    align-items: flex-start;
-}
-
-/* Content layout */
-.text-content {
-    flex: 1;
-    padding-right: 0; /* Removed right padding */
-    overflow-y: auto;
-    max-height: 700px;
-    width: 100%;
-}
-
-.image-content {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: 20px 0;
-}
-
-/* Add specific styling for fusbot image */
-.rule-image[src*="fusbot"] {
-    width: auto;
-    max-width: 400px;
-    height: auto;
-    margin: 0 auto;
-    padding: 20px;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
-}
-
-/* Rule sections */
-.rules-section {
-    margin-bottom: 2rem;
-    opacity: 0;
-    transform: translateX(20px);
-    animation: fadeIn 0.5s ease forwards;
-}
-
-.rules-section:last-child {
-    margin-bottom: 0;
-}
-
-.rules-text {
-    line-height: 1.6;
-    color: var(--text-color);
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-@media (max-width: 768px) {
-    .rule-content {
-        flex-direction: column;
-    }
-    
-    .rule-image {
-        width: 100%;
-        margin-top: 20px;
-        max-height: 300px;
-    }
-    
-    .content-container {
-        flex-direction: column;
-    }
-
-    .text-content {
-        padding-right: 0;
-        padding-bottom: 20px;
-        max-height: none;
-    }
-
-    .image-content {
-        max-width: 100%;
-        position: relative;
-        top: 0;
-        padding-left: 0;
-        margin-top: 20px;
-    }
-
-    .rule-image {
-        max-height: none;
-    }
-
-    .rule-image[src*="fubot"] {
-        min-width: 280px; /* Smaller minimum width on mobile */
-    }
-}
-
-/* Update animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Game Settings specific styles */
-.collapsible {
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15));
-    color: white;
-    cursor: pointer;
-    padding: 15px 25px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-    transition: all 0.3s ease;
-    margin: 15px 0;
-    width: 100%;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.collapsible:hover {
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.2));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.collapsible:after {
-    content: '\002B';
-    color: white;
-    font-weight: bold;
-    float: right;
-    margin-left: 5px;
-    font-size: 18px;
-    transition: transform 0.3s ease;
-}
-
-.collapsible.active:after {
-    content: "\2212";
-    transform: rotate(180deg);
-}
-
-.content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    border-radius: 8px;
-    padding: 30px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    min-height: 500px; /* Increased from 300px */
-}
-
-.content.active {
-    opacity: 1;
-    visibility: visible;
-    position: relative;
-    height: auto; /* Allow content to expand */
-}
-
-.game-settings-list {
-    list-style: none;
-    padding: 20px;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-    max-height: 80vh;
-    min-height: 400px; /* Increased from 250px */
-    overflow-y: auto;
-}
-
-.game-settings-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.game-settings-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.game-settings-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-.game-settings-list li {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 15px 20px;
-    border-radius: 8px;
-    text-align: center;
-    transition: background 0.3s ease;
-    color: white;
-    font-size: 15px;
-    line-height: 1.4;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.game-settings-list li:first-child {
-    grid-column: 1 / -1;
-    background: rgba(255, 255, 255, 0.15);
-    font-weight: 600;
-    padding: 20px;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
-/* Hide image when settings are active */
-.content.active ~ .rule-image {
-    display: none;
-}
-
-/* Regular content transitions */
-.regular-content {
-    transition: opacity 0.3s ease;
-}
-
-.content.active + .regular-content {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.rules-section {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-}
-
-.content-container {
-    position: relative;
-    overflow: visible;
-}
-
-@media (max-width: 1200px) {
-    .outer-container {
-        width: 95%;
-    }
-    
-    .content-container,
-    .rule-content.active {
-        grid-template-columns: 2fr 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .content-container,
-    .rule-content.active {
-        grid-template-columns: 1fr;
-    }
-
-    .image-content {
-        max-width: 100%;
-    }
-
-    .text-content {
-        padding-right: 0;
-        max-height: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .content {
-        margin: 0 -15px;
-        padding: 0 15px;
-    }
-    
-    .content.active {
-        padding: 15px;
-    }
-    
-    .game-settings-list {
-        grid-template-columns: 1fr;
-    }
-}
-
-.close-settings {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 5px 10px;
-    transition: all 0.3s ease;
-    padding: 5px;
-}
-
-.close-settings:hover {
-    transform: scale(1.1);
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.regular-content {
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    position: relative;
-    opacity: 1;
-    visibility: visible;
-}
-
-.download-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-top: 40px;
-}
-
-.download-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.download-icon {
-    width: 150px;
-    height: 150px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.download-icon:hover {
-    transform: translateY(-2px);
-}
-
-.download-text {
-    color: white;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 10px; /* Add space between icon and text */
-    text-align: center; /* Ensure text is centered */
-}
-
-footer {
-    position: relative;
-    width: 100%;
-    margin-top: auto; /* Push footer to bottom */
-    padding: 20px;
-    text-align: center;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 1200px) {
-    .outer-container {
-        width: 95%;
-    }
-    
-    .content-container {
-        padding: 20px;
-    }
-
-    .image-content {
-        max-width: 250px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .content-container {
-        flex-direction: column;
-    }
-
-    .text-content {
-        padding-right: 0;
-        margin-bottom: 20px;
-    }
-
-    .image-content {
-        max-width: 100%;
-        padding-left: 0;
-    }
-
-    .rule-image {
-        max-height: 300px;
-    }
-}
-
-/* Main Layout */
-.rules-container {
-    max-width: 1400px;
-    margin: 0 auto;
+    margin: var(--spacing) auto;
     padding: var(--spacing);
     background: var(--primary-bg);
-    border-radius: 15px;
-    min-height: calc(100vh - 200px);
+    border-radius: var(--border-radius);
+    min-height: calc(100vh - 100px);
 }
 
-/* Rule Navigation */
+/* ===== Navigation ===== */
 .rules-nav {
     display: flex;
     justify-content: center;
     gap: var(--spacing);
-    margin-bottom: 30px;
+    margin-bottom: var(--spacing);
 }
 
 .rule-button {
-    padding: 12px 28px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-color);
+    padding: 12px 24px;
+    background: var(--secondary-bg);
+    color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: all var(--transition);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .rule-button:hover {
-    background: var(--hover-color);
+    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
 }
 
@@ -766,128 +75,52 @@ footer {
     background: rgba(255, 255, 255, 0.25);
 }
 
-/* Rule Content */
+/* ===== Content Sections ===== */
 .rule-content {
     display: none;
-    grid-template-columns: 1fr;
-    gap: 30px;
     opacity: 0;
     visibility: hidden;
-    transition: opacity var(--transition),
-                visibility var(--transition);
+    transition: opacity var(--transition);
 }
 
 .rule-content.active {
     display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing);
     opacity: 1;
     visibility: visible;
 }
 
-/* Content Sections */
 .text-content {
-    color: var(--text-color);
-    line-height: 1.6;
+    color: var(--text-primary);
     max-height: 700px;
     overflow-y: auto;
     padding-right: var(--spacing);
 }
 
-.image-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-
-/* Images */
+/* ===== Images ===== */
 .rule-image {
     width: 100%;
     max-height: 500px;
     object-fit: contain;
-    margin: var(--spacing) auto;
+    margin: var(--spacing) 0;
 }
 
 .rule-image[src*="fubot"] {
     min-width: 350px;
     padding: var(--spacing);
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Responsive Design */
+/* ===== Media Queries ===== */
 @media (max-width: 768px) {
-    .rule-content.active {
-        grid-template-columns: 1fr;
-    }
-
-    .text-content {
-        padding-right: 0;
-        max-height: none;
-    }
-
-    .rule-image[src*="fubot"] {
-        min-width: 280px;
-    }
-}
-
-/* =========================================
-   Animations
-   ========================================= */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.rules-section {
-    animation: fadeIn var(--transition-normal) forwards;
-}
-
-/* =========================================
-   Media Queries
-   ========================================= */
-@media (max-width: 1200px) {
-    .outer-container {
-        width: 95%;
-    }
-    
-    .content-container {
-        grid-template-columns: 2fr 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .content-container {
-        grid-template-columns: 1fr;
-    }
-
-    .rule-content {
+    .rules-nav {
         flex-direction: column;
+        align-items: center;
     }
-    
+
     .text-content {
         padding-right: 0;
         max-height: none;
-    }
-
-    .image-content {
-        max-width: 100%;
     }
 
     .rule-image[src*="fubot"] {
@@ -895,14 +128,18 @@ footer {
     }
 }
 
-/* =========================================
-   Utility Classes
-   ========================================= */
-.hidden {
-    display: none !important;
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-.visible {
-    visibility: visible !important;
-    opacity: 1 !important;
+.fade-in {
+    animation: fadeIn var(--transition) forwards;
 }
