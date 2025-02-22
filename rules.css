@@ -489,3 +489,9 @@ accountbutton:hover {
     margin-top: 10px; /* Add space between icon and text */
     text-align: center; /* Ensure text is centered */
 }
+
+.beta-notice {
+    font-size: 48px;
+    text-align: center;
+    margin: 50px 0;
+}
