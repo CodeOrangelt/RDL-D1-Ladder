@@ -16,19 +16,37 @@ body {
     margin: 0;
 }
 
+/* Base styles */
+:root {
+    --container-bg: rgba(0, 0, 0, 0.75);
+    --border-color: rgba(255, 255, 255, 0.8);
+    --text-color: rgba(255, 255, 255, 0.9);
+    --transition-speed: 0.3s;
+}
+
+/* Layout containers */
 .outer-container {
-    display: flex;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 30px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
     width: 90%;
     max-width: 1400px;
     margin: 20px auto;
-    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
     min-height: calc(100vh - 200px);
-    overflow: hidden;
+}
+
+.content-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 25px;
+    background-color: var(--container-bg);
+    border: 5px solid var(--border-color);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    min-height: 500px;
 }
 
 .table-container {
@@ -169,13 +187,13 @@ accountbutton:hover {
     transform: translate(29.3%) rotate(45deg);
 }
 
+/* Navigation buttons */
 .button-container {
     display: flex;
     justify-content: center;
     gap: 20px;
     margin-bottom: 30px;
     padding: 20px;
-    border-radius: 12px;
 }
 
 .rule-button {
@@ -185,7 +203,7 @@ accountbutton:hover {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-speed) ease;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -200,8 +218,7 @@ accountbutton:hover {
 .rule-button.active {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(1px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .rule-button::before {
@@ -223,34 +240,22 @@ accountbutton:hover {
     display: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity var(--transition-speed) ease, 
+                visibility var(--transition-speed) ease;
 }
 
 .rule-content.active {
-    display: flex;
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 30px;
     opacity: 1;
     visibility: visible;
     width: 100%;
     height: 100%;
-    gap: 30px;
     align-items: flex-start;
 }
 
 /* Content layout */
-.content-container {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    background-color: rgba(0, 0, 0, 0.75);
-    border: 5px solid white;
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px 0;
-    min-height: 500px;
-    overflow: hidden;
-}
-
 .text-content {
     flex: 3;
     padding-right: 25px;
@@ -281,7 +286,7 @@ accountbutton:hover {
 
 .rules-text {
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
     font-size: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -465,6 +470,33 @@ accountbutton:hover {
 .content-container {
     position: relative;
     overflow: visible;
+}
+
+@media (max-width: 1200px) {
+    .outer-container {
+        width: 95%;
+    }
+    
+    .content-container,
+    .rule-content.active {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-container,
+    .rule-content.active {
+        grid-template-columns: 1fr;
+    }
+
+    .image-content {
+        max-width: 100%;
+    }
+
+    .text-content {
+        padding-right: 0;
+        max-height: none;
+    }
 }
 
 @media (max-width: 768px) {
