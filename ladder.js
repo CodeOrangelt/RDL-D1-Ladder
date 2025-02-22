@@ -157,11 +157,16 @@ async function updateLadderDisplay(ladderData) {
         if (elo >= 2000) {
             usernameLink.style.color = '#50C878';
             if (player.position === 1) {
+                // Apply styles to both the link and cell
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
-                usernameLink.style.fontSize = '24px'; // Use absolute size instead of percentage
-                usernameCell.style.lineHeight = '1.2'; // Maintain alignment
-                usernameCell.style.verticalAlign = 'middle'; // Keep vertically centered
+                usernameLink.style.fontSize = '32px'; // Increased size
+                usernameLink.style.display = 'inline-block'; // Ensure block-level styling
+                
+                // Style the container cell
+                usernameCell.style.height = '48px'; // Ensure cell height accommodates larger text
+                usernameCell.style.lineHeight = '48px'; // Match height for vertical centering
+                usernameCell.style.verticalAlign = 'middle';
             }
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';
