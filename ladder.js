@@ -142,6 +142,14 @@ async function updateLadderDisplay(ladderData) {
     for (const player of ladderData) {
         const row = document.createElement('tr');
         
+        // Add scaling for #1 position
+        if (player.position === 1) {
+            row.style.transform = 'scale(1.2)';
+            row.style.transformOrigin = 'left center';
+            row.style.height = '120%'; // Ensure enough space for scaled content
+            row.style.zIndex = '1'; // Ensure the scaled row appears above others
+        }
+
         // Create rank cell
         const rankCell = document.createElement('td');
         rankCell.textContent = player.position;
