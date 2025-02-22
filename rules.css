@@ -23,8 +23,11 @@ body {
     padding: 30px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    width: 85%;
-    margin: 20px auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: fit-content; /* Allow container to expand */
     backdrop-filter: blur(10px);
     overflow: visible; /* Allow content to flow outside */
 }
@@ -211,6 +214,9 @@ accountbutton:hover {
     height: auto;
     object-fit: cover;
     margin-bottom: 20px;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 20px 0;
 }
 
 .rule-content {
@@ -224,18 +230,35 @@ accountbutton:hover {
     gap: 30px;
     align-items: flex-start;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    display: none;
+    height: auto;
+    min-height: 100%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .rule-content.active {
     position: relative;
     opacity: 1;
     visibility: visible;
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    height: auto;
 }
 
 .content-container {
     position: relative;
     width: 100%;
     min-height: 400px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 20px;
+    height: auto; /* Allow content to determine height */
+    min-height: 600px; /* Minimum height */
+    overflow-y: auto; /* Add scroll if content exceeds container */
 }
 
 .rules-section {
@@ -243,6 +266,8 @@ accountbutton:hover {
     flex: 1;
     position: relative; /* Add this to contain absolute positioned content */
     width: 100%;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .rules-section:last-child {
@@ -426,6 +451,15 @@ accountbutton:hover {
     
     .game-settings-list {
         grid-template-columns: 1fr;
+    }
+
+    .content-container {
+        padding: 15px;
+        min-height: 400px;
+    }
+
+    .rules-section {
+        padding: 10px;
     }
 }
 
