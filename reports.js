@@ -224,7 +224,7 @@ function autoFillReportForm(reportData) {
                             document.getElementById('lightbox-comment').textContent = reportData.loserComment;
 
                             // Show the lightbox
-                            document.getElementById('report-lightbox').style.display = 'block';
+                            showLightbox();
 
                             // Add event listener to the Approve button
                             const approveButton = document.getElementById('approve-button');
@@ -246,9 +246,7 @@ function autoFillReportForm(reportData) {
                             approveButton.addEventListener('click', approveReportHandler);
 
                             // Add event listener to the Cancel button
-                            document.getElementById('cancel-button').addEventListener('click', function() {
-                                document.getElementById('report-lightbox').style.display = 'none';
-                            });
+                            document.getElementById('cancel-button').addEventListener('click', hideLightbox);
                         } else {
                             console.error('No loser found with username:', reportData.loserUsername);
                             alert('Error: No loser found with that username.');
@@ -268,7 +266,12 @@ function autoFillReportForm(reportData) {
 
 // Show lightbox
 function showLightbox() {
+    console.log('Showing lightbox');
     const lightbox = document.getElementById('report-lightbox');
+    if (!lightbox) {
+        console.error('Lightbox element not found');
+        return;
+    }
     lightbox.classList.add('show');
 }
 

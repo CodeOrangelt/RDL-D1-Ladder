@@ -72,28 +72,32 @@
 
         <div id="report-lightbox">
             <div class="lightbox-content">
-                <!-- Content will be dynamically inserted -->
+                <h2>Report Details</h2>
+                <p>Winner: <span id="lightbox-winner"></span></p>
+                <p>Loser: <span id="lightbox-loser"></span></p>
+                <p>Loser Score: <span id="lightbox-loser-score"></span></p>
+                <p>Suicides: <span id="lightbox-suicides"></span></p>
+                <p>Map: <span id="lightbox-map"></span></p>
+                <p>Loser Comment: <span id="lightbox-comment"></span></p>
+                
+                <div class="form-group">
+                    <label for="winner-score">Winner Score:</label>
+                    <input type="number" id="winner-score" required>
+                </div>
+                <div class="form-group">
+                    <label for="winner-suicides">Winner Suicides:</label>
+                    <input type="number" id="winner-suicides" required>
+                </div>
+                <div class="form-group">
+                    <label for="winner-comment">Winner Comment:</label>
+                    <textarea id="winner-comment" required></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="approve-button" class="btn">Approve</button>
+                    <button id="cancel-button" class="btn">Cancel</button>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div id="report-lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; padding:20px;">
-            <h2>Report Details</h2>
-            <p>Winner: <span id="lightbox-winner"></span></p>
-            <p>Loser: <span id="lightbox-loser"></span></p>
-            <p>Loser Score: <span id="lightbox-loser-score"></span></p>
-            <p>Suicides: <span id="lightbox-suicides"></span></p>
-            <p>Map: <span id="lightbox-map"></span></p>
-            <p>Loser Comment: <span id="lightbox-comment"></span></p>
-
-            <!-- Winner Input Fields -->
-            <p>Winner's Score: <input type="number" id="winner-score"></p>
-            <p>Winner's Suicides: <input type="number" id="winner-suicides"></p>
-            <p>Winner's Comment: <textarea id="winner-comment"></textarea></p>
-
-            <button id="approve-button">Approve</button>
-            <button id="cancel-button">Cancel</button>
         </div>
     </div>
 

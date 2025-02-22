@@ -187,7 +187,7 @@ textarea {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.85);
     z-index: 9999;
-    visibility: hidden; /* Changed from display: none */
+    visibility: hidden;
     opacity: 0;
     transition: visibility 0s, opacity 0.3s ease;
 }
