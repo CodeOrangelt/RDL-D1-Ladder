@@ -211,8 +211,6 @@ accountbutton:hover {
     height: auto;
     object-fit: cover;
     margin-bottom: 20px;
-    max-width: 100%;
-    border-radius: 8px;
 }
 
 .rule-content {
@@ -470,19 +468,6 @@ accountbutton:hover {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #50C878;
-    border-radius: 4px;
-    text-decoration: none;
-    color: white;
-    transition: background 0.3s ease;
-}
-
-.download-wrapper:hover {
-    background: #3da661;
 }
 
 .download-icon {
@@ -490,8 +475,6 @@ accountbutton:hover {
     height: 150px;
     cursor: pointer;
     transition: transform 0.3s ease;
-    width: 24px;
-    height: 24px;
 }
 
 .download-icon:hover {
@@ -505,75 +488,4 @@ accountbutton:hover {
     letter-spacing: 1px;
     margin-top: 10px; /* Add space between icon and text */
     text-align: center; /* Ensure text is centered */
-}
-
-.beta-notice {
-    font-size: 48px;
-    text-align: center;
-    margin: 50px 0;
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-    color: #50C878;
-}
-
-.rules-flex-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-    padding: 2rem;
-}
-
-.rules-text-container {
-    flex: 1;
-    max-width: 60%;
-}
-
-.rules-image-container {
-    flex: 1;
-    max-width: 40%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: sticky;
-    top: 2rem;
-}
-
-.beta-description {
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-.beta-description ul {
-    list-style-type: none;
-    padding-left: 1rem;
-    margin-top: 1rem;
-}
-
-.beta-description li {
-    margin-bottom: 0.5rem;
-    position: relative;
-    padding-left: 1.5rem;
-}
-
-.beta-description li:before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: #50C878;
-}
-
-@media (max-width: 768px) {
-    .rules-flex-container {
-        flex-direction: column;
-    }
-
-    .rules-text-container,
-    .rules-image-container {
-        max-width: 100%;
-    }
-
-    .rules-image-container {
-        position: static;
-    }
 }
