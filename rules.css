@@ -190,3 +190,73 @@ body {
     max-height: 1000px;
     padding: var(--spacing);
 }
+
+/* Add these styles for the collapsible button */
+.collapsible {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 12px 24px;
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    text-align: left;
+    outline: none;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all var(--transition);
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collapsible:after {
+    content: '▼';
+    font-size: 0.8rem;
+    transition: transform var(--transition);
+}
+
+.collapsible.active:after {
+    transform: rotate(180deg);
+}
+
+.collapsible:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Settings content styles */
+.content {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition);
+    background: var(--primary-bg);
+    border-radius: var(--border-radius);
+}
+
+.content.active {
+    max-height: 1000px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* Game settings list styling */
+.game-settings-list {
+    list-style: none;
+    padding: 0;
+}
+
+.game-settings-list li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.game-settings-list li:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--text-primary);
+}
