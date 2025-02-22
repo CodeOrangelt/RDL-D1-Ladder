@@ -249,7 +249,7 @@ accountbutton:hover {
 
 .rule-content.active {
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 1fr; /* Changed from 3fr 1fr to full width */
     gap: 30px;
     opacity: 1;
     visibility: visible;
@@ -260,20 +260,30 @@ accountbutton:hover {
 
 /* Content layout */
 .text-content {
-    flex: 3;
-    padding-right: 25px;
+    flex: 1;
+    padding-right: 0; /* Removed right padding */
     overflow-y: auto;
     max-height: 700px;
+    width: 100%;
 }
 
 .image-content {
-    flex: 1;
+    position: relative;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    justify-content: flex-start; /* Changed from default */
-    padding-left: 20px;
-    max-width: 400px; /* Increased from 300px */
+    width: 100%;
+    padding: 20px 0;
+}
+
+/* Add specific styling for fusbot image */
+.rule-image[src*="fusbot"] {
+    width: auto;
+    max-width: 400px;
+    height: auto;
+    margin: 0 auto;
+    padding: 20px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
 }
 
 /* Rule sections */
