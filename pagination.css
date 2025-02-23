@@ -1,11 +1,11 @@
 /* Add to your CSS file */
 #pagination {
-    margin-top: 20px;
+    margin-top: 0;
     text-align: center;
 }
 
 #pagination button {
-    margin: 0 10px;
+    margin: 0;
     padding: 5px 15px;
     cursor: pointer;
 }
@@ -20,10 +20,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(20, 20, 20, 0.95);
     padding: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
 .pagination-controls {
@@ -31,30 +32,31 @@
     justify-content: center;
     align-items: center;
     gap: 20px;
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
 .page-navigation {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 15px;
+    color: #fff;
 }
 
 .page-search {
     display: flex;
-    gap: 5px;
     align-items: center;
+    gap: 8px;
 }
 
 .page-search input {
     width: 60px;
-    padding: 4px 8px;
-    background: #2c2c2c;
-    border: 1px solid #444;
-    color: white;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
 }
 
 .page-search button {
@@ -70,7 +72,27 @@
     background: #3c3c3c;
 }
 
-/* Add margin to table container to prevent overlap with fixed pagination */
+.pagination-controls button {
+    padding: 8px 16px;
+    background: #50C878;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.pagination-controls button:hover {
+    background: #45b06a;
+}
+
+.pagination-controls button:disabled {
+    background: rgba(80, 200, 120, 0.3);
+    cursor: not-allowed;
+}
+
+/* Add margin to ensure content isn't hidden behind pagination */
 .container {
     margin-bottom: 80px;
 }
