@@ -780,19 +780,10 @@ document.getElementById('view-elo-history').addEventListener('click', () => {
 async function setCustomElo(username, newElo) {
     try {
         const user = auth.currentUser;
-        if (!user) {
-            throw new Error('User not authenticated');
-        }
-
-        // Log authentication state for debugging
-        console.log('Current user:', user.email);
-        console.log('Is admin:', isAdmin(user.email));
-
-        if (!isAdmin(user.email)) {
+        if (!user || !isAdmin(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
-        // Get player data
         const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
@@ -802,10 +793,8 @@ async function setCustomElo(username, newElo) {
         }
 
         const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const currentElo = playerData.eloRating || 1200;
+        const currentElo = playerDoc.data().eloRating || 1200;
 
-        // Use batch write
         const batch = writeBatch(db);
         
         // Update player document
@@ -815,31 +804,27 @@ async function setCustomElo(username, newElo) {
             modifiedBy: user.email
         });
 
-        // Add to ELO history
-        const historyRef = doc(collection(db, 'eloHistory'));
-        batch.set(historyRef, {
+        // Add ELO history entry
+        batch.set(doc(collection(db, 'eloHistory')), {
+            type: 'admin_modification',
             player: username,
             previousElo: currentElo,
             newElo: newElo,
             timestamp: serverTimestamp(),
-            type: 'admin_modification',
             change: newElo - currentElo,
             modifiedBy: user.email
         });
 
-        // Commit the batch
         await batch.commit();
-
-        // Update UI
-        alert(`Successfully updated ${username}'s ELO to ${newElo}`);
         
-        // Refresh displays
+        // Refresh displays after successful update
         await Promise.all([
             loadPlayers(),
             loadEloRatings(),
             loadEloHistory()
         ]);
 
+        return true;
     } catch (error) {
         console.error('Error setting custom ELO:', error);
         throw error;
