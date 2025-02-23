@@ -779,9 +779,16 @@ document.getElementById('view-elo-history').addEventListener('click', () => {
 // Add this function to handle setting custom ELO
 async function setCustomElo(username, newElo) {
     try {
-        // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
+        // Log authentication state for debugging
+        console.log('Current user:', user.email);
+        console.log('Is admin:', isAdmin(user.email));
+
+        if (!isAdmin(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
