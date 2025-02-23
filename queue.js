@@ -21,25 +21,30 @@ function updateQueueDisplay(players) {
         console.error('Queue container not found!');
         return;
     }
+
+    // Hide the entire queue section if no players are ready
+    if (players.length === 0) {
+        queueContainer.style.display = 'none';
+        return;
+    }
+
+    // Show the queue section if there are players
+    queueContainer.style.display = 'block';
     
     let queueHTML = `
         <div class="queue-box">
-            <h2>Players Ready (${players.length})</h2>
+            <h2>Waiting for a game</h2>
             <div class="queue-list">
     `;
 
-    if (players.length === 0) {
-        queueHTML += '<p class="no-players">No players in queue</p>';
-    } else {
-        players.forEach(player => {
-            queueHTML += `
-                <div class="player-card">
-                    <span class="player-name">${player.username || 'Unknown Player'}</span>
-                    <span class="queue-time">${formatQueueTime(player.lastUpdated)}</span>
-                </div>
-            `;
-        });
-    }
+    players.forEach(player => {
+        queueHTML += `
+            <div class="player-card">
+                <span class="player-name">${player.username || 'Unknown Player'}</span>
+                <span class="queue-time">${formatQueueTime(player.lastUpdated)}</span>
+            </div>
+        `;
+    });
 
     queueHTML += `
             </div>
