@@ -1,0 +1,49 @@
+.queue-box {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(80, 200, 120, 0.3);
+}
+
+.queue-box h2 {
+    color: #50C878;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.player-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.player-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.player-name {
+    color: white;
+    font-size: 16px;
+}
+
+.queue-time {
+    color: #50C878;
+    font-size: 14px;
+}
+
+.no-players {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
