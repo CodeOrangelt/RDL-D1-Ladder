@@ -43,6 +43,8 @@
                 <button id="demote-player" class="danger-button">Demote Player</button>
                 <!-- Add the test report button here -->
                 <button id="test-report-btn" class="collapse-btn" data-target="test-report-section">Test Report</button>
+                <!-- Add this button where your other admin controls are -->
+                <button id="set-elo-player" class="admin-button">Set Player ELO</button>
             </div>
             <!-- Add these dialog elements right after your admin-actions div -->
             <div id="promote-dialog" class="modal">
@@ -170,6 +172,20 @@
                 <h2>Create Test Report</h2>
                 <div class="form-group">
                     <button id="create-test-report" class="action-btn">Generate Test Report for Test5</button>
+                </div>
+            </div>
+            <!-- Add this to your admin controls section -->
+            <div id="set-elo-dialog" class="modal">
+                <div class="modal-content">
+                    <h2>Set Player ELO</h2>
+                    <div class="input-group">
+                        <input type="text" id="set-elo-username" placeholder="Username">
+                        <input type="number" id="set-elo-value" placeholder="New ELO Value">
+                    </div>
+                    <div class="button-group">
+                        <button id="confirm-set-elo">Update ELO</button>
+                        <button id="cancel-set-elo">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
