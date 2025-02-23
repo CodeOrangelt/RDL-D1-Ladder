@@ -5,10 +5,10 @@
 }
 
 .queue-box {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 20px;
-    margin: 20px;
+    margin: 20px 0;
     box-shadow: 0 0 10px rgba(80, 200, 120, 0.3);
 }
 
@@ -29,8 +29,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    margin: 5px 0;
     border-radius: 4px;
     transition: background 0.3s ease;
 }
@@ -46,8 +47,8 @@
 }
 
 .queue-time {
-    color: #50C878;
-    font-size: 14px;
+    color: #999;
+    font-size: 0.9em;
 }
 
 .no-players {
