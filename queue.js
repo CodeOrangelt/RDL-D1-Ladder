@@ -35,7 +35,7 @@ function updateQueueDisplay(players) {
             queueHTML += `
                 <div class="player-card">
                     <span class="player-name">${player.username || 'Unknown Player'}</span>
-                    <span class="queue-time">${formatQueueTime(player.timestamp)}</span>
+                    <span class="queue-time">${formatQueueTime(player.lastUpdated)}</span>
                 </div>
             `;
         });
@@ -60,7 +60,7 @@ function formatQueueTime(timestamp) {
 
 // Set up real-time listener
 console.log('Setting up queue listener...');
-const unsubscribe = onSnapshot(activePlayersQuery, 
+const unsubscribe = onSnapshot(readyPlayersRef, 
     (snapshot) => {
         console.log('Queue snapshot received:', {
             size: snapshot.size,
@@ -74,14 +74,16 @@ const unsubscribe = onSnapshot(activePlayersQuery,
                 id: doc.id,
                 username: data.username,
                 isReady: data.isReady,
-                timestamp: data.timestamp
+                lastUpdated: data.lastUpdated
             });
             
-            activePlayers.push({
-                id: doc.id,
-                username: data.username,
-                timestamp: data.timestamp || new Date()
-            });
+            if (data.isReady === true) {
+                activePlayers.push({
+                    id: doc.id,
+                    username: data.username,
+                    lastUpdated: data.lastUpdated || new Date()
+                });
+            }
         });
 
         console.log('Processing complete. Active players:', activePlayers);
