@@ -6,7 +6,8 @@ import {
     getDoc,
     query,
     where,
-    updateDoc
+    updateDoc,
+    Timestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -113,10 +114,40 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             await updateDoc(doc(db, 'players', winner.id), {
                 position: winnerNewPosition
             });
+
+            // Inside updatePlayerPositions function, after updating winner's position
+            if (winnerNewPosition === 1) {
+                // Check if this is the first time reaching #1
+                const winnerDoc = doc(db, 'players', winner.id);
+                const winnerData = await getDoc(winnerDoc);
+                
+                if (!winnerData.data().firstPlaceDate) {
+                    await updateDoc(winnerDoc, {
+                        firstPlaceDate: Timestamp.now()
+                    });
+                }
+            }
+
+            // If the previous #1 player is displaced
+            if (loser.position === 1) {
+                const loserDoc = doc(db, 'players', loser.id);
+                await updateDoc(loserDoc, {
+                    firstPlaceDate: null // Reset their streak
+                });
+            }
         }
     } catch (error) {
         console.error("Error updating player positions:", error);
     }
+}
+
+// Add this helper function at the top level
+function calculateStreakDays(startDate) {
+    if (!startDate) return 0;
+    const start = startDate.toDate();
+    const now = new Date();
+    const diffTime = Math.abs(now - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 // Modify your existing updateLadderDisplay function to sort by position
@@ -159,6 +190,19 @@ async function updateLadderDisplay(ladderData) {
             if (player.position === 1) {
                 usernameLink.style.textShadow = '0 0 5px #50C878';
                 usernameLink.style.animation = 'glow 2s ease-in-out infinite';
+                
+                // Add streak display for #1 position
+                if (player.firstPlaceDate) {
+                    const streakDays = calculateStreakDays(player.firstPlaceDate);
+                    if (streakDays > 0) {
+                        const streakSpan = document.createElement('span');
+                        streakSpan.innerHTML = ` 🔥 ${streakDays}d`;
+                        streakSpan.style.fontSize = '0.9em';
+                        streakSpan.style.color = '#FF4500';
+                        streakSpan.style.marginLeft = '5px';
+                        usernameCell.appendChild(streakSpan);
+                    }
+                }
             }
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';

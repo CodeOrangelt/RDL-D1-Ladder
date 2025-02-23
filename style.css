@@ -359,6 +359,16 @@ tr:nth-child(even) {
     }
 }
 
+@keyframes fireGlow {
+    0% { text-shadow: 0 0 3px #FF4500; }
+    50% { text-shadow: 0 0 8px #FF4500; }
+    100% { text-shadow: 0 0 3px #FF4500; }
+}
+
+.streak-counter {
+    animation: fireGlow 2s ease-in-out infinite;
+}
+
 .discord-container {
     position: fixed;
     right: 20px;
