@@ -91,11 +91,12 @@
                 // Initialize components
                 const { RetroTrackerMonitor } = await import('./whosplaying.js');
                 const { initializePromotionTracker } = await import('./promotion-tracker.js');
-                await import('./queue.js'); // Add queue initialization
+                const { initializeQueue } = await import('./queue.js'); // Update this line
 
                 const tracker = new RetroTrackerMonitor();
                 await tracker.initializeBannerOnly();
                 await initializePromotionTracker();
+                await initializeQueue(); // Add this line
 
                 // Discord widget toggle
                 const toggleButton = document.getElementById('toggle-discord');
