@@ -52,9 +52,13 @@ function updateQueueDisplay(players) {
 // Helper function to format queue time
 function formatQueueTime(timestamp) {
     if (!timestamp) return 'Just now';
-    const queueTime = timestamp.toDate();
+    
+    // Handle both Firestore Timestamp and regular Date objects
+    const queueTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const minutesInQueue = Math.floor((now - queueTime) / 60000);
+    
+    if (minutesInQueue < 1) return 'Just now';
     return `${minutesInQueue}m in queue`;
 }
 
