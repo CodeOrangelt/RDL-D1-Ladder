@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupDemotePlayerButton();
             setupManagePlayersSection();
             setupTestReportButton();
+            setupSetEloButton();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
@@ -773,4 +774,131 @@ async function displayEloHistory() {
 // Add this to your initialization code
 document.getElementById('view-elo-history').addEventListener('click', () => {
     displayEloHistory();
+});
+
+// Add this function to handle setting custom ELO
+async function setCustomElo(username, newElo) {
+    try {
+        // Check if current user is admin
+        const user = auth.currentUser;
+        if (!user || !isAdmin(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Get player data
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            throw new Error('Player not found');
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+
+        // Use batch write
+        const batch = writeBatch(db);
+        
+        // Update player document
+        batch.update(doc(db, 'players', playerDoc.id), {
+            eloRating: newElo,
+            lastModifiedAt: serverTimestamp(),
+            modifiedBy: user.email
+        });
+
+        // Add to ELO history
+        const historyRef = doc(collection(db, 'eloHistory'));
+        batch.set(historyRef, {
+            player: username,
+            previousElo: currentElo,
+            newElo: newElo,
+            timestamp: serverTimestamp(),
+            type: 'admin_modification',
+            change: newElo - currentElo,
+            modifiedBy: user.email
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        // Update UI
+        alert(`Successfully updated ${username}'s ELO to ${newElo}`);
+        
+        // Refresh displays
+        await Promise.all([
+            loadPlayers(),
+            loadEloRatings(),
+            loadEloHistory()
+        ]);
+
+    } catch (error) {
+        console.error('Error setting custom ELO:', error);
+        throw error;
+    }
+}
+
+// Add this function to setup the custom ELO dialog
+function setupSetEloButton() {
+    const setEloBtn = document.getElementById('set-elo-player');
+    const setEloDialog = document.getElementById('set-elo-dialog');
+    const confirmSetEloBtn = document.getElementById('confirm-set-elo');
+    const cancelSetEloBtn = document.getElementById('cancel-set-elo');
+    const eloUsernameInput = document.getElementById('set-elo-username');
+    const eloValueInput = document.getElementById('set-elo-value');
+
+    if (!setEloBtn || !setEloDialog || !confirmSetEloBtn || !cancelSetEloBtn || !eloUsernameInput || !eloValueInput) {
+        console.error('Missing set ELO dialog elements');
+        return;
+    }
+
+    setEloBtn.addEventListener('click', () => {
+        setEloDialog.style.display = 'block';
+    });
+
+    cancelSetEloBtn.addEventListener('click', () => {
+        setEloDialog.style.display = 'none';
+        eloUsernameInput.value = '';
+        eloValueInput.value = '';
+    });
+
+    // Close modal if clicked outside
+    setEloDialog.addEventListener('click', (e) => {
+        if (e.target === setEloDialog) {
+            setEloDialog.style.display = 'none';
+            eloUsernameInput.value = '';
+            eloValueInput.value = '';
+        }
+    });
+
+    confirmSetEloBtn.addEventListener('click', async () => {
+        const username = eloUsernameInput.value.trim();
+        const newElo = parseInt(eloValueInput.value);
+        
+        if (!username || isNaN(newElo)) {
+            alert('Please enter both username and valid ELO value');
+            return;
+        }
+        
+        try {
+            await setCustomElo(username, newElo);
+            setEloDialog.style.display = 'none';
+            eloUsernameInput.value = '';
+            eloValueInput.value = '';
+        } catch (error) {
+            console.error('Error setting ELO:', error);
+            alert('Failed to set ELO: ' + error.message);
+        }
+    });
+}
+
+// Add to your initialization code
+document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (user && isAdmin(user.email)) {
+            // ... existing initialization code ...
+            setupSetEloButton();
+        }
+    });
 });
