@@ -120,3 +120,22 @@ h2 {
         padding: 1rem;
     }
 }
+
+/* Add these styles */
+.map-stats-container {
+    margin-top: 2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+#mapStatsChart {
+    background: rgba(26, 26, 26, 0.8);
+    border-radius: 8px;
+    padding: 1rem;
+}
