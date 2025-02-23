@@ -9,9 +9,16 @@ const activePlayersQuery = query(playerStatusRef, where('isReady', '==', true));
 
 // Function to update queue display
 function updateQueueDisplay(players) {
+    console.log('Updating queue display with players:', players); // Debug log
     const queueContainer = document.getElementById('queue-container');
     
+    if (!queueContainer) {
+        console.error('Queue container not found!'); // Debug log
+        return;
+    }
+    
     if (players.length === 0) {
+        console.log('No players found in queue'); // Debug log
         queueContainer.innerHTML = '<p class="no-players">No players in queue</p>';
         return;
     }
@@ -50,20 +57,37 @@ function formatQueueTime(timestamp) {
 }
 
 // Real-time listener for queue updates
+console.log('Setting up queue listener...'); // Debug log
+
 onSnapshot(activePlayersQuery, (snapshot) => {
     const activePlayers = [];
-    console.log('Queue snapshot received, documents:', snapshot.size);
+    console.log('Queue snapshot received:', {
+        size: snapshot.size,
+        empty: snapshot.empty,
+        metadata: snapshot.metadata
+    });
     
     snapshot.forEach(doc => {
         const data = doc.data();
-        console.log('Player found:', data.username, 'Ready:', data.isReady);
-        activePlayers.push({
-            id: doc.id,
-            username: data.username,
-            queueStartTime: data.queueStartTime
-        });
+        console.log('Raw player data:', data); // Show full player data
+        console.log(`Player document found:
+            ID: ${doc.id}
+            Username: ${data.username}
+            isReady: ${data.isReady}
+            Queue Time: ${data.queueStartTime}
+        `);
+        
+        if (data.isReady === true) { // Explicit check
+            activePlayers.push({
+                id: doc.id,
+                username: data.username,
+                queueStartTime: data.queueStartTime || new Date() // Fallback for missing timestamp
+            });
+        }
     });
     
-    console.log('Total active players:', activePlayers.length);
+    console.log('Processing complete. Active players:', activePlayers);
     updateQueueDisplay(activePlayers);
+}, (error) => {
+    console.error('Error in queue listener:', error);
 });
