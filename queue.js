@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, where, onSnapshot, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Debugging: Check if Firestore is initialized
 console.log('Firestore initialization check:', !!db);
@@ -67,6 +67,28 @@ function formatQueueTime(timestamp) {
     return `${minutesInQueue}m in queue`;
 }
 
+// Helper function to check and update queue timeout
+async function checkQueueTimeout(player) {
+    if (!player.lastUpdated) return;
+    
+    const queueTime = player.lastUpdated.toDate ? player.lastUpdated.toDate() : new Date(player.lastUpdated);
+    const now = new Date();
+    const minutesInQueue = Math.floor((now - queueTime) / 60000);
+    
+    if (minutesInQueue >= 30) {
+        console.log(`Player ${player.username} has been in queue for ${minutesInQueue} minutes. Removing from queue.`);
+        try {
+            const playerRef = doc(db, 'readyPlayers', player.id);
+            await updateDoc(playerRef, {
+                isReady: false
+            });
+            console.log(`Successfully removed ${player.username} from queue`);
+        } catch (error) {
+            console.error('Error removing player from queue:', error);
+        }
+    }
+}
+
 // Set up real-time listener
 console.log('Setting up queue listener...');
 const unsubscribe = onSnapshot(readyPlayersRef, 
@@ -87,11 +109,13 @@ const unsubscribe = onSnapshot(readyPlayersRef,
             });
             
             if (data.isReady === true) {
-                activePlayers.push({
+                const player = {
                     id: doc.id,
                     username: data.username,
                     lastUpdated: data.lastUpdated || new Date()
-                });
+                };
+                activePlayers.push(player);
+                checkQueueTimeout(player); // Check timeout for each active player
             }
         });
 
