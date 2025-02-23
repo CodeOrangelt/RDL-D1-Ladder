@@ -72,11 +72,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 function createPaginationControls() {
     const totalPages = Math.ceil(allMatches.length / matchesPerPage);
     const paginationContainer = document.createElement('div');
-    paginationContainer.className = 'pagination';
+    paginationContainer.className = 'pagination-wrapper';
     paginationContainer.innerHTML = `
-        <button id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-        <span>Page ${currentPage} of ${totalPages}</span>
-        <button id="nextPage" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+        <div class="pagination-controls">
+            <button id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+            <div class="page-navigation">
+                <span>Page ${currentPage} of ${totalPages}</span>
+                <div class="page-search">
+                    <input type="number" id="pageInput" min="1" max="${totalPages}" value="${currentPage}">
+                    <button id="goToPage">Go</button>
+                </div>
+            </div>
+            <button id="nextPage" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+        </div>
     `;
 
     // Add pagination controls after the table
@@ -90,6 +98,24 @@ function createPaginationControls() {
 
     document.getElementById('nextPage').addEventListener('click', () => {
         if (currentPage < totalPages) displayMatchesPage(currentPage + 1);
+    });
+
+    document.getElementById('goToPage').addEventListener('click', () => {
+        const pageInput = document.getElementById('pageInput');
+        const pageNumber = parseInt(pageInput.value);
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            displayMatchesPage(pageNumber);
+        }
+    });
+
+    // Add enter key support for page input
+    document.getElementById('pageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const pageNumber = parseInt(e.target.value);
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                displayMatchesPage(pageNumber);
+            }
+        }
     });
 }
 
@@ -131,11 +157,19 @@ function displayMatchesPage(page) {
 
     // Update pagination controls
     const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-    const paginationContainer = document.querySelector('.pagination');
+    const paginationContainer = document.querySelector('.pagination-wrapper');
     paginationContainer.innerHTML = `
-        <button id="prevPage" ${page === 1 ? 'disabled' : ''}>Previous</button>
-        <span>Page ${page} of ${totalPages}</span>
-        <button id="nextPage" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        <div class="pagination-controls">
+            <button id="prevPage" ${page === 1 ? 'disabled' : ''}>Previous</button>
+            <div class="page-navigation">
+                <span>Page ${page} of ${totalPages}</span>
+                <div class="page-search">
+                    <input type="number" id="pageInput" min="1" max="${totalPages}" value="${page}">
+                    <button id="goToPage">Go</button>
+                </div>
+            </div>
+            <button id="nextPage" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        </div>
     `;
 
     // Reattach event listeners
@@ -145,5 +179,23 @@ function displayMatchesPage(page) {
 
     document.getElementById('nextPage').addEventListener('click', () => {
         if (currentPage < totalPages) displayMatchesPage(currentPage + 1);
+    });
+
+    document.getElementById('goToPage').addEventListener('click', () => {
+        const pageInput = document.getElementById('pageInput');
+        const pageNumber = parseInt(pageInput.value);
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            displayMatchesPage(pageNumber);
+        }
+    });
+
+    // Add enter key support for page input
+    document.getElementById('pageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const pageNumber = parseInt(e.target.value);
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                displayMatchesPage(pageNumber);
+            }
+        }
     });
 }
