@@ -1,3 +1,9 @@
+#queue-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
 .queue-box {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
@@ -10,6 +16,7 @@
     color: #50C878;
     text-align: center;
     margin-bottom: 20px;
+    font-size: 24px;
 }
 
 .queue-list {
@@ -23,7 +30,7 @@
     justify-content: space-between;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px 15px;
+    padding: 15px 20px;
     border-radius: 4px;
     transition: background 0.3s ease;
 }
@@ -35,6 +42,7 @@
 .player-name {
     color: white;
     font-size: 16px;
+    font-weight: 500;
 }
 
 .queue-time {
@@ -46,4 +54,5 @@
     text-align: center;
     color: #888;
     padding: 20px;
+    font-size: 16px;
 }
