@@ -37,13 +37,6 @@ function isValidDemotion(currentData, newData) {
          currentData.eloRating is number;
 }
 
-   // Player Stats collection
-   match /playerStats/{userId} {
-    allow read: if true;
-    allow write: if isSignedIn() && 
-      (request.auth.uid == userId || isAdmin());
-  }
-
 service cloud.firestore {
   match /databases/{database}/documents {
     // Players collection - Used in ladderalgorithm.js and ladder.js
@@ -56,15 +49,56 @@ service cloud.firestore {
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
                     isValidEloUpdate(resource.data, request.resource.data)) ||
-                   // Allow promotions from admin
+                   // Allow admin ELO modifications
                    (isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy'])) ||
-                   // Allow demotions from admin
-                   (isAdmin() &&
-                    request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastDemotedAt', 'demotedBy']));
+                    .hasAny(['eloRating', 'lastModifiedAt', 'modifiedBy']));
       allow delete: if isAdmin();
+    }
+
+    //nexus website usernames
+    match /nexus_users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    	
+    //player status colelction specific perms
+    match /player-status/{document=**} {
+      allow read: if true; // Adjust based on your security requirements
+      allow write: if request.auth != null;
+    }
+      
+    match /invites/{userId} {
+      allow read, write: if true;  // For testing - change this in production
+    }
+    
+    //for the bot not to repeat approved matches
+    match /processedMatches/{matchId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    //ready status on project D
+    match /readyPlayers/{userId} {
+      allow read, write: if true;  // For development only
+      // For production, use more restrictive rules like:
+      // allow read, write: if request.auth != null;
+    }
+
+    // Player Stats collection
+    match /playerStats/{userId} {
+      allow read: if true;
+      allow write: if isSignedIn() && 
+        (request.auth.uid == userId || isAdmin());
+    }
+    
+    // for bot to create/update notifications fro approved matches
+    match /approvedMatches/{matchId} {
+      allow read, write: if true;
+    }
+    
+    // Allow read/write access to system documents for last processed tracking
+    match /system/{document} {
+      allow read, write: if true;
     }
 
     // Match Management - Used in reports.js and ladderalgorithm.js
@@ -102,15 +136,11 @@ service cloud.firestore {
                         'matchResult', 'previousPosition', 'newPosition',
                         'timestamp'
                       ])) ||
-                     // Simplified promotion/demotion rules
-                     ((request.resource.data.type == 'promotion' ||
-                       request.resource.data.type == 'demotion') &&
+                     // Allow admin modifications
+                     (request.resource.data.type == 'admin_modification' &&
                       request.resource.data.keys().hasAll([
-                        'type',
-                        'player',
-                        'previousElo',
-                        'newElo',
-                        'timestamp'
+                        'type', 'player', 'previousElo', 'newElo',
+                        'timestamp', 'change', 'modifiedBy'
                       ]) &&
                       isAdmin())
                    );
