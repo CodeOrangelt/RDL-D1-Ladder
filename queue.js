@@ -52,13 +52,18 @@ function formatQueueTime(timestamp) {
 // Real-time listener for queue updates
 onSnapshot(activePlayersQuery, (snapshot) => {
     const activePlayers = [];
+    console.log('Queue snapshot received, documents:', snapshot.size);
+    
     snapshot.forEach(doc => {
         const data = doc.data();
+        console.log('Player found:', data.username, 'Ready:', data.isReady);
         activePlayers.push({
             id: doc.id,
             username: data.username,
             queueStartTime: data.queueStartTime
         });
     });
+    
+    console.log('Total active players:', activePlayers.length);
     updateQueueDisplay(activePlayers);
 });
