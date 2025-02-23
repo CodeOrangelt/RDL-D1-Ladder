@@ -109,8 +109,10 @@ async function loadMapStats() {
         
         matchesSnapshot.forEach(doc => {
             const match = doc.data();
-            const map = match.map;
-            mapCounts.set(map, (mapCounts.get(map) || 0) + 1);
+            const map = match.mapPlayed; // Changed from match.map to match.mapPlayed
+            if (map) { // Only count if map exists
+                mapCounts.set(map, (mapCounts.get(map) || 0) + 1);
+            }
         });
 
         // Sort maps by count
@@ -128,10 +130,10 @@ async function loadMapStats() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Matches Played',
+                    label: 'Times Played',
                     data: data,
-                    backgroundColor: 'rgba(116, 10, 132, 0.8)',
-                    borderColor: 'rgba(116, 10, 132, 1)',
+                    backgroundColor: '#740a84',
+                    borderColor: '#ffffff',
                     borderWidth: 1,
                     borderRadius: 5,
                 }]
@@ -142,7 +144,18 @@ async function loadMapStats() {
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#ffffff'
+                            color: '#ffffff',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Map Popularity',
+                        color: '#ffffff',
+                        font: {
+                            size: 18
                         }
                     }
                 },
@@ -153,7 +166,10 @@ async function loadMapStats() {
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: '#ffffff'
+                            color: '#ffffff',
+                            font: {
+                                size: 12
+                            }
                         }
                     },
                     x: {
@@ -161,7 +177,10 @@ async function loadMapStats() {
                             display: false
                         },
                         ticks: {
-                            color: '#ffffff'
+                            color: '#ffffff',
+                            font: {
+                                size: 12
+                            }
                         }
                     }
                 }
@@ -170,6 +189,10 @@ async function loadMapStats() {
 
     } catch (error) {
         console.error('Error loading map statistics:', error);
+        const container = document.querySelector('.chart-container');
+        if (container) {
+            container.innerHTML = '<p class="error-message">Error loading map statistics</p>';
+        }
     }
 }
 
