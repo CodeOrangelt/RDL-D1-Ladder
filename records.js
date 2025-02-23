@@ -56,6 +56,17 @@ async function loadRecords() {
             // Calculate final stats
             const kdRatio = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills;
             const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : 0;
+            
+            // Calculate score differential
+            let scoreDifferential = 0;
+            winnerMatches.forEach(match => {
+                const data = match.data();
+                scoreDifferential += (parseInt(data.winnerScore) || 0) - (parseInt(data.loserScore) || 0);
+            });
+            loserMatches.forEach(match => {
+                const data = match.data();
+                scoreDifferential += (parseInt(data.loserScore) || 0) - (parseInt(data.winnerScore) || 0);
+            });
 
             playerStats.set(username, {
                 wins,
@@ -63,7 +74,9 @@ async function loadRecords() {
                 totalMatches,
                 kdRatio,
                 winRate,
-                firstPlaceDate: player.firstPlaceDate
+                firstPlaceDate: player.firstPlaceDate,
+                scoreDifferential,
+                suicides: player.suicides || 0
             });
         }
 
@@ -73,6 +86,9 @@ async function loadRecords() {
         updateBestKD(playerStats);
         updateLongestStreak(playerStats);
         updateMostMatches(playerStats);
+        updateBestScoreDifferential(playerStats);
+        updateMostLosses(playerStats);
+        updateLeastSuicides(playerStats);
 
     } catch (error) {
         console.error('Error loading records:', error);
@@ -140,6 +156,39 @@ function updateMostMatches(playerStats) {
     }
     document.getElementById('most-matches').textContent = 
         `${mostMatches.username} (${mostMatches.matches})`;
+}
+
+function updateBestScoreDifferential(playerStats) {
+    let bestDiff = { username: 'None', diff: -Infinity };
+    for (const [username, stats] of playerStats) {
+        if (stats.totalMatches >= 10 && stats.scoreDifferential > bestDiff.diff) {
+            bestDiff = { username, diff: stats.scoreDifferential };
+        }
+    }
+    document.getElementById('best-differential').textContent = 
+        `${bestDiff.username} (${bestDiff.diff > 0 ? '+' : ''}${bestDiff.diff})`;
+}
+
+function updateMostLosses(playerStats) {
+    let mostLosses = { username: 'None', losses: 0 };
+    for (const [username, stats] of playerStats) {
+        if (stats.losses > mostLosses.losses) {
+            mostLosses = { username, losses: stats.losses };
+        }
+    }
+    document.getElementById('most-losses').textContent = 
+        `${mostLosses.username} (${mostLosses.losses})`;
+}
+
+function updateLeastSuicides(playerStats) {
+    let leastSuicides = { username: 'None', suicides: Infinity };
+    for (const [username, stats] of playerStats) {
+        if (stats.totalMatches >= 10 && stats.suicides < leastSuicides.suicides) {
+            leastSuicides = { username, suicides: stats.suicides };
+        }
+    }
+    document.getElementById('least-suicides').textContent = 
+        `${leastSuicides.username} (${leastSuicides.suicides})`;
 }
 
 // Load records when the page loads
