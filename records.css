@@ -9,37 +9,30 @@
 }
 
 h1 {
-    text-align: center;
     color: #ff6b00;
-    margin-bottom: 2rem;
+    text-align: center;
     font-size: 2.5rem;
+    margin-bottom: 2rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
     border-bottom: 2px solid #ff6b00;
     padding-bottom: 1rem;
 }
 
 .records-section {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 2rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     margin-top: 2rem;
 }
 
 h2 {
     color: #ff6b00;
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
     text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
 }
 
 .record-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
     padding: 1rem;
 }
 
@@ -50,7 +43,6 @@ h2 {
     padding: 1.5rem;
     text-align: center;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .record-card:hover {
@@ -64,7 +56,6 @@ h2 {
     font-size: 1.2rem;
     margin-bottom: 1rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .record-value {
@@ -99,5 +90,14 @@ h2 {
 
     .record-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .record-card {
+        padding: 1rem;
     }
 }
