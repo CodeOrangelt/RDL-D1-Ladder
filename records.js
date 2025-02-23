@@ -89,12 +89,87 @@ async function loadRecords() {
         updateBestScoreDifferential(playerStats);
         updateMostLosses(playerStats);
         updateLeastSuicides(playerStats);
+        updateLeastLosses(playerStats);
 
     } catch (error) {
         console.error('Error loading records:', error);
         document.querySelectorAll('.record-value').forEach(el => {
             el.textContent = 'Error loading data';
         });
+    }
+}
+
+async function loadMapStats() {
+    try {
+        const approvedMatchesRef = collection(db, 'approvedMatches');
+        const matchesSnapshot = await getDocs(approvedMatchesRef);
+        
+        // Count matches per map
+        const mapCounts = new Map();
+        
+        matchesSnapshot.forEach(doc => {
+            const match = doc.data();
+            const map = match.map;
+            mapCounts.set(map, (mapCounts.get(map) || 0) + 1);
+        });
+
+        // Sort maps by count
+        const sortedMaps = Array.from(mapCounts.entries())
+            .sort((a, b) => b[1] - a[1]);
+
+        // Prepare data for chart
+        const labels = sortedMaps.map(([map]) => map);
+        const data = sortedMaps.map(([, count]) => count);
+
+        // Create the chart
+        const ctx = document.getElementById('mapStatsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Matches Played',
+                    data: data,
+                    backgroundColor: 'rgba(116, 10, 132, 0.8)',
+                    borderColor: 'rgba(116, 10, 132, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading map statistics:', error);
     }
 }
 
@@ -191,5 +266,19 @@ function updateLeastSuicides(playerStats) {
         `${leastSuicides.username} (${leastSuicides.suicides})`;
 }
 
+function updateLeastLosses(playerStats) {
+    let leastLosses = { username: 'None', losses: Infinity };
+    for (const [username, stats] of playerStats) {
+        if (stats.totalMatches >= 10 && stats.losses < leastLosses.losses) {
+            leastLosses = { username, losses: stats.losses };
+        }
+    }
+    document.getElementById('least-losses').textContent = 
+        `${leastLosses.username} (${leastLosses.losses})`;
+}
+
 // Load records when the page loads
-document.addEventListener('DOMContentLoaded', loadRecords);
+document.addEventListener('DOMContentLoaded', () => {
+    loadRecords();
+    loadMapStats();
+});
