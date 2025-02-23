@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Get reference to player-status collection
 const playerStatusRef = collection(db, 'player-status');
