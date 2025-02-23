@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="footer.css">
     <link rel="stylesheet" href="promotionlightbox.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="queue.css">
     <style>
         main {
             padding-top: 20px; /* Add space after banner */
@@ -48,8 +47,6 @@
             </div>
         </div>
 
-        <div id="queue-container"></div>
-    
         <div class="discord-container">
             <button id="toggle-discord" class="discord-toggle">
                 <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16">
@@ -95,9 +92,6 @@
                 const tracker = new RetroTrackerMonitor();
                 await tracker.initializeBannerOnly();
                 await initializePromotionTracker();
-
-                // Initialize queue
-                await import('./queue.js');
 
                 // Discord widget toggle
                 const toggleButton = document.getElementById('toggle-discord');
