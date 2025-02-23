@@ -4,12 +4,12 @@ import { collection, query, where, onSnapshot } from 'https://www.gstatic.com/fi
 // Debugging: Check if Firestore is initialized
 console.log('Firestore initialization check:', !!db);
 
-// Get reference to player-status collection
-const playerStatusRef = collection(db, 'player-status');
-console.log('Player status collection reference created');
+// Get reference to readyPlayers collection
+const readyPlayersRef = collection(db, 'readyPlayers');
+console.log('Ready players collection reference created');
 
 // Create query for active players
-const activePlayersQuery = query(playerStatusRef, where('isReady', '==', true));
+const activePlayersQuery = query(readyPlayersRef, where('isReady', '==', true));
 console.log('Active players query created');
 
 // Function to update queue display
@@ -35,7 +35,7 @@ function updateQueueDisplay(players) {
             queueHTML += `
                 <div class="player-card">
                     <span class="player-name">${player.username || 'Unknown Player'}</span>
-                    <span class="queue-time">${formatQueueTime(player.queueStartTime)}</span>
+                    <span class="queue-time">${formatQueueTime(player.timestamp)}</span>
                 </div>
             `;
         });
@@ -73,16 +73,15 @@ const unsubscribe = onSnapshot(activePlayersQuery,
             console.log('Player document:', {
                 id: doc.id,
                 username: data.username,
-                isReady: data.isReady
+                isReady: data.isReady,
+                timestamp: data.timestamp
             });
             
-            if (data.isReady === true) {
-                activePlayers.push({
-                    id: doc.id,
-                    username: data.username,
-                    queueStartTime: data.queueStartTime || new Date()
-                });
-            }
+            activePlayers.push({
+                id: doc.id,
+                username: data.username,
+                timestamp: data.timestamp || new Date()
+            });
         });
 
         console.log('Processing complete. Active players:', activePlayers);
