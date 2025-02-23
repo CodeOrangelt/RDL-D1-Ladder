@@ -5,27 +5,29 @@ import { collection, query, where, onSnapshot } from 'https://www.gstatic.com/fi
 const playerStatusRef = collection(db, 'player-status');
 
 // Create query for active players
-const activePlayersQuery = query(playerStatusRef, where('ready', '==', true));
+const activePlayersQuery = query(playerStatusRef, where('isReady', '==', true));
 
 // Function to update queue display
 function updateQueueDisplay(players) {
     const queueContainer = document.getElementById('queue-container');
     
     if (players.length === 0) {
-        queueContainer.innerHTML = '<p class="no-players">No players currently in queue</p>';
+        queueContainer.innerHTML = '<p class="no-players">No players in queue</p>';
         return;
     }
 
     let queueHTML = `
         <div class="queue-box">
-            <h2>Queue Status</h2>
+            <h3>Players Ready to Play</h3>
             <div class="queue-list">
     `;
+
+    players.sort((a, b) => b.queueStartTime.seconds - a.queueStartTime.seconds);
 
     players.forEach(player => {
         queueHTML += `
             <div class="player-card">
-                <span class="player-name">${player.username} is waiting to play</span>
+                <span class="player-name">${player.username}</span>
                 <span class="queue-time">${formatQueueTime(player.queueStartTime)}</span>
             </div>
         `;
