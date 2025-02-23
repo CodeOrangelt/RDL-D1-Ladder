@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,12 +11,13 @@
     <link rel="stylesheet" href="rules.css">
     <link rel="stylesheet" href="footer.css">
 </head>
+
 <body>
     <div id="nav-placeholder"></div>
-    
+
     <main>
         <div class="ribbon-1 left">RDL - Beta Release</div>
-        
+
         <div class="outer-container">
             <div class="button-container">
                 <button class="rule-button active" data-content="general">General</button>
@@ -28,21 +30,142 @@
                 <!-- General Rules Content -->
                 <div id="general" class="rule-content active">
                     <section class="rules-section">
-                        <h2 class="hero-title">1. Customs and courtesies.</h2>
+                        <h2 class="hero-title">1. Registration</h2>
                         <p class="rules-text">
-                            Repect other pilots, no matter your history, no matter your arguments, no matter your opinions, respect your opponent. Obviously you're allowed to dislike certain individuals, but disrespect does not have a place on this ladder. Getting headed is normal, and expected in this community, but once the barrier is crossed where what you are doing is no longer competitively respectable, you could expect demotions, or a ban from the any one if not all ladders on the RDL.
+    
+    Player Requirements: Players must be logged in with home map pre-selected before each starting a match. Aliases are not allowed. 
+    Players must choose three home maps. Maps should follow the Home Level Framework. 
+    Pilots must use the most up to date Redux build. Any experiment builds are prohibited. 
+
                         </p>
-                        <h2 class="hero-title">2. Participation</h2>
+                        <h2 class="hero-title">2. Matches</h2>
                         <p class="rules-text">
-                            Part of being on a ladder is competing for your rank, dominance, and position. Intentionally or neglectfully avoiding matches can result in warnings, or ultimately demotions. Camping is a massive deterance to dynamic and refreshing play. (Camping defined as: Ingoring matches while #1 for a pro-longed amount of time)
+                            Matches are to 20 and won by 2.
+                            Rage quitting is counted as an automatic loss. If a player gets disconnected, report the technical problem in Discord. 
+                           	The loser of the match will report, and the winner will accept.  Matches must be reported directly after each game.
+                           	Players can play any map if they agree on said map. 
+                           	Players must agree on game settings, otherwise, default game settings are mandatory. 
+                            
                         </p>
-                        <h2 class="hero-title">3. Registration</h2>
+                        <h2 class="hero-title">3. Gameplay Rules</h2>
                         <p class="rules-text">
-                            You are not allowed to have multiple accounts on one ladder. You are also not allowed to have Aliases designed to deceive or guise as other players with a malicious or deceptive intent. (Fun aliases are most definetly allowed as long as you define your commonly-known alias in the box found on your profile.)
+                            Code of Conduct: All players must adhere to the league's code of conduct. Failure to do so will result in a reduction in rank, Skill level, time ban, or general ban. 
+                            Disputes: Any disputes during a match must be reported immediately to an admin. 
+                            The default game settings are used in case players cannot agree on the game settings
+
+                            <button class="collapsible">View Game Settings</button>
+
+                            <!-- Settings content that will overlay -->
+                            <div class="content">
+                                <button class="close-settings" onclick="closeSettings()">&times;</button>
+                                <ul class="game-settings-list">
+                                    <a href="path/to/your/settings.zip" download>
+                                        <div class="download-wrapper">
+                                            <img src="images/download.png" class="download-icon" alt="Download Icon">
+                                            <span class="download-text">Game Template</span>
+                                        </div>
+                                    </a>
+                                    <li>Game Settings: Matches must be played with the standard game settings. Much like the
+                                        Observatory the settings.</li>
+                                    <li>Do NOT set "Open Game"</li>
+                                    <li>Maximum Observers at least 4</li>
+                                    <li>Broadcast Delay 15 Seconds OFF (I don't think it works, if it does please let me
+                                        know)</li>
+                                    <li>Minimal Observer Info OFF</li>
+                                    <li>Difficulty MAX (Insane)</li>
+                                    <li>Reactor life 50 MINUTES</li>
+                                    <li>Max time 0 MINUTES</li>
+                                    <li>Kill goal 0 KILLS</li>
+                                    <li>Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7
+                                        players</li>
+                                    <li>Extra secondaries NONE</li>
+                                    <li>Cap secondaries UNCAPPED</li>
+                                    <li>Low vulcan ammo OFF</li>
+                                    <li>Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</li>
+                                    <li>Spawn style 2 second INVULN</li>
+                                    <li>Vulcan ammo style ORIGINAL (DEPLETING)</li>
+                                    <li>All players blue ON for 2 players, OFF for 3-7 players</li>
+                                    <li>Allow colored dynamic lighting OFF</li>
+                                    <li>Allow players to choose their colors ON (observers see this, even when all players
+                                        are blue)</li>
+                                    <li>Packets per second 40 for 2 players, 30 for 3 or higher (can be reduced if there are
+                                        severe connection issues, but no lower than 20)</li>
+                                    <li>Track this game ON</li>
+                                    <li>Retro protocol ON</li>
+                                    <li>Show all players on automap OFF</li>
+                                    <li>Bright player ships ON</li>
+                                    <li>Show enemy names on HUD OFF</li>
+                                    <li>Homing update rate 25</li>
+                                    <li>DXX-Retro homing speed OFF</li>
+                                    <li>Allow custom models and textures ON or OFF (Both players must agree on this setting)
+                                    </li>
+                                    <li>Reduced flash ON or OFF (Both players must agree on this setting)</li>
+                                </ul>
+                               
+                            </div>
+
                         </p>
-                        <h2 class="hero-title">4. Arugments & Disputes</h2>
+                        <h2 class="hero-title">4. Scoring and Rankings</h2>
                         <p class="rules-text">
-                            If rule #1 didn't make it clear enough, you're arguments, and disputes are to be kept private. If you have a dispute with another player, please contact an admin, or a moderator to help resolve the issue. Please exercise all methods of working towards either letting it go or resolving the argument before getting the ladder admins involved.
+                            Scoring System: To prove your skill, players compete for the position on the ladder and not ELO; however, your ELO will determine your skill level. The skill levels are Bronze, Silver, Gold, and Emerald. To achieve Emerald, you will have to face a gauntlet of the top emerald pilots, achieve a score of 17 or more AND have the ELO to back it up. Promotions will be based on your ELO. ELO will not be shown as that is not your primary concern for competitive Descent. The ladder placement and skill level are your main driving force.  
+                        </p>
+
+                        <h2 class="hero-title">5. Level Disagreement </h2>
+                        <p class="rules-text">
+                            Players must agree on a level before proceeding. If players cannot agree on a level, players will choose from each pilot’s home at least once. Players may opt to play a third if they choose. 
+                        </p>
+
+                        <h2 class="hero-title">6. Challenging </h2>
+                        <p class="rules-text">
+                            You can issue one challenge per pilot per week.  
+                            Players cannot camp on ladder spots. Pilots can challenge any pilot to take his spot. When you challenge someone, each pilot must play at least one of each opponent’s homes.
+                            Players must accept a challenge within a two-week period or risk a reduction in ladder placement.  
+                            Only the top three ranked players can challenge each other.
+                            You can only issue a challenge once a week per pilot. Top 30 percent of pilots are only allowed to issue challenges to one another.  The Challenged person can reject the challenge but will be moved to the bottom of the ladder.
+                        	
+                            
+                        </p>
+
+                        <h2 class="hero-title">7. Rematches</h2>
+                        <p class="rules-text">
+                            A rematch occurs when pilot wants a redo after a recently completed match. Both players must agree to the terms of the rematch. Both pilots must agree to the rematch otherwise the rematch will not be played. 
+ 
+                            Players can call a rematch anytime they choose. Both players must agree on the terms of the rematch. 
+                            
+                        	
+                            
+                        </p>
+
+                        <h2 class="hero-title">8. Timeouts </h2>
+                        <p class="rules-text">
+                            A player can call a timeout at anytime. Once the timeout is done. The pilot that called timeout must type “Ready” in the message box. The other pilot must acknowledge the “Ready” with a “Go”. On the message “Go”, the match will resume. 
+                            Extended times are accepted as long as both players agree on the duration of the time limit. The player must justify the extended timeout. If justification is not heard the map will forfeit  
+                            Extended time outs are 10 minutes or longer. 
+                            
+                            
+                        </p>
+
+                        <h2 class="hero-title">9. Homes</h2>
+                        <p class="rules-text">
+                            You can choose any map you wish if it follows the Home Level Framework
+                            Homes are used to prevent the DCL core map mechanic, prevent map anglers, and allow those that disagree on maps play a game. Maps should follow this standard. Home maps that do not follow this standard will be rejected.  Homes should be used as a last-ditch measure for pilots to play. Ideally pilots should agree on maps and not angle on one level. Map diversity is encouraged on the RDL.The Home Level Framework is as follows: <br>
+                            1.  Primary weapons should be equal number. <br>
+                            2.	Weapons should not focus on subtype matches i.e. (disorientation, single use weapons, rat, blind)  <br>
+                            3.	Map sizes should be reasonably sized for 1v1 play.  <br>
+                            4.	Maps that missile boat is prohibited.  (i.e. Levels where you are maxed out on missiles, and there are a ton more missiles to pick up)<br>
+                            5.	Home Maps should be stock i.e. (No MCAPs, or Xs).  <br>
+                            
+                            
+                        	
+                            
+                        </p>
+
+                        
+                        <h2 class="hero-title">10. Participation </h2>
+                        <p class="rules-text">
+                            Pilots must play a minimum of five matches per month to remain eligible to play. This requirement ensures active engagement and contributes to the competitive spirit of the league. 
+                            
+                            
                         </p>
                     </section>
                     <img src="images/fusbot.png" alt="General Rules" class="rule-image">
@@ -55,91 +178,66 @@
                         <div class="regular-content">
                             <h2 class="hero-title">1. Winning</h2>
                             <p class="rules-text">
-                                To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are prohibited.
+                                To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you
+                                leave rage quit a match, you LOSE. Recording games will be reccomended in the instance,
+                                with review of the situation by an admin, an automatic win could be awarded.
+                                Additionally, the latest version of Redux must be played. Experimental builds are
+                                prohibited.
                             </p>
                             <h2 class="hero-title">2. Map Angling</h2>
                             <p class="rules-text">
-                                With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players from reliably choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.
+                                With heavy consideration of previous attempts to determine the "core maps" that should
+                                be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure
+                                players can always play a fair match, but also prohibit players from reliably choosing
+                                maps they know they will excell in. Map core will consist of a variety of maps, and will
+                                be conditioned to exclude overtly-repetitve map-types regardless of statistical
+                                domination. More on "Map Core" after beta release.
                             </p>
                             <h2 class="hero-title">3. Game Settings</h2>
                             <p class="rules-text">
-                                To maintain competitive integrity, there are game settings that are required to be set in order to play a match. For games with seperate game settings sub-games should be set to compete for non-ELO results. This means trophies, and other rewards. 
+                                To maintain competitive integrity, there are game settings that are required to be set
+                                in order to play a match. For games with seperate game settings sub-games should be set
+                                to compete for non-ELO results. This means trophies, and other rewards.
                             </p>
                         </div>
 
                         <!-- Settings button -->
-                        <button class="collapsible">View Game Settings</button>
-
-                        <!-- Settings content that will overlay -->
-                        <div class="content">
-                            <button class="close-settings" onclick="closeSettings()">&times;</button>
-                            <ul class="game-settings-list">
-                                <li>Game Settings: Matches must be played with the standard game settings. Much like the Observatory the settings.</li>
-                                <li>Do NOT set "Open Game"</li>
-                                <li>Maximum Observers at least 4</li>
-                                <li>Broadcast Delay 15 Seconds OFF (I don't think it works, if it does please let me know)</li>
-                                <li>Minimal Observer Info OFF</li>
-                                <li>Difficulty MAX (Insane)</li>
-                                <li>Reactor life 50 MINUTES</li>
-                                <li>Max time 0 MINUTES</li>
-                                <li>Kill goal 0 KILLS</li>
-                                <li>Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7 players</li>
-                                <li>Extra secondaries NONE</li>
-                                <li>Cap secondaries UNCAPPED</li>
-                                <li>Low vulcan ammo OFF</li>
-                                <li>Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</li>
-                                <li>Spawn style 2 second INVULN</li>
-                                <li>Vulcan ammo style ORIGINAL (DEPLETING)</li>
-                                <li>All players blue ON for 2 players, OFF for 3-7 players</li>
-                                <li>Allow colored dynamic lighting OFF</li>
-                                <li>Allow players to choose their colors ON (observers see this, even when all players are blue)</li>
-                                <li>Packets per second 40 for 2 players, 30 for 3 or higher (can be reduced if there are severe connection issues, but no lower than 20)</li>
-                                <li>Track this game ON</li>
-                                <li>Retro protocol ON</li>
-                                <li>Show all players on automap OFF</li>
-                                <li>Bright player ships ON</li>
-                                <li>Show enemy names on HUD OFF</li>
-                                <li>Homing update rate 25</li>
-                                <li>DXX-Retro homing speed OFF</li>
-                                <li>Show confirmed hitsparsk ONLY</li>
-                                <li>Allow custom models and textures ON or OFF (Both players must agree on this setting)</li>
-                                <li>Reduced flash ON or OFF (Both players must agree on this setting)</li>
-                            </ul>
-                        </div>
+                     
                     </section>
                     <div class="download-section">
                         <img src="images/1v1.png" alt="Solo Rules" class="rule-image">
-                        <a href="Files/rdltemplate.ngs" download>
-                            <div class="download-wrapper">
-                                <img src="images/download.png" class="download-icon" alt="Download Icon">
-                                <span class="download-text">Game Template</span>
-                            </div>
-                        </a>
+                        
                     </div>
                 </div>
 
                 <!-- Duos Rules Content -->
                 <div id="duos" class="rule-content">
                     <section class="rules-section">
-                        <div class="beta-content">
-                            <h2 class="hero-title" style="font-size: 48px; text-align: center; margin: 50px 0;">MORE AFTER BETA</h2>
-                            <div class="centered-image">
-                                <img src="images/duo.png" alt="Duos Rules" class="rule-image">
-                            </div>
-                        </div>
+                        <h2 class="hero-title">Duo Match Format</h2>
+                        <p class="rules-text">
+                            2v2 matches follow a different structure:
+                            - Team coordination required
+                            - Shared powerup rules
+                            - Special scoring system
+                        </p>
                     </section>
+                    <!-- Try these alternatives for the duos section image -->
+                    <!-- or -->
+                    <img src="images/duo.png" alt="Duos Rules" class="rule-image">
                 </div>
 
                 <!-- CTF Rules Content -->
                 <div id="ctf" class="rule-content">
                     <section class="rules-section">
-                        <div class="beta-content">
-                            <h2 class="hero-title" style="font-size: 48px; text-align: center; margin: 50px 0;">MORE AFTER BETA</h2>
-                            <div class="centered-image">
-                                <img src="images/ladderbackdrop.png" alt="CTF Rules" class="rule-image">
-                            </div>
-                        </div>
+                        <h2 class="hero-title">Capture The Flag</h2>
+                        <p class="rules-text">
+                            CTF matches have unique requirements:
+                            - Flag capture rules
+                            - Team size requirements
+                            - Base defense guidelines
+                        </p>
                     </section>
+                    <img src="images/ladderbackdrop.png" alt="CTF Rules" class="rule-image">
                 </div>
             </div>
         </div>
@@ -149,9 +247,175 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#nav-placeholder").load("nav.html");
+            $("#footer-placeholder").load("footer.html");
+
+            // Rule button click handler
+            $('.rule-button').click(function () {
+                // Remove active class from all buttons and contents
+                $('.rule-button').removeClass('active');
+                $('.rule-content').removeClass('active');
+                // Add active class to clicked button and corresponding content
+                $(this).addClass('active');
+                $('#' + $(this).data('content')).addClass('active');
+            });
+        });
+    </script>
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+    </script>
+    <script>
+        // Collapsible functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapsibles = document.querySelectorAll('.collapsible');
+
+            collapsibles.forEach(button => {
+                button.addEventListener('click', function () {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('active');
+
+                    if (content.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = "0";
+                    }
+                });
+            });
+
+            // Rule button functionality
+            const ruleButtons = document.querySelectorAll('.rule-button');
+            const ruleContents = document.querySelectorAll('.rule-content');
+
+            ruleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    ruleButtons.forEach(b => b.classList.remove('active'));
+                    ruleContents.forEach(c => {
+                        c.classList.remove('active');
+                        c.style.maxHeight = "0";
+                    });
+
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    const contentId = button.getAttribute('data-content');
+                    const content = document.getElementById(contentId);
+                    content.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapsible = document.querySelector('.collapsible');
+            const content = document.querySelector('.content');
+            const regularContent = document.querySelector('.regular-content');
+
+            collapsible.addEventListener('click', function () {
+                this.classList.toggle('active');
+                content.classList.toggle('active');
+
+                // Toggle regular content visibility
+                if (content.classList.contains('active')) {
+                    regularContent.style.opacity = '0';
+                    regularContent.style.pointerEvents = 'none';
+                } else {
+                    regularContent.style.opacity = '1';
+                    regularContent.style.pointerEvents = 'auto';
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapsible = document.querySelector('.collapsible');
+            const content = document.querySelector('.content');
+            const regularContent = document.querySelector('.regular-content');
+            const ruleSection = document.querySelector('.rules-section');
+
+            collapsible.addEventListener('click', function () {
+                this.classList.toggle('active');
+
+                if (!this.classList.contains('active')) {
+                    // Show regular content
+                    content.style.position = 'absolute';
+                    content.style.opacity = '0';
+                    content.style.visibility = 'hidden';
+                    regularContent.style.position = 'relative';
+                    regularContent.style.opacity = '1';
+                    regularContent.style.visibility = 'visible';
+                } else {
+                    // Show settings content
+                    content.style.position = 'relative';
+                    content.style.opacity = '1';
+                    content.style.visibility = 'visible';
+                    regularContent.style.position = 'absolute';
+                    regularContent.style.opacity = '0';
+                    regularContent.style.visibility = 'hidden';
+                }
+            });
+        });
+
+        function closeSettings() {
+            const content = document.querySelector('.content');
+            const collapsible = document.querySelector('.collapsible');
+            const regularContent = document.querySelector('.regular-content');
+
+            collapsible.classList.remove('active');
+            content.style.position = 'absolute';
+            content.style.opacity = '0';
+            content.style.visibility = 'hidden';
+            regularContent.style.position = 'relative';
+            regularContent.style.opacity = '1';
+            regularContent.style.visibility = 'visible';
+        }
+    </script>
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
-    <script src="rules.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab switching
+            const ruleButtons = document.querySelectorAll('.rule-button');
+            const ruleContents = document.querySelectorAll('.rule-content');
+
+            ruleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-content');
+
+                    ruleButtons.forEach(btn => btn.classList.remove('active'));
+                    ruleContents.forEach(content => content.classList.remove('active'));
+
+                    button.classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            // Settings toggle
+            const collapsible = document.querySelector('.collapsible');
+            const content = document.querySelector('.content');
+            const regularContent = document.querySelector('.regular-content');
+
+            collapsible.addEventListener('click', function () {
+                this.classList.toggle('active');
+                content.classList.toggle('active');
+            });
+        });
+    </script>
 </body>
+
 </html>
