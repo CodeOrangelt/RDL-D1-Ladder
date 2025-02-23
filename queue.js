@@ -18,14 +18,14 @@ function updateQueueDisplay(players) {
 
     let queueHTML = `
         <div class="queue-box">
-            <h2>Players Ready</h2>
+            <h2>Queue Status</h2>
             <div class="queue-list">
     `;
 
     players.forEach(player => {
         queueHTML += `
             <div class="player-card">
-                <span class="player-name">${player.username}</span>
+                <span class="player-name">${player.username} is waiting to play</span>
                 <span class="queue-time">${formatQueueTime(player.queueStartTime)}</span>
             </div>
         `;
@@ -51,9 +51,11 @@ function formatQueueTime(timestamp) {
 onSnapshot(activePlayersQuery, (snapshot) => {
     const activePlayers = [];
     snapshot.forEach(doc => {
+        const data = doc.data();
         activePlayers.push({
             id: doc.id,
-            ...doc.data()
+            username: data.username,
+            queueStartTime: data.queueStartTime
         });
     });
     updateQueueDisplay(activePlayers);
