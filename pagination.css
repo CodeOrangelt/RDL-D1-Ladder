@@ -96,3 +96,22 @@
 #pagination button {
     margin: 0;
 }
+
+/* Add to your existing CSS */
+.tos-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tos-section:last-of-type {
+    border-bottom: none;
+}
+
+.tos-section ul li {
+    margin-bottom: 0.5rem;
+}
+
+.tos-section h2 {
+    margin-top: 1.5rem;
+}
