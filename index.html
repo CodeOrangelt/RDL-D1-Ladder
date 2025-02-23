@@ -38,6 +38,11 @@
                         <!-- Ladder rankings will be populated here -->
                     </tbody>
                 </table>
+                
+                <!-- Queue Display Container -->
+                <div id="queue-container" class="container mt-4">
+                    <!-- Queue content will be dynamically inserted here -->
+                </div>
             </div>
         </div>
         <!-- Moved promotion banner outside outer-container but still inside main -->
@@ -123,6 +128,7 @@
     <script type="module" src="current-user.js"></script>
     <script type="module" src="logout.js"></script>
     <script type="module" src="ladder.js"></script>
+    <script type="module" src="queue.js"></script>
     <script type="module">
         import { initializePromotionTracker } from './promotion-banner.js';
         
