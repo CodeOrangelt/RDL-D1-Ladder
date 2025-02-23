@@ -16,6 +16,7 @@ body {
     padding: 20px;
     min-height: 800px;
     overflow: hidden;
+    margin-bottom: 100px; /* Add margin to prevent content from being hidden behind fixed pagination */
 }
 
 h1 {
@@ -108,7 +109,9 @@ td a {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 20px; /* Updated gap */
+    max-width: 1200px; /* Added max-width */
+    margin: 0 auto; /* Added margin */
 }
 
 .pagination button {
@@ -145,12 +148,16 @@ td a {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px; /* Updated gap */
     margin: 0 15px;
+    background: rgba(40, 40, 40, 0.6); /* Added background */
+    padding: 5px 10px; /* Added padding */
+    border-radius: 6px; /* Added border-radius */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Added border */
 }
 
 .page-search input {
-    width: 60px;
+    width: 70px; /* Updated width */
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -174,4 +181,71 @@ td a {
 .page-search button:hover {
     background: rgba(60, 60, 60, 0.9);
     border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Pagination Styling */
+.pagination-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 20, 0.95);
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+}
+
+.page-navigation {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.page-search input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.pagination-controls button {
+    padding: 10px 20px;
+    background: rgba(45, 45, 45, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.pagination-controls button:disabled {
+    background: rgba(45, 45, 45, 0.3);
+    border-color: rgba(255, 255, 255, 0.05);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .page-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
