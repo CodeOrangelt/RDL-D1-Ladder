@@ -17,3 +17,7 @@ export const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+//debug lines for connection ping
+console.log('Firebase initialized:', !!app);
+console.log('Firestore initialized:', !!db);
