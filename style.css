@@ -489,3 +489,13 @@ tr:nth-child(even) {
     padding: 1rem;
     font-style: italic;
 }
+
+#queue-container {
+    display: none; /* Hidden by default */
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
