@@ -177,14 +177,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-		match /promotionViews/{docId} {
- 		  allow read: if request.auth != null;
-  	  allow write: if request.auth != null && 
-               docId.matches('promotion_.*_' + request.auth.token.name) &&  // Use displayName
-               request.resource.data.keys().hasAll(['promotionId', 'playerName', 'views', 'createdAt', 'updatedAt']) &&
-               request.resource.data.playerName == request.auth.token.name &&
-               request.resource.data.views <= 5;
-		}
+    match /promotionViews/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                   request.auth.token.email != null &&  // Ensure user has email
+                   docId.matches('promotion_.*_' + request.auth.token.email.split('@')[0]) &&  // Use email username
+                   request.resource.data.keys().hasAll(['promotionId', 'playerName', 'views', 'createdAt', 'updatedAt']) &&
+                   request.resource.data.views is number &&
+                   request.resource.data.views <= 3 &&  // Match MAX_VIEWS from promotion-banner.js
+                   request.resource.data.createdAt is timestamp &&
+                   request.resource.data.updatedAt is timestamp;
+    }
     
     match /season0/{document=**} {
       allow read: if request.auth != null;
@@ -202,6 +205,22 @@ service cloud.firestore {
     match /season0records/{document} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+    }
+
+    match /promotionHistory/{document} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null 
+        && request.resource.data.keys().hasAll([
+          'playerName', 'newRank', 'previousRank', 'promotionDate',
+          'previousElo', 'newElo', 'userId', 'timestamp', 'type'
+        ])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type == 'promotion'
+        && request.resource.data.newRank in ['Emerald', 'Gold', 'Silver', 'Bronze', 'Unranked']
+        && request.resource.data.previousRank in ['Emerald', 'Gold', 'Silver', 'Bronze', 'Unranked']
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.previousElo is number
+        && request.resource.data.newElo is number;
     }
   }
 }
