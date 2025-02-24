@@ -115,19 +115,24 @@
                 <h2 class="section-title">Stats</h2>
                 <button id="season0-stats-btn" class="collapse-btn">Season 0 Stats</button>
                 <div id="season0-stats" class="stats-section">
-                    <table id="season0-stats-table">
-                        <thead>
-                            <tr>
-                                <th>Player</th>
-                                <th>Wins</th>
-                                <th>Losses</th>
-                                <th>Win Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Stats will be populated here -->
-                        </tbody>
-                    </table>
+                    <!-- Records Grid -->
+                    <div class="records-grid">
+                        <div class="record-card">
+                            <h3>Most Wins</h3>
+                            <div class="record-value" id="most-wins">-</div>
+                            <div class="record-holder" id="most-wins-player">-</div>
+                        </div>
+                        <div class="record-card">
+                            <h3>Best Win Rate</h3>
+                            <div class="record-value" id="best-winrate">-</div>
+                            <div class="record-holder" id="best-winrate-player">-</div>
+                        </div>
+                        <div class="record-card">
+                            <h3>Best K/D Ratio</h3>
+                            <div class="record-value" id="best-kd">-</div>
+                            <div class="record-holder" id="best-kd-player">-</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
