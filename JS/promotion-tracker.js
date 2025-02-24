@@ -13,6 +13,12 @@ const RANK_COLORS = {
 export async function checkAndRecordPromotion(userId, newElo, oldElo) {
     console.log('Starting promotion check:', { userId, newElo, oldElo });
     
+    // Verify inputs
+    if (!userId || typeof newElo !== 'number' || typeof oldElo !== 'number') {
+        console.error('Invalid inputs:', { userId, newElo, oldElo });
+        return null;
+    }
+
     const ranks = [
         { threshold: 1400, name: 'Bronze' },
         { threshold: 1600, name: 'Silver' },
@@ -39,39 +45,50 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         }
 
         const userData = userSnap.data();
-        
-        // Create promotion record
-        const promotionData = {
-            playerName: userData.username || 'Unknown Player',
-            newRank: rankCrossed.name,
-            previousRank: getRankName(oldElo),
-            promotionDate: new Date().toISOString(),
-            previousElo: oldElo,
-            newElo: newElo,
-            userId: userId,
-            timestamp: new Date(),
-            type: 'promotion'
-        };
+        console.log('Found user data:', userData);
 
-        console.log('Creating promotion record:', promotionData);
+        // Try writing to promotionHistory first
+        try {
+            const promotionHistoryRef = collection(db, 'promotionHistory');
+            const promotionData = {
+                playerName: userData.username || 'Unknown Player',
+                newRank: rankCrossed.name,
+                previousRank: getRankName(oldElo),
+                promotionDate: new Date().toISOString(),
+                previousElo: oldElo,
+                newElo: newElo,
+                userId: userId,
+                timestamp: new Date(),
+                type: 'promotion'
+            };
 
-        // Use addDoc instead of setDoc
-        const docRef = await addDoc(collection(db, 'promotionHistory'), promotionData);
-        console.log('Successfully created promotion record:', docRef.id);
+            console.log('Attempting to write promotion record:', promotionData);
+            const promotionDoc = await addDoc(promotionHistoryRef, promotionData);
+            console.log('Successfully wrote to promotionHistory:', promotionDoc.id);
 
-        // Also create eloHistory record
-        await addDoc(collection(db, 'eloHistory'), {
-            player: userData.username,
-            type: 'promotion',
-            rankAchieved: rankCrossed.name,
-            timestamp: new Date(),
-            promotedBy: 'System'
-        });
+            // Now write to eloHistory
+            const eloHistoryRef = collection(db, 'eloHistory');
+            const eloHistoryData = {
+                player: userData.username,
+                type: 'promotion',
+                rankAchieved: rankCrossed.name,
+                timestamp: new Date(),
+                promotedBy: 'System'
+            };
 
-        return rankCrossed.name;
+            console.log('Attempting to write eloHistory record:', eloHistoryData);
+            const eloDoc = await addDoc(eloHistoryRef, eloHistoryData);
+            console.log('Successfully wrote to eloHistory:', eloDoc.id);
+
+            return rankCrossed.name;
+
+        } catch (writeError) {
+            console.error('Failed to write promotion records:', writeError);
+            throw writeError;
+        }
 
     } catch (error) {
-        console.error('Failed to record promotion:', error);
+        console.error('Error in promotion process:', error);
         return null;
     }
 }
