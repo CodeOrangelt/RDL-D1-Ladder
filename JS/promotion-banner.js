@@ -1,27 +1,34 @@
 import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where, deleteDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 const MAX_VIEWS = 5;
 
+// Modify the checkPromotionViews function for better tracking
 async function checkPromotionViews(promotionId, userId) {
     try {
         const viewsRef = doc(db, 'promotionViews', `${promotionId}_${userId}`);
         const viewsDoc = await getDoc(viewsRef);
         
         if (!viewsDoc.exists()) {
-            // First view
-            await setDoc(viewsRef, { views: 1 });
+            await setDoc(viewsRef, { 
+                views: 1,
+                firstView: new Date(),
+                lastView: new Date()
+            });
             return true;
         }
         
-        const views = viewsDoc.data().views;
-        if (views < MAX_VIEWS) {
-            // Increment views
-            await setDoc(viewsRef, { views: views + 1 }, { merge: true });
+        const data = viewsDoc.data();
+        if (data.views < MAX_VIEWS) {
+            await setDoc(viewsRef, { 
+                views: data.views + 1,
+                lastView: new Date()
+            }, { merge: true });
             return true;
         }
         
-        return false; // Max views reached
+        console.log(`Max views (${MAX_VIEWS}) reached for promotion ${promotionId} by user ${userId}`);
+        return false;
     } catch (error) {
         console.error('Error checking promotion views:', error);
         return false;
@@ -46,9 +53,11 @@ export function initializePromotionTracker() {
     promotionContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
+    // Modify the query section in initializePromotionTracker
     const q = query(
         historyRef, 
-        where('type', 'in', ['promotion', 'demotion']), // Add demotion type
+        where('type', 'in', ['promotion', 'demotion']),
+        where('timestamp', '>', new Date(Date.now() - 24 * 60 * 60 * 1000)), // Last 24 hours only
         orderBy('timestamp', 'desc'), 
         limit(5)
     );
@@ -103,7 +112,7 @@ export function initializePromotionTracker() {
         }
     });
 }
-
+// Update the banner display logic
 function showRankChangeBanner(data, container) {
     if (container.children.length >= 3) {
         container.removeChild(container.firstChild);
@@ -122,9 +131,24 @@ function showRankChangeBanner(data, container) {
         ? data.promotedBy || 'Admin'
         : data.demotedBy || 'Admin';
 
+    // Add rank change direction indicator
+    const directionIndicator = data.type === 'promotion' 
+        ? '↑' 
+        : '↓';
+
     bannerDiv.innerHTML = `
-        <p>${message} <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${byAdmin}</p>
+        <p>
+            ${message} 
+            <span class="rank-indicator ${data.type}" data-rank="${data.rankAchieved}">
+                ${directionIndicator} ${data.rankAchieved}
+            </span> 
+            by ${byAdmin}
+        </p>
     `;
+    
+    // Add animation class based on type
+    bannerDiv.classList.add(`rank-change-${data.type}`);
+
     container.appendChild(bannerDiv);
     container.style.display = 'block';
 
@@ -181,4 +205,22 @@ function showRankChangeLightbox(type, rankName) {
             modal.style.display = 'none';
         }
     });
+}
+
+// Add a cleanup function for old view records
+async function cleanupOldViewRecords() {
+    try {
+        const viewsRef = collection(db, 'promotionViews');
+        const oldViews = query(
+            viewsRef,
+            where('lastView', '<', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) // Older than 7 days
+        );
+        
+        const snapshot = await getDocs(oldViews);
+        snapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+        });
+    } catch (error) {
+        console.error('Error cleaning up old view records:', error);
+    }
 }
