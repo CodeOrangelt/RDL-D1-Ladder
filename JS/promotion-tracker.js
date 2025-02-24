@@ -15,18 +15,16 @@ function getRankStyle(rankName) {
 }
 
 export function initializePromotionTracker() {
-    const promotionDetails = document.getElementById('promotion-details');
-    const bannerElement = document.getElementById('latest-promotion');
-    
-    if (!promotionDetails || !bannerElement) {
-        console.error('Promotion elements not found');
+    const bannerContainer = document.getElementById('promotion-banner-container');
+    if (!bannerContainer) {
+        console.error('Banner container not found');
         return;
     }
 
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef,
-        where('type', 'in', ['promotion', 'demotion']), // Add demotion type
+        where('type', 'in', ['promotion', 'demotion']),
         orderBy('timestamp', 'desc'),
         limit(1)
     );
@@ -35,22 +33,33 @@ export function initializePromotionTracker() {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                if (data.type === 'promotion' || data.type === 'demotion') {
-                    // Set the rank attribute for styling
-                    bannerElement.setAttribute('data-rank', data.rankAchieved);
-                    
-                    // Create rank change text based on type
-                    const actionText = data.type === 'promotion' ? 'promoted to' : 'demoted to';
-                    const promotionText = `${data.player} was ${actionText} <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
-                    
-                    promotionDetails.innerHTML = promotionText;
-                    bannerElement.classList.add('new-promotion');
-                    
-                    setTimeout(() => {
-                        bannerElement.classList.remove('new-promotion');
-                    }, 3000);
-                }
+                
+                // Create banner element
+                const banner = document.createElement('div');
+                banner.className = 'promotion-banner';
+                banner.setAttribute('data-rank', data.rankAchieved);
+
+                // Create details element
+                const details = document.createElement('div');
+                details.className = 'promotion-details';
+                
+                // Set content with proper formatting
+                const actionText = data.type === 'promotion' ? 'promoted to' : 'demoted to';
+                details.innerHTML = `${data.player} was ${actionText} <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
+                
+                // Add to DOM
+                banner.appendChild(details);
+                bannerContainer.innerHTML = ''; // Clear existing banners
+                bannerContainer.appendChild(banner);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    banner.remove();
+                }, 5000);
             }
         });
     });
 }
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializePromotionTracker);
