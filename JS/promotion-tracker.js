@@ -19,7 +19,10 @@ export async function initializePromotionTracker() {
     const promotionDetails = document.getElementById('promotion-details');
     
     if (!promotionBanner || !promotionDetails) {
-        console.error('Promotion elements not found');
+        console.error('Promotion elements not found:', {
+            banner: promotionBanner,
+            details: promotionDetails
+        });
         return;
     }
     
@@ -32,24 +35,37 @@ export async function initializePromotionTracker() {
         limit(1)
     );
 
+    let currentTimeout;
+
     onSnapshot(q, (snapshot) => {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
+                console.log('New promotion data:', data);  // Debug log
+
                 if (data.type === 'promotion') {
+                    // Clear any existing timeout
+                    if (currentTimeout) clearTimeout(currentTimeout);
+
                     // Set the rank attribute for styling
                     promotionBanner.setAttribute('data-rank', data.rankAchieved);
                     
                     // Create promotion text with rank color
                     const rankColor = getRankStyle(data.rankAchieved);
-                    const promotionText = `${data.player} was promoted to <span style="color: ${rankColor}">${data.rankAchieved}</span> by Admin`;
+                    const promotionText = `
+                        <strong>${data.player}</strong> was promoted to 
+                        <span style="color: ${rankColor}; font-weight: bold;">
+                            ${data.rankAchieved}
+                        </span>
+                    `;
                     
                     promotionDetails.innerHTML = promotionText;
-                    promotionBanner.classList.add('new-promotion');
+                    promotionBanner.classList.add('active');
                     
-                    setTimeout(() => {
-                        promotionBanner.classList.remove('new-promotion');
-                    }, 3000);
+                    // Remove after 5 seconds
+                    currentTimeout = setTimeout(() => {
+                        promotionBanner.classList.remove('active');
+                    }, 5000);
                 }
             }
         });
