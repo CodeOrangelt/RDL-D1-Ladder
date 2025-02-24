@@ -129,7 +129,9 @@ export function initializePromotionTracker() {
 }
 // Update the banner display logic
 function showRankChangeBanner(data, container) {
-    console.log('Showing banner for:', data); // Add this debug log
+    console.log('Showing banner for:', data);
+    
+    container.style.display = 'block'; // Make sure container is visible
     
     if (container.children.length >= 3) {
         container.removeChild(container.firstChild);
@@ -166,15 +168,14 @@ function showRankChangeBanner(data, container) {
     // Add animation class based on type
     bannerDiv.classList.add(`rank-change-${data.type}`);
 
+    // Make sure to append the banner
     container.appendChild(bannerDiv);
-    container.style.display = 'block';
 
     // Add debug logging
-    console.log('Showing rank change banner:', {
-        type: data.type,
-        player: data.player,
-        rank: data.rankAchieved,
-        by: byAdmin
+    console.log('Banner added to container:', {
+        containerDisplay: container.style.display,
+        containerChildren: container.children.length,
+        bannerClass: bannerDiv.className
     });
 
     setTimeout(() => {
