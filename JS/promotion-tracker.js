@@ -71,7 +71,11 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
             // Write to promotionHistory (detailed record)
             addDoc(collection(db, 'promotionHistory'), promotionData),
             // Write simplified promotion record
-            addDoc(collection(db, 'promotionHistory'), simplePromotionData),
+            addDoc(collection(db, 'promotionHistory'), {
+                username: userData.username,
+                rank: rankCrossed.name,
+                timestamp: new Date()
+            }),
             // Write to eloHistory
             addDoc(collection(db, 'eloHistory'), {
                 player: userData.username,
