@@ -7,35 +7,44 @@ const MAX_VIEWS = 5;
 async function checkPromotionViews(promotionId, userId) {
     if (!promotionId || !userId) {
         console.warn('Missing promotionId or userId');
-        return false;
+        return true; // Default to showing banner if missing data
     }
 
     try {
-        const viewsRef = doc(db, 'promotionViews', `${promotionId}_${userId}`);
+        const docId = `promotion_${promotionId}_${userId}`;
+        const viewsRef = doc(db, 'promotionViews', docId);
         const viewsDoc = await getDoc(viewsRef);
         
         if (!viewsDoc.exists()) {
+            // First view
             await setDoc(viewsRef, { 
+                promotionId,
+                userId,
                 views: 1,
-                firstViewedAt: new Date(),
-                lastViewedAt: new Date()
+                createdAt: new Date(),
+                updatedAt: new Date()
             });
             return true;
         }
         
-        const views = viewsDoc.data().views;
-        if (views < MAX_VIEWS) {
-            await setDoc(viewsRef, { 
-                views: views + 1,
-                lastViewedAt: new Date()
-            }, { merge: true });
-            return true;
-        }
+        const data = viewsDoc.data();
+        const currentViews = data.views || 0;
         
-        return false;
+        if (currentViews >= MAX_VIEWS) {
+            return false;
+        }
+
+        // Increment view count
+        await setDoc(viewsRef, {
+            views: currentViews + 1,
+            updatedAt: new Date()
+        }, { merge: true });
+        
+        return true;
+
     } catch (error) {
         console.error('Error checking promotion views:', error);
-        return false;
+        return true; // Show banner on error to avoid missing important notifications
     }
 }
 
