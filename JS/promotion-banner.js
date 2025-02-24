@@ -11,7 +11,12 @@ async function checkPromotionViews(promotionId, userId) {
     }
 
     try {
-        const docId = `promotion_${promotionId}_${userId}`;
+        const currentUser = auth.currentUser;
+        if (!currentUser || !currentUser.displayName) {
+            return true;
+        }
+
+        const docId = `promotion_${promotionId}_${currentUser.displayName}`;  // Changed userId to displayName
         const viewsRef = doc(db, 'promotionViews', docId);
         const viewsDoc = await getDoc(viewsRef);
         
@@ -19,7 +24,7 @@ async function checkPromotionViews(promotionId, userId) {
             // First view
             await setDoc(viewsRef, { 
                 promotionId,
-                userId,
+                playerName: currentUser.displayName,  // Store displayName instead of userId
                 views: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
