@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupTestReportButton();
             setupSetEloButton();
             setupArchiveButton();
+            setupClearCacheButton();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
@@ -959,6 +960,63 @@ document.addEventListener('DOMContentLoaded', () => {
             setupTestReportButton();
             setupSetEloButton();
             setupArchiveButton(); // Add this line
+        }
+    });
+});
+
+// Add this function
+async function clearPromotionCache() {
+    try {
+        const user = auth.currentUser;
+        if (!user || !isAdmin(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Get all documents from promotionViews collection
+        const promotionViewsRef = collection(db, 'promotionViews');
+        const snapshot = await getDocs(promotionViewsRef);
+        
+        // Count documents for reporting
+        const totalDocs = snapshot.size;
+        
+        // Delete all documents
+        const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+        
+        alert(`Successfully cleared ${totalDocs} promotion banner records`);
+        console.log(`Cleared ${totalDocs} promotion banner records`);
+        
+    } catch (error) {
+        console.error('Error clearing promotion cache:', error);
+        alert('Failed to clear promotion cache: ' + error.message);
+    }
+}
+
+// Add setup function
+function setupClearCacheButton() {
+    const clearCacheBtn = document.getElementById('clear-promotion-cache');
+    if (!clearCacheBtn) return;
+
+    clearCacheBtn.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to clear all promotion banner records? This will reset view counts for all promotions.')) {
+            await clearPromotionCache();
+        }
+    });
+}
+
+// Add to initialization
+document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (user && isAdmin(user.email)) {
+            // ...existing initialization code...
+            setupCollapsibleButtons();
+            setupPromotePlayerButton();
+            setupDemotePlayerButton();
+            setupManagePlayersSection();
+            setupTestReportButton();
+            setupSetEloButton();
+            setupArchiveButton();
+            setupClearCacheButton(); // Add this line
         }
     });
 });
