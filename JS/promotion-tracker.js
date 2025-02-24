@@ -23,11 +23,7 @@ export async function initializePromotionTracker() {
         return;
     }
     
-    // Add this to debug
     console.log('Initializing promotion tracker');
-    
-    // When showing a promotion
-    promotionBanner.classList.add('active');
 
     const historyRef = collection(db, 'eloHistory');
     const q = query(
@@ -42,16 +38,17 @@ export async function initializePromotionTracker() {
                 const data = change.doc.data();
                 if (data.type === 'promotion') {
                     // Set the rank attribute for styling
-                    bannerElement.setAttribute('data-rank', data.rankAchieved);
+                    promotionBanner.setAttribute('data-rank', data.rankAchieved);
                     
-                    // Create promotion text
-                    const promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by Admin`;
+                    // Create promotion text with rank color
+                    const rankColor = getRankStyle(data.rankAchieved);
+                    const promotionText = `${data.player} was promoted to <span style="color: ${rankColor}">${data.rankAchieved}</span> by Admin`;
                     
                     promotionDetails.innerHTML = promotionText;
-                    bannerElement.classList.add('new-promotion');
+                    promotionBanner.classList.add('new-promotion');
                     
                     setTimeout(() => {
-                        bannerElement.classList.remove('new-promotion');
+                        promotionBanner.classList.remove('new-promotion');
                     }, 3000);
                 }
             }
