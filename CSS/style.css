@@ -212,12 +212,10 @@ tr:nth-child(even) {
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 300px;
     z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: none; /* Allow clicking through the container */
+    width: 300px;
+    min-height: 50px;
+    pointer-events: none;
 }
 
 .promotion-container[style*="display: block"] {
@@ -260,6 +258,16 @@ tr:nth-child(even) {
     font-size: 14px;
     font-weight: 500;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.rank-change-banner {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    animation: slideIn 0.5s ease-out;
+    pointer-events: auto;
 }
 
 /* Rank-specific styles */
