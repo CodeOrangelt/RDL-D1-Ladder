@@ -30,17 +30,16 @@ async function checkPromotionViews(promotionId, userId) {
 
 // Update the query to get more recent promotions
 export function initializePromotionTracker() {
-    const promotionContainer = document.querySelector('.promotion-container');
-    
-    console.log('Rank change tracker initializing...');
-
-    if (!promotionContainer) {
-        console.warn('Promotion container not found in DOM');
+    const bannerContainer = document.getElementById('promotion-banner-container');
+    if (!bannerContainer) {
+        console.error('Promotion container not found in DOM');
         return;
     }
 
-    promotionContainer.innerHTML = '';
-    promotionContainer.style.display = 'none';
+    console.log('Rank change tracker initializing...');
+
+    bannerContainer.innerHTML = '';
+    bannerContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
     const q = query(
@@ -78,7 +77,7 @@ export function initializePromotionTracker() {
                 if (shouldShow) {
                     console.log(`Showing ${rankChange.type} banner for:`, rankChange.player);
                     setTimeout(() => {
-                        showRankChangeBanner(rankChange, promotionContainer);
+                        showRankChangeBanner(rankChange, bannerContainer);
                     }, i * 1000);
 
                     if (rankChange.player === currentUser.displayName) {
