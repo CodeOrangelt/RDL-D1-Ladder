@@ -106,11 +106,24 @@ function showRankChangeBanner(data, container) {
         ? `${data.player} was promoted to` 
         : `${data.player} was demoted to`;
 
+    // Update the admin attribution based on type
+    const byAdmin = data.type === 'promotion' 
+        ? data.promotedBy || 'Admin'
+        : data.demotedBy || 'Admin';
+
     bannerDiv.innerHTML = `
-        <p>${message} <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}</p>
+        <p>${message} <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${byAdmin}</p>
     `;
     container.appendChild(bannerDiv);
     container.style.display = 'block';
+
+    // Add debug logging
+    console.log('Showing rank change banner:', {
+        type: data.type,
+        player: data.player,
+        rank: data.rankAchieved,
+        by: byAdmin
+    });
 
     setTimeout(() => {
         bannerDiv.classList.add('new-rank-change');
