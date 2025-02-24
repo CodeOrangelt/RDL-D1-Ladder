@@ -21,31 +21,49 @@ export class PromotionHandler {
         // Check if crossed a threshold
         for (const rank of ranks) {
             if (oldElo < rank.threshold && newElo >= rank.threshold) {
-                // Get user document to access their username
-                const userDoc = await getDoc(doc(db, 'players', userId));
-                const userData = userDoc.data();
-                const lastShownRank = userData.lastShownPromotion || 0;
+                try {
+                    // Get user document to access their username
+                    const userDoc = await getDoc(doc(db, 'players', userId));
+                    if (!userDoc.exists()) {
+                        console.error('User document not found');
+                        return;
+                    }
+                    
+                    const userData = userDoc.data();
+                    const lastShownRank = userData.lastShownPromotion || 0;
 
-                if (rank.threshold > lastShownRank) {
-                    // Create promotion history document
-                    const historyRef = doc(collection(db, 'promotionHistory'));
-                    await setDoc(historyRef, {
-                        playerName: userData.username,
-                        newRank: rank.name,
-                        promotionDate: new Date(),
-                        previousElo: oldElo,
-                        newElo: newElo
-                    });
+                    if (rank.threshold > lastShownRank) {
+                        // Create promotion history document with explicit timestamp
+                        const promotionData = {
+                            playerName: userData.username,
+                            newRank: rank.name,
+                            promotionDate: new Date().toISOString(),
+                            previousElo: oldElo,
+                            newElo: newElo,
+                            userId: userId,
+                            timestamp: new Date()
+                        };
 
-                    // Update last shown promotion
-                    await setDoc(doc(db, 'players', userId), {
-                        ...userData,
-                        lastShownPromotion: rank.threshold
-                    });
+                        // Log the promotion attempt
+                        console.log('Creating promotion history:', promotionData);
 
-                    // Show promotion modal
-                    this.showPromotionModal(rank.name);
-                    return;
+                        // Create promotion history document
+                        const historyRef = doc(collection(db, 'promotionHistory'));
+                        await setDoc(historyRef, promotionData);
+
+                        // Update last shown promotion
+                        await setDoc(doc(db, 'players', userId), {
+                            ...userData,
+                            lastShownPromotion: rank.threshold
+                        });
+
+                        // Show promotion modal
+                        this.showPromotionModal(rank.name);
+                        console.log('Promotion successfully recorded');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error recording promotion:', error);
                 }
             }
         }
