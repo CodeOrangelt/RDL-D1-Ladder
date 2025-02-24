@@ -22,7 +22,7 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
     for (const rank of ranks) {
         if (oldElo < rank.threshold && newElo >= rank.threshold) {
             try {
-                console.log('Promotion threshold crossed:', { oldElo, newElo, rank });
+                console.log('Debug: Checking promotion', { userId, oldElo, newElo, rank });
                 
                 const userDoc = await getDoc(doc(db, 'players', userId));
                 if (!userDoc.exists()) {
@@ -32,7 +32,7 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
 
                 const userData = userDoc.data();
                 const promotionData = {
-                    playerName: userData.username,
+                    playerName: userData.username || 'Unknown Player', // Add fallback
                     newRank: rank.name,
                     previousRank: getRankName(oldElo),
                     promotionDate: new Date().toISOString(),
@@ -40,19 +40,26 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
                     newElo: newElo,
                     userId: userId,
                     timestamp: new Date(),
-                    type: 'promotion'  // Explicitly set the type
+                    type: 'promotion'
                 };
 
-                console.log('Creating promotion record:', promotionData);
+                // Log before writing
+                console.log('Debug: Attempting to write promotion data:', promotionData);
 
-                // Create promotion history document
+                // Create promotion history document with explicit collection reference
                 const promotionHistoryRef = collection(db, 'promotionHistory');
                 const newDocRef = doc(promotionHistoryRef);
-                await setDoc(newDocRef, promotionData);
+                
+                // Use await and catch any specific errors
+                try {
+                    await setDoc(newDocRef, promotionData);
+                    console.log('Debug: Successfully wrote to promotionHistory:', newDocRef.id);
+                } catch (e) {
+                    console.error('Failed to write to promotionHistory:', e);
+                    throw e;
+                }
 
-                console.log('Promotion record created with ID:', newDocRef.id);
-
-                // Also create record in eloHistory for the banner system
+                // Create eloHistory record after successful promotion record
                 const eloHistoryRef = collection(db, 'eloHistory');
                 await setDoc(doc(eloHistoryRef), {
                     player: userData.username,
@@ -62,16 +69,10 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
                     promotedBy: 'System'
                 });
 
-                // Update player's last shown promotion
-                await setDoc(doc(db, 'players', userId), {
-                    ...userData,
-                    lastShownPromotion: rank.threshold
-                });
-
                 return rank.name;
             } catch (error) {
-                console.error('Error recording promotion:', error, error.stack);
-                throw error; // Re-throw to handle it in the calling code
+                console.error('Error in promotion process:', error);
+                throw error;
             }
         }
     }
