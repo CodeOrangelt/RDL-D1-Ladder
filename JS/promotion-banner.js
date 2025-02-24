@@ -4,19 +4,14 @@ import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, whe
 const MAX_VIEWS = 5;
 
 // Add error handling for the view counter
-async function checkPromotionViews(promotionId, userId) {
-    if (!promotionId || !userId) {
-        console.warn('Missing promotionId or userId');
+async function checkPromotionViews(promotionId, playerName) {  // Changed userId to playerName
+    if (!promotionId || !playerName) {
+        console.warn('Missing promotionId or playerName');
         return true; // Default to showing banner if missing data
     }
 
     try {
-        const currentUser = auth.currentUser;
-        if (!currentUser || !currentUser.displayName) {
-            return true;
-        }
-
-        const docId = `promotion_${promotionId}_${currentUser.displayName}`;  // Changed userId to displayName
+        const docId = `promotion_${promotionId}_${playerName}`;  // Use playerName directly
         const viewsRef = doc(db, 'promotionViews', docId);
         const viewsDoc = await getDoc(viewsRef);
         
@@ -24,7 +19,7 @@ async function checkPromotionViews(promotionId, userId) {
             // First view
             await setDoc(viewsRef, { 
                 promotionId,
-                playerName: currentUser.displayName,  // Store displayName instead of userId
+                playerName,  // Store the promoted/demoted player's name
                 views: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
@@ -97,7 +92,7 @@ export function initializePromotionTracker() {
                     continue;
                 }
 
-                const shouldShow = await checkPromotionViews(rankChange.id, currentUser.uid);
+                const shouldShow = await checkPromotionViews(rankChange.id, rankChange.player);  // Use rankChange.player instead of currentUser.uid
                 
                 if (shouldShow) {
                     console.log(`Showing ${rankChange.type} banner for:`, rankChange.player);
