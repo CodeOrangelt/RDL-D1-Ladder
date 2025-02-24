@@ -37,14 +37,18 @@ async function checkPromotionViews(promotionId, userId) {
 
 // Update the query to get more recent promotions
 export function initializePromotionTracker() {
-    const promotionContainer = document.querySelector('.promotion-container');
+    // Add more detailed logging
+    console.log('DOM Ready - Initializing promotion tracker');
     
-    console.log('Rank change tracker initializing...');
-
+    const promotionContainer = document.querySelector('.promotion-container');
+    console.log('Promotion container:', promotionContainer); // Log the actual element
+    
     if (!promotionContainer) {
-        console.warn('Promotion container not found in DOM');
+        console.error('Promotion container not found - Ensure .promotion-container exists in HTML');
         return;
     }
+
+    console.log('Rank change tracker initializing...');
 
     // Add debug logging
     console.log('Found promotion container:', promotionContainer);
@@ -237,3 +241,8 @@ async function cleanupOldViewRecords() {
         console.error('Error cleaning up old view records:', error);
     }
 }
+
+// or wherever you initialize your scripts
+document.addEventListener('DOMContentLoaded', () => {
+    initializePromotionTracker();
+});
