@@ -21,7 +21,7 @@ function getEloClass(elo) {
 // Helper function to get player data
 async function getPlayerData(username) {
     try {
-        const playersRef = collection(window.db, 'players');
+        const playersRef = collection(db, 'players');
         const q = query(playersRef, where('username', '==', username));
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
@@ -40,7 +40,7 @@ const matchesPerPage = 10;
 let allMatches = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const approvedMatchesRef = collection(window.db, 'approvedMatches');
+    const approvedMatchesRef = collection(db, 'approvedMatches');
     const q = query(approvedMatchesRef, orderBy('createdAt', 'desc'));
     
     try {
