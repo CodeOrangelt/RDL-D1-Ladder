@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         if (user) {
             setupStatsButton();
+            setupSeasonButton('season0');
         } else {
             console.log('User not authenticated');
             // Optionally redirect to login page
@@ -17,6 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupSeasonButton(seasonId) {
     const button = document.getElementById(`${seasonId}-btn`);
     const ladder = document.getElementById(`${seasonId}-ladder`);
+    
+    if (!button || !ladder) {
+        console.error(`Missing elements for ${seasonId}`);
+        return;
+    }
 
     button.addEventListener('click', () => {
         const isHidden = ladder.style.display === 'none' || !ladder.style.display;
@@ -31,6 +37,11 @@ function setupSeasonButton(seasonId) {
 function setupStatsButton() {
     const statsBtn = document.getElementById('season0-stats-btn');
     const statsSection = document.getElementById('season0-stats');
+    
+    if (!statsBtn || !statsSection) {
+        console.error('Missing stats elements');
+        return;
+    }
 
     statsBtn.addEventListener('click', () => {
         const isHidden = statsSection.style.display === 'none' || !statsSection.style.display;
@@ -75,17 +86,12 @@ async function loadSeasonLadder(seasonId) {
 
 async function loadSeasonStats() {
     try {
-        const user = auth.currentUser;
-        if (!user) {
-            console.error('No authenticated user');
-            return;
-        }
-
         const statsRef = doc(db, 'season0records', 'snapshot');
         const statsDoc = await getDoc(statsRef);
         
         if (!statsDoc.exists()) {
             console.log('No stats found for season 0');
+            document.getElementById('season0-stats').innerHTML = '<p>No statistics available for this season.</p>';
             return;
         }
 
@@ -95,19 +101,20 @@ async function loadSeasonStats() {
 
         records.forEach(record => {
             const tr = document.createElement('tr');
+            const winRate = record.wins + record.losses > 0 
+                ? ((record.wins / (record.wins + record.losses)) * 100).toFixed(1) 
+                : '0.0';
+            
             tr.innerHTML = `
                 <td>${record.username}</td>
-                <td>${record.wins}</td>
-                <td>${record.losses}</td>
-                <td>${(record.winRate * 100).toFixed(1)}%</td>
+                <td>${record.wins || 0}</td>
+                <td>${record.losses || 0}</td>
+                <td>${winRate}%</td>
             `;
             tbody.appendChild(tr);
         });
     } catch (error) {
         console.error('Error loading season stats:', error);
-        const statsSection = document.getElementById('season0-stats');
-        if (statsSection) {
-            statsSection.innerHTML = '<p class="error-message">Error loading stats. Please try again later.</p>';
-        }
+        document.getElementById('season0-stats').innerHTML = '<p class="error-message">Error loading statistics. Please try again later.</p>';
     }
 }

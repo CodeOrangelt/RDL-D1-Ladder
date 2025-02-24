@@ -126,7 +126,6 @@ service cloud.firestore {
       allow delete: if false;  // Keep match history immutable
     }
 
-    // ELO History - Used in elo-history.js and ladderalgorithm.js
     match /eloHistory/{historyId} {
       allow read: if true;
       allow create: if request.auth != null && 
@@ -139,17 +138,12 @@ service cloud.firestore {
                         'matchResult', 'previousPosition', 'newPosition',
                         'timestamp'
                       ])) ||
-                     // Simplified promotion/demotion rules
-                     ((request.resource.data.type == 'promotion' ||
-                       request.resource.data.type == 'demotion') &&
+                     // Allow promotion/demotion history
+                     ((request.resource.data.type in ['promotion', 'demotion']) &&
                       request.resource.data.keys().hasAll([
-                        'type',
-                        'player',
-                        'previousElo',
-                        'newElo',
-                        'timestamp'
-                      ]) &&
-                      isAdmin())
+                        'type', 'player', 'previousElo', 'newElo',
+                        'timestamp', 'rankAchieved'
+                      ]))
                    );
       allow update, delete: if false;  // Keep history immutable
     }
@@ -183,14 +177,31 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Promotion views tracking
-    match /promotionViews/{viewId} {
-      allow read: if request.auth != null && 
-                 viewId.matches('^.*_' + request.auth.uid + '$');
-      allow create, update: if request.auth != null && 
-                          viewId.matches('^.*_' + request.auth.uid + '$') &&
-                          request.resource.data.keys().hasOnly(['views']) &&
-                          request.resource.data.views <= 5;
+		match /promotionViews/{docId} {
+ 		  allow read: if request.auth != null;
+  	  allow write: if request.auth != null && 
+               docId.matches('promotion_.*_' + request.auth.token.name) &&  // Use displayName
+               request.resource.data.keys().hasAll(['promotionId', 'playerName', 'views', 'createdAt', 'updatedAt']) &&
+               request.resource.data.playerName == request.auth.token.name &&
+               request.resource.data.views <= 5;
+		}
+    
+    match /season0/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    match /season0records/{document} {
+      allow read: if request.auth != null;  // Changed from isAuthenticated() to match existing pattern
+      allow write: if isAdmin() && 
+                  request.resource.data.keys().hasAll(['records', 'archivedAt']) &&
+                  request.resource.data.records is list;
+    }
+    
+    // This allows a snapshot to archive season resets, malachi, you'll need to do this every time.
+    match /season0records/{document} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 }
