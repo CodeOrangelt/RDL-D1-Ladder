@@ -137,25 +137,100 @@ async function loadSeasonStats() {
         }
 
         const records = statsDoc.data().records;
-        const tbody = document.querySelector('#season0-stats-table tbody');
-        tbody.innerHTML = '';
-
-        records.forEach(record => {
-            const tr = document.createElement('tr');
-            const winRate = record.wins + record.losses > 0 
-                ? ((record.wins / (record.wins + record.losses)) * 100).toFixed(1) 
-                : '0.0';
-            
-            tr.innerHTML = `
-                <td>${record.username}</td>
-                <td>${record.wins || 0}</td>
-                <td>${record.losses || 0}</td>
-                <td>${winRate}%</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        const recordStats = calculateRecordStats(records);
+        displayRecordStats(recordStats);
+        displayDetailedStats(records);
     } catch (error) {
         console.error('Error loading season stats:', error);
         document.getElementById('season0-stats').innerHTML = '<p class="error-message">Error loading statistics. Please try again later.</p>';
     }
+}
+
+function calculateRecordStats(records) {
+    let stats = {
+        mostWins: { player: 'None', value: 0 },
+        bestWinRate: { player: 'None', value: 0 },
+        bestKDRatio: { player: 'None', value: 0 },
+        longestTopStreak: { player: 'None', value: 0 },
+        mostMatches: { player: 'None', value: 0 },
+        bestScoreDiff: { player: 'None', value: 0 },
+        mostLosses: { player: 'None', value: 0 },
+        leastSuicides: { player: 'None', value: Number.MAX_VALUE },
+        leastLosses: { player: 'None', value: Number.MAX_VALUE }
+    };
+
+    records.forEach(record => {
+        const totalMatches = (record.wins || 0) + (record.losses || 0);
+        const winRate = totalMatches > 0 ? (record.wins / totalMatches) * 100 : 0;
+        const scoreDiff = (record.scoreFor || 0) - (record.scoreAgainst || 0);
+
+        // Update records
+        if (record.wins > stats.mostWins.value) {
+            stats.mostWins = { player: record.username, value: record.wins };
+        }
+        
+        if (winRate > stats.bestWinRate.value && totalMatches >= 5) {
+            stats.bestWinRate = { player: record.username, value: winRate };
+        }
+
+        if (totalMatches > stats.mostMatches.value) {
+            stats.mostMatches = { player: record.username, value: totalMatches };
+        }
+
+        if (scoreDiff > stats.bestScoreDiff.value) {
+            stats.bestScoreDiff = { player: record.username, value: scoreDiff };
+        }
+
+        if (record.losses > stats.mostLosses.value) {
+            stats.mostLosses = { player: record.username, value: record.losses };
+        }
+
+        if (record.losses < stats.leastLosses.value && totalMatches >= 5) {
+            stats.leastLosses = { player: record.username, value: record.losses };
+        }
+    });
+
+    return stats;
+}
+
+function displayRecordStats(stats) {
+    const statsContainer = document.getElementById('season0-stats');
+    statsContainer.innerHTML = `
+        <div class="records-container">
+            <h3>Season Records</h3>
+            <div class="record-grid">
+                <div class="record-item">
+                    <span class="record-title">Most Wins</span>
+                    <span class="record-player">${stats.mostWins.player}</span>
+                    <span class="record-value">${stats.mostWins.value}</span>
+                </div>
+                <div class="record-item">
+                    <span class="record-title">Best Win Rate</span>
+                    <span class="record-player">${stats.bestWinRate.player}</span>
+                    <span class="record-value">${stats.bestWinRate.value.toFixed(1)}%</span>
+                </div>
+                <div class="record-item">
+                    <span class="record-title">Most Matches</span>
+                    <span class="record-player">${stats.mostMatches.player}</span>
+                    <span class="record-value">${stats.mostMatches.value}</span>
+                </div>
+                <div class="record-item">
+                    <span class="record-title">Best Score Differential</span>
+                    <span class="record-player">${stats.bestScoreDiff.player}</span>
+                    <span class="record-value">${stats.bestScoreDiff.value}</span>
+                </div>
+                <div class="record-item">
+                    <span class="record-title">Most Losses</span>
+                    <span class="record-player">${stats.mostLosses.player}</span>
+                    <span class="record-value">${stats.mostLosses.value}</span>
+                </div>
+                <div class="record-item">
+                    <span class="record-title">Least Losses</span>
+                    <span class="record-player">${stats.leastLosses.player}</span>
+                    <span class="record-value">${stats.leastLosses.value}</span>
+                </div>
+            </div>
+        </div>
+        <table id="season0-stats-table">...</table>
+    `;
 }
