@@ -4,12 +4,18 @@ on:
     branches:
       - main
 
+# Add permissions section
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Updated to v3
 
       - name: Create root index.html
         run: |
@@ -29,3 +35,4 @@ jobs:
         with:
           branch: gh-pages
           folder: .
+          clean: true  # Automatically remove deleted files from the deployment
