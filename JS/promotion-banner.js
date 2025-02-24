@@ -56,7 +56,7 @@ export function initializePromotionTracker() {
     // Modify the query section in initializePromotionTracker
     const q = query(
         historyRef, 
-        where('type', 'in', ['promotion', 'demotion']),
+        where('type', 'in', ['promotion', 'demotion']), 
         where('timestamp', '>', new Date(Date.now() - 24 * 60 * 60 * 1000)), // Last 24 hours only
         orderBy('timestamp', 'desc'), 
         limit(5)
@@ -64,33 +64,27 @@ export function initializePromotionTracker() {
 
     // Update the onSnapshot callback
     onSnapshot(q, async (snapshot) => {
-        console.log('Checking for new rank changes...');
+        console.log('Checking for new rank changes...', snapshot.size, 'changes found');
         
         const rankChanges = [];
         for (const change of snapshot.docChanges()) {
+            console.log('Change type:', change.type, 'Document data:', change.doc.data());
             if (change.type === "added") {
                 const data = change.doc.data();
-                // Add more detailed logging
-                console.log('New rank change data:', {
+                // Ensure rank is set correctly for both types
+                const rankAchieved = data.rankAchieved || data.rank;
+                console.log('Processing rank change:', {
                     type: data.type,
                     player: data.player,
-                    rankAchieved: data.rankAchieved,
-                    previousElo: data.previousElo,
-                    newElo: data.newElo
+                    rankAchieved: rankAchieved,
+                    id: change.doc.id
                 });
-                
-                // Make sure we're properly checking demotion type
-                if (data.type === 'demotion') {
-                    console.log('Demotion detected:', data);
-                }
 
-                // Verify both promotion and demotion are being captured
                 if (data.type && ['promotion', 'demotion'].includes(data.type)) {
                     rankChanges.push({ 
                         id: change.doc.id, 
                         ...data,
-                        // Ensure rankAchieved is set for demotions
-                        rankAchieved: data.rankAchieved || data.rank
+                        rankAchieved: rankAchieved
                     });
                 }
             }
@@ -131,12 +125,14 @@ export function initializePromotionTracker() {
 }
 // Update the banner display logic
 function showRankChangeBanner(data, container) {
+    console.log('Showing banner for:', data); // Add this debug log
+    
     if (container.children.length >= 3) {
         container.removeChild(container.firstChild);
     }
 
     const bannerDiv = document.createElement('div');
-    bannerDiv.className = `rank-change-banner ${data.type}`; // Add type-specific class
+    bannerDiv.className = `rank-change-banner ${data.type}`;
     bannerDiv.setAttribute('data-rank', data.rankAchieved);
     
     const message = data.type === 'promotion' 
