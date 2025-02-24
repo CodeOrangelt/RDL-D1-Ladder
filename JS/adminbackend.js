@@ -19,6 +19,7 @@ import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
 import { ADMIN_EMAILS } from './admin-config.js';
 import { isAdmin } from './admin-check.js';
+import { archiveSeason0 } from './resetseason.js';
 
 // Test data array
 const testPlayers = [
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setupManagePlayersSection();
             setupTestReportButton();
             setupSetEloButton();
+            setupArchiveButton();
             // Initial load of ELO ratings if the section is visible
             if (document.getElementById('elo-ratings').style.display !== 'none') {
                 loadEloRatings();
@@ -891,6 +893,72 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user && isAdmin(user.email)) {
             // ... existing initialization code ...
             setupSetEloButton();
+        }
+    });
+});
+
+// Add this function with your other setup functions
+function setupArchiveButton() {
+    const archiveBtn = document.getElementById('archive-season');
+    const archiveDialog = document.getElementById('archive-dialog');
+    const confirmArchiveBtn = document.getElementById('confirm-archive');
+    const cancelArchiveBtn = document.getElementById('cancel-archive');
+    const statusDiv = document.getElementById('archive-status');
+
+    if (!archiveBtn || !archiveDialog || !confirmArchiveBtn || !cancelArchiveBtn) {
+        console.error('Missing archive dialog elements');
+        return;
+    }
+
+    archiveBtn.addEventListener('click', () => {
+        archiveDialog.style.display = 'block';
+    });
+
+    cancelArchiveBtn.addEventListener('click', () => {
+        archiveDialog.style.display = 'none';
+        statusDiv.textContent = '';
+    });
+
+    archiveDialog.addEventListener('click', (e) => {
+        if (e.target === archiveDialog) {
+            archiveDialog.style.display = 'none';
+            statusDiv.textContent = '';
+        }
+    });
+
+    confirmArchiveBtn.addEventListener('click', async () => {
+        try {
+            confirmArchiveBtn.disabled = true;
+            statusDiv.textContent = 'Archiving season...';
+            
+            await archiveSeason0();
+            
+            statusDiv.textContent = 'Season successfully archived!';
+            setTimeout(() => {
+                archiveDialog.style.display = 'none';
+                statusDiv.textContent = '';
+            }, 2000);
+        } catch (error) {
+            console.error('Error archiving season:', error);
+            statusDiv.textContent = 'Failed to archive season: ' + error.message;
+        } finally {
+            confirmArchiveBtn.disabled = false;
+        }
+    });
+}
+
+// Add to your initialization code where other admin buttons are setup
+document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (user && isAdmin(user.email)) {
+            // ...existing initialization code...
+            setupCollapsibleButtons();
+            setupPromotePlayerButton();
+            setupDemotePlayerButton();
+            setupManagePlayersSection();
+            setupTestReportButton();
+            setupSetEloButton();
+            setupArchiveButton(); // Add this line
         }
     });
 });
