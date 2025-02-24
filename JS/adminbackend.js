@@ -12,16 +12,13 @@ import {
     setDoc, 
     updateDoc, 
     writeBatch,
-    runTransaction,
-    limit,
-    onSnapshot
+    runTransaction 
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
 import { ADMIN_EMAILS } from './admin-config.js';
 import { isAdmin } from './admin-check.js';
-import { initializePromotionTracker } from './promotion-banner.js';
 
 // Test data array
 const testPlayers = [
