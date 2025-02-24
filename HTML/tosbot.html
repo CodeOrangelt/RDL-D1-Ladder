@@ -185,8 +185,8 @@
     <script type="module">
         // Load nav and footer
         const [navResponse, footerResponse] = await Promise.all([
-            fetch('nav.html'),
-            fetch('footer.html')
+            fetch('../HTML/nav.html'),
+            fetch('../HTML/footer.html')
         ]);
 
         document.getElementById('nav-placeholder').innerHTML = await navResponse.text();
