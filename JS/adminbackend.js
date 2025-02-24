@@ -12,7 +12,9 @@ import {
     setDoc, 
     updateDoc, 
     writeBatch,
-    runTransaction 
+    runTransaction,
+    limit,
+    onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
