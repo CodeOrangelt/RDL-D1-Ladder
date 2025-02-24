@@ -48,8 +48,20 @@ export async function recordEloChange({
     try {
         const historyRef = doc(collection(db, 'eloHistory'));
         
+        // Determine the type and rank
+        let type = 'match';
+        if (isPromotion) type = 'promotion';
+        if (isDemotion) type = 'demotion';
+        
+        // Calculate rank based on new ELO
+        let rankAchieved = 'Unranked';
+        if (newElo >= 2000) rankAchieved = 'Emerald';
+        else if (newElo >= 1800) rankAchieved = 'Gold';
+        else if (newElo >= 1600) rankAchieved = 'Silver';
+        else if (newElo >= 1400) rankAchieved = 'Bronze';
+
         await setDoc(historyRef, {
-            type: 'match',
+            type,
             player: playerId,
             opponent: opponentId,
             previousElo,
@@ -58,8 +70,7 @@ export async function recordEloChange({
             matchResult,
             previousPosition,
             newPosition,
-            isPromotion,
-            isDemotion,
+            rankAchieved, // Make sure this is set for both promotions and demotions
             timestamp
         });
 

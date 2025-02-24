@@ -70,11 +70,28 @@ export function initializePromotionTracker() {
         for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
-                console.log('New rank change detected:', data); // Debug log
+                // Add more detailed logging
+                console.log('New rank change data:', {
+                    type: data.type,
+                    player: data.player,
+                    rankAchieved: data.rankAchieved,
+                    previousElo: data.previousElo,
+                    newElo: data.newElo
+                });
                 
-                // Verify the type is being captured
-                if (data.type && (data.type === 'promotion' || data.type === 'demotion')) {
-                    rankChanges.push({ id: change.doc.id, ...data });
+                // Make sure we're properly checking demotion type
+                if (data.type === 'demotion') {
+                    console.log('Demotion detected:', data);
+                }
+
+                // Verify both promotion and demotion are being captured
+                if (data.type && ['promotion', 'demotion'].includes(data.type)) {
+                    rankChanges.push({ 
+                        id: change.doc.id, 
+                        ...data,
+                        // Ensure rankAchieved is set for demotions
+                        rankAchieved: data.rankAchieved || data.rank
+                    });
                 }
             }
         }
