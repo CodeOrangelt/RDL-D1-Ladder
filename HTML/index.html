@@ -23,9 +23,15 @@
 <body>
     <div id="nav-placeholder"></div>
     <main>
+        <!-- Move this before the outer-container -->
+        <div class="promotion-container">
+            <div id="latest-promotion" class="promotion-banner" data-rank="">
+                <p id="promotion-details"></p>
+            </div>
+        </div>
 	    <div class="ribbon-1 left">RDL - Beta Release</div>
         <div class="outer-container">
-            <img src="./images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
+            <img src="../images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
             <div class="table-container">
                 <table id="ladder">
                     <thead>
@@ -50,13 +56,6 @@
                         <!-- Dynamic content will be inserted here -->
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Moved promotion banner outside outer-container but still inside main -->
-        <div class="promotion-container">
-            <div id="latest-promotion" class="promotion-banner" data-rank="">
-                <p id="promotion-details"></p>
             </div>
         </div>
 
@@ -137,13 +136,5 @@
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/ladder.js"></script>
     <script type="module" src="../JS/queue.js"></script>
-    <script type="module">
-        import { initializePromotionTracker } from '../JS/promotion-banner.js';
-        
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('Page loaded, initializing promotion tracker...');
-            await initializePromotionTracker();
-        });
-    </script>
 </body>
 </html>

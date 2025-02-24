@@ -14,14 +14,20 @@ function getRankStyle(rankName) {
     return RANK_COLORS[rankName] || '#FFFFFF';
 }
 
-export function initializePromotionTracker() {
+export async function initializePromotionTracker() {
+    const promotionBanner = document.getElementById('latest-promotion');
     const promotionDetails = document.getElementById('promotion-details');
-    const bannerElement = document.getElementById('latest-promotion');
     
-    if (!promotionDetails || !bannerElement) {
+    if (!promotionBanner || !promotionDetails) {
         console.error('Promotion elements not found');
         return;
     }
+    
+    // Add this to debug
+    console.log('Initializing promotion tracker');
+    
+    // When showing a promotion
+    promotionBanner.classList.add('active');
 
     const historyRef = collection(db, 'eloHistory');
     const q = query(
