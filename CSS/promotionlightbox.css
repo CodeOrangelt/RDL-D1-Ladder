@@ -60,16 +60,46 @@
 
 .promotion-banner {
     background: rgba(0, 0, 0, 0.8);
-    border: 1px solid #ffd700;
     padding: 10px 20px;
     border-radius: 5px;
     margin: 10px auto;
     max-width: 600px;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    border: 2px solid; /* Remove specific color to allow dynamic colors */
+}
+
+/* Add rank-specific border colors */
+.promotion-banner[data-rank="Emerald"] {
+    border-color: #50C878;
+}
+
+.promotion-banner[data-rank="Gold"] {
+    border-color: #FFD700;
+}
+
+.promotion-banner[data-rank="Silver"] {
+    border-color: #C0C0C0;
+}
+
+.promotion-banner[data-rank="Bronze"] {
+    border-color: #CD7F32;
+}
+
+.promotion-banner[data-rank="Unranked"] {
+    border-color: #808080;
 }
 
 .promotion-details {
     color: #fff;
     font-size: 1.1em;
     margin: 5px 0;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.rank-text {
+    display: inline;
+    font-weight: bold;
 }
