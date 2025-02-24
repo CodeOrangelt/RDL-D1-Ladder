@@ -84,10 +84,25 @@
 
 .promotion-container {
     position: fixed;
-    top: 80px;
+    top: 20px;
     right: 20px;
     z-index: 1000;
-    max-width: 300px;
+    width: 300px;
+}
+
+.rank-change-banner {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.rank-change-banner.new-rank-change {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 #promotion-details {
