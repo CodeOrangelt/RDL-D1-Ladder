@@ -206,7 +206,10 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             winnerComment: winnerComment,
             approved: true,
             approvedAt: serverTimestamp(),
-            approvedBy: currentUsername
+            approvedBy: currentUsername,
+            createdAt: reportData.createdAt || serverTimestamp(),
+            winnerUsername: reportData.winnerUsername,
+            loserUsername: reportData.loserUsername
         };
 
         // Move match to approved collection first
