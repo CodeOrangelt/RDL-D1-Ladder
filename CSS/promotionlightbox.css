@@ -59,17 +59,40 @@
 }
 
 .promotion-banner {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     border: 1px solid #ffd700;
-    padding: 10px 20px;
+    padding: 15px;
     border-radius: 5px;
-    margin: 10px auto;
+    margin-bottom: 10px;
     max-width: 600px;
     text-align: center;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.promotion-banner.active {
+    opacity: 1;
+    transform: translateX(0);
+    display: block;
 }
 
 .promotion-details {
     color: #fff;
     font-size: 1.1em;
     margin: 5px 0;
+}
+
+.promotion-container {
+    position: fixed;
+    top: 80px; /* Adjust based on your nav height */
+    right: 20px;
+    z-index: 1000;
+    max-width: 300px;
+    pointer-events: none; /* Allows clicking through */
+}
+
+#promotion-details {
+    margin: 0;
+    padding: 0;
 }
