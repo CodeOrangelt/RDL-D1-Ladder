@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Add rank color mapping
 const RANK_COLORS = {
@@ -11,6 +11,8 @@ const RANK_COLORS = {
 };
 
 export async function checkAndRecordPromotion(userId, newElo, oldElo) {
+    console.log('Starting promotion check:', { userId, newElo, oldElo });
+    
     const ranks = [
         { threshold: 1400, name: 'Bronze' },
         { threshold: 1600, name: 'Silver' },
@@ -18,65 +20,60 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         { threshold: 2000, name: 'Emerald' }
     ];
 
-    // Check if crossed a threshold
-    for (const rank of ranks) {
-        if (oldElo < rank.threshold && newElo >= rank.threshold) {
-            try {
-                console.log('Debug: Checking promotion', { userId, oldElo, newElo, rank });
-                
-                const userDoc = await getDoc(doc(db, 'players', userId));
-                if (!userDoc.exists()) {
-                    console.error('User document not found');
-                    return;
-                }
-
-                const userData = userDoc.data();
-                const promotionData = {
-                    playerName: userData.username || 'Unknown Player', // Add fallback
-                    newRank: rank.name,
-                    previousRank: getRankName(oldElo),
-                    promotionDate: new Date().toISOString(),
-                    previousElo: oldElo,
-                    newElo: newElo,
-                    userId: userId,
-                    timestamp: new Date(),
-                    type: 'promotion'
-                };
-
-                // Log before writing
-                console.log('Debug: Attempting to write promotion data:', promotionData);
-
-                // Create promotion history document with explicit collection reference
-                const promotionHistoryRef = collection(db, 'promotionHistory');
-                const newDocRef = doc(promotionHistoryRef);
-                
-                // Use await and catch any specific errors
-                try {
-                    await setDoc(newDocRef, promotionData);
-                    console.log('Debug: Successfully wrote to promotionHistory:', newDocRef.id);
-                } catch (e) {
-                    console.error('Failed to write to promotionHistory:', e);
-                    throw e;
-                }
-
-                // Create eloHistory record after successful promotion record
-                const eloHistoryRef = collection(db, 'eloHistory');
-                await setDoc(doc(eloHistoryRef), {
-                    player: userData.username,
-                    type: 'promotion',
-                    rankAchieved: rank.name,
-                    timestamp: new Date(),
-                    promotedBy: 'System'
-                });
-
-                return rank.name;
-            } catch (error) {
-                console.error('Error in promotion process:', error);
-                throw error;
-            }
-        }
+    // Find the rank crossed (if any)
+    const rankCrossed = ranks.find(rank => oldElo < rank.threshold && newElo >= rank.threshold);
+    
+    if (!rankCrossed) {
+        console.log('No rank threshold crossed');
+        return null;
     }
-    return null;
+
+    try {
+        // Get user data
+        const userRef = doc(db, 'players', userId);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+            console.error('User not found:', userId);
+            return null;
+        }
+
+        const userData = userSnap.data();
+        
+        // Create promotion record
+        const promotionData = {
+            playerName: userData.username || 'Unknown Player',
+            newRank: rankCrossed.name,
+            previousRank: getRankName(oldElo),
+            promotionDate: new Date().toISOString(),
+            previousElo: oldElo,
+            newElo: newElo,
+            userId: userId,
+            timestamp: new Date(),
+            type: 'promotion'
+        };
+
+        console.log('Creating promotion record:', promotionData);
+
+        // Use addDoc instead of setDoc
+        const docRef = await addDoc(collection(db, 'promotionHistory'), promotionData);
+        console.log('Successfully created promotion record:', docRef.id);
+
+        // Also create eloHistory record
+        await addDoc(collection(db, 'eloHistory'), {
+            player: userData.username,
+            type: 'promotion',
+            rankAchieved: rankCrossed.name,
+            timestamp: new Date(),
+            promotedBy: 'System'
+        });
+
+        return rankCrossed.name;
+
+    } catch (error) {
+        console.error('Failed to record promotion:', error);
+        return null;
+    }
 }
 
 // Helper function to get rank name from ELO
