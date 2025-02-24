@@ -3,7 +3,9 @@ import {
     collection, 
     getDocs, 
     setDoc,
-    doc 
+    doc,
+    query,
+    orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 async function archiveSeason0() {
@@ -34,5 +36,40 @@ async function archiveSeason0() {
     }
 }
 
-// Export the function to be used elsewhere
-export { archiveSeason0 };
+async function archiveRecords() {
+    try {
+        const recordsRef = collection(db, 'records');
+        const q = query(recordsRef, orderBy('wins', 'desc'));
+        const recordsSnapshot = await getDocs(q);
+        
+        const recordsArray = [];
+        recordsSnapshot.forEach(doc => {
+            const data = doc.data();
+            recordsArray.push({
+                username: data.username,
+                wins: data.wins || 0,
+                losses: data.losses || 0,
+                winRate: data.winRate || 0,
+                timestamp: new Date()
+            });
+        });
+
+        // Store in season0records collection
+        await setDoc(
+            doc(db, 'season0records', 'snapshot'), 
+            {
+                records: recordsArray,
+                archivedAt: new Date()
+            }
+        );
+        
+        console.log('Successfully archived records');
+        return true;
+    } catch (error) {
+        console.error('Error archiving records:', error);
+        throw error;
+    }
+}
+
+export { archiveSeason0, archiveRecords };
+
