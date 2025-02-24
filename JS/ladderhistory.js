@@ -1,13 +1,22 @@
-import { db } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import { collection, query, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getRankStyle } from './ranks.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     setupSeasonButton('season0');
-    setupStatsButton();
     // Add more seasons as they come
     // setupSeasonButton('season1');
     // setupSeasonButton('season2');
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            setupStatsButton();
+        } else {
+            console.log('User not authenticated');
+            // Optionally redirect to login page
+            // window.location.href = 'login.html';
+        }
+    });
 });
 
 function setupSeasonButton(seasonId) {
@@ -71,6 +80,12 @@ async function loadSeasonLadder(seasonId) {
 
 async function loadSeasonStats() {
     try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.error('No authenticated user');
+            return;
+        }
+
         const statsRef = doc(db, 'season0records', 'snapshot');
         const statsDoc = await getDoc(statsRef);
         
@@ -95,5 +110,9 @@ async function loadSeasonStats() {
         });
     } catch (error) {
         console.error('Error loading season stats:', error);
+        const statsSection = document.getElementById('season0-stats');
+        if (statsSection) {
+            statsSection.innerHTML = '<p class="error-message">Error loading stats. Please try again later.</p>';
+        }
     }
 }
