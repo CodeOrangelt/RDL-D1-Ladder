@@ -39,6 +39,9 @@ export function initializePromotionTracker() {
         return;
     }
 
+    // Add debug logging
+    console.log('Found promotion container:', promotionContainer);
+
     promotionContainer.innerHTML = '';
     promotionContainer.style.display = 'none';
     
