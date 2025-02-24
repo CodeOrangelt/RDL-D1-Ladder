@@ -1,12 +1,31 @@
 import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { 
+    collection, 
+    query, 
+    orderBy, 
+    getDocs, 
+    doc, 
+    getDoc,
+    enableIndexedDbPersistence 
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getRankStyle } from './ranks.js';
 
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code == 'unimplemented') {
+        console.warn('The current browser does not support persistence.');
+    }
+});
+
+// Initialize data loading state
+let isLoadingData = false;
+
 document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
         if (user) {
-            setupStatsButton();
-            setupSeasonButton('season0');
+            await initializeDataLoading();
         } else {
             console.log('User not authenticated');
             // Optionally redirect to login page
@@ -14,6 +33,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+async function initializeDataLoading() {
+    if (isLoadingData) return;
+    isLoadingData = true;
+
+    try {
+        setupStatsButton();
+        setupSeasonButton('season0');
+        await loadInitialData();
+    } catch (error) {
+        console.error('Error initializing data:', error);
+    } finally {
+        isLoadingData = false;
+    }
+}
+
+async function loadInitialData() {
+    // Pre-fetch initial data
+    const seasonRef = collection(db, 'season0');
+    const q = query(seasonRef, orderBy('eloRating', 'desc'));
+    await getDocs(q);
+}
 
 function setupSeasonButton(seasonId) {
     const button = document.getElementById(`${seasonId}-btn`);
