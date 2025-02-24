@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
 export class PromotionHandler {
@@ -21,14 +21,25 @@ export class PromotionHandler {
         // Check if crossed a threshold
         for (const rank of ranks) {
             if (oldElo < rank.threshold && newElo >= rank.threshold) {
-                // Check if promotion was already shown
+                // Get user document to access their username
                 const userDoc = await getDoc(doc(db, 'players', userId));
-                const lastShownRank = userDoc.data().lastShownPromotion || 0;
+                const userData = userDoc.data();
+                const lastShownRank = userData.lastShownPromotion || 0;
 
                 if (rank.threshold > lastShownRank) {
+                    // Create promotion history document
+                    const historyRef = doc(collection(db, 'promotionHistory'));
+                    await setDoc(historyRef, {
+                        playerName: userData.username,
+                        newRank: rank.name,
+                        promotionDate: new Date(),
+                        previousElo: oldElo,
+                        newElo: newElo
+                    });
+
                     // Update last shown promotion
                     await setDoc(doc(db, 'players', userId), {
-                        ...userDoc.data(),
+                        ...userData,
                         lastShownPromotion: rank.threshold
                     });
 
