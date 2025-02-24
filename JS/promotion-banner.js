@@ -1,4 +1,4 @@
-import { db, auth } from './JS/firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 const MAX_VIEWS = 5;

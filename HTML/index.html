@@ -87,21 +87,17 @@
                     fetch('./footer.html')
                 ]);
 
-                if (!navResponse.ok) throw new Error('Failed to load nav');
-                if (!footerResponse.ok) throw new Error('Failed to load footer');
-
                 document.getElementById('nav-placeholder').innerHTML = await navResponse.text();
                 document.getElementById('footer-placeholder').innerHTML = await footerResponse.text();
 
-                // Initialize components
+                // Initialize components properly
                 const { RetroTrackerMonitor } = await import('../JS/whosplaying.js');
-                // Remove this line since we're using promotion-banner.js instead
-                // const { initializePromotionTracker } = await import('../JS/promotion-tracker.js');
+                const { initializePromotionTracker } = await import('../JS/promotion-banner.js');
 
+                // Initialize both trackers
                 const tracker = new RetroTrackerMonitor();
                 await tracker.initializeBannerOnly();
-                // Remove this line
-                // await initializePromotionTracker();
+                await initializePromotionTracker(); // Add this back
 
                 // Discord widget toggle
                 const toggleButton = document.getElementById('toggle-discord');
