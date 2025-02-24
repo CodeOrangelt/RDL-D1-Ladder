@@ -22,6 +22,8 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
     for (const rank of ranks) {
         if (oldElo < rank.threshold && newElo >= rank.threshold) {
             try {
+                console.log('Promotion threshold crossed:', { oldElo, newElo, rank });
+                
                 const userDoc = await getDoc(doc(db, 'players', userId));
                 if (!userDoc.exists()) {
                     console.error('User document not found');
@@ -32,16 +34,33 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
                 const promotionData = {
                     playerName: userData.username,
                     newRank: rank.name,
+                    previousRank: getRankName(oldElo),
                     promotionDate: new Date().toISOString(),
                     previousElo: oldElo,
                     newElo: newElo,
                     userId: userId,
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    type: 'promotion'  // Explicitly set the type
                 };
 
+                console.log('Creating promotion record:', promotionData);
+
                 // Create promotion history document
-                const historyRef = doc(collection(db, 'promotionHistory'));
-                await setDoc(historyRef, promotionData);
+                const promotionHistoryRef = collection(db, 'promotionHistory');
+                const newDocRef = doc(promotionHistoryRef);
+                await setDoc(newDocRef, promotionData);
+
+                console.log('Promotion record created with ID:', newDocRef.id);
+
+                // Also create record in eloHistory for the banner system
+                const eloHistoryRef = collection(db, 'eloHistory');
+                await setDoc(doc(eloHistoryRef), {
+                    player: userData.username,
+                    type: 'promotion',
+                    rankAchieved: rank.name,
+                    timestamp: new Date(),
+                    promotedBy: 'System'
+                });
 
                 // Update player's last shown promotion
                 await setDoc(doc(db, 'players', userId), {
@@ -49,13 +68,23 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
                     lastShownPromotion: rank.threshold
                 });
 
-                return rank.name; // Return rank name for UI updates
+                return rank.name;
             } catch (error) {
-                console.error('Error recording promotion:', error);
+                console.error('Error recording promotion:', error, error.stack);
+                throw error; // Re-throw to handle it in the calling code
             }
         }
     }
     return null;
+}
+
+// Helper function to get rank name from ELO
+function getRankName(elo) {
+    if (elo >= 2000) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
 }
 
 function getRankStyle(rankName) {
