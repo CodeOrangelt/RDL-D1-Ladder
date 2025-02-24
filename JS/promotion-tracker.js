@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Add rank color mapping
 const RANK_COLORS = {
@@ -26,6 +26,7 @@ export function initializePromotionTracker() {
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef,
+        where('type', 'in', ['promotion', 'demotion']), // Add demotion type
         orderBy('timestamp', 'desc'),
         limit(1)
     );
@@ -34,12 +35,13 @@ export function initializePromotionTracker() {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                if (data.type === 'promotion') {
+                if (data.type === 'promotion' || data.type === 'demotion') {
                     // Set the rank attribute for styling
                     bannerElement.setAttribute('data-rank', data.rankAchieved);
                     
-                    // Create promotion text
-                    const promotionText = `${data.player} was promoted to <span class="rank-text">${data.rankAchieved}</span> by Admin`;
+                    // Create rank change text based on type
+                    const actionText = data.type === 'promotion' ? 'promoted to' : 'demoted to';
+                    const promotionText = `${data.player} was ${actionText} <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
                     
                     promotionDetails.innerHTML = promotionText;
                     bannerElement.classList.add('new-promotion');
