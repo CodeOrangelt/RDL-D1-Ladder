@@ -1,7 +1,7 @@
 import { db, auth } from './firebase-config.js';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-const MAX_VIEWS = 5;
+const MAX_VIEWS = 3;  // Changed from 5 to 3
 
 // Add error handling for the view counter
 async function checkPromotionViews(promotionId, playerName) {  // Changed userId to playerName
@@ -24,6 +24,7 @@ async function checkPromotionViews(promotionId, playerName) {  // Changed userId
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
+            console.log(`First view for promotion ${promotionId} by ${playerName}`);
             return true;
         }
         
@@ -31,6 +32,7 @@ async function checkPromotionViews(promotionId, playerName) {  // Changed userId
         const currentViews = data.views || 0;
         
         if (currentViews >= MAX_VIEWS) {
+            console.log(`Max views (${MAX_VIEWS}) reached for promotion ${promotionId}`);
             return false;
         }
 
@@ -40,6 +42,7 @@ async function checkPromotionViews(promotionId, playerName) {  // Changed userId
             updatedAt: new Date()
         }, { merge: true });
         
+        console.log(`View ${currentViews + 1}/${MAX_VIEWS} for promotion ${promotionId}`);
         return true;
 
     } catch (error) {
