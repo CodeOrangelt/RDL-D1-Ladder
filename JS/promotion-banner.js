@@ -97,7 +97,7 @@ function showRankChangeBanner(data, container) {
 
     const bannerDiv = document.createElement('div');
     bannerDiv.className = `rank-change-banner ${data.type}`; // Add type-specific class
-    bannerDiv.setAttribute('data-rank', data.rankAchieved);
+    bannerDiv.setAttribute('data-rank', data.rankAchieved); // Add this line here
     
     const message = data.type === 'promotion' 
         ? `${data.player} was promoted to` 
