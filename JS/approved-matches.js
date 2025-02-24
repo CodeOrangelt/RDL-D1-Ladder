@@ -5,6 +5,7 @@ import {
     getDocs,
     where 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
 
 // approved-matches.js
 
