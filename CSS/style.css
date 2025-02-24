@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background: url('images/backgroundrdl.png');
+    background: url('../images/backgroundrdl.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
