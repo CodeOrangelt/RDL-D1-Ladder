@@ -11,10 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function checkForOutstandingReports(username) {
-        db.collection('pendingMatches')
-            .where('winnerUsername', '==', username)
-            .where('approved', '==', false)
-            .get()
+        const pendingMatchesRef = collection(db, 'pendingMatches');
+        const q = query(
+            pendingMatchesRef,
+            where('winnerUsername', '==', username),
+            where('approved', '==', false)
+        );
+        getDocs(q)
             .then(snapshot => {
                 if (!snapshot.empty) {
                     const reportData = snapshot.docs[0].data();
