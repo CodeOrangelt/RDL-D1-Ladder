@@ -3,26 +3,33 @@ import { collection, query, orderBy, getDocs } from 'https://www.gstatic.com/fir
 import { getRankStyle } from './ranks.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const season0Btn = document.getElementById('season0-btn');
-    const season0Ladder = document.getElementById('season0-ladder');
-
-    season0Btn.addEventListener('click', () => {
-        const isHidden = season0Ladder.style.display === 'none' || !season0Ladder.style.display;
-        season0Ladder.style.display = isHidden ? 'block' : 'none';
-        
-        if (isHidden) {
-            loadSeason0Ladder();
-        }
-    });
+    setupSeasonButton('season0');
+    // Add more seasons as they come
+    // setupSeasonButton('season1');
+    // setupSeasonButton('season2');
 });
 
-async function loadSeason0Ladder() {
+function setupSeasonButton(seasonId) {
+    const button = document.getElementById(`${seasonId}-btn`);
+    const ladder = document.getElementById(`${seasonId}-ladder`);
+
+    button.addEventListener('click', () => {
+        const isHidden = ladder.style.display === 'none' || !ladder.style.display;
+        ladder.style.display = isHidden ? 'block' : 'none';
+        
+        if (isHidden) {
+            loadSeasonLadder(seasonId);
+        }
+    });
+}
+
+async function loadSeasonLadder(seasonId) {
     try {
-        const season0Ref = collection(db, 'season0');
-        const q = query(season0Ref, orderBy('eloRating', 'desc'));
+        const seasonRef = collection(db, seasonId);
+        const q = query(seasonRef, orderBy('eloRating', 'desc'));
         const snapshot = await getDocs(q);
 
-        const tbody = document.querySelector('#season0-table tbody');
+        const tbody = document.querySelector(`#${seasonId}-table tbody`);
         tbody.innerHTML = '';
 
         let position = 1;
@@ -30,7 +37,6 @@ async function loadSeason0Ladder() {
             const data = doc.data();
             const tr = document.createElement('tr');
             
-            // Apply rank styling
             const rankStyle = getRankStyle(data.eloRating);
             tr.style.backgroundColor = rankStyle.backgroundColor;
             tr.style.color = rankStyle.color;
@@ -44,6 +50,6 @@ async function loadSeason0Ladder() {
             position++;
         });
     } catch (error) {
-        console.error('Error loading season 0 ladder:', error);
+        console.error(`Error loading ${seasonId} ladder:`, error);
     }
 }
