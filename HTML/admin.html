@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/x-icon" href="cloak.ico">
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Backend</title>
     <link rel="stylesheet" href="../CSS/style.css">
@@ -203,8 +203,8 @@
     <link rel="stylesheet" href="footer.css">
     <script>
         Promise.all([
-            fetch('nav.html').then(response => response.text()),
-            fetch('footer.html').then(response => response.text())
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;

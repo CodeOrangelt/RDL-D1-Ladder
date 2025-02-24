@@ -78,8 +78,8 @@
     <script>
         // Load nav and footer using Promise.all
         Promise.all([
-            fetch('nav.html').then(response => response.text()),
-            fetch('footer.html').then(response => response.text())
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
             document.getElementById('footer-placeholder').innerHTML = footerData;
