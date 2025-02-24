@@ -88,8 +88,8 @@
             try {
                 // Load nav and footer
                 const [navResponse, footerResponse] = await Promise.all([
-                    fetch('HTML/nav.html'),
-                    fetch('HTML/footer.html')
+                    fetch('./nav.html'),
+                    fetch('./footer.html')
                 ]);
 
                 if (!navResponse.ok) throw new Error('Failed to load nav');
