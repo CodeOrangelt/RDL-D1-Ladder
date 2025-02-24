@@ -795,29 +795,26 @@ async function setCustomElo(username, newElo) {
         const playerDoc = querySnapshot.docs[0];
         const currentElo = playerDoc.data().eloRating || 1200;
 
-        const batch = writeBatch(db);
-        
-        // Update player document
-        batch.update(doc(db, 'players', playerDoc.id), {
+        // Update player document with required fields
+        await updateDoc(doc(db, 'players', playerDoc.id), {
             eloRating: newElo,
-            lastModifiedAt: serverTimestamp(),
-            modifiedBy: user.email
+            lastPromotedAt: serverTimestamp(), // Required by security rules
+            promotedBy: user.email, // Required by security rules
+            lastModifiedAt: serverTimestamp()
         });
 
         // Add ELO history entry
-        batch.set(doc(collection(db, 'eloHistory')), {
+        await addDoc(collection(db, 'eloHistory'), {
             type: 'admin_modification',
             player: username,
             previousElo: currentElo,
             newElo: newElo,
             timestamp: serverTimestamp(),
             change: newElo - currentElo,
-            modifiedBy: user.email
+            promotedBy: user.email
         });
 
-        await batch.commit();
-        
-        // Refresh displays after successful update
+        // Refresh displays
         await Promise.all([
             loadPlayers(),
             loadEloRatings(),
