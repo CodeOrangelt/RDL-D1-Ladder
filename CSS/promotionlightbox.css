@@ -69,7 +69,12 @@
     justify-content: center;
     align-items: center;
     border: 2px solid;
-    overflow: visible; /* Changed from hidden */
+    color: white;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
 }
 
 /* Add rank-specific colors for both border and text */
@@ -118,8 +123,41 @@
     width: 100%;
 }
 
+/* Add animation for new banners */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-rank-change {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
 .rank-text {
     display: inline;
     font-weight: bold;
     margin: 0 5px;
+}
+
+#promotion-banner-container {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+#promotion-banner-container .promotion-banner {
+    pointer-events: auto;
+    margin: 5px 0;
 }
