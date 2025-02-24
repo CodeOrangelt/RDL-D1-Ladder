@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RDL - Ladder History</title>
+    <link rel="icon" type="image/x-icon" href="cloak.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <style>
+        .season-container {
+            margin: 20px;
+            padding: 20px;
+        }
+        .collapse-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .ladder-section {
+            display: none;
+        }
+        .ladder-backdrop {
+            width: 100%;
+            max-width: 800px;
+            opacity: 0.1;
+            position: absolute;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div class="season-container">
+            <button id="season0-btn" class="collapse-btn">Season 0 Ladder</button>
+            <div id="season0-ladder" class="ladder-section">
+                <div class="outer-container">
+                    <img src="../images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
+                    <div class="table-container">
+                        <table id="season0-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>ELO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Season 0 data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" src="../JS/ladderhistory.js"></script>
+</body>
+</html>
