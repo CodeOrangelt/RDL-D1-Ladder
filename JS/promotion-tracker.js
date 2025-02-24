@@ -59,10 +59,19 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
             updatedAt: new Date()
         };
 
+        // Create simplified promotion history record
+        const simplePromotionData = {
+            username: userData.username,
+            rank: rankCrossed.name,
+            timestamp: new Date()
+        };
+
         // Write all records in parallel
         await Promise.all([
-            // Write to promotionHistory
+            // Write to promotionHistory (detailed record)
             addDoc(collection(db, 'promotionHistory'), promotionData),
+            // Write simplified promotion record
+            addDoc(collection(db, 'promotionHistory'), simplePromotionData),
             // Write to eloHistory
             addDoc(collection(db, 'eloHistory'), {
                 player: userData.username,
@@ -75,7 +84,7 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
             setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
         ]);
 
-        console.log('Successfully recorded promotion for:', userData.username);
+        console.log('Successfully recorded all promotion records for:', userData.username);
         return rankCrossed.name;
 
     } catch (error) {
