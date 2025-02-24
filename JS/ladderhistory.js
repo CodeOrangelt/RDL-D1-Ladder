@@ -1,9 +1,10 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getRankStyle } from './ranks.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     setupSeasonButton('season0');
+    setupStatsButton();
     // Add more seasons as they come
     // setupSeasonButton('season1');
     // setupSeasonButton('season2');
@@ -19,6 +20,20 @@ function setupSeasonButton(seasonId) {
         
         if (isHidden) {
             loadSeasonLadder(seasonId);
+        }
+    });
+}
+
+function setupStatsButton() {
+    const statsBtn = document.getElementById('season0-stats-btn');
+    const statsSection = document.getElementById('season0-stats');
+
+    statsBtn.addEventListener('click', () => {
+        const isHidden = statsSection.style.display === 'none' || !statsSection.style.display;
+        statsSection.style.display = isHidden ? 'block' : 'none';
+        
+        if (isHidden) {
+            loadSeasonStats();
         }
     });
 }
@@ -51,5 +66,34 @@ async function loadSeasonLadder(seasonId) {
         });
     } catch (error) {
         console.error(`Error loading ${seasonId} ladder:`, error);
+    }
+}
+
+async function loadSeasonStats() {
+    try {
+        const statsRef = doc(db, 'season0records', 'snapshot');
+        const statsDoc = await getDoc(statsRef);
+        
+        if (!statsDoc.exists()) {
+            console.log('No stats found for season 0');
+            return;
+        }
+
+        const records = statsDoc.data().records;
+        const tbody = document.querySelector('#season0-stats-table tbody');
+        tbody.innerHTML = '';
+
+        records.forEach(record => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${record.username}</td>
+                <td>${record.wins}</td>
+                <td>${record.losses}</td>
+                <td>${(record.winRate * 100).toFixed(1)}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error loading season stats:', error);
     }
 }

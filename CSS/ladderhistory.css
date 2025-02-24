@@ -1,0 +1,23 @@
+.stats-section {
+    display: none;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#season0-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#season0-stats-table th,
+#season0-stats-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+#season0-stats-table th {
+    background-color: #2c2c2c;
+    color: white;
+}
