@@ -74,7 +74,6 @@
     transform: none;
 }
 
-/* Add rank-specific colors for both border and text */
 .promotion-banner[data-rank="Emerald"] {
     border-color: #50C878;
 }
@@ -115,10 +114,11 @@
     font-size: 1.1em;
     margin: 0;
     padding: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* Changed from nowrap to allow wrapping */
+    overflow: visible; /* Changed from hidden to show all content */
     width: 100%;
+    line-height: 1.4; /* Added for better readability when wrapped */
+    word-wrap: break-word; /* Added to ensure proper wrapping */
 }
 
 /* Add animation for new banners */
@@ -146,8 +146,8 @@
 #promotion-banner-container {
     position: fixed;
     top: 80px;
-    right: 20px;
-    width: 300px;
+    right: 40px; /* Increased from 20px to prevent cutoff */
+    width: 400px; /* Increased width for better text display */
     z-index: 1000;
     display: flex;
     flex-direction: column;
