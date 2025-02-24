@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Add rank color mapping
 const RANK_COLORS = {
@@ -31,6 +31,7 @@ export async function initializePromotionTracker() {
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef,
+        where('type', 'in', ['promotion', 'demotion']),
         orderBy('timestamp', 'desc'),
         limit(1)
     );
@@ -41,32 +42,31 @@ export async function initializePromotionTracker() {
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                console.log('New promotion data:', data);  // Debug log
+                console.log('New rank change data:', data);  // Debug log
 
-                if (data.type === 'promotion') {
-                    // Clear any existing timeout
-                    if (currentTimeout) clearTimeout(currentTimeout);
+                // Clear any existing timeout
+                if (currentTimeout) clearTimeout(currentTimeout);
 
-                    // Set the rank attribute for styling
-                    promotionBanner.setAttribute('data-rank', data.rankAchieved);
-                    
-                    // Create promotion text with rank color
-                    const rankColor = getRankStyle(data.rankAchieved);
-                    const promotionText = `
-                        <strong>${data.player}</strong> was promoted to 
-                        <span style="color: ${rankColor}; font-weight: bold;">
-                            ${data.rankAchieved}
-                        </span>
-                    `;
-                    
-                    promotionDetails.innerHTML = promotionText;
-                    promotionBanner.classList.add('active');
-                    
-                    // Remove after 5 seconds
-                    currentTimeout = setTimeout(() => {
-                        promotionBanner.classList.remove('active');
-                    }, 5000);
-                }
+                // Set the rank attribute for styling
+                promotionBanner.setAttribute('data-rank', data.rankAchieved);
+                
+                // Create text based on type
+                const rankColor = getRankStyle(data.rankAchieved);
+                const actionText = data.type === 'promotion' ? 'was promoted to' : 'was demoted to';
+                const rankChangeText = `
+                    <strong>${data.player}</strong> ${actionText} 
+                    <span style="color: ${rankColor}; font-weight: bold;">
+                        ${data.rankAchieved}
+                    </span>
+                `;
+                
+                promotionDetails.innerHTML = rankChangeText;
+                promotionBanner.classList.add('active');
+                
+                // Remove after 5 seconds
+                currentTimeout = setTimeout(() => {
+                    promotionBanner.classList.remove('active');
+                }, 5000);
             }
         });
     });
