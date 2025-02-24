@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Load placeholders
-    $("#nav-placeholder").load("nav.html");
-    $("#footer-placeholder").load("footer.html");
+    $("#nav-placeholder").load("../HTML/nav.html");
+    $("#footer-placeholder").load("../HTML/footer.html");
 
     // Get DOM elements
     const collapsible = document.querySelector('.collapsible');

@@ -11,7 +11,7 @@ import {
     setDoc,
     getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db } from '../firebase-config.js';
+import { db } from './firebase-config.js';
 
 // Add these threshold constants at the top of the file
 const ELO_THRESHOLDS = [

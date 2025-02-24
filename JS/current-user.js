@@ -6,7 +6,7 @@ import {
     doc, 
     getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db } from '../firebase-config.js';
+import { db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
 
 // Add debugging for imports

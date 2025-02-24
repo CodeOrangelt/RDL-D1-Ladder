@@ -10,7 +10,7 @@ function initializeLogout() {
                 const auth = getAuth();
                 await signOut(auth);
                 console.log('User signed out successfully');
-                window.location.href = 'index.html';
+                window.location.href = '../index.html';
             } catch (error) {
                 console.error('Error signing out:', error);
             }
