@@ -3,25 +3,36 @@ import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, whe
 
 const MAX_VIEWS = 5;
 
+// Add error handling for the view counter
 async function checkPromotionViews(promotionId, userId) {
+    if (!promotionId || !userId) {
+        console.warn('Missing promotionId or userId');
+        return false;
+    }
+
     try {
         const viewsRef = doc(db, 'promotionViews', `${promotionId}_${userId}`);
         const viewsDoc = await getDoc(viewsRef);
         
         if (!viewsDoc.exists()) {
-            // First view
-            await setDoc(viewsRef, { views: 1 });
+            await setDoc(viewsRef, { 
+                views: 1,
+                firstViewedAt: new Date(),
+                lastViewedAt: new Date()
+            });
             return true;
         }
         
         const views = viewsDoc.data().views;
         if (views < MAX_VIEWS) {
-            // Increment views
-            await setDoc(viewsRef, { views: views + 1 }, { merge: true });
+            await setDoc(viewsRef, { 
+                views: views + 1,
+                lastViewedAt: new Date()
+            }, { merge: true });
             return true;
         }
         
-        return false; // Max views reached
+        return false;
     } catch (error) {
         console.error('Error checking promotion views:', error);
         return false;
