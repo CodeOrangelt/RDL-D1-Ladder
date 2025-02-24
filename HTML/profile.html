@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="cloak.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/profile-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div class="container">
+            <div class="content">
+                <div class="profile-container">
+                    <div class="profile-content">
+                        <div class="profile-image-section">
+                            <img id="profile-preview" src="images/shieldorb.png" alt="Profile Picture">
+                        </div>
+                        <div class="username-section">
+                            <h2 id="nickname"></h2>
+                            <p id="motto-view" class="motto-text"></p>
+                        </div>
+                        
+                        <!-- Simplified stats section -->
+                        <div class="stats-section">
+                            <span class="stat-item">
+                                <span class="stat-label">Matches:</span>
+                                <span id="stats-matches">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Wins:</span>
+                                <span id="stats-wins">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Losses:</span>
+                                <span id="stats-losses">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">K/D:</span>
+                                <span id="stats-kd">-</span>  <!-- Changed ID from stats-kda to stats-kd -->
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Win Rate:</span>
+                                <span id="stats-winrate">-</span>
+                            </span>
+                        </div>
+                        
+                        <div class="view-mode">
+                            <div class="profile-field">
+                                <label>Favorite Map</label>
+                                <span id="favorite-map-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Favorite Weapon</label>
+                                <span id="favorite-weapon-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Favorite Descent</label>
+                                <span id="division-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Timezone</label>
+                                <span id="timezone-view" class="view-text"></span>
+                            </div>
+
+                            <button id="edit-profile" class="edit-btn">Edit Profile</button>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <div class="edit-mode">
+                            <form id="profile-form">
+                                <div class="profile-field">
+                                    <label for="motto-edit">Motto:</label>
+                                    <input type="text" id="motto-edit" placeholder="Enter your motto">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-map-edit">Favorite Map:</label>
+                                    <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-weapon-edit">Favorite Weapon:</label>
+                                    <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="timezone-edit">Timezone:</label>
+                                    <select id="timezone-edit" name="timezone">
+                                        <option value="">Select Timezone</option>
+                                        <option value="UTC-12">UTC-12</option>
+                                        <option value="UTC-11">UTC-11</option>
+                                        <option value="UTC-10">UTC-10</option>
+                                        <option value="UTC-9">UTC-9</option>
+                                        <option value="UTC-8">UTC-8 (PST)</option>
+                                        <option value="UTC-7">UTC-7 (MST)</option>
+                                        <option value="UTC-6">UTC-6 (CST)</option>
+                                        <option value="UTC-5">UTC-5 (EST)</option>
+                                        <option value="UTC-4">UTC-4</option>
+                                        <option value="UTC-3">UTC-3</option>
+                                        <option value="UTC-2">UTC-2</option>
+                                        <option value="UTC-1">UTC-1</option>
+                                        <option value="UTC+0">UTC+0</option>
+                                        <option value="UTC+1">UTC+1</option>
+                                        <option value="UTC+2">UTC+2</option>
+                                        <option value="UTC+3">UTC+3</option>
+                                        <option value="UTC+4">UTC+4</option>
+                                        <option value="UTC+5">UTC+5</option>
+                                        <option value="UTC+6">UTC+6</option>
+                                        <option value="UTC+7">UTC+7</option>
+                                        <option value="UTC+8">UTC+8</option>
+                                        <option value="UTC+9">UTC+9</option>
+                                        <option value="UTC+10">UTC+10</option>
+                                        <option value="UTC+11">UTC+11</option>
+                                        <option value="UTC+12">UTC+12</option>
+                                    </select>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="division-edit">Favorite Descent:</label>
+                                    <select id="division-edit" name="division">
+                                        <option value="">Favorite Descent</option>
+                                        <option value="D1">D1</option>
+                                        <option value="D2">D2</option>
+                                        <option value="D3">D3</option>
+                                    </select>
+                                </div>
+                                <input type="text" id="motto" name="motto" placeholder="Your motto">
+                                <!-- Stats will be inserted here automatically -->
+                                <div class="button-group">
+                                    <button type="submit" class="save-btn">Save Changes</button>
+                                    <button type="button" class="cancel-btn">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+    
+    <!-- Scripts -->
+    <script type="module" src="../JS/profile-viewer.js"></script>
+    <script>
+        // Load nav and footer
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>

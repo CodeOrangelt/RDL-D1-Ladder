@@ -1,0 +1,251 @@
+/* approved-matches-style.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 75%;
+    padding: 20px;
+    min-height: 800px;
+    overflow: hidden;
+    margin-bottom: 100px; /* Add margin to prevent content from being hidden behind fixed pagination */
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* Update table styling for larger rows */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+    font-size: 1.2rem; /* Increased from 1.1rem */
+}
+
+th, td {
+    padding: 16px; /* Increased from 12px */
+    border: none;
+    text-align: left;
+    color: white;
+    background-color: transparent;
+    line-height: 1.4; /* Added for better text spacing */
+}
+
+/* Add subtle hover effect for better row distinction */
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Adjust cell spacing */
+td a {
+    padding: 4px 0;
+    display: inline-block;
+}
+
+/* Make sure player names stand out */
+.player-link {
+    font-size: 1.25rem; /* Slightly larger than regular text */
+    padding: 4px 0;
+    text-decoration: none;
+    font-weight: bold;
+    transition: opacity 0.2s ease;
+}
+
+.player-link:hover {
+    opacity: 0.8;
+}
+
+/* ELO rank colors */
+.elo-emerald { 
+    color: #50C878 !important; 
+    text-shadow: 0 0 5px rgba(80, 200, 120, 0.5);
+}
+
+.elo-gold { 
+    color: #FFD700 !important; 
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.elo-silver { 
+    color: #C0C0C0 !important; 
+    text-shadow: 0 0 5px rgba(192, 192, 192, 0.5);
+}
+
+.elo-bronze { 
+    color: #CD7F32 !important; 
+    text-shadow: 0 0 5px rgba(205, 127, 50, 0.5);
+}
+
+.elo-unranked { 
+    color: #ffffff !important; 
+}
+
+/* Update pagination styling */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    padding: 1rem;
+    max-width: 800px;
+    text-align: center;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Updated gap */
+    max-width: 1200px; /* Added max-width */
+    margin: 0 auto; /* Added margin */
+}
+
+.pagination button {
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(45, 45, 45, 0.8);
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pagination button:disabled {
+    background: rgba(45, 45, 45, 0.3);
+    border-color: rgba(255, 255, 255, 0.05);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination span {
+    font-weight: 500;
+    color: white;
+    font-size: 1rem;
+    margin: 0 15px;
+}
+
+.page-search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Updated gap */
+    margin: 0 15px;
+    background: rgba(40, 40, 40, 0.6); /* Added background */
+    padding: 5px 10px; /* Added padding */
+    border-radius: 6px; /* Added border-radius */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Added border */
+}
+
+.page-search input {
+    width: 70px; /* Updated width */
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+}
+
+.page-search button {
+    padding: 8px 16px;
+    background: rgba(45, 45, 45, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.page-search button:hover {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Pagination Styling */
+.pagination-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 20, 0.95);
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+}
+
+.page-navigation {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.page-search input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.pagination-controls button {
+    padding: 10px 20px;
+    background: rgba(45, 45, 45, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.pagination-controls button:disabled {
+    background: rgba(45, 45, 45, 0.3);
+    border-color: rgba(255, 255, 255, 0.05);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .page-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

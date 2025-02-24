@@ -1,0 +1,36 @@
+footer {
+    background: linear-gradient(to top,
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 0, 0, 0.5)),
+        url('../images/backgroundrdl.png');
+    background-size: 100px;
+    background-position: center;
+    background-repeat: repeat;
+    color: #fff;
+    padding: 10px 0;
+    width: 100%;
+    position: relative;  /* Changed from fixed to relative */
+    bottom: auto;  /* Remove fixed positioning */
+    left: auto;
+    z-index: 100;
+}
+
+footer::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: 4px;
+    background: rgba(128, 128, 128, 0.6);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

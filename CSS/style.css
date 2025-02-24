@@ -1,0 +1,511 @@
+body {
+    font-family: Arial, sans-serif;
+    background: url('../images/backgroundrdl.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#nav-placeholder {
+    width: 100%;
+    order: -1; /* Ensures nav always appears first */
+}
+
+/* Main content wrapper */
+main {
+    flex: 1;  /* This will push the footer down */
+    width: 100%;
+    padding: 40px 0;  /* Add padding top and bottom */
+    margin: 0;  /* Remove any top margin */
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 120px); /* Adjust based on your nav/footer height */
+    padding: 20px;
+}
+
+/* New table container styles */
+.outer-container {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75); /* Dark semi-transparent background */
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 85%;
+    padding: 20px;
+    min-height: 600px; /* Reduced container height */
+    overflow: hidden; /* Contain the backdrop image */
+    flex: 1;
+}
+
+/* Remove the ::before pseudo-element since we're using the direct image */
+.outer-container::before {
+    display: none;
+}
+
+.ladder-backdrop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%; /* Increased from 60% to 80% */
+    height: auto;
+    opacity: 0.08;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.table-container {
+    position: relative;
+    width: 85%;
+    border-radius: 30px;
+    background-color: transparent; /* Changed from #efefef */
+    margin: 0 auto;
+    padding: 15px 0; /* Reduced from 20px */
+    overflow: visible; /* Changed from hidden to show backdrop */
+    z-index: 2; /* Place above backdrop */
+}
+
+/* Update table styles */
+main table {
+    position: relative;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: transparent;
+    box-shadow: none;
+    z-index: 2; /* Ensure table is on top */
+    font-size: 1.2rem; /* Increased font size */
+}
+
+.container {
+    width: 95%;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+#footer-placeholder {
+    width: 100%;
+    margin-top: 40px;  /* Add space above footer */
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Update table border styles */
+table, th, td {
+    border: none; /* Remove default borders */
+}
+
+th, td {
+    border: none; /* Remove all borders */
+    padding: 16px; /* Increased padding */
+    text-align: center; /* Default center alignment */
+    font-family: Tahoma, sans-serif;
+    color: white;
+    background-color: transparent;
+    line-height: 1.4; /* Better line height */
+}
+
+/* Keep rank column (first column) centered but larger */
+th:first-child,
+td:first-child {
+    text-align: center;
+    width: 60px; /* Slightly wider for larger font */
+    font-size: 1.25rem; /* Larger rank numbers */
+}
+
+/* Align username column (second column) to the left */
+th:nth-child(2),
+td:nth-child(2) {
+    text-align: left;
+    padding-left: 20px; /* Add padding for better spacing */
+    font-size: 1.25rem; /* Larger usernames */
+}
+
+th {
+    background-color: transparent;
+    color: white;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: transparent; /* Remove alternating row color */
+}
+
+/* Update glow effect for #1 player */
+#ladder tr:first-child td:first-child {
+    position: relative;
+    font-weight: bold;
+    color: #FFD700;  /* Gold color */
+    text-shadow: 0 0 5px #FFD700;
+    animation: glow 2s ease-in-out infinite;
+    background-color: transparent;
+    border: none;
+    text-align: center; /* Keep rank centered */
+}
+
+
+/* Make sure the glow is contained within the cell */
+#ladder td:first-child {
+    width: 50px;
+    text-align: center;
+    position: relative;
+    overflow: visible;  /* Changed from hidden to allow glow to show */
+}
+
+#ladder td[title] {
+    position: relative;
+    cursor: help;
+}
+
+#ladder td[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% - 10px);  /* Adjust this value to move left/right */
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    z-index: 1000;
+    white-space: nowrap;
+    color: inherit;
+    border: 1px solid currentColor;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Remove the newer hover styles */
+.player-name::after,
+.player-name:hover::after {
+    display: none;
+}
+
+/* Add some spacing between table rows */
+#ladder tr {
+    height: 40px; /* Increased row height */
+}
+
+/* Add rank colors */
+:root {
+    --gold-color: #FFD700;
+    --gold-bg: rgba(255, 215, 0, 0.15);
+    --silver-color: #C0C0C0;
+    --silver-bg: rgba(192, 192, 192, 0.15);
+    --bronze-color: #CD7F32;
+    --bronze-bg: rgba(205, 127, 50, 0.15);
+    --emerald-color: #50C878;
+    --emerald-bg: rgba(80, 200, 120, 0.15);
+    --unranked-color: #808080;
+    --unranked-bg: rgba(128, 128, 128, 0.15);
+}
+
+.promotion-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Allow clicking through the container */
+}
+
+.promotion-container[style*="display: block"] {
+    opacity: 1;
+}
+
+.promotion-container[style*="display: none"] {
+    opacity: 0;
+}
+
+/* Update promotion banner text styles */
+.promotion-banner {
+    background: rgba(20, 20, 20, 0.95);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    pointer-events: auto; /* Re-enable clicking on the banner itself */
+}
+
+.promotion-banner.new-promotion {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.promotion-banner p {
+    color: white !important; /* Force white text color */
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.promotion-text {
+    margin: 0;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Rank-specific styles */
+.promotion-banner[data-rank="Gold"] {
+    border-color: var(--gold-color);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.promotion-banner[data-rank="Silver"] {
+    border-color: var(--silver-color);
+    box-shadow: 0 0 10px rgba(192, 192, 192, 0.3);
+}
+
+.promotion-banner[data-rank="Bronze"] {
+    border-color: var(--bronze-color);
+    box-shadow: 0 0 10px rgba(205, 127, 50, 0.3);
+}
+
+.promotion-banner[data-rank="Emerald"] {
+    border-color: var(--emerald-color);
+    box-shadow: 0 0 10px rgba(80, 200, 120, 0.3);
+}
+
+.promotion-banner[data-rank="Unranked"] {
+    background: var(--unranked-bg);
+    border-color: var(--unranked-color);
+    box-shadow: 0 0 15px rgba(128, 128, 128, 0.3);
+}
+
+/* Remove conflicting text color overrides */
+.promotion-banner[data-rank="Gold"] #promotion-details,
+.promotion-banner[data-rank="Silver"] #promotion-details,
+.promotion-banner[data-rank="Bronze"] #promotion-details,
+.promotion-banner[data-rank="Emerald"] #promotion-details,
+.promotion-banner[data-rank="Unranked"] #promotion-details {
+    color: white;
+}
+
+.rank-text {
+    font-weight: bold;
+    transition: color 0.3s ease;
+    text-shadow: 0 0 5px currentColor;
+}
+
+/* Rank-specific text colors */
+[data-rank="Gold"] .rank-text { color: var(--gold-color); }
+[data-rank="Silver"] .rank-text { color: var(--silver-color); }
+[data-rank="Bronze"] .rank-text { color: var(--bronze-color); }
+[data-rank="Emerald"] .rank-text { color: var(--emerald-color); }
+[data-rank="Unranked"] .rank-text { color: var(--unranked-color); }
+
+/* Only color the rank text portion */
+.rank-indicator {
+    font-weight: bold;
+}
+
+.rank-indicator[data-rank="Gold"] { color: var(--gold-color); }
+.rank-indicator[data-rank="Silver"] { color: var(--silver-color); }
+.rank-indicator[data-rank="Bronze"] { color: var(--bronze-color); }
+.rank-indicator[data-rank="Emerald"] { color: var(--emerald-color); }
+.rank-indicator[data-rank="Unranked"] { color: var(--unranked-color); }
+
+/* Update promotion text styles */
+#promotion-details {
+    color: white;
+    font-size: 1.2em;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+/* Updated rank-specific text styles */
+.promotion-banner[data-rank="Gold"] #promotion-details { color: var(--gold-color); }
+.promotion-banner[data-rank="Silver"] #promotion-details { color: var(--silver-color); }
+.promotion-banner[data-rank="Bronze"] #promotion-details { color: var(--bronze-color); }
+.promotion-banner[data-rank="Emerald"] #promotion-details { color: var(--emerald-color); }
+.promotion-banner[data-rank="Unranked"] #promotion-details { color: var(--unranked-color); }
+
+/* Animation for new promotions */
+@keyframes rankGlow {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+.new-promotion {
+    animation: rankGlow 2s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fireGlow {
+    0% { text-shadow: 0 0 3px #FF4500; }
+    50% { text-shadow: 0 0 8px #FF4500; }
+    100% { text-shadow: 0 0 3px #FF4500; }
+}
+
+.streak-counter {
+    animation: fireGlow 2s ease-in-out infinite;
+}
+
+.discord-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+}
+
+.discord-toggle {
+    background-color: #7289da;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.discord-toggle i {
+    font-size: 1.2em;
+}
+
+.discord-toggle:hover {
+    background-color: #5b73c7;
+}
+
+.discord-widget {
+    position: absolute;
+    bottom: 50px;
+    right: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.discord-widget.collapsed {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.discord-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.ribbon-1 {
+    position: absolute;
+    background: white;
+    box-shadow: 0 0 0 999px white;
+    clip-path: inset(0 -100%);
+    color: black;
+    z-index: 999;
+  }
+  .left {
+    inset: 0 auto auto 0;
+    transform-origin: 100% 0;
+    transform: translate(-29.3%) rotate(-45deg);
+  }
+
+/* Hover effect for better row distinction */
+#ladder tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+/* Keep stats columns readable */
+#ladder td:nth-child(n+3) {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.queue-section {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.queue-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.queue-box h2 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.player-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-name {
+    color: #fff;
+    font-weight: 500;
+}
+
+.queue-time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+}
+
+.no-players {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 1rem;
+    font-style: italic;
+}
+
+#queue-container {
+    display: none; /* Hidden by default */
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

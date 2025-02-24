@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="cloak.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Game</title>
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/report-style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <script type="module">
+        import { firebaseConfig } from './firebase-config.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+    </script>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <script>
+        fetch('../HTML/nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="container">
+        <h1>Report Game</h1>
+        <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
+        
+        <!-- Report Form -->
+        <form id="report-form" class="form" style="display: none;">
+            <div class="form-group">
+                <span id="loser-username" class="username-display"></span>
+            </div>
+            <div class="form-group">
+                <label for="winner-username">Opponent:</label>
+                <select id="winner-username" required>
+                    <option value="">Select Winner</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="loser-score">Your Score:</label>
+                <input type="number" id="loser-score" placeholder="Loser Score" required>
+            </div>
+            <div class="form-group">
+                <label for="suicides">Suicides:</label>
+                <input type="number" id="suicides" placeholder="Suicides" required>
+            </div>
+            <div class="form-group">
+                <label for="map-played">Map Played:</label>
+                <input type="text" id="map-played" placeholder="Map Played" required>
+            </div>
+            <div class="form-group">
+                <label for="loser-comment">Your Comment:</label>
+                <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
+            </div>
+            <button type="submit" class="btn">Report Game</button>
+        </form>
+        <div id="report-error" class="error"></div>
+
+        <div id="report-lightbox">
+            <div class="lightbox-content">
+                <h2>Report Details</h2>
+                <p>Winner: <span id="lightbox-winner"></span></p>
+                <p>Loser: <span id="lightbox-loser"></span></p>
+                <p>Loser Score: <span id="lightbox-loser-score"></span></p>
+                <p>Suicides: <span id="lightbox-suicides"></span></p>
+                <p>Map: <span id="lightbox-map"></span></p>
+                <p>Loser Comment: <span id="lightbox-comment"></span></p>
+                
+                <div class="form-group">
+                    <label for="winner-score">Winner Score:</label>
+                    <input type="number" id="winner-score" required>
+                </div>
+                <div class="form-group">
+                    <label for="winner-suicides">Winner Suicides:</label>
+                    <input type="number" id="winner-suicides" required>
+                </div>
+                <div class="form-group">
+                    <label for="winner-comment">Winner Comment:</label>
+                    <textarea id="winner-comment" required></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="approve-button" class="btn">Approve</button>
+                    <button id="cancel-button" class="btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update script tags to use type="module" -->
+    <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" src="../JS/ladderalgorithm.js"></script>
+    <script type="module" src="../JS/current-user.js"></script>
+    <script type="module" src="../JS/logout.js"></script>
+    <script type="module" src="../JS/reports.js"></script>
+
+    <div id="footer-placeholder"></div>
+    <script>
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>
