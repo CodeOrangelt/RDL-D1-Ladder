@@ -3,11 +3,6 @@ import { collection, query, orderBy, getDocs, doc, getDoc } from 'https://www.gs
 import { getRankStyle } from './ranks.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupSeasonButton('season0');
-    // Add more seasons as they come
-    // setupSeasonButton('season1');
-    // setupSeasonButton('season2');
-
     auth.onAuthStateChanged(user => {
         if (user) {
             setupStatsButton();
