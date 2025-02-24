@@ -201,7 +201,7 @@ class ProfileViewer {
         // Update profile image
         const profilePreview = document.getElementById('profile-preview');
         if (profilePreview) {
-            profilePreview.src = 'images/shieldorb.png';
+            profilePreview.src = './images/profile-placeholder.png';
         }
 
         // Check if current user is the profile owner

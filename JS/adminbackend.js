@@ -19,6 +19,7 @@ import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
 import { ADMIN_EMAILS } from './admin-config.js';
 import { isAdmin } from './admin-check.js';
+import { initializePromotionTracker } from './promotion-banner.js';
 
 // Test data array
 const testPlayers = [

@@ -10,7 +10,7 @@ export class RetroTrackerMonitor {
         this.lastUpdate = null;
         this.activeGames = new Map();
         this.updateInterval = 30000; // 30 seconds
-        this.isMainPage = window.location.pathname.endsWith('whosplaying.html');
+        this.isMainPage = window.location.pathname.endsWith('/whosplaying.html');
     }
 
     async initialize() {
