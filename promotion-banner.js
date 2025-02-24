@@ -32,63 +32,57 @@ async function checkPromotionViews(promotionId, userId) {
 export function initializePromotionTracker() {
     const promotionContainer = document.querySelector('.promotion-container');
     
-    console.log('Promotion tracker initializing...');
+    console.log('Rank change tracker initializing...');
 
     if (!promotionContainer) {
         console.warn('Promotion container not found in DOM');
         return;
     }
 
-    // Clear existing banners and ensure container is ready
     promotionContainer.innerHTML = '';
     promotionContainer.style.display = 'none';
     
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef, 
-        where('type', '==', 'promotion'),
+        where('type', 'in', ['promotion', 'demotion']), // Add demotion type
         orderBy('timestamp', 'desc'), 
         limit(5)
     );
 
     onSnapshot(q, async (snapshot) => {
-        console.log('Checking for new history entries...');
+        console.log('Checking for new rank changes...');
         
-        // Process promotions in order
-        const promotions = [];
+        const rankChanges = [];
         for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
-                promotions.push({ id: change.doc.id, ...data });
+                rankChanges.push({ id: change.doc.id, ...data });
             }
         }
 
-        // Sort by timestamp to show newest first
-        promotions.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+        rankChanges.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
 
-        // Show promotions with delay between each
-        for (let i = 0; i < promotions.length; i++) {
-            const promotion = promotions[i];
+        for (let i = 0; i < rankChanges.length; i++) {
+            const rankChange = rankChanges[i];
             
-            if (promotion.rankAchieved) {
+            if (rankChange.rankAchieved) {
                 const currentUser = auth.currentUser;
                 if (!currentUser) {
-                    console.log('No user logged in, skipping promotion banner');
+                    console.log('No user logged in, skipping rank change banner');
                     continue;
                 }
 
-                const shouldShow = await checkPromotionViews(promotion.id, currentUser.uid);
+                const shouldShow = await checkPromotionViews(rankChange.id, currentUser.uid);
                 
                 if (shouldShow) {
-                    console.log('Showing promotion banner for:', promotion.player);
-                    // Add delay between banners
+                    console.log(`Showing ${rankChange.type} banner for:`, rankChange.player);
                     setTimeout(() => {
-                        showPromotionBanner(promotion, promotionContainer);
-                    }, i * 1000); // 1 second delay between each banner
+                        showRankChangeBanner(rankChange, promotionContainer);
+                    }, i * 1000);
 
-                    // Personal lightbox for promoted user
-                    if (promotion.player === currentUser.displayName) {
-                        showPromotionLightbox(promotion.rankAchieved);
+                    if (rankChange.player === currentUser.displayName) {
+                        showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
                     }
                 }
             }
@@ -96,32 +90,33 @@ export function initializePromotionTracker() {
     });
 }
 
-function showPromotionBanner(data, container) {
-    // Check if we already have 3 banners
+function showRankChangeBanner(data, container) {
     if (container.children.length >= 3) {
         container.removeChild(container.firstChild);
     }
 
     const bannerDiv = document.createElement('div');
-    bannerDiv.className = 'promotion-banner';
+    bannerDiv.className = `rank-change-banner ${data.type}`; // Add type-specific class
     bannerDiv.setAttribute('data-rank', data.rankAchieved);
+    
+    const message = data.type === 'promotion' 
+        ? `${data.player} was promoted to` 
+        : `${data.player} was demoted to`;
+
     bannerDiv.innerHTML = `
-        <p>${data.player} was promoted to <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}</p>
+        <p>${message} <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}</p>
     `;
     container.appendChild(bannerDiv);
     container.style.display = 'block';
 
-    // Add animation class after a brief delay
     setTimeout(() => {
-        bannerDiv.classList.add('new-promotion');
+        bannerDiv.classList.add('new-rank-change');
     }, 100);
 
-    // Remove banner after display time
     setTimeout(() => {
-        bannerDiv.classList.remove('new-promotion');
+        bannerDiv.classList.remove('new-rank-change');
         setTimeout(() => {
             bannerDiv.remove();
-            // Hide container if no more banners
             if (container.children.length === 0) {
                 container.style.display = 'none';
             }
@@ -129,22 +124,24 @@ function showPromotionBanner(data, container) {
     }, 8000);
 }
 
-function showPromotionLightbox(rankName) {
-    // Create modal if it doesn't exist
-    let modal = document.getElementById('promotionModal');
+function showRankChangeLightbox(type, rankName) {
+    let modal = document.getElementById('rankChangeModal');
     if (!modal) {
         modal = document.createElement('div');
-        modal.id = 'promotionModal';
-        modal.className = 'promotion-modal';
+        modal.id = 'rankChangeModal';
+        modal.className = `rank-change-modal ${type}`;
         document.body.appendChild(modal);
     }
 
+    const title = type === 'promotion' ? 'Congratulations!' : 'Rank Update';
+    const message = type === 'promotion' ? "You've been promoted to" : "You've been demoted to";
+
     modal.innerHTML = `
-        <div class="promotion-content">
-            <h2 class="promotion-title">Congratulations!</h2>
-            <p>You've been promoted to</p>
+        <div class="rank-change-content">
+            <h2 class="rank-change-title">${title}</h2>
+            <p>${message}</p>
             <h3 class="rank-name">${rankName}</h3>
-            <button class="promotion-button" onclick="document.getElementById('promotionModal').style.display='none'">
+            <button class="rank-change-button" onclick="document.getElementById('rankChangeModal').style.display='none'">
                 Got it!
             </button>
         </div>
@@ -152,7 +149,6 @@ function showPromotionLightbox(rankName) {
 
     modal.style.display = 'flex';
 
-    // Close on click outside
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
