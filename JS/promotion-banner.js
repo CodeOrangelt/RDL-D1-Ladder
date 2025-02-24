@@ -95,19 +95,24 @@ function showRankChangeBanner(data, container) {
     }
 
     const bannerDiv = document.createElement('div');
-    bannerDiv.className = `rank-change-banner ${data.type}`; // Add type-specific class
-    bannerDiv.setAttribute('data-rank', data.rankAchieved); // Add this line here
+    bannerDiv.className = 'promotion-banner'; // Changed from rank-change-banner
+    bannerDiv.setAttribute('data-rank', data.rankAchieved);
+    
+    // Create details element with proper class
+    const details = document.createElement('div');
+    details.className = 'promotion-details';
     
     const message = data.type === 'promotion' 
         ? `${data.player} was promoted to` 
         : `${data.player} was demoted to`;
 
-    bannerDiv.innerHTML = `
-        <p>${message} <span class="rank-indicator" data-rank="${data.rankAchieved}">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}</p>
-    `;
+    details.innerHTML = `${message} <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
+    
+    bannerDiv.appendChild(details);
     container.appendChild(bannerDiv);
     container.style.display = 'block';
 
+    // Rest of the animation timing code remains the same
     setTimeout(() => {
         bannerDiv.classList.add('new-rank-change');
     }, 100);
