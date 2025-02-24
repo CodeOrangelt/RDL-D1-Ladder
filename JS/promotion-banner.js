@@ -53,6 +53,7 @@ export function initializePromotionTracker() {
         limit(5)
     );
 
+    // Update the onSnapshot callback
     onSnapshot(q, async (snapshot) => {
         console.log('Checking for new rank changes...');
         
@@ -60,7 +61,12 @@ export function initializePromotionTracker() {
         for (const change of snapshot.docChanges()) {
             if (change.type === "added") {
                 const data = change.doc.data();
-                rankChanges.push({ id: change.doc.id, ...data });
+                console.log('New rank change detected:', data); // Debug log
+                
+                // Verify the type is being captured
+                if (data.type && (data.type === 'promotion' || data.type === 'demotion')) {
+                    rankChanges.push({ id: change.doc.id, ...data });
+                }
             }
         }
 
@@ -70,9 +76,14 @@ export function initializePromotionTracker() {
             const rankChange = rankChanges[i];
             
             if (rankChange.rankAchieved) {
+                console.log(`Processing ${rankChange.type} for player:`, rankChange.player);
+                
                 const currentUser = auth.currentUser;
                 if (!currentUser) {
-                    console.log('No user logged in, skipping rank change banner');
+                    console.log('No user logged in, showing rank change anyway');
+                    setTimeout(() => {
+                        showRankChangeBanner(rankChange, promotionContainer);
+                    }, i * 1000);
                     continue;
                 }
 
