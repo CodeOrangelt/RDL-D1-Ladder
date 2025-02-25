@@ -360,3 +360,68 @@ if (eloInput) {
 document.addEventListener('DOMContentLoaded', displayLadder);
 
 export { displayLadder };
+
+// Function to create and update raw ladder feed
+function setupRawLadderFeed() {
+    const playersRef = collection(db, 'players');
+    
+    // Set up real-time listener for player changes
+    onSnapshot(playersRef, async (snapshot) => {
+        try {
+            // Extract player data
+            const players = [];
+            snapshot.forEach((doc) => {
+                const playerData = doc.data();
+                players.push({
+                    ...playerData,
+                    id: doc.id,
+                    elo: playerData.eloRating || 0,
+                    position: playerData.position || Number.MAX_SAFE_INTEGER
+                });
+            });
+            
+            // Sort players by position
+            players.sort((a, b) => {
+                if (!a.position) return 1;
+                if (!b.position) return -1;
+                return a.position - b.position;
+            });
+            
+            // Create raw text representation
+            let rawText = '';
+            for (const player of players) {
+                // Get stats from matches
+                const approvedMatchesRef = collection(db, 'approvedMatches');
+                const [winnerMatches, loserMatches] = await Promise.all([
+                    getDocs(query(approvedMatchesRef, where('winnerUsername', '==', player.username))),
+                    getDocs(query(approvedMatchesRef, where('loserUsername', '==', player.username)))
+                ]);
+                
+                const wins = winnerMatches.size;
+                const losses = loserMatches.size;
+                const totalMatches = wins + losses;
+                
+                // Format text line for each player
+                rawText += `${player.position}. ${player.username} (${player.eloRating || 0}) - W:${wins} L:${losses}\n`;
+            }
+            
+            // Send this text to your server endpoint that will write to rawleaderboard.html
+            await fetch('/api/update-raw-ladder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: rawText
+            });
+            
+        } catch (error) {
+            console.error("Error updating raw ladder feed:", error);
+        }
+    });
+}
+
+// Call this function when the app initializes
+document.addEventListener('DOMContentLoaded', () => {
+    displayLadder();
+    setupRawLadderFeed();
+});
