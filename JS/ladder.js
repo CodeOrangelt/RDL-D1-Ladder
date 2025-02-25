@@ -371,16 +371,24 @@ function setupRawLadderFeed() {
                 players.push({
                     ...playerData,
                     id: doc.id,
-                    elo: playerData.eloRating || 0,
+                    elo: parseInt(playerData.eloRating) || 0,
                     position: playerData.position || Number.MAX_SAFE_INTEGER
                 });
             });
             
-            // Sort players by position
+            // Sort players by ELO rating first, then use position as backup
             players.sort((a, b) => {
-                if (!a.position) return 1;
-                if (!b.position) return -1;
-                return a.position - b.position;
+                // First sort by ELO rating (highest to lowest)
+                if (b.elo !== a.elo) {
+                    return b.elo - a.elo;
+                }
+                // If ELO is the same, use position if available
+                return (a.position || Number.MAX_SAFE_INTEGER) - (b.position || Number.MAX_SAFE_INTEGER);
+            });
+            
+            // Assign positions if not already set
+            players.forEach((player, index) => {
+                player.position = index + 1; // Position starts from 1
             });
             
             // Create raw text representation
@@ -398,7 +406,7 @@ function setupRawLadderFeed() {
                 const totalMatches = wins + losses;
                 
                 // Format text line for each player
-                rawText += `${player.position}. ${player.username} (${player.eloRating || 0}) - W:${wins} L:${losses}\n`;
+                rawText += `${player.position}. ${player.username} (${player.elo}) - W:${wins} L:${losses}\n`;
             }
             
             // Update the page content if we're on the raw leaderboard page
