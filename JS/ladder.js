@@ -357,64 +357,50 @@ if (eloInput) {
     });
 }
 
-// Function to create and update raw ladder feed
+/// Simplified function to create and update raw ladder feed
 function setupRawLadderFeed() {
     const playersRef = collection(db, 'players');
     
     // Set up real-time listener for player changes
-    onSnapshot(playersRef, async (snapshot) => {
+    onSnapshot(playersRef, (snapshot) => {
         try {
+            console.log("Raw leaderboard snapshot received");
+            
             // Extract player data
             const players = [];
             snapshot.forEach((doc) => {
                 const playerData = doc.data();
                 players.push({
-                    ...playerData,
-                    id: doc.id,
+                    username: playerData.username,
                     elo: parseInt(playerData.eloRating) || 0,
                     position: playerData.position || Number.MAX_SAFE_INTEGER
                 });
             });
             
-            // Sort players by ELO rating first, then use position as backup
-            players.sort((a, b) => {
-                // First sort by ELO rating (highest to lowest)
-                if (b.elo !== a.elo) {
-                    return b.elo - a.elo;
-                }
-                // If ELO is the same, use position if available
-                return (a.position || Number.MAX_SAFE_INTEGER) - (b.position || Number.MAX_SAFE_INTEGER);
-            });
+            // Sort players by ELO rating (highest to lowest)
+            players.sort((a, b) => b.elo - a.elo);
             
-            // Assign positions if not already set
+            // Assign positions sequentially
             players.forEach((player, index) => {
-                player.position = index + 1; // Position starts from 1
+                player.position = index + 1;
             });
             
             // Create raw text representation
-            let rawText = '';
-            for (const player of players) {
-                // Get stats from matches
-                const approvedMatchesRef = collection(db, 'approvedMatches');
-                const [winnerMatches, loserMatches] = await Promise.all([
-                    getDocs(query(approvedMatchesRef, where('winnerUsername', '==', player.username))),
-                    getDocs(query(approvedMatchesRef, where('loserUsername', '==', player.username)))
-                ]);
-                
-                const wins = winnerMatches.size;
-                const losses = loserMatches.size;
-                const totalMatches = wins + losses;
-                
-                // Format text line for each player
-                rawText += `${player.position}. ${player.username} (${player.elo}) - W:${wins} L:${losses}\n`;
-            }
+            let rawText = 'NGS LADDER - RAW DATA\n\n';
+            players.forEach(player => {
+                rawText += `${player.position}. ${player.username} (${player.elo})\n`;
+            });
             
             // Update the page content if we're on the raw leaderboard page
             if (window.location.pathname.includes('rawleaderboard.html')) {
+                console.log("Updating raw leaderboard content");
                 document.body.innerText = rawText;
             }
         } catch (error) {
             console.error("Error updating raw ladder feed:", error);
+            if (window.location.pathname.includes('rawleaderboard.html')) {
+                document.body.innerText = `Error loading ladder data: ${error.message}`;
+            }
         }
     });
 }
@@ -428,6 +414,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Always set up the raw ladder feed listener
     setupRawLadderFeed();
+    
+    // Add debug info for raw leaderboard page
+    if (window.location.pathname.includes('rawleaderboard.html')) {
+        console.log("Raw leaderboard page detected");
+    }
 });
-
-export { displayLadder, setupRawLadderFeed };
