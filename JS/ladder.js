@@ -7,7 +7,8 @@ import {
     query,
     where,
     updateDoc,
-    Timestamp
+    Timestamp,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -356,11 +357,6 @@ if (eloInput) {
     });
 }
 
-// Initialize ladder when DOM is loaded
-document.addEventListener('DOMContentLoaded', displayLadder);
-
-export { displayLadder };
-
 // Function to create and update raw ladder feed
 function setupRawLadderFeed() {
     const playersRef = collection(db, 'players');
@@ -405,23 +401,25 @@ function setupRawLadderFeed() {
                 rawText += `${player.position}. ${player.username} (${player.eloRating || 0}) - W:${wins} L:${losses}\n`;
             }
             
-            // Send this text to your server endpoint that will write to rawleaderboard.html
-            await fetch('/api/update-raw-ladder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: rawText
-            });
-            
+            // Update the page content if we're on the raw leaderboard page
+            if (window.location.pathname.includes('rawleaderboard.html')) {
+                document.body.innerText = rawText;
+            }
         } catch (error) {
             console.error("Error updating raw ladder feed:", error);
         }
     });
 }
 
-// Call this function when the app initializes
+// Initialize both functions when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    displayLadder();
+    // Only run displayLadder if we're on a page with the ladder element
+    if (document.querySelector('#ladder')) {
+        displayLadder();
+    }
+    
+    // Always set up the raw ladder feed listener
     setupRawLadderFeed();
 });
+
+export { displayLadder, setupRawLadderFeed };
