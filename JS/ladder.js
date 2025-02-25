@@ -392,13 +392,13 @@ function setupRawLadderFeed() {
             });
             
             // Update the page content if we're on the raw leaderboard page
-            if (window.location.pathname.includes('rawleaderboard.html')) {
+            if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
                 console.log("Updating raw leaderboard content");
                 document.body.innerText = rawText;
             }
         } catch (error) {
             console.error("Error updating raw ladder feed:", error);
-            if (window.location.pathname.includes('rawleaderboard.html')) {
+            if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
                 document.body.innerText = `Error loading ladder data: ${error.message}`;
             }
         }
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupRawLadderFeed();
     
     // Add debug info for raw leaderboard page
-    if (window.location.pathname.includes('rawleaderboard.html')) {
+    if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
         console.log("Raw leaderboard page detected");
     }
 });
