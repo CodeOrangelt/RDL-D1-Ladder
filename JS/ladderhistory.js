@@ -393,16 +393,16 @@ async function snapshotSeason0() {
         playersSnapshot.forEach((playerDoc) => {
             seasonData.ladder.push({ id: playerDoc.id, ...playerDoc.data() });
         });
+        console.log(`Ladder: Found ${seasonData.ladder.length} players`);
 
-        // 2. Stats snapshot
-        // Instead of querying a collection, we parse the numbers/username from records.html.
-        // Ensure that your records.html has an element with id "records-stats" containing your stats.
+        // 2. Stats snapshot (parsing from records.html)
         const recordsStatsElement = document.getElementById("records-stats");
         if (recordsStatsElement) {
-            // You can adapt this parsing logic if you need to extract individual numbers.
             seasonData.stats = recordsStatsElement.innerText;
+            console.log("Stats loaded from records element:", seasonData.stats);
         } else {
             seasonData.stats = "Stats not available";
+            console.warn("records-stats element not found");
         }
 
         // 3. Match history snapshot (from approvedMatches collection)
@@ -413,6 +413,7 @@ async function snapshotSeason0() {
         matchesSnapshot.forEach((matchDoc) => {
             seasonData.matches.push({ id: matchDoc.id, ...matchDoc.data() });
         });
+        console.log(`Matches: Found ${seasonData.matches.length} approved matches`);
 
         // Store the snapshot for Season 0 in a dedicated document
         await setDoc(doc(db, "seasons", "season0"), {
@@ -420,7 +421,7 @@ async function snapshotSeason0() {
             ...seasonData
         });
 
-        console.log("Season 0 archived successfully.");
+        console.log("Season 0 archived successfully.", seasonData);
         return true;
     } catch (error) {
         console.error("Error archiving Season 0:", error);
