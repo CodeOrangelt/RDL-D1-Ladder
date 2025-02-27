@@ -37,36 +37,51 @@ async function updateAuthSection(user) {
     
     if (user) {
         try {
-            // First check players collection
-            const userDoc = await getDoc(doc(db, 'players', user.uid));
-            let username;
-            let isNonParticipant = false;
+            // Check all possible collections
+            const collections = [
+                'players',     // D1
+                'playersD2', 
+                'playersD3', 
+                'playersDuos', 
+                'playersCTF',
+                'nonParticipants'
+            ];
             
-            if (userDoc.exists()) {
-                // User is in players collection
-                username = userDoc.data().username;
-                console.log('Username found in players collection:', username);
-            } else {
-                // If not in players, check nonParticipants collection
-                const nonParticipantDoc = await getDoc(doc(db, 'nonParticipants', user.uid));
-                if (nonParticipantDoc.exists()) {
-                    username = nonParticipantDoc.data().username;
-                    isNonParticipant = true;
-                    console.log('Username found in nonParticipants collection:', username);
-                } else {
-                    // If not found in either collection, fallback to email
-                    username = user.email;
-                    console.log('Username not found in any collection, using email:', username);
+            let username = null;
+            let isNonParticipant = false;
+            let gameMode = null;
+            
+            // Check each collection until we find the user
+            for (const collection of collections) {
+                const userDocRef = doc(db, collection, user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    username = userDoc.data().username;
+                    isNonParticipant = collection === 'nonParticipants';
+                    gameMode = userDoc.data().gameMode || (collection === 'players' ? 'D1' : collection.replace('players', ''));
+                    console.log(`Username found in ${collection} collection:`, username);
+                    break;
                 }
             }
             
+            // If not found in any collection, fallback to email
+            if (!username) {
+                username = user.email;
+                console.log('Username not found in any collection, using email:', username);
+            }
+            
             const isUserAdmin = isAdmin(user.email);
-            console.log('User data loaded:', { username, isAdmin: isUserAdmin, isNonParticipant });
+            console.log('User data loaded:', { username, isAdmin: isUserAdmin, isNonParticipant, gameMode });
             
             // Add the non-participant indicator for non-participant users
-            const displayUsername = isNonParticipant ? 
-                `${username}<span class="non-participant-indicator">(NP)</span>` : 
-                username;
+            // Or game mode indicator for players
+            let displayUsername = username;
+            if (isNonParticipant) {
+                displayUsername = `${username}<span class="non-participant-indicator">(NP)</span>`;
+            } else if (gameMode) {
+                displayUsername = `${username}<span class="gamemode-indicator">(${gameMode})</span>`;
+            }
             
             authSection.innerHTML = `
                 <div class="user-dropdown">
