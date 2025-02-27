@@ -133,46 +133,42 @@ async function handleLogin(e) {
         console.log("Attempting Firebase signInWithEmailAndPassword...");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        console.log("User signed in:", user.uid, "Email verified:", user.emailVerified);
+        console.log("User signed in:", user.uid);
 
-        // Check if the user has verified their email
-        if (user.emailVerified) {
-            console.log("Email is verified, checking user collections...");
-            // Check if user exists in players collection
-            const userDocRef = doc(db, "players", user.uid);
-            const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
+        // Check if the user exists in players or nonParticipants collection
+        const userDocRef = doc(db, "players", user.uid);
+        const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
+        
+        // Check both collections to see if user exists in either
+        console.log("Checking if user exists in players or nonParticipants...");
+        const [userDoc, nonParticipantDoc] = await Promise.all([
+            getDoc(userDocRef),
+            getDoc(nonParticipantDocRef)
+        ]);
+        
+        // If user doesn't exist in either collection, check pending registration
+        if (!userDoc.exists() && !nonParticipantDoc.exists()) {
+            console.log("User not found in main collections, checking pending registration");
+            const pendingRef = doc(db, "pendingRegistrations", user.uid);
+            const pendingDoc = await getDoc(pendingRef);
             
-            // Check both collections to see if user exists in either
-            console.log("Checking if user exists in players or nonParticipants...");
-            const [userDoc, nonParticipantDoc] = await Promise.all([
-                getDoc(userDocRef),
-                getDoc(nonParticipantDocRef)
-            ]);
-            console.log("User exists in players:", userDoc.exists());
-            console.log("User exists in nonParticipants:", nonParticipantDoc.exists());
-
-            // If user doesn't exist in either collection, process their registration
-            if (!userDoc.exists() && !nonParticipantDoc.exists()) {
-                console.log("New user, checking pending registration...");
-                // Get pending registration
-                const pendingRef = doc(db, "pendingRegistrations", user.uid);
-                const pendingDoc = await getDoc(pendingRef);
-                console.log("Pending registration exists:", pendingDoc.exists());
-
-                if (pendingDoc.exists()) {
-                    const pendingData = pendingDoc.data();
-                    console.log("Pending registration data:", pendingData);
+            if (pendingDoc.exists()) {
+                const pendingData = pendingDoc.data();
+                console.log("Found pending registration:", pendingData);
+                
+                // Process the registration if the email is verified
+                if (user.emailVerified) {
+                    console.log("Email is verified, processing registration");
                     
-                    // Show verification success message before redirecting
+                    // Show success message
                     errorElement.innerHTML = `
                         <div class="success-message">
-                            Email verified successfully! Setting up your account...
+                            Setting up your account...
                         </div>`;
                     
                     // Handle non-participant users
                     if (pendingData.nonParticipant) {
                         console.log("Processing non-participant registration");
-                        // Add user to nonParticipants collection with appropriate data
                         await setDoc(doc(db, "nonParticipants", user.uid), {
                             username: pendingData.username,
                             email: user.email,
@@ -184,14 +180,11 @@ async function handleLogin(e) {
                     // Only D1 players are added to the main ladder
                     else if (pendingData.gameMode === "D1") {
                         console.log("Processing D1 player registration");
-                        // Get next position on ladder
                         const playersRef = collection(db, "players");
                         const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
                         const playersSnapshot = await getDocs(playersQuery);
                         const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
-                        console.log("Next position on ladder:", nextPosition);
                         
-                        // Create player document in the ladder
                         await setDoc(userDocRef, {
                             username: pendingData.username,
                             email: user.email,
@@ -205,47 +198,42 @@ async function handleLogin(e) {
                         });
                         console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
                     } 
-                    // For other game modes, just log they're not added to main ladder
                     else {
                         console.log(`User registered with game mode "${pendingData.gameMode}" not added to main ladder`);
                     }
                     
                     // Clean up pending registration
-                    console.log("Deleting pending registration...");
                     await deleteDoc(pendingRef);
                     
                     // Short delay to show success message before redirecting
-                    console.log("Setting timeout for redirect...");
                     setTimeout(() => {
-                        console.log("Redirecting to index.html"); // Changed this to go to index, not login
                         window.location.href = '../HTML/index.html';
                     }, 2000);
                     return;
+                } 
+                else {
+                    // Email not verified, show warning but still let them proceed to verify
+                    errorElement.innerHTML = `
+                        <div class="warning-message">
+                            Please verify your email to complete your registration.
+                            <br><br>
+                            <button type="button" id="resend-button" class="resend-button">
+                                Resend Verification Email
+                            </button>
+                        </div>`;
+                    
+                    // Add event listener for the resend button
+                    document.getElementById('resend-button').addEventListener('click', () => {
+                        resendVerificationEmail(email);
+                    });
+                    
+                    // Sign out until email is verified
+                    await signOut(auth);
                 }
             }
-
-            // If not a new registration, just redirect immediately
-            console.log("Existing user, redirecting to index.html");
-            window.location.href = '../HTML/index.html';
         } else {
-            console.log("Email not verified, showing warning");
-            // User hasn't verified email yet
-            errorElement.innerHTML = `
-                <div class="warning-message">
-                    Please verify your email before logging in.
-                    <br><br>
-                    <button type="button" id="resend-button" class="resend-button">
-                        Resend Verification Email
-                    </button>
-                </div>`;
-            
-            // Add event listener for the resend button
-            document.getElementById('resend-button').addEventListener('click', () => {
-                resendVerificationEmail(email);
-            });
-            
-            // Sign out until email is verified
-            await signOut(auth);
+            // Existing user, redirect to index.html
+            window.location.href = '../HTML/index.html';
         }
     } catch (error) {
         console.error('Login error:', error);
