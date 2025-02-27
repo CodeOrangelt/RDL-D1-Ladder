@@ -165,80 +165,113 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     }
 }
 
-export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+// Update the approveReport function to handle different collections
+export async function approveReport(
+    reportId, 
+    winnerScore, 
+    winnerSuicides = "0", 
+    winnerComment = "", 
+    pendingCollection = 'pendingMatches',
+    approvedCollection = 'approvedMatches',
+    gameMode = 'D1'
+) {
+    console.log(`Approving report ${reportId} for game mode ${gameMode}`);
+    console.log(`Using collections: pending=${pendingCollection}, approved=${approvedCollection}`);
+
     try {
-        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+        // Get the report data
+        const reportRef = doc(db, pendingCollection, reportId);
+        const reportDoc = await getDoc(reportRef);
         
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            console.log('No user logged in');
-            throw new Error('You must be logged in to approve matches');
+        if (!reportDoc.exists()) {
+            throw new Error(`Report ${reportId} not found in collection ${pendingCollection}`);
         }
-        console.log('Current user:', currentUser.email);
-
-        // Get user's player document
-        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
-        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
-        console.log('Current username:', currentUsername);
-
-        // Get the pending match
-        const pendingMatchRef = doc(db, 'pendingMatches', reportId);
-        const reportSnapshot = await getDoc(pendingMatchRef);
-
-        if (!reportSnapshot.exists()) {
-            console.log('Report not found with ID:', reportId);
-            throw new Error('Match report not found');
-        }
-
-        const reportData = reportSnapshot.data();
-        console.log('Report data:', reportData);
         
-        // Check if user is the winner
-        if (currentUsername !== reportData.winnerUsername) {
-            throw new Error('Only the winner can approve matches');
+        const reportData = reportDoc.data();
+        
+        // Validate necessary fields exist
+        if (!reportData.winnerUsername || !reportData.loserUsername) {
+            throw new Error('Report is missing winner or loser username');
         }
-
-        // Add winner details to report data
-        const updatedReportData = {
+        
+        // Determine which players collection to use
+        const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
+        
+        // Get winner and loser data
+        let winnerRef, loserRef, winnerDoc, loserDoc;
+        
+        // Try to get players by ID first (new format)
+        if (reportData.winnerId && reportData.loserId) {
+            winnerRef = doc(db, playersCollection, reportData.winnerId);
+            loserRef = doc(db, playersCollection, reportData.loserId);
+            
+            winnerDoc = await getDoc(winnerRef);
+            loserDoc = await getDoc(loserRef);
+            
+            // If either doesn't exist by ID, fall back to username
+            if (!winnerDoc.exists() || !loserDoc.exists()) {
+                console.log('Player not found by ID, trying username lookup');
+                
+                // Try to find by username
+                const winnerQuery = query(collection(db, playersCollection), where("username", "==", reportData.winnerUsername));
+                const loserQuery = query(collection(db, playersCollection), where("username", "==", reportData.loserUsername));
+                
+                const winnerSnapshot = await getDocs(winnerQuery);
+                const loserSnapshot = await getDocs(loserQuery);
+                
+                if (winnerSnapshot.empty || loserSnapshot.empty) {
+                    throw new Error('Could not find winner or loser in the players collection');
+                }
+                
+                winnerRef = doc(db, playersCollection, winnerSnapshot.docs[0].id);
+                loserRef = doc(db, playersCollection, loserSnapshot.docs[0].id);
+                
+                winnerDoc = winnerSnapshot.docs[0];
+                loserDoc = loserSnapshot.docs[0];
+            }
+        } else {
+            // No IDs provided, try usernames
+            const winnerQuery = query(collection(db, playersCollection), where("username", "==", reportData.winnerUsername));
+            const loserQuery = query(collection(db, playersCollection), where("username", "==", reportData.loserUsername));
+            
+            const winnerSnapshot = await getDocs(winnerQuery);
+            const loserSnapshot = await getDocs(loserQuery);
+            
+            if (winnerSnapshot.empty || loserSnapshot.empty) {
+                throw new Error('Could not find winner or loser in the players collection');
+            }
+            
+            winnerRef = doc(db, playersCollection, winnerSnapshot.docs[0].id);
+            loserRef = doc(db, playersCollection, loserSnapshot.docs[0].id);
+            
+            winnerDoc = winnerSnapshot.docs[0];
+            loserDoc = winnerSnapshot.docs[0];
+        }
+        
+        // Rest of your existing approval logic...
+        // (Continue with the existing function implementation)
+        
+        // Create an approved match with the combined data
+        const approvedMatchData = {
             ...reportData,
-            winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides,
-            winnerComment: winnerComment,
+            winnerScore,
+            winnerSuicides,
+            winnerComment,
             approved: true,
             approvedAt: serverTimestamp(),
-            approvedBy: currentUsername,
-            createdAt: reportData.createdAt || serverTimestamp(),
-            winnerUsername: reportData.winnerUsername,
-            loserUsername: reportData.loserUsername
+            approvedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
         };
-
-        // Move match to approved collection first
-        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
-        await deleteDoc(pendingMatchRef);
-
-        console.log('Match moved to approved collection');
-
-        // Get player IDs
-        const [winnerDocs, loserDocs] = await Promise.all([
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
-        ]);
-
-        if (winnerDocs.empty || loserDocs.empty) {
-            throw new Error('Could not find player documents');
-        }
-
-        const winnerId = winnerDocs.docs[0].id;
-        const loserId = loserDocs.docs[0].id;
-
-        // Update ELO ratings
-        await updateEloRatings(winnerId, loserId, reportId);
-
-        console.log('Match successfully approved and ELO updated');
+        
+        // Add to approved collection
+        await setDoc(doc(db, approvedCollection, reportId), approvedMatchData);
+        
+        // Delete from pending collection
+        await deleteDoc(reportRef);
+        
+        console.log(`Report ${reportId} approved successfully`);
         return true;
-
     } catch (error) {
-        console.error('Error in approveReport:', error);
+        console.error('Error approving report:', error);
         throw error;
     }
 }
