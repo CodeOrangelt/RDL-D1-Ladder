@@ -204,12 +204,8 @@ service cloud.firestore {
     // Match Management - Used in reports.js and ladderalgorithm.js
     match /pendingMatches/{matchId} {
       allow read: if true;
-      allow create: if request.auth != null && 
-                   request.resource.data.keys().hasAll([
-                     'winnerUsername', 'loserUsername', 'loserScore',
-                     'mapPlayed', 'loserComment', 'createdAt'
-                   ]);
-      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null; // More permissive
     }
 
     match /approvedMatches/{matchId} {
@@ -236,12 +232,7 @@ service cloud.firestore {
 
     match /approvedMatchesD2/{matchId} {
       allow read: if true;
-      allow create: if request.auth != null && 
-                   request.resource.data.keys().hasAll([
-                     'winnerScore', 'winnerComment', 'approved',
-                     'approvedAt', 'approvedBy'
-                   ]);
-      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow create, update: if request.auth != null; // More permissive
       allow delete: if false;  // Keep match history immutable
     }
 
