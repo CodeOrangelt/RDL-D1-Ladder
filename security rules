@@ -56,6 +56,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // Add specific rule for pendingRegistrations collection
+    match /pendingRegistrations/{registrationId} {
+      allow read: if true;  // Allow reading without authentication for username checks
+      allow create: if request.auth != null;  // Only authenticated users can create
+      allow update: if request.auth != null && 
+                   (request.auth.uid == registrationId || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
     //nexus website usernames
         match /nexus_users/{userId} {
       allow read: if request.auth != null;
