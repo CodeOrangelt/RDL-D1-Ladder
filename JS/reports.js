@@ -1,7 +1,7 @@
 import { approveReport } from './ladderalgorithm.js';
 import { 
     collection, getDocs, query, where, 
-    orderBy, serverTimestamp, doc, setDoc 
+    orderBy, serverTimestamp, doc, setDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
@@ -51,20 +51,37 @@ async function handleUserSignedIn(user, elements) {
         console.error('Elements object is null or undefined');
         return;
     }
-
-    // Add null checks for each element
-    if (elements.authWarning) {
-        elements.authWarning.style.display = 'none';
-    }
-    
-    if (elements.reportForm) {
-        elements.reportForm.style.display = 'block';
-    }
     
     // Set email first before any other operations
     currentUserEmail = user.email || null;
 
     try {
+        // Check if user is a non-participant
+        const nonParticipantRef = doc(db, 'nonParticipants', user.uid);
+        const nonParticipantDoc = await getDoc(nonParticipantRef);
+        
+        if (nonParticipantDoc.exists()) {
+            // If user is a non-participant, show warning and hide form
+            if (elements.authWarning) {
+                elements.authWarning.style.display = 'block';
+                elements.authWarning.textContent = 'Non-participants cannot report games.';
+            }
+            
+            if (elements.reportForm) {
+                elements.reportForm.style.display = 'none';
+            }
+            return; // Exit early
+        }
+        
+        // Regular participant flow
+        if (elements.authWarning) {
+            elements.authWarning.style.display = 'none';
+        }
+        
+        if (elements.reportForm) {
+            elements.reportForm.style.display = 'block';
+        }
+
         await updateUserDisplay(user.email, elements);
         if (elements.winnerUsername) {
             await populateWinnerDropdown(elements.winnerUsername);
