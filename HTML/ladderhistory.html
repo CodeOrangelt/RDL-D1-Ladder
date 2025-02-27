@@ -8,74 +8,7 @@
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/nav.css">
     <link rel="stylesheet" href="../CSS/footer.css">
-    <style>
-        .season-container {
-            margin: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .collapse-btn {
-            width: 100%;
-            padding: 8px 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            background-color: #3c3c3c;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .collapse-btn:hover {
-            background-color: #4c4c4c;
-        }
-        .ladder-section {
-            display: none;
-            width: 100%;
-        }
-        .ladder-backdrop {
-            width: 100%;
-            max-width: 800px;
-            opacity: 0.1;
-            position: absolute;
-            z-index: -1;
-        }
-        .table-container {
-            margin-top: 20px;
-            width: 100%;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #444;
-        }
-        .page-container {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-            gap: 20px;
-        }
-        .container-section {
-            flex: 1;
-            background-color: #2c2c2c;
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 400px;
-            max-width: 400px;
-        }
-        .section-title {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #444;
-        }
-    </style>
+    <link rel="stylesheet" href="../CSS/ladderhistory.css">
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -84,63 +17,34 @@
             <!-- Ladder History Section -->
             <div class="container-section">
                 <h2 class="section-title">Ladder History</h2>
-                <button id="season0-btn" class="collapse-btn">Season 0</button>
-                <div id="season0-ladder" class="ladder-section">
-                    <div class="outer-container">
-                        <img src="../images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
-                        <div class="table-container">
-                            <table id="season0-table">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Username</th>
-                                        <th>ELO</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Season 0 data will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <button id="season1-btn" class="collapse-btn">Season 1</button>
-                <div id="season1-ladder" class="ladder-section">
-                    <!-- Same structure as season0-ladder -->
-                </div>
+                <button id="season0-btn" class="modal-btn">Season 0 Ladder</button>
+                <button id="season1-btn" class="modal-btn">Season 1 Ladder</button>
             </div>
 
             <!-- Stats Section -->
             <div class="container-section">
                 <h2 class="section-title">Stats</h2>
-                <button id="season0-stats-btn" class="collapse-btn">Season 0 Stats</button>
-                <div id="season0-stats" class="stats-section">
-                    <!-- Records Grid -->
-                    <div class="records-grid">
-                        <div class="record-card">
-                            <h3>Most Wins</h3>
-                            <div class="record-value" id="most-wins">-</div>
-                            <div class="record-holder" id="most-wins-player">-</div>
-                        </div>
-                        <div class="record-card">
-                            <h3>Best Win Rate</h3>
-                            <div class="record-value" id="best-winrate">-</div>
-                            <div class="record-holder" id="best-winrate-player">-</div>
-                        </div>
-                        <div class="record-card">
-                            <h3>Best K/D Ratio</h3>
-                            <div class="record-value" id="best-kd">-</div>
-                            <div class="record-holder" id="best-kd-player">-</div>
-                        </div>
-                    </div>
-                </div>
+                <button id="season0-stats-btn" class="modal-btn">Season 0 Stats</button>
+                <button id="season1-stats-btn" class="modal-btn">Season 1 Stats</button>
             </div>
 
             <!-- Matches Section -->
             <div class="container-section">
                 <h2 class="section-title">Matches</h2>
-                <div id="matches-content">
-                    <!-- Matches content will go here -->
+                <button id="season0-matches-btn" class="modal-btn">Season 0 Matches</button>
+                <button id="season1-matches-btn" class="modal-btn">Season 1 Matches</button>
+            </div>
+        </div>
+        
+        <!-- Modal for displaying data -->
+        <div id="data-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title">Title</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div id="modal-body" class="modal-body">
+                    <!-- Content will be inserted here -->
                 </div>
             </div>
         </div>

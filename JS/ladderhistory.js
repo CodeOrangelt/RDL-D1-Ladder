@@ -1,236 +1,429 @@
-import { db, auth } from './firebase-config.js';
-import { 
-    collection, 
-    query, 
-    orderBy, 
-    getDocs, 
-    doc, 
-    getDoc,
-    enableIndexedDbPersistence 
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { getRankStyle } from './ranks.js';
-
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-    } else if (err.code == 'unimplemented') {
-        console.warn('The current browser does not support persistence.');
-    }
-});
-
-// Initialize data loading state
-let isLoadingData = false;
+import { db } from './firebase-config.js';
+import { collection, getDocs, query, where, orderBy, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(async user => {
-        if (user) {
-            await initializeDataLoading();
+    // Setup modal structure
+    setupModalStructure();
+    
+    // Setup button event listeners
+    const season0Btn = document.getElementById('season0-btn');
+    if (season0Btn) {
+        season0Btn.addEventListener('click', async () => {
+            const ladderData = await prepareSeason0LadderData();
+            showModal('Season 0 Ladder (Final Standings)', ladderData);
+        });
+    }
+    
+    const season0StatsBtn = document.getElementById('season0-stats-btn');
+    if (season0StatsBtn) {
+        season0StatsBtn.addEventListener('click', async () => {
+            const statsData = await prepareSeason0StatsData();
+            showModal('Season 0 Stats', statsData);
+        });
+    }
+    
+    const season0MatchesBtn = document.getElementById('season0-matches-btn');
+    if (season0MatchesBtn) {
+        season0MatchesBtn.addEventListener('click', async () => {
+            const matchesData = await prepareSeason0MatchesData();
+            showModal('Season 0 Matches', matchesData);
+        });
+    }
+    
+    // Setup modal close button
+    const closeBtn = document.querySelector('.close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    // Close modal when clicking outside of modal content
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('data-modal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Example: call snapshotSeason0() when the archive button is clicked.
+    document.getElementById("archive-season0-btn")?.addEventListener("click", async () => {
+        const success = await snapshotSeason0();
+        if (success) {
+            alert("Season 0 archived successfully! You can now reset for a new season.");
         } else {
-            console.log('User not authenticated');
-            // Optionally redirect to login page
-            // window.location.href = 'login.html';
+            alert("Error archiving Season 0. See console for details.");
         }
     });
 });
 
-async function initializeDataLoading() {
-    if (isLoadingData) return;
-    isLoadingData = true;
-
+// Function to prepare Season 0 ladder data
+async function prepareSeason0LadderData() {
     try {
-        setupStatsButton();
-        setupSeasonButton('season0');
-        await loadInitialData();
-    } catch (error) {
-        console.error('Error initializing data:', error);
-    } finally {
-        isLoadingData = false;
-    }
-}
-
-async function loadInitialData() {
-    // Pre-fetch initial data
-    const seasonRef = collection(db, 'season0');
-    const q = query(seasonRef, orderBy('eloRating', 'desc'));
-    await getDocs(q);
-}
-
-function setupSeasonButton(seasonId) {
-    const button = document.getElementById(`${seasonId}-btn`);
-    const ladder = document.getElementById(`${seasonId}-ladder`);
-    
-    if (!button || !ladder) {
-        console.error(`Missing elements for ${seasonId}`);
-        return;
-    }
-
-    button.addEventListener('click', () => {
-        const isHidden = ladder.style.display === 'none' || !ladder.style.display;
-        ladder.style.display = isHidden ? 'block' : 'none';
+        // Using the db reference correctly
+        const playersRef = collection(db, "players");
+        const playersQuery = query(playersRef, orderBy("elo", "desc"));
+        const playersSnapshot = await getDocs(playersQuery);
         
-        if (isHidden) {
-            loadSeasonLadder(seasonId);
-        }
-    });
-}
-
-function setupStatsButton() {
-    const statsBtn = document.getElementById('season0-stats-btn');
-    const statsSection = document.getElementById('season0-stats');
-    
-    if (!statsBtn || !statsSection) {
-        console.error('Missing stats elements');
-        return;
-    }
-
-    statsBtn.addEventListener('click', () => {
-        const isHidden = statsSection.style.display === 'none' || !statsSection.style.display;
-        statsSection.style.display = isHidden ? 'block' : 'none';
+        // Create the table HTML
+        let tableHTML = `
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>ELO</th>
+                        <th>W-L</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
         
-        if (isHidden) {
-            loadSeasonStats();
-        }
-    });
-}
-
-async function loadSeasonLadder(seasonId) {
-    try {
-        const seasonRef = collection(db, seasonId);
-        const q = query(seasonRef, orderBy('eloRating', 'desc'));
-        const snapshot = await getDocs(q);
-
-        const tbody = document.querySelector(`#${seasonId}-table tbody`);
-        tbody.innerHTML = '';
-
-        let position = 1;
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const tr = document.createElement('tr');
-            
-            const rankStyle = getRankStyle(data.eloRating);
-            tr.style.backgroundColor = rankStyle.backgroundColor;
-            tr.style.color = rankStyle.color;
-
-            tr.innerHTML = `
-                <td>${position}</td>
-                <td>${data.username || 'Unknown'}</td>
-                <td>${Math.round(data.eloRating)}</td>
-            `;
-            tbody.appendChild(tr);
-            position++;
+        let rank = 1;
+        playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            // Only include players who have played at least one match
+            if (player.wins > 0 || player.losses > 0) {
+                tableHTML += `
+                    <tr>
+                        <td>${rank}</td>
+                        <td>${player.username}</td>
+                        <td>${Math.round(player.elo)}</td>
+                        <td>${player.wins}-${player.losses}</td>
+                    </tr>
+                `;
+                rank++;
+            }
         });
+        
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        return tableHTML;
     } catch (error) {
-        console.error(`Error loading ${seasonId} ladder:`, error);
+        console.error("Error loading ladder data:", error);
+        return `<p class="error-message">Error loading ladder data: ${error.message}</p>`;
     }
 }
 
-async function loadSeasonStats() {
+// Function to prepare Season 0 stats data
+async function prepareSeason0StatsData() {
     try {
-        const statsRef = doc(db, 'season0records', 'snapshot');
-        const statsDoc = await getDoc(statsRef);
+        const playersRef = collection(db, "players");
+        const playersSnapshot = await getDocs(playersRef);
         
-        if (!statsDoc.exists()) {
-            console.log('No stats found for season 0');
-            document.getElementById('season0-stats').innerHTML = '<p>No statistics available for this season.</p>';
-            return;
-        }
-
-        const records = statsDoc.data().records;
-        const recordStats = calculateRecordStats(records);
-        displayRecordStats(recordStats);
-        displayDetailedStats(records);
-    } catch (error) {
-        console.error('Error loading season stats:', error);
-        document.getElementById('season0-stats').innerHTML = '<p class="error-message">Error loading statistics. Please try again later.</p>';
-    }
-}
-
-function calculateRecordStats(records) {
-    let stats = {
-        mostWins: { player: 'None', value: 0 },
-        bestWinRate: { player: 'None', value: 0 },
-        bestKDRatio: { player: 'None', value: 0 },
-        longestTopStreak: { player: 'None', value: 0 },
-        mostMatches: { player: 'None', value: 0 },
-        bestScoreDiff: { player: 'None', value: 0 },
-        mostLosses: { player: 'None', value: 0 },
-        leastSuicides: { player: 'None', value: Number.MAX_VALUE },
-        leastLosses: { player: 'None', value: Number.MAX_VALUE }
-    };
-
-    records.forEach(record => {
-        const totalMatches = (record.wins || 0) + (record.losses || 0);
-        const winRate = totalMatches > 0 ? (record.wins / totalMatches) * 100 : 0;
-        const scoreDiff = (record.scoreFor || 0) - (record.scoreAgainst || 0);
-
-        // Update records
-        if (record.wins > stats.mostWins.value) {
-            stats.mostWins = { player: record.username, value: record.wins };
-        }
+        let mostWins = { count: 0, player: "" };
+        let bestWinRate = { rate: 0, player: "", games: 0 };
+        let bestKD = { ratio: 0, player: "", kills: 0, deaths: 0 };
         
-        if (winRate > stats.bestWinRate.value && totalMatches >= 5) {
-            stats.bestWinRate = { player: record.username, value: winRate };
-        }
-
-        if (totalMatches > stats.mostMatches.value) {
-            stats.mostMatches = { player: record.username, value: totalMatches };
-        }
-
-        if (scoreDiff > stats.bestScoreDiff.value) {
-            stats.bestScoreDiff = { player: record.username, value: scoreDiff };
-        }
-
-        if (record.losses > stats.mostLosses.value) {
-            stats.mostLosses = { player: record.username, value: record.losses };
-        }
-
-        if (record.losses < stats.leastLosses.value && totalMatches >= 5) {
-            stats.leastLosses = { player: record.username, value: record.losses };
-        }
-    });
-
-    return stats;
-}
-
-function displayRecordStats(stats) {
-    const statsContainer = document.getElementById('season0-stats');
-    statsContainer.innerHTML = `
-        <div class="records-container">
-            <h3>Season Records</h3>
-            <div class="record-grid">
-                <div class="record-item">
-                    <span class="record-title">Most Wins</span>
-                    <span class="record-player">${stats.mostWins.player}</span>
-                    <span class="record-value">${stats.mostWins.value}</span>
+        playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            const totalGames = player.wins + player.losses;
+            
+            // Most wins
+            if (player.wins > mostWins.count) {
+                mostWins.count = player.wins;
+                mostWins.player = player.username;
+            }
+            
+            // Best win rate (minimum 5 games)
+            if (totalGames >= 5) {
+                const winRate = (player.wins / totalGames) * 100;
+                if (winRate > bestWinRate.rate) {
+                    bestWinRate.rate = winRate;
+                    bestWinRate.player = player.username;
+                    bestWinRate.games = totalGames;
+                }
+            }
+            
+            // Best K/D ratio (minimum 10 kills)
+            if (player.kills >= 10) {
+                const kdRatio = player.deaths > 0 ? player.kills / player.deaths : player.kills;
+                if (kdRatio > bestKD.ratio) {
+                    bestKD.ratio = kdRatio;
+                    bestKD.player = player.username;
+                    bestKD.kills = player.kills;
+                    bestKD.deaths = player.deaths;
+                }
+            }
+        });
+        
+        // Create stats HTML
+        const statsHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Most Wins</h3>
+                    <div class="stat-value">${mostWins.count}</div>
+                    <div class="stat-holder">${mostWins.player}</div>
                 </div>
-                <div class="record-item">
-                    <span class="record-title">Best Win Rate</span>
-                    <span class="record-player">${stats.bestWinRate.player}</span>
-                    <span class="record-value">${stats.bestWinRate.value.toFixed(1)}%</span>
+                
+                <div class="stat-card">
+                    <h3>Best Win Rate</h3>
+                    <div class="stat-value">${bestWinRate.rate.toFixed(1)}%</div>
+                    <div class="stat-holder">${bestWinRate.player} (${bestWinRate.games} games)</div>
                 </div>
-                <div class="record-item">
-                    <span class="record-title">Most Matches</span>
-                    <span class="record-player">${stats.mostMatches.player}</span>
-                    <span class="record-value">${stats.mostMatches.value}</span>
-                </div>
-                <div class="record-item">
-                    <span class="record-title">Best Score Differential</span>
-                    <span class="record-player">${stats.bestScoreDiff.player}</span>
-                    <span class="record-value">${stats.bestScoreDiff.value}</span>
-                </div>
-                <div class="record-item">
-                    <span class="record-title">Most Losses</span>
-                    <span class="record-player">${stats.mostLosses.player}</span>
-                    <span class="record-value">${stats.mostLosses.value}</span>
-                </div>
-                <div class="record-item">
-                    <span class="record-title">Least Losses</span>
-                    <span class="record-player">${stats.leastLosses.player}</span>
-                    <span class="record-value">${stats.leastLosses.value}</span>
+                
+                <div class="stat-card">
+                    <h3>Best K/D Ratio</h3>
+                    <div class="stat-value">${bestKD.ratio.toFixed(2)}</div>
+                    <div class="stat-holder">${bestKD.player} (${bestKD.kills}K/${bestKD.deaths}D)</div>
                 </div>
             </div>
-        </div>
-        <table id="season0-stats-table">...</table>
-    `;
+        `;
+        
+        return statsHTML;
+    } catch (error) {
+        console.error("Error loading stats data:", error);
+        return `<p class="error-message">Error loading stats data: ${error.message}</p>`;
+    }
+}
+
+// Function to prepare Season 0 matches data
+async function prepareSeason0MatchesData() {
+    try {
+        const matchesRef = collection(db, "matches");
+        const matchesQuery = query(
+            matchesRef, 
+            where("status", "==", "approved"),
+            orderBy("timestamp", "desc")
+        );
+        const matchesSnapshot = await getDocs(matchesQuery);
+        
+        if (matchesSnapshot.empty) {
+            return '<p>No matches found.</p>';
+        }
+        
+        // Create matches HTML table
+        let matchesHTML = `
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Winner</th>
+                        <th>Loser</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+                
+        matchesSnapshot.forEach((doc) => {
+            const match = doc.data();
+            // Format date
+            const matchDate = match.timestamp ? new Date(match.timestamp.toDate()) : new Date();
+            const dateString = matchDate.toLocaleDateString();
+            
+            matchesHTML += `
+                <tr>
+                    <td>${dateString}</td>
+                    <td>${match.winner}</td>
+                    <td>${match.loser}</td>
+                    <td>${match.winnerScore} - ${match.loserScore}</td>
+                </tr>`;
+        });
+        
+        matchesHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        return matchesHTML;
+        
+    } catch (error) {
+        console.error("Error loading matches data:", error);
+        return `<p class="error-message">Error loading matches data: ${error.message}</p>`;
+    }
+}
+
+// Function to setup modal structure
+function setupModalStructure() {
+    // Create modal elements if they don't exist
+    if (!document.getElementById('data-modal')) {
+        const modalHTML = `
+            <div id="data-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modal-title">Title</h2>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div id="modal-body" class="modal-body">
+                        <!-- Content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal HTML to the body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        
+        // Add modal styles
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                overflow: auto;
+            }
+            
+            .modal-content {
+                background-color: #2c2c2c;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #444;
+                width: 80%;
+                max-width: 900px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #444;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .close-modal {
+                color: #aaa;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            
+            .close-modal:hover {
+                color: #f8c300;
+            }
+            
+            .modal-body {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            
+            .modal-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            .modal-table th, .modal-table td {
+                padding: 10px;
+                border-bottom: 1px solid #444;
+                text-align: left;
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .stat-card {
+                background-color: #333;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+                font-weight: bold;
+                color: #f8c300;
+                margin: 10px 0;
+            }
+            
+            .stat-holder {
+                font-style: italic;
+            }
+            
+            .error-message {
+                color: #ff6b6b;
+                font-weight: bold;
+                padding: 10px;
+                background-color: rgba(255, 107, 107, 0.1);
+                border-radius: 5px;
+            }
+        `;
+        document.head.appendChild(styleElement);
+    }
+}
+
+// Function to show modal with content
+function showModal(title, content) {
+    const modal = document.getElementById('data-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    
+    if (!modal || !modalTitle || !modalBody) {
+        console.error("Modal elements not found");
+        return;
+    }
+    
+    modalTitle.textContent = title;
+    modalBody.innerHTML = content;
+    
+    modal.style.display = 'block';
+}
+
+// Function to close modal
+function closeModal() {
+    const modal = document.getElementById('data-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Function to snapshot Season 0 data
+async function snapshotSeason0() {
+    try {
+        const seasonData = {};
+
+        // 1. Ladder history snapshot (players ordered by ELO)
+        const playersRef = collection(db, "players");
+        const ladderQuery = query(playersRef, orderBy("elo", "desc"));
+        const playersSnapshot = await getDocs(ladderQuery);
+        seasonData.ladder = [];
+        playersSnapshot.forEach((playerDoc) => {
+            seasonData.ladder.push({ id: playerDoc.id, ...playerDoc.data() });
+        });
+
+        // 2. Stats snapshot
+        // Instead of querying a collection, we parse the numbers/username from records.html.
+        // Ensure that your records.html has an element with id "records-stats" containing your stats.
+        const recordsStatsElement = document.getElementById("records-stats");
+        if (recordsStatsElement) {
+            // You can adapt this parsing logic if you need to extract individual numbers.
+            seasonData.stats = recordsStatsElement.innerText;
+        } else {
+            seasonData.stats = "Stats not available";
+        }
+
+        // 3. Match history snapshot (from approvedMatches collection)
+        const matchesRef = collection(db, "approvedMatches");
+        const matchesQuery = query(matchesRef, orderBy("timestamp", "desc"));
+        const matchesSnapshot = await getDocs(matchesQuery);
+        seasonData.matches = [];
+        matchesSnapshot.forEach((matchDoc) => {
+            seasonData.matches.push({ id: matchDoc.id, ...matchDoc.data() });
+        });
+
+        // Store the snapshot for Season 0 in a dedicated document
+        await setDoc(doc(db, "seasons", "season0"), {
+            archivedAt: new Date(),
+            ...seasonData
+        });
+
+        console.log("Season 0 archived successfully.");
+        return true;
+    } catch (error) {
+        console.error("Error archiving Season 0:", error);
+        return false;
+    }
 }
