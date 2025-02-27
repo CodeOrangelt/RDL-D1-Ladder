@@ -299,7 +299,7 @@
                 // Reset pagination
                 currentPage = 1;
                 
-                // Get matches from D1 collection
+                // Get matches from D1 collection with pagination
                 const matchesRef = collection(window.db, 'approvedMatches');
                 const q = query(matchesRef, orderBy('approvedAt', 'desc'));
                 console.log('Fetching D1 matches...');
@@ -313,23 +313,25 @@
                 
                 console.log(`Found ${querySnapshot.size} D1 matches`);
                 
-                // Process all matches and store
-                allMatches = [];
-                for (const doc of querySnapshot.docs) {
+                // Create a map of usernames to fetch ELO ratings in batch
+                const uniqueUsernames = new Set();
+                const matchesData = querySnapshot.docs.map(doc => {
                     const match = doc.data();
+                    uniqueUsernames.add(match.winnerUsername);
+                    uniqueUsernames.add(match.loserUsername);
                     const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
-                    
-                    // Get ELO ratings for winner and loser
-                    const winnerElo = await getPlayerElo(match.winnerUsername, 'players');
-                    const loserElo = await getPlayerElo(match.loserUsername, 'players');
-                    
-                    allMatches.push({
-                        ...match,
-                        approvedDate,
-                        winnerElo,
-                        loserElo
-                    });
-                }
+                    return { ...match, approvedDate };
+                });
+                
+                // Fetch all ELO ratings in batch
+                const playerElos = await fetchPlayerElosInBatch(Array.from(uniqueUsernames), 'players');
+                
+                // Process all matches with ELO data
+                allMatches = matchesData.map(match => ({
+                    ...match,
+                    winnerElo: playerElos[match.winnerUsername] || 1200,
+                    loserElo: playerElos[match.loserUsername] || 1200
+                }));
                 
                 // Display first page
                 displayPage(1);
@@ -363,23 +365,25 @@
                 
                 console.log(`Found ${querySnapshot.size} D2 matches`);
                 
-                // Process all matches and store
-                allMatches = [];
-                for (const doc of querySnapshot.docs) {
+                // Create a map of usernames to fetch ELO ratings in batch
+                const uniqueUsernames = new Set();
+                const matchesData = querySnapshot.docs.map(doc => {
                     const match = doc.data();
+                    uniqueUsernames.add(match.winnerUsername);
+                    uniqueUsernames.add(match.loserUsername);
                     const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
-                    
-                    // Get ELO ratings for winner and loser
-                    const winnerElo = await getPlayerElo(match.winnerUsername, 'playersD2');
-                    const loserElo = await getPlayerElo(match.loserUsername, 'playersD2');
-                    
-                    allMatches.push({
-                        ...match,
-                        approvedDate,
-                        winnerElo,
-                        loserElo
-                    });
-                }
+                    return { ...match, approvedDate };
+                });
+                
+                // Fetch all ELO ratings in batch
+                const playerElos = await fetchPlayerElosInBatch(Array.from(uniqueUsernames), 'playersD2');
+                
+                // Process all matches with ELO data
+                allMatches = matchesData.map(match => ({
+                    ...match,
+                    winnerElo: playerElos[match.winnerUsername] || 1200,
+                    loserElo: playerElos[match.loserUsername] || 1200
+                }));
                 
                 // Display first page
                 displayPage(1);
@@ -387,6 +391,42 @@
             } catch (error) {
                 console.error('Error fetching D2 approved matches:', error);
                 tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D2 matches. Please try again.</td></tr>';
+            }
+        }
+
+        // New helper function to fetch player ELO ratings in batch
+        async function fetchPlayerElosInBatch(usernames, collectionName) {
+            const eloMap = {};
+            
+            try {
+                if (!usernames.length) return eloMap;
+                
+                // Split usernames into chunks of 10 to avoid exceeding Firestore query limits
+                const batchSize = 10;
+                const batches = [];
+                
+                for (let i = 0; i < usernames.length; i += batchSize) {
+                    const batch = usernames.slice(i, i + batchSize);
+                    batches.push(batch);
+                }
+                
+                // Process each batch with parallel queries
+                const batchPromises = batches.map(async batch => {
+                    const playersRef = collection(window.db, collectionName);
+                    const q = query(playersRef, where('username', 'in', batch));
+                    const snapshot = await getDocs(q);
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        eloMap[data.username] = data.eloRating || 1200;
+                    });
+                });
+                
+                await Promise.all(batchPromises);
+                return eloMap;
+            } catch (error) {
+                console.error(`Error getting batch ELO ratings:`, error);
+                return eloMap;
             }
         }
         
