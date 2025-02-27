@@ -83,17 +83,58 @@ async function handleUserSignedIn(user, elements) {
     
     // Set email first before any other operations
     currentUserEmail = user.email || null;
+    const userUid = user.uid;
 
     try {
-        // Check if user is a non-participant
-        const nonParticipantRef = doc(db, 'nonParticipants', user.uid);
-        const nonParticipantDoc = await getDoc(nonParticipantRef);
+        // Check if user is a non-participant by UID
+        const nonParticipantRef = doc(db, 'nonParticipants', userUid);
+        try {
+            const nonParticipantDoc = await getDoc(nonParticipantRef);
+            
+            if (nonParticipantDoc.exists()) {
+                // If user is a non-participant, show warning and hide form
+                if (elements.authWarning) {
+                    elements.authWarning.style.display = 'block';
+                    elements.authWarning.textContent = 'Non-participants cannot report games.';
+                }
+                
+                if (elements.reportForm) {
+                    elements.reportForm.style.display = 'none';
+                }
+                return; // Exit early
+            }
+        } catch (error) {
+            console.warn('Error checking non-participant status:', error);
+            // Continue execution - don't block on this error
+        }
         
-        if (nonParticipantDoc.exists()) {
-            // If user is a non-participant, show warning and hide form
+        // Check if user exists in any of the player collections
+        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersCTF'];
+        let userFound = false;
+        let username = '';
+        
+        for (const collectionName of collections) {
+            try {
+                const playerRef = doc(db, collectionName, userUid);
+                const playerDoc = await getDoc(playerRef);
+                
+                if (playerDoc.exists()) {
+                    userFound = true;
+                    username = playerDoc.data().username;
+                    console.log(`User found in collection ${collectionName} with username: ${username}`);
+                    break;
+                }
+            } catch (error) {
+                console.warn(`Error checking ${collectionName} collection:`, error);
+                // Continue to next collection
+            }
+        }
+        
+        if (!userFound) {
+            // If user is not in any player collection, show warning and hide form
             if (elements.authWarning) {
                 elements.authWarning.style.display = 'block';
-                elements.authWarning.textContent = 'Non-participants cannot report games.';
+                elements.authWarning.textContent = 'You are not registered in any ladder.';
             }
             
             if (elements.reportForm) {
@@ -102,7 +143,7 @@ async function handleUserSignedIn(user, elements) {
             return; // Exit early
         }
         
-        // Regular participant flow
+        // Regular participant flow - user is in a player collection
         if (elements.authWarning) {
             elements.authWarning.style.display = 'none';
         }
@@ -111,11 +152,21 @@ async function handleUserSignedIn(user, elements) {
             elements.reportForm.style.display = 'block';
         }
 
-        await updateUserDisplay(user.email, elements);
+        // Update to check game mode when loading opponents list
+        if (currentGameMode === 'D1') {
+            await updateUserDisplay(user.email, elements);
+        }
+        
         if (elements.winnerUsername) {
             await populateWinnerDropdown(elements.winnerUsername);
         }
-        checkForOutstandingReports(user.email, elements);
+        
+        // Load the opponents list based on current game mode
+        await loadOpponentsList(userUid);
+        
+        // Check for outstanding reports
+        const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        checkForOutstandingReports(user.email, elements, pendingMatchesCollection);
     } catch (error) {
         console.error('Error during sign-in handling:', error);
     }
@@ -181,31 +232,63 @@ function setupReportForm(elements) {
 }
 
 async function submitReport(elements) {
-    const pendingMatchesRef = collection(db, 'pendingMatches');
+    // Use the correct collection based on game mode
+    const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+    const pendingMatchesRef = collection(db, pendingMatchesCollection);
     const newMatchRef = doc(pendingMatchesRef);
     
-    const winnerQuery = query(
-        collection(db, 'players'), 
-        where('email', '==', elements.winnerUsername.value)
-    );
-    const winnerSnapshot = await getDocs(winnerQuery);
-    
-    if (!winnerSnapshot.empty) {
+    try {
+        // Get current user's info
+        const user = auth.currentUser;
+        if (!user) throw new Error("User not authenticated");
+        
+        const userUid = user.uid;
+        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        
+        // Get current user (loser) document
+        const loserDoc = await getDoc(doc(db, playersCollection, userUid));
+        if (!loserDoc.exists()) throw new Error("Your player profile not found");
+        
+        // Get winner username from select
+        const winnerUsername = elements.winnerUsername.value;
+        if (!winnerUsername) throw new Error("Please select an opponent");
+        
+        // Find winner by username
+        const winnerQuery = query(collection(db, playersCollection), where("username", "==", winnerUsername));
+        const winnerSnapshot = await getDocs(winnerQuery);
+        
+        if (winnerSnapshot.empty) throw new Error("Selected opponent not found");
+        
         const winnerData = winnerSnapshot.docs[0].data();
+        const winnerId = winnerSnapshot.docs[0].id;
+        
         const reportData = {
             matchId: newMatchRef.id,
-            loserUsername: elements.loserUsername.textContent,
+            loserUsername: loserDoc.data().username,
+            loserId: userUid,
             winnerUsername: winnerData.username,
-            winnerEmail: elements.winnerUsername.value,
+            winnerId: winnerId,
             loserScore: elements.loserScore.value,
             suicides: elements.suicides.value,
             mapPlayed: elements.mapPlayed.value,
             loserComment: elements.loserComment.value,
+            gameMode: currentGameMode,
             approved: false,
             createdAt: serverTimestamp()
         };
         
         await setDoc(newMatchRef, reportData);
+        console.log(`Match reported in ${pendingMatchesCollection} with ID: ${newMatchRef.id}`);
+        
+        // Success feedback
+        elements.reportError.textContent = "Game reported successfully!";
+        elements.reportError.style.color = "green";
+        
+    } catch (error) {
+        console.error('Error submitting report:', error);
+        elements.reportError.textContent = `Error: ${error.message}`;
+        elements.reportError.style.color = "red";
+        throw error;
     }
 }
 
@@ -338,26 +421,40 @@ function hideLightbox() {
 }
 
 // Function to load the opponents list based on game mode
-async function loadOpponentsList(userEmail) {
+async function loadOpponentsList(userUid) {
     try {
-        // Get current user's ID
-        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        const reportError = document.getElementById('report-error');
+        const loserUsername = document.getElementById('loser-username');
+        const winnerUsername = document.getElementById('winner-username');
         
-        // Get current user's document
-        const currentUserDoc = await getDoc(doc(db, playersCollection, userEmail));
-        let currentUserName = '';
-        
-        if (currentUserDoc.exists()) {
-            const currentUserData = currentUserDoc.data();
-            currentUserName = currentUserData.username;
-            document.getElementById('loser-username').textContent = `You (${currentUserName})`;
-        } else {
-            document.getElementById('report-error').textContent = `You are not registered in the ${currentGameMode} ladder.`;
-            document.getElementById('loser-username').textContent = 'Not registered in ladder';
+        if (!reportError || !loserUsername || !winnerUsername) {
+            console.error('Required elements not found for loadOpponentsList');
             return;
         }
+        
+        // Get current user's document from the appropriate collection
+        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        console.log(`Loading opponents from collection: ${playersCollection}`);
+        
+        // Get current user's document
+        const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
+        
+        if (!currentUserDoc.exists()) {
+            reportError.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            reportError.style.color = 'red';
+            loserUsername.textContent = 'Not registered in this ladder';
+            winnerUsername.disabled = true;
+            return;
+        }
+        
+        // User exists in this ladder
+        const currentUserData = currentUserDoc.data();
+        const currentUserName = currentUserData.username;
+        loserUsername.textContent = `You (${currentUserName})`;
+        reportError.textContent = '';
+        winnerUsername.disabled = false;
 
-        // Get all players
+        // Get all players from this ladder
         const playersRef = collection(db, playersCollection);
         const playersSnapshot = await getDocs(playersRef);
 
@@ -367,24 +464,23 @@ async function loadOpponentsList(userEmail) {
         }
 
         // Clear the select
-        const select = document.getElementById('winner-username');
-        // Keep only the first option
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
+        winnerUsername.innerHTML = '<option value="">Select Opponent</option>';
 
         // Add all players except current user
         playersSnapshot.forEach(doc => {
             const playerData = doc.data();
-            if (doc.id !== userEmail) { // Skip current user
+            // Skip current user
+            if (doc.id !== userUid) {
                 const option = document.createElement('option');
-                option.value = playerData.username;
+                option.value = playerData.username; // Store username as the value
                 option.textContent = playerData.username;
-                select.appendChild(option);
+                option.dataset.uid = doc.id; // Store the UID as a data attribute
+                winnerUsername.appendChild(option);
             }
         });
     } catch (error) {
         console.error('Error loading opponents list:', error);
         document.getElementById('report-error').textContent = 'Error loading opponents. Please try again later.';
+        document.getElementById('report-error').style.color = 'red';
     }
 }
