@@ -35,11 +35,12 @@ async function isUsernameAvailable(username) {
                 'Username can only contain letters, numbers, underscores and hyphens';
             return false;
         }
-        const [playersSnapshot, pendingSnapshot] = await Promise.all([
+        const [playersSnapshot, pendingSnapshot, nonParticipantsSnapshot] = await Promise.all([
             getDocs(query(collection(db, "players"), where("username", "==", trimmedUsername))),
-            getDocs(query(collection(db, "pendingRegistrations"), where("username", "==", trimmedUsername)))
+            getDocs(query(collection(db, "pendingRegistrations"), where("username", "==", trimmedUsername))),
+            getDocs(query(collection(db, "nonParticipants"), where("username", "==", trimmedUsername)))
         ]);
-        if (!playersSnapshot.empty || !pendingSnapshot.empty) {
+        if (!playersSnapshot.empty || !pendingSnapshot.empty || !nonParticipantsSnapshot.empty) {
             document.getElementById('register-error').textContent = 
                 'Username is already taken';
             return false;
@@ -63,13 +64,12 @@ async function handleRegister(e) {
     const password = document.getElementById('register-password').value;
     const username = document.getElementById('register-username').value;
     const verificationAnswer = document.getElementById('verification-answer').value.toLowerCase();
-
+    
     // Get gameMode and non-participant flag
     const gameMode = document.getElementById('register-mode').value;
     const nonParticipant = document.getElementById('non-participant')?.checked || false;
 
-    // Since the registration form now prevents both inputs,
-    // also add a sanity check:
+    // Prevent both inputs from being provided
     if (nonParticipant && gameMode !== "") {
         errorElement.textContent = "Please unselect a game mode if you choose Non-Participant.";
         return;
@@ -130,17 +130,28 @@ async function handleLogin(e) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // Check if user exists in players collection
         const userDocRef = doc(db, "players", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
+        
+        // Check both collections to see if user exists in either
+        const [userDoc, nonParticipantDoc] = await Promise.all([
+            getDoc(userDocRef),
+            getDoc(nonParticipantDocRef)
+        ]);
 
-        if (!userDoc.exists()) {
+        // If user doesn't exist in either collection, process their registration
+        if (!userDoc.exists() && !nonParticipantDoc.exists()) {
+            // Get pending registration
             const pendingRef = doc(db, "pendingRegistrations", user.uid);
             const pendingDoc = await getDoc(pendingRef);
 
             if (pendingDoc.exists()) {
                 const pendingData = pendingDoc.data();
+                
+                // Handle non-participant users
                 if (pendingData.nonParticipant) {
-                    // Handle non-participant users
+                    // Add user to nonParticipants collection with appropriate data
                     await setDoc(doc(db, "nonParticipants", user.uid), {
                         username: pendingData.username,
                         email: user.email,
@@ -148,12 +159,16 @@ async function handleLogin(e) {
                         isNonParticipant: true
                     });
                     console.log(`User ${pendingData.username} added to nonParticipants collection`);
-                } else if (pendingData.gameMode === "D1") {
-                    // Only add D1 players to the main ladder
+                } 
+                // Only D1 players are added to the main ladder
+                else if (pendingData.gameMode === "D1") {
+                    // Get next position on ladder
                     const playersRef = collection(db, "players");
                     const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
                     const playersSnapshot = await getDocs(playersQuery);
                     const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+                    
+                    // Create player document in the ladder
                     await setDoc(userDocRef, {
                         username: pendingData.username,
                         email: user.email,
@@ -166,14 +181,18 @@ async function handleLogin(e) {
                         losses: 0
                     });
                     console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
-                } else {
-                    // For other game modes (D2, D3, Duos, CTF)
+                } 
+                // For other game modes, just log they're not added to main ladder
+                else {
                     console.log(`User registered with game mode "${pendingData.gameMode}" not added to main ladder`);
                 }
+                
+                // Clean up pending registration
                 await deleteDoc(pendingRef);
             }
         }
 
+        // Successful login - redirect to home
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Login error:', error);
@@ -203,27 +222,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle game mode select based on Non-Participant status
     const nonParticipantCheckbox = document.getElementById('non-participant');
     const registerModeSelect = document.getElementById('register-mode');
-    nonParticipantCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            registerModeSelect.value = "";
-            registerModeSelect.disabled = true;
-        } else {
-            registerModeSelect.disabled = false;
-        }
-    });
+    
+    if (nonParticipantCheckbox && registerModeSelect) {
+        nonParticipantCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                registerModeSelect.value = "";
+                registerModeSelect.disabled = true;
+            } else {
+                registerModeSelect.disabled = false;
+            }
+        });
+    }
 
-    document.getElementById('register-form').addEventListener('submit', handleRegister);
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
 
-    document.getElementById('show-register').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('register-container').style.display = 'block';
-    });
-
-    document.getElementById('show-login').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('register-container').style.display = 'none';
-        document.getElementById('login-container').style.display = 'block';
-    });
+    const showRegister = document.getElementById('show-register');
+    const showLogin = document.getElementById('show-login');
+    
+    if (showRegister) {
+        showRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        });
+    }
+    
+    if (showLogin) {
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
+    }
 });
