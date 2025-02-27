@@ -321,12 +321,3 @@ body {
     vertical-align: super;
     font-weight: normal;
 }
-
-/* Game mode indicator styling */
-.gamemode-indicator {
-    font-size: 0.7em;
-    color: #888;
-    margin-left: 4px;
-    vertical-align: super;
-    font-weight: normal;
-}
