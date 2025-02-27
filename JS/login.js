@@ -20,6 +20,69 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
+// Add this function near the top of your file
+function setupVerificationListener(email, password) {
+    console.log("Setting up email verification listener for:", email);
+    
+    // Create an interval that checks verification status
+    const intervalId = setInterval(async () => {
+        try {
+            console.log("Checking if email has been verified...");
+            // Sign in to refresh user state
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Force token refresh to get latest emailVerified status
+            await user.getIdToken(true);
+            
+            if (user.emailVerified) {
+                console.log("Email has been verified! Redirecting to login page...");
+                clearInterval(intervalId); // Stop checking
+                
+                // Show success message
+                document.getElementById('register-error').innerHTML = `
+                    <div class="success-message">
+                        Email verified successfully! You can now log in.
+                    </div>`;
+                
+                // Sign out the user
+                await signOut(auth);
+                
+                // Switch to login form after a short delay
+                setTimeout(() => {
+                    document.getElementById('register-container').style.display = 'none';
+                    document.getElementById('login-container').style.display = 'block';
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-error').innerHTML = `
+                        <div class="success-message">
+                            Your account has been verified! You can now log in.
+                        </div>`;
+                }, 2000);
+            } else {
+                console.log("Email not yet verified, waiting...");
+                // Sign out again to not keep user signed in
+                await signOut(auth);
+            }
+        } catch (error) {
+            console.error("Error checking verification status:", error);
+            // Stop checking if there's an error
+            clearInterval(intervalId);
+        }
+    }, 5000); // Check every 5 seconds
+    
+    // Store the interval ID in a global variable so we can clear it if needed
+    window.verificationCheckInterval = intervalId;
+    
+    // Set a timeout to eventually stop checking (after 5 minutes)
+    setTimeout(() => {
+        if (window.verificationCheckInterval) {
+            clearInterval(window.verificationCheckInterval);
+            window.verificationCheckInterval = null;
+            console.log("Stopped checking for email verification (timeout reached)");
+        }
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
 // Check username availability (pending + active)
 async function isUsernameAvailable(username) {
     if (!username || typeof username !== 'string' || username.trim().length < 3) {
@@ -111,6 +174,9 @@ async function handleRegister(e) {
             </div>`;
 
         await signOut(auth);
+
+        // Start the verification listener
+        setupVerificationListener(email, password);
     } catch (error) {
         console.error('Registration error:', error);
         errorElement.textContent = error.code === 'auth/email-already-in-use' 
