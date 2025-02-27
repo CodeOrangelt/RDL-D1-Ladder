@@ -193,7 +193,7 @@ async function handleLogin(e) {
         }
 
         // Successful login - redirect to home
-        window.location.href = 'index.html';
+        window.location.href = '../HTML/index.html';
     } catch (error) {
         console.error('Login error:', error);
         errorElement.textContent = 'Login failed: ' + error.message;
