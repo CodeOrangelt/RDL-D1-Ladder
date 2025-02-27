@@ -126,30 +126,42 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
     const errorElement = document.getElementById('login-error');
 
+    console.log("Login attempt started for:", email);
+    errorElement.textContent = ''; // Clear any previous error
+
     try {
+        console.log("Attempting Firebase signInWithEmailAndPassword...");
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        console.log("User signed in:", user.uid, "Email verified:", user.emailVerified);
 
         // Check if the user has verified their email
         if (user.emailVerified) {
+            console.log("Email is verified, checking user collections...");
             // Check if user exists in players collection
             const userDocRef = doc(db, "players", user.uid);
             const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
             
             // Check both collections to see if user exists in either
+            console.log("Checking if user exists in players or nonParticipants...");
             const [userDoc, nonParticipantDoc] = await Promise.all([
                 getDoc(userDocRef),
                 getDoc(nonParticipantDocRef)
             ]);
+            console.log("User exists in players:", userDoc.exists());
+            console.log("User exists in nonParticipants:", nonParticipantDoc.exists());
 
             // If user doesn't exist in either collection, process their registration
             if (!userDoc.exists() && !nonParticipantDoc.exists()) {
+                console.log("New user, checking pending registration...");
                 // Get pending registration
                 const pendingRef = doc(db, "pendingRegistrations", user.uid);
                 const pendingDoc = await getDoc(pendingRef);
+                console.log("Pending registration exists:", pendingDoc.exists());
 
                 if (pendingDoc.exists()) {
                     const pendingData = pendingDoc.data();
+                    console.log("Pending registration data:", pendingData);
                     
                     // Show verification success message before redirecting
                     errorElement.innerHTML = `
@@ -159,6 +171,7 @@ async function handleLogin(e) {
                     
                     // Handle non-participant users
                     if (pendingData.nonParticipant) {
+                        console.log("Processing non-participant registration");
                         // Add user to nonParticipants collection with appropriate data
                         await setDoc(doc(db, "nonParticipants", user.uid), {
                             username: pendingData.username,
@@ -170,11 +183,13 @@ async function handleLogin(e) {
                     } 
                     // Only D1 players are added to the main ladder
                     else if (pendingData.gameMode === "D1") {
+                        console.log("Processing D1 player registration");
                         // Get next position on ladder
                         const playersRef = collection(db, "players");
                         const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
                         const playersSnapshot = await getDocs(playersQuery);
                         const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+                        console.log("Next position on ladder:", nextPosition);
                         
                         // Create player document in the ladder
                         await setDoc(userDocRef, {
@@ -196,28 +211,38 @@ async function handleLogin(e) {
                     }
                     
                     // Clean up pending registration
+                    console.log("Deleting pending registration...");
                     await deleteDoc(pendingRef);
                     
                     // Short delay to show success message before redirecting
+                    console.log("Setting timeout for redirect...");
                     setTimeout(() => {
-                        window.location.href = '../HTML/login.html';
+                        console.log("Redirecting to index.html"); // Changed this to go to index, not login
+                        window.location.href = '../HTML/index.html';
                     }, 2000);
                     return;
                 }
             }
 
             // If not a new registration, just redirect immediately
+            console.log("Existing user, redirecting to index.html");
             window.location.href = '../HTML/index.html';
         } else {
+            console.log("Email not verified, showing warning");
             // User hasn't verified email yet
             errorElement.innerHTML = `
                 <div class="warning-message">
                     Please verify your email before logging in.
                     <br><br>
-                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                    <button type="button" id="resend-button" class="resend-button">
                         Resend Verification Email
                     </button>
                 </div>`;
+            
+            // Add event listener for the resend button
+            document.getElementById('resend-button').addEventListener('click', () => {
+                resendVerificationEmail(email);
+            });
             
             // Sign out until email is verified
             await signOut(auth);
@@ -230,20 +255,44 @@ async function handleLogin(e) {
 
 // Resend verification email function
 async function resendVerificationEmail(email) {
+    console.log("Attempting to resend verification email to:", email);
     try {
-        const user = auth.currentUser;
-        if (user) {
-            await sendEmailVerification(user);
-            document.getElementById('login-error').innerHTML = `
-                <div class="success-message">
-                    Verification email has been resent. Please check your inbox.
-                </div>`;
+        // Need to sign in again to get the user object
+        const password = document.getElementById('login-password')?.value;
+        if (!password) {
+            console.error("Password not available for resending verification");
+            document.getElementById('login-error').textContent = 
+                'Please enter your password to resend verification email';
+            return;
         }
+        
+        // Sign in to get user object
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("User signed in for verification email:", user.uid);
+        
+        await sendEmailVerification(user);
+        console.log("Verification email sent");
+        
+        document.getElementById('login-error').innerHTML = `
+            <div class="success-message">
+                Verification email has been resent to ${email}. Please check your inbox.
+            </div>`;
+        
+        // Sign out again
+        await signOut(auth);
     } catch (error) {
-        document.getElementById('login-error').textContent = error.message;
+        console.error("Error resending verification email:", error);
+        document.getElementById('login-error').textContent = 
+            'Error sending verification email: ' + error.message;
     }
 }
-window.resendVerificationEmail = resendVerificationEmail;
+
+// Keep exposing the function, but with a proper function implementation
+window.resendVerificationEmail = function(email) {
+    console.log("Window.resendVerificationEmail called with:", email);
+    resendVerificationEmail(email);
+};
 
 // Setup event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
