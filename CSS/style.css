@@ -517,3 +517,79 @@ tr:nth-child(even) {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+.ladder-join-prompt {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 12px;
+    margin: 20px auto;
+    max-width: 400px;
+    text-align: center;
+}
+
+.ladder-join-message {
+    color: #fff;
+    font-size: 15px;
+}
+
+.join-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.join-form label {
+    font-size: 14px;
+    color: #ccc;
+}
+
+.join-form input {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 10px;
+    width: 200px;
+}
+
+.join-ladder-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.join-ladder-button:hover {
+    background-color: #45a049;
+}
+
+.join-ladder-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.ladder-join-status {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.ladder-join-status.success {
+    color: #4CAF50;
+}
+
+.ladder-join-status.error {
+    color: #f44336;
+}
+
+.ladder-join-status.loading {
+    color: #2196F3;
+}
