@@ -312,3 +312,107 @@ body {
     opacity: 0.7;
     font-size: 14px;
 }
+
+/* Styling for the user dropdown in the navbar */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-username {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: inherit;
+    transition: color 0.3s;
+}
+
+.nav-username:hover {
+    color: #4CAF50; /* Green hover effect matching other links */
+}
+
+.nav-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #0f0f0f;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    right: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.nav-dropdown:hover .nav-dropdown-content {
+    display: block;
+}
+
+.nav-dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    border-bottom: 1px solid #222;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.nav-dropdown-content a:hover {
+    background-color: #222;
+    color: #4CAF50;
+}
+
+/* Fix for the older dropdown class used in fallback error state */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.username-display {
+    display: inline-block;
+    color: white;
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #0f0f0f;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    right: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    border-bottom: 1px solid #222;
+    transition: background-color 0.2s;
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #222;
+    color: #4CAF50;
+}

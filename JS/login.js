@@ -19,7 +19,6 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
-import { handleLogin as importedHandleLogin } from './some-other-file.js';
 
 // Add this function near the top of your file
 function setupVerificationListener(email, password) {
@@ -432,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (loginForm) {
-        loginForm.addEventListener('submit', loginFormHandler);
+        loginForm.addEventListener('submit', handleLogin);
     }
 
     const showRegister = document.getElementById('show-register');
