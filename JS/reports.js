@@ -55,9 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentGameMode = mode;
         console.log(`Game mode set to: ${currentGameMode}`);
         
-        // If user is logged in, reload the opponent list for the new game mode
-        if (currentUserEmail) {
-            loadOpponentsList(currentUserEmail);
+        // If user is logged in, check if they belong in this ladder and reload opponents
+        if (auth.currentUser) {
+            checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
         }
     }
 
@@ -122,6 +122,23 @@ async function handleUserSignedIn(user, elements) {
                     userFound = true;
                     username = playerDoc.data().username;
                     console.log(`User found in collection ${collectionName} with username: ${username}`);
+                    
+                    // If user is found in D1 or D2 collection, set that as the current mode
+                    if (collectionName === 'players' && currentGameMode !== 'D1') {
+                        // User exists in D1 collection but current mode is not D1
+                        currentGameMode = 'D1';
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        d1Button.classList.add('active');
+                        d2Button.classList.remove('active');
+                    } else if (collectionName === 'playersD2' && currentGameMode !== 'D2') {
+                        // User exists in D2 collection but current mode is not D2
+                        currentGameMode = 'D2';
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        d2Button.classList.add('active');
+                        d1Button.classList.remove('active');
+                    }
                     break;
                 }
             } catch (error) {
@@ -143,30 +160,48 @@ async function handleUserSignedIn(user, elements) {
             return; // Exit early
         }
         
-        // Regular participant flow - user is in a player collection
-        if (elements.authWarning) {
-            elements.authWarning.style.display = 'none';
-        }
+        // Check if user is in the current ladder and load opponents
+        const isInCurrentLadder = await checkUserInLadderAndLoadOpponents(userUid);
         
-        if (elements.reportForm) {
-            elements.reportForm.style.display = 'block';
+        if (!isInCurrentLadder) {
+            console.warn(`User is not in the ${currentGameMode} ladder. Checking other ladders.`);
+            
+            // Try to find a ladder where the user exists
+            for (const collection of ['players', 'playersD2']) {
+                if (collection === (currentGameMode === 'D1' ? 'players' : 'playersD2')) {
+                    continue; // Skip the current mode's collection as we already checked
+                }
+                
+                const playerRef = doc(db, collection, userUid);
+                try {
+                    const playerDoc = await getDoc(playerRef);
+                    if (playerDoc.exists()) {
+                        // Update game mode to the one where user exists
+                        const newMode = collection === 'players' ? 'D1' : 'D2';
+                        console.log(`User found in ${collection}, switching to ${newMode} mode`);
+                        
+                        // Update UI to reflect the new mode
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        
+                        if (newMode === 'D1') {
+                            d1Button.classList.add('active');
+                            d2Button.classList.remove('active');
+                        } else {
+                            d2Button.classList.add('active');
+                            d1Button.classList.remove('active');
+                        }
+                        
+                        // Set the mode and check again
+                        currentGameMode = newMode;
+                        await checkUserInLadderAndLoadOpponents(userUid);
+                        break;
+                    }
+                } catch (error) {
+                    console.warn(`Error checking ${collection}:`, error);
+                }
+            }
         }
-
-        // Update to check game mode when loading opponents list
-        if (currentGameMode === 'D1') {
-            await updateUserDisplay(user.email, elements);
-        }
-        
-        if (elements.winnerUsername) {
-            await populateWinnerDropdown(elements.winnerUsername);
-        }
-        
-        // Load the opponents list based on current game mode
-        await loadOpponentsList(userUid);
-        
-        // Check for outstanding reports
-        const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
-        checkForOutstandingReports(user.email, elements, pendingMatchesCollection);
     } catch (error) {
         console.error('Error during sign-in handling:', error);
     }
@@ -482,5 +517,68 @@ async function loadOpponentsList(userUid) {
         console.error('Error loading opponents list:', error);
         document.getElementById('report-error').textContent = 'Error loading opponents. Please try again later.';
         document.getElementById('report-error').style.color = 'red';
+    }
+}
+
+// New function to check if user is in the selected ladder and load opponents if so
+async function checkUserInLadderAndLoadOpponents(userUid) {
+    try {
+        const reportError = document.getElementById('report-error');
+        const loserUsername = document.getElementById('loser-username');
+        const winnerUsername = document.getElementById('winner-username');
+        const reportForm = document.getElementById('report-form');
+        const authWarning = document.getElementById('auth-warning');
+        
+        // Show "checking" message
+        reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
+        reportError.style.color = 'white';
+        
+        // Get current user's document from the appropriate collection
+        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        console.log(`Checking if user exists in collection: ${playersCollection}`);
+        
+        // Get current user's document
+        const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
+        
+        if (!currentUserDoc.exists()) {
+            // User is not in this ladder
+            reportError.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            reportError.style.color = 'red';
+            loserUsername.textContent = 'Not registered in this ladder';
+            winnerUsername.disabled = true;
+            winnerUsername.innerHTML = '<option value="">Select Opponent</option>';
+            
+            // Show warning about not being in the ladder
+            authWarning.style.display = 'block';
+            authWarning.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            return false;
+        }
+        
+        // User exists in this ladder - clear error and warning
+        reportError.textContent = '';
+        authWarning.style.display = 'none';
+        
+        // User exists in this ladder
+        const currentUserData = currentUserDoc.data();
+        const currentUserName = currentUserData.username;
+        loserUsername.textContent = `You (${currentUserName})`;
+        winnerUsername.disabled = false;
+        
+        // Make sure form is visible
+        reportForm.style.display = 'block';
+        
+        // Load the opponents list
+        await loadOpponentsList(userUid);
+        
+        // Check for outstanding reports in this game mode
+        const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        await checkForOutstandingReports(currentUserData.email, null, pendingMatchesCollection);
+        
+        return true;
+    } catch (error) {
+        console.error('Error checking if user is in ladder:', error);
+        document.getElementById('report-error').textContent = 'Error checking ladder membership. Please try again later.';
+        document.getElementById('report-error').style.color = 'red';
+        return false;
     }
 }
