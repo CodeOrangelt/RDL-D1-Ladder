@@ -130,70 +130,98 @@ async function handleLogin(e) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Check if user exists in players collection
-        const userDocRef = doc(db, "players", user.uid);
-        const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
-        
-        // Check both collections to see if user exists in either
-        const [userDoc, nonParticipantDoc] = await Promise.all([
-            getDoc(userDocRef),
-            getDoc(nonParticipantDocRef)
-        ]);
+        // Check if the user has verified their email
+        if (user.emailVerified) {
+            // Check if user exists in players collection
+            const userDocRef = doc(db, "players", user.uid);
+            const nonParticipantDocRef = doc(db, "nonParticipants", user.uid);
+            
+            // Check both collections to see if user exists in either
+            const [userDoc, nonParticipantDoc] = await Promise.all([
+                getDoc(userDocRef),
+                getDoc(nonParticipantDocRef)
+            ]);
 
-        // If user doesn't exist in either collection, process their registration
-        if (!userDoc.exists() && !nonParticipantDoc.exists()) {
-            // Get pending registration
-            const pendingRef = doc(db, "pendingRegistrations", user.uid);
-            const pendingDoc = await getDoc(pendingRef);
+            // If user doesn't exist in either collection, process their registration
+            if (!userDoc.exists() && !nonParticipantDoc.exists()) {
+                // Get pending registration
+                const pendingRef = doc(db, "pendingRegistrations", user.uid);
+                const pendingDoc = await getDoc(pendingRef);
 
-            if (pendingDoc.exists()) {
-                const pendingData = pendingDoc.data();
-                
-                // Handle non-participant users
-                if (pendingData.nonParticipant) {
-                    // Add user to nonParticipants collection with appropriate data
-                    await setDoc(doc(db, "nonParticipants", user.uid), {
-                        username: pendingData.username,
-                        email: user.email,
-                        createdAt: serverTimestamp(),
-                        isNonParticipant: true
-                    });
-                    console.log(`User ${pendingData.username} added to nonParticipants collection`);
-                } 
-                // Only D1 players are added to the main ladder
-                else if (pendingData.gameMode === "D1") {
-                    // Get next position on ladder
-                    const playersRef = collection(db, "players");
-                    const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
-                    const playersSnapshot = await getDocs(playersQuery);
-                    const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+                if (pendingDoc.exists()) {
+                    const pendingData = pendingDoc.data();
                     
-                    // Create player document in the ladder
-                    await setDoc(userDocRef, {
-                        username: pendingData.username,
-                        email: user.email,
-                        eloRating: 1200,
-                        position: nextPosition,
-                        createdAt: serverTimestamp(),
-                        isAdmin: false,
-                        matches: 0,
-                        wins: 0,
-                        losses: 0
-                    });
-                    console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
-                } 
-                // For other game modes, just log they're not added to main ladder
-                else {
-                    console.log(`User registered with game mode "${pendingData.gameMode}" not added to main ladder`);
+                    // Show verification success message before redirecting
+                    errorElement.innerHTML = `
+                        <div class="success-message">
+                            Email verified successfully! Setting up your account...
+                        </div>`;
+                    
+                    // Handle non-participant users
+                    if (pendingData.nonParticipant) {
+                        // Add user to nonParticipants collection with appropriate data
+                        await setDoc(doc(db, "nonParticipants", user.uid), {
+                            username: pendingData.username,
+                            email: user.email,
+                            createdAt: serverTimestamp(),
+                            isNonParticipant: true
+                        });
+                        console.log(`User ${pendingData.username} added to nonParticipants collection`);
+                    } 
+                    // Only D1 players are added to the main ladder
+                    else if (pendingData.gameMode === "D1") {
+                        // Get next position on ladder
+                        const playersRef = collection(db, "players");
+                        const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
+                        const playersSnapshot = await getDocs(playersQuery);
+                        const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+                        
+                        // Create player document in the ladder
+                        await setDoc(userDocRef, {
+                            username: pendingData.username,
+                            email: user.email,
+                            eloRating: 1200,
+                            position: nextPosition,
+                            createdAt: serverTimestamp(),
+                            isAdmin: false,
+                            matches: 0,
+                            wins: 0,
+                            losses: 0
+                        });
+                        console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
+                    } 
+                    // For other game modes, just log they're not added to main ladder
+                    else {
+                        console.log(`User registered with game mode "${pendingData.gameMode}" not added to main ladder`);
+                    }
+                    
+                    // Clean up pending registration
+                    await deleteDoc(pendingRef);
+                    
+                    // Short delay to show success message before redirecting
+                    setTimeout(() => {
+                        window.location.href = '../HTML/login.html';
+                    }, 2000);
+                    return;
                 }
-                
-                // Clean up pending registration
-                await deleteDoc(pendingRef);
             }
-        }
 
-        // Successful login - redirect to home
-        window.location.href = '../HTML/index.html';
+            // If not a new registration, just redirect immediately
+            window.location.href = '../HTML/index.html';
+        } else {
+            // User hasn't verified email yet
+            errorElement.innerHTML = `
+                <div class="warning-message">
+                    Please verify your email before logging in.
+                    <br><br>
+                    <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                        Resend Verification Email
+                    </button>
+                </div>`;
+            
+            // Sign out until email is verified
+            await signOut(auth);
+        }
     } catch (error) {
         console.error('Login error:', error);
         errorElement.textContent = 'Login failed: ' + error.message;
