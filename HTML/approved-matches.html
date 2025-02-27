@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../CSS/approved-matches-style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/pagination.css">
     
     <style>
         .ladder-toggle {
@@ -37,6 +38,130 @@
         
         .toggle-button.active {
             background-color: #337ab7;
+        }
+        
+        /* ELO color classes */
+        .elo-emerald { 
+            color: #50C878 !important; 
+            text-shadow: 0 0 5px rgba(80, 200, 120, 0.5);
+        }
+        
+        .elo-gold { 
+            color: #FFD700 !important; 
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+        
+        .elo-silver { 
+            color: #C0C0C0 !important; 
+            text-shadow: 0 0 5px rgba(192, 192, 192, 0.5);
+        }
+        
+        .elo-bronze { 
+            color: #CD7F32 !important; 
+            text-shadow: 0 0 5px rgba(205, 127, 50, 0.5);
+        }
+        
+        .elo-unranked { 
+            color: #ffffff !important; 
+        }
+        
+        /* Pagination styles */
+        .pagination {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .pagination button {
+            padding: 8px 15px;
+            background: #337ab7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .pagination button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .page-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .page-search {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .page-search input {
+            width: 60px;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #333;
+            color: white;
+            text-align: center;
+        }
+        
+        /* Add bottom margin to container to prevent pagination overlay */
+        .container {
+            margin-bottom: 80px;
+        }
+        
+        /* Search bar styles */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        #match-search {
+            padding: 10px;
+            width: 300px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        
+        #search-button, #reset-button {
+            padding: 10px 15px;
+            background-color: #337ab7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #search-button:hover, #reset-button:hover {
+            background-color: #286090;
+        }
+        
+        #reset-button {
+            background-color: #d9534f;
+        }
+        
+        #reset-button:hover {
+            background-color: #c9302c;
         }
     </style>
     
@@ -69,6 +194,28 @@
         <div class="ladder-toggle">
             <button id="d1-button" class="toggle-button active">D1 Ladder</button>
             <button id="d2-button" class="toggle-button">D2 Ladder</button>
+        </div>
+        
+        <!-- Add search bar -->
+        <div class="search-container">
+            <input type="text" id="match-search" placeholder="Search by player name...">
+            <button id="search-button">Search</button>
+            <button id="reset-button">Reset</button>
+        </div>
+        
+        <!-- Pagination container - moved here from bottom -->
+        <div class="pagination-container">
+            <div class="pagination-controls">
+                <button id="prevPage" disabled>Previous</button>
+                <div class="page-navigation">
+                    <span id="page-status">Page 1 of 1</span>
+                    <div class="page-search">
+                        <input type="number" id="pageInput" min="1" value="1">
+                        <button id="goToPage">Go</button>
+                    </div>
+                </div>
+                <button id="nextPage">Next</button>
+            </div>
         </div>
         
         <table id="approved-matches-table">
@@ -105,14 +252,43 @@
             getDocs, 
             query, 
             orderBy, 
+            where,
             limit 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { firebaseConfig } from '../JS/firebase-config.js';
 
         // Global variables
         let currentGameMode = 'D1';
+        let currentPage = 1;
+        const matchesPerPage = 10;
+        let allMatches = [];
         const tableBody = document.querySelector('#approved-matches-table tbody');
         const title = document.querySelector('h1');
+        
+        // Helper function to determine ELO class
+        function getEloClass(elo) {
+            if (elo >= 2000) return 'elo-emerald';
+            if (elo >= 1800) return 'elo-gold';
+            if (elo >= 1600) return 'elo-silver';
+            if (elo >= 1400) return 'elo-bronze';
+            return 'elo-unranked';
+        }
+        
+        // Helper function to get player's ELO
+        async function getPlayerElo(username, collectionName) {
+            try {
+                const playersRef = collection(window.db, collectionName);
+                const q = query(playersRef, where('username', '==', username));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    return snapshot.docs[0].data().eloRating || 1200;
+                }
+                return 1200; // Default ELO
+            } catch (error) {
+                console.error(`Error getting ${username}'s ELO:`, error);
+                return 1200;
+            }
+        }
 
         // Function to load D1 matches
         async function loadD1Matches() {
@@ -120,42 +296,43 @@
                 tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D1 matches...</td></tr>';
                 title.textContent = 'D1 Approved Matches';
                 
+                // Reset pagination
+                currentPage = 1;
+                
                 // Get matches from D1 collection
                 const matchesRef = collection(window.db, 'approvedMatches');
-                const q = query(matchesRef, orderBy('approvedAt', 'desc'), limit(100));
+                const q = query(matchesRef, orderBy('approvedAt', 'desc'));
                 console.log('Fetching D1 matches...');
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
                     tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D1 matches found</td></tr>';
+                    updatePagination(1, 1);
                     return;
                 }
                 
                 console.log(`Found ${querySnapshot.size} D1 matches`);
                 
-                // Build table rows
-                let tableContent = '';
-                querySnapshot.forEach(doc => {
+                // Process all matches and store
+                allMatches = [];
+                for (const doc of querySnapshot.docs) {
                     const match = doc.data();
                     const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
                     
-                    tableContent += `
-                        <tr>
-                            <td>${match.winnerUsername || 'Unknown'}</td>
-                            <td>${match.loserUsername || 'Unknown'}</td>
-                            <td>${match.winnerScore || '20'}</td>
-                            <td>${match.loserScore || '0'}</td>
-                            <td>${match.winnerSuicides || '0'}</td>
-                            <td>${match.suicides || '0'}</td>
-                            <td>${match.mapPlayed || 'Unknown'}</td>
-                            <td>${match.winnerComment || 'None'}</td>
-                            <td>${match.loserComment || 'None'}</td>
-                            <td>${approvedDate.toLocaleString()}</td>
-                        </tr>
-                    `;
-                });
+                    // Get ELO ratings for winner and loser
+                    const winnerElo = await getPlayerElo(match.winnerUsername, 'players');
+                    const loserElo = await getPlayerElo(match.loserUsername, 'players');
+                    
+                    allMatches.push({
+                        ...match,
+                        approvedDate,
+                        winnerElo,
+                        loserElo
+                    });
+                }
                 
-                tableBody.innerHTML = tableContent;
+                // Display first page
+                displayPage(1);
                 
             } catch (error) {
                 console.error('Error fetching D1 approved matches:', error);
@@ -169,47 +346,152 @@
                 tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D2 matches...</td></tr>';
                 title.textContent = 'D2 Approved Matches';
                 
+                // Reset pagination
+                currentPage = 1;
+                
                 // Get matches from D2 collection
                 const matchesRef = collection(window.db, 'approvedMatchesD2');
-                const q = query(matchesRef, orderBy('approvedAt', 'desc'), limit(100));
+                const q = query(matchesRef, orderBy('approvedAt', 'desc'));
                 console.log('Fetching D2 matches...');
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
                     tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D2 matches found</td></tr>';
+                    updatePagination(1, 1);
                     return;
                 }
                 
                 console.log(`Found ${querySnapshot.size} D2 matches`);
                 
-                // Build table rows
-                let tableContent = '';
-                querySnapshot.forEach(doc => {
+                // Process all matches and store
+                allMatches = [];
+                for (const doc of querySnapshot.docs) {
                     const match = doc.data();
                     const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
                     
-                    tableContent += `
-                        <tr>
-                            <td>${match.winnerUsername || 'Unknown'}</td>
-                            <td>${match.loserUsername || 'Unknown'}</td>
-                            <td>${match.winnerScore || '20'}</td>
-                            <td>${match.loserScore || '0'}</td>
-                            <td>${match.winnerSuicides || '0'}</td>
-                            <td>${match.suicides || '0'}</td>
-                            <td>${match.mapPlayed || 'Unknown'}</td>
-                            <td>${match.winnerComment || 'None'}</td>
-                            <td>${match.loserComment || 'None'}</td>
-                            <td>${approvedDate.toLocaleString()}</td>
-                        </tr>
-                    `;
-                });
+                    // Get ELO ratings for winner and loser
+                    const winnerElo = await getPlayerElo(match.winnerUsername, 'playersD2');
+                    const loserElo = await getPlayerElo(match.loserUsername, 'playersD2');
+                    
+                    allMatches.push({
+                        ...match,
+                        approvedDate,
+                        winnerElo,
+                        loserElo
+                    });
+                }
                 
-                tableBody.innerHTML = tableContent;
+                // Display first page
+                displayPage(1);
                 
             } catch (error) {
                 console.error('Error fetching D2 approved matches:', error);
                 tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D2 matches. Please try again.</td></tr>';
             }
+        }
+        
+        // Function to display a specific page of matches
+        function displayPage(page) {
+            // Calculate which matches to show for this page
+            const startIndex = (page - 1) * matchesPerPage;
+            const endIndex = startIndex + matchesPerPage;
+            const matchesToShow = allMatches.slice(startIndex, endIndex);
+            
+            if (matchesToShow.length === 0 && page > 1) {
+                // If no matches on this page but it's not page 1, go to previous page
+                displayPage(page - 1);
+                return;
+            }
+            
+            // Update current page
+            currentPage = page;
+            
+            // Clear table
+            tableBody.innerHTML = '';
+            
+            // Add matches to table
+            matchesToShow.forEach(match => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const dateString = match.approvedDate.toLocaleString();
+                
+                row.innerHTML = `
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}" 
+                           class="player-link ${getEloClass(match.winnerElo)}">
+                            ${match.winnerUsername || 'Unknown'}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}" 
+                           class="player-link ${getEloClass(match.loserElo)}">
+                            ${match.loserUsername || 'Unknown'}
+                        </a>
+                    </td>
+                    <td>${match.winnerScore || '20'}</td>
+                    <td>${match.loserScore || '0'}</td>
+                    <td>${match.winnerSuicides || '0'}</td>
+                    <td>${match.suicides || '0'}</td>
+                    <td>${match.mapPlayed || 'Unknown'}</td>
+                    <td>${match.winnerComment || 'None'}</td>
+                    <td>${match.loserComment || 'None'}</td>
+                    <td>${dateString}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Update pagination controls
+            const totalPages = Math.max(1, Math.ceil(allMatches.length / matchesPerPage));
+            updatePagination(page, totalPages);
+        }
+        
+        // Function to update pagination controls
+        function updatePagination(currentPage, totalPages) {
+            document.getElementById('page-status').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+            document.getElementById('pageInput').value = currentPage;
+            document.getElementById('pageInput').max = totalPages;
+        }
+
+        // Function to search matches
+        function searchMatches(query) {
+            if (!query || query.trim() === '') {
+                // If empty query, display all matches
+                displayPage(1);
+                return;
+            }
+            
+            const searchQuery = query.toLowerCase().trim();
+            const filteredMatches = allMatches.filter(match => {
+                const winnerUsername = match.winnerUsername?.toLowerCase() || '';
+                const loserUsername = match.loserUsername?.toLowerCase() || '';
+                const mapPlayed = match.mapPlayed?.toLowerCase() || '';
+                
+                return winnerUsername.includes(searchQuery) || 
+                       loserUsername.includes(searchQuery) ||
+                       mapPlayed.includes(searchQuery);
+            });
+            
+            if (filteredMatches.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No matches found for your search</td></tr>';
+                updatePagination(1, 1);
+                return;
+            }
+            
+            // Save original matches and replace with filtered matches temporarily
+            const originalMatches = allMatches;
+            allMatches = filteredMatches;
+            
+            // Display first page of results
+            displayPage(1);
+            
+            // Restore original matches
+            setTimeout(() => {
+                allMatches = originalMatches;
+            }, 0);
         }
 
         // Event listeners for toggle buttons
@@ -232,6 +514,66 @@
                     d1Button.classList.remove('active');
                     currentGameMode = 'D2';
                     loadD2Matches();
+                }
+            });
+            
+            // Set up pagination controls
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    displayPage(currentPage - 1);
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                const totalPages = Math.ceil(allMatches.length / matchesPerPage);
+                if (currentPage < totalPages) {
+                    displayPage(currentPage + 1);
+                }
+            });
+            
+            document.getElementById('goToPage').addEventListener('click', () => {
+                const pageInput = document.getElementById('pageInput');
+                const requestedPage = parseInt(pageInput.value);
+                const totalPages = Math.ceil(allMatches.length / matchesPerPage);
+                
+                if (requestedPage >= 1 && requestedPage <= totalPages) {
+                    displayPage(requestedPage);
+                } else {
+                    // Reset to valid value
+                    pageInput.value = currentPage;
+                }
+            });
+            
+            // Handle Enter key in page input
+            document.getElementById('pageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const requestedPage = parseInt(e.target.value);
+                    const totalPages = Math.ceil(allMatches.length / matchesPerPage);
+                    
+                    if (requestedPage >= 1 && requestedPage <= totalPages) {
+                        displayPage(requestedPage);
+                    } else {
+                        // Reset to valid value
+                        e.target.value = currentPage;
+                    }
+                }
+            });
+
+            // Add these event listeners to your DOMContentLoaded block
+            document.getElementById('search-button').addEventListener('click', () => {
+                const searchQuery = document.getElementById('match-search').value;
+                searchMatches(searchQuery);
+            });
+
+            document.getElementById('reset-button').addEventListener('click', () => {
+                document.getElementById('match-search').value = '';
+                displayPage(1); // Reset to first page with all matches
+            });
+
+            document.getElementById('match-search').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const searchQuery = e.target.value;
+                    searchMatches(searchQuery);
                 }
             });
             
