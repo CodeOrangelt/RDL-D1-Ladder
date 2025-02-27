@@ -116,6 +116,19 @@
             </div>
         </div>
 
+        <!-- Remove the original ladder-join-prompt div and add this below the outer-container div -->
+        <div id="ladder-join-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Want to join the <span id="join-ladder-type"></span> ladder?</p>
+                <div class="join-form">
+                    <label for="join-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="join-username-input" placeholder="Your username">
+                    <button id="join-ladder-button" class="join-ladder-button">Join</button>
+                </div>
+                <span id="ladder-join-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
         <div class="discord-container">
             <button id="toggle-discord" class="discord-toggle">
                 <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16">
@@ -213,5 +226,6 @@
     <script type="module" src="../JS/ladderd2.js"></script>
     <script type="module" src="../JS/queue.js"></script>
     <script type="module" src="../JS/promotion-banner.js"></script>
+    <script type="module" src="../JS/ladder-join.js"></script>
 </body>
 </html>
