@@ -3,12 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="../images/cloak.ico">
-v    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Game</title>
     <link rel="stylesheet" href="../CSS/nav.css">
     <link rel="stylesheet" href="../CSS/report-style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/style.css">
+    <style>
+        /* Game mode toggle buttons */
+        .game-mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .game-mode-toggle button {
+            padding: 8px 20px;
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .game-mode-toggle button:hover {
+            background-color: #444;
+        }
+        
+        .game-mode-toggle button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+    </style>
     <script type="module">
         import { firebaseConfig } from './firebase-config.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -37,6 +67,12 @@ v    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="container">
         <h1>Report Game</h1>
         <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
+        
+        <!-- Game Mode Toggle Buttons -->
+        <div class="game-mode-toggle" id="game-mode-toggle">
+            <button id="d1-mode" class="active">D1</button>
+            <button id="d2-mode">D2</button>
+        </div>
         
         <!-- Report Form -->
         <form id="report-form" class="form" style="display: none;">
@@ -73,6 +109,7 @@ v    <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <div id="report-lightbox">
             <div class="lightbox-content">
                 <h2>Report Details</h2>
+                <p>Game Mode: <span id="lightbox-game-mode"></span></p>
                 <p>Winner: <span id="lightbox-winner"></span></p>
                 <p>Loser: <span id="lightbox-loser"></span></p>
                 <p>Loser Score: <span id="lightbox-loser-score"></span></p>

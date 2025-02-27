@@ -1,7 +1,7 @@
 import { approveReport } from './ladderalgorithm.js';
 import { 
     collection, getDocs, query, where, 
-    orderBy, serverTimestamp, doc, setDoc, getDoc 
+    orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
@@ -10,6 +10,7 @@ import { auth, db } from './firebase-config.js';
 let currentUserEmail = null;
 let confirmationNotification = null; // Also adding this to fix potential undefined error
 let outstandingReportData = null; // And this one
+let currentGameMode = 'D1'; // Add global variable to track current game mode
 
 document.addEventListener('DOMContentLoaded', async () => {
     const elements = {
@@ -31,6 +32,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn(`Element '${key}' not found in the DOM`);
         }
     });
+
+    // Game mode toggle buttons
+    const d1Button = document.getElementById('d1-mode');
+    const d2Button = document.getElementById('d2-mode');
+
+    // Setup toggle button event listeners
+    d1Button.addEventListener('click', () => {
+        setGameMode('D1');
+        d1Button.classList.add('active');
+        d2Button.classList.remove('active');
+    });
+
+    d2Button.addEventListener('click', () => {
+        setGameMode('D2');
+        d2Button.classList.add('active');
+        d1Button.classList.remove('active');
+    });
+
+    // Function to change the game mode and reload opponents
+    function setGameMode(mode) {
+        currentGameMode = mode;
+        console.log(`Game mode set to: ${currentGameMode}`);
+        
+        // If user is logged in, reload the opponent list for the new game mode
+        if (currentUserEmail) {
+            loadOpponentsList(currentUserEmail);
+        }
+    }
 
     setupAuthStateListener(elements);
     setupReportForm(elements);
@@ -306,4 +335,56 @@ function showLightbox() {
 function hideLightbox() {
     const lightbox = document.getElementById('report-lightbox');
     lightbox.classList.remove('show');
+}
+
+// Function to load the opponents list based on game mode
+async function loadOpponentsList(userEmail) {
+    try {
+        // Get current user's ID
+        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        
+        // Get current user's document
+        const currentUserDoc = await getDoc(doc(db, playersCollection, userEmail));
+        let currentUserName = '';
+        
+        if (currentUserDoc.exists()) {
+            const currentUserData = currentUserDoc.data();
+            currentUserName = currentUserData.username;
+            document.getElementById('loser-username').textContent = `You (${currentUserName})`;
+        } else {
+            document.getElementById('report-error').textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            document.getElementById('loser-username').textContent = 'Not registered in ladder';
+            return;
+        }
+
+        // Get all players
+        const playersRef = collection(db, playersCollection);
+        const playersSnapshot = await getDocs(playersRef);
+
+        if (playersSnapshot.empty) {
+            console.log('No opponents available');
+            return;
+        }
+
+        // Clear the select
+        const select = document.getElementById('winner-username');
+        // Keep only the first option
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+
+        // Add all players except current user
+        playersSnapshot.forEach(doc => {
+            const playerData = doc.data();
+            if (doc.id !== userEmail) { // Skip current user
+                const option = document.createElement('option');
+                option.value = playerData.username;
+                option.textContent = playerData.username;
+                select.appendChild(option);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading opponents list:', error);
+        document.getElementById('report-error').textContent = 'Error loading opponents. Please try again later.';
+    }
 }
