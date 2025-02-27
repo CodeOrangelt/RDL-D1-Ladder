@@ -18,16 +18,63 @@
         main {
             padding-top: 20px; /* Add space after banner */
         }
+        
+        /* Ladder mode toggle buttons */
+        .ladder-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .ladder-toggle button {
+            padding: 8px 20px;
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .ladder-toggle button:hover {
+            background-color: #444;
+        }
+        
+        .ladder-toggle button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        /* Hide inactive ladders */
+        .ladder-container {
+            display: none;
+        }
+        
+        .ladder-container.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div id="nav-placeholder"></div>
     <main>
         <div id="promotion-banner-container" class="promotion-container"></div>
-	    <div class="ribbon-1 left">RDL - Beta Release</div>
+        <div class="ribbon-1 left">RDL - Beta Release</div>
+        
+        <!-- Add ladder mode toggle buttons -->
+        <div class="ladder-toggle">
+            <button id="d1-toggle" class="active">D1 Ladder</button>
+            <button id="d2-toggle">D2 Ladder</button>
+        </div>
+        
         <div class="outer-container">
             <img src="../images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
-            <div class="table-container">
+            
+            <!-- D1 Ladder Container -->
+            <div id="d1-ladder-container" class="ladder-container table-container active">
                 <table id="ladder">
                     <thead>
                         <tr>
@@ -36,7 +83,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Ladder rankings will be populated here -->
+                        <!-- D1 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- D2 Ladder Container -->
+            <div id="d2-ladder-container" class="ladder-container table-container">
+                <table id="ladder-d2">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D2 Ladder rankings will be populated here -->
                     </tbody>
                 </table>
             </div>
@@ -112,6 +174,26 @@
                         ${isCollapsed ? 'RDL Server' : 'Hide Discord'}
                     `;
                 });
+                
+                // Setup ladder toggle buttons
+                const d1Toggle = document.getElementById('d1-toggle');
+                const d2Toggle = document.getElementById('d2-toggle');
+                const d1Container = document.getElementById('d1-ladder-container');
+                const d2Container = document.getElementById('d2-ladder-container');
+                
+                d1Toggle.addEventListener('click', () => {
+                    d1Toggle.classList.add('active');
+                    d2Toggle.classList.remove('active');
+                    d1Container.classList.add('active');
+                    d2Container.classList.remove('active');
+                });
+                
+                d2Toggle.addEventListener('click', () => {
+                    d2Toggle.classList.add('active');
+                    d1Toggle.classList.remove('active');
+                    d2Container.classList.add('active');
+                    d1Container.classList.remove('active');
+                });
 
             } catch (error) {
                 console.error('Error initializing page:', error);
@@ -128,6 +210,7 @@
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/ladder.js"></script>
+    <script type="module" src="../JS/ladderd2.js"></script>
     <script type="module" src="../JS/queue.js"></script>
     <script type="module" src="../JS/promotion-banner.js"></script>
 </body>
