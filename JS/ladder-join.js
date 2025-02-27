@@ -56,17 +56,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Update the checkUserLadderStatus function to display the ladder type
+// Update the checkUserLadderStatus function with additional security checks
 async function checkUserLadderStatus() {
     const user = auth.currentUser;
     const joinPrompt = document.getElementById('ladder-join-prompt');
     const joinLadderType = document.getElementById('join-ladder-type');
     
-    if (!user || !joinPrompt || !joinLadderType) {
+    if (!user || !user.uid || !joinPrompt || !joinLadderType) {
+        // If no user or invalid user, hide the join prompt
+        if (joinPrompt) {
+            joinPrompt.style.display = 'none';
+        }
         return;
     }
     
     try {
+        // Verify authentication is valid
+        try {
+            await user.getIdToken(false); // Check token without forcing refresh
+        } catch (authError) {
+            console.error("Authentication verification failed:", authError);
+            joinPrompt.style.display = 'none';
+            return;
+        }
+        
         // Get the collection name based on the current ladder
         const collectionName = currentLadder === 'D1' ? 'players' : 'playersD2';
         
@@ -97,18 +110,31 @@ async function checkUserLadderStatus() {
         }
     } catch (error) {
         console.error('Error checking ladder status:', error);
+        joinPrompt.style.display = 'none'; // Hide on error as a safety measure
     }
 }
 
-// Update the handleJoinLadder function to verify username
+// Update the handleJoinLadder function to properly verify authentication
 async function handleJoinLadder() {
     const user = auth.currentUser;
     const joinButton = document.getElementById('join-ladder-button');
     const joinStatus = document.getElementById('ladder-join-status');
     const usernameInput = document.getElementById('join-username-input');
     
-    if (!user) {
+    // First, make sure the user is authenticated
+    if (!user || !user.uid) {
         joinStatus.textContent = 'You must be signed in to join a ladder.';
+        joinStatus.className = 'ladder-join-status error';
+        return;
+    }
+    
+    // Verify authentication state again
+    try {
+        // This will throw an error if the user's auth token is invalid or expired
+        await user.getIdToken(true);
+    } catch (authError) {
+        console.error("Authentication error:", authError);
+        joinStatus.textContent = 'Authentication failed. Please sign in again.';
         joinStatus.className = 'ladder-join-status error';
         return;
     }
@@ -152,6 +178,14 @@ async function handleJoinLadder() {
             actualUsername = user.email.split('@')[0];
         }
         
+        // If we still don't have a username, reject the attempt
+        if (!actualUsername) {
+            joinStatus.textContent = 'Could not verify your account. Please contact an administrator.';
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
         // Verify the entered username matches the actual username
         const enteredUsername = usernameInput.value.trim();
         
@@ -174,6 +208,16 @@ async function handleJoinLadder() {
         
         if (userDoc.exists()) {
             joinStatus.textContent = `You are already part of the ${currentLadder} ladder.`;
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
+        // Verify the user's authentication again before adding them to the ladder
+        try {
+            await user.getIdToken(true); // Force token refresh to verify auth state
+        } catch (authError) {
+            joinStatus.textContent = 'Authentication failed. Please sign in again.';
             joinStatus.className = 'ladder-join-status error';
             joinButton.disabled = false;
             return;

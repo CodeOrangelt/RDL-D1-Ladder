@@ -10,6 +10,14 @@ function isVerifiedUser() {
   return request.auth != null;
 }
 
+function isSignedIn() {
+  return request.auth != null;
+}
+
+function isAuthenticated() {
+  return request.auth != null;
+}
+
 function isMatchParticipant(matchData) {
   return request.auth != null && (
     matchData.winnerEmail == request.auth.token.email ||
@@ -380,6 +388,20 @@ service cloud.firestore {
         && request.resource.data.timestamp is timestamp
         && request.resource.data.previousElo is number
         && request.resource.data.newElo is number;
+    }
+
+    // Add a general rule for user authentication collections
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Add rule for nonParticipants
+    match /nonParticipants/{userId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
     }
   }
 }

@@ -19,6 +19,7 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
+import { handleLogin as importedHandleLogin } from './some-other-file.js';
 
 // Add this function near the top of your file
 function setupVerificationListener(email, password) {
@@ -345,6 +346,26 @@ async function handleLogin(e) {
     }
 }
 
+// Handle login submission
+function loginFormHandler(event) {
+  event.preventDefault();
+  
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorElement = document.getElementById('login-error');
+  
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      console.log("User signed in:", userCredential.user);
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      console.error("Login error:", error);
+      errorElement.textContent = `Login error: ${error.message}`;
+      errorElement.style.display = 'block';
+    });
+}
+
 // Resend verification email function
 async function resendVerificationEmail(email) {
     console.log("Attempting to resend verification email to:", email);
@@ -411,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
+        loginForm.addEventListener('submit', loginFormHandler);
     }
 
     const showRegister = document.getElementById('show-register');
