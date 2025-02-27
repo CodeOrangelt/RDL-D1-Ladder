@@ -9,6 +9,12 @@ import { db } from './firebase-config.js';
 
 // approved-matches.js
 
+// Add this line to update the title when the D1 script loads
+const title = document.querySelector('h1');
+if (title) {
+    title.textContent = 'D1 Approved Matches';
+}
+
 // Helper function to get ELO class
 function getEloClass(elo) {
     if (elo >= 2000) return 'elo-emerald';
