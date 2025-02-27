@@ -327,112 +327,241 @@ async function submitReport(elements) {
     }
 }
 
-async function checkForOutstandingReports(username, elements) {
-    console.log("Checking reports for email:", currentUserEmail);
+// Replace the existing checkForOutstandingReports function with this updated version
+async function checkForOutstandingReports(username, elements, collectionName = null) {
+    console.log(`Checking reports for user: ${username} in ${collectionName || 'default collection'}`);
+    
+    // Use the passed collection name or determine based on current game mode
+    const pendingCollection = collectionName || (currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2');
+    console.log(`Using collection: ${pendingCollection}`);
     
     try {
-        const pendingMatchesRef = collection(db, 'pendingMatches');
-        const q = query(
+        // First try to find by winnerId if we're using the new structure
+        const user = auth.currentUser;
+        if (!user) {
+            console.log("No authenticated user found");
+            return;
+        }
+        
+        const userId = user.uid;
+        
+        // Query pending matches where the current user is the winner
+        const pendingMatchesRef = collection(db, pendingCollection);
+        
+        // Try first with winnerId field (new format)
+        const q1 = query(
             pendingMatchesRef,
-            where('winnerEmail', '==', currentUserEmail),
+            where('winnerId', '==', userId),
             where('approved', '==', false)
         );
         
-        const snapshot = await getDocs(q);
-        console.log("Query results:", snapshot.size, "matches found");
+        let snapshot = await getDocs(q1);
+        console.log(`Query by winnerId results: ${snapshot.size} matches found`);
         
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            console.log("Report data:", data);
+        // If no matches found, try with winnerEmail (old format)
+        if (snapshot.empty && user.email) {
+            console.log("No matches found by winnerId, trying winnerEmail");
+            const q2 = query(
+                pendingMatchesRef,
+                where('winnerEmail', '==', user.email),
+                where('approved', '==', false)
+            );
+            snapshot = await getDocs(q2);
+            console.log(`Query by winnerEmail results: ${snapshot.size} matches found`);
+        }
+        
+        // If still no matches, try with winnerUsername (alternative format)
+        if (snapshot.empty) {
+            console.log("No matches found by email either, trying winnerUsername");
+            
+            // First get the username from the appropriate players collection
+            const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+            const userDoc = await getDoc(doc(db, playersCollection, userId));
+            
+            if (userDoc.exists() && userDoc.data().username) {
+                const username = userDoc.data().username;
+                const q3 = query(
+                    pendingMatchesRef,
+                    where('winnerUsername', '==', username),
+                    where('approved', '==', false)
+                );
+                snapshot = await getDocs(q3);
+                console.log(`Query by winnerUsername results: ${snapshot.size} matches found`);
+            }
+        }
+        
+        // If we found any pending matches, show the first one
+        if (!snapshot.empty) {
+            const reportData = snapshot.docs[0].data();
+            console.log("Found pending match:", reportData);
+            
             // Add the document ID to the data
-            data.id = doc.id;
-            autoFillReportForm(data);
-        });
+            reportData.id = snapshot.docs[0].id;
+            autoFillReportForm(reportData);
+        } else {
+            console.log("No pending matches found for this user");
+        }
     } catch (error) {
         console.error('Error checking outstanding reports:', error);
     }
 }
 
+// Update the autoFillReportForm function to handle both D1 and D2 ladders
 function autoFillReportForm(reportData) {
     console.log("Report Data in autoFillReportForm:", reportData);
     if (reportData) {
         // Calculate winner score based on loser score
-        const loserScore = parseInt(reportData.loserScore);
+        const loserScore = parseInt(reportData.loserScore || "0");
         const winnerScore = loserScore < 18 ? 20 : loserScore + 2;
-
-        // Fetch the winner's username
-        const winnerQuery = query(
-            collection(db, 'players'),
-            where('email', '==', reportData.winnerEmail)
-        );
         
-        getDocs(winnerQuery)
-            .then(winnerQuerySnapshot => {
-                if (!winnerQuerySnapshot.empty) {
-                    const winnerDoc = winnerQuerySnapshot.docs[0];
-                    const winnerUsername = winnerDoc.data().username;
+        // Determine which collection to use based on the report data or current game mode
+        const gameMode = reportData.gameMode || currentGameMode;
+        const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
+        
+        console.log(`Using players collection: ${playersCollection} for game mode: ${gameMode}`);
 
-                    // Fetch the loser's username
-                    const loserQuery = query(
-                        collection(db, 'players'),
-                        where('username', '==', reportData.loserUsername)
-                    );
+        // Get the winner's data using winnerId or username
+        let winnerPromise;
+        
+        if (reportData.winnerId) {
+            // Get winner by ID
+            winnerPromise = getDoc(doc(db, playersCollection, reportData.winnerId))
+                .then(docSnap => docSnap.exists() ? {
+                    id: docSnap.id,
+                    data: docSnap.data()
+                } : null);
+        } else {
+            // Try to get winner by username
+            winnerPromise = getDocs(query(
+                collection(db, playersCollection), 
+                where("username", "==", reportData.winnerUsername)
+            )).then(snapshot => !snapshot.empty ? {
+                id: snapshot.docs[0].id,
+                data: snapshot.docs[0].data()
+            } : null);
+        }
+        
+        // Get the loser's data using loserId or username
+        let loserPromise;
+        
+        if (reportData.loserId) {
+            // Get loser by ID
+            loserPromise = getDoc(doc(db, playersCollection, reportData.loserId))
+                .then(docSnap => docSnap.exists() ? {
+                    id: docSnap.id,
+                    data: docSnap.data()
+                } : null);
+        } else {
+            // Try to get loser by username
+            loserPromise = getDocs(query(
+                collection(db, playersCollection), 
+                where("username", "==", reportData.loserUsername)
+            )).then(snapshot => !snapshot.empty ? {
+                id: snapshot.docs[0].id,
+                data: snapshot.docs[0].data()
+            } : null);
+        }
+        
+        // Process both promises
+        Promise.all([winnerPromise, loserPromise])
+            .then(([winnerResult, loserResult]) => {
+                if (!winnerResult) {
+                    console.error('No winner found for this match');
+                    alert('Error: Winner data not found.');
+                    return;
+                }
+                
+                if (!loserResult) {
+                    console.error('No loser found for this match');
+                    alert('Error: Loser data not found.');
+                    return;
+                }
+                
+                const winnerUsername = winnerResult.data.username;
+                const loserUsername = loserResult.data.username;
+                
+                console.log(`Winner: ${winnerUsername}, Loser: ${loserUsername}`);
+
+                // Populate the lightbox
+                const lightbox = document.getElementById('report-lightbox');
+                if (!lightbox) {
+                    console.error('Lightbox element not found');
+                    return;
+                }
+                
+                const lightboxWinner = document.getElementById('lightbox-winner');
+                const lightboxLoser = document.getElementById('lightbox-loser');
+                const lightboxLoserScore = document.getElementById('lightbox-loser-score');
+                const lightboxSuicides = document.getElementById('lightbox-suicides');
+                const lightboxMap = document.getElementById('lightbox-map');
+                const lightboxComment = document.getElementById('lightbox-comment');
+                
+                if (!lightboxWinner || !lightboxLoser || !lightboxLoserScore || 
+                    !lightboxSuicides || !lightboxMap || !lightboxComment) {
+                    console.error('Some lightbox elements not found');
+                    return;
+                }
+                
+                lightboxWinner.textContent = winnerUsername;
+                lightboxLoser.textContent = loserUsername;
+                lightboxLoserScore.textContent = reportData.loserScore || "0";
+                lightboxSuicides.textContent = reportData.suicides || "0";
+                lightboxMap.textContent = reportData.mapPlayed || "Not specified";
+                lightboxComment.textContent = reportData.loserComment || "No comment";
+
+                // Set and disable winner score input
+                const winnerScoreInput = document.getElementById('winner-score');
+                if (winnerScoreInput) {
+                    winnerScoreInput.value = winnerScore;
+                    winnerScoreInput.readOnly = true; // Make it read-only
+                    winnerScoreInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; // Visual indication it's readonly
+                }
+
+                // Show the lightbox
+                showLightbox();
+
+                // Add event listener to the Approve button
+                const approveButton = document.getElementById('approve-button');
+                if (approveButton) {
+                    // Remove any existing event listeners to prevent duplicates
+                    const newApproveButton = approveButton.cloneNode(true);
+                    approveButton.parentNode.replaceChild(newApproveButton, approveButton);
                     
-                    return getDocs(loserQuery).then(loserQuerySnapshot => {
-                        if (!loserQuerySnapshot.empty) {
-                            const loserDoc = loserQuerySnapshot.docs[0];
-                            const loserUsername = loserDoc.data().username;
-
-                            // Populate the lightbox
-                            document.getElementById('lightbox-winner').textContent = winnerUsername;
-                            document.getElementById('lightbox-loser').textContent = loserUsername;
-                            document.getElementById('lightbox-loser-score').textContent = reportData.loserScore;
-                            document.getElementById('lightbox-suicides').textContent = reportData.suicides;
-                            document.getElementById('lightbox-map').textContent = reportData.mapPlayed;
-                            document.getElementById('lightbox-comment').textContent = reportData.loserComment;
-
-                            // Set and disable winner score input
-                            const winnerScoreInput = document.getElementById('winner-score');
-                            winnerScoreInput.value = winnerScore;
-                            winnerScoreInput.readOnly = true; // Make it read-only
-                            winnerScoreInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; // Visual indication it's readonly
-
-                            // Show the lightbox
-                            showLightbox();
-
-                            // Add event listener to the Approve button
-                            const approveButton = document.getElementById('approve-button');
-                            const approveReportHandler = async function() {
-                                try {
-                                    const winnerScore = document.getElementById('winner-score').value;
-                                    const winnerSuicides = document.getElementById('winner-suicides').value;
-                                    const winnerComment = document.getElementById('winner-comment').value;
-
-                                    await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
-                                    document.getElementById('report-lightbox').style.display = 'none';
-                                    alert('Match approved successfully');
-                                    location.reload(); // Refresh to update the UI
-                                } catch (error) {
-                                    console.error('Error approving report:', error);
-                                    alert('Error approving match: ' + error.message);
-                                }
-                            };
-                            approveButton.addEventListener('click', approveReportHandler);
-
-                            // Add event listener to the Cancel button
-                            document.getElementById('cancel-button').addEventListener('click', hideLightbox);
-                        } else {
-                            console.error('No loser found with username:', reportData.loserUsername);
-                            alert('Error: No loser found with that username.');
+                    newApproveButton.addEventListener('click', async function() {
+                        try {
+                            const winnerScore = document.getElementById('winner-score').value;
+                            const winnerSuicides = document.getElementById('winner-suicides').value || "0";
+                            const winnerComment = document.getElementById('winner-comment').value || "";
+                            
+                            // Determine which collection to use for approval
+                            const pendingCollection = gameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+                            const approvedCollection = gameMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+                            
+                            await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment, 
+                                                pendingCollection, approvedCollection, gameMode);
+                            
+                            document.getElementById('report-lightbox').style.display = 'none';
+                            alert('Match approved successfully');
+                            location.reload(); // Refresh to update the UI
+                        } catch (error) {
+                            console.error('Error approving report:', error);
+                            alert('Error approving match: ' + error.message);
                         }
                     });
-                } else {
-                    console.error('No winner found with email:', reportData.winnerEmail);
-                    alert('Error: No winner found with that email.');
+                }
+
+                // Add event listener to the Cancel button
+                const cancelButton = document.getElementById('cancel-button');
+                if (cancelButton) {
+                    // Remove any existing event listeners
+                    const newCancelButton = cancelButton.cloneNode(true);
+                    cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+                    
+                    newCancelButton.addEventListener('click', hideLightbox);
                 }
             })
             .catch(error => {
-                console.error('Error fetching player data:', error);
+                console.error('Error processing player data:', error);
                 alert('Error fetching player data. Please try again.');
             });
     }
