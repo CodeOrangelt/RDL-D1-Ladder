@@ -321,6 +321,9 @@ async function submitReport(elements) {
         
     } catch (error) {
         console.error('Error submitting report:', error);
+
+
+        
         elements.reportError.textContent = `Error: ${error.message}`;
         elements.reportError.style.color = "red";
         throw error;
