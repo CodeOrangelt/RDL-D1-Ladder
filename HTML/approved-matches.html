@@ -1,3 +1,5 @@
+<!-- Language: HTML -->
+<!-- filepath: /c:/Descent Nexus Repo/RDL-D1-Ladder/HTML/approved-matches.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,50 +88,141 @@
             </thead>
             <tbody>
                 <!-- Approved matches will be populated here -->
+                <tr><td colspan="10" style="text-align: center;">Loading matches...</td></tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Update script imports to use modules -->
+    <!-- Important base scripts -->
     <script type="module" src="../JS/firebase-config.js"></script>
-    <script type="module" id="active-script" src="../JS/approved-matches.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
 
+    <!-- Main script for handling matches and UI -->
     <script type="module">
-        // Script to toggle between D1 and D2 approved matches
+        import { 
+            collection, 
+            getDocs, 
+            query, 
+            orderBy, 
+            limit 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { firebaseConfig } from '../JS/firebase-config.js';
+
+        // Global variables
+        let currentGameMode = 'D1';
+        const tableBody = document.querySelector('#approved-matches-table tbody');
+        const title = document.querySelector('h1');
+
+        // Function to load D1 matches
+        async function loadD1Matches() {
+            try {
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D1 matches...</td></tr>';
+                title.textContent = 'D1 Approved Matches';
+                
+                // Get matches from D1 collection
+                const matchesRef = collection(window.db, 'approvedMatches');
+                const q = query(matchesRef, orderBy('approvedAt', 'desc'), limit(100));
+                console.log('Fetching D1 matches...');
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D1 matches found</td></tr>';
+                    return;
+                }
+                
+                console.log(`Found ${querySnapshot.size} D1 matches`);
+                
+                // Build table rows
+                let tableContent = '';
+                querySnapshot.forEach(doc => {
+                    const match = doc.data();
+                    const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
+                    
+                    tableContent += `
+                        <tr>
+                            <td>${match.winnerUsername || 'Unknown'}</td>
+                            <td>${match.loserUsername || 'Unknown'}</td>
+                            <td>${match.winnerScore || '20'}</td>
+                            <td>${match.loserScore || '0'}</td>
+                            <td>${match.winnerSuicides || '0'}</td>
+                            <td>${match.suicides || '0'}</td>
+                            <td>${match.mapPlayed || 'Unknown'}</td>
+                            <td>${match.winnerComment || 'None'}</td>
+                            <td>${match.loserComment || 'None'}</td>
+                            <td>${approvedDate.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = tableContent;
+                
+            } catch (error) {
+                console.error('Error fetching D1 approved matches:', error);
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D1 matches. Please try again.</td></tr>';
+            }
+        }
+
+        // Function to load D2 matches
+        async function loadD2Matches() {
+            try {
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D2 matches...</td></tr>';
+                title.textContent = 'D2 Approved Matches';
+                
+                // Get matches from D2 collection
+                const matchesRef = collection(window.db, 'approvedMatchesD2');
+                const q = query(matchesRef, orderBy('approvedAt', 'desc'), limit(100));
+                console.log('Fetching D2 matches...');
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D2 matches found</td></tr>';
+                    return;
+                }
+                
+                console.log(`Found ${querySnapshot.size} D2 matches`);
+                
+                // Build table rows
+                let tableContent = '';
+                querySnapshot.forEach(doc => {
+                    const match = doc.data();
+                    const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
+                    
+                    tableContent += `
+                        <tr>
+                            <td>${match.winnerUsername || 'Unknown'}</td>
+                            <td>${match.loserUsername || 'Unknown'}</td>
+                            <td>${match.winnerScore || '20'}</td>
+                            <td>${match.loserScore || '0'}</td>
+                            <td>${match.winnerSuicides || '0'}</td>
+                            <td>${match.suicides || '0'}</td>
+                            <td>${match.mapPlayed || 'Unknown'}</td>
+                            <td>${match.winnerComment || 'None'}</td>
+                            <td>${match.loserComment || 'None'}</td>
+                            <td>${approvedDate.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = tableContent;
+                
+            } catch (error) {
+                console.error('Error fetching D2 approved matches:', error);
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D2 matches. Please try again.</td></tr>';
+            }
+        }
+
+        // Event listeners for toggle buttons
         document.addEventListener('DOMContentLoaded', () => {
             const d1Button = document.getElementById('d1-button');
             const d2Button = document.getElementById('d2-button');
-            let currentGameMode = 'D1';
             
-            // Function to load the appropriate script
-            function loadScript(scriptSrc) {
-                // Remove existing script
-                const oldScript = document.getElementById('active-script');
-                if (oldScript) {
-                    oldScript.remove();
-                }
-                
-                // Create and add new script
-                const newScript = document.createElement('script');
-                newScript.id = 'active-script';
-                newScript.type = 'module';
-                newScript.src = scriptSrc;
-                document.body.appendChild(newScript);
-                
-                // Clear the table
-                const tableBody = document.querySelector('#approved-matches-table tbody');
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading matches...</td></tr>';
-            }
-            
-            // Set up event listeners for toggle buttons
             d1Button.addEventListener('click', () => {
                 if (currentGameMode !== 'D1') {
                     d1Button.classList.add('active');
                     d2Button.classList.remove('active');
-                    loadScript('../JS/approved-matches.js');
                     currentGameMode = 'D1';
+                    loadD1Matches();
                 }
             });
             
@@ -137,10 +230,13 @@
                 if (currentGameMode !== 'D2') {
                     d2Button.classList.add('active');
                     d1Button.classList.remove('active');
-                    loadScript('../JS/approved-matchesD2.js');
                     currentGameMode = 'D2';
+                    loadD2Matches();
                 }
             });
+            
+            // Load initial matches
+            loadD1Matches();
         });
     </script>
 
