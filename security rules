@@ -22,8 +22,16 @@ function isMatchParticipant(matchData) {
   return request.auth != null && (
     matchData.winnerEmail == request.auth.token.email ||
     matchData.loserEmail == request.auth.token.email ||
-    matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
-    matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+    // Use safer approach with exists checks to prevent errors
+    (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
+     matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
+    (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
+     matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
+    // Check D2 players collection
+    (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+     matchData.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
+    (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+     matchData.loserUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username)
   );
 }
 
@@ -47,6 +55,11 @@ function isValidDemotion(currentData, newData) {
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Global read rule - helps troubleshoot permission issues during development
+    // match /{document=**} {
+    //   allow read: if true;
+    // }
+    
     // Players collection - Used in ladderalgorithm.js and ladder.js
     match /players/{playerId} {
       allow read: if true;
@@ -126,6 +139,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // Add specific rule for nonParticipants collection
+    match /nonParticipants/{userId} {
+      allow read: if true;  // Allow reading without authentication
+      allow create: if isVerifiedUser();  // Only authenticated users can create
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+    
     // Add specific rule for pendingRegistrations collection
     match /pendingRegistrations/{registrationId} {
       allow read: if true;  // Allow reading without authentication for username checks
@@ -136,26 +157,25 @@ service cloud.firestore {
     }
     
     //nexus website usernames
-        match /nexus_users/{userId} {
+    match /nexus_users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
-    	
-    //player status colelction specific perms
-      match /player-status/{document=**} {
-        allow read: if true; // Adjust based on your security requirements
-        allow write: if request.auth != null;
-      }
+        
+    //player status collection specific perms
+    match /player-status/{document=**} {
+      allow read: if true; // Allow anyone to read
+      allow write: if request.auth != null;
+    }
       
     match /invites/{userId} {
       allow read, write: if true;  // For testing - change this in production
     }
     
     //for the bot not to repeat approved matches
-        match /processedMatches/{matchId} {
+    match /processedMatches/{matchId} {
       allow read, write: if request.auth != null;
     }
-    
     
     //ready status on project D
     match /readyPlayers/{userId} {
@@ -163,17 +183,16 @@ service cloud.firestore {
       // For production, use more restrictive rules like:
       // allow read, write: if request.auth != null;
     }
-
     
-       // Player Stats collection
+    // Player Stats collection
     match /playerStats/{userId} {
-    allow read: if true;
-    allow write: if isSignedIn() && 
-      (request.auth.uid == userId || isAdmin());
- 	  }
+      allow read: if true;
+      allow write: if isSignedIn() && 
+        (request.auth.uid == userId || isAdmin());
+    }
     
-    // for bot to create/update notifications fro approved matches
-        match /approvedMatches/{matchId} {
+    // for bot to create/update notifications for approved matches
+    match /approvedMatches/{matchId} {
       allow read, write: if true;
     }
     
@@ -181,7 +200,6 @@ service cloud.firestore {
     match /system/{document} {
       allow read, write: if true;
     }
-
 
     // Match Management - Used in reports.js and ladderalgorithm.js
     match /pendingMatches/{matchId} {

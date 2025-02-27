@@ -33,6 +33,9 @@ async function updateAuthSection(user) {
     
     console.log('Updating auth section. Current user:', user ? 'logged in' : 'not logged in');
     
+    // Add loading indication
+    showLoadingState();
+    
     if (user) {
         try {
             // Check all possible collections
@@ -68,16 +71,17 @@ async function updateAuthSection(user) {
             
             // If not found in any collection, fallback to email
             if (!username) {
-                username = user.email.split('@')[0];
-                console.log('Username not found in any collection, using email part:', username);
+                username = user.email ? user.email.split('@')[0] : 'User';
+                console.log('Username not found in any collection, using fallback:', username);
             }
             
             const isUserAdmin = isAdmin(user.email);
+            console.log('User admin status:', isUserAdmin);
             
-            // Update the UI with dropdown - modify this part in your updateAuthSection function
+            // Update the UI with dropdown - consistent styling
             authSection.innerHTML = `
                 <div class="nav-dropdown">
-                    <a href="#" class="nav-username">${username}</a>
+                    <a href="#" class="nav-username">${username}${isUserAdmin ? ' (Admin)' : ''}</a>
                     <div class="nav-dropdown-content">
                         <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
                         <a href="#" id="logout-link">Sign Out</a>
@@ -102,10 +106,12 @@ async function updateAuthSection(user) {
         } catch (error) {
             console.error('Error updating auth section:', error);
             // Still provide basic functionality even if there's an error
+            const username = user.email ? user.email.split('@')[0] : 'User';
+            
             authSection.innerHTML = `
-                <div class="dropdown">
-                    <span class="username-display">${user.email.split('@')[0]}</span>
-                    <div class="dropdown-content">
+                <div class="nav-dropdown">
+                    <a href="#" class="nav-username">${username}</a>
+                    <div class="nav-dropdown-content">
                         <a href="#" id="logout-link">Sign Out</a>
                     </div>
                 </div>
@@ -147,10 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             await updateAuthSection(user);
             
-            const adminLink = document.querySelector('.admin-only');
-            if (adminLink && user) {
-                console.log('Updating admin link visibility');
-                adminLink.style.display = isAdmin(user.email) ? 'block' : 'none';
+            // Update admin link visibility
+            const adminLinks = document.querySelectorAll('.admin-only');
+            if (adminLinks.length > 0 && user) {
+                const shouldShowAdmin = isAdmin(user.email);
+                console.log('Updating admin link visibility:', shouldShowAdmin);
+                adminLinks.forEach(link => {
+                    link.style.display = shouldShowAdmin ? 'block' : 'none';
+                });
             }
         });
     } catch (error) {
