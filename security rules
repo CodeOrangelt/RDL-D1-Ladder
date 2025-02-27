@@ -56,6 +56,68 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // D2 Players collection
+    match /playersD2/{playerId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || 
+                   request.auth.uid == playerId || 
+                   // Allow ELO updates from matches
+                   (request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                   // Allow promotions from admin
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']));
+      allow delete: if isAdmin();
+    }
+
+    // D3 Players collection
+    match /playersD3/{playerId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || 
+                   request.auth.uid == playerId || 
+                   (request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']));
+      allow delete: if isAdmin();
+    }
+
+    // Duos Players collection
+    match /playersDuos/{playerId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || 
+                   request.auth.uid == playerId || 
+                   (request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']));
+      allow delete: if isAdmin();
+    }
+
+    // CTF Players collection
+    match /playersCTF/{playerId} {
+      allow read: if true;
+      allow create: if isVerifiedUser();
+      allow update: if isAdmin() || 
+                   request.auth.uid == playerId || 
+                   (request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
+                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                   (isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']));
+      allow delete: if isAdmin();
+    }
+    
     // Add specific rule for pendingRegistrations collection
     match /pendingRegistrations/{registrationId} {
       allow read: if true;  // Allow reading without authentication for username checks
@@ -125,6 +187,94 @@ service cloud.firestore {
     }
 
     match /approvedMatches/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerScore', 'winnerComment', 'approved',
+                     'approvedAt', 'approvedBy'
+                   ]);
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if false;  // Keep match history immutable
+    }
+
+    // D2 Match Management
+    match /pendingMatchesD2/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerUsername', 'loserUsername', 'loserScore',
+                     'mapPlayed', 'loserComment', 'createdAt'
+                   ]);
+      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+    }
+
+    match /approvedMatchesD2/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerScore', 'winnerComment', 'approved',
+                     'approvedAt', 'approvedBy'
+                   ]);
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if false;  // Keep match history immutable
+    }
+
+    // D3 Match Management
+    match /pendingMatchesD3/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerUsername', 'loserUsername', 'loserScore',
+                     'mapPlayed', 'loserComment', 'createdAt'
+                   ]);
+      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+    }
+
+    match /approvedMatchesD3/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerScore', 'winnerComment', 'approved',
+                     'approvedAt', 'approvedBy'
+                   ]);
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if false;  // Keep match history immutable
+    }
+
+    // Duos Match Management
+    match /pendingMatchesDuos/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerUsername', 'loserUsername', 'loserScore',
+                     'mapPlayed', 'loserComment', 'createdAt'
+                   ]);
+      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+    }
+
+    match /approvedMatchesDuos/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerScore', 'winnerComment', 'approved',
+                     'approvedAt', 'approvedBy'
+                   ]);
+      allow update: if isAdmin() || isMatchParticipant(resource.data);
+      allow delete: if false;  // Keep match history immutable
+    }
+
+    // CTF Match Management
+    match /pendingMatchesCTF/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+                   request.resource.data.keys().hasAll([
+                     'winnerUsername', 'loserUsername', 'loserScore',
+                     'mapPlayed', 'loserComment', 'createdAt'
+                   ]);
+      allow update, delete: if isAdmin() || isMatchParticipant(resource.data);
+    }
+
+    match /approvedMatchesCTF/{matchId} {
       allow read: if true;
       allow create: if request.auth != null && 
                    request.resource.data.keys().hasAll([
