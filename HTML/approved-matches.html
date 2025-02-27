@@ -10,12 +10,40 @@
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/style.css">
     
+    <style>
+        .ladder-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .toggle-button {
+            padding: 10px 20px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        
+        .toggle-button:hover {
+            background-color: #666;
+        }
+        
+        .toggle-button.active {
+            background-color: #337ab7;
+        }
+    </style>
+    
     <!-- Initialize Firebase using ES modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from './firebase-config.js';
+        import { firebaseConfig } from '../JS/firebase-config.js';
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -34,6 +62,13 @@
     <br>
     <div class="container">
         <h1>Approved Matches</h1>
+        
+        <!-- Ladder toggle buttons -->
+        <div class="ladder-toggle">
+            <button id="d1-button" class="toggle-button active">D1 Ladder</button>
+            <button id="d2-button" class="toggle-button">D2 Ladder</button>
+        </div>
+        
         <table id="approved-matches-table">
             <thead>
                 <tr>
@@ -57,9 +92,57 @@
 
     <!-- Update script imports to use modules -->
     <script type="module" src="../JS/firebase-config.js"></script>
-    <script type="module" src="../JS/approved-matches.js"></script>
+    <script type="module" id="active-script" src="../JS/approved-matches.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
+
+    <script type="module">
+        // Script to toggle between D1 and D2 approved matches
+        document.addEventListener('DOMContentLoaded', () => {
+            const d1Button = document.getElementById('d1-button');
+            const d2Button = document.getElementById('d2-button');
+            let currentGameMode = 'D1';
+            
+            // Function to load the appropriate script
+            function loadScript(scriptSrc) {
+                // Remove existing script
+                const oldScript = document.getElementById('active-script');
+                if (oldScript) {
+                    oldScript.remove();
+                }
+                
+                // Create and add new script
+                const newScript = document.createElement('script');
+                newScript.id = 'active-script';
+                newScript.type = 'module';
+                newScript.src = scriptSrc;
+                document.body.appendChild(newScript);
+                
+                // Clear the table
+                const tableBody = document.querySelector('#approved-matches-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading matches...</td></tr>';
+            }
+            
+            // Set up event listeners for toggle buttons
+            d1Button.addEventListener('click', () => {
+                if (currentGameMode !== 'D1') {
+                    d1Button.classList.add('active');
+                    d2Button.classList.remove('active');
+                    loadScript('../JS/approved-matches.js');
+                    currentGameMode = 'D1';
+                }
+            });
+            
+            d2Button.addEventListener('click', () => {
+                if (currentGameMode !== 'D2') {
+                    d2Button.classList.add('active');
+                    d1Button.classList.remove('active');
+                    loadScript('../JS/approved-matchesD2.js');
+                    currentGameMode = 'D2';
+                }
+            });
+        });
+    </script>
 
     <div id="footer-placeholder"></div>
     <script>
