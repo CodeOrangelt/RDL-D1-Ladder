@@ -37,15 +37,40 @@ async function updateAuthSection(user) {
     
     if (user) {
         try {
+            // First check players collection
             const userDoc = await getDoc(doc(db, 'players', user.uid));
-            const username = userDoc.exists() ? userDoc.data().username : user.email;
-            const isUserAdmin = isAdmin(user.email);
+            let username;
+            let isNonParticipant = false;
             
-            console.log('User data loaded:', { username, isAdmin: isUserAdmin });
+            if (userDoc.exists()) {
+                // User is in players collection
+                username = userDoc.data().username;
+                console.log('Username found in players collection:', username);
+            } else {
+                // If not in players, check nonParticipants collection
+                const nonParticipantDoc = await getDoc(doc(db, 'nonParticipants', user.uid));
+                if (nonParticipantDoc.exists()) {
+                    username = nonParticipantDoc.data().username;
+                    isNonParticipant = true;
+                    console.log('Username found in nonParticipants collection:', username);
+                } else {
+                    // If not found in either collection, fallback to email
+                    username = user.email;
+                    console.log('Username not found in any collection, using email:', username);
+                }
+            }
+            
+            const isUserAdmin = isAdmin(user.email);
+            console.log('User data loaded:', { username, isAdmin: isUserAdmin, isNonParticipant });
+            
+            // Add the non-participant indicator for non-participant users
+            const displayUsername = isNonParticipant ? 
+                `${username}<span class="non-participant-indicator">(NP)</span>` : 
+                username;
             
             authSection.innerHTML = `
                 <div class="user-dropdown">
-                    <span id="current-user">${username}</span>
+                    <span id="current-user">${displayUsername}</span>
                     <div class="dropdown-content">
                         <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
                         ${isUserAdmin ? '<a href="admin.html" class="admin-only">Admin</a>' : ''}
