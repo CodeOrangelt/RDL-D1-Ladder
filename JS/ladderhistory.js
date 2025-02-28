@@ -383,6 +383,7 @@ function closeModal() {
 // Function to snapshot Season 0 data
 async function snapshotSeason0() {
     try {
+        console.log("snapshotSeason0(): Started");
         const seasonData = {};
 
         // 1. Ladder history snapshot (players ordered by ELO)
@@ -390,6 +391,9 @@ async function snapshotSeason0() {
         const ladderQuery = query(playersRef, orderBy("elo", "desc"));
         const playersSnapshot = await getDocs(ladderQuery);
         seasonData.ladder = [];
+        if (playersSnapshot.empty) {
+            console.warn("No player documents found in the players collection.");
+        }
         playersSnapshot.forEach((playerDoc) => {
             seasonData.ladder.push({ id: playerDoc.id, ...playerDoc.data() });
         });
@@ -402,7 +406,7 @@ async function snapshotSeason0() {
             console.log("Stats loaded from records element:", seasonData.stats);
         } else {
             seasonData.stats = "Stats not available";
-            console.warn("records-stats element not found");
+            console.warn("records-stats element not found in the DOM.");
         }
 
         // 3. Match history snapshot (from approvedMatches collection)
@@ -410,6 +414,9 @@ async function snapshotSeason0() {
         const matchesQuery = query(matchesRef, orderBy("timestamp", "desc"));
         const matchesSnapshot = await getDocs(matchesQuery);
         seasonData.matches = [];
+        if (matchesSnapshot.empty) {
+            console.warn("No approved match documents found in approvedMatches collection.");
+        }
         matchesSnapshot.forEach((matchDoc) => {
             seasonData.matches.push({ id: matchDoc.id, ...matchDoc.data() });
         });
@@ -420,7 +427,6 @@ async function snapshotSeason0() {
             archivedAt: new Date(),
             ...seasonData
         });
-
         console.log("Season 0 archived successfully.", seasonData);
         return true;
     } catch (error) {
