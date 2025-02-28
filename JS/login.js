@@ -202,8 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerModeSelect = document.getElementById('register-mode');
     nonParticipantCheckbox.addEventListener('change', function() {
         if (this.checked) {
-            registerModeSelect.disabled = true;
             registerModeSelect.value = "";
+            registerModeSelect.disabled = true;
         } else {
             registerModeSelect.disabled = false;
         }

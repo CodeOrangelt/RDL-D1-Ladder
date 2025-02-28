@@ -9,22 +9,17 @@
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/login-style.css">
-    <!-- Update Firebase SDK imports -->
+    <!-- Initialize Firebase -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        
-        // Your Firebase configuration will be imported from firebase-config.js
         import { firebaseConfig } from './firebase-config.js';
         
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Make Firebase services available globally
         window.auth = auth;
         window.db = db;
     </script>
@@ -33,6 +28,7 @@
     <div id="nav-placeholder"></div>
     <main>
         <div class="container">
+            <!-- Login Form -->
             <div class="form-container" id="login-container">
                 <h2>Login</h2>
                 <form id="login-form">
@@ -46,6 +42,7 @@
                 </p>
             </div>
 
+            <!-- Registration Form -->
             <div class="form-container" id="register-container" style="display: none;">
                 <h2>Create Account</h2>
                 <form id="register-form">
@@ -94,7 +91,7 @@
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script>
-        // Load nav and footer using Promise.all
+        // Load nav and footer
         Promise.all([
             fetch('../HTML/nav.html').then(response => response.text()),
             fetch('../HTML/footer.html').then(response => response.text())
