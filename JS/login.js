@@ -140,6 +140,7 @@ async function handleLogin(e) {
             if (pendingDoc.exists()) {
                 const pendingData = pendingDoc.data();
                 if (pendingData.nonParticipant) {
+                    // Handle non-participant users
                     await setDoc(doc(db, "nonParticipants", user.uid), {
                         username: pendingData.username,
                         email: user.email,
@@ -148,6 +149,7 @@ async function handleLogin(e) {
                     });
                     console.log(`User ${pendingData.username} added to nonParticipants collection`);
                 } else if (pendingData.gameMode === "D1") {
+                    // Only add D1 players to the main ladder
                     const playersRef = collection(db, "players");
                     const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
                     const playersSnapshot = await getDocs(playersQuery);
@@ -165,7 +167,8 @@ async function handleLogin(e) {
                     });
                     console.log(`New player ${pendingData.username} added to ladder at position ${nextPosition}`);
                 } else {
-                    console.log(`User registered with game mode "${pendingData.gameMode}" and not marked as nonParticipant, not added to ladder.`);
+                    // For other game modes (D2, D3, Duos, CTF)
+                    console.log(`User registered with game mode "${pendingData.gameMode}" not added to main ladder`);
                 }
                 await deleteDoc(pendingRef);
             }
