@@ -643,3 +643,45 @@ tr:nth-child(even) {
 #resume-session-btn:hover {
     background-color: #3da05f;
 }
+
+/* Tiny retire button positioned at the bottom right of the ladder container */
+#ladder-retire-tiny-container {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.tiny-retire-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tiny-retire-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Position the tiny join button at the bottom right */
+#ladder-join-tiny-container {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.tiny-join-button {
+    background-color: #4CAF50; /* green */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tiny-join-button:hover {
+    background-color: #388E3C;
+}
