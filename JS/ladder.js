@@ -78,7 +78,7 @@ function getNextAvailablePosition(players) {
     return maxPosition + 1;
 }
 
-// Add this new function
+// Improved function to handle all position update scenarios
 async function updatePlayerPositions(winnerUsername, loserUsername) {
     try {
         // Get all players
@@ -97,17 +97,26 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
         const winner = players.find(p => p.username === winnerUsername);
         const loser = players.find(p => p.username === loserUsername);
 
-        // Only update positions if winner is below loser
+        if (!winner || !loser) {
+            console.error("Could not find winner or loser in players list");
+            return;
+        }
+
+        console.log(`Match result: ${winnerUsername}(${winner.position}) beat ${loserUsername}(${loser.position})`);
+
+        // Only update positions if winner is below loser in the ladder
         if (winner.position > loser.position) {
+            console.log(`Winner ${winnerUsername} is moving up from position ${winner.position} to ${loser.position}`);
             const winnerNewPosition = loser.position;
             
             // Update positions for players between winner and loser
             for (const player of players) {
-                if (player.position >= loser.position && player.position < winner.position) {
+                if (player.position >= loser.position && player.position < winner.position && player.username !== winnerUsername) {
                     // Move everyone down one position
                     await updateDoc(doc(db, 'players', player.id), {
                         position: player.position + 1
                     });
+                    console.log(`Moving ${player.username} down to position ${player.position + 1}`);
                 }
             }
 
@@ -115,8 +124,9 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             await updateDoc(doc(db, 'players', winner.id), {
                 position: winnerNewPosition
             });
+            console.log(`Updated ${winnerUsername} to position ${winnerNewPosition}`);
 
-            // Inside updatePlayerPositions function, after updating winner's position
+            // Handle #1 position streak tracking
             if (winnerNewPosition === 1) {
                 // Check if this is the first time reaching #1
                 const winnerDoc = doc(db, 'players', winner.id);
@@ -126,6 +136,7 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     await updateDoc(winnerDoc, {
                         firstPlaceDate: Timestamp.now()
                     });
+                    console.log(`${winnerUsername} reached #1 for the first time, setting firstPlaceDate`);
                 }
             }
 
@@ -135,7 +146,11 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                 await updateDoc(loserDoc, {
                     firstPlaceDate: null // Reset their streak
                 });
+                console.log(`${loserUsername} lost #1 position, resetting firstPlaceDate`);
             }
+        } else {
+            // If winner is already above loser or equal, maintain positions
+            console.log(`No position change needed: winner ${winnerUsername}(${winner.position}) is already above or equal to loser ${loserUsername}(${loser.position})`);
         }
     } catch (error) {
         console.error("Error updating player positions:", error);
