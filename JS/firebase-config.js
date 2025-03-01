@@ -1,7 +1,10 @@
 // firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, initializeFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Import idle timeout functionality
+import { initIdleTimeout } from './idle-timeout.js';
 
 export const firebaseConfig = {
   apiKey: "AIzaSyDMF-bq4tpLoZvUYep_G-igmHbK2h-e-Zs",
@@ -16,8 +19,34 @@ export const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Initialize Firestore with settings for reduced network usage
+const firestoreSettings = {
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+  ignoreUndefinedProperties: true,
+};
+
+// Then initialize Firestore with optimized settings
+const db = initializeFirestore(app, firestoreSettings);
+
+// Enable offline persistence (careful with quota)
+enableIndexedDbPersistence(db)
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Persistence failed - multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Persistence not available in this browser');
+    }
+  });
+
+// Export the optimized db instance
+export { app, db };
 
 //debug lines for connection ping
 console.log('Firebase initialized:', !!app);
 console.log('Firestore initialized:', !!db);
+
+// Initialize idle timeout when firebase config is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initIdleTimeout();
+});

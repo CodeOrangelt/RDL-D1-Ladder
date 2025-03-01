@@ -1,36 +1,49 @@
-import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { 
+    collection, 
+    doc, 
+    query, 
+    where, 
+    orderBy, 
+    limit, 
+    getDoc, 
+    setDoc, 
+    onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
 
-const MAX_VIEWS = 3;  // Changed from 5 to 3
+// Maximum views for each promotion
+const MAX_VIEWS = 5;
 
 // Add error handling for the view counter
-async function checkPromotionViews(promotionId, playerName) {  // Changed userId to playerName
+async function checkPromotionViews(promotionId, playerName) {
     if (!promotionId || !playerName) {
         console.warn('Missing promotionId or playerName');
         return true; // Default to showing banner if missing data
     }
-
+    
     try {
-        const docId = `promotion_${promotionId}_${playerName}`;  // Use playerName directly
+        // Create a valid document ID that matches our security rules
+        const docId = `promotion_${promotionId}_${playerName}`;
         const viewsRef = doc(db, 'promotionViews', docId);
         const viewsDoc = await getDoc(viewsRef);
         
         if (!viewsDoc.exists()) {
-            // First view
+            // First view - create document
             await setDoc(viewsRef, { 
                 promotionId,
-                playerName,  // Store the promoted/demoted player's name
+                playerName,
                 views: 1,
                 createdAt: new Date(),
                 updatedAt: new Date()
             });
-            console.log(`First view for promotion ${promotionId} by ${playerName}`);
+            console.log(`First view for promotion ${promotionId}`);
             return true;
         }
         
         const data = viewsDoc.data();
         const currentViews = data.views || 0;
         
+        // Check if we've hit the view limit
         if (currentViews >= MAX_VIEWS) {
             console.log(`Max views (${MAX_VIEWS}) reached for promotion ${promotionId}`);
             return false;
@@ -38,20 +51,22 @@ async function checkPromotionViews(promotionId, playerName) {  // Changed userId
 
         // Increment view count
         await setDoc(viewsRef, {
+            promotionId,
+            playerName,
             views: currentViews + 1,
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            createdAt: data.createdAt || new Date()
         }, { merge: true });
         
         console.log(`View ${currentViews + 1}/${MAX_VIEWS} for promotion ${promotionId}`);
         return true;
-
     } catch (error) {
         console.error('Error checking promotion views:', error);
-        return true; // Show banner on error to avoid missing important notifications
+        // Don't block showing the banner if we can't track views
+        return true;
     }
 }
 
-// Update the query to get more recent promotions
 export function initializePromotionTracker() {
     const bannerContainer = document.getElementById('promotion-banner-container');
     if (!bannerContainer) {
@@ -67,7 +82,7 @@ export function initializePromotionTracker() {
     const historyRef = collection(db, 'eloHistory');
     const q = query(
         historyRef, 
-        where('type', 'in', ['promotion', 'demotion']), // Add demotion type
+        where('type', 'in', ['promotion', 'demotion']),
         orderBy('timestamp', 'desc'), 
         limit(5)
     );
@@ -82,7 +97,13 @@ export function initializePromotionTracker() {
                 rankChanges.push({ id: change.doc.id, ...data });
             }
         }
-
+        
+        if (rankChanges.length === 0) {
+            console.log('No new rank changes');
+            return;
+        }
+        
+        // Sort by timestamp (newest first)
         rankChanges.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
 
         for (let i = 0; i < rankChanges.length; i++) {
@@ -95,20 +116,26 @@ export function initializePromotionTracker() {
                     continue;
                 }
 
-                const shouldShow = await checkPromotionViews(rankChange.id, rankChange.player);  // Use rankChange.player instead of currentUser.uid
-                
-                if (shouldShow) {
-                    console.log(`Showing ${rankChange.type} banner for:`, rankChange.player);
-                    setTimeout(() => {
-                        showRankChangeBanner(rankChange, bannerContainer);
-                    }, i * 1000);
+                try {
+                    const shouldShow = await checkPromotionViews(rankChange.id, rankChange.player);
+                    
+                    if (shouldShow) {
+                        console.log(`Showing ${rankChange.type} banner for:`, rankChange.player);
+                        setTimeout(() => {
+                            showRankChangeBanner(rankChange, bannerContainer);
+                        }, i * 1000);
 
-                    if (rankChange.player === currentUser.displayName) {
-                        showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
+                        if (rankChange.player === currentUser.displayName) {
+                            showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
+                        }
                     }
+                } catch (error) {
+                    console.error('Error processing rank change:', error);
                 }
             }
         }
+    }, (error) => {
+        console.error('Error listening for rank changes:', error);
     });
 }
 
@@ -118,7 +145,7 @@ function showRankChangeBanner(data, container) {
     }
 
     const bannerDiv = document.createElement('div');
-    bannerDiv.className = 'promotion-banner'; // Changed from rank-change-banner
+    bannerDiv.className = 'promotion-banner';
     bannerDiv.setAttribute('data-rank', data.rankAchieved);
     
     // Create details element with proper class
@@ -135,20 +162,20 @@ function showRankChangeBanner(data, container) {
     container.appendChild(bannerDiv);
     container.style.display = 'block';
 
-    // Rest of the animation timing code remains the same
+    // Animation timing
     setTimeout(() => {
         bannerDiv.classList.add('new-rank-change');
-    }, 100);
-
-    setTimeout(() => {
-        bannerDiv.classList.remove('new-rank-change');
+        
         setTimeout(() => {
-            bannerDiv.remove();
-            if (container.children.length === 0) {
-                container.style.display = 'none';
-            }
-        }, 5000);
-    }, 8000);
+            bannerDiv.classList.remove('new-rank-change');
+            setTimeout(() => {
+                bannerDiv.remove();
+                if (container.children.length === 0) {
+                    container.style.display = 'none';
+                }
+            }, 5000);
+        }, 10000);
+    }, 100);
 }
 
 function showRankChangeLightbox(type, rankName) {
@@ -168,7 +195,7 @@ function showRankChangeLightbox(type, rankName) {
             <h2 class="rank-change-title">${title}</h2>
             <p>${message}</p>
             <h3 class="rank-name">${rankName}</h3>
-            <button class="rank-change-button" onclick="document.getElementById('rankChangeModal').style.display='none'">
+            <button class="rank-change-button" id="rank-change-ok-btn">
                 Got it!
             </button>
         </div>
@@ -176,6 +203,12 @@ function showRankChangeLightbox(type, rankName) {
 
     modal.style.display = 'flex';
 
+    // Add event listener to button using proper method
+    document.getElementById('rank-change-ok-btn').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Close when clicking outside
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
