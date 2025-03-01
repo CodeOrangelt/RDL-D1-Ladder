@@ -61,12 +61,12 @@ async function checkUserLadderStatus() {
     const user = auth.currentUser;
     const joinPrompt = document.getElementById('ladder-join-prompt');
     const joinLadderType = document.getElementById('join-ladder-type');
+    const tinyJoinButton = document.getElementById('tiny-join-button');
     
-    if (!user || !user.uid || !joinPrompt || !joinLadderType) {
-        // If no user or invalid user, hide the join prompt
-        if (joinPrompt) {
-            joinPrompt.style.display = 'none';
-        }
+    if (!user || !user.uid || !joinPrompt || !joinLadderType || !tinyJoinButton) {
+        // If no user or UI elements missing, hide the join prompt and tiny join button
+        if (joinPrompt) joinPrompt.style.display = 'none';
+        if (tinyJoinButton) tinyJoinButton.style.display = 'none';
         return;
     }
     
@@ -77,6 +77,7 @@ async function checkUserLadderStatus() {
         } catch (authError) {
             console.error("Authentication verification failed:", authError);
             joinPrompt.style.display = 'none';
+            tinyJoinButton.style.display = 'none';
             return;
         }
         
@@ -88,21 +89,28 @@ async function checkUserLadderStatus() {
         const userDoc = await getDoc(userDocRef);
         
         if (userDoc.exists()) {
-            // User is part of this ladder, hide the join prompt
+            // User is already on this ladder, hide both the join prompt and tiny join button
             joinPrompt.style.display = 'none';
+            tinyJoinButton.style.display = 'none';
         } else {
-            // User is not part of this ladder, show the join prompt
-            joinPrompt.style.display = 'block';
+            // User is not on this ladder: show the tiny join button and prepare the join prompt.
+            joinPrompt.style.display = 'none'; // Hide full prompt by default.
+            tinyJoinButton.style.display = 'block';
             joinLadderType.textContent = currentLadder;
             
+            // Toggle the join prompt when the tiny join button is clicked.
+            tinyJoinButton.onclick = () => {
+                if (joinPrompt.style.display === 'block') {
+                    joinPrompt.style.display = 'none';
+                } else {
+                    joinPrompt.style.display = 'block';
+                }
+            };
+
             // Clear any previous inputs and status messages
             const usernameInput = document.getElementById('join-username-input');
             const joinStatus = document.getElementById('ladder-join-status');
-            
-            if (usernameInput) {
-                usernameInput.value = '';
-            }
-            
+            if (usernameInput) usernameInput.value = '';
             if (joinStatus) {
                 joinStatus.textContent = '';
                 joinStatus.className = 'ladder-join-status';
@@ -111,6 +119,7 @@ async function checkUserLadderStatus() {
     } catch (error) {
         console.error('Error checking ladder status:', error);
         joinPrompt.style.display = 'none'; // Hide on error as a safety measure
+        tinyJoinButton.style.display = 'none';
     }
 }
 
