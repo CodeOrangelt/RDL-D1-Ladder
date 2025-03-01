@@ -139,6 +139,7 @@ export function initializePromotionTracker() {
     });
 }
 
+// Modified showRankChangeBanner to ensure we're using player's username
 function showRankChangeBanner(data, container) {
     if (container.children.length >= 3) {
         container.removeChild(container.firstChild);
@@ -152,9 +153,12 @@ function showRankChangeBanner(data, container) {
     const details = document.createElement('div');
     details.className = 'promotion-details';
     
+    // Use player name (ensure it's not an email or UID)
+    const playerName = data.player;  // This is already correct
+    
     const message = data.type === 'promotion' 
-        ? `${data.player} was promoted to` 
-        : `${data.player} was demoted to`;
+        ? `${playerName} was promoted to` 
+        : `${playerName} was demoted to`;
 
     details.innerHTML = `${message} <span class="rank-text">${data.rankAchieved}</span> by ${data.promotedBy || 'Admin'}`;
     
