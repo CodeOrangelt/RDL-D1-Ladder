@@ -1,7 +1,7 @@
 import { approveReport } from './ladderalgorithm.js';
 import { 
     collection, getDocs, query, where, 
-    orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc 
+    orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
@@ -351,7 +351,7 @@ async function checkForOutstandingReports(username, elements, collectionName = n
         // Query pending matches where the current user is the winner
         const pendingMatchesRef = collection(db, pendingCollection);
         
-        // Try first with winnerId field (new format)
+        // Try first with winnerId fiyeld (new format)
         const q1 = query(
             pendingMatchesRef,
             where('winnerId', '==', userId),
@@ -546,6 +546,24 @@ function autoFillReportForm(reportData) {
                             document.getElementById('report-lightbox').style.display = 'none';
                             alert('Match approved successfully');
                             location.reload(); // Refresh to update the UI
+
+                            // After approving the match and updating ELO ratings…
+                            const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
+                            const winnerRef = doc(db, playersCollection, winnerId); // Assume winnerId is available
+                            const loserRef  = doc(db, playersCollection, loserId);  // Assume loserId is available
+
+                            const [winnerSnap, loserSnap] = await Promise.all([getDoc(winnerRef), getDoc(loserRef)]);
+                            if (winnerSnap.exists() && loserSnap.exists()) {
+                                const winnerData = winnerSnap.data();
+                                const loserData = loserSnap.data();
+                                // If winner is ranked lower (position number higher) than loser, update position
+                                if (winnerData.position > loserData.position) {
+                                    await updateDoc(winnerRef, { position: loserData.position });
+                                    console.log(`Winner ${winnerData.username} moved to position ${loserData.position}`);
+                                } else {
+                                    console.log("No position change needed; winner is already above the loser.");
+                                }
+                            }
                         } catch (error) {
                             console.error('Error approving report:', error);
                             alert('Error approving match: ' + error.message);
