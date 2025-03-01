@@ -1,27 +1,25 @@
-import { rdlFirestore } from './firestore-wrapper.js';
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    orderBy, 
+    addDoc, 
+    deleteDoc, 
+    where, 
+    doc, 
+    getDoc,
+    serverTimestamp, 
+    setDoc, 
+    updateDoc, 
+    writeBatch,
+    runTransaction 
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
 import { ADMIN_EMAILS } from './admin-config.js';
 import { isAdmin } from './admin-check.js';
 import { archiveSeason0 } from './resetseason.js';
-
-// Extract the wrapped methods for easier access
-const {
-    collection: collectionRef,
-    doc: docRef,
-    getDocs: getDocsWrapper,
-    getDoc: getDocWrapper,
-    query: queryWrapper,
-    where: whereWrapper,
-    orderBy: orderByWrapper,
-    addDoc: addDocWrapper,
-    deleteDoc: deleteDocWrapper,
-    updateDoc: updateDocWrapper,
-    setDoc: setDocWrapper,
-    writeBatch: writeBatchWrapper,
-    serverTimestamp: serverTimestampWrapper
-} = rdlFirestore;
 
 // Test data array
 const testPlayers = [
@@ -130,14 +128,14 @@ async function setupAdminButtons() {
 
 async function populateTestLadder() {
     try {
-        const playersRef = collectionRef(db, 'players');
+        const playersRef = collection(db, 'players');
         
         // Clear existing players
-        const existingPlayers = await getDocsWrapper(playersRef);
-        await Promise.all(existingPlayers.docs.map(doc => deleteDocWrapper(docRef(playersRef, doc.id))));
+        const existingPlayers = await getDocs(playersRef);
+        await Promise.all(existingPlayers.docs.map(doc => deleteDoc(doc.ref)));
 
         // Add test players
-        await Promise.all(testPlayers.map(player => addDocWrapper(playersRef, player)));
+        await Promise.all(testPlayers.map(player => addDoc(playersRef, player)));
 
         alert('Test ladder populated successfully!');
         
@@ -159,9 +157,9 @@ async function loadEloRatings() {
     tableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
 
     try {
-        const playersRef = collectionRef(db, 'players');
-        const q = queryWrapper(playersRef, orderByWrapper('eloRating', 'desc'));
-        const querySnapshot = await getDocsWrapper(q);
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, orderBy('eloRating', 'desc'));
+        const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="2">No players found</td></tr>';
@@ -198,9 +196,9 @@ async function loadEloHistory() {
     tableBody.innerHTML = '<tr><td colspan="7">Loading history...</td></tr>';
 
     try {
-        const eloHistoryRef = collectionRef(db, 'eloHistory');
-        const q = queryWrapper(eloHistoryRef, orderByWrapper('timestamp', 'desc'));
-        const querySnapshot = await getDocsWrapper(q);
+        const eloHistoryRef = collection(db, 'eloHistory');
+        const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="7">No ELO history found</td></tr>';
@@ -246,81 +244,6 @@ function displayTemplateLadder() {
     });
 }
 
-// Add to adminbackend.js
-let adminCachedData = {
-  players: null,
-  eloHistory: null,
-  timestamp: {}
-};
-
-async function getPlayersData(forceRefresh = false) {
-  const cacheAge = adminCachedData.timestamp.players ? (Date.now() - adminCachedData.timestamp.players) / 1000 : Infinity;
-  
-  // Use cache if available and less than 30 seconds old, unless force refresh
-  if (adminCachedData.players && cacheAge < 30 && !forceRefresh) {
-    return adminCachedData.players;
-  }
-  
-  // Otherwise fetch fresh data
-  const playersRef = collectionRef(db, 'players');
-  const q = queryWrapper(playersRef, orderByWrapper('username'));
-  const snapshot = await getDocsWrapper(q);
-  
-  // Store in cache
-  adminCachedData.players = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-  adminCachedData.timestamp.players = Date.now();
-  
-  return adminCachedData.players;
-}
-
-// Then update your other functions to use this shared data
-async function loadPlayers() {
-    const tableBody = document.querySelector('#players-table tbody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-
-    try {
-        const players = await getPlayersData();
-
-        if (!players.length) {
-            tableBody.innerHTML = '<tr><td colspan="4">No players found</td></tr>';
-            return;
-        }
-
-        tableBody.innerHTML = '';
-        let position = 1;
-
-        players.forEach(player => {
-            const row = document.createElement('tr');
-            const rankStyle = getRankStyle(player.eloRating || 1200);
-            
-            row.innerHTML = `
-                <td>${position}</td>
-                <td style="color: ${rankStyle.color}; font-weight: bold;">
-                    ${player.username || 'Unknown'}
-                </td>
-                <td>${player.eloRating || 1200}</td>
-                <td>
-                    <button class="move-btn" data-direction="up" data-id="${player.id}" data-pos="${position}">↑</button>
-                    <button class="move-btn" data-direction="down" data-id="${player.id}" data-pos="${position}">↓</button>
-                    <button class="remove-btn" data-id="${player.id}">Remove</button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-            position++;
-        });
-
-        setupLadderControls();
-    } catch (error) {
-        console.error('Error loading players:', error);
-        tableBody.innerHTML = '<tr><td colspan="4">Error loading players</td></tr>';
-    }
-}
-
 // Update loadPlayers function to prevent duplicates and handle visibility
 async function loadPlayers() {
     const tableBody = document.querySelector('#players-table tbody');
@@ -329,9 +252,11 @@ async function loadPlayers() {
     tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
 
     try {
-        const players = await getPlayersData();
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, orderBy('username'));
+        const querySnapshot = await getDocs(q);
 
-        if (!players.length) {
+        if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="4">No players found</td></tr>';
             return;
         }
@@ -339,7 +264,8 @@ async function loadPlayers() {
         tableBody.innerHTML = '';
         let position = 1;
 
-        players.forEach(player => {
+        querySnapshot.forEach(doc => {
+            const player = doc.data();
             const row = document.createElement('tr');
             const rankStyle = getRankStyle(player.eloRating || 1200);
             
@@ -350,9 +276,9 @@ async function loadPlayers() {
                 </td>
                 <td>${player.eloRating || 1200}</td>
                 <td>
-                    <button class="move-btn" data-direction="up" data-id="${player.id}" data-pos="${position}">↑</button>
-                    <button class="move-btn" data-direction="down" data-id="${player.id}" data-pos="${position}">↓</button>
-                    <button class="remove-btn" data-id="${player.id}">Remove</button>
+                    <button class="move-btn" data-direction="up" data-id="${doc.id}" data-pos="${position}">↑</button>
+                    <button class="move-btn" data-direction="down" data-id="${doc.id}" data-pos="${position}">↓</button>
+                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
                 </td>
             `;
             tableBody.appendChild(row);
@@ -377,25 +303,25 @@ async function setupLadderControls() {
             const currentPos = parseInt(e.target.dataset.pos);
             
             try {
-                const batch = writeBatchWrapper(db);
-                const playersRef = collectionRef(db, 'players');
+                const batch = writeBatch(db);
+                const playersRef = collection(db, 'players');
                 
                 // Get current player
-                const currentPlayerDoc = await getDocWrapper(docRef(playersRef, playerId));
+                const currentPlayerDoc = await getDoc(doc(playersRef, playerId));
                 
                 // Get adjacent player
                 const targetPos = direction === 'up' ? currentPos - 1 : currentPos + 1;
-                const targetQuery = queryWrapper(playersRef, whereWrapper('position', '==', targetPos));
-                const targetSnapshot = await getDocsWrapper(targetQuery);
+                const targetQuery = query(playersRef, where('position', '==', targetPos));
+                const targetSnapshot = await getDocs(targetQuery);
                 
                 if (!targetSnapshot.empty) {
                     const targetDoc = targetSnapshot.docs[0];
                     
                     // Swap positions
-                    batch.update(docRef(playersRef, playerId), {
+                    batch.update(doc(playersRef, playerId), {
                         position: targetPos
                     });
-                    batch.update(docRef(playersRef, targetDoc.id), {
+                    batch.update(doc(playersRef, targetDoc.id), {
                         position: currentPos
                     });
                     
@@ -414,7 +340,7 @@ async function setupLadderControls() {
         button.addEventListener('click', async (e) => {
             if (confirm('Are you sure you want to remove this player?')) {
                 try {
-                    await deleteDocWrapper(docRef(db, 'players', e.target.dataset.id));
+                    await deleteDoc(doc(db, 'players', e.target.dataset.id));
                     await loadPlayers(); // Refresh the list
                 } catch (error) {
                     console.error('Error removing player:', error);
@@ -436,9 +362,9 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
 
     try {
         // Check if username exists
-        const playersRef = collectionRef(db, 'players');
-        const q = queryWrapper(playersRef, whereWrapper('username', '==', username));
-        const querySnapshot = await getDocsWrapper(q);
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
             alert('Username already exists');
@@ -446,9 +372,10 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
         }
 
         // Get all players to determine next position
-        const allPlayersSnapshot = await getPlayersData(true);
+        const allPlayersSnapshot = await getDocs(playersRef);
         const positions = [];
-        allPlayersSnapshot.forEach(playerData => {
+        allPlayersSnapshot.forEach(doc => {
+            const playerData = doc.data();
             if (playerData.position) {
                 positions.push(playerData.position);
             }
@@ -462,10 +389,10 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
             username: username,
             eloRating: eloRating,
             position: nextPosition,
-            createdAt: serverTimestampWrapper()
+            createdAt: serverTimestamp()
         };
 
-        await addDocWrapper(collectionRef(db, 'players'), playerData);
+        await addDoc(collection(db, 'players'), playerData);
         alert('Player added successfully at position ' + nextPosition);
 
         // Clear inputs and refresh
@@ -489,9 +416,9 @@ async function promotePlayer(username) {
         }
 
         // Get player data
-        const playersRef = collectionRef(db, 'players');
-        const q = queryWrapper(playersRef, whereWrapper('username', '==', username));
-        const querySnapshot = await getDocsWrapper(q);
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
             throw new Error('Player not found');
@@ -517,22 +444,22 @@ async function promotePlayer(username) {
         }
 
         // Use batch write instead of transaction
-        const batch = writeBatchWrapper(db);
+        const batch = writeBatch(db);
         
         // Update player document
-        batch.update(docRef(db, 'players', playerDoc.id), {
+        batch.update(doc(db, 'players', playerDoc.id), {
             eloRating: nextThreshold.elo,
-            lastPromotedAt: serverTimestampWrapper(),
+            lastPromotedAt: serverTimestamp(),
             promotedBy: user.email
         });
 
         // Add promotion history
-        const historyRef = docRef(collectionRef(db, 'eloHistory'));
+        const historyRef = doc(collection(db, 'eloHistory'));
         batch.set(historyRef, {
             player: username,
             previousElo: currentElo,
             newElo: nextThreshold.elo,
-            timestamp: serverTimestampWrapper(),
+            timestamp: serverTimestamp(),
             type: 'promotion',
             rankAchieved: nextThreshold.name,
             promotedBy: user.email
@@ -659,9 +586,9 @@ async function demotePlayer(username) {
         }
 
         // Get player data
-        const playersRef = collectionRef(db, 'players');
-        const q = queryWrapper(playersRef, whereWrapper('username', '==', username));
-        const querySnapshot = await getDocsWrapper(q);
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
             throw new Error('Player not found');
@@ -687,22 +614,22 @@ async function demotePlayer(username) {
         }
 
         // Use batch write
-        const batch = writeBatchWrapper(db);
+        const batch = writeBatch(db);
         
         // Update player document
-        batch.update(docRef(db, 'players', playerDoc.id), {
+        batch.update(doc(db, 'players', playerDoc.id), {
             eloRating: prevThreshold.elo,
-            lastDemotedAt: serverTimestampWrapper(),
+            lastDemotedAt: serverTimestamp(),
             demotedBy: user.email
         });
 
         // Add demotion history
-        const historyRef = docRef(collectionRef(db, 'eloHistory'));
+        const historyRef = doc(collection(db, 'eloHistory'));
         batch.set(historyRef, {
             player: username,
             previousElo: currentElo,
             newElo: prevThreshold.elo,
-            timestamp: serverTimestampWrapper(),
+            timestamp: serverTimestamp(),
             type: 'demotion',
             rankAchieved: prevThreshold.name,
             demotedBy: user.email
@@ -794,12 +721,12 @@ function setupTestReportButton() {
                 winnerComment: 'Test match',
                 loserComment: 'Test match',
                 approved: false,
-                createdAt: serverTimestampWrapper(),
+                createdAt: serverTimestamp(),
                 reportedBy: 'Admin (Test)',
                 matchId: Date.now().toString()
             };
 
-            await addDocWrapper(collectionRef(db, 'pendingMatches'), testReport);
+            await addDoc(collection(db, 'pendingMatches'), testReport);
             alert('Test report created! Login as test5 to approve it.');
 
         } catch (error) {
@@ -860,9 +787,9 @@ async function setCustomElo(username, newElo) {
             throw new Error('Unauthorized: Admin access required');
         }
 
-        const playersRef = collectionRef(db, 'players');
-        const q = queryWrapper(playersRef, whereWrapper('username', '==', username));
-        const querySnapshot = await getDocsWrapper(q);
+        const playersRef = collection(db, 'players');
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
             throw new Error('Player not found');
@@ -871,22 +798,22 @@ async function setCustomElo(username, newElo) {
         const playerDoc = querySnapshot.docs[0];
         const currentElo = playerDoc.data().eloRating || 1200;
 
-        const batch = writeBatchWrapper(db);
+        const batch = writeBatch(db);
         
         // Update player document
-        batch.update(docRef(db, 'players', playerDoc.id), {
+        batch.update(doc(db, 'players', playerDoc.id), {
             eloRating: newElo,
-            lastModifiedAt: serverTimestampWrapper(),
+            lastModifiedAt: serverTimestamp(),
             modifiedBy: user.email
         });
 
         // Add ELO history entry
-        batch.set(docRef(collectionRef(db, 'eloHistory')), {
+        batch.set(doc(collection(db, 'eloHistory')), {
             type: 'admin_modification',
             player: username,
             previousElo: currentElo,
             newElo: newElo,
-            timestamp: serverTimestampWrapper(),
+            timestamp: serverTimestamp(),
             change: newElo - currentElo,
             modifiedBy: user.email
         });
@@ -1046,14 +973,14 @@ async function clearPromotionCache() {
         }
 
         // Get all documents from promotionViews collection
-        const promotionViewsRef = collectionRef(db, 'promotionViews');
-        const snapshot = await getDocsWrapper(promotionViewsRef);
+        const promotionViewsRef = collection(db, 'promotionViews');
+        const snapshot = await getDocs(promotionViewsRef);
         
         // Count documents for reporting
         const totalDocs = snapshot.size;
         
         // Delete all documents
-        const deletePromises = snapshot.docs.map(doc => deleteDocWrapper(docRef(db, 'promotionViews', doc.id)));
+        const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
         await Promise.all(deletePromises);
         
         alert(`Successfully cleared ${totalDocs} promotion banner records`);
