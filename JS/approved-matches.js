@@ -3,7 +3,9 @@ import {
     query, 
     orderBy, 
     getDocs,
-    where 
+    where,
+    limit,
+    startAfter
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
@@ -24,118 +26,121 @@ function getEloClass(elo) {
     return 'elo-unranked';
 }
 
-// Helper function to get player data
-async function getPlayerData(username) {
-    try {
-        const playersRef = collection(db, 'players');
-        const q = query(playersRef, where('username', '==', username));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-            return snapshot.docs[0].data();
-        }
-        return null;
-    } catch (error) {
-        console.error('Error fetching player data:', error);
-        return null;
-    }
-}
-
 // Add pagination state
 let currentPage = 1;
 const matchesPerPage = 10;
-let allMatches = [];
+let lastVisibleDoc = null;
+let firstVisibleDoc = null;
+let pageCache = new Map(); // Cache for pages we've already fetched
+let totalDocCount = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const approvedMatchesRef = collection(db, 'approvedMatches');
-    const q = query(approvedMatchesRef, orderBy('createdAt', 'desc'));
+    await getTotalMatchCount();
+    await fetchMatchesPage(1);
+});
+
+// Get the total count of matches (only needed once)
+async function getTotalMatchCount() {
+    try {
+        const countSnapshot = await getDocs(
+            query(collection(db, 'approvedMatches'))
+        );
+        totalDocCount = countSnapshot.size;
+    } catch (error) {
+        console.error("Error getting total count:", error);
+        totalDocCount = 0;
+    }
+}
+
+// Fetch a specific page of matches
+async function fetchMatchesPage(page) {
+    // Check if page is in cache
+    if (pageCache.has(page)) {
+        const cachedData = pageCache.get(page);
+        displayMatches(cachedData.matches);
+        lastVisibleDoc = cachedData.lastDoc;
+        firstVisibleDoc = cachedData.firstDoc;
+        updatePaginationControls(page);
+        return;
+    }
+    
+    const tableBody = document.querySelector('#approved-matches-table tbody');
+    tableBody.innerHTML = '<tr><td colspan="10">Loading matches...</td></tr>';
     
     try {
-        const querySnapshot = await getDocs(q);
-        allMatches = await Promise.all(querySnapshot.docs.map(async doc => {
+        let matchesQuery;
+        
+        if (page === 1) {
+            // First page query
+            matchesQuery = query(
+                collection(db, 'approvedMatches'),
+                orderBy('createdAt', 'desc'),
+                limit(matchesPerPage)
+            );
+        } else if (page > currentPage) {
+            // Next page
+            matchesQuery = query(
+                collection(db, 'approvedMatches'),
+                orderBy('createdAt', 'desc'),
+                startAfter(lastVisibleDoc),
+                limit(matchesPerPage)
+            );
+        } else {
+            // Previous page - we should have this in cache ideally
+            // This is a fallback and would require additional handling for proper prev pagination
+            matchesQuery = query(
+                collection(db, 'approvedMatches'),
+                orderBy('createdAt', 'desc'),
+                limit(page * matchesPerPage)
+            );
+        }
+
+        const querySnapshot = await getDocs(matchesQuery);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="10">No matches found</td></tr>';
+            return;
+        }
+
+        const matches = querySnapshot.docs.map(doc => {
             const data = doc.data();
-            const winnerData = await getPlayerData(data.winnerUsername);
-            const loserData = await getPlayerData(data.loserUsername);
-            
             return {
                 ...data,
-                winnerElo: winnerData?.eloRating || 1200,
-                loserElo: loserData?.eloRating || 1200,
+                id: doc.id,
+                winnerElo: data.winnerOldElo || data.winnerElo || 1200,
+                loserElo: data.loserOldElo || data.loserElo || 1200,
                 date: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A',
                 loserSuicidesValue: data.loserSuicides || data.suicides || 'N/A'
             };
-        }));
+        });
 
-        // Create pagination controls
-        createPaginationControls();
-        // Display first page
-        displayMatchesPage(1);
+        // Update document pointers for pagination
+        lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        firstVisibleDoc = querySnapshot.docs[0];
+        
+        // Cache this page
+        pageCache.set(page, {
+            matches: matches,
+            lastDoc: lastVisibleDoc,
+            firstDoc: firstVisibleDoc
+        });
+        
+        // Update current page and display matches
+        currentPage = page;
+        displayMatches(matches);
+        updatePaginationControls(page);
+        
     } catch (error) {
-        console.error("Error fetching approved matches:", error);
-        const tableBody = document.querySelector('#approved-matches-table tbody');
+        console.error("Error fetching matches:", error);
         tableBody.innerHTML = '<tr><td colspan="10">Error loading matches</td></tr>';
     }
-});
-
-function createPaginationControls() {
-    const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-    const paginationContainer = document.createElement('div');
-    paginationContainer.className = 'pagination-wrapper';
-    paginationContainer.innerHTML = `
-        <div class="pagination-controls">
-            <button id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-            <div class="page-navigation">
-                <span>Page ${currentPage} of ${totalPages}</span>
-                <div class="page-search">
-                    <input type="number" id="pageInput" min="1" max="${totalPages}" value="${currentPage}">
-                    <button id="goToPage">Go</button>
-                </div>
-            </div>
-            <button id="nextPage" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
-        </div>
-    `;
-
-    // Add pagination controls after the table
-    const table = document.querySelector('#approved-matches-table');
-    table.parentNode.insertBefore(paginationContainer, table.nextSibling);
-
-    // Add event listeners
-    document.getElementById('prevPage').addEventListener('click', () => {
-        if (currentPage > 1) displayMatchesPage(currentPage - 1);
-    });
-
-    document.getElementById('nextPage').addEventListener('click', () => {
-        if (currentPage < totalPages) displayMatchesPage(currentPage + 1);
-    });
-
-    document.getElementById('goToPage').addEventListener('click', () => {
-        const pageInput = document.getElementById('pageInput');
-        const pageNumber = parseInt(pageInput.value);
-        if (pageNumber >= 1 && pageNumber <= totalPages) {
-            displayMatchesPage(pageNumber);
-        }
-    });
-
-    // Add enter key support for page input
-    document.getElementById('pageInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const pageNumber = parseInt(e.target.value);
-            if (pageNumber >= 1 && pageNumber <= totalPages) {
-                displayMatchesPage(pageNumber);
-            }
-        }
-    });
 }
 
-function displayMatchesPage(page) {
+function displayMatches(matches) {
     const tableBody = document.querySelector('#approved-matches-table tbody');
     tableBody.innerHTML = '';
-    currentPage = page;
-
-    const start = (page - 1) * matchesPerPage;
-    const end = start + matchesPerPage;
-    const matchesToShow = allMatches.slice(start, end);
-
-    matchesToShow.forEach(data => {
+    
+    matches.forEach(data => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
@@ -161,10 +166,20 @@ function displayMatchesPage(page) {
         `;
         tableBody.appendChild(row);
     });
+}
 
-    // Update pagination controls
-    const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-    const paginationContainer = document.querySelector('.pagination-wrapper');
+function updatePaginationControls(page) {
+    const totalPages = Math.ceil(totalDocCount / matchesPerPage);
+    
+    // Create or update pagination controls
+    let paginationContainer = document.querySelector('.pagination-wrapper');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-wrapper';
+        const table = document.querySelector('#approved-matches-table');
+        table.parentNode.insertBefore(paginationContainer, table.nextSibling);
+    }
+    
     paginationContainer.innerHTML = `
         <div class="pagination-controls">
             <button id="prevPage" ${page === 1 ? 'disabled' : ''}>Previous</button>
@@ -175,33 +190,32 @@ function displayMatchesPage(page) {
                     <button id="goToPage">Go</button>
                 </div>
             </div>
-            <button id="nextPage" ${page === totalPages ? 'disabled' : ''}>Next</button>
+            <button id="nextPage" ${page === totalPages || totalPages === 0 ? 'disabled' : ''}>Next</button>
         </div>
     `;
 
-    // Reattach event listeners
+    // Attach event listeners
     document.getElementById('prevPage').addEventListener('click', () => {
-        if (currentPage > 1) displayMatchesPage(currentPage - 1);
+        if (currentPage > 1) fetchMatchesPage(currentPage - 1);
     });
 
     document.getElementById('nextPage').addEventListener('click', () => {
-        if (currentPage < totalPages) displayMatchesPage(currentPage + 1);
+        if (currentPage < totalPages) fetchMatchesPage(currentPage + 1);
     });
 
     document.getElementById('goToPage').addEventListener('click', () => {
         const pageInput = document.getElementById('pageInput');
         const pageNumber = parseInt(pageInput.value);
         if (pageNumber >= 1 && pageNumber <= totalPages) {
-            displayMatchesPage(pageNumber);
+            fetchMatchesPage(pageNumber);
         }
     });
 
-    // Add enter key support for page input
     document.getElementById('pageInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             const pageNumber = parseInt(e.target.value);
             if (pageNumber >= 1 && pageNumber <= totalPages) {
-                displayMatchesPage(pageNumber);
+                fetchMatchesPage(pageNumber);
             }
         }
     });
