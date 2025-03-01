@@ -197,26 +197,55 @@ service cloud.firestore {
     // Match Management - Used in reports.js and ladderalgorithm.js
     // FIXED: Removed duplicate rule for approvedMatches
     match /pendingMatches/{matchId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // More permissive
+      allow update, delete: if request.auth != null && (
+        isAdmin() || 
+        resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+        resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+      );
     }
 
     match /approvedMatches/{matchId} {
-      allow read, write: if true; // Simplified for debugging - more permissive
+      allow read: if true;
+      allow create: if request.auth != null && (
+        isAdmin() || 
+        request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+        request.resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+      );
+      allow update, delete: if request.auth != null && isAdmin();
     }
 
     // D2 Match Management
     match /pendingMatchesD2/{matchId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // More permissive
+      allow update, delete: if request.auth != null && (
+        isAdmin() || 
+        resource.data.winnerId == request.auth.uid ||
+        resource.data.loserId == request.auth.uid ||
+        // Add username-based checks as fallback
+        (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+         resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
+        (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+         resource.data.loserUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username)
+      );
     }
 
     match /approvedMatchesD2/{matchId} {
       allow read: if true;
-      allow create, update: if request.auth != null; // More permissive
-      allow delete: if false;  // Keep match history immutable
+      // Fix this rule to allow match participants to create approved matches
+      allow create: if request.auth != null && (
+        isAdmin() || 
+        request.resource.data.winnerId == request.auth.uid ||
+        request.resource.data.loserId == request.auth.uid ||
+        // Add username-based checks as fallback
+        (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+         request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
+        (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+         request.resource.data.loserUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username)
+      );
+      allow update, delete: if request.auth != null && isAdmin();
     }
 
     // D3 Match Management
