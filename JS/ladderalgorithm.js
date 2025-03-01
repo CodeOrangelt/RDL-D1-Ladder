@@ -242,12 +242,16 @@ export async function approveReport(
             }
             
             winnerRef = doc(db, playersCollection, winnerSnapshot.docs[0].id);
-            loserRef = doc(db, playersCollection, loserSnapshot.docs[0].id);
+            loserRef = doc(db, playersCollection, winnerSnapshot.docs[0].id);
             
             winnerDoc = winnerSnapshot.docs[0];
             loserDoc = winnerSnapshot.docs[0];
         }
         
+        // Store the current ELO ratings before updating
+        const winnerOldElo = winnerDoc.data().eloRating || 1200;
+        const loserOldElo = loserDoc.data().eloRating || 1200;
+
         // Rest of your existing approval logic...
         // (Continue with the existing function implementation)
         
@@ -259,7 +263,9 @@ export async function approveReport(
             winnerComment,
             approved: true,
             approvedAt: serverTimestamp(),
-            approvedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
+            approvedBy: auth.currentUser ? auth.currentUser.email : 'unknown',
+            winnerOldElo: winnerOldElo, // Add these two lines
+            loserOldElo: loserOldElo
         };
         
         // Add to approved collection

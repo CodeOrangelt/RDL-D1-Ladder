@@ -69,6 +69,10 @@ td a {
 }
 
 /* ELO rank colors */
+.elo-missing {
+    color: #ff4d4d !important;
+}
+
 .elo-emerald { 
     color: #50C878 !important; 
     text-shadow: 0 0 5px rgba(80, 200, 120, 0.5);
@@ -90,7 +94,19 @@ td a {
 }
 
 .elo-unranked { 
-    color: #ffffff !important; 
+    color: #808080 !important; 
+}
+
+/* Add this after the other ELO styling classes */
+
+.elo-badge {
+    display: inline-block;
+    font-size: 0.8em;
+    margin-left: 5px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Update pagination styling */

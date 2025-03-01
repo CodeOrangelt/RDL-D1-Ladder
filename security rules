@@ -368,5 +368,19 @@ service cloud.firestore {
       allow update: if isAdmin() || request.auth.uid == userId;
       allow delete: if isAdmin();
     }
+
+    // Add this to your security rules file
+    match /promotionViews/{docId} {
+      // Allow read to anyone who is authenticated
+      allow read: if request.auth != null;
+      
+      // Allow writes with proper validation
+      allow write: if request.auth != null && 
+                   request.resource.data.keys().hasAll(['promotionId', 'playerName', 'views', 'createdAt', 'updatedAt']) &&
+                   request.resource.data.views is number &&
+                   request.resource.data.views <= 10 &&
+                   request.resource.data.createdAt is timestamp &&
+                   request.resource.data.updatedAt is timestamp;
+    }
   }
 }
