@@ -1,5 +1,3 @@
-<!-- Language: HTML -->
-<!-- filepath: /c:/Descent Nexus Repo/RDL-D1-Ladder/HTML/approved-matches.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +9,6 @@
     <link rel="stylesheet" href="../CSS/approved-matches-style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/style.css">
-    <link rel="stylesheet" href="../CSS/pagination.css">
     
     <style>
         .ladder-toggle {
@@ -40,128 +37,108 @@
             background-color: #337ab7;
         }
         
-        /* ELO color classes */
-        .elo-emerald { 
-            color: #50C878 !important; 
-            text-shadow: 0 0 5px rgba(80, 200, 120, 0.5);
-        }
-        
-        .elo-gold { 
-            color: #FFD700 !important; 
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-        }
-        
-        .elo-silver { 
-            color: #C0C0C0 !important; 
-            text-shadow: 0 0 5px rgba(192, 192, 192, 0.5);
-        }
-        
-        .elo-bronze { 
-            color: #CD7F32 !important; 
-            text-shadow: 0 0 5px rgba(205, 127, 50, 0.5);
-        }
-        
-        .elo-unranked { 
-            color: #ffffff !important; 
-        }
-        
-        /* Pagination styles */
-        .pagination {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        .pagination-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .pagination button {
-            padding: 8px 15px;
-            background: #337ab7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .pagination button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-        
-        .page-navigation {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .page-search {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .page-search input {
-            width: 60px;
-            padding: 5px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            background: #333;
-            color: white;
+        /* Search section */
+        .search-section {
+            margin: 20px 0;
             text-align: center;
         }
         
-        /* Add bottom margin to container to prevent pagination overlay */
-        .container {
-            margin-bottom: 80px;
-        }
-        
-        /* Search bar styles */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            gap: 10px;
-        }
-        
-        #match-search {
+        .search-box {
             padding: 10px;
             width: 300px;
-            background-color: #333;
-            color: white;
+            border-radius: 5px;
             border: 1px solid #555;
-            border-radius: 4px;
+            margin-right: 10px;
         }
         
-        #search-button, #reset-button {
-            padding: 10px 15px;
-            background-color: #337ab7;
+        .search-button {
+            padding: 10px 20px;
+            background-color: #555;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         
-        #search-button:hover, #reset-button:hover {
-            background-color: #286090;
+        .search-button:hover {
+            background-color: #666;
         }
         
-        #reset-button {
-            background-color: #d9534f;
+        /* Add pagination styles */
+        .pagination-wrapper {
+            margin: 20px 0;
+            text-align: center;
         }
         
-        #reset-button:hover {
-            background-color: #c9302c;
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-navigation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px;
+        }
+        
+        .page-search {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pagination-controls button {
+            padding: 8px 15px;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .pagination-controls button:hover:not([disabled]) {
+            background-color: #50C878;
+        }
+        
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Loading indicator styles */
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #50C878;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
     
@@ -196,26 +173,15 @@
             <button id="d2-button" class="toggle-button">D2 Ladder</button>
         </div>
         
-        <!-- Add search bar -->
-        <div class="search-container">
-            <input type="text" id="match-search" placeholder="Search by player name...">
-            <button id="search-button">Search</button>
-            <button id="reset-button">Reset</button>
+        <!-- Search Section -->
+        <div class="search-section">
+            <input type="text" id="player-search" class="search-box" placeholder="Search player username...">
+            <button id="search-button" class="search-button">Search</button>
         </div>
         
-        <!-- Pagination container - moved here from bottom -->
-        <div class="pagination-container">
-            <div class="pagination-controls">
-                <button id="prevPage" disabled>Previous</button>
-                <div class="page-navigation">
-                    <span id="page-status">Page 1 of 1</span>
-                    <div class="page-search">
-                        <input type="number" id="pageInput" min="1" value="1">
-                        <button id="goToPage">Go</button>
-                    </div>
-                </div>
-                <button id="nextPage">Next</button>
-            </div>
+        <!-- Pagination moved to be below search section -->
+        <div class="pagination-wrapper">
+            <!-- Pagination controls will be added here dynamically -->
         </div>
         
         <table id="approved-matches-table">
@@ -240,311 +206,75 @@
         </table>
     </div>
 
-    <!-- Important base scripts -->
+    <!-- Loading indicator -->
+    <div class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Loading matches...</p>
+    </div>
+
+    <!-- Update script imports to use modules -->
     <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" id="active-script" src="../JS/approved-matches.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
 
-    <!-- Main script for handling matches and UI -->
     <script type="module">
-        import { 
-            collection, 
-            getDocs, 
-            query, 
-            orderBy, 
-            where,
-            limit 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from '../JS/firebase-config.js';
-
-        // Global variables
-        let currentGameMode = 'D1';
-        let currentPage = 1;
-        const matchesPerPage = 10;
-        let allMatches = [];
-        const tableBody = document.querySelector('#approved-matches-table tbody');
-        const title = document.querySelector('h1');
-        
-        // Helper function to determine ELO class
-        function getEloClass(elo) {
-            if (elo >= 2000) return 'elo-emerald';
-            if (elo >= 1800) return 'elo-gold';
-            if (elo >= 1600) return 'elo-silver';
-            if (elo >= 1400) return 'elo-bronze';
-            return 'elo-unranked';
-        }
-        
-        // Helper function to get player's ELO
-        async function getPlayerElo(username, collectionName) {
-            try {
-                const playersRef = collection(window.db, collectionName);
-                const q = query(playersRef, where('username', '==', username));
-                const snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    return snapshot.docs[0].data().eloRating || 1200;
-                }
-                return 1200; // Default ELO
-            } catch (error) {
-                console.error(`Error getting ${username}'s ELO:`, error);
-                return 1200;
-            }
-        }
-
-        // Function to load D1 matches
-        async function loadD1Matches() {
-            try {
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D1 matches...</td></tr>';
-                title.textContent = 'D1 Approved Matches';
-                
-                // Reset pagination
-                currentPage = 1;
-                
-                // Get matches from D1 collection with pagination
-                const matchesRef = collection(window.db, 'approvedMatches');
-                const q = query(matchesRef, orderBy('approvedAt', 'desc'));
-                console.log('Fetching D1 matches...');
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D1 matches found</td></tr>';
-                    updatePagination(1, 1);
-                    return;
-                }
-                
-                console.log(`Found ${querySnapshot.size} D1 matches`);
-                
-                // Create a map of usernames to fetch ELO ratings in batch
-                const uniqueUsernames = new Set();
-                const matchesData = querySnapshot.docs.map(doc => {
-                    const match = doc.data();
-                    uniqueUsernames.add(match.winnerUsername);
-                    uniqueUsernames.add(match.loserUsername);
-                    const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
-                    return { ...match, approvedDate };
-                });
-                
-                // Fetch all ELO ratings in batch
-                const playerElos = await fetchPlayerElosInBatch(Array.from(uniqueUsernames), 'players');
-                
-                // Process all matches with ELO data
-                allMatches = matchesData.map(match => ({
-                    ...match,
-                    winnerElo: playerElos[match.winnerUsername] || 1200,
-                    loserElo: playerElos[match.loserUsername] || 1200
-                }));
-                
-                // Display first page
-                displayPage(1);
-                
-            } catch (error) {
-                console.error('Error fetching D1 approved matches:', error);
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D1 matches. Please try again.</td></tr>';
-            }
-        }
-
-        // Function to load D2 matches
-        async function loadD2Matches() {
-            try {
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading D2 matches...</td></tr>';
-                title.textContent = 'D2 Approved Matches';
-                
-                // Reset pagination
-                currentPage = 1;
-                
-                // Get matches from D2 collection
-                const matchesRef = collection(window.db, 'approvedMatchesD2');
-                const q = query(matchesRef, orderBy('approvedAt', 'desc'));
-                console.log('Fetching D2 matches...');
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No D2 matches found</td></tr>';
-                    updatePagination(1, 1);
-                    return;
-                }
-                
-                console.log(`Found ${querySnapshot.size} D2 matches`);
-                
-                // Create a map of usernames to fetch ELO ratings in batch
-                const uniqueUsernames = new Set();
-                const matchesData = querySnapshot.docs.map(doc => {
-                    const match = doc.data();
-                    uniqueUsernames.add(match.winnerUsername);
-                    uniqueUsernames.add(match.loserUsername);
-                    const approvedDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : new Date();
-                    return { ...match, approvedDate };
-                });
-                
-                // Fetch all ELO ratings in batch
-                const playerElos = await fetchPlayerElosInBatch(Array.from(uniqueUsernames), 'playersD2');
-                
-                // Process all matches with ELO data
-                allMatches = matchesData.map(match => ({
-                    ...match,
-                    winnerElo: playerElos[match.winnerUsername] || 1200,
-                    loserElo: playerElos[match.loserUsername] || 1200
-                }));
-                
-                // Display first page
-                displayPage(1);
-                
-            } catch (error) {
-                console.error('Error fetching D2 approved matches:', error);
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Error loading D2 matches. Please try again.</td></tr>';
-            }
-        }
-
-        // New helper function to fetch player ELO ratings in batch
-        async function fetchPlayerElosInBatch(usernames, collectionName) {
-            const eloMap = {};
-            
-            try {
-                if (!usernames.length) return eloMap;
-                
-                // Split usernames into chunks of 10 to avoid exceeding Firestore query limits
-                const batchSize = 10;
-                const batches = [];
-                
-                for (let i = 0; i < usernames.length; i += batchSize) {
-                    const batch = usernames.slice(i, i + batchSize);
-                    batches.push(batch);
-                }
-                
-                // Process each batch with parallel queries
-                const batchPromises = batches.map(async batch => {
-                    const playersRef = collection(window.db, collectionName);
-                    const q = query(playersRef, where('username', 'in', batch));
-                    const snapshot = await getDocs(q);
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        eloMap[data.username] = data.eloRating || 1200;
-                    });
-                });
-                
-                await Promise.all(batchPromises);
-                return eloMap;
-            } catch (error) {
-                console.error(`Error getting batch ELO ratings:`, error);
-                return eloMap;
-            }
-        }
-        
-        // Function to display a specific page of matches
-        function displayPage(page) {
-            // Calculate which matches to show for this page
-            const startIndex = (page - 1) * matchesPerPage;
-            const endIndex = startIndex + matchesPerPage;
-            const matchesToShow = allMatches.slice(startIndex, endIndex);
-            
-            if (matchesToShow.length === 0 && page > 1) {
-                // If no matches on this page but it's not page 1, go to previous page
-                displayPage(page - 1);
-                return;
-            }
-            
-            // Update current page
-            currentPage = page;
-            
-            // Clear table
-            tableBody.innerHTML = '';
-            
-            // Add matches to table
-            matchesToShow.forEach(match => {
-                const row = document.createElement('tr');
-                
-                // Format date
-                const dateString = match.approvedDate.toLocaleString();
-                
-                row.innerHTML = `
-                    <td>
-                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}" 
-                           class="player-link ${getEloClass(match.winnerElo)}">
-                            ${match.winnerUsername || 'Unknown'}
-                        </a>
-                    </td>
-                    <td>
-                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}" 
-                           class="player-link ${getEloClass(match.loserElo)}">
-                            ${match.loserUsername || 'Unknown'}
-                        </a>
-                    </td>
-                    <td>${match.winnerScore || '20'}</td>
-                    <td>${match.loserScore || '0'}</td>
-                    <td>${match.winnerSuicides || '0'}</td>
-                    <td>${match.suicides || '0'}</td>
-                    <td>${match.mapPlayed || 'Unknown'}</td>
-                    <td>${match.winnerComment || 'None'}</td>
-                    <td>${match.loserComment || 'None'}</td>
-                    <td>${dateString}</td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-            
-            // Update pagination controls
-            const totalPages = Math.max(1, Math.ceil(allMatches.length / matchesPerPage));
-            updatePagination(page, totalPages);
-        }
-        
-        // Function to update pagination controls
-        function updatePagination(currentPage, totalPages) {
-            document.getElementById('page-status').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('prevPage').disabled = currentPage <= 1;
-            document.getElementById('nextPage').disabled = currentPage >= totalPages;
-            document.getElementById('pageInput').value = currentPage;
-            document.getElementById('pageInput').max = totalPages;
-        }
-
-        // Function to search matches
-        function searchMatches(query) {
-            if (!query || query.trim() === '') {
-                // If empty query, display all matches
-                displayPage(1);
-                return;
-            }
-            
-            const searchQuery = query.toLowerCase().trim();
-            const filteredMatches = allMatches.filter(match => {
-                const winnerUsername = match.winnerUsername?.toLowerCase() || '';
-                const loserUsername = match.loserUsername?.toLowerCase() || '';
-                const mapPlayed = match.mapPlayed?.toLowerCase() || '';
-                
-                return winnerUsername.includes(searchQuery) || 
-                       loserUsername.includes(searchQuery) ||
-                       mapPlayed.includes(searchQuery);
-            });
-            
-            if (filteredMatches.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No matches found for your search</td></tr>';
-                updatePagination(1, 1);
-                return;
-            }
-            
-            // Save original matches and replace with filtered matches temporarily
-            const originalMatches = allMatches;
-            allMatches = filteredMatches;
-            
-            // Display first page of results
-            displayPage(1);
-            
-            // Restore original matches
-            setTimeout(() => {
-                allMatches = originalMatches;
-            }, 0);
-        }
-
-        // Event listeners for toggle buttons
+        // Script to toggle between D1 and D2 approved matches
         document.addEventListener('DOMContentLoaded', () => {
             const d1Button = document.getElementById('d1-button');
             const d2Button = document.getElementById('d2-button');
+            let currentGameMode = 'D1';
             
+            // Function to load the appropriate script and reset the state
+            function loadScript(scriptSrc) {
+                // Remove existing script
+                const oldScript = document.getElementById('active-script');
+                if (oldScript) {
+                    oldScript.remove();
+                }
+                
+                // Clear any existing cached data
+                if (window.state) {
+                    window.state = {
+                        currentPage: 1,
+                        matchesPerPage: 10,
+                        currentMatches: [],
+                        lastVisible: null,
+                        hasNextPage: true,
+                        hasPrevPage: false,
+                        totalPages: 0,
+                        pageCache: {},
+                        estimatedTotal: 0
+                    };
+                }
+                
+                // Create and add new script
+                const newScript = document.createElement('script');
+                newScript.id = 'active-script';
+                newScript.type = 'module';
+                newScript.src = scriptSrc;
+                document.body.appendChild(newScript);
+                
+                // Clear the table and reset pagination
+                const tableBody = document.querySelector('#approved-matches-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading matches...</td></tr>';
+                
+                // Show loading indicator
+                const loadingIndicator = document.querySelector('.loading-indicator');
+                if (loadingIndicator) loadingIndicator.style.display = 'block';
+                
+                // Hide any existing pagination
+                const paginationWrapper = document.querySelector('.pagination-wrapper');
+                if (paginationWrapper) paginationWrapper.innerHTML = '';
+            }
+            
+            // Set up event listeners for toggle buttons
             d1Button.addEventListener('click', () => {
                 if (currentGameMode !== 'D1') {
                     d1Button.classList.add('active');
                     d2Button.classList.remove('active');
+                    loadScript('../JS/approved-matches.js');
                     currentGameMode = 'D1';
-                    loadD1Matches();
                 }
             });
             
@@ -552,73 +282,38 @@
                 if (currentGameMode !== 'D2') {
                     d2Button.classList.add('active');
                     d1Button.classList.remove('active');
+                    loadScript('../JS/approved-matchesD2.js');
                     currentGameMode = 'D2';
-                    loadD2Matches();
                 }
             });
             
-            // Set up pagination controls
-            document.getElementById('prevPage').addEventListener('click', () => {
-                if (currentPage > 1) {
-                    displayPage(currentPage - 1);
-                }
-            });
+            // Set up search functionality
+            const searchButton = document.getElementById('search-button');
+            const playerSearch = document.getElementById('player-search');
             
-            document.getElementById('nextPage').addEventListener('click', () => {
-                const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-                if (currentPage < totalPages) {
-                    displayPage(currentPage + 1);
-                }
-            });
-            
-            document.getElementById('goToPage').addEventListener('click', () => {
-                const pageInput = document.getElementById('pageInput');
-                const requestedPage = parseInt(pageInput.value);
-                const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-                
-                if (requestedPage >= 1 && requestedPage <= totalPages) {
-                    displayPage(requestedPage);
-                } else {
-                    // Reset to valid value
-                    pageInput.value = currentPage;
-                }
-            });
-            
-            // Handle Enter key in page input
-            document.getElementById('pageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const requestedPage = parseInt(e.target.value);
-                    const totalPages = Math.ceil(allMatches.length / matchesPerPage);
-                    
-                    if (requestedPage >= 1 && requestedPage <= totalPages) {
-                        displayPage(requestedPage);
-                    } else {
-                        // Reset to valid value
-                        e.target.value = currentPage;
+            if (searchButton && playerSearch) {
+                searchButton.addEventListener('click', handleSearch);
+                playerSearch.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleSearch();
                     }
-                }
-            });
-
-            // Add these event listeners to your DOMContentLoaded block
-            document.getElementById('search-button').addEventListener('click', () => {
-                const searchQuery = document.getElementById('match-search').value;
-                searchMatches(searchQuery);
-            });
-
-            document.getElementById('reset-button').addEventListener('click', () => {
-                document.getElementById('match-search').value = '';
-                displayPage(1); // Reset to first page with all matches
-            });
-
-            document.getElementById('match-search').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const searchQuery = e.target.value;
-                    searchMatches(searchQuery);
-                }
-            });
+                });
+            }
             
-            // Load initial matches
-            loadD1Matches();
+            function handleSearch() {
+                const searchTerm = playerSearch.value.trim().toLowerCase();
+                if (!searchTerm) return;
+                
+                // Store search term in session storage for the scripts to use
+                sessionStorage.setItem('playerSearchTerm', searchTerm);
+                
+                // Reload the current script to apply the search
+                if (currentGameMode === 'D1') {
+                    loadScript('../JS/approved-matches.js');
+                } else {
+                    loadScript('../JS/approved-matchesD2.js');
+                }
+            }
         });
     </script>
 
