@@ -9,7 +9,8 @@ import {
     writeBatch,
     query,
     where,
-    serverTimestamp 
+    serverTimestamp,
+    addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
@@ -151,6 +152,37 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 timestamp: serverTimestamp()
             })
         ]);
+
+        // Record promotions/demotions to promotionHistory
+        if (winnerUpdates.position < winnerPosition) {
+            await addDoc(collection(db, 'promotionHistory'), {
+                username: winnerData.username,
+                userId: winnerId,
+                previousElo: winnerData.eloRating,
+                newElo: newWinnerRating,
+                previousPosition: winnerPosition,
+                newPosition: winnerUpdates.position,
+                timestamp: serverTimestamp(),
+                type: 'promotion',
+                promotedBy: 'System',
+                matchId: matchId
+            });
+        }
+
+        if (loserUpdates.position > loserPosition) {
+            await addDoc(collection(db, 'promotionHistory'), {
+                username: loserData.username,
+                userId: loserId,
+                previousElo: loserData.eloRating,
+                newElo: newLoserRating,
+                previousPosition: loserPosition,
+                newPosition: loserUpdates.position,
+                timestamp: serverTimestamp(),
+                type: 'demotion',
+                promotedBy: 'System',
+                matchId: matchId
+            });
+        }
 
         // Commit batch after history is recorded
         await batch.commit();
