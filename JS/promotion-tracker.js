@@ -68,21 +68,14 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
 
         // Write all records in parallel
         await Promise.all([
-            // Write to promotionHistory (detailed record)
-            addDoc(collection(db, 'promotionHistory'), promotionData),
-            // Write simplified promotion record
-            addDoc(collection(db, 'promotionHistory'), {
-                username: userData.username,
-                rank: rankCrossed.name,
-                timestamp: new Date()
-            }),
+            // Write to promotionHistory (simplified record only)
+            addDoc(collection(db, 'promotionHistory'), simplePromotionData),
             // Write to eloHistory
             addDoc(collection(db, 'eloHistory'), {
                 player: userData.username,
                 type: 'promotion',
                 rankAchieved: rankCrossed.name,
                 timestamp: new Date(),
-                promotedBy: 'System'
             }),
             // Write to promotionViews
             setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
