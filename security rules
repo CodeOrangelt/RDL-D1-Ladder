@@ -414,5 +414,27 @@ service cloud.firestore {
                    request.resource.data.createdAt is timestamp &&
                    request.resource.data.updatedAt is timestamp;
     }
+
+    // Add this section for bot-specific collections
+    match /approvedMatches/{matchId} {
+      // Allow read access to everyone (including the bot)
+      allow read: if true;
+      
+      // Allow create only for match participants and admins
+      allow create: if request.auth != null && (
+        isAdmin() || 
+        request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+        request.resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+      );
+      
+      // Allow updates and deletes only for admins
+      allow update, delete: if isAdmin();
+    }
+
+    // Add this section for bot notifications tracking
+    match /notifiedMatches/{matchId} {
+      // Allow read and write for the bot
+      allow read, write: if true;
+    }
   }
 }
