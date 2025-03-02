@@ -17,6 +17,14 @@ body {
     min-height: 800px;
     overflow: hidden;
     margin-bottom: 100px; /* Add margin to prevent content from being hidden behind fixed pagination */
+    max-width: 1200px;
+}
+
+/* Ensure the container properly contains the pagination */
+.container {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 20px;
 }
 
 h1 {
@@ -128,6 +136,52 @@ td a {
     gap: 20px; /* Updated gap */
     max-width: 1200px; /* Added max-width */
     margin: 0 auto; /* Added margin */
+    display: inline-flex;
+    gap: 10px;
+}
+
+/* Individual pagination controls */
+.pagination-controls {
+  display: inline-flex;
+  gap: 10px;
+}
+
+/* Center pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
+  gap: 10px; /* Space between buttons */
+}
+
+/* Style for the pagination buttons */
+.pagination-btn {
+  padding: 5px 10px;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Hover effect */
+.pagination-btn:not([disabled]):hover {
+  background-color: #444;
+}
+
+/* Disabled button styling */
+.pagination-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Page info styling */
+#page-info {
+  margin: 0 10px;
+  font-weight: bold;
+  color: white
 }
 
 .pagination button {
@@ -210,6 +264,14 @@ td a {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
     z-index: 1000;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Pagination wrapper styled to appear immediately below search section */
+.pagination-wrapper {
+  margin: 20px 0;
+  text-align: center;
 }
 
 .page-navigation {
@@ -238,12 +300,20 @@ td a {
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 120px;
+    padding: 8px 15px;
+    background-color: #3a3a3a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .pagination-controls button:hover:not(:disabled) {
     background: rgba(60, 60, 60, 0.9);
     border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
+    background-color: #49104b;
 }
 
 .pagination-controls button:disabled {
@@ -251,6 +321,8 @@ td a {
     border-color: rgba(255, 255, 255, 0.05);
     cursor: not-allowed;
     opacity: 0.6;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Responsive adjustments */

@@ -355,6 +355,7 @@ body {
     text-decoration: none;
     display: block;
     text-align: left;
+    z-index: 100;
     border-bottom: 1px solid #222;
     transition: background-color 0.2s, color 0.2s;
 }
@@ -372,6 +373,7 @@ body {
 .dropdown {
     position: relative;
     display: inline-block;
+    z-index: 100;
 }
 
 .username-display {
@@ -404,6 +406,7 @@ body {
     text-decoration: none;
     display: block;
     text-align: left;
+    z-index: 100;
     border-bottom: 1px solid #222;
     transition: background-color 0.2s;
 }
