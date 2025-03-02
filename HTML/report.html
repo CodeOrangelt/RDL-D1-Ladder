@@ -168,6 +168,9 @@
             } else {
                 console.error('D1 or D2 mode button not found');
             }
+
+            const gameMode = d1Button.classList.contains('active') ? 'D1' : 'D2';
+            const playersCollectionName = gameMode === 'D1' ? 'players' : 'playersD2';
         });
     </script>
 
