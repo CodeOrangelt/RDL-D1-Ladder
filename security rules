@@ -373,18 +373,15 @@ service cloud.firestore {
 
     match /promotionHistory/{document} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null 
-        && request.resource.data.keys().hasAll([
-          'playerName', 'newRank', 'previousRank', 'promotionDate',
-          'previousElo', 'newElo', 'userId', 'timestamp', 'type'
-        ])
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.type == 'promotion'
-        && request.resource.data.newRank in ['Emerald', 'Gold', 'Silver', 'Bronze', 'Unranked']
-        && request.resource.data.previousRank in ['Emerald', 'Gold', 'Silver', 'Bronze', 'Unranked']
-        && request.resource.data.timestamp is timestamp
-        && request.resource.data.previousElo is number
-        && request.resource.data.newElo is number;
+      allow create: if request.auth != null && (
+        // Allow both detailed and simple promotion records
+        (request.resource.data.keys().hasAll(['username', 'rank', 'timestamp']) &&
+         request.resource.data.timestamp is timestamp) ||
+        (request.resource.data.keys().hasAll([
+            'playerName', 'newRank', 'previousRank', 'promotionDate',
+            'previousElo', 'newElo', 'userId', 'timestamp', 'type'
+        ]))
+      );
     }
 
     // Add a general rule for user authentication collections
