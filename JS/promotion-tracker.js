@@ -35,57 +35,47 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         ];
 
         const rankCrossed = ranks.find(rank => oldElo < rank.threshold && newElo >= rank.threshold);
-        if (!rankCrossed) return null;
+        if (!rankCrossed) {
+            console.log('No rank threshold crossed');
+            return null;
+        }
 
-        // Create promotion record
-        const promotionData = {
-            playerName: userData.username || 'Unknown Player',
-            newRank: rankCrossed.name,
-            previousRank: getRankName(oldElo),
-            promotionDate: new Date().toISOString(),
+        // Create detailed promotion history record
+        const promotionHistoryData = {
+            username: userData.username,
+            userId: userId,
             previousElo: oldElo,
             newElo: newElo,
-            userId: userId,
-            timestamp: new Date(),
-            type: 'promotion'
+            previousRank: getRankName(oldElo),
+            newRank: rankCrossed.name,
+            timestamp: serverTimestamp(),
+            type: 'promotion',
+            promotedBy: 'System' // Add this field to track automatic promotions
         };
 
-        // Create promotion view record
-        const viewsData = {
-            promotionId: `${userId}_${rankCrossed.name}`,
-            playerName: userData.username,
-            views: 0,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        // Create simplified promotion history record
-        const simplePromotionData = {
-            username: userData.username,
-            rank: rankCrossed.name,
-            timestamp: serverTimestamp() // Use serverTimestamp instead of new Date()
-        };
-
-        console.log('Attempting to write promotion history:', simplePromotionData);
-
-        // Write records separately to track which one fails
+        // Write to both collections using Promise.all
         try {
-            // Write to promotionHistory first
-            const promotionHistoryRef = await addDoc(collection(db, 'promotionHistory'), simplePromotionData);
-            console.log('Successfully wrote to promotionHistory:', promotionHistoryRef.id);
-
-            // Then write the rest
-            await Promise.all([
+            const [promotionHistoryRef, eloHistoryRef] = await Promise.all([
+                // Write to promotionHistory
+                addDoc(collection(db, 'promotionHistory'), promotionHistoryData),
+                // Write to eloHistory
                 addDoc(collection(db, 'eloHistory'), {
                     player: userData.username,
                     type: 'promotion',
                     rankAchieved: rankCrossed.name,
                     timestamp: serverTimestamp(),
-                }),
-                setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
+                    previousElo: oldElo,
+                    newElo: newElo
+                })
             ]);
 
-            console.log('Successfully recorded all promotion records for:', userData.username);
+            console.log('Successfully recorded promotion:', {
+                promotionId: promotionHistoryRef.id,
+                eloHistoryId: eloHistoryRef.id,
+                username: userData.username,
+                newRank: rankCrossed.name
+            });
+
             return rankCrossed.name;
 
         } catch (writeError) {
