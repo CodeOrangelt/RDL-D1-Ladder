@@ -1,3 +1,22 @@
+/* First, add these rules to make sure the page structure supports a sticky footer */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* viewport height */
+}
+
+/* This ensures the main content can grow but footer stays at bottom */
+main, .content-wrapper, #content {
+    flex: 1 0 auto;
+}
+
+/* Footer styling */
 footer {
     background: linear-gradient(to top,
         rgba(0, 0, 0, 0.7),
@@ -9,18 +28,19 @@ footer {
     color: #fff;
     padding: 10px 0;
     width: 100%;
-    position: relative;  /* Changed from fixed to relative */
-    bottom: auto;  /* Remove fixed positioning */
-    left: auto;
+    flex-shrink: 0; /* Prevent footer from shrinking */
     z-index: 100;
+    position: relative; /* Added for proper positioning of the separator */
+    margin-top: 4px; /* Space for the separator */
 }
 
+/* Footer separator */
 footer::before {
     content: '';
     position: absolute;
     top: -4px;
-    left: -10px;
-    width: calc(100% + 20px);
+    left: 0;
+    width: 100%;
     height: 4px;
     background: rgba(128, 128, 128, 0.6);
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
