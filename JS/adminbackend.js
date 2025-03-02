@@ -496,6 +496,7 @@ document.getElementById('promote-player-btn').addEventListener('click', async ()
 */
 
 // Add this new function to handle promote player button setup
+// Modified setupPromotePlayerButton function with event listener cleanup
 function setupPromotePlayerButton() {
     const promoteBtn = document.getElementById('promote-player');
     const promoteDialog = document.getElementById('promote-dialog');
@@ -508,11 +509,22 @@ function setupPromotePlayerButton() {
         return;
     }
 
-    promoteBtn.addEventListener('click', () => {
+    // Remove existing event listeners (important fix!)
+    const newPromoteBtn = promoteBtn.cloneNode(true);
+    promoteBtn.parentNode.replaceChild(newPromoteBtn, promoteBtn);
+    
+    const newConfirmPromoteBtn = confirmPromoteBtn.cloneNode(true);
+    confirmPromoteBtn.parentNode.replaceChild(newConfirmPromoteBtn, confirmPromoteBtn);
+    
+    const newCancelPromoteBtn = cancelPromoteBtn.cloneNode(true);
+    cancelPromoteBtn.parentNode.replaceChild(newCancelPromoteBtn, cancelPromoteBtn);
+
+    // Add new event listeners to cloned elements
+    newPromoteBtn.addEventListener('click', () => {
         promoteDialog.style.display = 'block';
     });
 
-    cancelPromoteBtn.addEventListener('click', () => {
+    newCancelPromoteBtn.addEventListener('click', () => {
         promoteDialog.style.display = 'none';
         promoteUsernameInput.value = '';
     });
@@ -525,7 +537,7 @@ function setupPromotePlayerButton() {
         }
     });
 
-    confirmPromoteBtn.addEventListener('click', async () => {
+    newConfirmPromoteBtn.addEventListener('click', async () => {
         const username = promoteUsernameInput.value.trim();
         if (!username) {
             alert('Please enter a username');
