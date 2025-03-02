@@ -371,17 +371,30 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Remove duplicate rules and consolidate promotionHistory rules
     match /promotionHistory/{document} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && (
-        // Allow both detailed and simple promotion records
-        (request.resource.data.keys().hasAll(['username', 'rank', 'timestamp']) &&
-         request.resource.data.timestamp is timestamp) ||
-        (request.resource.data.keys().hasAll([
-            'playerName', 'newRank', 'previousRank', 'promotionDate',
-            'previousElo', 'newElo', 'userId', 'timestamp', 'type'
-        ]))
+        // Simple format
+        (
+          request.resource.data.keys().hasAll(['username', 'rank', 'timestamp']) &&
+          request.resource.data.timestamp is timestamp &&
+          request.resource.data.username is string &&
+          request.resource.data.rank is string
+        ) ||
+        // Detailed format
+        (
+          request.resource.data.keys().hasAll([
+            'username', 'userId', 'previousElo', 'newElo',
+            'previousRank', 'newRank', 'timestamp', 'type'
+          ]) &&
+          request.resource.data.timestamp is timestamp &&
+          request.resource.data.previousElo is number &&
+          request.resource.data.newElo is number &&
+          request.resource.data.type in ['promotion', 'demotion']
+        )
       );
+      allow update, delete: if false; // Keep history immutable
     }
 
     // Add a general rule for user authentication collections
