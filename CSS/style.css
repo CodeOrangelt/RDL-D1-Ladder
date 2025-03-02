@@ -685,3 +685,37 @@ tr:nth-child(even) {
 .tiny-join-button:hover {
     background-color: #388E3C;
 }
+
+/* Add this to your CSS styles */
+.promotion-banner.clickable {
+    cursor: pointer;
+    position: relative;
+}
+
+.promotion-banner.clickable:hover {
+    filter: brightness(1.1);
+}
+
+.promotion-banner.clickable::after {
+    content: "×";
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 18px;
+    opacity: 0.7;
+}
+
+.promotion-banner.clickable:hover::after {
+    opacity: 1;
+}
+
+.promotion-banner.dismissing {
+    animation: fade-out 0.3s forwards;
+}
+
+@keyframes fade-out {
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
