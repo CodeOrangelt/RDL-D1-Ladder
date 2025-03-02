@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, addDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, addDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Add rank color mapping
 const RANK_COLORS = {
@@ -35,53 +35,54 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         ];
 
         const rankCrossed = ranks.find(rank => oldElo < rank.threshold && newElo >= rank.threshold);
-        if (!rankCrossed) {
-            console.log('No rank threshold crossed');
-            return null;
-        }
+        if (!rankCrossed) return null;
 
-        // Create detailed promotion history record
-        const promotionHistoryData = {
-            username: userData.username,
-            userId: userId,
+        // Create promotion record
+        const promotionData = {
+            playerName: userData.username || 'Unknown Player',
+            newRank: rankCrossed.name,
+            previousRank: getRankName(oldElo),
+            promotionDate: new Date().toISOString(),
             previousElo: oldElo,
             newElo: newElo,
-            previousRank: getRankName(oldElo),
-            newRank: rankCrossed.name,
-            timestamp: serverTimestamp(),
-            type: 'promotion',
-            promotedBy: 'System' // Add this field to track automatic promotions
+            userId: userId,
+            timestamp: new Date(),
+            type: 'promotion'
         };
 
-        // Write to both collections using Promise.all
-        try {
-            const [promotionHistoryRef, eloHistoryRef] = await Promise.all([
-                // Write to promotionHistory
-                addDoc(collection(db, 'promotionHistory'), promotionHistoryData),
-                // Write to eloHistory
-                addDoc(collection(db, 'eloHistory'), {
-                    player: userData.username,
-                    type: 'promotion',
-                    rankAchieved: rankCrossed.name,
-                    timestamp: serverTimestamp(),
-                    previousElo: oldElo,
-                    newElo: newElo
-                })
-            ]);
+        // Create promotion view record
+        const viewsData = {
+            promotionId: `${userId}_${rankCrossed.name}`,
+            playerName: userData.username,
+            views: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
 
-            console.log('Successfully recorded promotion:', {
-                promotionId: promotionHistoryRef.id,
-                eloHistoryId: eloHistoryRef.id,
-                username: userData.username,
-                newRank: rankCrossed.name
-            });
+        // Create simplified promotion history record
+        const simplePromotionData = {
+            username: userData.username,
+            rank: rankCrossed.name,
+            timestamp: new Date()
+        };
 
-            return rankCrossed.name;
+        // Write all records in parallel
+        await Promise.all([
+            // Write to promotionHistory (simplified record only)
+            addDoc(collection(db, 'promotionHistory'), simplePromotionData),
+            // Write to eloHistory
+            addDoc(collection(db, 'eloHistory'), {
+                player: userData.username,
+                type: 'promotion',
+                rankAchieved: rankCrossed.name,
+                timestamp: new Date(),
+            }),
+            // Write to promotionViews
+            setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
+        ]);
 
-        } catch (writeError) {
-            console.error('Error writing promotion records:', writeError);
-            throw writeError;
-        }
+        console.log('Successfully recorded all promotion records for:', userData.username);
+        return rankCrossed.name;
 
     } catch (error) {
         console.error('Error in promotion process:', error);
@@ -90,7 +91,7 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
 }
 
 // Helper function to get rank name from ELO
-export function getRankName(elo) {
+function getRankName(elo) {
     if (elo >= 2000) return 'Emerald';
     if (elo >= 1800) return 'Gold';
     if (elo >= 1600) return 'Silver';
