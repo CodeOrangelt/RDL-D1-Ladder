@@ -680,44 +680,6 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         reportForm.style.display = 'block';
         
         // Load the opponents list
-        reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
-        reportError.style.color = 'white';
-        
-        // Get current user's document from the appropriate collection
-        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
-        console.log(`Checking if user exists in collection: ${playersCollection}`);
-        
-        // Get current user's document
-        const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
-        
-        if (!currentUserDoc.exists()) {
-            // User is not in this ladder
-            reportError.textContent = `You are not registered in the ${currentGameMode} ladder.`;
-            reportError.style.color = 'red';
-            loserUsername.textContent = 'Not registered in this ladder';
-            winnerUsername.disabled = true;
-            winnerUsername.innerHTML = '<option value="">Select Opponent</option>';
-            
-            // Show warning about not being in the ladder
-            authWarning.style.display = 'block';
-            authWarning.textContent = `You are not registered in the ${currentGameMode} ladder.`;
-            return false;
-        }
-        
-        // User exists in this ladder - clear error and warning
-        reportError.textContent = '';
-        authWarning.style.display = 'none';
-        
-        // User exists in this ladder
-        const currentUserData = currentUserDoc.data();
-        const currentUserName = currentUserData.username;
-        loserUsername.textContent = `You (${currentUserName})`;
-        winnerUsername.disabled = false;
-        
-        // Make sure form is visible
-        reportForm.style.display = 'block';
-        
-        // Load the opponents list
         await loadOpponentsList(userUid);
         
         // Check for outstanding reports in this game mode
