@@ -16,7 +16,6 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { PromotionHandler } from './promotion-handler.js';
 import { isAdmin } from './admin-check.js';
-import { getRankName } from './promotion-tracker.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -151,24 +150,7 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 isDemotion: loserUpdates.position > loserPosition,
                 matchId: matchId,
                 timestamp: serverTimestamp()
-            }),
-            // Add promotion/demotion records based on ELO thresholds
-            checkAndRecordRankChange(
-                winnerData.username,
-                winnerId,
-                winnerData.eloRating || 1200,
-                newWinnerRating,
-                matchId,
-                'System'
-            ),
-            checkAndRecordRankChange(
-                loserData.username,
-                loserId,
-                loserData.eloRating || 1200,
-                newLoserRating,
-                matchId,
-                'System'
-            )
+            })
         ]);
 
         // Record promotions/demotions to promotionHistory
@@ -178,8 +160,6 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 userId: winnerId,
                 previousElo: winnerData.eloRating,
                 newElo: newWinnerRating,
-                previousRank: getRankName(winnerData.eloRating),
-                newRank: getRankName(newWinnerRating),
                 previousPosition: winnerPosition,
                 newPosition: winnerUpdates.position,
                 timestamp: serverTimestamp(),
@@ -332,24 +312,4 @@ async function updatePlayerStats(playerId, matchData, isWinner) {
     stats.lastUpdated = new Date().toISOString();
 
     await setDoc(statsRef, stats, { merge: true });
-}
-
-async function checkAndRecordRankChange(username, userId, oldElo, newElo, matchId, promotedBy) {
-    const oldRank = getRankName(oldElo);
-    const newRank = getRankName(newElo);
-    
-    if (oldRank !== newRank) {
-        await addDoc(collection(db, 'promotionHistory'), {
-            username: username,
-            userId: userId,
-            previousElo: oldElo,
-            newElo: newElo,
-            previousRank: oldRank,
-            newRank: newRank,
-            timestamp: serverTimestamp(),
-            type: newElo > oldElo ? 'promotion' : 'demotion',
-            promotedBy: promotedBy,
-            matchId: matchId
-        });
-    }
 }
