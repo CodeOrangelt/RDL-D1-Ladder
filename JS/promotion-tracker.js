@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, addDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, query, orderBy, limit, onSnapshot, where, doc, getDoc, addDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Add rank color mapping
 const RANK_COLORS = {
@@ -63,26 +63,35 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         const simplePromotionData = {
             username: userData.username,
             rank: rankCrossed.name,
-            timestamp: new Date()
+            timestamp: serverTimestamp() // Use serverTimestamp instead of new Date()
         };
 
-        // Write all records in parallel
-        await Promise.all([
-            // Write to promotionHistory (simplified record only)
-            addDoc(collection(db, 'promotionHistory'), simplePromotionData),
-            // Write to eloHistory
-            addDoc(collection(db, 'eloHistory'), {
-                player: userData.username,
-                type: 'promotion',
-                rankAchieved: rankCrossed.name,
-                timestamp: new Date(),
-            }),
-            // Write to promotionViews
-            setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
-        ]);
+        console.log('Attempting to write promotion history:', simplePromotionData);
 
-        console.log('Successfully recorded all promotion records for:', userData.username);
-        return rankCrossed.name;
+        // Write records separately to track which one fails
+        try {
+            // Write to promotionHistory first
+            const promotionHistoryRef = await addDoc(collection(db, 'promotionHistory'), simplePromotionData);
+            console.log('Successfully wrote to promotionHistory:', promotionHistoryRef.id);
+
+            // Then write the rest
+            await Promise.all([
+                addDoc(collection(db, 'eloHistory'), {
+                    player: userData.username,
+                    type: 'promotion',
+                    rankAchieved: rankCrossed.name,
+                    timestamp: serverTimestamp(),
+                }),
+                setDoc(doc(db, 'promotionViews', viewsData.promotionId), viewsData)
+            ]);
+
+            console.log('Successfully recorded all promotion records for:', userData.username);
+            return rankCrossed.name;
+
+        } catch (writeError) {
+            console.error('Error writing promotion records:', writeError);
+            throw writeError;
+        }
 
     } catch (error) {
         console.error('Error in promotion process:', error);
