@@ -160,6 +160,8 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 userId: winnerId,
                 previousElo: winnerData.eloRating,
                 newElo: newWinnerRating,
+                previousRank: getRankName(winnerData.eloRating),
+                newRank: getRankName(newWinnerRating),
                 previousPosition: winnerPosition,
                 newPosition: winnerUpdates.position,
                 timestamp: serverTimestamp(),
