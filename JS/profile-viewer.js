@@ -201,7 +201,9 @@ class ProfileViewer {
         // Update profile image
         const profilePreview = document.getElementById('profile-preview');
         if (profilePreview) {
-            profilePreview.src = './images/profile-placeholder.png';
+            profilePreview.src = '../images/shieldorb.png'; // Fixed path
+            // If you want to keep using shieldorb.png:
+            // profilePreview.src = '../images/shieldorb.png';
         }
 
         // Check if current user is the profile owner
