@@ -266,37 +266,37 @@ function setupReportForm(elements) {
     });
 }
 
+// --- Inside your submitReport function ---
 async function submitReport(elements) {
-    // Use the correct collection based on game mode
+    // Use the appropriate collection based on current game mode
     const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
     const pendingMatchesRef = collection(db, pendingMatchesCollection);
     const newMatchRef = doc(pendingMatchesRef);
     
     try {
-        // Get current user's info
+        // Get current user (loser)
         const user = auth.currentUser;
         if (!user) throw new Error("User not authenticated");
-        
         const userUid = user.uid;
         const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
         
-        // Get current user (loser) document
+        // Get current user's document
         const loserDoc = await getDoc(doc(db, playersCollection, userUid));
         if (!loserDoc.exists()) throw new Error("Your player profile not found");
         
-        // Get winner username from select
+        // Get winner username from select element
         const winnerUsername = elements.winnerUsername.value;
         if (!winnerUsername) throw new Error("Please select an opponent");
         
-        // Find winner by username
+        // Find the winner by username
         const winnerQuery = query(collection(db, playersCollection), where("username", "==", winnerUsername));
         const winnerSnapshot = await getDocs(winnerQuery);
-        
         if (winnerSnapshot.empty) throw new Error("Selected opponent not found");
         
         const winnerData = winnerSnapshot.docs[0].data();
         const winnerId = winnerSnapshot.docs[0].id;
         
+        // Build reportData including old Elo ratings and loser suicides (renamed field)
         const reportData = {
             matchId: newMatchRef.id,
             loserUsername: loserDoc.data().username,
@@ -304,12 +304,15 @@ async function submitReport(elements) {
             winnerUsername: winnerData.username,
             winnerId: winnerId,
             loserScore: elements.loserScore.value,
-            suicides: elements.suicides.value,
+            loserSuicides: elements.suicides.value, // renamed field
             mapPlayed: elements.mapPlayed.value,
             loserComment: elements.loserComment.value,
             gameMode: currentGameMode,
             approved: false,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            // Capture old ELO ratings if available
+            winnerOldElo: winnerData.eloRating || null,
+            losersOldElo: loserDoc.data().eloRating || null
         };
         
         await setDoc(newMatchRef, reportData);
@@ -321,9 +324,6 @@ async function submitReport(elements) {
         
     } catch (error) {
         console.error('Error submitting report:', error);
-
-
-        
         elements.reportError.textContent = `Error: ${error.message}`;
         elements.reportError.style.color = "red";
         throw error;
@@ -409,63 +409,41 @@ async function checkForOutstandingReports(username, elements, collectionName = n
     }
 }
 
-// Update the autoFillReportForm function to handle both D1 and D2 ladders
+// --- Updated autoFillReportForm function ---
 function autoFillReportForm(reportData) {
     console.log("Report Data in autoFillReportForm:", reportData);
     if (reportData) {
         // Calculate winner score based on loser score
         const loserScore = parseInt(reportData.loserScore || "0");
+        // For example, if loser score is less than 18, the winner gets 20; otherwise, winner score is loser score + 2.
         const winnerScore = loserScore < 18 ? 20 : loserScore + 2;
         
-        // Determine which collection to use based on the report data or current game mode
+        // Determine game mode and corresponding players collection
         const gameMode = reportData.gameMode || currentGameMode;
         const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
         
         console.log(`Using players collection: ${playersCollection} for game mode: ${gameMode}`);
-
-        // Get the winner's data using winnerId or username
+        
+        // Retrieve winner's data either by winnerId or by username
         let winnerPromise;
-        
         if (reportData.winnerId) {
-            // Get winner by ID
             winnerPromise = getDoc(doc(db, playersCollection, reportData.winnerId))
-                .then(docSnap => docSnap.exists() ? {
-                    id: docSnap.id,
-                    data: docSnap.data()
-                } : null);
+                .then(docSnap => docSnap.exists() ? { id: docSnap.id, data: docSnap.data() } : null);
         } else {
-            // Try to get winner by username
-            winnerPromise = getDocs(query(
-                collection(db, playersCollection), 
-                where("username", "==", reportData.winnerUsername)
-            )).then(snapshot => !snapshot.empty ? {
-                id: snapshot.docs[0].id,
-                data: snapshot.docs[0].data()
-            } : null);
+            winnerPromise = getDocs(query(collection(db, playersCollection), where("username", "==", reportData.winnerUsername)))
+                .then(snapshot => !snapshot.empty ? { id: snapshot.docs[0].id, data: snapshot.docs[0].data() } : null);
         }
         
-        // Get the loser's data using loserId or username
+        // Retrieve loser's data either by loserId or by username
         let loserPromise;
-        
         if (reportData.loserId) {
-            // Get loser by ID
             loserPromise = getDoc(doc(db, playersCollection, reportData.loserId))
-                .then(docSnap => docSnap.exists() ? {
-                    id: docSnap.id,
-                    data: docSnap.data()
-                } : null);
+                .then(docSnap => docSnap.exists() ? { id: docSnap.id, data: docSnap.data() } : null);
         } else {
-            // Try to get loser by username
-            loserPromise = getDocs(query(
-                collection(db, playersCollection), 
-                where("username", "==", reportData.loserUsername)
-            )).then(snapshot => !snapshot.empty ? {
-                id: snapshot.docs[0].id,
-                data: snapshot.docs[0].data()
-            } : null);
+            loserPromise = getDocs(query(collection(db, playersCollection), where("username", "==", reportData.loserUsername)))
+                .then(snapshot => !snapshot.empty ? { id: snapshot.docs[0].id, data: snapshot.docs[0].data() } : null);
         }
         
-        // Process both promises
         Promise.all([winnerPromise, loserPromise])
             .then(([winnerResult, loserResult]) => {
                 if (!winnerResult) {
@@ -473,70 +451,57 @@ function autoFillReportForm(reportData) {
                     alert('Error: Winner data not found.');
                     return;
                 }
-                
                 if (!loserResult) {
                     console.error('No loser found for this match');
                     alert('Error: Loser data not found.');
                     return;
                 }
                 
+                // Use the old Elo values if available, falling back on the current Elo if not
+                const winnerEloToUse = reportData.winnerOldElo != null ? reportData.winnerOldElo : winnerResult.data.eloRating;
+                const loserEloToUse = reportData.losersOldElo != null ? reportData.losersOldElo : loserResult.data.eloRating;
+                
                 const winnerUsername = winnerResult.data.username;
                 const loserUsername = loserResult.data.username;
                 
-                console.log(`Winner: ${winnerUsername}, Loser: ${loserUsername}`);
-
-                // Populate the lightbox
+                console.log(`Winner: ${winnerUsername} (ELO: ${winnerEloToUse}), Loser: ${loserUsername} (ELO: ${loserEloToUse})`);
+                
+                // Populate the lightbox fields
                 const lightbox = document.getElementById('report-lightbox');
                 if (!lightbox) {
                     console.error('Lightbox element not found');
                     return;
                 }
+                document.getElementById('lightbox-winner').textContent = winnerUsername;
+                document.getElementById('lightbox-loser').textContent = loserUsername;
+                document.getElementById('lightbox-loser-score').textContent = reportData.loserScore || "0";
+                // Use loserSuicides (instead of generic suicides) for display
+                document.getElementById('lightbox-suicides').textContent = reportData.loserSuicides || "0";
+                document.getElementById('lightbox-map').textContent = reportData.mapPlayed || "Not specified";
+                document.getElementById('lightbox-comment').textContent = reportData.loserComment || "No comment";
                 
-                const lightboxWinner = document.getElementById('lightbox-winner');
-                const lightboxLoser = document.getElementById('lightbox-loser');
-                const lightboxLoserScore = document.getElementById('lightbox-loser-score');
-                const lightboxSuicides = document.getElementById('lightbox-suicides');
-                const lightboxMap = document.getElementById('lightbox-map');
-                const lightboxComment = document.getElementById('lightbox-comment');
-                
-                if (!lightboxWinner || !lightboxLoser || !lightboxLoserScore || 
-                    !lightboxSuicides || !lightboxMap || !lightboxComment) {
-                    console.error('Some lightbox elements not found');
-                    return;
-                }
-                
-                lightboxWinner.textContent = winnerUsername;
-                lightboxLoser.textContent = loserUsername;
-                lightboxLoserScore.textContent = reportData.loserScore || "0";
-                lightboxSuicides.textContent = reportData.suicides || "0";
-                lightboxMap.textContent = reportData.mapPlayed || "Not specified";
-                lightboxComment.textContent = reportData.loserComment || "No comment";
-
-                // Set and disable winner score input
+                // Set and disable the winner score input field
                 const winnerScoreInput = document.getElementById('winner-score');
                 if (winnerScoreInput) {
                     winnerScoreInput.value = winnerScore;
-                    winnerScoreInput.readOnly = true; // Make it read-only
-                    winnerScoreInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'; // Visual indication it's readonly
+                    winnerScoreInput.readOnly = true;
+                    winnerScoreInput.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                 }
-
+                
                 // Show the lightbox
                 showLightbox();
-
-                // Add event listener to the Approve button
+                
+                // Setup Approve and Cancel button event listeners (using cloneNode to avoid duplicates)
                 const approveButton = document.getElementById('approve-button');
                 if (approveButton) {
-                    // Remove any existing event listeners to prevent duplicates
                     const newApproveButton = approveButton.cloneNode(true);
                     approveButton.parentNode.replaceChild(newApproveButton, approveButton);
-                    
                     newApproveButton.addEventListener('click', async function() {
                         try {
                             const winnerScore = document.getElementById('winner-score').value;
                             const winnerSuicides = document.getElementById('winner-suicides').value || "0";
                             const winnerComment = document.getElementById('winner-comment').value || "";
                             
-                            // Determine which collection to use for approval
                             const pendingCollection = gameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
                             const approvedCollection = gameMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
                             
@@ -545,21 +510,20 @@ function autoFillReportForm(reportData) {
                             
                             document.getElementById('report-lightbox').style.display = 'none';
                             alert('Match approved successfully');
-                            location.reload(); // Refresh to update the UI
-
-                            // After approving the match and updating ELO ratings…
+                            location.reload();
+                            
+                            // After approval, update positions if necessary (using old Elo data is preserved in the report)
                             const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
-                            const winnerRef = doc(db, playersCollection, winnerId); // Assume winnerId is available
-                            const loserRef  = doc(db, playersCollection, loserId);  // Assume loserId is available
-
+                            const winnerRef = doc(db, playersCollection, winnerResult.id);
+                            const loserRef  = doc(db, playersCollection, loserResult.id);
+                            
                             const [winnerSnap, loserSnap] = await Promise.all([getDoc(winnerRef), getDoc(loserRef)]);
                             if (winnerSnap.exists() && loserSnap.exists()) {
-                                const winnerData = winnerSnap.data();
-                                const loserData = loserSnap.data();
-                                // If winner is ranked lower (position number higher) than loser, update position
-                                if (winnerData.position > loserData.position) {
-                                    await updateDoc(winnerRef, { position: loserData.position });
-                                    console.log(`Winner ${winnerData.username} moved to position ${loserData.position}`);
+                                const winnerDataUpdated = winnerSnap.data();
+                                const loserDataUpdated = loserSnap.data();
+                                if (winnerDataUpdated.position > loserDataUpdated.position) {
+                                    await updateDoc(winnerRef, { position: loserDataUpdated.position });
+                                    console.log(`Winner ${winnerDataUpdated.username} moved to position ${loserDataUpdated.position}`);
                                 } else {
                                     console.log("No position change needed; winner is already above the loser.");
                                 }
@@ -570,16 +534,14 @@ function autoFillReportForm(reportData) {
                         }
                     });
                 }
-
-                // Add event listener to the Cancel button
+                
                 const cancelButton = document.getElementById('cancel-button');
                 if (cancelButton) {
-                    // Remove any existing event listeners
                     const newCancelButton = cancelButton.cloneNode(true);
                     cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
-                    
                     newCancelButton.addEventListener('click', hideLightbox);
                 }
+                
             })
             .catch(error => {
                 console.error('Error processing player data:', error);
@@ -680,6 +642,44 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         const authWarning = document.getElementById('auth-warning');
         
         // Show "checking" message
+        reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
+        reportError.style.color = 'white';
+        
+        // Get current user's document from the appropriate collection
+        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        console.log(`Checking if user exists in collection: ${playersCollection}`);
+        
+        // Get current user's document
+        const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
+        
+        if (!currentUserDoc.exists()) {
+            // User is not in this ladder
+            reportError.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            reportError.style.color = 'red';
+            loserUsername.textContent = 'Not registered in this ladder';
+            winnerUsername.disabled = true;
+            winnerUsername.innerHTML = '<option value="">Select Opponent</option>';
+            
+            // Show warning about not being in the ladder
+            authWarning.style.display = 'block';
+            authWarning.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            return false;
+        }
+        
+        // User exists in this ladder - clear error and warning
+        reportError.textContent = '';
+        authWarning.style.display = 'none';
+        
+        // User exists in this ladder
+        const currentUserData = currentUserDoc.data();
+        const currentUserName = currentUserData.username;
+        loserUsername.textContent = `You (${currentUserName})`;
+        winnerUsername.disabled = false;
+        
+        // Make sure form is visible
+        reportForm.style.display = 'block';
+        
+        // Load the opponents list
         reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
         reportError.style.color = 'white';
         
