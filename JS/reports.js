@@ -63,6 +63,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupAuthStateListener(elements);
     setupReportForm(elements);
+    
+    // ADD THIS CODE: Immediately check ladder status if user is already logged in
+    if (auth.currentUser) {
+        console.log("User already logged in, checking D1 ladder status");
+        // D1 is the default mode, so just check that ladder
+        checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
+    } else {
+        console.log("No user logged in yet, waiting for auth state change");
+    }
 });
 
 function setupAuthStateListener(elements) {
@@ -91,7 +100,13 @@ async function handleUserSignedIn(user, elements) {
         try {
             const nonParticipantDoc = await getDoc(nonParticipantRef);
             
-            if (nonParticipantDoc.exists()) {
+            console.log("Non-participant check:", {
+                exists: nonParticipantDoc.exists(),
+                data: nonParticipantDoc.exists() ? nonParticipantDoc.data() : null
+            });
+            
+            // Only consider as non-participant if document exists AND has the isNonParticipant flag set
+            if (nonParticipantDoc.exists() && nonParticipantDoc.data().isNonParticipant === true) {
                 // If user is a non-participant, show warning and hide form
                 if (elements.authWarning) {
                     elements.authWarning.style.display = 'block';
