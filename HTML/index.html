@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <!-- Add these security headers -->
@@ -7,7 +8,7 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <!-- Your existing meta tags -->
     <title>Redux Descent League</title>
-    <link rel="icon" type="image/x-icon" href="../images/cloak.ico">
+    <link rel="icon" type="image/x-icon" href="../images/laddericon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/nav.css">
@@ -16,9 +17,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         main {
-            padding-top: 20px; /* Add space after banner */
+            padding-top: 20px;
+            /* Add space after banner */
         }
-        
+
         /* Ladder mode toggle buttons */
         .ladder-toggle {
             display: flex;
@@ -26,7 +28,7 @@
             margin-bottom: 15px;
             gap: 10px;
         }
-        
+
         .ladder-toggle button {
             padding: 8px 20px;
             background-color: #333;
@@ -37,42 +39,42 @@
             font-weight: bold;
             transition: all 0.2s ease;
         }
-        
+
         .ladder-toggle button:hover {
             background-color: #444;
         }
-        
+
         .ladder-toggle button.active {
             background-color: #4CAF50;
             color: white;
             border-color: #4CAF50;
         }
-        
+
         /* Hide inactive ladders */
         .ladder-container {
             display: none;
         }
-        
+
         .ladder-container.active {
             display: block;
         }
     </style>
 </head>
+
 <body>
     <div id="nav-placeholder"></div>
     <main>
         <div id="promotion-banner-container" class="promotion-container"></div>
         <div class="ribbon-1 left">RDL - Beta Release</div>
-        
         <!-- Add ladder mode toggle buttons -->
         <div class="ladder-toggle">
             <button id="d1-toggle" class="active">D1 Ladder</button>
             <button id="d2-toggle">D2 Ladder</button>
         </div>
-        
+
         <div class="outer-container">
             <img src="../images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
-            
+
             <!-- D1 Ladder Container -->
             <div id="d1-ladder-container" class="ladder-container table-container active">
                 <table id="ladder">
@@ -87,7 +89,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- D2 Ladder Container -->
             <div id="d2-ladder-container" class="ladder-container table-container">
                 <table id="ladder-d2">
@@ -142,42 +144,42 @@
 
         <!-- Add this section where you want the retire ladder functionality to appear -->
         <div id="ladder-retire-section" class="section">
-            </div>
-            
-            <div id="ladder-retire-prompt" class="ladder-join-prompt" style="display: none;">
-                <div class="ladder-join-message">
-                    <p>Are you sure you want to retire from the <span id="retire-ladder-type"></span> ladder?</p>
-                    <p class="retire-warning">This will remove you from the ladder rankings. Your records will be preserved but you will need to re-register if you want to participate again.</p>
-                    <div class="join-form">
-                        <label for="retire-username-input">Enter your username to confirm:</label>
-                        <input type="text" id="retire-username-input" placeholder="Your username">
-                        <button id="retire-ladder-button" class="join-ladder-button danger-button">Retire from Ladder</button>
-                    </div>
-                    <span id="ladder-retire-status" class="ladder-join-status"></span>
+        </div>
+
+        <div id="ladder-retire-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Are you sure you want to retire from the <span id="retire-ladder-type"></span> ladder?</p>
+                <p class="retire-warning">This will remove you from the ladder rankings. Your records will be preserved
+                    but you will need to re-register if you want to participate again.</p>
+                <div class="join-form">
+                    <label for="retire-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="retire-username-input" placeholder="Your username">
+                    <button id="retire-ladder-button" class="join-ladder-button danger-button">Retire from
+                        Ladder</button>
                 </div>
+                <span id="ladder-retire-status" class="ladder-join-status"></span>
             </div>
+        </div>
         </div>
 
         <div class="discord-container">
             <button id="toggle-discord" class="discord-toggle">
                 <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16">
-                    <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                    <path fill="currentColor"
+                        d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
                 </svg>
                 RDL Server
             </button>
             <div id="discord-widget" class="discord-widget collapsed">
-                <iframe src="https://discord.com/widget?id=739546894946271242&theme=dark" 
-                        width="350" 
-                        height="500" 
-                        allowtransparency="true" 
-                        frameborder="0" 
-                        sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+                <iframe src="https://discord.com/widget?id=739546894946271242&theme=dark" width="350" height="500"
+                    allowtransparency="true" frameborder="0"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
                 </iframe>
             </div>
         </div>
 
     </main>
-    
+
     <div id="footer-placeholder"></div>
 
     <!-- Scripts -->
@@ -205,7 +207,7 @@
                 // Discord widget toggle
                 const toggleButton = document.getElementById('toggle-discord');
                 const discordWidget = document.getElementById('discord-widget');
-                
+
                 toggleButton.addEventListener('click', () => {
                     discordWidget.classList.toggle('collapsed');
                     const isCollapsed = discordWidget.classList.contains('collapsed');
@@ -216,20 +218,20 @@
                         ${isCollapsed ? 'RDL Server' : 'Hide Discord'}
                     `;
                 });
-                
+
                 // Setup ladder toggle buttons
                 const d1Toggle = document.getElementById('d1-toggle');
                 const d2Toggle = document.getElementById('d2-toggle');
                 const d1Container = document.getElementById('d1-ladder-container');
                 const d2Container = document.getElementById('d2-ladder-container');
-                
+
                 d1Toggle.addEventListener('click', () => {
                     d1Toggle.classList.add('active');
                     d2Toggle.classList.remove('active');
                     d1Container.classList.add('active');
                     d2Container.classList.remove('active');
                 });
-                
+
                 d2Toggle.addEventListener('click', () => {
                     d2Toggle.classList.add('active');
                     d1Toggle.classList.remove('active');
@@ -258,4 +260,5 @@
     <script type="module" src="../JS/ladder-join.js"></script>
     <script type="module" src="../JS/ladder-retire.js"></script>
 </body>
+
 </html>
