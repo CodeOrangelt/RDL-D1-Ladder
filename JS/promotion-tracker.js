@@ -11,22 +11,8 @@ const RANK_COLORS = {
 };
 
 export async function checkAndRecordPromotion(userId, newElo, oldElo) {
-    console.log('Starting promotion check:', { userId, newElo, oldElo });
     
     try {
-        // Get user data first
-        const userRef = doc(db, 'players', userId);
-        const userSnap = await getDoc(userRef);
-        
-        if (!userSnap.exists()) {
-            console.error('User not found:', userId);
-            return null;
-        }
-
-        const userData = userSnap.data();
-        console.log('Found user data:', userData);
-
-        // Find rank crossed
         const ranks = [
             { threshold: 1400, name: 'Bronze' },
             { threshold: 1600, name: 'Silver' },
@@ -35,7 +21,15 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
         ];
 
         const rankCrossed = ranks.find(rank => oldElo < rank.threshold && newElo >= rank.threshold);
-        if (!rankCrossed) return null;
+        if (!rankCrossed) return; // Add this return statement
+
+        // Get user data
+        const userDoc = await getDoc(doc(db, 'players', userId));
+        if (!userDoc.exists()) {
+            console.error('User document not found');
+            return;
+        }
+        const userData = userDoc.data();
 
         // Create promotion record
         const promotionData = {
