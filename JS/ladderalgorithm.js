@@ -107,13 +107,13 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             );
             
             const playersSnapshot = await getDocs(playersToUpdate);
-            playersSnapshot.forEach(playerDoc => {
+            for (const playerDoc of playersSnapshot.docs) {
                 if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
-                    batch.update(doc(db, 'players', playerDoc.id), {
+                    await updateDoc(doc(db, 'players', playerDoc.id), {
                         position: playerDoc.data().position + 1
                     });
                 }
-            });
+            }
         } else {
             // Winner was already ranked higher than loser, positions stay the same
             console.log('Winner already ranked higher - keeping positions');
