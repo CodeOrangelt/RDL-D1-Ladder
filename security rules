@@ -74,10 +74,8 @@ service cloud.firestore {
                    (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['position']) ||
                     request.resource.data.diff(resource.data).affectedKeys().hasAll(['position']) && 
                     request.resource.data.diff(resource.data).affectedKeys().size() == 1) ||
-                   // Allow promotions from admin
-                   (isAdmin() &&
-                    request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']));
+                   // Allow updates with position among other fields if admin
+                   (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['eloRating', 'lastPromotedAt', 'promotedBy', 'position']));
       allow delete: if isAdmin();
     }
     
