@@ -109,7 +109,8 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             const playersSnapshot = await getDocs(playersToUpdate);
             for (const playerDoc of playersSnapshot.docs) {
                 if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
-                    await updateDoc(doc(db, 'players', playerDoc.id), {
+                    // Use batch update instead of individual updateDoc
+                    batch.update(doc(db, 'players', playerDoc.id), {
                         position: playerDoc.data().position + 1
                     });
                 }
