@@ -71,9 +71,8 @@ service cloud.firestore {
                     .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
                     isValidEloUpdate(resource.data, request.resource.data)) ||
                    // Allow position updates for any player during ladder reordering
-                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['position']) ||
-                    request.resource.data.diff(resource.data).affectedKeys().hasAll(['position']) && 
-                    request.resource.data.diff(resource.data).affectedKeys().size() == 1) ||
+                   (request.resource.data.diff(resource.data).affectedKeys().hasAll(['position']) &&
+                    (request.resource.data.diff(resource.data).affectedKeys().size() <= 2)) ||
                    // Allow updates with position among other fields if admin
                    (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['eloRating', 'lastPromotedAt', 'promotedBy', 'position']));
       allow delete: if isAdmin();
