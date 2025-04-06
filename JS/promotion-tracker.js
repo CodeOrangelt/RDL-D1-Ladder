@@ -85,7 +85,7 @@ export async function checkAndRecordPromotion(userId, newElo, oldElo) {
 }
 
 // Helper function to get rank name from ELO
-function getRankName(elo) {
+export function getRankName(elo) {
     if (elo >= 2000) return 'Emerald';
     if (elo >= 1800) return 'Gold';
     if (elo >= 1600) return 'Silver';
