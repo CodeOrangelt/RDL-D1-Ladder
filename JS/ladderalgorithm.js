@@ -118,212 +118,195 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         } else {
             // Winner was already ranked higher than loser, positions stay the same
             console.log('Winner already ranked higher - keeping positions');
-            winnerUpdates.position = winnerPosition;playerDoc.id), {
-            loserUpdates.position = loserPosition;.position + 1
-        }           });
-                }
+            winnerUpdates.position = winnerPosition;
+            loserUpdates.position = loserPosition;
+        }
+
         // Add updates to batch
         batch.update(winnerRef, winnerUpdates);
-        batch.update(loserRef, loserUpdates);er than loser, positions stay the same
-            console.log('Winner already ranked higher - keeping positions');
-        // Record ELO history first= winnerPosition;
-        await Promise.all([sition = loserPosition;
+        batch.update(loserRef, loserUpdates);
+
+        // Record ELO history first
+        await Promise.all([
             recordEloChange({
                 playerId: winnerId,
                 previousElo: winnerData.eloRating || 1200,
-                newElo: newWinnerRating,dates);
-                opponentId: loserId,Updates);
+                newElo: newWinnerRating,
+                opponentId: loserId,
                 matchResult: 'win',
                 previousPosition: winnerPosition,
                 newPosition: winnerUpdates.position,
                 isPromotion: winnerUpdates.position < winnerPosition,
-                matchId: matchId,d,
-                timestamp: serverTimestamp()ating || 1200,
-            }), newElo: newWinnerRating,
-            recordEloChange({oserId,
-                playerId: loserId,,
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            }),
+            recordEloChange({
+                playerId: loserId,
                 previousElo: loserData.eloRating || 1200,
-                newElo: newLoserRating,tes.position,
-                opponentId: winnerId,dates.position < winnerPosition,
+                newElo: newLoserRating,
+                opponentId: winnerId,
                 matchResult: 'loss',
                 previousPosition: loserPosition,
                 newPosition: loserUpdates.position,
                 isDemotion: loserUpdates.position > loserPosition,
-                matchId: matchId,,
-                timestamp: serverTimestamp()ting || 1200,
-            })  newElo: newLoserRating,
-        ]);     opponentId: winnerId,
-                matchResult: 'loss',
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            })
+        ]);
+
         // Record promotions/demotions to promotionHistory
         if (winnerUpdates.position < winnerPosition) {
-            await addDoc(collection(db, 'promotionHistory'), {ion,
+            await addDoc(collection(db, 'promotionHistory'), {
                 username: winnerData.username,
-                userId: winnerId,Timestamp()
+                userId: winnerId,
                 previousElo: winnerData.eloRating,
                 newElo: newWinnerRating,
                 previousPosition: winnerPosition,
-                newPosition: winnerUpdates.position,istory
-                timestamp: serverTimestamp(),sition) {
-                type: 'promotion',n(db, 'promotionHistory'), {
-                promotedBy: 'System',username,
-                matchId: matchId,
-            }); previousElo: winnerData.eloRating,
-        }       newElo: newWinnerRating,
-                previousPosition: winnerPosition,
+                newPosition: winnerUpdates.position,
+                timestamp: serverTimestamp(),
+                type: 'promotion',
+                promotedBy: 'System',
+                matchId: matchId
+            });
+        }
+
         if (loserUpdates.position > loserPosition) {
             await addDoc(collection(db, 'promotionHistory'), {
                 username: loserData.username,
-                userId: loserId,tem',
+                userId: loserId,
                 previousElo: loserData.eloRating,
                 newElo: newLoserRating,
                 previousPosition: loserPosition,
                 newPosition: loserUpdates.position,
-                timestamp: serverTimestamp(),tion) {
-                type: 'demotion',on(db, 'promotionHistory'), {
-                promotedBy: 'System',sername,
-                matchId: matchId
-            }); previousElo: loserData.eloRating,
-        }       newElo: newLoserRating,
-                previousPosition: loserPosition,
-        // Commit batch after history is recordedn,
-        await batch.commit();rverTimestamp(),
+                timestamp: serverTimestamp(),
                 type: 'demotion',
-        // Dispatch custom event
-        document.dispatchEvent(new CustomEvent('elo-updated'));hId: matchId
+                promotedBy: 'System',
+                matchId: matchId
             });
+        }
+
+        // Commit batch after history is recorded
+        await batch.commit();
+
         console.log('ELO ratings and positions updated successfully');
         return true;
-tch after history is recorded
-    } catch (error) {   await batch.commit();
+
+    } catch (error) {
         console.error('Error in updateEloRatings:', error);
-        throw error;        console.log('ELO ratings and positions updated successfully');
+        throw error;
     }
 }
 
-export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {console.error('Error in updateEloRatings:', error);
+export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
         console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
         
         const currentUser = auth.currentUser;
-        if (!currentUser) {ync function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+        if (!currentUser) {
             console.log('No user logged in');
-            throw new Error('You must be logged in to approve matches');        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+            throw new Error('You must be logged in to approve matches');
         }
         console.log('Current user:', currentUser.email);
 
         // Get user's player document
-        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));            throw new Error('You must be logged in to approve matches');
+        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
         const currentUsername = userDoc.exists() ? userDoc.data().username : null;
         console.log('Current username:', currentUsername);
 
-        // Get the pending match        // Get user's player document
-        const pendingMatchRef = doc(db, 'pendingMatches', reportId);c(db, 'players', currentUser.uid));
-        const reportSnapshot = await getDoc(pendingMatchRef);().username : null;
-me);
-        if (!reportSnapshot.exists()) {
-            console.log('Report not found with ID:', reportId);        // Get the pending match
-            throw new Error('Match report not found');atches', reportId);
-        }ingMatchRef);
+        // Get the pending match
+        const pendingMatchRef = doc(db, 'pendingMatches', reportId);
+        const reportSnapshot = await getDoc(pendingMatchRef);
 
-        const reportData = reportSnapshot.data();{
-        console.log('Report data:', reportData);d);
+        if (!reportSnapshot.exists()) {
+            console.log('Report not found with ID:', reportId);
+            throw new Error('Match report not found');
+        }
+
+        const reportData = reportSnapshot.data();
+        console.log('Report data:', reportData);
         
         // Check if user is the winner
         if (currentUsername !== reportData.winnerUsername) {
-            throw new Error('Only the winner can approve matches');ta();
-        } reportData);
+            throw new Error('Only the winner can approve matches');
+        }
 
-        // Add winner details to report datar
-        const updatedReportData = {winnerUsername) {
-            ...reportData,ner can approve matches');
+        // Add winner details to report data
+        const updatedReportData = {
+            ...reportData,
             winnerScore: winnerScore,
             winnerSuicides: winnerSuicides,
-            winnerComment: winnerComment,data
+            winnerComment: winnerComment,
             approved: true,
             approvedAt: serverTimestamp(),
             approvedBy: currentUsername,
-            createdAt: reportData.createdAt || serverTimestamp(),  winnerSuicides: winnerSuicides,
-            winnerUsername: reportData.winnerUsername,            winnerComment: winnerComment,
+            createdAt: reportData.createdAt || serverTimestamp(),
+            winnerUsername: reportData.winnerUsername,
             loserUsername: reportData.loserUsername
         };
 
-        // Move match to approved collection first            createdAt: reportData.createdAt || serverTimestamp(),
+        // Move match to approved collection first
         await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
-        await deleteDoc(pendingMatchRef);            loserUsername: reportData.loserUsername
+        await deleteDoc(pendingMatchRef);
 
         console.log('Match moved to approved collection');
 
         // Get player IDs
-        const [winnerDocs, loserDocs] = await Promise.all([it deleteDoc(pendingMatchRef);
+        const [winnerDocs, loserDocs] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
-            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))ction');
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
         ]);
-/ Get player IDs
-        if (winnerDocs.empty || loserDocs.empty) {        const [winnerDocs, loserDocs] = await Promise.all([
-            throw new Error('Could not find player documents');rs'), where('username', '==', reportData.winnerUsername))),
-        }yers'), where('username', '==', reportData.loserUsername)))
-        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            throw new Error('Could not find player documents');
+        }
+
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
-            throw new Error('Could not find player documents');
+
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
-        const winnerId = winnerDocs.docs[0].id;
-        console.log('Match successfully approved and ELO updated'); = loserDocs.docs[0].id;
+
+        console.log('Match successfully approved and ELO updated');
         return true;
-O ratings
-    } catch (error) {   await updateEloRatings(winnerId, loserId, reportId);
+
+    } catch (error) {
         console.error('Error in approveReport:', error);
-        throw error;        console.log('Match successfully approved and ELO updated');
+        throw error;
     }
 }
 
-async function updatePlayerElo(userId, oldElo, newElo) {'Error in approveReport:', error);
+async function updatePlayerElo(userId, oldElo, newElo) {
     // Update player's ELO in database
     await setDoc(doc(db, 'players', userId), {
-        ...playerData,}
+        ...playerData,
         eloRating: newElo
     });
-   // Update player's ELO in database
-    // Check for promotion    await setDoc(doc(db, 'players', userId), {
+
+    // Check for promotion
     await PromotionHandler.checkPromotion(userId, newElo, oldElo);
 }
 
 async function updatePlayerStats(playerId, matchData, isWinner) {
-    const statsRef = doc(db, 'playerStats', playerId); promotion
-    const statsDoc = await getDoc(statsRef);nHandler.checkPromotion(userId, newElo, oldElo);
+    const statsRef = doc(db, 'playerStats', playerId);
+    const statsDoc = await getDoc(statsRef);
     let stats = statsDoc.exists() ? statsDoc.data() : {
         wins: 0,
-        losses: 0,atePlayerStats(playerId, matchData, isWinner) {
-        totalKills: 0,nst statsRef = doc(db, 'playerStats', playerId);
-        totalDeaths: 0,    const statsDoc = await getDoc(statsRef);
-        winRate: 0tsDoc.exists() ? statsDoc.data() : {
+        losses: 0,
+        totalKills: 0,
+        totalDeaths: 0,
+        winRate: 0
     };
 
     if (isWinner) {
-        stats.wins++;lDeaths: 0,
+        stats.wins++;
         stats.totalKills += parseInt(matchData.winnerScore || 0);
         stats.totalDeaths += parseInt(matchData.loserScore || 0);
     } else {
-        stats.losses++;f (isWinner) {
-        stats.totalKills += parseInt(matchData.loserScore || 0);        stats.wins++;
-        stats.totalDeaths += parseInt(matchData.winnerScore || 0);+= parseInt(matchData.winnerScore || 0);
-    }oserScore || 0);
+        stats.losses++;
+        stats.totalKills += parseInt(matchData.loserScore || 0);
+        stats.totalDeaths += parseInt(matchData.winnerScore || 0);
+    }
 
-    // Calculate win rate
-    const totalGames = stats.wins + stats.losses;        stats.totalKills += parseInt(matchData.loserScore || 0);
-    stats.winRate = totalGames > 0 ? ((stats.wins / totalGames) * 100).toFixed(1) : 0;nerScore || 0);
-    stats.lastUpdated = new Date().toISOString();   }
-
-
-
-
-
-
-
-
-
-});    loadPlayers();    // Refresh the ladder displaydocument.addEventListener('elo-updated', () => {// ladder.js}    await setDoc(statsRef, stats, { merge: true });
     // Calculate win rate
     const totalGames = stats.wins + stats.losses;
     stats.winRate = totalGames > 0 ? ((stats.wins / totalGames) * 100).toFixed(1) : 0;

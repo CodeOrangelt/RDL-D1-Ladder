@@ -69,7 +69,8 @@ service cloud.firestore {
                    // Allow ELO updates from matches
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
-                    isValidEloUpdate(resource.data, request.resource.data)) ||
+                    isValidEloUpdate(resource.data, request.resource.data) &&
+                    isMatchParticipant(resource.data)) ||
                    // Allow position updates for any player during ladder reordering
                    (request.resource.data.diff(resource.data).affectedKeys().hasAll(['position']) &&
                     (request.resource.data.diff(resource.data).affectedKeys().size() <= 2)) ||
