@@ -55,7 +55,7 @@ export async function recordEloChange({
         
         // Calculate rank based on new ELO
         let rankAchieved = 'Unranked';
-        if (newElo >= 2000) rankAchieved = 'Emerald';
+        if (newElo >= 2100) rankAchieved = 'Emerald';
         else if (newElo >= 1800) rankAchieved = 'Gold';
         else if (newElo >= 1600) rankAchieved = 'Silver';
         else if (newElo >= 1400) rankAchieved = 'Bronze';

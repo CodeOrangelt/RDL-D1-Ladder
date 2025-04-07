@@ -196,7 +196,7 @@ async function updateLadderDisplay(ladderData) {
         
         // Set ELO-based colors
         const elo = parseFloat(player.elo) || 0;
-        if (elo >= 2000) {
+        if (elo >= 2100) {
             usernameLink.style.color = '#50C878';
             if (player.position === 1) {
                 usernameLink.style.textShadow = '0 0 5px #50C878';
