@@ -8,9 +8,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 class ProfileViewer {
+    // Fix the constructor to properly get the username from URL
     constructor() {
-        this.init();
+        // Get username from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        
+        // Setup event listeners
         this.setupEventListeners();
+        
+        // Initialize with username if available
+        if (username) {
+            this.init(username);
+        } else {
+            // Display message if no username is provided
+            const container = document.querySelector('.content');
+            if (container) {
+                container.innerHTML = '<div class="error-message">No username specified.</div>';
+            }
+        }
     }
 
     setupEventListeners() {
@@ -436,6 +452,68 @@ class ProfileViewer {
         return querySnapshot.docs[0]?.data();
     }
 
+    async getPlayerMatches(username) {
+        try {
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const q = query(
+                approvedMatchesRef,
+                where(
+                    'players', 
+                    'array-contains', 
+                    username
+                ),
+                orderBy('createdAt', 'desc')
+            );
+            
+            // Handle legacy matches that don't use players array
+            const legacyQuery1 = query(
+                approvedMatchesRef,
+                where('winnerUsername', '==', username),
+                orderBy('createdAt', 'desc')
+            );
+            
+            const legacyQuery2 = query(
+                approvedMatchesRef,
+                where('loserUsername', '==', username),
+                orderBy('createdAt', 'desc')
+            );
+            
+            const [snapshot, legacySnapshot1, legacySnapshot2] = await Promise.all([
+                getDocs(q),
+                getDocs(legacyQuery1),
+                getDocs(legacyQuery2)
+            ]);
+            
+            // Combine results, removing duplicates
+            const matchIds = new Set();
+            const matches = [];
+            
+            const processSnapshot = (snapshot) => {
+                snapshot.forEach(doc => {
+                    if (!matchIds.has(doc.id)) {
+                        matchIds.add(doc.id);
+                        matches.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    }
+                });
+            };
+            
+            processSnapshot(snapshot);
+            processSnapshot(legacySnapshot1);
+            processSnapshot(legacySnapshot2);
+            
+            // Sort by date descending
+            return matches.sort((a, b) => 
+                (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+            );
+        } catch (error) {
+            console.error('Error getting player matches:', error);
+            return [];
+        }
+    }
+
     async loadPlayerStats(username) {
         if (!username) return;
 
@@ -687,6 +765,45 @@ class ProfileViewer {
                     </div>
                 `;
             }
+        }
+    }
+
+    // Add this method if it's missing
+    async loadPlayerData(username) {
+        try {
+            // Get player details from players collection
+            const playersRef = collection(db, 'players');
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                throw new Error('Player not found');
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            
+            // Get user profile data if available
+            const userProfileRef = doc(db, 'userProfiles', playerData.userId || 'unknown');
+            const profileDoc = await getDoc(userProfileRef);
+            
+            // Combine player and profile data
+            const data = {
+                ...playerData,
+                ...(profileDoc.exists() ? profileDoc.data() : {}),
+                username: username,
+            };
+            
+            // Display the profile data
+            this.displayProfile(data);
+            
+            // Load stats
+            await this.loadPlayerStats(username);
+            
+            return data;
+        } catch (error) {
+            console.error('Error loading player data:', error);
+            this.showError(`Error: ${error.message}`);
+            return null;
         }
     }
 }
