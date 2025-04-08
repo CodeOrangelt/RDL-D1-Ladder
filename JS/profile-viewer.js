@@ -1,244 +1,314 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getFirestore, doc, getDoc, setDoc, collection, 
+    query, where, getDocs, orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
+// Initialize Firebase once
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Cache for player data to reduce redundant queries
+const playerDataCache = new Map();
+const containerReferences = {};
+
 class ProfileViewer {
-    // Fix the constructor to properly get the username from URL
     constructor() {
+        this.currentProfileData = null;
+        this.init();
+    }
+    
+    init() {
         // Get username from URL
         const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get('username');
         
-        // Setup event listeners
-        this.setupEventListeners();
-        
-        // Initialize with username if available
         if (username) {
-            this.init(username);
+            this.loadProfile(username);
         } else {
-            // Display message if no username is provided
             const container = document.querySelector('.content');
             if (container) {
                 container.innerHTML = '<div class="error-message">No username specified.</div>';
             }
         }
     }
-
-    setupEventListeners() {
-        const editBtn = document.getElementById('edit-profile');
-        const cancelBtn = document.querySelector('.cancel-btn');
-        const profileForm = document.getElementById('profile-form');
-
-        editBtn?.addEventListener('click', () => this.toggleEditMode(true));
-        cancelBtn?.addEventListener('click', () => this.toggleEditMode(false));
-        profileForm?.addEventListener('submit', (e) => this.handleSubmit(e));
-    }
-
-    // Fix the init method to properly load and display data
-    async init(username) {
-        if (!username) return;
-        
+    
+    async loadProfile(username) {
         try {
-            // Load player data first
+            // Load player data
             await this.loadPlayerData(username);
             
-            // Get matches for this player
-            const matches = await this.getPlayerMatches(username);
-            console.log('Retrieved matches:', matches.length); // Debug output
-            
-            // Create all containers FIRST to ensure proper DOM structure
-            const mainContainer = document.querySelector('.content');
-            
-            // Create all containers with loading states
+            // Initialize containers in the correct order
             this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
             
-            // Now populate them with data - they already exist in the DOM
-            await this.displayPromotionHistory(username); 
-            await this.displayMatchStats(username, matches);
-            await this.displayPlayerMatchups(username, matches);
-            await this.displayMatchHistory(username, matches);
+            // Get matches - do this once so we don't repeat the same query
+            const matches = await this.getPlayerMatches(username);
             
-            // Initialize other profile functionality
+            // Display sections in parallel for better performance
+            await Promise.all([
+                this.displayPromotionHistory(username),
+                this.displayMatchStats(username, matches),
+                this.displayPlayerMatchups(username, matches),
+                this.displayMatchHistory(username, matches)
+            ]);
+            
+            // Set up edit functionality
             this.setupEditProfile();
-            
         } catch (error) {
-            console.error('Error initializing profile:', error);
+            console.error('Error loading profile:', error);
+            this.showError(`Failed to load profile: ${error.message}`);
         }
     }
-
-    // Fix the createContainers method
+    
     createContainers(sections) {
         const contentContainer = document.querySelector('.content');
         if (!contentContainer) return;
         
-        // Find the profile container
         const profileContainer = document.querySelector('.profile-container');
         if (!profileContainer) return;
         
-        // Clear any existing containers first
+        // Remove any existing containers
         document.querySelectorAll('.match-history-container').forEach(el => el.remove());
         
-        // Insert all containers after the profile container in the specified order
-        let previousContainer = profileContainer;
+        // Create all containers at once using fragment for better performance
+        const fragment = document.createDocumentFragment();
+        let previousContainer = null;
         
         sections.forEach(section => {
             const container = document.createElement('div');
             container.className = `match-history-container ${section}-container`;
             container.innerHTML = '<p class="loading-text">Loading data...</p>';
+            fragment.appendChild(container);
             
-            // Always insert after the previous container
-            contentContainer.insertBefore(container, previousContainer.nextSibling);
+            // Store references for later use
+            containerReferences[section] = container;
+            
+            if (previousContainer) {
+                previousContainer.insertAdjacentElement('afterend', container);
+            } else {
+                profileContainer.insertAdjacentElement('afterend', container);
+            }
             previousContainer = container;
         });
-    }
-
-    async handleSubmit(event) {
-        event.preventDefault();
-        const user = auth.currentUser;
         
-        if (!user) {
-            this.showError('You must be logged in to edit your profile');
-            return;
-        }
-
+        contentContainer.appendChild(fragment);
+    }
+    
+    async loadPlayerData(username) {
         try {
-            const profileData = {
-                motto: document.getElementById('motto-edit').value,
-                favoriteMap: document.getElementById('favorite-map-edit').value,
-                favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
-                lastUpdated: new Date().toISOString(),
-                timezone: document.getElementById('timezone-edit').value,
-                division: document.getElementById('division-edit').value
-            };
-
-            // Save to userProfiles collection
-            await setDoc(doc(db, 'userProfiles', user.uid), profileData, { merge: true });
+            // Check cache first
+            if (playerDataCache.has(username)) {
+                const cachedData = playerDataCache.get(username);
+                this.displayProfile(cachedData);
+                await this.loadPlayerStats(username);
+                return cachedData;
+            }
             
-            this.toggleEditMode(false);
-            this.displayProfile({
+            // Get player details
+            const playersRef = collection(db, 'players');
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                throw new Error('Player not found');
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            const userId = playerData.userId || querySnapshot.docs[0].id;
+            
+            // Get profile data from both collections in parallel
+            let profileData = {};
+            
+            try {
+                const [userProfileDoc, oldProfileDoc] = await Promise.all([
+                    getDoc(doc(db, 'userProfiles', userId)),
+                    getDoc(doc(db, 'profiles', userId))
+                ]);
+                
+                if (userProfileDoc.exists()) {
+                    profileData = userProfileDoc.data();
+                }
+                
+                if (oldProfileDoc.exists()) {
+                    profileData = { ...oldProfileDoc.data(), ...profileData };
+                }
+            } catch (profileError) {
+                console.warn('Error fetching profile data:', profileError);
+                // Continue with player data only
+            }
+            
+            // Combine all data
+            const data = {
+                ...playerData,
                 ...profileData,
-                username: user.displayName || 'Anonymous',
-                userId: user.uid
-            });
-
+                username,
+                userId
+            };
+            
+            // Cache for future use
+            playerDataCache.set(username, data);
+            
+            // Display profile
+            this.displayProfile(data);
+            await this.loadPlayerStats(username);
+            
+            return data;
         } catch (error) {
-            console.error('Error saving profile:', error);
-            this.showError('Failed to save profile changes');
+            console.error('Error loading player data:', error);
+            this.showError(`Error: ${error.message}`);
+            return null;
         }
     }
-
-    // Also modify the displayProfile method to store the data
+    
     displayProfile(data) {
         this.currentProfileData = data;
         
-        // Set ELO rating class
+        // Apply ELO rating styles
         const container = document.querySelector('.profile-content');
-        const eloRating = data.eloRating || 0;
+        if (!container) return;
         
-        // Remove any existing elo classes
+        const eloRating = parseInt(data.eloRating) || 0;
+        
+        // Remove existing classes
         container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
         
-        // Add appropriate elo class based on rating
+        // Add appropriate class
+        let eloClass;
         if (eloRating >= 2000) {
-            container.classList.add('elo-emerald');
+            eloClass = 'elo-emerald';
         } else if (eloRating >= 1800) {
-            container.classList.add('elo-gold');
+            eloClass = 'elo-gold';
         } else if (eloRating >= 1600) {
-            container.classList.add('elo-silver');
+            eloClass = 'elo-silver';
         } else if (eloRating >= 1400) {
-            container.classList.add('elo-bronze');
+            eloClass = 'elo-bronze';
         } else {
-            container.classList.add('elo-unranked');
+            eloClass = 'elo-unranked';
         }
-
-        // Update all profile fields
-        document.getElementById('nickname').textContent = data.username;
-        document.getElementById('motto-view').textContent = data.motto || 'No motto set';
-        document.getElementById('favorite-map-view').textContent = data.favoriteMap || 'Not set';
-        document.getElementById('favorite-weapon-view').textContent = data.favoriteWeapon || 'Not set';
-        document.getElementById('timezone-view').textContent = data.timezone || 'Not set';
-        document.getElementById('division-view').textContent = data.division || 'Not set';
-
+        container.classList.add(eloClass);
+        
+        // Update profile elements - all at once to avoid layout thrashing
+        const elements = {
+            'nickname': data.username,
+            'motto-view': data.motto || 'No motto set',
+            'favorite-map-view': data.favoriteMap || 'Not set',
+            'favorite-weapon-view': data.favoriteWeapon || 'Not set',
+            'timezone-view': data.timezone || 'Not set',
+            'division-view': data.division || 'Not set'
+        };
+        
+        for (const [id, value] of Object.entries(elements)) {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        }
+        
         // Update profile image
         const profilePreview = document.getElementById('profile-preview');
         if (profilePreview) {
-            profilePreview.src = '../images/shieldorb.png'; // Fixed path
-            // If you want to keep using shieldorb.png:
-            // profilePreview.src = '../images/shieldorb.png';
+            profilePreview.src = '../images/shieldorb.png';
         }
-
-        // Check if current user is the profile owner
+        
+        // Handle edit controls visibility
         const currentUser = auth.currentUser;
         const isOwner = currentUser && currentUser.uid === data.userId;
-
-        // Show/hide edit controls based on ownership
+        
         const editBtn = document.getElementById('edit-profile');
         const imageUploadControls = document.querySelector('.image-upload-controls');
         
         if (editBtn) editBtn.style.display = isOwner ? 'block' : 'none';
         if (imageUploadControls) imageUploadControls.style.display = isOwner ? 'block' : 'none';
-
-        // Only populate edit fields if user is the owner
-        if (isOwner) {
-            const mottoEdit = document.getElementById('motto-edit');
-            const mapEdit = document.getElementById('favorite-map-edit');
-            const weaponEdit = document.getElementById('favorite-weapon-edit');
-
-            if (mottoEdit) mottoEdit.value = data.motto || '';
-            if (mapEdit) mapEdit.value = data.favoriteMap || '';
-            if (weaponEdit) weaponEdit.value = data.favoriteWeapon || '';
-        }
-    }
-
-    // Modify the toggleEditMode method to populate form fields
-    toggleEditMode(isEditing) {
-        const viewMode = document.querySelector('.view-mode');
-        const editMode = document.querySelector('.edit-mode');
         
-        if (isEditing && this.currentProfileData) {
-            // Populate edit fields
-            document.getElementById('motto-edit').value = this.currentProfileData.motto || '';
-            document.getElementById('favorite-map-edit').value = this.currentProfileData.favoriteMap || '';
-            document.getElementById('favorite-weapon-edit').value = this.currentProfileData.favoriteWeapon || '';
+        // Populate edit fields if owner
+        if (isOwner) {
+            const editFields = {
+                'motto-edit': data.motto || '',
+                'favorite-map-edit': data.favoriteMap || '',
+                'favorite-weapon-edit': data.favoriteWeapon || ''
+            };
             
-            viewMode.style.display = 'none';
-            editMode.style.display = 'block';
-        } else {
-            viewMode.style.display = 'block';
-            editMode.style.display = 'none';
+            for (const [id, value] of Object.entries(editFields)) {
+                const element = document.getElementById(id);
+                if (element) element.value = value;
+            }
         }
     }
-
-    showError(message) {
-        const container = document.querySelector('.profile-content');
-        container.innerHTML = `<div class="error-message" style="color: white; text-align: center; padding: 20px;">${message}</div>`;
+    
+    async getPlayerMatches(username) {
+        try {
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            
+            // Use separate queries to avoid index requirements
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username), orderBy('createdAt', 'desc'))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username), orderBy('createdAt', 'desc')))
+            ]);
+            
+            // Combine results efficiently
+            const matchIds = new Set();
+            const matches = [];
+            
+            const processMatches = (snapshot) => {
+                snapshot.forEach(doc => {
+                    if (!matchIds.has(doc.id)) {
+                        matchIds.add(doc.id);
+                        matches.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    }
+                });
+            };
+            
+            processMatches(winnerMatches);
+            processMatches(loserMatches);
+            
+            // Sort by date
+            return matches.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        } catch (error) {
+            console.error('Error fetching matches:', error);
+            return [];
+        }
     }
-
+    
+    async getPlayerEloData(username) {
+        // Check cache first
+        if (playerDataCache.has(username)) {
+            return playerDataCache.get(username).eloRating || 0;
+        }
+        
+        try {
+            const playersRef = collection(db, 'players');
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            const playerData = querySnapshot.docs[0]?.data() || {};
+            return playerData.eloRating || 0;
+        } catch (error) {
+            console.error(`Error fetching ELO for ${username}:`, error);
+            return 0;
+        }
+    }
+    
     async displayMatchHistory(username, matches) {
         try {
-            // Use existing container
-            const matchHistoryContainer = document.querySelector('.match-history-container');
+            const matchHistoryContainer = containerReferences['match-history'];
             if (!matchHistoryContainer) return;
-
-            // Get ELO ratings for all players
+            
+            // Get all player ELOs at once to avoid multiple queries
+            const uniquePlayers = new Set();
+            matches.forEach(match => {
+                uniquePlayers.add(match.winnerUsername);
+                uniquePlayers.add(match.loserUsername);
+            });
+            
             const playerElos = {};
-            for (const match of matches) {
-                if (!playerElos[match.winnerUsername]) {
-                    const playerDoc = await this.getPlayerData(match.winnerUsername);
-                    playerElos[match.winnerUsername] = playerDoc?.eloRating || 0;
-                }
-                if (!playerElos[match.loserUsername]) {
-                    const playerDoc = await this.getPlayerData(match.loserUsername);
-                    playerElos[match.loserUsername] = playerDoc?.eloRating || 0;
-                }
-            }
-
-            // Helper function for ELO class
+            await Promise.all([...uniquePlayers].map(async (player) => {
+                playerElos[player] = await this.getPlayerEloData(player);
+            }));
+            
+            // Helper function
             const getEloClass = (elo) => {
                 if (elo >= 2000) return 'elo-emerald';
                 if (elo >= 1800) return 'elo-gold';
@@ -246,8 +316,8 @@ class ProfileViewer {
                 if (elo >= 1400) return 'elo-bronze';
                 return 'elo-unranked';
             };
-
-            // Update match history display
+            
+            // Build match history HTML
             matchHistoryContainer.innerHTML = `
                 <h2>Match History</h2>
                 <table class="match-history-table">
@@ -295,349 +365,165 @@ class ProfileViewer {
                     </tbody>
                 </table>
             `;
-
         } catch (error) {
-            console.error('Error loading match history:', error);
-            const matchHistoryContainer = document.querySelector('.match-history-container');
-            if (matchHistoryContainer) {
-                matchHistoryContainer.innerHTML = `
-                    <div class="error-message">
-                        Error loading match history. Please try refreshing the page.
-                        ${error.message}
-                    </div>
-                `;
-            }
+            console.error('Error displaying match history:', error);
+            this.showErrorInContainer('match-history', 'Failed to load match history');
         }
     }
-
+    
     async displayMatchStats(username, matches) {
-        // Use existing container 
-        const statsContainer = document.querySelector('.match-stats-container');
-        if (!statsContainer) return;
-        
-        // Get current season number
-        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
-        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
-        
-        statsContainer.innerHTML = `
-            <div class="season-label">S${currentSeason}</div>
-            <h2>Match Statistics</h2>
-            <div class="stats-content">
-                <canvas id="eloChart"></canvas>
-            </div>
-        `;
-
-        // Process match data after container is in DOM
-        const matchData = matches.map(match => ({
-            date: new Date(match.createdAt.seconds * 1000),
-            isWinner: match.winnerUsername === username,
-            score: match.winnerUsername === username ? match.winnerScore : match.loserScore
-        })).sort((a, b) => a.date - b.date);
-
-        // Get context after canvas is in DOM
-        const ctx = document.getElementById('eloChart')?.getContext('2d');
-        if (ctx) {
-            try {
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: matchData.map(match => match.date.toLocaleDateString()),
-                        datasets: [{
-                            label: 'Score History',
-                            data: matchData.map(match => match.score),
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: 'white'
-                                }
-                            }
+        try {
+            const statsContainer = containerReferences['match-stats'];
+            if (!statsContainer) return;
+            
+            // Get season number - reused in multiple places
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            statsContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Match Statistics</h2>
+                <div class="stats-content">
+                    <canvas id="eloChart"></canvas>
+                </div>
+            `;
+            
+            // Process match data for chart
+            const matchData = matches.map(match => ({
+                date: new Date(match.createdAt.seconds * 1000),
+                isWinner: match.winnerUsername === username,
+                score: match.winnerUsername === username ? match.winnerScore : match.loserScore
+            })).sort((a, b) => a.date - b.date);
+            
+            // Create chart if there's data
+            const ctx = document.getElementById('eloChart')?.getContext('2d');
+            if (ctx) {
+                try {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: matchData.map(match => match.date.toLocaleDateString()),
+                            datasets: [{
+                                label: 'Score History',
+                                data: matchData.map(match => match.score),
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1,
+                                fill: false
+                            }]
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                },
-                                ticks: {
-                                    color: 'white'
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: { color: 'white' }
                                 }
                             },
-                            x: {
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: 'white' }
                                 },
-                                ticks: {
-                                    color: 'white'
+                                x: {
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: 'white' }
                                 }
                             }
                         }
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating chart:', error);
-                statsContainer.innerHTML += '<p class="error-message">Error displaying chart</p>';
-            }
-        }
-    }
-
-    async displayPlayerMatchups(username, matches) {
-        // Use existing container 
-        const matchupsContainer = document.querySelector('.player-matchups-container');
-        if (!matchupsContainer) return;
-
-        // Get matchups data first
-        const matchups = matches.reduce((acc, match) => {
-            const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
-            const isWin = match.winnerUsername === username;
-            
-            if (!acc[opponent]) {
-                acc[opponent] = { wins: 0, losses: 0, total: 0 };
-            }
-            
-            acc[opponent].total++;
-            if (isWin) {
-                acc[opponent].wins++;
-            } else {
-                acc[opponent].losses++;
-            }
-            
-            return acc;
-        }, {});
-
-        // Sort matchups
-        const sortedMatchups = Object.entries(matchups)
-            .sort((a, b) => b[1].total - a[1].total);
-
-        // Get current season number
-        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
-        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
-
-        // Generate HTML with sorted matchups
-        matchupsContainer.innerHTML = `
-            <div class="season-label">S${currentSeason}</div>
-            <h2>Player Matchups</h2>
-            <table class="match-history-table">
-                <thead>
-                    <tr>
-                        <th>Opponent</th>
-                        <th>Games Played</th>
-                        <th>Wins</th>
-                        <th>Losses</th>
-                        <th>Win Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sortedMatchups.map(([opponent, stats]) => {
-                        const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
-                        return `
-                            <tr>
-                                <td>
-                                    <a href="profile.html?username=${encodeURIComponent(opponent)}"
-                                       class="player-link">
-                                        ${opponent}
-                                    </a>
-                                </td>
-                                <td>${stats.total}</td>
-                                <td class="wins">${stats.wins}</td>
-                                <td class="losses">${stats.losses}</td>
-                                <td>${winRate}%</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        `;
-    }
-
-    // Helper method to get player data
-    async getPlayerData(username) {
-        const playersRef = collection(db, 'players');
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs[0]?.data();
-    }
-
-    // Fix the getPlayerMatches method
-    async getPlayerMatches(username) {
-        try {
-            console.log('Fetching matches for:', username);
-            
-            const approvedMatchesRef = collection(db, 'approvedMatches');
-            
-            // Use separate queries instead of compound query with array-contains + orderBy
-            const legacyQuery1 = query(
-                approvedMatchesRef,
-                where('winnerUsername', '==', username),
-                orderBy('createdAt', 'desc')
-            );
-            
-            const legacyQuery2 = query(
-                approvedMatchesRef,
-                where('loserUsername', '==', username),
-                orderBy('createdAt', 'desc')
-            );
-            
-            const [legacySnapshot1, legacySnapshot2] = await Promise.all([
-                getDocs(legacyQuery1),
-                getDocs(legacyQuery2)
-            ]);
-            
-            console.log('Match counts:', {
-                winnerMatches: legacySnapshot1.size,
-                loserMatches: legacySnapshot2.size
-            });
-            
-            // Combine results, removing duplicates
-            const matchIds = new Set();
-            const matches = [];
-            
-            const processSnapshot = (snapshot) => {
-                snapshot.forEach(doc => {
-                    if (!matchIds.has(doc.id)) {
-                        matchIds.add(doc.id);
-                        matches.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    }
-                });
-            };
-            
-            processSnapshot(legacySnapshot1);
-            processSnapshot(legacySnapshot2);
-            
-            // Sort by date descending
-            return matches.sort((a, b) => 
-                (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-            );
-        } catch (error) {
-            console.error('Error getting player matches:', error);
-            return [];
-        }
-    }
-
-    async loadPlayerStats(username) {
-        if (!username) return;
-
-        try {
-            console.log('Loading stats for user:', username);
-            
-            // First get the player data to access ELO rating
-            const playersRef = collection(db, 'players');
-            const playerQuery = query(playersRef, where('username', '==', username));
-            const playerSnapshot = await getDocs(playerQuery);
-            const playerData = playerSnapshot.docs[0]?.data() || {};
-            
-            // Get match data
-            const approvedMatchesRef = collection(db, 'approvedMatches');
-            const [winnerMatches, loserMatches] = await Promise.all([
-                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
-                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
-            ]);
-
-            console.log('Matches found:', {
-                winnerMatches: winnerMatches.size,
-                loserMatches: loserMatches.size
-            });
-
-            let stats = {
-                wins: winnerMatches.size,
-                losses: loserMatches.size,
-                totalKills: 0,
-                totalDeaths: 0,
-                totalMatches: winnerMatches.size + loserMatches.size,
-                kda: 0,
-                winRate: 0
-            };
-    
-            // Calculate kills and deaths
-            winnerMatches.forEach(doc => {
-                const match = doc.data();
-                stats.totalKills += parseInt(match.winnerScore) || 0;
-                stats.totalDeaths += parseInt(match.loserScore) || 0;
-            });
-    
-            loserMatches.forEach(doc => {
-                const match = doc.data();
-                stats.totalKills += parseInt(match.loserScore) || 0;
-                stats.totalDeaths += parseInt(match.winnerScore) || 0;
-            });
-    
-            console.log('Calculated stats:', stats);
-
-            // Calculate KDA and win rate
-            stats.kda = stats.totalDeaths > 0 ? 
-                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
-                stats.totalKills.toFixed(2);
-    
-            stats.winRate = stats.totalMatches > 0 ? 
-                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
-    
-            // Update elements object to include ELO
-            const elements = {
-                'stats-matches': stats.totalMatches,
-                'stats-wins': stats.wins,
-                'stats-losses': stats.losses,
-                'stats-kd': stats.kda,
-                'stats-winrate': `${stats.winRate}%`,
-                'stats-elo': playerData.eloRating || 'N/A'  // Add ELO rating
-            };
-            
-            // Update the UI
-            for (const [id, value] of Object.entries(elements)) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = value;
-                    console.log(`Updated ${id} with value:`, value);
-                } else {
-                    console.warn(`Element with id ${id} not found`);
+                    });
+                } catch (chartError) {
+                    console.error('Error creating chart:', chartError);
+                    statsContainer.innerHTML += '<p class="error-message">Error displaying chart</p>';
                 }
             }
-            
         } catch (error) {
-            console.error('Error loading player stats:', error);
-            this.setDefaultStats();
+            console.error('Error displaying match stats:', error);
+            this.showErrorInContainer('match-stats', 'Failed to load match statistics');
         }
     }
-
-    setDefaultStats() {
-        const defaultStats = {
-            'stats-matches': '0',
-            'stats-wins': '0',
-            'stats-losses': '0',
-            'stats-kd': '0.00',  // Changed from stats-kda to stats-kd
-            'stats-winrate': '0%'
-        };
-
-        for (const [id, value] of Object.entries(defaultStats)) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
+    
+    async displayPlayerMatchups(username, matches) {
+        try {
+            const matchupsContainer = containerReferences['player-matchups'];
+            if (!matchupsContainer) return;
+            
+            // Calculate matchups in one pass through the data
+            const matchups = matches.reduce((acc, match) => {
+                const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+                const isWin = match.winnerUsername === username;
+                
+                if (!acc[opponent]) {
+                    acc[opponent] = { wins: 0, losses: 0, total: 0 };
+                }
+                
+                acc[opponent].total++;
+                acc[opponent][isWin ? 'wins' : 'losses']++;
+                
+                return acc;
+            }, {});
+            
+            // Sort by most played
+            const sortedMatchups = Object.entries(matchups)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            // Get season information
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            // Build the matchups table
+            matchupsContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Player Matchups</h2>
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th>Games Played</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedMatchups.length === 0 ?
+                            '<tr><td colspan="5">No matchups found</td></tr>' :
+                            sortedMatchups.map(([opponent, stats]) => {
+                                const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                                return `
+                                    <tr>
+                                        <td>
+                                            <a href="profile.html?username=${encodeURIComponent(opponent)}"
+                                               class="player-link">
+                                                ${opponent}
+                                            </a>
+                                        </td>
+                                        <td>${stats.total}</td>
+                                        <td class="wins">${stats.wins}</td>
+                                        <td class="losses">${stats.losses}</td>
+                                        <td>${winRate}%</td>
+                                    </tr>
+                                `;
+                            }).join('')
+                        }
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Error displaying player matchups:', error);
+            this.showErrorInContainer('player-matchups', 'Failed to load player matchups');
         }
     }
-
+    
     async displayPromotionHistory(username) {
         try {
-            // Use correct container selector with both classes
-            const promotionContainer = document.querySelector('.match-history-container.rank-history-container');
+            const promotionContainer = containerReferences['rank-history'];
             if (!promotionContainer) {
                 console.error('Promotion history container not found');
                 return;
             }
             
-            // Add loading state
-            promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
-
-            // Fetch promotion history
+            // Fetch promotion/demotion history
             const eloHistoryRef = collection(db, 'eloHistory');
             const q = query(
                 eloHistoryRef,
@@ -648,7 +534,7 @@ class ProfileViewer {
             
             const snapshot = await getDocs(q);
             
-            // Check if we have any promotion records
+            // Handle no records case
             if (snapshot.empty) {
                 promotionContainer.innerHTML = `
                     <h2>Rank History</h2>
@@ -664,11 +550,11 @@ class ProfileViewer {
                 date: doc.data().timestamp ? new Date(doc.data().timestamp.seconds * 1000) : new Date()
             }));
             
-            // Get current season number
+            // Get season information
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
             const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
             
-            // Build the HTML
+            // Build the promotion history table
             promotionContainer.innerHTML = `
                 <div class="season-label">S${currentSeason}</div>
                 <h2>Rank History</h2>
@@ -714,148 +600,258 @@ class ProfileViewer {
                 </table>
             `;
             
-            // Add CSS styles for the new elements
-            const styleEl = document.createElement('style');
-            styleEl.textContent = `
-                .promotion-table .event-badge {
-                    display: inline-block;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    font-weight: bold;
-                }
-                .promotion-table .event-badge.promotion {
-                    background-color: #4CAF50;
-                    color: white;
-                }
-                .promotion-table .event-badge.demotion {
-                    background-color: #F44336;
-                    color: white;
-                }
-                .promotion-table .rank-name {
-                    font-weight: bold;
-                    font-size: 0.85em; // Add this line to make the font smaller
-                }
-                .promotion-table .rank-name.bronze {
-                    color: #CD7F32;
-                }
-                .promotion-table .rank-name.silver {
-                    color: #C0C0C0;
-                }
-                .promotion-table .rank-name.gold {
-                    color: #FFD700;
-                }
-                .promotion-table .rank-name.emerald {
-                    color: #50C878;
-                }
-                .promotion-table .positive-change {
-                    color: #4CAF50;
-                    font-weight: bold;
-                }
-                .promotion-table .negative-change {
-                    color: #F44336;
-                    font-weight: bold;
-                }
-            `;
-            document.head.appendChild(styleEl);
-            
+            // Add styles if not already present
+            if (!document.getElementById('promotion-styles')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'promotion-styles';
+                styleEl.textContent = `
+                    .promotion-table .event-badge {
+                        display: inline-block;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                    .promotion-table .event-badge.promotion {
+                        background-color: #4CAF50;
+                        color: white;
+                    }
+                    .promotion-table .event-badge.demotion {
+                        background-color: #F44336;
+                        color: white;
+                    }
+                    .promotion-table .rank-name {
+                        font-weight: bold;
+                        font-size: 0.85em;
+                    }
+                    .promotion-table .rank-name.bronze {
+                        color: #CD7F32;
+                    }
+                    .promotion-table .rank-name.silver {
+                        color: #C0C0C0;
+                    }
+                    .promotion-table .rank-name.gold {
+                        color: #FFD700;
+                    }
+                    .promotion-table .rank-name.emerald {
+                        color: #50C878;
+                    }
+                    .promotion-table .positive-change {
+                        color: #4CAF50;
+                        font-weight: bold;
+                    }
+                    .promotion-table .negative-change {
+                        color: #F44336;
+                        font-weight: bold;
+                    }
+                `;
+                document.head.appendChild(styleEl);
+            }
         } catch (error) {
             console.error('Error loading promotion history:', error);
-            const container = document.querySelector('.promotion-history-container');
-            if (container) {
-                container.innerHTML = `
-                    <h2>Rank History</h2>
-                    <div class="error-message">
-                        Error loading promotion history. Please try refreshing the page.
-                    </div>
-                `;
-            }
+            this.showErrorInContainer('rank-history', 'Failed to load rank history');
         }
     }
+    
+    async loadPlayerStats(username) {
+        if (!username) return;
 
-    // Add this method if it's missing
-    async loadPlayerData(username) {
         try {
-            // Get player details from players collection
-            const playersRef = collection(db, 'players');
-            const q = query(playersRef, where('username', '==', username));
-            const querySnapshot = await getDocs(q);
+            // Get player data for ELO
+            const playerData = playerDataCache.has(username) ? 
+                playerDataCache.get(username) : 
+                await this.getPlayerData(username);
             
-            if (querySnapshot.empty) {
-                throw new Error('Player not found');
-            }
+            // Fetch match data
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
+            ]);
             
-            const playerData = querySnapshot.docs[0].data();
-            const userId = playerData.userId || querySnapshot.docs[0].id;
-            
-            // Try to get profile data from both collections
-            let profileData = {};
-            
-            // First try userProfiles collection
-            const userProfileRef = doc(db, 'userProfiles', userId);
-            const userProfileDoc = await getDoc(userProfileRef);
-            if (userProfileDoc.exists()) {
-                profileData = userProfileDoc.data();
-            }
-            
-            // Also try the profiles collection used by profile.js
-            const oldProfileRef = doc(db, 'profiles', userId);
-            const oldProfileDoc = await getDoc(oldProfileRef);
-            if (oldProfileDoc.exists()) {
-                // Merge data, preferring newer data
-                profileData = { ...oldProfileDoc.data(), ...profileData };
-            }
-            
-            // Combine all data
-            const data = {
-                ...playerData,
-                ...profileData,
-                username: username,
-                userId: userId
+            // Calculate stats
+            const stats = {
+                wins: winnerMatches.size,
+                losses: loserMatches.size,
+                totalKills: 0,
+                totalDeaths: 0,
+                totalMatches: winnerMatches.size + loserMatches.size
             };
             
-            // Display the profile data
-            this.displayProfile(data);
+            // Process winner matches
+            winnerMatches.forEach(doc => {
+                const match = doc.data();
+                stats.totalKills += parseInt(match.winnerScore) || 0;
+                stats.totalDeaths += parseInt(match.loserScore) || 0;
+            });
             
-            // Load stats
-            await this.loadPlayerStats(username);
+            // Process loser matches
+            loserMatches.forEach(doc => {
+                const match = doc.data();
+                stats.totalKills += parseInt(match.loserScore) || 0;
+                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+            });
             
-            return data;
+            // Calculate derived stats
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+            
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+            
+            // Update DOM elements
+            const elements = {
+                'stats-matches': stats.totalMatches,
+                'stats-wins': stats.wins,
+                'stats-losses': stats.losses,
+                'stats-kd': stats.kda,
+                'stats-winrate': `${stats.winRate}%`,
+                'stats-elo': playerData.eloRating || 'N/A'
+            };
+            
+            // Update all elements at once
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
         } catch (error) {
-            console.error('Error loading player data:', error);
-            this.showError(`Error: ${error.message}`);
-            return null;
+            console.error('Error loading player stats:', error);
+            this.setDefaultStats();
         }
     }
+    
+    setDefaultStats() {
+        const defaultStats = {
+            'stats-matches': '0',
+            'stats-wins': '0',
+            'stats-losses': '0',
+            'stats-kd': '0.00',
+            'stats-winrate': '0%',
+            'stats-elo': 'N/A'
+        };
 
-    // Add this method to the ProfileViewer class
+        for (const [id, value] of Object.entries(defaultStats)) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+    }
+    
+    showError(message) {
+        const container = document.querySelector('.content');
+        if (container) {
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    }
+    
+    showErrorInContainer(containerKey, message) {
+        const container = containerReferences[containerKey];
+        if (container) {
+            container.innerHTML = `
+                <h2>${containerKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h2>
+                <div class="error-message">${message}</div>
+            `;
+        }
+    }
+    
+    toggleEditMode(isEditing) {
+        const viewMode = document.querySelector('.view-mode');
+        const editMode = document.querySelector('.edit-mode');
+        
+        if (!viewMode || !editMode) return;
+        
+        if (isEditing && this.currentProfileData) {
+            // Update form fields
+            const editFields = {
+                'motto-edit': this.currentProfileData.motto || '',
+                'favorite-map-edit': this.currentProfileData.favoriteMap || '',
+                'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || ''
+            };
+            
+            for (const [id, value] of Object.entries(editFields)) {
+                const element = document.getElementById(id);
+                if (element) element.value = value;
+            }
+            
+            // Show edit mode
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        } else {
+            // Show view mode
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+        }
+    }
+    
+    async handleSubmit(event) {
+        event.preventDefault();
+        const user = auth.currentUser;
+        
+        if (!user) {
+            this.showError('You must be logged in to edit your profile');
+            return;
+        }
+
+        try {
+            // Get form data
+            const profileData = {
+                motto: document.getElementById('motto-edit').value,
+                favoriteMap: document.getElementById('favorite-map-edit').value,
+                favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
+                lastUpdated: new Date().toISOString(),
+                timezone: document.getElementById('timezone-edit').value,
+                division: document.getElementById('division-edit').value
+            };
+
+            // Save to Firestore
+            await setDoc(doc(db, 'userProfiles', user.uid), profileData, { merge: true });
+            
+            // Update cache
+            if (user.displayName && playerDataCache.has(user.displayName)) {
+                const cachedData = playerDataCache.get(user.displayName);
+                playerDataCache.set(user.displayName, { ...cachedData, ...profileData });
+            }
+            
+            // Update display
+            this.toggleEditMode(false);
+            this.displayProfile({
+                ...this.currentProfileData,
+                ...profileData,
+                username: user.displayName || 'Anonymous',
+                userId: user.uid
+            });
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            this.showError('Failed to save profile changes');
+        }
+    }
+    
     setupEditProfile() {
-        // Get edit controls
-        const editBtn = document.getElementById('edit-profile');
-        const cancelBtn = document.querySelector('.cancel-btn');
-        const profileForm = document.getElementById('profile-form');
-
-        // Remove any existing event listeners
-        if (editBtn) {
-            const newEditBtn = editBtn.cloneNode(true);
-            editBtn.parentNode.replaceChild(newEditBtn, editBtn);
-            newEditBtn.addEventListener('click', () => this.toggleEditMode(true));
-        }
-
-        if (cancelBtn) {
-            const newCancelBtn = cancelBtn.cloneNode(true);
-            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-            newCancelBtn.addEventListener('click', () => this.toggleEditMode(false));
-        }
-
-        if (profileForm) {
-            const newProfileForm = profileForm.cloneNode(true);
-            profileForm.parentNode.replaceChild(newProfileForm, profileForm);
-            newProfileForm.addEventListener('submit', (e) => this.handleSubmit(e));
+        // Get references to edit controls
+        const elements = {
+            'edit-profile': element => element.addEventListener('click', () => this.toggleEditMode(true)),
+            'cancel-btn': element => element.addEventListener('click', () => this.toggleEditMode(false)),
+            'profile-form': element => element.addEventListener('submit', e => this.handleSubmit(e))
+        };
+        
+        // Add event listeners
+        for (const [id, handler] of Object.entries(elements)) {
+            const element = document.getElementById(id) || document.querySelector(`.${id}`);
+            if (element) {
+                // Remove old listeners by cloning
+                const newElement = element.cloneNode(true);
+                element.parentNode.replaceChild(newElement, element);
+                handler(newElement);
+            }
         }
     }
 }
 
-// Remove the separate DOMContentLoaded event listener
-// since we're handling initialization in the constructor
-new ProfileViewer();
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    new ProfileViewer();
+});
