@@ -484,7 +484,7 @@ async function promotePlayer(username) {
     }
 }
 
-// Add this new function to handle promote player button setup
+// Update the setupPromotePlayerButton function to handle the cancel button
 function setupPromotePlayerButton() {
     const promoteBtn = document.getElementById('promote-player');
     if (!promoteBtn) return;
@@ -514,11 +514,24 @@ function setupPromotePlayerButton() {
             try {
                 await promotePlayer(username);
                 document.getElementById('promote-dialog').style.display = 'none';
-                document.getElementById('promote-username').value = '';
+                document.getElementById('promote-username-1').value = '';
             } catch (error) {
                 console.error('Error promoting player:', error);
                 alert('Failed to promote player: ' + error.message);
             }
+        });
+    }
+    
+    // Handle cancel button
+    const cancelBtn = document.getElementById('cancel-promote');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', () => {
+            const promoteDialog = document.getElementById('promote-dialog');
+            if (promoteDialog) promoteDialog.style.display = 'none';
+            document.getElementById('promote-username-1').value = '';
         });
     }
 }
