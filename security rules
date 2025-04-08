@@ -396,5 +396,28 @@ service cloud.firestore {
       // Allow read and write for the bot
       allow read, write: if true;
     }
+
+    // Fix profiles collection - this was missing proper permissions
+    match /profiles/{userId} {
+      allow read: if true; // Allow public reading of profiles
+      allow create, update: if request.auth != null && 
+                            (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Fix eloHistory permissions to ensure promotion history works
+    match /eloHistory/{historyId} {
+      allow read: if true; // Allow public reading for profile displays
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+    
+    // Update userProfiles permissions to ensure they're accessible
+    match /userProfiles/{userId} {
+      allow read: if true; // Allow public reading for profile displays
+      allow create, update: if request.auth != null && 
+                           (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
   }
 }
