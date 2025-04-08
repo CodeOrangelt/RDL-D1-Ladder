@@ -8,7 +8,9 @@ import {
     where,
     updateDoc,
     Timestamp,
-    onSnapshot
+    onSnapshot,
+    orderBy,
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -167,7 +169,8 @@ function calculateStreakDays(startDate) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// Modify your existing updateLadderDisplay function to sort by position
+// Update the updateLadderDisplay function
+
 async function updateLadderDisplay(ladderData) {
     // Sort by position before displaying
     ladderData.sort((a, b) => a.position - b.position);
@@ -175,17 +178,21 @@ async function updateLadderDisplay(ladderData) {
     const tbody = document.querySelector('#ladder tbody');
     tbody.innerHTML = '';
     
-    // Update the table header with new columns
+    // Update the table header with new columns - add ELO column
     const thead = document.querySelector('#ladder thead tr');
     thead.innerHTML = `
         <th>Rank</th>
         <th>Username</th>
+        <th>ELO</th>
         <th>Matches</th>
         <th>Wins</th>
         <th>Losses</th>
         <th>K/D</th>
         <th>Win Rate</th>
     `;
+    
+    // Cache for ELO history to minimize duplicate queries
+    const eloHistoryCache = new Map();
     
     for (const player of ladderData) {
         const row = document.createElement('tr');
@@ -233,6 +240,38 @@ async function updateLadderDisplay(ladderData) {
         
         usernameLink.style.textDecoration = 'none';
         usernameCell.appendChild(usernameLink);
+        
+        // Create ELO cell with trend indicator
+        const eloCell = document.createElement('td');
+        eloCell.textContent = elo.toString();
+        eloCell.style.color = usernameLink.style.color; // Match username color
+        
+        // Get the ELO history for this player if not in cache
+        if (!eloHistoryCache.has(player.username)) {
+            // Get last ELO change from player's lastEloChange property, if it exists
+            let direction = player.lastEloChange > 0 ? 'up' : 
+                            player.lastEloChange < 0 ? 'down' : 'none';
+            
+            eloHistoryCache.set(player.username, direction);
+        }
+        
+        // Get ELO direction from cache
+        const eloDirection = eloHistoryCache.get(player.username);
+        
+        // Add the trend indicator
+        if (eloDirection === 'up') {
+            const trendIndicator = document.createElement('span');
+            trendIndicator.innerHTML = ' ▲';
+            trendIndicator.style.color = '#4CAF50'; // Green
+            trendIndicator.style.marginLeft = '5px';
+            eloCell.appendChild(trendIndicator);
+        } else if (eloDirection === 'down') {
+            const trendIndicator = document.createElement('span');
+            trendIndicator.innerHTML = ' ▼';
+            trendIndicator.style.color = '#F44336'; // Red
+            trendIndicator.style.marginLeft = '5px';
+            eloCell.appendChild(trendIndicator);
+        }
 
         // Get match history for the player
         const approvedMatchesRef = collection(db, 'approvedMatches');
@@ -252,7 +291,7 @@ async function updateLadderDisplay(ladderData) {
             winRate: 0
         };
 
-        // Calculate kills and deaths from matches
+        // Process match data and calculate stats
         winnerMatches.forEach(doc => {
             const match = doc.data();
             stats.totalKills += parseInt(match.winnerScore) || 0;
@@ -274,7 +313,7 @@ async function updateLadderDisplay(ladderData) {
         stats.winRate = stats.totalMatches > 0 ? 
             ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
 
-        // Create cells with new stats
+        // Create cells with stats
         const matchesCell = document.createElement('td');
         matchesCell.textContent = stats.totalMatches;
 
@@ -293,6 +332,7 @@ async function updateLadderDisplay(ladderData) {
         // Add all cells to row
         row.appendChild(rankCell);
         row.appendChild(usernameCell);
+        row.appendChild(eloCell); // Add the new ELO cell
         row.appendChild(matchesCell);
         row.appendChild(winsCell);
         row.appendChild(lossesCell);
@@ -301,6 +341,78 @@ async function updateLadderDisplay(ladderData) {
         
         tbody.appendChild(row);
     }
+    
+    // If needed, get the last ELO change for players
+    // but only do this once when the ladder loads to be resource efficient
+    if (ladderData.length > 0 && !eloHistoryCache.size) {
+        getPlayersLastEloChanges(ladderData.map(p => p.username))
+            .then(changes => {
+                // Update the DOM with trend indicators
+                changes.forEach((change, username) => {
+                    const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'none';
+                    eloHistoryCache.set(username, direction);
+                    
+                    // Find the row for this player
+                    const playerRows = tbody.querySelectorAll('tr');
+                    for (const row of playerRows) {
+                        const usernameLink = row.querySelector('td:nth-child(2) a');
+                        if (usernameLink && usernameLink.textContent === username) {
+                            const eloCell = row.querySelector('td:nth-child(3)');
+                            if (eloCell) {
+                                if (direction === 'up') {
+                                    eloCell.innerHTML += '<span style="color:#4CAF50;margin-left:5px;">▲</span>';
+                                } else if (direction === 'down') {
+                                    eloCell.innerHTML += '<span style="color:#F44336;margin-left:5px;">▼</span>';
+                                }
+                            }
+                            break;
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error getting ELO changes:', error));
+    }
+}
+
+// Add a helper function to get the last ELO changes for multiple players
+// This makes a single batch query to be more efficient
+async function getPlayersLastEloChanges(usernames) {
+    const changes = new Map();
+    
+    try {
+        // Preload with default values
+        usernames.forEach(username => changes.set(username, 0));
+        
+        // Batch query for efficiency - get last ELO history entry for each player
+        const eloHistoryRef = collection(db, 'eloHistory');
+        
+        const promises = usernames.map(username => {
+            const q = query(
+                eloHistoryRef,
+                where('player', '==', username),
+                orderBy('timestamp', 'desc'),
+                limit(1)
+            );
+            return getDocs(q);
+        });
+        
+        const results = await Promise.all(promises);
+        
+        // Process results
+        results.forEach((snapshot, index) => {
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
+                const username = usernames[index];
+                // Calculate ELO change
+                const eloChange = data.newElo - data.previousElo;
+                changes.set(username, eloChange);
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching ELO history:', error);
+    }
+    
+    return changes;
 }
 
 async function loadPlayers() {
