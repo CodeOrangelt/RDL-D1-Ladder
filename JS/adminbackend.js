@@ -641,7 +641,7 @@ function setupDemotePlayerButton() {
     const demoteDialog = document.getElementById('demote-dialog');
     const confirmDemoteBtn = document.getElementById('confirm-demote');
     const cancelDemoteBtn = document.getElementById('cancel-demote');
-    const demoteUsernameInput = document.getElementById('demote-username');
+    const demoteUsernameInput = document.getElementById('demote-username-1');
 
     if (!demoteBtn || !demoteDialog || !confirmDemoteBtn || !cancelDemoteBtn || !demoteUsernameInput) {
         console.error('Missing demote dialog elements');
