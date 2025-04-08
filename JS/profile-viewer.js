@@ -554,6 +554,11 @@ class ProfileViewer {
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
             const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
             
+            // Split records: first 3 and the rest
+            const initialRecords = promotionRecords.slice(0, 3);
+            const additionalRecords = promotionRecords.slice(3);
+            const hasMoreRecords = additionalRecords.length > 0;
+            
             // Build the promotion history table
             promotionContainer.innerHTML = `
                 <div class="season-label">S${currentSeason}</div>
@@ -569,8 +574,8 @@ class ProfileViewer {
                             <th>Change</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ${promotionRecords.map(record => {
+                    <tbody class="initial-records">
+                        ${initialRecords.map(record => {
                             const dateDisplay = record.date.toLocaleDateString();
                             const isPromotion = record.type === 'promotion';
                             const changeValue = record.newElo - record.previousElo;
@@ -597,8 +602,63 @@ class ProfileViewer {
                             `;
                         }).join('')}
                     </tbody>
+                    ${hasMoreRecords ? `
+                    <tbody class="additional-records" style="display: none;">
+                        ${additionalRecords.map(record => {
+                            const dateDisplay = record.date.toLocaleDateString();
+                            const isPromotion = record.type === 'promotion';
+                            const changeValue = record.newElo - record.previousElo;
+                            
+                            return `
+                                <tr class="${isPromotion ? 'promotion-row' : 'demotion-row'}">
+                                    <td>${dateDisplay}</td>
+                                    <td class="event-type">
+                                        <span class="event-badge ${isPromotion ? 'promotion' : 'demotion'}">
+                                            ${isPromotion ? 'PROMOTION' : 'DEMOTION'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="rank-name ${record.rankAchieved.toLowerCase()}">
+                                            ${record.rankAchieved}
+                                        </span>
+                                    </td>
+                                    <td>${record.previousElo}</td>
+                                    <td>${record.newElo}</td>
+                                    <td class="${isPromotion ? 'positive-change' : 'negative-change'}">
+                                        ${isPromotion ? '+' : ''}${changeValue}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    ` : ''}
                 </table>
+                ${hasMoreRecords ? `
+                <div class="show-more-container">
+                    <button class="show-more-btn">Show More (${additionalRecords.length})</button>
+                    <button class="show-less-btn" style="display: none;">Show Less</button>
+                </div>
+                ` : ''}
             `;
+            
+            // Add toggle functionality if there are additional records
+            if (hasMoreRecords) {
+                const showMoreBtn = promotionContainer.querySelector('.show-more-btn');
+                const showLessBtn = promotionContainer.querySelector('.show-less-btn');
+                const additionalRecordsEl = promotionContainer.querySelector('.additional-records');
+                
+                showMoreBtn.addEventListener('click', () => {
+                    additionalRecordsEl.style.display = 'table-row-group';
+                    showMoreBtn.style.display = 'none';
+                    showLessBtn.style.display = 'inline-block';
+                });
+                
+                showLessBtn.addEventListener('click', () => {
+                    additionalRecordsEl.style.display = 'none';
+                    showMoreBtn.style.display = 'inline-block';
+                    showLessBtn.style.display = 'none';
+                });
+            }
             
             // Add styles if not already present
             if (!document.getElementById('promotion-styles')) {
@@ -643,6 +703,22 @@ class ProfileViewer {
                     .promotion-table .negative-change {
                         color: #F44336;
                         font-weight: bold;
+                    }
+                    .show-more-container {
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                    .show-more-btn, .show-less-btn {
+                        background-color: #333;
+                        border: 1px solid #666;
+                        color: white;
+                        padding: 5px 15px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    }
+                    .show-more-btn:hover, .show-less-btn:hover {
+                        background-color: #444;
                     }
                 `;
                 document.head.appendChild(styleEl);
