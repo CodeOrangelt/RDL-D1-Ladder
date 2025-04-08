@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../CSS/report-style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/style.css">
+    <script type="module" src="../JS/firebase-config.js"></script>
     <style>
         /* Game mode toggle buttons */
         .game-mode-toggle {
@@ -40,14 +41,9 @@
         }
     </style>
     <script type="module">
-        import { firebaseConfig } from './firebase-config.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
-        window.db = getFirestore(app);
     </script>
 </head>
 <body>
