@@ -71,11 +71,19 @@ class ProfileViewer {
         }
     }
 
-    // Add this helper method to create containers in the correct order
+    // Fix the createContainers method
     createContainers(sections) {
+        const contentContainer = document.querySelector('.content');
+        if (!contentContainer) return;
+        
+        // Find the profile container
         const profileContainer = document.querySelector('.profile-container');
         if (!profileContainer) return;
         
+        // Clear any existing containers first
+        document.querySelectorAll('.match-history-container').forEach(el => el.remove());
+        
+        // Insert all containers after the profile container in the specified order
         let previousContainer = profileContainer;
         
         sections.forEach(section => {
@@ -83,13 +91,8 @@ class ProfileViewer {
             container.className = `match-history-container ${section}-container`;
             container.innerHTML = '<p class="loading-text">Loading data...</p>';
             
-            // Insert after the previous container
-            if (previousContainer.nextSibling) {
-                profileContainer.parentNode.insertBefore(container, previousContainer.nextSibling);
-            } else {
-                profileContainer.parentNode.appendChild(container);
-            }
-            
+            // Always insert after the previous container
+            contentContainer.insertBefore(container, previousContainer.nextSibling);
             previousContainer = container;
         });
     }
@@ -624,9 +627,12 @@ class ProfileViewer {
 
     async displayPromotionHistory(username) {
         try {
-            // Use existing container instead of creating a new one
-            const promotionContainer = document.querySelector('.rank-history-container');
-            if (!promotionContainer) return;
+            // Use correct container selector with both classes
+            const promotionContainer = document.querySelector('.match-history-container.rank-history-container');
+            if (!promotionContainer) {
+                console.error('Promotion history container not found');
+                return;
+            }
             
             // Add loading state
             promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
@@ -780,16 +786,32 @@ class ProfileViewer {
             }
             
             const playerData = querySnapshot.docs[0].data();
+            const userId = playerData.userId || querySnapshot.docs[0].id;
             
-            // Get user profile data if available
-            const userProfileRef = doc(db, 'userProfiles', playerData.userId || 'unknown');
-            const profileDoc = await getDoc(userProfileRef);
+            // Try to get profile data from both collections
+            let profileData = {};
             
-            // Combine player and profile data
+            // First try userProfiles collection
+            const userProfileRef = doc(db, 'userProfiles', userId);
+            const userProfileDoc = await getDoc(userProfileRef);
+            if (userProfileDoc.exists()) {
+                profileData = userProfileDoc.data();
+            }
+            
+            // Also try the profiles collection used by profile.js
+            const oldProfileRef = doc(db, 'profiles', userId);
+            const oldProfileDoc = await getDoc(oldProfileRef);
+            if (oldProfileDoc.exists()) {
+                // Merge data, preferring newer data
+                profileData = { ...oldProfileDoc.data(), ...profileData };
+            }
+            
+            // Combine all data
             const data = {
                 ...playerData,
-                ...(profileDoc.exists() ? profileDoc.data() : {}),
+                ...profileData,
                 username: username,
+                userId: userId
             };
             
             // Display the profile data
