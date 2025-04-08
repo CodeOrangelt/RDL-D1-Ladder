@@ -506,7 +506,7 @@ function setupPromotePlayerButton() {
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
         
         newConfirmBtn.addEventListener('click', async () => {
-            const username = document.getElementById('promote-username').value.trim();
+            const username = document.getElementById('promote-username-1').value.trim();
             if (!username) {
                 alert('Please enter a username');
                 return;
