@@ -484,74 +484,43 @@ async function promotePlayer(username) {
     }
 }
 
-// Add the button click handler
-// Remove this standalone event listener
-/*
-document.getElementById('promote-player-btn').addEventListener('click', async () => {
-    const username = prompt('Enter the username of the player to promote:');
-    if (username) {
-        await promotePlayer(username.trim());
-    }
-});
-*/
-
 // Add this new function to handle promote player button setup
-// Modified setupPromotePlayerButton function with event listener cleanup
 function setupPromotePlayerButton() {
     const promoteBtn = document.getElementById('promote-player');
-    const promoteDialog = document.getElementById('promote-dialog');
-    const confirmPromoteBtn = document.getElementById('confirm-promote');
-    const cancelPromoteBtn = document.getElementById('cancel-promote');
-    const promoteUsernameInput = document.getElementById('promote-username');
-
-    if (!promoteBtn || !promoteDialog || !confirmPromoteBtn || !cancelPromoteBtn || !promoteUsernameInput) {
-        console.error('Missing promote dialog elements');
-        return;
-    }
-
-    // Remove existing event listeners (important fix!)
+    if (!promoteBtn) return;
+    
+    // Clean up old event listeners
     const newPromoteBtn = promoteBtn.cloneNode(true);
     promoteBtn.parentNode.replaceChild(newPromoteBtn, promoteBtn);
     
-    const newConfirmPromoteBtn = confirmPromoteBtn.cloneNode(true);
-    confirmPromoteBtn.parentNode.replaceChild(newConfirmPromoteBtn, confirmPromoteBtn);
-    
-    const newCancelPromoteBtn = cancelPromoteBtn.cloneNode(true);
-    cancelPromoteBtn.parentNode.replaceChild(newCancelPromoteBtn, cancelPromoteBtn);
-
-    // Add new event listeners to cloned elements
+    // Add fresh event listener
     newPromoteBtn.addEventListener('click', () => {
-        promoteDialog.style.display = 'block';
+        const promoteDialog = document.getElementById('promote-dialog');
+        if (promoteDialog) promoteDialog.style.display = 'block';
     });
-
-    newCancelPromoteBtn.addEventListener('click', () => {
-        promoteDialog.style.display = 'none';
-        promoteUsernameInput.value = '';
-    });
-
-    // Close modal if clicked outside
-    promoteDialog.addEventListener('click', (e) => {
-        if (e.target === promoteDialog) {
-            promoteDialog.style.display = 'none';
-            promoteUsernameInput.value = '';
-        }
-    });
-
-    newConfirmPromoteBtn.addEventListener('click', async () => {
-        const username = promoteUsernameInput.value.trim();
-        if (!username) {
-            alert('Please enter a username');
-            return;
-        }
-        try {
-            await promotePlayer(username);
-            promoteDialog.style.display = 'none';
-            promoteUsernameInput.value = '';
-        } catch (error) {
-            console.error('Error promoting player:', error);
-            alert('Failed to promote player: ' + error.message);
-        }
-    });
+    
+    // Same for confirmation button
+    const confirmBtn = document.getElementById('confirm-promote');
+    if (confirmBtn) {
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        newConfirmBtn.addEventListener('click', async () => {
+            const username = document.getElementById('promote-username').value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            try {
+                await promotePlayer(username);
+                document.getElementById('promote-dialog').style.display = 'none';
+                document.getElementById('promote-username').value = '';
+            } catch (error) {
+                console.error('Error promoting player:', error);
+                alert('Failed to promote player: ' + error.message);
+            }
+        });
+    }
 }
 
 // Add a new function to handle the manage players section setup

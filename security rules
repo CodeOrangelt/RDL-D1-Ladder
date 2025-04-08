@@ -44,13 +44,14 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isVerifiedUser();
       allow update: if 
-        isVerifiedUser() && (
-          // Either it's your own document OR
-          request.auth.uid == playerId ||
-          // You're just updating match-related fields (anyone can do this)
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId', 'wins', 'losses'])
-        );
+        // Admin can update anything
+        isAdmin() ||
+        // User can update their own document
+        (isVerifiedUser() && request.auth.uid == playerId) ||
+        // Anyone can update match-related fields
+        (isVerifiedUser() && 
+         request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId', 'wins', 'losses']));
       allow delete: if isAdmin();
     }
     
@@ -259,7 +260,7 @@ service cloud.firestore {
     match /eloHistory/{historyId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if false;
+      allow update, delete: if isAdmin();
     }
 
     match /retroTracker/{docId} {
