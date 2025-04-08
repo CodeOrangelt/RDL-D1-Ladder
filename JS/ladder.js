@@ -12,6 +12,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
+import { displayLadderD2 } from './ladderd2.js';
 
 async function displayLadder() {
     const tableBody = document.querySelector('#ladder tbody');
@@ -433,5 +434,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add debug info for raw leaderboard page
     if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
         console.log("Raw leaderboard page detected");
+    }
+    
+    // Add toggle functionality for ladder selection
+    const d1Toggle = document.getElementById('d1-toggle');
+    const d2Toggle = document.getElementById('d2-toggle');
+    const d1Container = document.getElementById('d1-ladder-container');
+    const d2Container = document.getElementById('d2-ladder-container');
+    
+    if (d1Toggle && d2Toggle && d1Container && d2Container) {
+        d1Toggle.addEventListener('click', () => {
+            // Update button UI
+            d1Toggle.classList.add('active');
+            d2Toggle.classList.remove('active');
+            
+            // Show D1 ladder, hide D2 ladder
+            d1Container.classList.add('active');
+            d2Container.classList.remove('active');
+            
+            // Ensure D1 ladder is displayed
+            if (document.querySelector('#ladder')) {
+                displayLadder();
+            }
+        });
+        
+        d2Toggle.addEventListener('click', () => {
+            // Update button UI
+            d2Toggle.classList.add('active');
+            d1Toggle.classList.remove('active');
+            
+            // Show D2 ladder, hide D1 ladder
+            d2Container.classList.add('active');
+            d1Container.classList.remove('active');
+            
+            // Ensure D2 ladder is displayed
+            // This calls the displayLadderD2 function from ladderd2.js
+            if (document.querySelector('#ladder-d2')) {
+                if (typeof displayLadderD2 === 'function') {
+                    displayLadderD2();
+                } else {
+                    console.error('displayLadderD2 function not found. Make sure ladderd2.js is loaded properly.');
+                }
+            }
+        });
+    } else {
+        console.warn('Ladder toggle elements not found in the DOM');
     }
 });
