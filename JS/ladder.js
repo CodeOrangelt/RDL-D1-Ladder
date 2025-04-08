@@ -354,40 +354,60 @@ async function updateLadderDisplay(ladderData) {
     });
     
     // Get all ELO changes at once
-    getPlayersLastEloChanges(usernames)
-        .then(changes => {
-            changes.forEach((change, username) => {
-                const row = rowMap.get(username);
-                if (row) {
-                    const eloCell = row.querySelector('td:nth-child(3)');
-                    if (eloCell) {
-                        // Clear any existing indicators
-                        const existingIndicator = eloCell.querySelector('.trend-indicator');
-                        if (existingIndicator) {
-                            existingIndicator.remove();
-                        }
-                        
-                        // Add new indicator
-                        if (change > 0) {
-                            const indicator = document.createElement('span');
-                            indicator.className = 'trend-indicator';
-                            indicator.innerHTML = ' ▲';
-                            indicator.style.color = '#4CAF50'; // Green
-                            indicator.style.marginLeft = '5px';
-                            eloCell.appendChild(indicator);
-                        } else if (change < 0) {
-                            const indicator = document.createElement('span');
-                            indicator.className = 'trend-indicator';
-                            indicator.innerHTML = ' ▼';
-                            indicator.style.color = '#F44336'; // Red
-                            indicator.style.marginLeft = '5px';
-                            eloCell.appendChild(indicator);
-                        }
+    // Replace the getPlayersLastEloChanges function with this version
+
+async function getPlayersLastEloChanges(usernames) {
+    const changes = new Map();
+    
+    try {
+        // Preload with default values
+        usernames.forEach(username => changes.set(username, 0));
+        
+        // Try a different query approach to use existing indexes
+        const eloHistoryRef = collection(db, 'eloHistory');
+        
+        // First try to use the 'type' field which should have an existing index
+        // Many eloHistory entries have type=promotion or type=demotion
+        for (const username of usernames) {
+            try {
+                // Try to query using 'type' field first, which likely already has indexes
+                const typeQuery = query(
+                    eloHistoryRef,
+                    where('player', '==', username),
+                    where('type', 'in', ['match', 'promotion', 'demotion', 'admin_modification']),
+                    limit(5)
+                );
+                
+                const snapshot = await getDocs(typeQuery);
+                
+                if (!snapshot.empty) {
+                    // Sort manually to avoid needing the orderBy index
+                    const entries = snapshot.docs
+                        .map(doc => doc.data())
+                        .sort((a, b) => {
+                            // Convert Firestore timestamps to milliseconds for comparison
+                            const timeA = a.timestamp?.seconds || 0;
+                            const timeB = b.timestamp?.seconds || 0;
+                            return timeB - timeA; // descending order
+                        });
+                    
+                    if (entries.length > 0) {
+                        const latestEntry = entries[0];
+                        const eloChange = latestEntry.newElo - latestEntry.previousElo;
+                        changes.set(username, eloChange);
+                        console.log(`Got ELO change for ${username}: ${eloChange}`);
                     }
                 }
-            });
-        })
-        .catch(error => console.error('Error updating ELO trend indicators:', error));
+            } catch (userError) {
+                console.warn(`Minor error fetching history for ${username}:`, userError);
+                // Continue with next user
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching ELO history:', error);
+    }
+    
+    return changes;
 }
 
 // Add a helper function to get the last ELO changes for multiple players
