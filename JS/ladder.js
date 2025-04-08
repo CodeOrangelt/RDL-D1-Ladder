@@ -390,9 +390,8 @@ async function updateLadderDisplay(ladderData) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Replace BOTH getPlayersLastEloChanges functions with this single implementation
+// Replace the getPlayersLastEloChanges function with this improved version
 
-// Add a helper function to get the last ELO changes for multiple players
 async function getPlayersLastEloChanges(usernames) {
     const changes = new Map();
     
@@ -400,7 +399,6 @@ async function getPlayersLastEloChanges(usernames) {
         // Preload with default values
         usernames.forEach(username => changes.set(username, 0));
         
-        // Try a different query approach to use existing indexes
         const eloHistoryRef = collection(db, 'eloHistory');
         
         // Process users in small batches to avoid overloading Firestore
@@ -408,39 +406,65 @@ async function getPlayersLastEloChanges(usernames) {
         for (let i = 0; i < usernames.length; i += batchSize) {
             const batchUsernames = usernames.slice(i, i + batchSize);
             
-            // Process each username in the current batch
             for (const username of batchUsernames) {
                 try {
-                    // First try querying with type field which should have existing indexes
-                    const typeQuery = query(
+                    // Query specifically for promotion events first
+                    const promotionQuery = query(
                         eloHistoryRef,
                         where('player', '==', username),
-                        where('type', 'in', ['match', 'promotion', 'demotion', 'admin_modification']),
-                        limit(5)
+                        where('type', '==', 'promotion'),
+                        limit(1)
                     );
                     
-                    const snapshot = await getDocs(typeQuery);
+                    const promotionSnapshot = await getDocs(promotionQuery);
+                    
+                    // If we found a promotion, use it
+                    if (!promotionSnapshot.empty) {
+                        const promotionData = promotionSnapshot.docs[0].data();
+                        const eloChange = promotionData.newElo - promotionData.previousElo;
+                        // Ensure promotion always shows as positive
+                        changes.set(username, Math.abs(eloChange));
+                        console.log(`Found promotion for ${username}: +${eloChange}`);
+                        continue; // Skip to next player
+                    }
+                    
+                    // If no promotion, look for any type of ELO change
+                    const generalQuery = query(
+                        eloHistoryRef,
+                        where('player', '==', username),
+                        limit(10) // Get several records to sort through
+                    );
+                    
+                    const snapshot = await getDocs(generalQuery);
                     
                     if (!snapshot.empty) {
-                        // Sort manually to avoid needing the orderBy index
+                        // Sort by timestamp (newest first)
                         const entries = snapshot.docs
                             .map(doc => doc.data())
                             .sort((a, b) => {
                                 const timeA = a.timestamp?.seconds || 0;
                                 const timeB = b.timestamp?.seconds || 0;
-                                return timeB - timeA; // descending order
+                                return timeB - timeA; // newest first
                             });
                         
                         if (entries.length > 0) {
                             const latestEntry = entries[0];
                             const eloChange = latestEntry.newElo - latestEntry.previousElo;
-                            changes.set(username, eloChange);
-                            console.log(`Got ELO change for ${username}: ${eloChange}`);
+                            
+                            // Override for admin_modification and promotion/demotion
+                            if (latestEntry.type === 'promotion') {
+                                changes.set(username, Math.abs(eloChange)); // Always positive
+                            } else if (latestEntry.type === 'demotion') {
+                                changes.set(username, -Math.abs(eloChange)); // Always negative
+                            } else {
+                                changes.set(username, eloChange);
+                            }
+                            
+                            console.log(`Got ELO change for ${username}: ${eloChange} (${latestEntry.type})`);
                         }
                     }
                 } catch (userError) {
                     console.warn(`Error fetching history for ${username}:`, userError);
-                    // Continue with next user
                 }
             }
             
