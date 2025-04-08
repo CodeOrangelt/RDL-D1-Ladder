@@ -110,6 +110,9 @@ class ProfileViewer {
             // Call displayMatchHistory only once
             await this.displayMatchHistory(username);
 
+            // Call displayPromotionHistory
+            await this.displayPromotionHistory(username);
+
             // Show edit controls if viewing own profile
             const currentUser = auth.currentUser;
             console.log('Checking edit permissions:', {
@@ -547,15 +550,23 @@ class ProfileViewer {
 
     async loadPlayerStats(username) {
         if (!username) return;
-    
+
         try {
             console.log('Loading stats for user:', username);
+            
+            // First get the player data to access ELO rating
+            const playersRef = collection(db, 'players');
+            const playerQuery = query(playersRef, where('username', '==', username));
+            const playerSnapshot = await getDocs(playerQuery);
+            const playerData = playerSnapshot.docs[0]?.data() || {};
+            
+            // Get match data
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
                 getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
             ]);
-    
+
             console.log('Matches found:', {
                 winnerMatches: winnerMatches.size,
                 loserMatches: loserMatches.size
@@ -594,15 +605,17 @@ class ProfileViewer {
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
     
-            // Update stats display
+            // Update elements object to include ELO
             const elements = {
                 'stats-matches': stats.totalMatches,
                 'stats-wins': stats.wins,
                 'stats-losses': stats.losses,
-                'stats-kd': stats.kda,  // Changed from stats-kda to stats-kd
-                'stats-winrate': `${stats.winRate}%`
+                'stats-kd': stats.kda,
+                'stats-winrate': `${stats.winRate}%`,
+                'stats-elo': playerData.eloRating || 'N/A'  // Add ELO rating
             };
-
+            
+            // Update the UI
             for (const [id, value] of Object.entries(elements)) {
                 const element = document.getElementById(id);
                 if (element) {
@@ -612,7 +625,7 @@ class ProfileViewer {
                     console.warn(`Element with id ${id} not found`);
                 }
             }
-    
+            
         } catch (error) {
             console.error('Error loading player stats:', error);
             this.setDefaultStats();
@@ -632,6 +645,159 @@ class ProfileViewer {
             const element = document.getElementById(id);
             if (element) {
                 element.textContent = value;
+            }
+        }
+    }
+
+    async displayPromotionHistory(username) {
+        try {
+            // Create container
+            const promotionContainer = document.createElement('div');
+            promotionContainer.className = 'match-history-container promotion-history-container';
+            
+            // Add loading state
+            promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
+            
+            // Find where to insert the container (after matchups container)
+            const matchupsContainer = document.querySelector('.match-history-container:nth-child(4)') || 
+                                    document.querySelector('.match-history-container:last-child');
+            if (matchupsContainer) {
+                matchupsContainer.parentNode.insertBefore(promotionContainer, matchupsContainer.nextSibling);
+            } else {
+                document.querySelector('.profile-container').parentNode.appendChild(promotionContainer);
+            }
+
+            // Fetch promotion history
+            const eloHistoryRef = collection(db, 'eloHistory');
+            const q = query(
+                eloHistoryRef,
+                where('player', '==', username),
+                where('type', 'in', ['promotion', 'demotion']),
+                orderBy('timestamp', 'desc')
+            );
+            
+            const snapshot = await getDocs(q);
+            
+            // Check if we have any promotion records
+            if (snapshot.empty) {
+                promotionContainer.innerHTML = `
+                    <h2>Rank History</h2>
+                    <p class="no-data">No promotion or demotion history available.</p>
+                `;
+                return;
+            }
+            
+            // Process the data
+            const promotionRecords = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+                date: doc.data().timestamp ? new Date(doc.data().timestamp.seconds * 1000) : new Date()
+            }));
+            
+            // Get current season number
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            // Build the HTML
+            promotionContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Rank History</h2>
+                <table class="match-history-table promotion-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Event</th>
+                            <th>Rank Achieved</th>
+                            <th>Previous ELO</th>
+                            <th>New ELO</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${promotionRecords.map(record => {
+                            const dateDisplay = record.date.toLocaleDateString();
+                            const isPromotion = record.type === 'promotion';
+                            const changeValue = record.newElo - record.previousElo;
+                            
+                            return `
+                                <tr class="${isPromotion ? 'promotion-row' : 'demotion-row'}">
+                                    <td>${dateDisplay}</td>
+                                    <td class="event-type">
+                                        <span class="event-badge ${isPromotion ? 'promotion' : 'demotion'}">
+                                            ${isPromotion ? 'PROMOTION' : 'DEMOTION'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="rank-name ${record.rankAchieved.toLowerCase()}">
+                                            ${record.rankAchieved}
+                                        </span>
+                                    </td>
+                                    <td>${record.previousElo}</td>
+                                    <td>${record.newElo}</td>
+                                    <td class="${isPromotion ? 'positive-change' : 'negative-change'}">
+                                        ${isPromotion ? '+' : ''}${changeValue}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            // Add CSS styles for the new elements
+            const styleEl = document.createElement('style');
+            styleEl.textContent = `
+                .promotion-table .event-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+                .promotion-table .event-badge.promotion {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+                .promotion-table .event-badge.demotion {
+                    background-color: #F44336;
+                    color: white;
+                }
+                .promotion-table .rank-name {
+                    font-weight: bold;
+                }
+                .promotion-table .rank-name.bronze {
+                    color: #CD7F32;
+                }
+                .promotion-table .rank-name.silver {
+                    color: #C0C0C0;
+                }
+                .promotion-table .rank-name.gold {
+                    color: #FFD700;
+                }
+                .promotion-table .rank-name.emerald {
+                    color: #50C878;
+                }
+                .promotion-table .positive-change {
+                    color: #4CAF50;
+                    font-weight: bold;
+                }
+                .promotion-table .negative-change {
+                    color: #F44336;
+                    font-weight: bold;
+                }
+            `;
+            document.head.appendChild(styleEl);
+            
+        } catch (error) {
+            console.error('Error loading promotion history:', error);
+            const container = document.querySelector('.promotion-history-container');
+            if (container) {
+                container.innerHTML = `
+                    <h2>Rank History</h2>
+                    <div class="error-message">
+                        Error loading promotion history. Please try refreshing the page.
+                    </div>
+                `;
             }
         }
     }
