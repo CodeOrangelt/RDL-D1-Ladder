@@ -46,21 +46,23 @@ export function assignDefaultEloRating(playerId, playerData) {
 
 export async function updateEloRatings(winnerId, loserId, matchId) {
     try {
-        console.log('Starting ELO update for winner:', winnerId, 'and loser:', loserId);
+        // Get batch instance
+        const batch = writeBatch(db);
         
-        // Get the current ratings and positions of both players
+        // Get player references
         const winnerRef = doc(db, 'players', winnerId);
         const loserRef = doc(db, 'players', loserId);
         
+        // Get current player data
         const [winnerDoc, loserDoc] = await Promise.all([
             getDoc(winnerRef),
             getDoc(loserRef)
         ]);
-
+        
         if (!winnerDoc.exists() || !loserDoc.exists()) {
-            throw new Error('One or both players not found in the database.');
+            throw new Error('One or both players not found');
         }
-
+        
         const winnerData = winnerDoc.data();
         const loserData = loserDoc.data();
         
@@ -74,30 +76,19 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             loserData.eloRating || 1200
         );
 
-        // Create batch for atomic updates
-        const batch = writeBatch(db);
-
-        // Default updates (only ELO and timestamp)
-        let winnerUpdates = {
-            eloRating: newWinnerRating,
-            lastMatchDate: serverTimestamp()
-        };
-
-        let loserUpdates = {
-            eloRating: newLoserRating,
-            lastMatchDate: serverTimestamp()
-        };
-
         // Handle position updating based on ladder rules
+        let newWinnerPosition = winnerPosition;
+        let newLoserPosition = loserPosition;
+
         if (winnerPosition > loserPosition) {
             // Winner was ranked lower than loser, so winner moves up
             console.log('Position swap needed - winner was lower ranked');
             
             // Winner takes loser's position
-            winnerUpdates.position = loserPosition;
+            newWinnerPosition = loserPosition;
             
             // Loser moves down one spot
-            loserUpdates.position = loserPosition + 1;
+            newLoserPosition = loserPosition + 1;
             
             // Move everyone else between the old positions down one spot
             const playersToUpdate = query(
@@ -118,15 +109,33 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         } else {
             // Winner was already ranked higher than loser, positions stay the same
             console.log('Winner already ranked higher - keeping positions');
-            winnerUpdates.position = winnerPosition;
-            loserUpdates.position = loserPosition;
         }
 
-        // Add updates to batch
-        batch.update(winnerRef, winnerUpdates);
-        batch.update(loserRef, loserUpdates);
-
-        // Record ELO history first
+        // Use ONLY the fields specifically allowed in the security rules
+        const winnerUpdate = {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            position: newWinnerPosition,
+            lastMatchId: matchId
+        };
+        
+        const loserUpdate = {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            position: newLoserPosition,
+            lastMatchId: matchId
+        };
+        
+        // Update the documents with the limited field set
+        batch.update(winnerRef, winnerUpdate);
+        batch.update(loserRef, loserUpdate);
+        
+        // Commit the batch
+        await batch.commit();
+        
+        console.log('ELO ratings updated successfully');
+        
+        // Create ELO history entries
         await Promise.all([
             recordEloChange({
                 playerId: winnerId,
@@ -135,8 +144,8 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 opponentId: loserId,
                 matchResult: 'win',
                 previousPosition: winnerPosition,
-                newPosition: winnerUpdates.position,
-                isPromotion: winnerUpdates.position < winnerPosition,
+                newPosition: newWinnerPosition,
+                isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
                 timestamp: serverTimestamp()
             }),
@@ -147,22 +156,22 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 opponentId: winnerId,
                 matchResult: 'loss',
                 previousPosition: loserPosition,
-                newPosition: loserUpdates.position,
-                isDemotion: loserUpdates.position > loserPosition,
+                newPosition: newLoserPosition,
+                isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
                 timestamp: serverTimestamp()
             })
         ]);
 
         // Record promotions/demotions to promotionHistory
-        if (winnerUpdates.position < winnerPosition) {
+        if (newWinnerPosition < winnerPosition) {
             await addDoc(collection(db, 'promotionHistory'), {
                 username: winnerData.username,
                 userId: winnerId,
                 previousElo: winnerData.eloRating,
                 newElo: newWinnerRating,
                 previousPosition: winnerPosition,
-                newPosition: winnerUpdates.position,
+                newPosition: newWinnerPosition,
                 timestamp: serverTimestamp(),
                 type: 'promotion',
                 promotedBy: 'System',
@@ -170,23 +179,20 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             });
         }
 
-        if (loserUpdates.position > loserPosition) {
+        if (newLoserPosition > loserPosition) {
             await addDoc(collection(db, 'promotionHistory'), {
                 username: loserData.username,
                 userId: loserId,
                 previousElo: loserData.eloRating,
                 newElo: newLoserRating,
                 previousPosition: loserPosition,
-                newPosition: loserUpdates.position,
+                newPosition: newLoserPosition,
                 timestamp: serverTimestamp(),
                 type: 'demotion',
                 promotedBy: 'System',
                 matchId: matchId
             });
         }
-
-        // Commit batch after history is recorded
-        await batch.commit();
 
         console.log('ELO ratings and positions updated successfully');
         return true;

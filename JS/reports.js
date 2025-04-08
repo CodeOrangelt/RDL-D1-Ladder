@@ -517,6 +517,13 @@ function autoFillReportForm(reportData) {
                             const winnerSuicides = document.getElementById('winner-suicides').value || "0";
                             const winnerComment = document.getElementById('winner-comment').value || "";
                             
+                            // Log the current user for debugging
+                            console.log("Current user info:", {
+                                uid: auth.currentUser?.uid,
+                                email: auth.currentUser?.email,
+                                isAdmin: auth.currentUser?.email === 'admin@ladder.com' || auth.currentUser?.email === 'brian2af@outlook.com'
+                            });
+                            
                             const pendingCollection = gameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
                             const approvedCollection = gameMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
                             
