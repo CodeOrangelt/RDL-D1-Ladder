@@ -14,7 +14,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
-import { PromotionHandler } from './promotion-handler.js';
+import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
 
 // ladderalgorithm.js
@@ -289,7 +289,7 @@ async function updatePlayerElo(userId, oldElo, newElo) {
     });
 
     // Check for promotion
-    await PromotionHandler.checkPromotion(userId, newElo, oldElo);
+    await checkAndRecordPromotion(userId, newElo, oldElo);
 }
 
 async function updatePlayerStats(playerId, matchData, isWinner) {
