@@ -462,23 +462,14 @@ class ProfileViewer {
         return querySnapshot.docs[0]?.data();
     }
 
-    // Add debug logging to getPlayerMatches to check what's happening
+    // Fix the getPlayerMatches method
     async getPlayerMatches(username) {
         try {
             console.log('Fetching matches for:', username);
             
             const approvedMatchesRef = collection(db, 'approvedMatches');
-            const q = query(
-                approvedMatchesRef,
-                where(
-                    'players', 
-                    'array-contains', 
-                    username
-                ),
-                orderBy('createdAt', 'desc')
-            );
             
-            // Handle legacy matches that don't use players array
+            // Use separate queries instead of compound query with array-contains + orderBy
             const legacyQuery1 = query(
                 approvedMatchesRef,
                 where('winnerUsername', '==', username),
@@ -491,14 +482,12 @@ class ProfileViewer {
                 orderBy('createdAt', 'desc')
             );
             
-            const [snapshot, legacySnapshot1, legacySnapshot2] = await Promise.all([
-                getDocs(q),
+            const [legacySnapshot1, legacySnapshot2] = await Promise.all([
                 getDocs(legacyQuery1),
                 getDocs(legacyQuery2)
             ]);
             
             console.log('Match counts:', {
-                playersArray: snapshot.size,
                 winnerMatches: legacySnapshot1.size,
                 loserMatches: legacySnapshot2.size
             });
@@ -519,7 +508,6 @@ class ProfileViewer {
                 });
             };
             
-            processSnapshot(snapshot);
             processSnapshot(legacySnapshot1);
             processSnapshot(legacySnapshot2);
             
@@ -815,6 +803,33 @@ class ProfileViewer {
             console.error('Error loading player data:', error);
             this.showError(`Error: ${error.message}`);
             return null;
+        }
+    }
+
+    // Add this method to the ProfileViewer class
+    setupEditProfile() {
+        // Get edit controls
+        const editBtn = document.getElementById('edit-profile');
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const profileForm = document.getElementById('profile-form');
+
+        // Remove any existing event listeners
+        if (editBtn) {
+            const newEditBtn = editBtn.cloneNode(true);
+            editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+            newEditBtn.addEventListener('click', () => this.toggleEditMode(true));
+        }
+
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            newCancelBtn.addEventListener('click', () => this.toggleEditMode(false));
+        }
+
+        if (profileForm) {
+            const newProfileForm = profileForm.cloneNode(true);
+            profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+            newProfileForm.addEventListener('submit', (e) => this.handleSubmit(e));
         }
     }
 }
