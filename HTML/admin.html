@@ -15,7 +15,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from './firebase-config.js';
+        import { firebaseConfig } from '../JS/firebase-config.js';
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -28,6 +28,9 @@
     </script>
 </head>
 <body>
+    <!-- Add promotion banner container -->
+    <div id="promotion-banner-container"></div>
+    
     <div id="nav-placeholder"></div>
     <main>
         <div class="container">
@@ -41,16 +44,13 @@
                 <button id="reset-season" class="danger-button">Reset Season</button>
                 <button id="promote-player" class="danger-button">Promote Player</button>
                 <button id="demote-player" class="danger-button">Demote Player</button>
-                <!-- Add the test report button here -->
                 <button id="test-report-btn" class="collapse-btn" data-target="test-report-section">Test Report</button>
-                <!-- Add this button where your other admin controls are -->
                 <button id="set-elo-player" class="admin-button">Set Player ELO</button>
-                <!-- Add this button with your other admin buttons -->
                 <button id="archive-season" class="admin-button">Archive Season</button>
-                <!-- Add this button with your other admin buttons -->
                 <button id="clear-promotion-cache" class="admin-button">Clear Promotion Banner Cache</button>
             </div>
-            <!-- Add these dialog elements right after your admin-actions div -->
+            
+            <!-- Dialog elements for promote/demote actions -->
             <div id="promote-dialog" class="modal">
                 <div class="modal-content">
                     <h3>Promote Player</h3>
@@ -62,173 +62,163 @@
                 </div>
             </div>
 
-            <div id="demote-dialog" class="admin-dialog">
-                <div class="dialog-content">
-                    <h2>Demote Player</h2>
-                    <label for="demote-username-1">Username:</label>
+            <div id="demote-dialog" class="modal">
+                <div class="modal-content">
+                    <h3>Demote Player</h3>
                     <input type="text" id="demote-username-1" placeholder="Enter username" class="admin-input">
-                    <div class="dialog-buttons">
-                        <button id="confirm-demote" class="admin-button">Confirm</button>
-                        <button id="cancel-demote" class="admin-button">Cancel</button>
+                    <div class="button-group">
+                        <button id="confirm-demote" class="danger-button">Demote</button>
+                        <button id="cancel-demote" class="secondary-button">Cancel</button>
                     </div>
                 </div>
             </div>
+            
+            <!-- ELO ratings section -->
             <div id="elo-ratings" style="display: none;">
                 <h2>Player ELO Ratings</h2>
                 <table id="elo-table">
                     <thead>
                         <tr>
                             <th>Username</th>
-                            <th>ELO Rating</th>th>ELO Rating</th>
-                        </tr>>
-                    </thead>>
+                            <th>ELO Rating</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <!-- ELO ratings will be populated here by JavaScript --> ELO ratings will be populated here by JavaScript -->
-                    </tbody>ody>
-                </table>table>
+                        <!-- ELO ratings will be populated here by JavaScript -->
+                    </tbody>
+                </table>
             </div>
-            <div id="elo-history" style="display: none;">splay: none;">
+            
+            <!-- ELO history section -->
+            <div id="elo-history" style="display: none;">
                 <h2>ELO Rating History</h2>
-                <table id="elo-history-table">  <!-- Changed ID here -->elo-history-table">  <!-- Changed ID here -->
+                <table id="elo-history-table">
                     <thead>
                         <tr>
                             <th>Time</th>
                             <th>Player</th>
-                            <th>Previous ELO</th></th>
-                            <th>New ELO</th>>
+                            <th>Previous ELO</th>
+                            <th>New ELO</th>
                             <th>Change</th>
-                            <th>Opponent</th>h>
-                            <th>Result</th>th>Result</th>
-                        </tr>>
-                    </thead>>
+                            <th>Opponent</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <!-- ELO history will be populated here --> ELO history will be populated here -->
-                    </tbody>ody>
+                        <!-- ELO history will be populated here -->
+                    </tbody>
                 </table>
-                <div id="pagination"></div>iv id="pagination"></div>
+                <div id="pagination"></div>
             </div>
-            <div id="template-ladder" style="display: none;">yle="display: none;">
+            
+            <!-- Template ladder section -->
+            <div id="template-ladder" style="display: none;">
                 <h2>Template Ladder</h2>
-                <table id="template-table">template-table">
+                <table id="template-table">
                     <thead>
                         <tr>
                             <th>Position</th>
-                            <th>Username</th>th>Username</th>
-                        </tr>>
-                    </thead>>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <!-- Template ladder will be populated here --> Template ladder will be populated here -->
-                    </tbody>ody>
-                </table>table>
+                        <!-- Template ladder will be populated here -->
+                    </tbody>
+                </table>
             </div>
-            <div id="manage-players-section" class="admin-section">lass="admin-section">
+            
+            <!-- Manage players section -->
+            <div id="manage-players-section" class="admin-section">
                 <h2>Manage Ladder Players</h2>
                 <div class="players-table-container">
-                    <table id="players-table" class="admin-table">players-table" class="admin-table">
+                    <table id="players-table" class="admin-table">
                         <thead>
                             <tr>
                                 <th>Position</th>
                                 <th>Username</th>
-                                <th>ELO Rating</th>th>
-                                <th>Actions</th>th>Actions</th>
-                            </tr>>
+                                <th>ELO Rating</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
-                        <tbody></tbody>dy></tbody>
-                    </table>table>
+                        <tbody></tbody>
+                    </table>
                 </div>
                 <div class="form-group">
                     <input type="text" id="new-player-username" placeholder="Enter username" class="admin-input">
-                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000" class="admin-input">ting" min="0" max="3000" class="admin-input">
-                    <button id="add-player-btn" class="action-btn">Add Player</button>utton id="add-player-btn" class="action-btn">Add Player</button>
-                </div>div>
-            </div>
-            <div class="admin-section">
-                <div id="promote-dialog" class="confirmation-dialog" style="display: none;">ass="confirmation-dialog" style="display: none;">
-                    <h3>Promote Player</h3>
-                    <input type="text" id="promote-username-2" placeholder="Enter username" class="admin-input">mote-username-2" placeholder="Enter username" class="admin-input">
-                    <div class="button-group">
-                        <button id="confirm-promote" class="danger-button">Promote</button>
-                        <button id="cancel-promote" class="secondary-button">Cancel</button>utton id="cancel-promote" class="secondary-button">Cancel</button>
-                    </div>div>
+                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000" class="admin-input">
+                    <button id="add-player-btn" class="action-btn">Add Player</button>
                 </div>
-                <div id="reset-confirmation" class="confirmation-dialog">
-                    <p>⚠️ Warning: This will reset all player rankings and start a new season.</p>kings and start a new season.</p>
-                    <p>Please enter your password to confirm:</p>
-                    <input type="password" id="reset-password" class="password-input" placeholder="Enter your password">"reset-password" class="password-input" placeholder="Enter your password">
-                    <div class="button-group">
-                        <button id="confirm-reset" class="danger-button">Reset Season</button>ton>
-                        <button id="cancel-reset" class="secondary-button">Cancel</button>utton id="cancel-reset" class="secondary-button">Cancel</button>
-                    </div>div>
+            </div>
+            
+            <!-- Reset confirmation dialog -->
+            <div id="reset-confirmation" class="confirmation-dialog">
+                <p>⚠️ Warning: This will reset all player rankings and start a new season.</p>
+                <p>Please enter your password to confirm:</p>
+                <input type="password" id="reset-password" class="password-input" placeholder="Enter your password">
+                <div class="button-group">
+                    <button id="confirm-reset" class="danger-button">Reset Season</button>
+                    <button id="cancel-reset" class="secondary-button">Cancel</button>
                 </div>
-                <div id="demote-dialog" class="confirmation-dialog" style="display: none;">ass="confirmation-dialog" style="display: none;">
-                    <h3>Demote Player</h3>
-                    <input type="text" id="demote-username-2" placeholder="Enter username" class="admin-input">ote-username-2" placeholder="Enter username" class="admin-input">
-                    <div class="button-group">
-                        <button id="confirm-demote" class="danger-button">Demote</button>
-                        <button id="cancel-demote" class="secondary-button">Cancel</button>utton id="cancel-demote" class="secondary-button">Cancel</button>
-                    </div>div>
-                </div>div>
             </div>
-            <div class="admin-section">
-                <button id="test-report-btn" class="admin-button">Create Test Report</button>utton id="test-report-btn" class="admin-button">Create Test Report</button>
-            </div>
-            <!-- Add the collapsible section after your other sections -->
-            <div id="test-report-section" class="admin-section" style="display: none;">lass="admin-section" style="display: none;">
-                <h2>Create Test Report</h2>h2>
+            
+            <!-- Test report section -->
+            <div id="test-report-section" class="admin-section" style="display: none;">
+                <h2>Create Test Report</h2>
                 <div class="form-group">
-                    <button id="create-test-report" class="action-btn">Generate Test Report for Test5</button>utton id="create-test-report" class="action-btn">Generate Test Report for Test5</button>
-                </div>div>
+                    <button id="create-test-report" class="action-btn">Generate Test Report for Test5</button>
+                </div>
             </div>
-            <!-- Add this to your admin controls section -->ction -->
-            <div id="set-elo-dialog" class="modal">"modal">
+            
+            <!-- Set ELO dialog -->
+            <div id="set-elo-dialog" class="modal">
                 <div class="modal-content">
                     <h2>Set Player ELO</h2>
                     <div class="input-group">
                         <input type="text" id="set-elo-username" placeholder="Username">
-                        <input type="number" id="set-elo-value" placeholder="New ELO Value">nput type="number" id="set-elo-value" placeholder="New ELO Value">
+                        <input type="number" id="set-elo-value" placeholder="New ELO Value">
                     </div>
                     <div class="button-group">
-                        <button id="confirm-set-elo">Update ELO</button>tton>
-                        <button id="cancel-set-elo">Cancel</button>utton id="cancel-set-elo">Cancel</button>
-                    </div>div>
-                </div>div>
+                        <button id="confirm-set-elo">Update ELO</button>
+                        <button id="cancel-set-elo">Cancel</button>
+                    </div>
+                </div>
             </div>
-            <!-- Add this with your other admin dialogs -->logs -->
-            <div id="archive-dialog" class="modal">"modal">
+            
+            <!-- Archive dialog -->
+            <div id="archive-dialog" class="modal">
                 <div class="modal-content">
                     <h2>Archive Season 0</h2>
-                    <p>This will copy all current player data to the season0 collection.</p>player data to the season0 collection.</p>
+                    <p>This will copy all current player data to the season0 collection.</p>
                     <div class="button-container">
-                        <button id="confirm-archive">Archive</button>n>
-                        <button id="cancel-archive">Cancel</button>utton id="cancel-archive">Cancel</button>
+                        <button id="confirm-archive">Archive</button>
+                        <button id="cancel-archive">Cancel</button>
                     </div>
-                    <div id="archive-status"></div>iv id="archive-status"></div>
-                </div>div>
-            </div>div>
-        </div>iv>
+                    <div id="archive-status"></div>
+                </div>
+            </div>
+        </div>
     </main>
-    <div id="footer-placeholder"></div>    <div id="footer-placeholder"></div>
+    <div id="footer-placeholder"></div>
 
-    <!-- Make sure these are loaded before adminbackend.js -->
-    <link rel="stylesheet" href="../CSS/footer.css">
+    <!-- Scripts -->
     <script type="module" src="../JS/firebase-config.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/pagination.js"></script>
     <script type="module" src="../JS/adminbackend.js"></script>
     <script type="module" src="../JS/ladderalgorithm.js"></script>
+    <script type="module" src="../JS/promotions.js"></script>
 
     <script>
         Promise.all([
             fetch('../HTML/nav.html').then(response => response.text()),
-            fetch('../HTML/footer.html').then(response => response.text())n(response => response.text())
+            fetch('../HTML/footer.html').then(response => response.text())
         ]).then(([navData, footerData]) => {
             document.getElementById('nav-placeholder').innerHTML = navData;
-            document.getElementById('footer-placeholder').innerHTML = footerData;mentById('footer-placeholder').innerHTML = footerData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
         }).catch(error => {
-            console.error('Error loading nav/footer:', error); console.error('Error loading nav/footer:', error);
+            console.error('Error loading nav/footer:', error);
         });
-    </script>cript>
+    </script>
 </body>
-
-</html></html>
+</html>
