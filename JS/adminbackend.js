@@ -635,51 +635,57 @@ async function demotePlayer(username) {
     }
 }
 
-// Add setup for demote button
+// Replace the setupDemotePlayerButton function with this fixed version
 function setupDemotePlayerButton() {
     const demoteBtn = document.getElementById('demote-player');
-    const demoteDialog = document.getElementById('demote-dialog');
-    const confirmDemoteBtn = document.getElementById('confirm-demote');
-    const cancelDemoteBtn = document.getElementById('cancel-demote');
-    const demoteUsernameInput = document.getElementById('demote-username-1');
-
-    if (!demoteBtn || !demoteDialog || !confirmDemoteBtn || !cancelDemoteBtn || !demoteUsernameInput) {
-        console.error('Missing demote dialog elements');
-        return;
+    if (!demoteBtn) return;
+    
+    // Clean up old event listeners by cloning and replacing
+    const newDemoteBtn = demoteBtn.cloneNode(true);
+    demoteBtn.parentNode.replaceChild(newDemoteBtn, demoteBtn);
+    
+    // Add fresh event listener to the new button
+    newDemoteBtn.addEventListener('click', () => {
+        const demoteDialog = document.getElementById('demote-dialog');
+        if (demoteDialog) demoteDialog.style.display = 'block';
+    });
+    
+    // Also replace the confirm button to prevent duplicate listeners
+    const confirmBtn = document.getElementById('confirm-demote');
+    if (confirmBtn) {
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        newConfirmBtn.addEventListener('click', async () => {
+            const username = document.getElementById('demote-username-1').value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await demotePlayer(username);
+                document.getElementById('demote-dialog').style.display = 'none';
+                document.getElementById('demote-username-1').value = '';
+            } catch (error) {
+                console.error('Error demoting player:', error);
+                alert('Failed to demote player: ' + error.message);
+            }
+        });
     }
-
-    demoteBtn.addEventListener('click', () => {
-        demoteDialog.style.display = 'block';
-    });
-
-    cancelDemoteBtn.addEventListener('click', () => {
-        demoteDialog.style.display = 'none';
-        demoteUsernameInput.value = '';
-    });
-
-    // Close modal if clicked outside
-    demoteDialog.addEventListener('click', (e) => {
-        if (e.target === demoteDialog) {
-            demoteDialog.style.display = 'none';
-            demoteUsernameInput.value = '';
-        }
-    });
-
-    confirmDemoteBtn.addEventListener('click', async () => {
-        const username = demoteUsernameInput.value.trim();
-        if (!username) {
-            alert('Please enter a username');
-            return;
-        }
-        try {
-            await demotePlayer(username);
-            demoteDialog.style.display = 'none';
-            demoteUsernameInput.value = '';
-        } catch (error) {
-            console.error('Error demoting player:', error);
-            alert('Failed to demote player: ' + error.message);
-        }
-    });
+    
+    // Replace cancel button too
+    const cancelBtn = document.getElementById('cancel-demote');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', () => {
+            const demoteDialog = document.getElementById('demote-dialog');
+            if (demoteDialog) demoteDialog.style.display = 'none';
+            document.getElementById('demote-username-1').value = '';
+        });
+    }
 }
 
 // Add to your setupManagePlayersSection function or where other admin buttons are initialized
