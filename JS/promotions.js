@@ -280,17 +280,15 @@ class PromotionManager {
     }
     
     /**
-     * Check if a player has been promoted based on ELO change
+     * Check if a player has been promoted or demoted based on ELO change
      */
     async checkAndRecordPromotion(userId, newElo, oldElo) {
         try {
-            // Find which rank threshold was crossed
-            const rankCrossed = this.RANKS.find(rank => 
-                oldElo < rank.threshold && newElo >= rank.threshold
-            );
-            
-            if (!rankCrossed) return null;
-            
+            // Don't process if ELO hasn't changed or user ID is missing
+            if (newElo === oldElo || !userId) {
+                return null;
+            }
+
             // Get user data
             const userDoc = await getDoc(doc(db, 'players', userId));
             if (!userDoc.exists()) {
@@ -301,31 +299,75 @@ class PromotionManager {
             const userData = userDoc.data();
             const username = userData.username || 'Unknown Player';
             
-            // Record in eloHistory (for banner display)
-            await addDoc(collection(db, 'eloHistory'), {
-                player: username,
-                type: 'promotion',
-                rankAchieved: rankCrossed.name,
-                timestamp: serverTimestamp(),
-                previousElo: oldElo,
-                newElo: newElo
-            });
+            // Check if this is a promotion or demotion
+            let type = null;
+            let rankAchieved = null;
+            let rankName = null;
             
-            // Record in promotionHistory (for historical tracking)
-            await addDoc(collection(db, 'promotionHistory'), {
-                username: username,
-                rank: rankCrossed.name,
-                timestamp: serverTimestamp(),
-                userId: userId,
-                previousElo: oldElo,
-                newElo: newElo,
-                type: 'promotion'
-            });
+            if (newElo > oldElo) {
+                // Promotion check - find which rank threshold was crossed going up
+                const rankCrossed = this.RANKS.find(rank => 
+                    oldElo < rank.threshold && newElo >= rank.threshold
+                );
+                
+                if (rankCrossed) {
+                    type = 'promotion';
+                    rankAchieved = rankCrossed.name;
+                    rankName = rankCrossed.name;
+                }
+            } else {
+                // Demotion check - find which rank threshold was crossed going down
+                // Sort ranks by threshold ascending for demotion check
+                const sortedRanks = [...this.RANKS].sort((a, b) => a.threshold - b.threshold);
+                
+                const rankCrossed = sortedRanks.find(rank => 
+                    oldElo >= rank.threshold && newElo < rank.threshold
+                );
+                
+                if (rankCrossed) {
+                    type = 'demotion';
+                    // For demotion, find the rank they've been demoted to
+                    const newRankIndex = sortedRanks.findIndex(r => r === rankCrossed) - 1;
+                    rankName = newRankIndex >= 0 ? sortedRanks[newRankIndex].name : 'Unranked';
+                    rankAchieved = rankName;
+                }
+            }
             
-            console.log(`Recorded promotion for ${username} to ${rankCrossed.name}`);
-            return rankCrossed.name;
+            // If we detected a rank change, record it
+            if (type && rankAchieved) {
+                console.log(`Recording ${type} for ${username}: ${oldElo} → ${newElo} (${rankAchieved})`);
+                
+                // Record in eloHistory (for banner display)
+                await addDoc(collection(db, 'eloHistory'), {
+                    player: username,
+                    playerUsername: username, // Extra field for compatibility
+                    type: type,
+                    rankAchieved: rankAchieved,
+                    timestamp: serverTimestamp(),
+                    previousElo: oldElo,
+                    newElo: newElo,
+                    change: newElo - oldElo
+                });
+                
+                // Record in promotionHistory (for historical tracking)
+                await addDoc(collection(db, 'promotionHistory'), {
+                    username: username,
+                    rank: rankAchieved,
+                    timestamp: serverTimestamp(),
+                    userId: userId,
+                    previousElo: oldElo,
+                    newElo: newElo,
+                    type: type,
+                    previousRank: this.getRankName(oldElo),
+                    newRank: this.getRankName(newElo)
+                });
+                
+                return rankName;
+            }
+            
+            return null;
         } catch (error) {
-            console.error('Error in promotion recording:', error);
+            console.error('Error in promotion/demotion recording:', error);
             return null;
         }
     }
