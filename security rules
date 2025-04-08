@@ -2,8 +2,8 @@ rules_version = '2';
 
 function isAdmin() {
   let adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
-  return request.auth != null && 
-    adminEmails.hasAny([request.auth.token.email.lower()]);
+  let userEmail = request.auth.token.email.lower();
+  return request.auth != null && adminEmails.hasAny([userEmail]);
 }
 
 function isVerifiedUser() {
@@ -18,28 +18,26 @@ function isAuthenticated() {
   return request.auth != null;
 }
 
+// Update the isMatchParticipant function
 function isMatchParticipant(matchData) {
   return request.auth != null && (
     matchData.winnerEmail == request.auth.token.email ||
     matchData.loserEmail == request.auth.token.email ||
-    // Use safer approach with exists checks to prevent errors
-    (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
-     matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
-    (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
-     matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
-    // Check D2 players collection
-    (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
-     matchData.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
-    (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
-     matchData.loserUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username)
+    matchData.winnerId == request.auth.uid ||
+    matchData.loserId == request.auth.uid ||
+    (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && (
+      matchData.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+      matchData.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+    ))
   );
 }
 
+// Update isValidEloUpdate to be more permissive
 function isValidEloUpdate(currentData, newData) {
   return newData.eloRating is number &&
          currentData.eloRating is number &&
-         (newData.eloRating - currentData.eloRating) <= 32 &&
-         (newData.eloRating - currentData.eloRating) >= -32;
+         (newData.eloRating - currentData.eloRating) <= 100 && // Higher limit for big upsets
+         (newData.eloRating - currentData.eloRating) >= -100;  // Higher limit for big upsets
 }
 
 // Update isValidPromotion and isValidDemotion to be more permissive
@@ -60,22 +58,24 @@ service cloud.firestore {
     //   allow read: if true;
     // }
     
-    // Players collection - Used in ladderalgorithm.js and ladder.js
+    // Update the players collection rules to be more permissive
     match /players/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if isAdmin() || 
-                   request.auth.uid == playerId || 
-                   // Allow ELO updates from matches
-                   (request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastMatchDate', 'position']) &&
-                    isValidEloUpdate(resource.data, request.resource.data) &&
-                    isMatchParticipant(resource.data)) ||
-                   // Allow position updates for any player during ladder reordering
-                   (request.resource.data.diff(resource.data).affectedKeys().hasAll(['position']) &&
-                    (request.resource.data.diff(resource.data).affectedKeys().size() <= 2)) ||
-                   // Allow updates with position among other fields if admin
-                   (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['eloRating', 'lastPromotedAt', 'promotedBy', 'position']));
+      allow update: if 
+        isAdmin() ||
+        request.auth.uid == playerId ||
+        // Allow ELO updates from matches with more permissive checks
+        (
+          request.auth != null &&
+          (
+            request.resource.data.diff(resource.data).affectedKeys()
+            .hasAll(['eloRating', 'lastMatchDate', 'position']) ||
+            // Also allow updates that only modify these fields
+            request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId'])
+          )
+        );
       allow delete: if isAdmin();
     }
     
@@ -197,25 +197,36 @@ service cloud.firestore {
     }
 
     // Match Management - Used in reports.js and ladderalgorithm.js
-    // FIXED: Removed duplicate rule for approvedMatches
     match /pendingMatches/{matchId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && (
-        isAdmin() || 
-        resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
-        resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+        isAdmin() ||
+        request.auth.uid == resource.data.loserId ||
+        request.auth.uid == resource.data.winnerId ||
+        (
+          exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
+          (
+            resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
+            resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+          )
+        )
       );
     }
 
+    // Update approvedMatches rules
     match /approvedMatches/{matchId} {
       allow read: if true;
+      // Allow create for match participants and admins with more permissive checks
       allow create: if request.auth != null && (
-        isAdmin() || 
-        request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username ||
-        request.resource.data.loserUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username
+        isAdmin() ||
+        request.auth.uid == request.resource.data.winnerId ||
+        request.auth.uid == request.resource.data.loserId ||
+        (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
+         (request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username))
       );
-      allow update, delete: if request.auth != null && isAdmin();
+      // Allow updates only for admins
+      allow update, delete: if isAdmin();
     }
 
     // D2 Match Management
@@ -289,29 +300,13 @@ service cloud.firestore {
       allow delete: if false;  // Keep match history immutable
     }
 
+    // Add rule for eloHistory
     match /eloHistory/{historyId} {
       allow read: if true;
-      allow create: if request.auth != null && 
-                   (
-                     // Regular match history
-                     (request.resource.data.type == 'match' &&
-                      request.resource.data.keys().hasAll([
-                        'type', 'player', 'opponent',
-                        'previousElo', 'newElo', 'change',
-                        'matchResult', 'previousPosition', 'newPosition',
-                        'timestamp'
-                      ])) ||
-                     // Allow promotion/demotion history
-                     ((request.resource.data.type in ['promotion', 'demotion']) &&
-                      request.resource.data.keys().hasAll([
-                        'type', 'player', 'previousElo', 'newElo',
-                        'timestamp', 'rankAchieved'
-                      ]))
-                   );
-      allow update, delete: if false;  // Keep history immutable
+      allow create: if request.auth != null;
+      allow update, delete: if false;
     }
 
-    // RetroTracker - Used in whosplaying.js
     match /retroTracker/{docId} {
       allow read: if true;
       allow create: if request.auth != null && 
