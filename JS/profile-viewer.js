@@ -658,11 +658,10 @@ class ProfileViewer {
             // Add loading state
             promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
             
-            // Find where to insert the container (after matchups container)
-            const matchupsContainer = document.querySelector('.match-history-container:nth-child(4)') || 
-                                    document.querySelector('.match-history-container:last-child');
-            if (matchupsContainer) {
-                matchupsContainer.parentNode.insertBefore(promotionContainer, matchupsContainer.nextSibling);
+            // Insert right after the match history container (which is the first match-history-container)
+            const matchHistoryContainer = document.querySelector('.match-history-container:first-child');
+            if (matchHistoryContainer) {
+                matchHistoryContainer.parentNode.insertBefore(promotionContainer, matchHistoryContainer.nextSibling);
             } else {
                 document.querySelector('.profile-container').parentNode.appendChild(promotionContainer);
             }
