@@ -390,7 +390,7 @@ async function updateLadderDisplay(ladderData) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Replace the getPlayersLastEloChanges function with this improved version
+// Replace the getPlayersLastEloChanges function with this optimized version
 
 async function getPlayersLastEloChanges(usernames) {
     const changes = new Map();
@@ -400,77 +400,74 @@ async function getPlayersLastEloChanges(usernames) {
         usernames.forEach(username => changes.set(username, 0));
         
         const eloHistoryRef = collection(db, 'eloHistory');
+        const eloChangesCache = new Map(); // Local cache for this function run
         
-        // Process users in small batches to avoid overloading Firestore
+        // Process in smaller batches to avoid rate limits
         const batchSize = 5;
+        
         for (let i = 0; i < usernames.length; i += batchSize) {
             const batchUsernames = usernames.slice(i, i + batchSize);
             
-            for (const username of batchUsernames) {
+            // Process each username independently
+            const batchPromises = batchUsernames.map(async (username) => {
                 try {
-                    // Query specifically for promotion events first
-                    const promotionQuery = query(
+                    // Get the most recent entries of any type for this user
+                    const historyQuery = query(
                         eloHistoryRef,
                         where('player', '==', username),
-                        where('type', '==', 'promotion'),
-                        limit(1)
+                        limit(5) // Get a few of the most recent entries
                     );
                     
-                    const promotionSnapshot = await getDocs(promotionQuery);
-                    
-                    // If we found a promotion, use it
-                    if (!promotionSnapshot.empty) {
-                        const promotionData = promotionSnapshot.docs[0].data();
-                        const eloChange = promotionData.newElo - promotionData.previousElo;
-                        // Ensure promotion always shows as positive
-                        changes.set(username, Math.abs(eloChange));
-                        console.log(`Found promotion for ${username}: +${eloChange}`);
-                        continue; // Skip to next player
-                    }
-                    
-                    // If no promotion, look for any type of ELO change
-                    const generalQuery = query(
-                        eloHistoryRef,
-                        where('player', '==', username),
-                        limit(10) // Get several records to sort through
-                    );
-                    
-                    const snapshot = await getDocs(generalQuery);
+                    const snapshot = await getDocs(historyQuery);
                     
                     if (!snapshot.empty) {
-                        // Sort by timestamp (newest first)
+                        // Sort by timestamp manually (newest first)
                         const entries = snapshot.docs
                             .map(doc => doc.data())
                             .sort((a, b) => {
                                 const timeA = a.timestamp?.seconds || 0;
                                 const timeB = b.timestamp?.seconds || 0;
-                                return timeB - timeA; // newest first
+                                return timeB - timeA;
                             });
                         
+                        // Get the most recent entry
                         if (entries.length > 0) {
                             const latestEntry = entries[0];
                             const eloChange = latestEntry.newElo - latestEntry.previousElo;
                             
-                            // Override for admin_modification and promotion/demotion
+                            // Store the actual ELO change based on entry type
                             if (latestEntry.type === 'promotion') {
                                 changes.set(username, Math.abs(eloChange)); // Always positive
                             } else if (latestEntry.type === 'demotion') {
                                 changes.set(username, -Math.abs(eloChange)); // Always negative
+                            } else if (latestEntry.type === 'match') {
+                                // For matches, use the actual ELO change
+                                changes.set(username, eloChange);
                             } else {
+                                // For other types, use the calculated difference
                                 changes.set(username, eloChange);
                             }
                             
-                            console.log(`Got ELO change for ${username}: ${eloChange} (${latestEntry.type})`);
+                            // Cache the result
+                            eloChangesCache.set(username, {
+                                change: changes.get(username),
+                                timestamp: latestEntry.timestamp?.seconds || 0
+                            });
+                            
+                            console.log(`${username}: ${changes.get(username)} (${latestEntry.type})`);
                         }
                     }
-                } catch (userError) {
-                    console.warn(`Error fetching history for ${username}:`, userError);
+                } catch (err) {
+                    console.warn(`Error processing ${username}:`, err);
                 }
-            }
+            });
             
-            // Small delay between batches to prevent rate limiting
+            // Wait for all promises in this batch
+            await Promise.all(batchPromises);
+            
+            // Add a small delay between batches
             if (i + batchSize < usernames.length) {
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(r => setTimeout(r, 50));
             }
         }
     } catch (error) {
