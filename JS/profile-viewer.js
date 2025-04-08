@@ -39,6 +39,7 @@ class ProfileViewer {
         profileForm?.addEventListener('submit', (e) => this.handleSubmit(e));
     }
 
+    // Fix the init method to properly load and display data
     async init(username) {
         if (!username) return;
         
@@ -48,20 +49,18 @@ class ProfileViewer {
             
             // Get matches for this player
             const matches = await this.getPlayerMatches(username);
+            console.log('Retrieved matches:', matches.length); // Debug output
             
-            // Create containers in the correct order
+            // Create all containers FIRST to ensure proper DOM structure
             const mainContainer = document.querySelector('.content');
             
-            // 1. Create Rank History first
-            await this.displayPromotionHistory(username);
+            // Create all containers with loading states
+            this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
             
-            // 2. Then Match Statistics
+            // Now populate them with data - they already exist in the DOM
+            await this.displayPromotionHistory(username); 
             await this.displayMatchStats(username, matches);
-            
-            // 3. Then Player Matchups
             await this.displayPlayerMatchups(username, matches);
-            
-            // 4. Finally Match History
             await this.displayMatchHistory(username, matches);
             
             // Initialize other profile functionality
@@ -70,6 +69,29 @@ class ProfileViewer {
         } catch (error) {
             console.error('Error initializing profile:', error);
         }
+    }
+
+    // Add this helper method to create containers in the correct order
+    createContainers(sections) {
+        const profileContainer = document.querySelector('.profile-container');
+        if (!profileContainer) return;
+        
+        let previousContainer = profileContainer;
+        
+        sections.forEach(section => {
+            const container = document.createElement('div');
+            container.className = `match-history-container ${section}-container`;
+            container.innerHTML = '<p class="loading-text">Loading data...</p>';
+            
+            // Insert after the previous container
+            if (previousContainer.nextSibling) {
+                profileContainer.parentNode.insertBefore(container, previousContainer.nextSibling);
+            } else {
+                profileContainer.parentNode.appendChild(container);
+            }
+            
+            previousContainer = container;
+        });
     }
 
     async handleSubmit(event) {
@@ -196,14 +218,9 @@ class ProfileViewer {
 
     async displayMatchHistory(username, matches) {
         try {
-            // Create containers first
-            const matchHistoryContainer = document.createElement('div');
-            matchHistoryContainer.className = 'match-history-container';
-            
-            // Add loading state
-            matchHistoryContainer.innerHTML = '<p class="loading-text">Loading match history...</p>';
-            const profileContainer = document.querySelector('.profile-container');
-            profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
+            // Use existing container
+            const matchHistoryContainer = document.querySelector('.match-history-container');
+            if (!matchHistoryContainer) return;
 
             // Get ELO ratings for all players
             const playerElos = {};
@@ -291,19 +308,13 @@ class ProfileViewer {
     }
 
     async displayMatchStats(username, matches) {
-        // Create container first
-        const statsContainer = document.createElement('div');
-        statsContainer.className = 'match-history-container';
+        // Use existing container 
+        const statsContainer = document.querySelector('.match-stats-container');
+        if (!statsContainer) return;
         
         // Get current season number
         const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
         const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
-        
-        // Insert container into DOM before adding content
-        const profileContainer = document.querySelector('.profile-container');
-        if (profileContainer) {
-            profileContainer.parentNode.insertBefore(statsContainer, profileContainer.nextSibling);
-        }
         
         statsContainer.innerHTML = `
             <div class="season-label">S${currentSeason}</div>
@@ -323,53 +334,62 @@ class ProfileViewer {
         // Get context after canvas is in DOM
         const ctx = document.getElementById('eloChart')?.getContext('2d');
         if (ctx) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: matchData.map(match => match.date.toLocaleDateString()),
-                    datasets: [{
-                        label: 'Score History',
-                        data: matchData.map(match => match.score),
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white'
-                            }
-                        }
+            try {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: matchData.map(match => match.date.toLocaleDateString()),
+                        datasets: [{
+                            label: 'Score History',
+                            data: matchData.map(match => match.score),
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1,
+                            fill: false
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: 'white'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
                             }
                         },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'white'
+                                }
                             },
-                            ticks: {
-                                color: 'white'
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'white'
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                statsContainer.innerHTML += '<p class="error-message">Error displaying chart</p>';
+            }
         }
     }
 
     async displayPlayerMatchups(username, matches) {
+        // Use existing container 
+        const matchupsContainer = document.querySelector('.player-matchups-container');
+        if (!matchupsContainer) return;
+
         // Get matchups data first
         const matchups = matches.reduce((acc, match) => {
             const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
@@ -393,10 +413,6 @@ class ProfileViewer {
         const sortedMatchups = Object.entries(matchups)
             .sort((a, b) => b[1].total - a[1].total);
 
-        // Create and insert container
-        const matchupsContainer = document.createElement('div');
-        matchupsContainer.className = 'match-history-container';
-        
         // Get current season number
         const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
         const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
@@ -436,12 +452,6 @@ class ProfileViewer {
                 </tbody>
             </table>
         `;
-
-        // Insert after stats container
-        const statsContainer = document.querySelector('.match-history-container');
-        if (statsContainer) {
-            statsContainer.parentNode.insertBefore(matchupsContainer, statsContainer.nextSibling);
-        }
     }
 
     // Helper method to get player data
@@ -452,8 +462,11 @@ class ProfileViewer {
         return querySnapshot.docs[0]?.data();
     }
 
+    // Add debug logging to getPlayerMatches to check what's happening
     async getPlayerMatches(username) {
         try {
+            console.log('Fetching matches for:', username);
+            
             const approvedMatchesRef = collection(db, 'approvedMatches');
             const q = query(
                 approvedMatchesRef,
@@ -483,6 +496,12 @@ class ProfileViewer {
                 getDocs(legacyQuery1),
                 getDocs(legacyQuery2)
             ]);
+            
+            console.log('Match counts:', {
+                playersArray: snapshot.size,
+                winnerMatches: legacySnapshot1.size,
+                loserMatches: legacySnapshot2.size
+            });
             
             // Combine results, removing duplicates
             const matchIds = new Set();
@@ -617,20 +636,12 @@ class ProfileViewer {
 
     async displayPromotionHistory(username) {
         try {
-            // Create container
-            const promotionContainer = document.createElement('div');
-            promotionContainer.className = 'match-history-container promotion-history-container';
+            // Use existing container instead of creating a new one
+            const promotionContainer = document.querySelector('.rank-history-container');
+            if (!promotionContainer) return;
             
             // Add loading state
             promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
-            
-            // Insert as the FIRST container after the profile section
-            const profileContainer = document.querySelector('.profile-container');
-            if (profileContainer && profileContainer.parentNode) {
-                profileContainer.parentNode.insertBefore(promotionContainer, profileContainer.nextSibling);
-            } else {
-                document.querySelector('.content').appendChild(promotionContainer);
-            }
 
             // Fetch promotion history
             const eloHistoryRef = collection(db, 'eloHistory');
