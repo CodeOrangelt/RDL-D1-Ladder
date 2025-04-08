@@ -342,36 +342,52 @@ async function updateLadderDisplay(ladderData) {
         tbody.appendChild(row);
     }
     
-    // If needed, get the last ELO change for players
-    // but only do this once when the ladder loads to be resource efficient
-    if (ladderData.length > 0 && !eloHistoryCache.size) {
-        getPlayersLastEloChanges(ladderData.map(p => p.username))
-            .then(changes => {
-                // Update the DOM with trend indicators
-                changes.forEach((change, username) => {
-                    const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'none';
-                    eloHistoryCache.set(username, direction);
-                    
-                    // Find the row for this player
-                    const playerRows = tbody.querySelectorAll('tr');
-                    for (const row of playerRows) {
-                        const usernameLink = row.querySelector('td:nth-child(2) a');
-                        if (usernameLink && usernameLink.textContent === username) {
-                            const eloCell = row.querySelector('td:nth-child(3)');
-                            if (eloCell) {
-                                if (direction === 'up') {
-                                    eloCell.innerHTML += '<span style="color:#4CAF50;margin-left:5px;">▲</span>';
-                                } else if (direction === 'down') {
-                                    eloCell.innerHTML += '<span style="color:#F44336;margin-left:5px;">▼</span>';
-                                }
-                            }
-                            break;
+    // Get all usernames for batch processing
+    const usernames = ladderData.map(p => p.username);
+    
+    // Create a mapping of username to row for quick updates
+    const rowMap = new Map();
+    tbody.querySelectorAll('tr').forEach((row, index) => {
+        if (index < usernames.length) {
+            rowMap.set(usernames[index], row);
+        }
+    });
+    
+    // Get all ELO changes at once
+    getPlayersLastEloChanges(usernames)
+        .then(changes => {
+            changes.forEach((change, username) => {
+                const row = rowMap.get(username);
+                if (row) {
+                    const eloCell = row.querySelector('td:nth-child(3)');
+                    if (eloCell) {
+                        // Clear any existing indicators
+                        const existingIndicator = eloCell.querySelector('.trend-indicator');
+                        if (existingIndicator) {
+                            existingIndicator.remove();
+                        }
+                        
+                        // Add new indicator
+                        if (change > 0) {
+                            const indicator = document.createElement('span');
+                            indicator.className = 'trend-indicator';
+                            indicator.innerHTML = ' ▲';
+                            indicator.style.color = '#4CAF50'; // Green
+                            indicator.style.marginLeft = '5px';
+                            eloCell.appendChild(indicator);
+                        } else if (change < 0) {
+                            const indicator = document.createElement('span');
+                            indicator.className = 'trend-indicator';
+                            indicator.innerHTML = ' ▼';
+                            indicator.style.color = '#F44336'; // Red
+                            indicator.style.marginLeft = '5px';
+                            eloCell.appendChild(indicator);
                         }
                     }
-                });
-            })
-            .catch(error => console.error('Error getting ELO changes:', error));
-    }
+                }
+            });
+        })
+        .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
 // Add a helper function to get the last ELO changes for multiple players
@@ -383,31 +399,37 @@ async function getPlayersLastEloChanges(usernames) {
         // Preload with default values
         usernames.forEach(username => changes.set(username, 0));
         
-        // Batch query for efficiency - get last ELO history entry for each player
+        // Use a more efficient batched approach
         const eloHistoryRef = collection(db, 'eloHistory');
+        const batch = 10; // Process 10 players at a time to avoid rate limits
         
-        const promises = usernames.map(username => {
-            const q = query(
-                eloHistoryRef,
-                where('player', '==', username),
-                orderBy('timestamp', 'desc'),
-                limit(1)
-            );
-            return getDocs(q);
-        });
-        
-        const results = await Promise.all(promises);
-        
-        // Process results
-        results.forEach((snapshot, index) => {
-            if (!snapshot.empty) {
-                const data = snapshot.docs[0].data();
-                const username = usernames[index];
-                // Calculate ELO change
-                const eloChange = data.newElo - data.previousElo;
-                changes.set(username, eloChange);
-            }
-        });
+        for (let i = 0; i < usernames.length; i += batch) {
+            const batchUsernames = usernames.slice(i, i + batch);
+            const promises = batchUsernames.map(username => {
+                const q = query(
+                    eloHistoryRef,
+                    where('player', '==', username),
+                    orderBy('timestamp', 'desc'),
+                    limit(1)
+                );
+                return getDocs(q);
+            });
+            
+            const results = await Promise.all(promises);
+            
+            // Process this batch of results
+            results.forEach((snapshot, index) => {
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+                    const username = batchUsernames[index];
+                    // Calculate ELO change
+                    const eloChange = data.newElo - data.previousElo;
+                    changes.set(username, eloChange);
+                    
+                    console.log(`Got ELO change for ${username}: ${eloChange}`);
+                }
+            });
+        }
     } catch (error) {
         console.error('Error fetching ELO history:', error);
     }
