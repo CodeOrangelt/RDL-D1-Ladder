@@ -406,12 +406,12 @@ document.getElementById('add-player-btn').addEventListener('click', async () => 
     }
 });
 
-// Add this function to handle promotions
+// Add this function to handle promotions with proper batch handling
 async function promotePlayer(username) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        if (!user || !isAdmin(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
@@ -443,30 +443,23 @@ async function promotePlayer(username) {
             throw new Error('Player is already at maximum rank (Emerald)');
         }
 
-        // Use batch write instead of transaction
-        const batch = writeBatch(db);
-        
-        // Update player document
-        batch.update(doc(db, 'players', playerDoc.id), {
+        // First update the player document
+        await updateDoc(doc(db, 'players', playerDoc.id), {
             eloRating: nextThreshold.elo,
-            lastPromotedAt: serverTimestamp(),
+            lastPromotedAt: new Date(),
             promotedBy: user.email
         });
 
-        // Add promotion history
-        const historyRef = doc(collection(db, 'eloHistory'));
-        batch.set(historyRef, {
+        // Then add promotion history separately
+        await addDoc(collection(db, 'eloHistory'), {
             player: username,
             previousElo: currentElo,
             newElo: nextThreshold.elo,
-            timestamp: serverTimestamp(),
+            timestamp: new Date(),
             type: 'promotion',
             rankAchieved: nextThreshold.name,
             promotedBy: user.email
         });
-
-        // Commit the batch
-        await batch.commit();
 
         // Update UI
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
@@ -478,6 +471,7 @@ async function promotePlayer(username) {
             loadEloHistory()
         ]);
 
+        return true;
     } catch (error) {
         console.error('Error promoting player:', error);
         throw error;
@@ -570,7 +564,7 @@ function setupManagePlayersSection() {
     }
 }
 
-// Add demote player function
+// Add demote player function with proper async operations
 async function demotePlayer(username) {
     try {
         // Check if current user is admin
@@ -607,30 +601,23 @@ async function demotePlayer(username) {
             throw new Error('Player is already at minimum rank (Unranked)');
         }
 
-        // Use batch write
-        const batch = writeBatch(db);
-        
         // Update player document
-        batch.update(doc(db, 'players', playerDoc.id), {
+        await updateDoc(doc(db, 'players', playerDoc.id), {
             eloRating: prevThreshold.elo,
-            lastDemotedAt: serverTimestamp(),
+            lastDemotedAt: new Date(),
             demotedBy: user.email
         });
 
         // Add demotion history
-        const historyRef = doc(collection(db, 'eloHistory'));
-        batch.set(historyRef, {
+        await addDoc(collection(db, 'eloHistory'), {
             player: username,
             previousElo: currentElo,
             newElo: prevThreshold.elo,
-            timestamp: serverTimestamp(),
+            timestamp: new Date(),
             type: 'demotion',
             rankAchieved: prevThreshold.name,
             demotedBy: user.email
         });
-
-        // Commit the batch
-        await batch.commit();
 
         // Update UI
         alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
@@ -642,6 +629,7 @@ async function demotePlayer(username) {
             loadEloHistory()
         ]);
 
+        return true;
     } catch (error) {
         console.error('Error demoting player:', error);
         throw error;
