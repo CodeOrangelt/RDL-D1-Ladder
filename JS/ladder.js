@@ -354,6 +354,40 @@ async function updateLadderDisplay(ladderData) {
     });
     
     // Get all ELO changes at once
+    getPlayersLastEloChanges(usernames)
+        .then(changes => {
+            changes.forEach((change, username) => {
+                const row = rowMap.get(username);
+                if (row) {
+                    const eloCell = row.querySelector('td:nth-child(3)');
+                    if (eloCell) {
+                        // Clear any existing indicators
+                        const existingIndicator = eloCell.querySelector('.trend-indicator');
+                        if (existingIndicator) {
+                            existingIndicator.remove();
+                        }
+                        
+                        // Add new indicator
+                        if (change > 0) {
+                            const indicator = document.createElement('span');
+                            indicator.className = 'trend-indicator';
+                            indicator.innerHTML = ' ▲';
+                            indicator.style.color = '#4CAF50'; // Green
+                            indicator.style.marginLeft = '5px';
+                            eloCell.appendChild(indicator);
+                        } else if (change < 0) {
+                            const indicator = document.createElement('span');
+                            indicator.className = 'trend-indicator';
+                            indicator.innerHTML = ' ▼';
+                            indicator.style.color = '#F44336'; // Red
+                            indicator.style.marginLeft = '5px';
+                            eloCell.appendChild(indicator);
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
 // Replace BOTH getPlayersLastEloChanges functions with this single implementation
