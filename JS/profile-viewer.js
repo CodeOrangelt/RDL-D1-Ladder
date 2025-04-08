@@ -23,114 +23,36 @@ class ProfileViewer {
         profileForm?.addEventListener('submit', (e) => this.handleSubmit(e));
     }
 
-    async init() {
+    async init(username) {
+        if (!username) return;
+        
         try {
-            console.log('Starting profile initialization...');
-            const urlParams = new URLSearchParams(window.location.search);
-            let username = urlParams.get('username');
-            console.log('URL username parameter:', username);
-
-            if (!username) {
-                username = localStorage.getItem('nickname');
-                console.log('Using nickname from localStorage:', username);
-            }
-
-            if (!username) {
-                console.log('No username found');
-                this.showError('Profile not found - No username provided');
-                return;
-            }
-
-            // Load player stats first
-            await this.loadPlayerStats(username);
-
-            if (!username) {
-                const currentUser = auth.currentUser;
-                console.log('No username in URL, checking current user:', currentUser);
-                
-                if (currentUser) {
-                    // Get current user's profile
-                    console.log('Getting current user document for ID:', currentUser.uid);
-                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                    if (userDoc.exists()) {
-                        console.log('User document found:', userDoc.data());
-                        username = userDoc.data().username;
-                    } else {
-                        console.log('No user document found for current user');
-                    }
-                } else {
-                    console.log('No current user and no username provided');
-                    this.showError('Profile not found - No username provided');
-                    return;
-                }
-            }
-
-            // Query players collection by username
-            console.log('Querying players collection for username:', username);
-            const playersRef = collection(db, 'players');
-            const q = query(playersRef, where('username', '==', username));
-            const playerSnapshot = await getDocs(q);
-
-            console.log('Player query results:', {
-                empty: playerSnapshot.empty,
-                size: playerSnapshot.size
-            });
-
-            if (playerSnapshot.empty) {
-                console.log('No player found with username:', username);
-                this.showError('User not found');
-                return;
-            }
-
-            // Get the player document
-            const playerDoc = playerSnapshot.docs[0];
-            const userId = playerDoc.id;
-            const playerData = playerDoc.data();
-            console.log('Player data found:', {
-                userId: userId,
-                playerData: playerData
-            });
-
-            // Get profile data
-            console.log('Fetching profile data for userId:', userId);
-            const profileDoc = await getDoc(doc(db, 'userProfiles', userId));
-            const profileData = profileDoc.exists() ? profileDoc.data() : {};
-            console.log('Profile data:', profileData);
-
-            // Display the combined profile data
-            const combinedData = {
-                ...profileData,
-                ...playerData,
-                username: playerData.username,
-                userId: userId
-            };
-            console.log('Combined profile data:', combinedData);
-            this.displayProfile(combinedData);
+            // Load player data first
+            await this.loadPlayerData(username);
             
-            // Call displayMatchHistory only once
-            await this.displayMatchHistory(username);
-
-            // Call displayPromotionHistory
+            // Get matches for this player
+            const matches = await this.getPlayerMatches(username);
+            
+            // Create containers in the correct order
+            const mainContainer = document.querySelector('.content');
+            
+            // 1. Create Rank History first
             await this.displayPromotionHistory(username);
-
-            // Show edit controls if viewing own profile
-            const currentUser = auth.currentUser;
-            console.log('Checking edit permissions:', {
-                currentUser: currentUser?.uid,
-                profileUserId: userId,
-                canEdit: currentUser && currentUser.uid === userId
-            });
-
-            if (currentUser && currentUser.uid === userId) {
-                document.getElementById('edit-profile').style.display = 'block';
-                const uploadBtn = document.querySelector('.upload-btn');
-                if (uploadBtn) uploadBtn.style.display = 'inline-block';
-            }
-
+            
+            // 2. Then Match Statistics
+            await this.displayMatchStats(username, matches);
+            
+            // 3. Then Player Matchups
+            await this.displayPlayerMatchups(username, matches);
+            
+            // 4. Finally Match History
+            await this.displayMatchHistory(username, matches);
+            
+            // Initialize other profile functionality
+            this.setupEditProfile();
+            
         } catch (error) {
-            console.error('Profile initialization error:', error);
-            console.error('Error stack:', error.stack);
-            this.showError(`Error loading profile: ${error.message}`);
+            console.error('Error initializing profile:', error);
         }
     }
 
@@ -256,7 +178,7 @@ class ProfileViewer {
         container.innerHTML = `<div class="error-message" style="color: white; text-align: center; padding: 20px;">${message}</div>`;
     }
 
-    async displayMatchHistory(username) {
+    async displayMatchHistory(username, matches) {
         try {
             // Create containers first
             const matchHistoryContainer = document.createElement('div');
@@ -266,34 +188,6 @@ class ProfileViewer {
             matchHistoryContainer.innerHTML = '<p class="loading-text">Loading match history...</p>';
             const profileContainer = document.querySelector('.profile-container');
             profileContainer.parentNode.insertBefore(matchHistoryContainer, profileContainer.nextSibling);
-
-            // Fetch matches
-            const approvedMatchesRef = collection(db, 'approvedMatches');
-            const matchesQuery = query(
-                approvedMatchesRef,
-                where('winnerUsername', '==', username),
-                orderBy('createdAt', 'desc')
-            );
-
-            const loserMatchesQuery = query(
-                approvedMatchesRef,
-                where('loserUsername', '==', username),
-                orderBy('createdAt', 'desc')
-            );
-
-            // Get both winner and loser matches
-            const [winnerMatches, loserMatches] = await Promise.all([
-                getDocs(matchesQuery),
-                getDocs(loserMatchesQuery)
-            ]);
-
-            // Combine and sort matches
-            const matches = [...winnerMatches.docs, ...loserMatches.docs]
-                .map(doc => ({
-                    ...doc.data(),
-                    id: doc.id
-                }))
-                .sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
             // Get ELO ratings for all players
             const playerElos = {};
@@ -365,12 +259,6 @@ class ProfileViewer {
                     </tbody>
                 </table>
             `;
-
-            // After matches are loaded, display statistics
-            if (matches.length > 0) {
-                await this.displayMatchStats(username, matches);
-                await this.displayPlayerMatchups(username, matches);
-            }
 
         } catch (error) {
             console.error('Error loading match history:', error);
@@ -658,12 +546,12 @@ class ProfileViewer {
             // Add loading state
             promotionContainer.innerHTML = '<p class="loading-text">Loading promotion history...</p>';
             
-            // Insert right after the match history container (which is the first match-history-container)
-            const matchHistoryContainer = document.querySelector('.match-history-container:first-child');
-            if (matchHistoryContainer) {
-                matchHistoryContainer.parentNode.insertBefore(promotionContainer, matchHistoryContainer.nextSibling);
+            // Insert as the FIRST container after the profile section
+            const profileContainer = document.querySelector('.profile-container');
+            if (profileContainer && profileContainer.parentNode) {
+                profileContainer.parentNode.insertBefore(promotionContainer, profileContainer.nextSibling);
             } else {
-                document.querySelector('.profile-container').parentNode.appendChild(promotionContainer);
+                document.querySelector('.content').appendChild(promotionContainer);
             }
 
             // Fetch promotion history
@@ -763,6 +651,7 @@ class ProfileViewer {
                 }
                 .promotion-table .rank-name {
                     font-weight: bold;
+                    font-size: 0.85em; // Add this line to make the font smaller
                 }
                 .promotion-table .rank-name.bronze {
                     color: #CD7F32;
