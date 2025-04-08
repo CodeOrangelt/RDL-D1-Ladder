@@ -197,12 +197,12 @@
 
                 // Initialize components properly
                 const { RetroTrackerMonitor } = await import('../JS/whosplaying.js');
-                const { initializePromotionTracker } = await import('../JS/promotion-banner.js');
+                const { promotionManager } = await import('../JS/promotions.js');
 
                 // Initialize both trackers
                 const tracker = new RetroTrackerMonitor();
                 await tracker.initializeBannerOnly();
-                await initializePromotionTracker(); // Add this back
+                promotionManager.initialize();
 
                 // Discord widget toggle
                 const toggleButton = document.getElementById('toggle-discord');
