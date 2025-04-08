@@ -354,8 +354,11 @@ async function updateLadderDisplay(ladderData) {
     });
     
     // Get all ELO changes at once
-    // Replace the getPlayersLastEloChanges function with this version
+}
 
+// Replace BOTH getPlayersLastEloChanges functions with this single implementation
+
+// Add a helper function to get the last ELO changes for multiple players
 async function getPlayersLastEloChanges(usernames) {
     const changes = new Map();
     
@@ -366,89 +369,51 @@ async function getPlayersLastEloChanges(usernames) {
         // Try a different query approach to use existing indexes
         const eloHistoryRef = collection(db, 'eloHistory');
         
-        // First try to use the 'type' field which should have an existing index
-        // Many eloHistory entries have type=promotion or type=demotion
-        for (const username of usernames) {
-            try {
-                // Try to query using 'type' field first, which likely already has indexes
-                const typeQuery = query(
-                    eloHistoryRef,
-                    where('player', '==', username),
-                    where('type', 'in', ['match', 'promotion', 'demotion', 'admin_modification']),
-                    limit(5)
-                );
-                
-                const snapshot = await getDocs(typeQuery);
-                
-                if (!snapshot.empty) {
-                    // Sort manually to avoid needing the orderBy index
-                    const entries = snapshot.docs
-                        .map(doc => doc.data())
-                        .sort((a, b) => {
-                            // Convert Firestore timestamps to milliseconds for comparison
-                            const timeA = a.timestamp?.seconds || 0;
-                            const timeB = b.timestamp?.seconds || 0;
-                            return timeB - timeA; // descending order
-                        });
+        // Process users in small batches to avoid overloading Firestore
+        const batchSize = 5;
+        for (let i = 0; i < usernames.length; i += batchSize) {
+            const batchUsernames = usernames.slice(i, i + batchSize);
+            
+            // Process each username in the current batch
+            for (const username of batchUsernames) {
+                try {
+                    // First try querying with type field which should have existing indexes
+                    const typeQuery = query(
+                        eloHistoryRef,
+                        where('player', '==', username),
+                        where('type', 'in', ['match', 'promotion', 'demotion', 'admin_modification']),
+                        limit(5)
+                    );
                     
-                    if (entries.length > 0) {
-                        const latestEntry = entries[0];
-                        const eloChange = latestEntry.newElo - latestEntry.previousElo;
-                        changes.set(username, eloChange);
-                        console.log(`Got ELO change for ${username}: ${eloChange}`);
+                    const snapshot = await getDocs(typeQuery);
+                    
+                    if (!snapshot.empty) {
+                        // Sort manually to avoid needing the orderBy index
+                        const entries = snapshot.docs
+                            .map(doc => doc.data())
+                            .sort((a, b) => {
+                                const timeA = a.timestamp?.seconds || 0;
+                                const timeB = b.timestamp?.seconds || 0;
+                                return timeB - timeA; // descending order
+                            });
+                        
+                        if (entries.length > 0) {
+                            const latestEntry = entries[0];
+                            const eloChange = latestEntry.newElo - latestEntry.previousElo;
+                            changes.set(username, eloChange);
+                            console.log(`Got ELO change for ${username}: ${eloChange}`);
+                        }
                     }
+                } catch (userError) {
+                    console.warn(`Error fetching history for ${username}:`, userError);
+                    // Continue with next user
                 }
-            } catch (userError) {
-                console.warn(`Minor error fetching history for ${username}:`, userError);
-                // Continue with next user
             }
-        }
-    } catch (error) {
-        console.error('Error fetching ELO history:', error);
-    }
-    
-    return changes;
-}
-
-// Add a helper function to get the last ELO changes for multiple players
-// This makes a single batch query to be more efficient
-async function getPlayersLastEloChanges(usernames) {
-    const changes = new Map();
-    
-    try {
-        // Preload with default values
-        usernames.forEach(username => changes.set(username, 0));
-        
-        // Use a more efficient batched approach
-        const eloHistoryRef = collection(db, 'eloHistory');
-        const batch = 10; // Process 10 players at a time to avoid rate limits
-        
-        for (let i = 0; i < usernames.length; i += batch) {
-            const batchUsernames = usernames.slice(i, i + batch);
-            const promises = batchUsernames.map(username => {
-                const q = query(
-                    eloHistoryRef,
-                    where('player', '==', username),
-                    orderBy('timestamp', 'desc'),
-                    limit(1)
-                );
-                return getDocs(q);
-            });
             
-            const results = await Promise.all(promises);
-            
-            // Process this batch of results
-            results.forEach((snapshot, index) => {
-                if (!snapshot.empty) {
-                    const data = snapshot.docs[0].data();
-                    const username = batchUsernames[index];
-                    // Calculate ELO change
-                    const eloChange = data.newElo - data.previousElo;
-                    changes.set(username, eloChange);
-                    
-                    console.log(`Got ELO change for ${username}: ${eloChange}`);
-                }
-            });
+            // Small delay between batches to prevent rate limiting
+            if (i + batchSize < usernames.length) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
         }
     } catch (error) {
         console.error('Error fetching ELO history:', error);
