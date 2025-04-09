@@ -1,41 +1,85 @@
 /**
- * Discord Widget CORS Fix
- * Handles cross-origin issues with the Discord widget
+ * Discord Widget Enhancement
+ * - Improves appearance even with CORS errors
+ * - Handles widget toggle functionality
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Reference to the Discord widget and toggle button
+    // Get widget elements
     const discordWidget = document.getElementById('discord-widget');
     const toggleButton = document.getElementById('toggle-discord');
     
-    // Apply custom styles to improve widget appearance when images fail
-    const styleEl = document.createElement('style');
-    document.head.appendChild(styleEl);
-    
-    // Toggle widget visibility when button is clicked
+    // Initialize toggle functionality
     if (toggleButton && discordWidget) {
         toggleButton.addEventListener('click', function() {
             discordWidget.classList.toggle('collapsed');
         });
     }
     
-    // Load Discord widget with improved settings
-    function enhanceDiscordWidget() {
-        const iframe = discordWidget?.querySelector('iframe');
-        
-        if (iframe) {
-            // Set sandbox attributes to appropriate values
-            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
-            
-            // Add loading attribute for better performance
-            iframe.setAttribute('loading', 'lazy');
-            
-            // Add title for accessibility
-            iframe.setAttribute('title', 'RDL Discord Server');
-            
-            console.log('Discord widget enhanced for better performance');
+    // Apply better styling that works with CORS limitations
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+        /* Improved Discord widget styling */
+        #discord-widget {
+            background-color: #36393f;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
-    }
+        
+        #discord-widget.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        #discord-widget:not(.collapsed) {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        #discord-widget iframe {
+            border: none !important;
+            width: 100%;
+            height: 500px;
+        }
+        
+        /* Prevent widget from being cut off */
+        .discord-container {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Style toggle button */
+        .discord-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #5865F2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .discord-toggle:hover {
+            background-color: #4752c4;
+        }
+    `;
+    document.head.appendChild(styleEl);
     
-    // Run enhancement after a short delay to ensure iframe is in the DOM
-    setTimeout(enhanceDiscordWidget, 500);
+    // Console error silencer - this won't fix CORS but will reduce console spam
+    const originalError = console.error;
+    console.error = function() {
+        // Ignore CORS errors from Discord widget
+        if (arguments[0] && 
+            typeof arguments[0] === 'string' && 
+            arguments[0].includes('cdn.discordapp.com/widget-avatars')) {
+            return;
+        }
+        originalError.apply(console, arguments);
+    };
 });
