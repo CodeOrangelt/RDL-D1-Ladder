@@ -911,3 +911,16 @@ tr:nth-child(even) {
 .rank-change-modal.demotion .rank-name {
   color: #f44336;
 }
+
+/* Add these styles to your CSS */
+
+
+#ladder th:nth-child(3), 
+#ladder td:nth-child(3) {
+    width: 100px; /* Fixed width for ELO column */
+}
+
+.trend-indicator {
+    display: inline-block;
+    min-width: 35px;
+}
