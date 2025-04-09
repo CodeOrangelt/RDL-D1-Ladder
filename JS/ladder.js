@@ -367,20 +367,21 @@ async function updateLadderDisplay(ladderData) {
                             existingIndicator.remove();
                         }
                         
-                        // Add new indicator
-                        if (change > 0) {
+                        // Add numeric indicator with the actual value
+                        if (change !== 0) {
                             const indicator = document.createElement('span');
                             indicator.className = 'trend-indicator';
-                            indicator.innerHTML = ' ▲';
-                            indicator.style.color = '#4CAF50'; // Green
+                            
+                            // Format the change value with + or - sign
+                            const formattedChange = change > 0 ? `+${change}` : `${change}`;
+                            indicator.textContent = ` ${formattedChange}`;
+                            
+                            // Style based on positive/negative change
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
                             indicator.style.marginLeft = '5px';
-                            eloCell.appendChild(indicator);
-                        } else if (change < 0) {
-                            const indicator = document.createElement('span');
-                            indicator.className = 'trend-indicator';
-                            indicator.innerHTML = ' ▼';
-                            indicator.style.color = '#F44336'; // Red
-                            indicator.style.marginLeft = '5px';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.9em';
+                            
                             eloCell.appendChild(indicator);
                         }
                     }
@@ -400,7 +401,6 @@ async function getPlayersLastEloChanges(usernames) {
         usernames.forEach(username => changes.set(username, 0));
         
         const eloHistoryRef = collection(db, 'eloHistory');
-        const eloChangesCache = new Map(); // Local cache for this function run
         
         // Process in smaller batches to avoid rate limits
         const batchSize = 5;
@@ -411,51 +411,27 @@ async function getPlayersLastEloChanges(usernames) {
             // Process each username independently
             const batchPromises = batchUsernames.map(async (username) => {
                 try {
-                    // Get the most recent entries of any type for this user
+                    // Use the existing index query from elo-history.js
                     const historyQuery = query(
                         eloHistoryRef,
                         where('player', '==', username),
-                        limit(5) // Get a few of the most recent entries
+                        orderBy('timestamp', 'desc'),
+                        limit(1)
                     );
                     
                     const snapshot = await getDocs(historyQuery);
                     
                     if (!snapshot.empty) {
-                        // Sort by timestamp manually (newest first)
-                        const entries = snapshot.docs
-                            .map(doc => doc.data())
-                            .sort((a, b) => {
-                                const timeA = a.timestamp?.seconds || 0;
-                                const timeB = b.timestamp?.seconds || 0;
-                                return timeB - timeA;
-                            });
+                        const latestEntry = snapshot.docs[0].data();
                         
-                        // Get the most recent entry
-                        if (entries.length > 0) {
-                            const latestEntry = entries[0];
-                            const eloChange = latestEntry.newElo - latestEntry.previousElo;
-                            
-                            // Store the actual ELO change based on entry type
-                            if (latestEntry.type === 'promotion') {
-                                changes.set(username, Math.abs(eloChange)); // Always positive
-                            } else if (latestEntry.type === 'demotion') {
-                                changes.set(username, -Math.abs(eloChange)); // Always negative
-                            } else if (latestEntry.type === 'match') {
-                                // For matches, use the actual ELO change
-                                changes.set(username, eloChange);
-                            } else {
-                                // For other types, use the calculated difference
-                                changes.set(username, eloChange);
-                            }
-                            
-                            // Cache the result
-                            eloChangesCache.set(username, {
-                                change: changes.get(username),
-                                timestamp: latestEntry.timestamp?.seconds || 0
-                            });
-                            
-                            console.log(`${username}: ${changes.get(username)} (${latestEntry.type})`);
-                        }
+                        // Calculate the ELO change
+                        let eloChange = latestEntry.newElo - latestEntry.previousElo;
+                        
+                        // Store the actual numeric change value based on entry type
+                        // For promotions/demotions, we want to show the exact value
+                        changes.set(username, eloChange);
+                        
+                        console.log(`${username}: ${eloChange} (${latestEntry.type || 'unknown type'})`);
                     }
                 } catch (err) {
                     console.warn(`Error processing ${username}:`, err);
