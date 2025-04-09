@@ -407,80 +407,85 @@ async function updateLadderDisplay(ladderData) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Replace the getPlayersLastEloChanges function with this version that uses existing indexes
+// Updated function that prioritizes regular match ELO changes over promotions/demotions
 
 async function getPlayersLastEloChanges(usernames) {
+    // Initialize map with default values
     const changes = new Map();
+    usernames.forEach(username => changes.set(username, 0));
     
     try {
-        // Preload with default values
-        usernames.forEach(username => changes.set(username, 0));
+        // Import the getEloHistory function from elo-history.js
+        const { entries } = await import('./elo-history.js').then(module => module.getEloHistory());
         
-        // Use the batch approach for better performance
-        const batchSize = 5;
+        // Group entries by username
+        const entriesByUsername = new Map();
         
-        for (let i = 0; i < usernames.length; i += batchSize) {
-            const batchUsernames = usernames.slice(i, i + batchSize);
+        // Process all entries and associate them with usernames
+        entries.forEach(entry => {
+            // The playerUsername field is already populated by getEloHistory()
+            const username = entry.playerUsername;
             
-            const batchPromises = batchUsernames.map(async (username) => {
-                try {
-                    // Use a simpler query without orderBy to avoid index issues
-                    // This is similar to what's used in elo-history.js
-                    const eloHistoryRef = collection(db, 'eloHistory');
-                    const historyQuery = query(
-                        eloHistoryRef,
-                        where('player', '==', username),
-                        limit(5) // Get a few recent entries to sort manually
-                    );
-                    
-                    const snapshot = await getDocs(historyQuery);
-                    
-                    if (!snapshot.empty) {
-                        // Sort manually by timestamp (most recent first)
-                        const entries = snapshot.docs
-                            .map(doc => doc.data())
-                            .sort((a, b) => {
-                                const timeA = a.timestamp?.seconds || 0;
-                                const timeB = b.timestamp?.seconds || 0;
-                                return timeB - timeA; // descending order
-                            });
-                        
-                        // Get the most recent entry
-                        const latestEntry = entries[0];
-                        
-                        // Get the numeric change
-                        let eloChange;
-                        
-                        // For promotion/demotion, use change property if available
-                        if (latestEntry.change !== undefined) {
-                            eloChange = latestEntry.change;
-                        } else {
-                            eloChange = latestEntry.newElo - latestEntry.previousElo;
-                        }
-                        
-                        // Special handling for promotions/demotions
-                        if (latestEntry.type === 'promotion') {
-                            // Ensure promotion is positive
-                            eloChange = Math.abs(eloChange);
-                        } else if (latestEntry.type === 'demotion') {
-                            // Ensure demotion is negative
-                            eloChange = -Math.abs(eloChange);
-                        }
-                        
-                        changes.set(username, eloChange);
-                        console.log(`${username}: ${eloChange} (${latestEntry.type || 'unknown type'})`);
-                    }
-                } catch (err) {
-                    console.warn(`Error processing ${username}:`, err);
+            if (usernames.includes(username)) {
+                if (!entriesByUsername.has(username)) {
+                    entriesByUsername.set(username, []);
                 }
-            });
-            
-            await Promise.all(batchPromises);
-            
-            if (i + batchSize < usernames.length) {
-                await new Promise(r => setTimeout(r, 50));
+                
+                entriesByUsername.get(username).push({
+                    ...entry,
+                    // Ensure we have timestamp in the right format
+                    timestamp: entry.timestamp?.seconds || 0
+                });
             }
-        }
+        });
+        
+        // For each player, find and record their most recent ELO change
+        entriesByUsername.forEach((playerEntries, username) => {
+            if (playerEntries.length > 0) {
+                // Entries are already sorted by timestamp (newest first) from getEloHistory()
+                
+                // Debug log showing what we found
+                console.log(`${username} has ${playerEntries.length} entries:`, 
+                    playerEntries.slice(0, 3).map(e => ({
+                        type: e.type,
+                        timestamp: new Date(e.timestamp * 1000).toLocaleString(),
+                        change: e.change,
+                        newElo: e.newElo,
+                        previousElo: e.previousElo
+                    }))
+                );
+                
+                // Use the first (most recent) entry that has valid change information
+                const recentEntry = playerEntries.find(entry => 
+                    entry.change !== undefined || 
+                    (entry.newElo !== undefined && entry.previousElo !== undefined)
+                );
+                
+                if (recentEntry) {
+                    // Calculate ELO change
+                    let eloChange;
+                    if (recentEntry.change !== undefined) {
+                        eloChange = recentEntry.change;
+                    } else if (recentEntry.newElo !== undefined && recentEntry.previousElo !== undefined) {
+                        eloChange = recentEntry.newElo - recentEntry.previousElo;
+                    }
+                    
+                    if (eloChange !== undefined) {
+                        // Store the change
+                        changes.set(username, eloChange);
+                        
+                        // Log for debugging
+                        const date = recentEntry.timestamp ? 
+                            new Date(recentEntry.timestamp * 1000).toLocaleString() : 
+                            'unknown date';
+                        
+                        console.log(`Selected for ${username}: ${eloChange} (${recentEntry.type || 'match'}) from ${date}`);
+                    }
+                } else {
+                    console.log(`${username}: No valid entries found`);
+                }
+            }
+        });
     } catch (error) {
         console.error('Error fetching ELO history:', error);
     }
