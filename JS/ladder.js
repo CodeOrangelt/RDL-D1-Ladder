@@ -367,6 +367,19 @@ async function updateLadderDisplay(ladderData) {
                             existingIndicator.remove();
                         }
                         
+                        // Convert eloCell to use flexbox for alignment
+                        eloCell.style.display = 'flex';
+                        eloCell.style.alignItems = 'center';
+                        
+                        // Create a wrapper for the ELO value to maintain alignment
+                        const eloValue = document.createElement('span');
+                        eloValue.textContent = eloCell.textContent;
+                        eloValue.style.flexGrow = '1';
+                        
+                        // Clear the cell and add the value back
+                        eloCell.textContent = '';
+                        eloCell.appendChild(eloValue);
+                        
                         // Add numeric indicator with the actual value
                         if (change !== 0) {
                             const indicator = document.createElement('span');
@@ -374,13 +387,16 @@ async function updateLadderDisplay(ladderData) {
                             
                             // Format the change value with + or - sign
                             const formattedChange = change > 0 ? `+${change}` : `${change}`;
-                            indicator.textContent = ` ${formattedChange}`;
+                            indicator.textContent = formattedChange;
                             
                             // Style based on positive/negative change
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
                             indicator.style.marginLeft = '5px';
                             indicator.style.fontWeight = 'bold';
-                            indicator.style.fontSize = '0.9em';
+                            indicator.style.fontSize = '0.7em';
+                            indicator.style.flexShrink = '0'; // Prevent shrinking
+                            indicator.style.width = '40px';   // Fixed width for consistency
+                            indicator.style.textAlign = 'right';
                             
                             eloCell.appendChild(indicator);
                         }
@@ -391,7 +407,7 @@ async function updateLadderDisplay(ladderData) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Replace the getPlayersLastEloChanges function with this optimized version
+// Replace the getPlayersLastEloChanges function with this version that uses existing indexes
 
 async function getPlayersLastEloChanges(usernames) {
     const changes = new Map();
@@ -400,37 +416,58 @@ async function getPlayersLastEloChanges(usernames) {
         // Preload with default values
         usernames.forEach(username => changes.set(username, 0));
         
-        const eloHistoryRef = collection(db, 'eloHistory');
-        
-        // Process in smaller batches to avoid rate limits
+        // Use the batch approach for better performance
         const batchSize = 5;
         
         for (let i = 0; i < usernames.length; i += batchSize) {
             const batchUsernames = usernames.slice(i, i + batchSize);
             
-            // Process each username independently
             const batchPromises = batchUsernames.map(async (username) => {
                 try {
-                    // Use the existing index query from elo-history.js
+                    // Use a simpler query without orderBy to avoid index issues
+                    // This is similar to what's used in elo-history.js
+                    const eloHistoryRef = collection(db, 'eloHistory');
                     const historyQuery = query(
                         eloHistoryRef,
                         where('player', '==', username),
-                        orderBy('timestamp', 'desc'),
-                        limit(1)
+                        limit(5) // Get a few recent entries to sort manually
                     );
                     
                     const snapshot = await getDocs(historyQuery);
                     
                     if (!snapshot.empty) {
-                        const latestEntry = snapshot.docs[0].data();
+                        // Sort manually by timestamp (most recent first)
+                        const entries = snapshot.docs
+                            .map(doc => doc.data())
+                            .sort((a, b) => {
+                                const timeA = a.timestamp?.seconds || 0;
+                                const timeB = b.timestamp?.seconds || 0;
+                                return timeB - timeA; // descending order
+                            });
                         
-                        // Calculate the ELO change
-                        let eloChange = latestEntry.newElo - latestEntry.previousElo;
+                        // Get the most recent entry
+                        const latestEntry = entries[0];
                         
-                        // Store the actual numeric change value based on entry type
-                        // For promotions/demotions, we want to show the exact value
+                        // Get the numeric change
+                        let eloChange;
+                        
+                        // For promotion/demotion, use change property if available
+                        if (latestEntry.change !== undefined) {
+                            eloChange = latestEntry.change;
+                        } else {
+                            eloChange = latestEntry.newElo - latestEntry.previousElo;
+                        }
+                        
+                        // Special handling for promotions/demotions
+                        if (latestEntry.type === 'promotion') {
+                            // Ensure promotion is positive
+                            eloChange = Math.abs(eloChange);
+                        } else if (latestEntry.type === 'demotion') {
+                            // Ensure demotion is negative
+                            eloChange = -Math.abs(eloChange);
+                        }
+                        
                         changes.set(username, eloChange);
-                        
                         console.log(`${username}: ${eloChange} (${latestEntry.type || 'unknown type'})`);
                     }
                 } catch (err) {
@@ -438,10 +475,8 @@ async function getPlayersLastEloChanges(usernames) {
                 }
             });
             
-            // Wait for all promises in this batch
             await Promise.all(batchPromises);
             
-            // Add a small delay between batches
             if (i + batchSize < usernames.length) {
                 await new Promise(r => setTimeout(r, 50));
             }
