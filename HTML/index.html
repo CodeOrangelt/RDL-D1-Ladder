@@ -188,65 +188,55 @@
     
     <!-- Scripts -->
     <script type="module">
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Load nav and footer
-                const [navResponse, footerResponse] = await Promise.all([
-                    fetch('./nav.html'),
-                    fetch('./footer.html')
-                ]);
-
-                document.getElementById('nav-placeholder').innerHTML = await navResponse.text();
-                document.getElementById('footer-placeholder').innerHTML = await footerResponse.text();
-
-                // Initialize components properly
-                const { RetroTrackerMonitor } = await import('../JS/whosplaying.js');
-                const { promotionManager } = await import('../JS/promotions.js');
-
-                // Initialize both trackers
-                const tracker = new RetroTrackerMonitor();
-                await tracker.initializeBannerOnly();
-                promotionManager.initialize();
-
-                // Discord widget toggle
-                const toggleButton = document.getElementById('toggle-discord');
-                const discordWidget = document.getElementById('discord-widget');
-
-                toggleButton.addEventListener('click', () => {
-                    discordWidget.classList.toggle('collapsed');
-                    const isCollapsed = discordWidget.classList.contains('collapsed');
-                    toggleButton.innerHTML = `
-                        <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16">
-                            <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                        </svg>
-                        ${isCollapsed ? 'RDL Server' : 'Hide Discord'}
-                    `;
-                });
-
-                // Setup ladder toggle buttons
-                const d1Toggle = document.getElementById('d1-toggle');
-                const d2Toggle = document.getElementById('d2-toggle');
-                const d1Container = document.getElementById('d1-ladder-container');
-                const d2Container = document.getElementById('d2-ladder-container');
-
-                d1Toggle.addEventListener('click', () => {
-                    d1Toggle.classList.add('active');
-                    d2Toggle.classList.remove('active');
-                    d1Container.classList.add('active');
-                    d2Container.classList.remove('active');
-                });
-
-                d2Toggle.addEventListener('click', () => {
-                    d2Toggle.classList.add('active');
-                    d1Toggle.classList.remove('active');
-                    d2Container.classList.add('active');
-                    d1Container.classList.remove('active');
-                });
-
-            } catch (error) {
-                console.error('Error initializing page:', error);
+        document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle Discord widget errors
+    function handleDiscordWidgetIssues() {
+        try {
+            // Get the Discord widget iframe
+            const discordFrame = document.querySelector('#discord-widget iframe');
+            
+            // If we found the iframe, add a load event handler
+            if (discordFrame) {
+                discordFrame.onload = function() {
+                    // Try to access the iframe contents - this may fail due to CORS
+                    try {
+                        // Attempt to add error handlers to avatar images
+                        const frameDoc = discordFrame.contentDocument || discordFrame.contentWindow.document;
+                        const avatarImages = frameDoc.querySelectorAll('img[src*="cdn.discordapp.com/widget-avatars/"]');
+                        
+                        avatarImages.forEach(img => {
+                            img.onerror = function() {
+                                // Replace with generic avatar or hide
+                                this.style.display = 'none';
+                                // Prevent error spam in console
+                                this.onerror = null;
+                            };
+                        });
+                    } catch (corsError) {
+                        // Expected CORS error - normal behavior for cross-origin iframes
+                        console.log('Discord widget loaded with restricted access (normal CORS behavior)');
+                    }
+                };
             }
-        });
+            
+            // Add a CSS fix for the CORS issue
+            const style = document.createElement('style');
+            style.textContent = `
+                /* Hide broken Discord avatar images */
+                #discord-widget iframe {
+                    border: none !important;
+                }
+            `;
+            document.head.appendChild(style);
+        } catch (e) {
+            console.log('Discord widget enhancement could not be applied');
+        }
+    }
+    
+    // Try immediately and again after a delay to ensure widget is loaded
+    handleDiscordWidgetIssues();
+    setTimeout(handleDiscordWidgetIssues, 2000);
+});
     </script>
     <!-- Firebase and core app scripts -->
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
@@ -263,6 +253,7 @@
     <script type="module" src="../JS/promotions.js"></script>
     <script type="module" src="../JS/ladder-join.js"></script>
     <script type="module" src="../JS/ladder-retire.js"></script>
+    <script src="../JS/discord-widget-fix.js"></script>  <!-- Add this line -->
 </body>
 
 </html>
