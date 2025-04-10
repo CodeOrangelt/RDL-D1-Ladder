@@ -124,6 +124,16 @@ async function setupAdminButtons() {
             }
         });
     }
+
+    const viewEloHistoryD2Btn = document.getElementById('view-elo-history-d2');
+    if (viewEloHistoryD2Btn) {
+        viewEloHistoryD2Btn.addEventListener('click', async () => {
+            document.getElementById('elo-history-d2').style.display = 'block';
+            // Import dynamically to reduce initial load time
+            const { displayEloHistoryD2 } = await import('./admin-elo-history-d2.js');
+            await displayEloHistoryD2();
+        });
+    }
 }
 
 async function populateTestLadder() {
@@ -459,6 +469,12 @@ async function promotePlayer(username) {
             type: 'promotion',
             rankAchieved: nextThreshold.name,
             promotedBy: user.email
+        });
+
+        // Check and record promotion
+        await promotionManager.checkAndRecordPromotion(playerDoc.id, nextThreshold.elo, currentElo, {
+            source: 'admin',
+            adminUser: user.email
         });
 
         // Update UI
@@ -807,6 +823,12 @@ async function setCustomElo(username, newElo) {
         });
 
         await batch.commit();
+
+        // Check and record promotion
+        await promotionManager.checkAndRecordPromotion(playerDoc.id, newElo, currentElo, {
+            source: 'admin',
+            adminUser: user.email
+        });
         
         // Refresh displays after successful update
         await Promise.all([
@@ -1008,3 +1030,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+import { getEloHistoryD2, resetPaginationD2 } from './elo-history-d2.js';
+
+export async function displayEloHistoryD2() {
+    const historyContainer = document.querySelector('#elo-history-d2-table tbody');
+    if (!historyContainer) return;
+
+    try {
+        const { entries } = await getEloHistoryD2();
+        historyContainer.innerHTML = ''; // Clear existing entries
+
+        entries.forEach(entry => {
+            const row = document.createElement('tr');
+            const changeClass = entry.change > 0 ? 'positive-change' : entry.change < 0 ? 'negative-change' : '';
+            
+            row.innerHTML = `
+                <td>${entry.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
+                <td>${entry.playerUsername}</td>
+                <td>${entry.previousElo}</td>
+                <td>${entry.newElo}</td>
+                <td class="${changeClass}">
+                    ${entry.change > 0 ? '+' : ''}${entry.change}
+                </td>
+                <td>${entry.opponentUsername}</td>
+                <td>${entry.matchResult}</td>
+            `;
+            historyContainer.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error displaying D2 ELO history:', error);
+        historyContainer.innerHTML = '<tr><td colspan="7">Error loading D2 history</td></tr>';
+    }
+}

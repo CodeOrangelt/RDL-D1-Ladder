@@ -1,4 +1,5 @@
 import { approveReport } from './ladderalgorithm.js';
+import { approveReportD2 } from './ladderalgorithm-d2.js';
 import { 
     collection, getDocs, query, where, 
     orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc 
@@ -524,11 +525,14 @@ function autoFillReportForm(reportData) {
                                 isAdmin: auth.currentUser?.email === 'admin@ladder.com' || auth.currentUser?.email === 'brian2af@outlook.com'
                             });
                             
-                            const pendingCollection = gameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
-                            const approvedCollection = gameMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-                            
-                            await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment, 
-                                                pendingCollection, approvedCollection, gameMode);
+                            const gameMode = reportData.gameMode || currentGameMode;
+
+                            // Call the appropriate function based on game mode
+                            if (gameMode === 'D2') {
+                                await approveReportD2(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                            } else {
+                                await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                            }
                             
                             document.getElementById('report-lightbox').style.display = 'none';
                             alert('Match approved successfully');
