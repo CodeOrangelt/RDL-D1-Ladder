@@ -183,75 +183,22 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- Add this right before the closing body tag in index.html -->
+    <!-- Single promotion-banner-container -->
     <div id="promotion-banner-container"></div>
     
     <!-- Scripts -->
-    <script type="module">
-      /**
- * Discord Widget Enhancement
- * - Improves appearance even with CORS errors
- * - Handles widget toggle functionality
- */
-document.addEventListener('DOMContentLoaded', function() {
-    // Get widget elements
-    const discordWidget = document.getElementById('discord-widget');
-    const toggleButton = document.getElementById('toggle-discord');
     
-    // Initialize toggle functionality
-    if (toggleButton && discordWidget) {
-        toggleButton.addEventListener('click', function() {
-            discordWidget.classList.toggle('collapsed');
-        });
-    }
-    
-    // Apply better styling that works with CORS limitations
-    const styleEl = document.createElement('style');
-
-    document.head.appendChild(styleEl);
-    
-    // Console error silencer - this won't fix CORS but will reduce console spam
-    const originalError = console.error;
-    console.error = function() {
-        // Ignore CORS errors from Discord widget
-        if (arguments[0] && 
-            typeof arguments[0] === 'string' && 
-            arguments[0].includes('cdn.discordapp.com/widget-avatars')) {
-            return;
-        }
-        originalError.apply(console, arguments);
-    };
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Load navigation
-    fetch('../HTML/nav.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('nav-placeholder').innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading navigation:', error);
-        });
-    
-    // Load footer
-    fetch('../HTML/footer.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('footer-placeholder').innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error loading footer:', error);
-        });
-});
-    </script>
     <!-- Firebase and core app scripts -->
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
 
+    <!-- Page components (navigation, footer, Discord widget) -->
+    <script src="../JS/page-components.js"></script>
+
     <!-- Application scripts -->
     <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" src="../JS/firebase-cache.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/ladder.js"></script>
