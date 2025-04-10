@@ -389,16 +389,20 @@ async function updateLadderDisplay(ladderData) {
                             const formattedChange = change > 0 ? `+${change}` : `${change}`;
                             indicator.textContent = formattedChange;
                             
+                            // Use a completely different approach with positioning
+                            eloCell.style.position = 'relative'; // Make the cell a positioned container
+                            
                             // Style based on positive/negative change
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-                            indicator.style.marginLeft = '5px';
+                            indicator.style.position = 'absolute';
+                            indicator.style.right = '5px';
+                            indicator.style.top = '50%';
+                            indicator.style.transform = 'translateY(-50%)';
                             indicator.style.fontWeight = 'bold';
                             indicator.style.fontSize = '0.7em';
-                            indicator.style.flexShrink = '0'; // Prevent shrinking
-                            indicator.style.width = '40px';   // Fixed width for consistency
-                            indicator.style.textAlign = 'right';
                             
                             eloCell.appendChild(indicator);
+                            console.log(`D1: Added ELO indicator ${formattedChange} to ${username}`);
                         }
                     }
                 }
