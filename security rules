@@ -419,5 +419,26 @@ service cloud.firestore {
                            (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
+
+    // Add these new rules for D2 collections
+    match /eloHistoryD2/{document=**} {
+      allow read;  // Anyone can read ELO history
+      allow write: if request.auth != null;  // Only authenticated users can write
+    }
+
+    match /pendingMatchesD2/{document=**} {
+      allow read;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
+        (request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username ||
+         request.auth.token.email == 'admin@ladder.com');
+    }
+    
+    match /approvedMatchesD2/{document=**} {
+      allow read;
+      allow write: if request.auth != null && 
+        (request.auth.token.email == 'admin@ladder.com' || 
+         request.auth.uid == request.resource.data.winnerId);
+    }
   }
 }

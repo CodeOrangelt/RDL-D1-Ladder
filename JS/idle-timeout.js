@@ -1,5 +1,8 @@
+// Import the Firebase idle handler
+import firebaseIdle, { enhanceIdleTimeout } from './firebase-idle-wrapper.js';
+
 // Configuration
-const IDLE_TIMEOUT = 1.5 * 60 * 1000; // 1.5 minutes in milliseconds
+const IDLE_TIMEOUT = 5 * 60 * 1000; // Increased to 5 minutes for better UX
 let idleTimer = null;
 let isSessionSuspended = false;
 let networkErrorRetryCount = 0;
@@ -43,7 +46,7 @@ function createIdleOverlay() {
     message.style.cssText = 'color: #50C878; margin-bottom: 20px; font-size: 24px;';
     
     const subMessage = document.createElement('p');
-    subMessage.textContent = 'Your session has been suspended after 1.5 minutes of inactivity for security reasons.';
+    subMessage.textContent = 'Your session has been suspended after 5 minutes of inactivity for security reasons.';
     subMessage.style.cssText = 'color: #fff; margin-bottom: 30px;';
     
     const button = document.createElement('button');
@@ -185,6 +188,9 @@ function handleNetworkError() {
     window.RDL_NETWORK_ERROR = true;
     
     console.log('Network error detected, showing error overlay');
+    
+    // Also suspend Firebase operations
+    firebaseIdle.suspendAllListeners();
 }
 
 // Retry connection after network error
@@ -235,6 +241,9 @@ function retryConnection() {
         console.error('Failed to test connection:', error);
         handleNetworkError();
     }
+    
+    // Also resume Firebase listeners
+    firebaseIdle.resumeAllListeners();
 }
 
 // Suspend the session
@@ -247,9 +256,9 @@ function suspendSession() {
     
     console.log('Session suspended due to inactivity');
     
-    // We're not signing out the user, just preventing Firestore operations
-    // by setting a flag that our Firestore wrapper will check
+    // Suspend Firebase operations
     window.RDL_SESSION_SUSPENDED = true;
+    firebaseIdle.suspendAllListeners();
 }
 
 // Resume the session
@@ -264,6 +273,9 @@ function resumeSession() {
     
     console.log('Session resumed');
     resetIdleTimer();
+    
+    // Resume Firebase listeners
+    firebaseIdle.resumeAllListeners();
     
     // Force a page reload to ensure clean state if session was suspended for a long time
     if (idleTimer && Date.now() - (window.RDL_LAST_ACTIVITY || 0) > IDLE_TIMEOUT * 2) {
@@ -306,6 +318,13 @@ function initIdleTimeout() {
     resetIdleTimer();
     
     console.log('Idle timeout initialized:', IDLE_TIMEOUT, 'ms');
+    
+    // Make functions available globally for the wrapper
+    window.suspendSession = suspendSession;
+    window.resumeSession = resumeSession;
+    
+    // Enhance with Firebase idle functionality
+    enhanceIdleTimeout();
 }
 
 // Export functions
