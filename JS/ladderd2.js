@@ -330,6 +330,12 @@ async function updateLadderDisplayD2(ladderData) {
     // Get all ELO changes at once
     getPlayersLastEloChangesD2(usernames)
         .then(changes => {
+            console.log('D2: Got changes map with', changes.size, 'entries:', 
+                Array.from(changes.entries())
+                    .filter(([_, change]) => change !== 0)
+                    .map(([name, change]) => `${name}: ${change}`)
+            );
+            
             changes.forEach((change, username) => {
                 const row = rowMap.get(username);
                 if (row) {
@@ -363,16 +369,20 @@ async function updateLadderDisplayD2(ladderData) {
                             const formattedChange = change > 0 ? `+${change}` : `${change}`;
                             indicator.textContent = formattedChange;
                             
+                            // Use a completely different approach with positioning
+                            eloCell.style.position = 'relative'; // Make the cell a positioned container
+                            
                             // Style based on positive/negative change
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-                            indicator.style.marginLeft = '5px';
+                            indicator.style.position = 'absolute';
+                            indicator.style.right = '5px';
+                            indicator.style.top = '50%';
+                            indicator.style.transform = 'translateY(-50%)';
                             indicator.style.fontWeight = 'bold';
                             indicator.style.fontSize = '0.7em';
-                            indicator.style.flexShrink = '0'; // Prevent shrinking
-                            indicator.style.width = '40px';   // Fixed width for consistency
-                            indicator.style.textAlign = 'right';
                             
                             eloCell.appendChild(indicator);
+                            console.log(`D2: Added ELO indicator ${formattedChange} to ${username}`);
                         }
                     }
                 }
@@ -383,51 +393,72 @@ async function updateLadderDisplayD2(ladderData) {
 
 // Function for D2 ELO change tracking
 async function getPlayersLastEloChangesD2(usernames) {
-    // Initialize map with default values
+    console.log('D2: Finding ELO changes for', usernames.length, 'players');
     const changes = new Map();
     usernames.forEach(username => changes.set(username, 0));
     
     try {
-        // Use D2 collection for ELO history
+        // Try direct Firestore call first in case the idle wrapper is causing issues
         const eloHistoryRef = collection(db, 'eloHistoryD2');
         const recentHistoryQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
-        const snapshot = await firebaseIdle.getDocuments(recentHistoryQuery);
+        const snapshot = await getDocs(recentHistoryQuery);
         
-        // Group entries by username
+        console.log('D2: Found', snapshot.size, 'history entries');
+        
+        // Build a player ID to username mapping to improve matching
+        const playerIdToUsername = new Map();
+        const playersQuery = await getDocs(collection(db, 'playersD2'));
+        playersQuery.forEach(doc => {
+            const data = doc.data();
+            if (data.username) {
+                playerIdToUsername.set(doc.id, data.username);
+            }
+        });
+        
+        // Process entries by username with enhanced matching
         const entriesByUsername = new Map();
         
-        // Process all entries and associate them with usernames
         snapshot.forEach(doc => {
             const entry = doc.data();
-            const username = entry.player || entry.username || entry.playerUsername;
+            // Try different fields for username
+            let username = entry.username || entry.playerUsername;
+            
+            // If we have a player ID, try to match it
+            if (!username && entry.player && playerIdToUsername.has(entry.player)) {
+                username = playerIdToUsername.get(entry.player);
+            }
+            
+            // If still no username but we have match ID, try to get from match data
+            if (!username && entry.matchId) {
+                // This will be handled later if needed
+            }
             
             if (username && usernames.includes(username)) {
                 if (!entriesByUsername.has(username)) {
                     entriesByUsername.set(username, []);
                 }
                 
+                // Add entry to the user's history
                 entriesByUsername.get(username).push({
                     ...entry,
-                    // Ensure we have timestamp in the right format
-                    timestamp: entry.timestamp?.seconds || 0
+                    timestamp: entry.timestamp?.seconds || 0,
+                    username: username // Ensure username is set
                 });
             }
         });
         
-        // For each player, find and record their most recent ELO change
-        entriesByUsername.forEach((playerEntries, username) => {
-            if (playerEntries.length > 0) {
-                // Sort entries by timestamp (newest first)
-                playerEntries.sort((a, b) => b.timestamp - a.timestamp);
+        console.log('D2: Found entries for', entriesByUsername.size, 'players');
+        
+        entriesByUsername.forEach((entries, username) => {
+            if (entries.length > 0) {
+                entries.sort((a, b) => b.timestamp - a.timestamp);
                 
-                // Use the first (most recent) entry that has valid change information
-                const recentEntry = playerEntries.find(entry => 
+                const recentEntry = entries.find(entry => 
                     entry.change !== undefined || 
                     (entry.newElo !== undefined && entry.previousElo !== undefined)
                 );
                 
                 if (recentEntry) {
-                    // Calculate ELO change
                     let eloChange;
                     if (recentEntry.change !== undefined) {
                         eloChange = recentEntry.change;
@@ -436,14 +467,50 @@ async function getPlayersLastEloChangesD2(usernames) {
                     }
                     
                     if (eloChange !== undefined) {
-                        // Store the change
                         changes.set(username, eloChange);
+                        console.log(`D2: ${username} ELO change: ${eloChange}`);
                     }
                 }
             }
         });
+        
+        // If we didn't find any changes, try fallback to main eloHistory
+        if (entriesByUsername.size === 0) {
+            console.log('D2: No entries found in D2 history, checking main history');
+            
+            const fallbackRef = collection(db, 'eloHistory');
+            const fallbackQuery = query(
+                fallbackRef, 
+                where('gameMode', '==', 'D2'), 
+                orderBy('timestamp', 'desc'), 
+                limit(50)
+            );
+            
+            try {
+                const fallbackSnapshot = await getDocs(fallbackQuery);
+                console.log('D2: Found', fallbackSnapshot.size, 'fallback entries');
+                
+                fallbackSnapshot.forEach(doc => {
+                    const entry = doc.data();
+                    const username = entry.username || entry.playerUsername;
+                    
+                    if (username && usernames.includes(username)) {
+                        const eloChange = entry.change || 
+                            (entry.newElo !== undefined && entry.previousElo !== undefined ? 
+                             entry.newElo - entry.previousElo : 0);
+                        
+                        if (eloChange !== 0) {
+                            changes.set(username, eloChange);
+                            console.log(`D2: ${username} fallback ELO change: ${eloChange}`);
+                        }
+                    }
+                });
+            } catch (fallbackError) {
+                console.log('D2: Error checking fallback history:', fallbackError);
+            }
+        }
     } catch (error) {
-        console.error('Error fetching D2 ELO history:', error);
+        console.error('D2: Error fetching ELO history:', error);
     }
     
     return changes;
