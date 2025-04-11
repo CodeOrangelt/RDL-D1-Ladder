@@ -204,7 +204,7 @@ async function updateLadderDisplay(ladderData) {
         // Create username cell with styling
         const usernameCell = document.createElement('td');
         const usernameLink = document.createElement('a');
-        usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}`;
+        usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}&ladder=d1`;
         usernameLink.textContent = player.username;
         
         // Set ELO-based colors

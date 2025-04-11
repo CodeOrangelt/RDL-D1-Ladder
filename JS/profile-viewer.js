@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, doc, getDoc, setDoc, collection, 
-    query, where, getDocs, orderBy 
+    query, where, getDocs, orderBy, limit 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -18,15 +18,23 @@ const containerReferences = {};
 class ProfileViewer {
     constructor() {
         this.currentProfileData = null;
+        this.currentLadder = 'D1'; // Default to D1
         this.init();
     }
     
     init() {
-        // Get username from URL
+        // Get username and optional ladder from URL
         const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get('username');
+        const ladder = urlParams.get('ladder');
+        
+        // Set initial ladder from URL if present
+        if (ladder && ladder.toUpperCase() === 'D2') {
+            this.currentLadder = 'D2';
+        }
         
         if (username) {
+            this.setupToggleButtons();
             this.loadProfile(username);
         } else {
             const container = document.querySelector('.content');
@@ -36,8 +44,64 @@ class ProfileViewer {
         }
     }
     
+    setupToggleButtons() {
+        const d1Button = document.getElementById('profile-d1-toggle');
+        const d2Button = document.getElementById('profile-d2-toggle');
+        
+        if (d1Button && d2Button) {
+            // Set initial active state
+            if (this.currentLadder === 'D1') {
+                d1Button.classList.add('active');
+                d2Button.classList.remove('active');
+            } else {
+                d2Button.classList.add('active');
+                d1Button.classList.remove('active');
+            }
+            
+            // Add click handlers
+            d1Button.addEventListener('click', () => {
+                if (this.currentLadder !== 'D1') {
+                    this.currentLadder = 'D1';
+                    d1Button.classList.add('active');
+                    d2Button.classList.remove('active');
+                    
+                    // Get current username
+                    const username = this.currentProfileData?.username;
+                    if (username) {
+                        this.loadProfile(username);
+                    }
+                }
+            });
+            
+            d2Button.addEventListener('click', () => {
+                if (this.currentLadder !== 'D2') {
+                    this.currentLadder = 'D2';
+                    d2Button.classList.add('active');
+                    d1Button.classList.remove('active');
+                    
+                    // Get current username
+                    const username = this.currentProfileData?.username;
+                    if (username) {
+                        this.loadProfile(username);
+                    }
+                }
+            });
+        }
+    }
+    
     async loadProfile(username) {
+        console.log(`Loading profile for ${username} in ${this.currentLadder} ladder`);
         try {
+            // Check which ladders the player is registered in
+            const { inD1, inD2 } = await this.checkDualLadderStatus(username);
+            
+            // If not found in current ladder but found in other, switch ladders
+            if ((this.currentLadder === 'D1' && !inD1 && inD2) || 
+                (this.currentLadder === 'D2' && !inD2 && inD1)) {
+                this.currentLadder = this.currentLadder === 'D1' ? 'D2' : 'D1';
+                this.setupToggleButtons(); // Update active button
+            }
+            
             // Load player data
             await this.loadPlayerData(username);
             
@@ -98,22 +162,40 @@ class ProfileViewer {
     }
     
     async loadPlayerData(username) {
+        console.log(`Loading player data for ${username} in ${this.currentLadder} ladder`);
         try {
+            // Get cache key that includes ladder
+            const cacheKey = `${username}_${this.currentLadder}`;
+            
             // Check cache first
-            if (playerDataCache.has(username)) {
-                const cachedData = playerDataCache.get(username);
+            if (playerDataCache.has(cacheKey)) {
+                const cachedData = playerDataCache.get(cacheKey);
                 this.displayProfile(cachedData);
                 await this.loadPlayerStats(username);
                 return cachedData;
             }
             
-            // Get player details
-            const playersRef = collection(db, 'players');
+            // Get player details from the appropriate collection
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
             
+            // Show appropriate message if player not found
             if (querySnapshot.empty) {
-                throw new Error('Player not found');
+                const message = `Player not found in ${this.currentLadder} ladder`;
+                
+                // Check if player exists in the other ladder
+                const otherLadder = this.currentLadder === 'D1' ? 'D2' : 'D1';
+                const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : 'playersD2');
+                const otherQuery = query(otherPlayersRef, where('username', '==', username));
+                const otherSnapshot = await getDocs(otherQuery);
+                
+                if (!otherSnapshot.empty) {
+                    throw new Error(`${message}. Try selecting the ${otherLadder} ladder.`);
+                } else {
+                    throw new Error(`Player not found in any ladder`);
+                }
             }
             
             const playerData = querySnapshot.docs[0].data();
@@ -145,11 +227,12 @@ class ProfileViewer {
                 ...playerData,
                 ...profileData,
                 username,
-                userId
+                userId,
+                ladder: this.currentLadder
             };
             
             // Cache for future use
-            playerDataCache.set(username, data);
+            playerDataCache.set(cacheKey, data);
             
             // Display profile
             this.displayProfile(data);
@@ -159,6 +242,70 @@ class ProfileViewer {
         } catch (error) {
             console.error('Error loading player data:', error);
             this.showError(`Error: ${error.message}`);
+            return null;
+        }
+    }
+    
+    async getPlayerData(username) {
+        try {
+            // Get cache key that includes ladder
+            const cacheKey = `${username}_${this.currentLadder}`;
+            
+            // Check cache first
+            if (playerDataCache.has(cacheKey)) {
+                return playerDataCache.get(cacheKey);
+            }
+            
+            // Get player details from the appropriate collection
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                console.warn(`Player ${username} not found in ${this.currentLadder} ladder`);
+                return null;
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            const userId = playerData.userId || querySnapshot.docs[0].id;
+            
+            // Get profile data from both collections in parallel
+            let profileData = {};
+            
+            try {
+                const [userProfileDoc, oldProfileDoc] = await Promise.all([
+                    getDoc(doc(db, 'userProfiles', userId)),
+                    getDoc(doc(db, 'profiles', userId))
+                ]);
+                
+                if (userProfileDoc.exists()) {
+                    profileData = userProfileDoc.data();
+                }
+                
+                if (oldProfileDoc.exists()) {
+                    profileData = { ...oldProfileDoc.data(), ...profileData };
+                }
+            } catch (profileError) {
+                console.warn('Error fetching profile data:', profileError);
+                // Continue with player data only
+            }
+            
+            // Combine all data
+            const data = {
+                ...playerData,
+                ...profileData,
+                username,
+                userId,
+                ladder: this.currentLadder
+            };
+            
+            // Cache for future use
+            playerDataCache.set(cacheKey, data);
+            
+            return data;
+        } catch (error) {
+            console.error(`Error getting player data for ${username}:`, error);
             return null;
         }
     }
@@ -238,7 +385,8 @@ class ProfileViewer {
     
     async getPlayerMatches(username) {
         try {
-            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+            const approvedMatchesRef = collection(db, matchesCollection);
             
             // Use separate queries to avoid index requirements
             const [winnerMatches, loserMatches] = await Promise.all([
@@ -274,13 +422,16 @@ class ProfileViewer {
     }
     
     async getPlayerEloData(username) {
-        // Check cache first
-        if (playerDataCache.has(username)) {
-            return playerDataCache.get(username).eloRating || 0;
+        // Update cache key to include ladder
+        const cacheKey = `${username}_${this.currentLadder}`;
+        
+        if (playerDataCache.has(cacheKey)) {
+            return playerDataCache.get(cacheKey).eloRating || 0;
         }
         
         try {
-            const playersRef = collection(db, 'players');
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
             const playerData = querySnapshot.docs[0]?.data() || {};
@@ -523,8 +674,9 @@ class ProfileViewer {
                 return;
             }
             
-            // Fetch promotion/demotion history
-            const eloHistoryRef = collection(db, 'eloHistory');
+            // Update to use ladder-specific collections
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+            const eloHistoryRef = collection(db, eloHistoryCollection);
             const q = query(
                 eloHistoryRef,
                 where('player', '==', username),
@@ -725,21 +877,34 @@ class ProfileViewer {
             }
         } catch (error) {
             console.error('Error loading promotion history:', error);
-            this.showErrorInContainer('rank-history', 'Failed to load rank history');
+            this.showErrorInContainer('rank-history', `Failed to load ${this.currentLadder} rank history`);
         }
     }
     
     async loadPlayerStats(username) {
         if (!username) return;
+        console.log(`Loading stats for ${username} in ${this.currentLadder} ladder`);
 
         try {
-            // Get player data for ELO
-            const playerData = playerDataCache.has(username) ? 
-                playerDataCache.get(username) : 
-                await this.getPlayerData(username);
+            // Direct Firebase query for player data - bypass cache
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
             
-            // Fetch match data
-            const approvedMatchesRef = collection(db, 'approvedMatches');
+            if (querySnapshot.empty) {
+                console.warn(`No player found for ${username} in ${playersCollection}`);
+                this.setDefaultStats();
+                return;
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            console.log(`Found player data for ${username}:`, playerData);
+            
+            // Rest of your existing code for matches...
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+            const approvedMatchesRef = collection(db, matchesCollection);
+            
             const [winnerMatches, loserMatches] = await Promise.all([
                 getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
                 getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
@@ -923,6 +1088,39 @@ class ProfileViewer {
                 element.parentNode.replaceChild(newElement, element);
                 handler(newElement);
             }
+        }
+    }
+
+    async checkDualLadderStatus(username) {
+        try {
+            // Check if player exists in both ladders
+            const [d1Snapshot, d2Snapshot] = await Promise.all([
+                getDocs(query(collection(db, 'players'), where('username', '==', username), limit(1))),
+                getDocs(query(collection(db, 'playersD2'), where('username', '==', username), limit(1)))
+            ]);
+            
+            const inD1 = !d1Snapshot.empty;
+            const inD2 = !d2Snapshot.empty;
+            
+            // Update toggle button visibility based on registration
+            const d1Button = document.getElementById('profile-d1-toggle');
+            const d2Button = document.getElementById('profile-d2-toggle');
+            
+            if (d1Button && d2Button) {
+                d1Button.style.display = inD1 ? 'block' : 'none';
+                d2Button.style.display = inD2 ? 'block' : 'none';
+                
+                // If only registered in one ladder, hide toggle completely
+                const toggleContainer = document.querySelector('.profile-ladder-toggle');
+                if (toggleContainer) {
+                    toggleContainer.style.display = (inD1 && inD2) ? 'flex' : 'none';
+                }
+            }
+            
+            return { inD1, inD2 };
+        } catch (error) {
+            console.error('Error checking dual ladder status:', error);
+            return { inD1: true, inD2: false }; // Default to D1 only on error
         }
     }
 }
