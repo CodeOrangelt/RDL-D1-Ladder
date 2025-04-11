@@ -506,3 +506,38 @@
     display: block !important;
 }
 
+/* Add this to your existing CSS */
+.profile-ladder-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    width: 100%;
+}
+
+.profile-ladder-toggle button {
+    background-color: #333;
+    color: white;
+    border: 1px solid #666;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    outline: white;
+
+}
+
+.profile-ladder-toggle button.active {
+    background-color: #50c87800;
+    border-color: #50c87800;
+    font-weight: bold;
+    outline: white;
+}
+
+.profile-ladder-toggle button:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.profile-ladder-toggle button:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
