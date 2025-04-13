@@ -434,5 +434,47 @@ service cloud.firestore {
         (request.auth.token.email == 'admin@ladder.com' || 
          request.auth.uid == request.resource.data.winnerId);
     }
+
+    // Add these new rules for rejected matches collections
+    match /RejectedD1/{matchId} {
+      allow read: if request.auth != null;
+      
+      // Allow creation if the user is authenticated and is the winner of the match
+      allow create: if request.auth != null && (
+        // Match winner ID
+        request.resource.data.winnerId == request.auth.uid ||
+        // Match winner email
+        request.resource.data.winnerEmail == request.auth.token.email ||
+        // Match winner username
+        (exists(/databases/$(database)/documents/players/$(request.auth.uid)) && 
+         request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
+        // Admin can always create
+        isAdmin()
+      );
+      
+      // Only admins can update or delete rejected match records
+      allow update, delete: if isAdmin();
+    }
+
+    // Same rules for D2 rejected matches
+    match /RejectedD2/{matchId} {
+      allow read: if request.auth != null;
+      
+      // Allow creation if the user is authenticated and is the winner of the match
+      allow create: if request.auth != null && (
+        // Match winner ID
+        request.resource.data.winnerId == request.auth.uid ||
+        // Match winner email
+        request.resource.data.winnerEmail == request.auth.token.email ||
+        // Match winner username
+        (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) && 
+         request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
+        // Admin can always create
+        isAdmin()
+      );
+      
+      // Only admins can update or delete rejected match records
+      allow update, delete: if isAdmin();
+    }
   }
 }
