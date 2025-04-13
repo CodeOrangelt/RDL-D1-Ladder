@@ -3,7 +3,7 @@ import { approveReportD2 } from './ladderalgorithm-d2.js';
 import { checkPendingMatches, updatePendingMatchNotification, updateNotificationDot } from './checkPendingMatches.js';
 import { 
     collection, getDocs, query, where, 
-    orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc 
+    orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth, db } from './firebase-config.js';
@@ -518,8 +518,43 @@ function autoFillReportForm(reportData) {
                 // Show the lightbox
                 showLightbox();
                 
-                // Setup Approve and Cancel button event listeners (using cloneNode to avoid duplicates)
+                // Update the lightbox buttons container to include a reject button
+                const buttonsContainer = document.querySelector('.lightbox-buttons');
+                if (buttonsContainer) {
+                    console.log("Found buttons container:", buttonsContainer);
+                    
+                    // Remove any existing reject button to avoid duplicates
+                    const existingRejectButton = document.getElementById('reject-button');
+                    if (existingRejectButton) {
+                        existingRejectButton.remove();
+                    }
+                    
+                    // Create new reject button with prominent styling
+                    const rejectButton = document.createElement('button');
+                    rejectButton.id = 'reject-button';
+                    rejectButton.className = 'button danger-button';
+                    rejectButton.textContent = 'Reject Match';
+                    rejectButton.style.backgroundColor = '#d32f2f';
+                    rejectButton.style.color = 'white';
+                    rejectButton.style.marginRight = '10px';
+                    rejectButton.style.padding = '8px 16px';
+                    rejectButton.style.border = 'none';
+                    rejectButton.style.borderRadius = '4px';
+                    rejectButton.style.cursor = 'pointer';
+                    rejectButton.style.fontWeight = 'bold';
+                    
+                    // Insert at the start of the buttons container instead of trying to use insertBefore
+                    buttonsContainer.prepend(rejectButton);
+                    
+                    console.log("Reject button added:", rejectButton);
+                }
+                
+                // Setup all button event listeners
                 const approveButton = document.getElementById('approve-button');
+                const rejectButton = document.getElementById('reject-button');
+                const cancelButton = document.getElementById('cancel-button');
+                
+                // Replace approve button event listener
                 if (approveButton) {
                     const newApproveButton = approveButton.cloneNode(true);
                     approveButton.parentNode.replaceChild(newApproveButton, approveButton);
@@ -576,13 +611,43 @@ function autoFillReportForm(reportData) {
                     });
                 }
                 
-                const cancelButton = document.getElementById('cancel-button');
+                // Add event listener for reject button
+                if (rejectButton) {
+                    const newRejectButton = rejectButton.cloneNode(true);
+                    rejectButton.parentNode.replaceChild(newRejectButton, rejectButton);
+                    newRejectButton.addEventListener('click', async function() {
+                        try {
+                            // Prompt for rejection reason
+                            const rejectionReason = prompt("Please provide a reason for rejecting this match report:", "");
+                            
+                            if (rejectionReason === null) {
+                                // User canceled the prompt
+                                return;
+                            }
+                            
+                            // Call the reject function
+                            await rejectReport(reportData.id, rejectionReason);
+                            
+                            hideLightbox();
+                            alert('Match report rejected successfully');
+                            
+                            // Update notification indicator
+                            updatePendingMatchNotification();
+                            
+                            location.reload();
+                        } catch (error) {
+                            console.error('Error rejecting report:', error);
+                            alert('Error rejecting match: ' + error.message);
+                        }
+                    });
+                }
+                
+                // Replace cancel button event listener
                 if (cancelButton) {
                     const newCancelButton = cancelButton.cloneNode(true);
                     cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
                     newCancelButton.addEventListener('click', hideLightbox);
                 }
-                
             })
             .catch(error => {
                 console.error('Error processing player data:', error);
@@ -606,6 +671,84 @@ function showLightbox() {
 function hideLightbox() {
     const lightbox = document.getElementById('report-lightbox');
     lightbox.classList.remove('show');
+}
+
+// Function to reject a pending match report
+async function rejectReport(reportId, rejectionReason) {
+    try {
+        // Determine which collections to use based on game mode
+        const pendingCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        const rejectedCollection = currentGameMode === 'D1' ? 'RejectedD1' : 'RejectedD2';
+        
+        console.log(`Rejecting match ${reportId} from ${pendingCollection} to ${rejectedCollection}`);
+        
+        // Get the current user
+        const user = auth.currentUser;
+        if (!user) throw new Error("You must be logged in to reject a match");
+        
+        // Get the match data
+        const matchRef = doc(db, pendingCollection, reportId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            throw new Error("Match report not found");
+        }
+        
+        const matchData = matchSnap.data();
+        
+        // Verify the current user is the intended approver (winner)
+        const isAuthorized = 
+            (matchData.winnerId && matchData.winnerId === user.uid) ||
+            (matchData.winnerEmail && matchData.winnerEmail === user.email) || 
+            (matchData.winnerUsername && matchData.winnerUsername === await getUsernameFromId(user.uid));
+            
+        if (!isAuthorized) {
+            throw new Error("Only the winner of the match can reject it");
+        }
+        
+        // Add rejection data
+        const rejectionData = {
+            ...matchData,
+            rejectedAt: serverTimestamp(),
+            rejectedBy: user.uid,
+            rejectionReason: rejectionReason || "No reason provided",
+            originalDocumentId: reportId
+        };
+        
+        // Write to rejected collection first
+        const newRejectedRef = doc(collection(db, rejectedCollection));
+        await setDoc(newRejectedRef, rejectionData);
+        
+        // Then delete from pending collection
+        await deleteDoc(matchRef);
+        
+        console.log(`Match ${reportId} rejected successfully`);
+        
+        // Update notification status
+        updatePendingMatchNotification();
+        
+        return true;
+    } catch (error) {
+        console.error("Error rejecting match:", error);
+        throw error;
+    }
+}
+
+// Helper function to get username from user ID
+async function getUsernameFromId(userId) {
+    // Try D1 collection first
+    const d1PlayerDoc = await getDoc(doc(db, 'players', userId));
+    if (d1PlayerDoc.exists()) {
+        return d1PlayerDoc.data().username;
+    }
+    
+    // Try D2 collection next
+    const d2PlayerDoc = await getDoc(doc(db, 'playersD2', userId));
+    if (d2PlayerDoc.exists()) {
+        return d2PlayerDoc.data().username;
+    }
+    
+    return null;
 }
 
 // Function to load the opponents list based on game mode

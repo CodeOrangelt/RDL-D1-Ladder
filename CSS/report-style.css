@@ -244,21 +244,64 @@ textarea {
     height: 120px;
 }
 
+/* Update the lightbox button styles */
+#report-lightbox .lightbox-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+/* Base button style for all lightbox buttons */
 #report-lightbox button {
-    background-color: #881e8e;
-    color: white;
+    flex: 1;
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1rem;
+    font-weight: bold;
     transition: all 0.3s ease;
-    margin-top: 20px;
+    margin: 0 8px;
+    color: white;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 0; /* Override the original margin-top */
 }
 
+/* Remove default hover since we're adding specific ones */
 #report-lightbox button:hover {
-    background-color: #b026b9;
     transform: translateY(-2px);
+}
+
+/* Red reject button */
+#report-lightbox #reject-button {
+    background-color: #d32f2f;
+    border-radius: 8px;
+    border: 2px solid #b71c1c;
+}
+
+#report-lightbox #reject-button:hover {
+    background-color: #b71c1c;
+}
+
+/* Green approve button */
+#report-lightbox #approve-button {
+    background-color: #2e7d32;
+    border: 2px solid #1b5e20;
+}
+
+#report-lightbox #approve-button:hover {
+    background-color: #1b5e20;
+}
+
+/* Purple cancel button */
+#report-lightbox #cancel-button {
+    background-color: #881e8e; 
+    border: 2px solid #6a1b9a;
+}
+
+#report-lightbox #cancel-button:hover {
+    background-color: #6a1b9a;
 }
 
 .table {
@@ -281,4 +324,18 @@ textarea {
 
 .table tbody tr:nth-child(even) {
     background-color: #f9f9f9;
+}
+
+.danger-button {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.danger-button:hover {
+    background-color: #b71c1c;
 }

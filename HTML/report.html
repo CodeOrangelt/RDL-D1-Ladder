@@ -102,7 +102,7 @@
         </form>
         <div id="report-error" class="error"></div>
 
-        <div id="report-lightbox">
+        <div id="report-lightbox" class="report-lightbox">
             <div class="lightbox-content">
                 <h2>Report Details</h2>
                 <p>Game Mode: <span id="lightbox-game-mode"></span></p>
@@ -126,9 +126,10 @@
                     <textarea id="winner-comment" required></textarea>
                 </div>
                 
-                <div class="button-group">
-                    <button id="approve-button" class="btn">Approve</button>
-                    <button id="cancel-button" class="btn">Cancel</button>
+                <div class="lightbox-buttons">
+                    <button id="approve-button" class="button">Approve</button>
+                    <button id="cancel-button" class="button">Cancel</button>
+                    <!-- Reject button will be added here -->
                 </div>
             </div>
         </div>
@@ -184,3 +185,4 @@
     </script>
 </body>
 </html>
+``` 
