@@ -419,3 +419,20 @@ body {
     background-color: #222;
     color: #4CAF50;
 }
+
+/* Notification indicator styles */
+.nav-notification {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 0;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  display: none; /* Hidden by default */
+}
