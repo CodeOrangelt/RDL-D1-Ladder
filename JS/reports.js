@@ -1,5 +1,6 @@
 import { approveReport } from './ladderalgorithm.js';
 import { approveReportD2 } from './ladderalgorithm-d2.js';
+import { checkPendingMatches, updatePendingMatchNotification, updateNotificationDot } from './checkPendingMatches.js';
 import { 
     collection, getDocs, query, where, 
     orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc 
@@ -338,6 +339,9 @@ async function submitReport(elements) {
         elements.reportError.textContent = "Game reported successfully!";
         elements.reportError.style.color = "green";
         
+        // Update notification indicator
+        updatePendingMatchNotification();
+        
     } catch (error) {
         console.error('Error submitting report:', error);
         elements.reportError.textContent = `Error: ${error.message}`;
@@ -417,8 +421,15 @@ async function checkForOutstandingReports(username, elements, collectionName = n
             // Add the document ID to the data
             reportData.id = snapshot.docs[0].id;
             autoFillReportForm(reportData);
+
+            // Update the notification dot as well
+            updateNotificationDot(true);
+            
+            return true;
         } else {
             console.log("No pending matches found for this user");
+            updateNotificationDot(false);
+            return false;
         }
     } catch (error) {
         console.error('Error checking outstanding reports:', error);
@@ -536,6 +547,10 @@ function autoFillReportForm(reportData) {
                             
                             document.getElementById('report-lightbox').style.display = 'none';
                             alert('Match approved successfully');
+                            
+                            // Update notification indicator
+                            updatePendingMatchNotification();
+                            
                             location.reload();
                             
                             // After approval, update positions if necessary (using old Elo data is preserved in the report)
