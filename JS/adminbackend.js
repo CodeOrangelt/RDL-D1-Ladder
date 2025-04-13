@@ -141,7 +141,6 @@ async function loadDashboardOverview() {
         
         // Create dashboard charts
         createRankDistributionChart();
-        createEloHistoryChart();
         createActivityChart();
         
     } catch (error) {
@@ -224,109 +223,6 @@ async function createRankDistributionChart() {
     } catch (error) {
         console.error("Error creating rank distribution chart:", error);
         document.getElementById('rank-distribution-chart').innerHTML = 
-            '<div class="chart-error">Error loading chart data</div>';
-    }
-}
-
-async function createEloHistoryChart() {
-    try {
-        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
-        const historyRef = collection(db, historyCollection);
-        
-        // Get last 30 days of data
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
-        const q = query(
-            historyRef,
-            where('timestamp', '>=', thirtyDaysAgo),
-            orderBy('timestamp', 'asc')
-        );
-        
-        const querySnapshot = await getDocs(q);
-        
-        // Organize data by date
-        const dataByDate = {};
-        querySnapshot.forEach(doc => {
-            const history = doc.data();
-            if (history.timestamp) {
-                const date = new Date(history.timestamp.seconds * 1000).toLocaleDateString();
-                if (!dataByDate[date]) {
-                    dataByDate[date] = { count: 0 };
-                }
-                dataByDate[date].count++;
-            }
-        });
-        
-        // Prepare chart data
-        const dates = Object.keys(dataByDate).sort((a, b) => new Date(a) - new Date(b));
-        const counts = dates.map(date => dataByDate[date].count);
-        
-        // Create chart
-        const chartContainer = document.getElementById('elo-history-chart');
-        
-        // Destroy existing chart if it exists
-        if (charts.eloHistory) {
-            charts.eloHistory.destroy();
-        }
-        
-        charts.eloHistory = new Chart(chartContainer, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'ELO Changes',
-                    data: counts,
-                    borderColor: currentLadder === 'D1' ? '#d32f2f' : '#1976d2',
-                    backgroundColor: currentLadder === 'D1' ? 'rgba(211, 47, 47, 0.2)' : 'rgba(25, 118, 210, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: '#e0e0e0'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#e0e0e0',
-                            maxRotation: 45,
-                            minRotation: 45
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#e0e0e0'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: `${currentLadder} ELO History (30 Days)`,
-                        color: '#e0e0e0',
-                        font: {
-                            size: 16
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error creating ELO history chart:", error);
-        document.getElementById('elo-history-chart').innerHTML = 
             '<div class="chart-error">Error loading chart data</div>';
     }
 }
@@ -701,20 +597,21 @@ async function setupManagePlayersSection() {
 }
 
 async function addNewPlayer() {
-    const usernameInput = document.getElementById('new-player-username');
-    const eloInput = document.getElementById('new-player-elo');
-    const ladderSelect = document.getElementById('new-player-ladder');
-    
-    const username = usernameInput.value.trim();
-    const elo = parseInt(eloInput.value);
-    const ladder = ladderSelect.value;
-    
-    if (!username || isNaN(elo)) {
-        showNotification('Please enter valid username and ELO', 'error');
-        return;
-    }
-    
     try {
+        const usernameInput = document.getElementById('new-player-username');
+        const eloInput = document.getElementById('new-player-elo');
+        const ladder = document.querySelector('input[name="new-player-ladder"]:checked').value;
+        
+        const username = usernameInput.value.trim();
+        const elo = parseInt(eloInput.value) || 1200;
+        
+        if (!username) {
+            alert('Please enter a valid username');
+            return;
+        }
+        
+        console.log(`Adding player ${username} with ELO ${elo} to ${ladder} ladder(s)`);
+        
         // Determine which collection(s) to use
         const addToD1 = ladder === 'D1' || ladder === 'BOTH';
         const addToD2 = ladder === 'D2' || ladder === 'BOTH';
@@ -724,7 +621,7 @@ async function addNewPlayer() {
             const d1Query = query(collection(db, 'players'), where('username', '==', username));
             const d1Snap = await getDocs(d1Query);
             if (!d1Snap.empty) {
-                showNotification(`Username ${username} already exists in D1 ladder`, 'error');
+                alert(`Username ${username} already exists in D1 ladder`);
                 return;
             }
         }
@@ -733,74 +630,94 @@ async function addNewPlayer() {
             const d2Query = query(collection(db, 'playersD2'), where('username', '==', username));
             const d2Snap = await getDocs(d2Query);
             if (!d2Snap.empty) {
-                showNotification(`Username ${username} already exists in D2 ladder`, 'error');
+                alert(`Username ${username} already exists in D2 ladder`);
                 return;
             }
         }
         
         // Add the player to selected ladder(s)
         const promises = [];
+        const user = auth.currentUser;
         
         if (addToD1) {
-            promises.push(addPlayerToLadder('D1', username, elo));
+            const playerData = {
+                username,
+                eloRating: elo,
+                wins: 0,
+                losses: 0,
+                createdAt: serverTimestamp(),
+                createdBy: user ? user.email : 'admin',
+                gameMode: 'D1'
+            };
+            
+            promises.push(addDoc(collection(db, 'players'), playerData));
+            
+            // Record initial ELO in history
+            promises.push(addDoc(collection(db, 'eloHistory'), {
+                player: username,
+                previousElo: 1200,
+                newElo: elo,
+                timestamp: serverTimestamp(),
+                type: 'initial_placement',
+                placedBy: user ? user.email : 'admin',
+                gameMode: 'D1'
+            }));
         }
         
         if (addToD2) {
-            promises.push(addPlayerToLadder('D2', username, elo));
+            const playerData = {
+                username,
+                eloRating: elo,
+                wins: 0,
+                losses: 0,
+                createdAt: serverTimestamp(),
+                createdBy: user ? user.email : 'admin',
+                gameMode: 'D2'
+            };
+            
+            promises.push(addDoc(collection(db, 'playersD2'), playerData));
+            
+            // Record initial ELO in history
+            promises.push(addDoc(collection(db, 'eloHistoryD2'), {
+                player: username,
+                previousElo: 1200,
+                newElo: elo,
+                timestamp: serverTimestamp(),
+                type: 'initial_placement',
+                placedBy: user ? user.email : 'admin',
+                gameMode: 'D2'
+            }));
         }
         
         await Promise.all(promises);
         
-        // Reset form
+        // Reset form and refresh display
         usernameInput.value = '';
-        eloInput.value = '';
-        ladderSelect.value = 'D1'; // Reset to default
+        eloInput.value = '1200';
+        document.querySelector('input[id="new-player-d1"]').checked = true;
         
-        // Refresh player list if current ladder matches
-        if (currentLadder === ladder || ladder === 'BOTH' || 
-            (currentLadder === 'D1' && ladder === 'D1') || 
-            (currentLadder === 'D2' && ladder === 'D2')) {
-            loadPlayersData();
-        }
+        // Show success message
+        alert(`Player ${username} added successfully!`);
         
-        showNotification(`Player ${username} added successfully`, 'success');
+        // Refresh player list
+        loadPlayersData();
         
     } catch (error) {
         console.error("Error adding player:", error);
-        showNotification('Failed to add player: ' + error.message, 'error');
+        alert(`Error adding player: ${error.message}`);
     }
 }
 
-async function addPlayerToLadder(ladder, username, elo) {
-    const collectionName = ladder === 'D1' ? 'players' : 'playersD2';
-    const historyCollection = ladder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
-    
-    // Add player document
-    const playerData = {
-        username,
-        eloRating: elo,
-        wins: 0,
-        losses: 0,
-        createdAt: serverTimestamp(),
-        createdBy: auth.currentUser.email,
-        gameMode: ladder
-    };
-    
-    const docRef = await addDoc(collection(db, collectionName), playerData);
-    
-    // Record initial ELO in history
-    await addDoc(collection(db, historyCollection), {
-        player: username,
-        previousElo: 1200,
-        newElo: elo,
-        timestamp: serverTimestamp(),
-        type: 'initial_placement',
-        placedBy: auth.currentUser.email,
-        gameMode: ladder
-    });
-    
-    return docRef;
-}
+// Make sure the event listener is connected properly
+document.addEventListener('DOMContentLoaded', () => {
+    const addPlayerForm = document.getElementById('add-player-form');
+    if (addPlayerForm) {
+        addPlayerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addNewPlayer();
+        });
+    }
+});
 
 function filterPlayerTable() {
     const searchTerm = document.getElementById('player-search').value.toLowerCase();
@@ -1229,22 +1146,17 @@ function setupRankControls() {
             const ladder = ladderSelect.value;
             
             if (!username) {
-                showNotification('Please enter a username', 'error');
+                alert('Please enter a username');
                 return;
             }
             
             try {
                 await demotePlayer(username, ladder);
-                demoteModal.classList.remove('active');
-                usernameInput.value = '';
+                document.getElementById('demote-modal').classList.remove('active');
+                document.getElementById('demote-username').value = '';
             } catch (error) {
-                showNotification(error.message, 'error');
+                console.error('Error in demotion:', error);
             }
-        });
-        
-        // Cancel button
-        document.getElementById('cancel-demote-btn').addEventListener('click', () => {
-            demoteModal.classList.remove('active');
         });
     }
     
@@ -1299,30 +1211,37 @@ function setupRankControls() {
     }
 }
 
+// Replace the promotePlayer function with this implementation
 async function promotePlayer(username, ladder) {
     try {
+        console.log(`Attempting to promote ${username} in ${ladder} ladder`);
+        
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
-            throw new Error('Unauthorized: Admin access required');
+        if (!user) {
+            throw new Error('You must be logged in to perform this action');
         }
-
+        
         // Determine which collection to use
         const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
         const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
         
         // Get player data
+        console.log(`Searching for player in ${collectionName}`);
         const playersRef = collection(db, collectionName);
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
+            alert(`Player not found in ${ladder} ladder`);
             throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
         const playerData = playerDoc.data();
         const currentElo = playerData.eloRating || 1200;
+        
+        console.log(`Found player with current ELO: ${currentElo}`);
 
         // Define ELO thresholds
         const thresholds = [
@@ -1336,62 +1255,36 @@ async function promotePlayer(username, ladder) {
         let nextThreshold = thresholds.find(t => t.elo > currentElo);
         
         if (!nextThreshold) {
+            alert(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
             throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
         }
 
-        // Begin transaction
-        const batch = writeBatch(db);
+        console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
         
         // Update player document
-        batch.update(doc(db, collectionName, playerDoc.id), {
+        await updateDoc(doc(db, collectionName, playerDoc.id), {
             eloRating: nextThreshold.elo,
             lastPromotedAt: serverTimestamp(),
-            promotedBy: user.email
+            promotedBy: user.email || 'admin'
         });
 
         // Add history entry
-        const historyRef = doc(collection(db, historyCollection));
-        batch.set(historyRef, {
+        await addDoc(collection(db, historyCollection), {
             player: username,
             previousElo: currentElo,
             newElo: nextThreshold.elo,
             timestamp: serverTimestamp(),
             type: 'promotion',
             rankAchieved: nextThreshold.name,
-            promotedBy: user.email,
+            promotedBy: user.email || 'admin',
             gameMode: ladder
         });
 
-        await batch.commit();
-
-        // Add a promotion record for banner notification
-        try {
-            const promotionData = {
-                id: `promotion_${username}_${Date.now()}`,
-                player: username,
-                playerId: playerDoc.id,
-                previousRank: getRankFromElo(currentElo),
-                newRank: nextThreshold.name,
-                previousElo: currentElo,
-                newElo: nextThreshold.elo,
-                timestamp: new Date(),
-                type: 'promotion',
-                rankAchieved: nextThreshold.name,
-                promotedBy: user.email,
-                gameMode: ladder
-            };
-            
-            await addDoc(collection(db, 'promotionHistory'), promotionData);
-        } catch (e) {
-            console.warn('Failed to record promotion for banner display:', e);
-            // Don't fail the main operation if this fails
-        }
-
-        showNotification(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`, 'success');
+        // Show success message
+        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
         
-        // Refresh relevant data if same ladder is active
+        // Refresh relevant data
         if (currentLadder === ladder) {
-            loadDashboardOverview();
             loadPlayersData();
             loadEloHistory(1);
         }
@@ -1399,34 +1292,68 @@ async function promotePlayer(username, ladder) {
         return true;
     } catch (error) {
         console.error('Error promoting player:', error);
+        alert(`Error promoting player: ${error.message}`);
         throw error;
     }
 }
 
+// Ensure the promote form is properly connected
+document.addEventListener('DOMContentLoaded', () => {
+    const promoteForm = document.getElementById('promote-form');
+    if (promoteForm) {
+        promoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('promote-username').value.trim();
+            const ladder = document.querySelector('input[name="promote-ladder"]:checked').value;
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await promotePlayer(username, ladder);
+                document.getElementById('promote-modal').classList.remove('active');
+                document.getElementById('promote-username').value = '';
+            } catch (error) {
+                console.error('Error in promotion:', error);
+            }
+        });
+    }
+});
+
+// Replace the demotePlayer function with this implementation
 async function demotePlayer(username, ladder) {
     try {
+        console.log(`Attempting to demote ${username} in ${ladder} ladder`);
+        
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
-            throw new Error('Unauthorized: Admin access required');
+        if (!user) {
+            throw new Error('You must be logged in to perform this action');
         }
-
+        
         // Determine which collection to use
         const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
         const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
-
+        
         // Get player data
+        console.log(`Searching for player in ${collectionName}`);
         const playersRef = collection(db, collectionName);
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
+            alert(`Player not found in ${ladder} ladder`);
             throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
         const playerData = playerDoc.data();
         const currentElo = playerData.eloRating || 1200;
+        
+        console.log(`Found player with current ELO: ${currentElo}`);
 
         // Define ELO thresholds (in reverse order for demotion)
         const thresholds = [
@@ -1440,62 +1367,36 @@ async function demotePlayer(username, ladder) {
         let prevThreshold = thresholds.find(t => t.elo < currentElo);
         
         if (!prevThreshold) {
+            alert(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
             throw new Error(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
         }
 
-        // Begin transaction
-        const batch = writeBatch(db);
+        console.log(`Demoting player to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
         
         // Update player document
-        batch.update(doc(db, collectionName, playerDoc.id), {
+        await updateDoc(doc(db, collectionName, playerDoc.id), {
             eloRating: prevThreshold.elo,
             lastDemotedAt: serverTimestamp(),
-            demotedBy: user.email
+            demotedBy: user.email || 'admin'
         });
 
         // Add history entry
-        const historyRef = doc(collection(db, historyCollection));
-        batch.set(historyRef, {
+        await addDoc(collection(db, historyCollection), {
             player: username,
             previousElo: currentElo,
             newElo: prevThreshold.elo,
             timestamp: serverTimestamp(),
             type: 'demotion',
             rankAchieved: prevThreshold.name,
-            demotedBy: user.email,
+            demotedBy: user.email || 'admin',
             gameMode: ladder
         });
 
-        await batch.commit();
-
-        // Add a demotion record for banner notification
-        try {
-            const demotionData = {
-                id: `demotion_${username}_${Date.now()}`,
-                player: username,
-                playerId: playerDoc.id,
-                previousRank: getRankFromElo(currentElo),
-                newRank: prevThreshold.name,
-                previousElo: currentElo,
-                newElo: prevThreshold.elo,
-                timestamp: new Date(),
-                type: 'demotion',
-                rankAchieved: prevThreshold.name,
-                demotedBy: user.email,
-                gameMode: ladder
-            };
-            
-            await addDoc(collection(db, 'promotionHistory'), demotionData);
-        } catch (e) {
-            console.warn('Failed to record demotion for banner display:', e);
-            // Don't fail the main operation if this fails
-        }
-
-        showNotification(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`, 'success');
+        // Show success message
+        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
         
-        // Refresh relevant data if same ladder is active
+        // Refresh relevant data
         if (currentLadder === ladder) {
-            loadDashboardOverview();
             loadPlayersData();
             loadEloHistory(1);
         }
@@ -1503,9 +1404,36 @@ async function demotePlayer(username, ladder) {
         return true;
     } catch (error) {
         console.error('Error demoting player:', error);
+        alert(`Error demoting player: ${error.message}`);
         throw error;
     }
 }
+
+// Ensure the demote form is properly connected
+document.addEventListener('DOMContentLoaded', () => {
+    const demoteForm = document.getElementById('demote-form');
+    if (demoteForm) {
+        demoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('demote-username').value.trim();
+            const ladder = document.querySelector('input[name="demote-ladder"]:checked').value;
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await demotePlayer(username, ladder);
+                document.getElementById('demote-modal').classList.remove('active');
+                document.getElementById('demote-username').value = '';
+            } catch (error) {
+                console.error('Error in demotion:', error);
+            }
+        });
+    }
+});
 
 async function setCustomElo(username, elo, ladder) {
     try {
