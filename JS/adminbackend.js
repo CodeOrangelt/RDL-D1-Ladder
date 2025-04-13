@@ -1,39 +1,17 @@
 import { 
-    collection, 
-    getDocs, 
-    query, 
-    orderBy, 
-    addDoc, 
-    deleteDoc, 
-    where, 
-    doc, 
-    getDoc,
-    serverTimestamp, 
-    setDoc, 
-    updateDoc, 
-    writeBatch,
-    runTransaction 
+    collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
+    serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
+    limitToLast, onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
-import { getEloHistory } from './elo-history.js';
 import { getRankStyle } from './ranks.js';
-import { ADMIN_EMAILS } from './admin-config.js';
 import { isAdmin } from './admin-check.js';
-import { archiveSeason0 } from './resetseason.js';
 
-// Test data array
-const testPlayers = [
-    { username: "EmergingPro", eloRating: 2250, position: 1 },    // Emerald
-    { username: "GoldMaster", eloRating: 1950, position: 2 },     // Gold
-    { username: "SilverStriker", eloRating: 1750, position: 3 },  // Silver
-    { username: "BronzeWarrior", eloRating: 1500, position: 4 },  // Bronze
-    { username: "GoldChampion", eloRating: 1850, position: 5 },   // Gold
-    { username: "EmberEmerald", eloRating: 2150, position: 6 },   // Emerald
-    { username: "SilverPhoenix", eloRating: 1650, position: 7 },  // Silver
-    { username: "BronzeKnight", eloRating: 1450, position: 8 },   // Bronze
-    { username: "Newcomer", eloRating: 1200, position: 9 },       // Unranked
-    { username: "RookiePlayer", eloRating: 1350, position: 10 }   // Unranked
-];
+// Initialize charts container
+const charts = {};
+let currentLadder = 'D1'; // Default ladder mode
+let eloHistoryPagination = { d1: { page: 1, lastVisible: null, firstVisible: null }, d2: { page: 1, lastVisible: null, firstVisible: null } };
+const PAGE_SIZE = 15; // Items per page for history tables
 
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async (user) => {
@@ -43,381 +21,1285 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (isAdmin(user.email)) {
-            setupCollapsibleButtons();
-            setupPromotePlayerButton();
-            setupDemotePlayerButton();
-            setupManagePlayersSection();
-            setupTestReportButton();
-            setupSetEloButton();
-            setupArchiveButton();
-            setupClearCacheButton();
-            // Initial load of ELO ratings if the section is visible
-            if (document.getElementById('elo-ratings').style.display !== 'none') {
-                loadEloRatings();
-            }
+            initializeAdminDashboard();
         } else {
             window.location.href = 'index.html';
         }
     });
 });
 
-function setupCollapsibleButtons() {
-    const buttons = document.querySelectorAll('.collapse-btn');
-    const adminSections = document.querySelectorAll('.admin-section');
+function initializeAdminDashboard() {
+    // Initialize sidebar navigation
+    setupSidebarNavigation();
     
-    buttons.forEach(button => {
-        button.addEventListener('click', async () => {
-            const targetId = button.getAttribute('data-target');
-            
-            // Hide all sections first
-            adminSections.forEach(section => {
-                section.style.display = 'none';
-            });
+    // Initialize ladder selector
+    setupLadderSelector();
+    
+    // Initialize dashboard overview
+    loadDashboardOverview();
+    
+    // Initialize player management
+    setupManagePlayersSection();
+    
+    // Initialize elo history
+    setupEloHistorySection();
+    
+    // Initialize promote/demote controls
+    setupRankControls();
+}
 
-            // Show target section and load appropriate data
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                
-                // Load appropriate data based on section
-                if (targetId === 'manage-players-section') {
-                    await loadPlayers();
-                } else if (targetId === 'elo-history') {
-                    await loadEloHistory();
-                } else if (targetId === 'elo-ratings') {
-                    await loadEloRatings();
-                }
+function setupSidebarNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.admin-section');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // Update active nav item
+            navItems.forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Show selected section, hide others
+            const targetSection = item.dataset.section;
+            sections.forEach(section => {
+                section.style.display = section.id === targetSection ? 'block' : 'none';
+            });
+            
+            // Load section data if needed
+            loadSectionData(targetSection);
+        });
+    });
+}
+
+function setupLadderSelector() {
+    const ladderSwitches = document.querySelectorAll('.ladder-switch input');
+    
+    ladderSwitches.forEach(switchInput => {
+        switchInput.addEventListener('change', () => {
+            currentLadder = switchInput.value;
+            document.body.setAttribute('data-ladder', currentLadder);
+            
+            // Refresh active section data
+            const activeSection = document.querySelector('.admin-section[style="display: block;"]');
+            if (activeSection) {
+                loadSectionData(activeSection.id);
             }
         });
     });
 }
 
-async function setupAdminButtons() {
-    const viewEloButton = document.getElementById('view-elo-ratings');
-    if (viewEloButton) {
-        viewEloButton.addEventListener('click', async () => {
-            document.getElementById('elo-ratings').style.display = 'block';
-            await loadEloRatings();
+function loadSectionData(sectionId) {
+    switch(sectionId) {
+        case 'dashboard':
+            loadDashboardOverview();
+            break;
+        case 'players':
+            loadPlayersData();
+            break;
+        case 'elo-history':
+            loadEloHistory();
+            break;
+        case 'manage-ranks':
+            // Nothing to preload
+            break;
+    }
+}
+
+async function loadDashboardOverview() {
+    try {
+        // Show loading states
+        document.querySelectorAll('.stat-card .stat-value').forEach(el => {
+            el.innerHTML = '<span class="loading-spinner"></span>';
         });
-    }
 
-    const viewEloHistoryBtn = document.getElementById('view-elo-history');
-    if (viewEloHistoryBtn) {
-        viewEloHistoryBtn.addEventListener('click', async () => {
-            document.getElementById('elo-history').style.display = 'block';
-            await loadEloHistory();
+        // Get collection names based on current ladder
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        
+        // Get player count
+        const playersSnapshot = await getDocs(collection(db, playerCollection));
+        const playerCount = playersSnapshot.size;
+        
+        // Get match count
+        const matchesSnapshot = await getDocs(collection(db, matchesCollection));
+        const matchCount = matchesSnapshot.size;
+        
+        // Get pending matches count
+        const pendingCollection = currentLadder === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        const pendingSnapshot = await getDocs(collection(db, pendingCollection));
+        const pendingCount = pendingSnapshot.size;
+        
+        // Get rejected matches count
+        const rejectedCollection = currentLadder === 'D1' ? 'RejectedD1' : 'RejectedD2';
+        const rejectedSnapshot = await getDocs(collection(db, rejectedCollection));
+        const rejectedCount = rejectedSnapshot.size;
+        
+        // Update stat cards
+        document.getElementById('player-count').textContent = playerCount;
+        document.getElementById('match-count').textContent = matchCount;
+        document.getElementById('pending-count').textContent = pendingCount;
+        document.getElementById('rejected-count').textContent = rejectedCount;
+        
+        // Create dashboard charts
+        createRankDistributionChart();
+        createEloHistoryChart();
+        createActivityChart();
+        
+    } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        showNotification('Failed to load dashboard overview', 'error');
+    }
+}
+
+async function createRankDistributionChart() {
+    try {
+        // Determine collection based on ladder selection
+        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
+        const querySnapshot = await getDocs(playersRef);
+
+        // Count players in each rank
+        const rankCounts = {
+            'Unranked': 0,
+            'Bronze': 0,
+            'Silver': 0,
+            'Gold': 0,
+            'Emerald': 0
+        };
+        
+        querySnapshot.forEach(doc => {
+            const player = doc.data();
+            const elo = player.eloRating || 1200;
+            
+            if (elo >= 2000) rankCounts['Emerald']++;
+            else if (elo >= 1800) rankCounts['Gold']++;
+            else if (elo >= 1600) rankCounts['Silver']++;
+            else if (elo >= 1400) rankCounts['Bronze']++;
+            else rankCounts['Unranked']++;
         });
-    }
-
-    const populateButton = document.getElementById('populate-test-ladder');
-    if (populateButton) {
-        populateButton.addEventListener('click', populateTestLadder);
-    }
-
-    const viewTemplateBtn = document.getElementById('view-template-ladder');
-    if (viewTemplateBtn) {
-        viewTemplateBtn.addEventListener('click', () => {
-            const templateSection = document.getElementById('template-ladder');
-            templateSection.style.display = templateSection.style.display === 'none' ? 'block' : 'none';
-            if (templateSection.style.display === 'block') {
-                displayTemplateLadder();
+        
+        const chartContainer = document.getElementById('rank-distribution-chart');
+        
+        // Destroy existing chart if it exists
+        if (charts.rankDistribution) {
+            charts.rankDistribution.destroy();
+        }
+        
+        // Create chart
+        charts.rankDistribution = new Chart(chartContainer, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(rankCounts),
+                datasets: [{
+                    data: Object.values(rankCounts),
+                    backgroundColor: [
+                        '#808080', // Unranked - Gray
+                        '#CD7F32', // Bronze
+                        '#C0C0C0', // Silver
+                        '#FFD700', // Gold
+                        '#50C878'  // Emerald
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `${currentLadder} Rank Distribution`,
+                        color: '#e0e0e0',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
             }
         });
-    }
-
-    const viewEloHistoryD2Btn = document.getElementById('view-elo-history-d2');
-    if (viewEloHistoryD2Btn) {
-        viewEloHistoryD2Btn.addEventListener('click', async () => {
-            document.getElementById('elo-history-d2').style.display = 'block';
-            // Import dynamically to reduce initial load time
-            const { displayEloHistoryD2 } = await import('./admin-elo-history-d2.js');
-            await displayEloHistoryD2();
-        });
-    }
-}
-
-async function populateTestLadder() {
-    try {
-        const playersRef = collection(db, 'players');
-        
-        // Clear existing players
-        const existingPlayers = await getDocs(playersRef);
-        await Promise.all(existingPlayers.docs.map(doc => deleteDoc(doc.ref)));
-
-        // Add test players
-        await Promise.all(testPlayers.map(player => addDoc(playersRef, player)));
-
-        alert('Test ladder populated successfully!');
-        
-        // Refresh ELO ratings display if visible
-        const eloRatings = document.getElementById('elo-ratings');
-        if (eloRatings && eloRatings.style.display === 'block') {
-            await loadEloRatings();
-        }
     } catch (error) {
-        console.error("Error populating test ladder:", error);
-        alert('Error populating test ladder: ' + error.message);
+        console.error("Error creating rank distribution chart:", error);
+        document.getElementById('rank-distribution-chart').innerHTML = 
+            '<div class="chart-error">Error loading chart data</div>';
     }
 }
 
-async function loadEloRatings() {
-    const tableBody = document.querySelector('#elo-table tbody');
-    if (!tableBody) return;
-
-    tableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
-
+async function createEloHistoryChart() {
     try {
-        const playersRef = collection(db, 'players');
+        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        const historyRef = collection(db, historyCollection);
+        
+        // Get last 30 days of data
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const q = query(
+            historyRef,
+            where('timestamp', '>=', thirtyDaysAgo),
+            orderBy('timestamp', 'asc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Organize data by date
+        const dataByDate = {};
+        querySnapshot.forEach(doc => {
+            const history = doc.data();
+            if (history.timestamp) {
+                const date = new Date(history.timestamp.seconds * 1000).toLocaleDateString();
+                if (!dataByDate[date]) {
+                    dataByDate[date] = { count: 0 };
+                }
+                dataByDate[date].count++;
+            }
+        });
+        
+        // Prepare chart data
+        const dates = Object.keys(dataByDate).sort((a, b) => new Date(a) - new Date(b));
+        const counts = dates.map(date => dataByDate[date].count);
+        
+        // Create chart
+        const chartContainer = document.getElementById('elo-history-chart');
+        
+        // Destroy existing chart if it exists
+        if (charts.eloHistory) {
+            charts.eloHistory.destroy();
+        }
+        
+        charts.eloHistory = new Chart(chartContainer, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'ELO Changes',
+                    data: counts,
+                    borderColor: currentLadder === 'D1' ? '#d32f2f' : '#1976d2',
+                    backgroundColor: currentLadder === 'D1' ? 'rgba(211, 47, 47, 0.2)' : 'rgba(25, 118, 210, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#e0e0e0',
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `${currentLadder} ELO History (30 Days)`,
+                        color: '#e0e0e0',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error creating ELO history chart:", error);
+        document.getElementById('elo-history-chart').innerHTML = 
+            '<div class="chart-error">Error loading chart data</div>';
+    }
+}
+
+async function createActivityChart() {
+    try {
+        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        const matchesRef = collection(db, matchesCollection);
+        
+        // Get last 7 days of data
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const q = query(
+            matchesRef,
+            where('approvedAt', '>=', sevenDaysAgo),
+            orderBy('approvedAt', 'asc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Organize data by day of week
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const activityByDay = dayNames.reduce((acc, day) => ({...acc, [day]: 0}), {});
+        
+        querySnapshot.forEach(doc => {
+            const match = doc.data();
+            if (match.approvedAt) {
+                const dayOfWeek = dayNames[new Date(match.approvedAt.seconds * 1000).getDay()];
+                activityByDay[dayOfWeek]++;
+            }
+        });
+        
+        // Create chart
+        const chartContainer = document.getElementById('activity-chart');
+        
+        // Destroy existing chart if it exists
+        if (charts.activity) {
+            charts.activity.destroy();
+        }
+        
+        charts.activity = new Chart(chartContainer, {
+            type: 'bar',
+            data: {
+                labels: dayNames,
+                datasets: [{
+                    label: 'Matches Played',
+                    data: dayNames.map(day => activityByDay[day]),
+                    backgroundColor: currentLadder === 'D1' ? 'rgba(211, 47, 47, 0.7)' : 'rgba(25, 118, 210, 0.7)',
+                    borderColor: currentLadder === 'D1' ? '#d32f2f' : '#1976d2',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `${currentLadder} Weekly Activity`,
+                        color: '#e0e0e0',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error creating activity chart:", error);
+        document.getElementById('activity-chart').innerHTML = 
+            '<div class="chart-error">Error loading chart data</div>';
+    }
+}
+
+async function loadPlayersData() {
+    const playerTable = document.getElementById('players-table-body');
+    if (!playerTable) return;
+    
+    playerTable.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading players...</td></tr>';
+    
+    try {
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const playersRef = collection(db, playerCollection);
         const q = query(playersRef, orderBy('eloRating', 'desc'));
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="2">No players found</td></tr>';
+            playerTable.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>';
             return;
         }
-
-        tableBody.innerHTML = '';
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            const row = document.createElement('tr');
-            const rankStyle = getRankStyle(data.eloRating);
-            
-            row.innerHTML = `
-                <td style="color: ${rankStyle.color}; font-weight: bold;" title="${rankStyle.name}">
-                    ${data.username || 'Unknown'}
-                </td>
-                <td>${data.eloRating || 1200}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error("Error loading ELO ratings:", error);
-        tableBody.innerHTML = '<tr><td colspan="2">Error loading ratings</td></tr>';
-    }
-}
-
-async function loadEloHistory() {
-    const tableBody = document.querySelector('#elo-history-table tbody');
-    if (!tableBody) {
-        console.error('ELO history table not found');
-        return;
-    }
-
-    tableBody.innerHTML = '<tr><td colspan="7">Loading history...</td></tr>';
-
-    try {
-        const eloHistoryRef = collection(db, 'eloHistory');
-        const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="7">No ELO history found</td></tr>';
-            return;
-        }
-
-        tableBody.innerHTML = '';
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            const row = document.createElement('tr');
-            const eloChange = data.newElo - data.previousElo;
-            const changeColor = eloChange > 0 ? 'color: #4CAF50;' : eloChange < 0 ? 'color: #f44336;' : '';
-            
-            row.innerHTML = `
-                <td>${data.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
-                <td>${data.player || 'N/A'}</td>
-                <td>${data.previousElo || 'N/A'}</td>
-                <td>${data.newElo || 'N/A'}</td>
-                <td style="${changeColor}">${eloChange > 0 ? '+' + eloChange : eloChange}</td>
-                <td>${data.opponent || 'N/A'}</td>
-                <td>${data.matchResult || 'N/A'}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error("Error loading ELO history:", error);
-        tableBody.innerHTML = '<tr><td colspan="7">Error loading history: ' + error.message + '</td></tr>';
-    }
-}
-
-function displayTemplateLadder() {
-    const tableBody = document.querySelector('#template-table tbody');
-    tableBody.innerHTML = '';
-
-    testPlayers.forEach(player => {
-        const row = document.createElement('tr');
-        const rankStyle = getRankStyle(player.eloRating);
-        row.innerHTML = `
-            <td>${player.position}</td>
-            <td style="color: ${rankStyle.color}; font-weight: bold;">${player.username}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-// Update loadPlayers function to prevent duplicates and handle visibility
-async function loadPlayers() {
-    const tableBody = document.querySelector('#players-table tbody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-
-    try {
-        const playersRef = collection(db, 'players');
-        const q = query(playersRef, orderBy('username'));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="4">No players found</td></tr>';
-            return;
-        }
-
-        tableBody.innerHTML = '';
+        
+        playerTable.innerHTML = '';
         let position = 1;
-
+        
         querySnapshot.forEach(doc => {
             const player = doc.data();
-            const row = document.createElement('tr');
+            const rank = getRankFromElo(player.eloRating || 1200);
             const rankStyle = getRankStyle(player.eloRating || 1200);
             
+            const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${position}</td>
-                <td style="color: ${rankStyle.color}; font-weight: bold;">
+                <td class="position">${position}</td>
+                <td class="username" style="color: ${rankStyle.color}">
                     ${player.username || 'Unknown'}
                 </td>
-                <td>${player.eloRating || 1200}</td>
-                <td>
-                    <button class="move-btn" data-direction="up" data-id="${doc.id}" data-pos="${position}">↑</button>
-                    <button class="move-btn" data-direction="down" data-id="${doc.id}" data-pos="${position}">↓</button>
-                    <button class="remove-btn" data-id="${doc.id}">Remove</button>
+                <td class="elo">${player.eloRating || 1200}</td>
+                <td class="rank">
+                    <span class="rank-badge" style="background-color: ${rankStyle.color}">
+                        ${rank}
+                    </span>
+                </td>
+                <td class="stats">
+                    ${player.wins || 0}W / ${player.losses || 0}L
+                </td>
+                <td class="actions">
+                    <button class="edit-btn" data-id="${doc.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-btn" data-id="${doc.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </td>
             `;
-            tableBody.appendChild(row);
+            playerTable.appendChild(row);
             position++;
         });
-
-        // Use setupLadderControls instead of setupPlayerControls
-        setupLadderControls();
-
+        
+        // Add event listeners to edit and delete buttons
+        setupPlayerActionButtons();
+        
     } catch (error) {
-        console.error('Error loading players:', error);
-        tableBody.innerHTML = '<tr><td colspan="4">Error loading players</td></tr>';
+        console.error("Error loading players:", error);
+        playerTable.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-state">
+                    Error loading players: ${error.message}
+                </td>
+            </tr>
+        `;
     }
 }
 
-async function setupLadderControls() {
-    // Handle move buttons
-    document.querySelectorAll('.move-btn').forEach(button => {
+function getRankFromElo(elo) {
+    if (elo >= 2000) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
+}
+
+function setupPlayerActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', async (e) => {
-            const direction = e.target.dataset.direction;
-            const playerId = e.target.dataset.id;
-            const currentPos = parseInt(e.target.dataset.pos);
-            
-            try {
-                const batch = writeBatch(db);
-                const playersRef = collection(db, 'players');
-                
-                // Get current player
-                const currentPlayerDoc = await getDoc(doc(playersRef, playerId));
-                
-                // Get adjacent player
-                const targetPos = direction === 'up' ? currentPos - 1 : currentPos + 1;
-                const targetQuery = query(playersRef, where('position', '==', targetPos));
-                const targetSnapshot = await getDocs(targetQuery);
-                
-                if (!targetSnapshot.empty) {
-                    const targetDoc = targetSnapshot.docs[0];
-                    
-                    // Swap positions
-                    batch.update(doc(playersRef, playerId), {
-                        position: targetPos
-                    });
-                    batch.update(doc(playersRef, targetDoc.id), {
-                        position: currentPos
-                    });
-                    
-                    await batch.commit();
-                    await loadPlayers(); // Refresh the display
-                }
-            } catch (error) {
-                console.error('Error moving player:', error);
-                alert('Failed to move player: ' + error.message);
-            }
+            const playerId = e.currentTarget.dataset.id;
+            openEditPlayerModal(playerId);
         });
     });
-
-    // Handle remove buttons
-    document.querySelectorAll('.remove-btn').forEach(button => {
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', async (e) => {
-            if (confirm('Are you sure you want to remove this player?')) {
-                try {
-                    await deleteDoc(doc(db, 'players', e.target.dataset.id));
-                    await loadPlayers(); // Refresh the list
-                } catch (error) {
-                    console.error('Error removing player:', error);
-                    alert('Failed to remove player: ' + error.message);
-                }
-            }
+            const playerId = e.currentTarget.dataset.id;
+            confirmDeletePlayer(playerId);
         });
     });
 }
 
-document.getElementById('add-player-btn').addEventListener('click', async () => {
-    const username = document.getElementById('new-player-username').value.trim();
-    const eloRating = parseInt(document.getElementById('new-player-elo').value);
-
-    if (!username || isNaN(eloRating)) {
-        alert('Please enter both username and ELO rating');
-        return;
-    }
-
+async function openEditPlayerModal(playerId) {
     try {
-        // Check if username exists
-        const playersRef = collection(db, 'players');
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            alert('Username already exists');
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const playerRef = doc(db, playerCollection, playerId);
+        const playerSnap = await getDoc(playerRef);
+        
+        if (!playerSnap.exists()) {
+            showNotification('Player not found', 'error');
             return;
         }
+        
+        const player = playerSnap.data();
+        
+        // Populate the edit modal
+        const modal = document.getElementById('edit-player-modal');
+        const usernameInput = document.getElementById('edit-username');
+        const eloInput = document.getElementById('edit-elo');
+        const winsInput = document.getElementById('edit-wins');
+        const lossesInput = document.getElementById('edit-losses');
+        
+        usernameInput.value = player.username || '';
+        eloInput.value = player.eloRating || 1200;
+        winsInput.value = player.wins || 0;
+        lossesInput.value = player.losses || 0;
+        
+        // Store player ID for the save function
+        modal.dataset.playerId = playerId;
+        
+        // Show the modal
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error("Error opening edit modal:", error);
+        showNotification('Failed to load player data', 'error');
+    }
+}
 
-        // Get all players to determine next position
-        const allPlayersSnapshot = await getDocs(playersRef);
-        const positions = [];
-        allPlayersSnapshot.forEach(doc => {
-            const playerData = doc.data();
-            if (playerData.position) {
-                positions.push(playerData.position);
+async function saveEditedPlayer() {
+    try {
+        const modal = document.getElementById('edit-player-modal');
+        const playerId = modal.dataset.playerId;
+        
+        if (!playerId) {
+            showNotification('No player selected', 'error');
+            return;
+        }
+        
+        const usernameInput = document.getElementById('edit-username');
+        const eloInput = document.getElementById('edit-elo');
+        const winsInput = document.getElementById('edit-wins');
+        const lossesInput = document.getElementById('edit-losses');
+        
+        const username = usernameInput.value.trim();
+        const elo = parseInt(eloInput.value);
+        const wins = parseInt(winsInput.value);
+        const losses = parseInt(lossesInput.value);
+        
+        if (!username || isNaN(elo)) {
+            showNotification('Please enter valid username and ELO', 'error');
+            return;
+        }
+        
+        // Update player data
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const playerRef = doc(db, playerCollection, playerId);
+        
+        // Get current player data for ELO history tracking
+        const currentPlayerSnap = await getDoc(playerRef);
+        const currentPlayer = currentPlayerSnap.exists() ? currentPlayerSnap.data() : {};
+        const currentElo = currentPlayer.eloRating || 1200;
+        
+        // Update player document
+        await updateDoc(playerRef, {
+            username,
+            eloRating: elo,
+            wins: wins || 0,
+            losses: losses || 0,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: auth.currentUser.email
+        });
+        
+        // If ELO changed, record in history
+        if (elo !== currentElo) {
+            const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+            await addDoc(collection(db, historyCollection), {
+                player: username,
+                previousElo: currentElo,
+                newElo: elo,
+                timestamp: serverTimestamp(),
+                type: 'admin_modification',
+                modifiedBy: auth.currentUser.email,
+                gameMode: currentLadder
+            });
+        }
+        
+        // Close modal
+        closeEditPlayerModal();
+        
+        // Refresh player data
+        loadPlayersData();
+        
+        showNotification('Player updated successfully', 'success');
+        
+    } catch (error) {
+        console.error("Error updating player:", error);
+        showNotification('Failed to update player: ' + error.message, 'error');
+    }
+}
+
+function closeEditPlayerModal() {
+    const modal = document.getElementById('edit-player-modal');
+    modal.classList.remove('active');
+    modal.dataset.playerId = '';
+}
+
+async function confirmDeletePlayer(playerId) {
+    if (confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
+        try {
+            const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+            await deleteDoc(doc(db, playerCollection, playerId));
+            
+            // Refresh player data
+            loadPlayersData();
+            
+            showNotification('Player deleted successfully', 'success');
+            
+        } catch (error) {
+            console.error("Error deleting player:", error);
+            showNotification('Failed to delete player: ' + error.message, 'error');
+        }
+    }
+}
+
+async function setupManagePlayersSection() {
+    // Add player form
+    const addPlayerForm = document.getElementById('add-player-form');
+    if (addPlayerForm) {
+        addPlayerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addNewPlayer();
+        });
+    }
+    
+    // Search functionality
+    const searchInput = document.getElementById('player-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterPlayerTable, 300));
+    }
+    
+    // Edit player modal buttons
+    const savePlayerBtn = document.getElementById('save-player-btn');
+    if (savePlayerBtn) {
+        savePlayerBtn.addEventListener('click', saveEditedPlayer);
+    }
+    
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', closeEditPlayerModal);
+    }
+    
+    // Modal background click to close
+    const editModal = document.getElementById('edit-player-modal');
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                closeEditPlayerModal();
             }
         });
-
-        // Calculate next position
-        const nextPosition = positions.length > 0 ? Math.max(...positions) + 1 : 1;
-
-        // Add new player with calculated position
-        const playerData = {
-            username: username,
-            eloRating: eloRating,
-            position: nextPosition,
-            createdAt: serverTimestamp()
-        };
-
-        await addDoc(collection(db, 'players'), playerData);
-        alert('Player added successfully at position ' + nextPosition);
-
-        // Clear inputs and refresh
-        document.getElementById('new-player-username').value = '';
-        document.getElementById('new-player-elo').value = '';
-        loadPlayers();
-
-    } catch (error) {
-        console.error('Error adding player:', error);
-        alert('Failed to add player');
     }
-});
+    
+    // Ladder selector for players section
+    const ladderSelector = document.getElementById('players-ladder-selector');
+    if (ladderSelector) {
+        ladderSelector.addEventListener('change', () => {
+            currentLadder = ladderSelector.value;
+            loadPlayersData();
+        });
+    }
+}
 
-// Add this function to handle promotions with proper batch handling
-async function promotePlayer(username) {
+async function addNewPlayer() {
+    const usernameInput = document.getElementById('new-player-username');
+    const eloInput = document.getElementById('new-player-elo');
+    const ladderSelect = document.getElementById('new-player-ladder');
+    
+    const username = usernameInput.value.trim();
+    const elo = parseInt(eloInput.value);
+    const ladder = ladderSelect.value;
+    
+    if (!username || isNaN(elo)) {
+        showNotification('Please enter valid username and ELO', 'error');
+        return;
+    }
+    
+    try {
+        // Determine which collection(s) to use
+        const addToD1 = ladder === 'D1' || ladder === 'BOTH';
+        const addToD2 = ladder === 'D2' || ladder === 'BOTH';
+        
+        // Check if username exists in the collections
+        if (addToD1) {
+            const d1Query = query(collection(db, 'players'), where('username', '==', username));
+            const d1Snap = await getDocs(d1Query);
+            if (!d1Snap.empty) {
+                showNotification(`Username ${username} already exists in D1 ladder`, 'error');
+                return;
+            }
+        }
+        
+        if (addToD2) {
+            const d2Query = query(collection(db, 'playersD2'), where('username', '==', username));
+            const d2Snap = await getDocs(d2Query);
+            if (!d2Snap.empty) {
+                showNotification(`Username ${username} already exists in D2 ladder`, 'error');
+                return;
+            }
+        }
+        
+        // Add the player to selected ladder(s)
+        const promises = [];
+        
+        if (addToD1) {
+            promises.push(addPlayerToLadder('D1', username, elo));
+        }
+        
+        if (addToD2) {
+            promises.push(addPlayerToLadder('D2', username, elo));
+        }
+        
+        await Promise.all(promises);
+        
+        // Reset form
+        usernameInput.value = '';
+        eloInput.value = '';
+        ladderSelect.value = 'D1'; // Reset to default
+        
+        // Refresh player list if current ladder matches
+        if (currentLadder === ladder || ladder === 'BOTH' || 
+            (currentLadder === 'D1' && ladder === 'D1') || 
+            (currentLadder === 'D2' && ladder === 'D2')) {
+            loadPlayersData();
+        }
+        
+        showNotification(`Player ${username} added successfully`, 'success');
+        
+    } catch (error) {
+        console.error("Error adding player:", error);
+        showNotification('Failed to add player: ' + error.message, 'error');
+    }
+}
+
+async function addPlayerToLadder(ladder, username, elo) {
+    const collectionName = ladder === 'D1' ? 'players' : 'playersD2';
+    const historyCollection = ladder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+    
+    // Add player document
+    const playerData = {
+        username,
+        eloRating: elo,
+        wins: 0,
+        losses: 0,
+        createdAt: serverTimestamp(),
+        createdBy: auth.currentUser.email,
+        gameMode: ladder
+    };
+    
+    const docRef = await addDoc(collection(db, collectionName), playerData);
+    
+    // Record initial ELO in history
+    await addDoc(collection(db, historyCollection), {
+        player: username,
+        previousElo: 1200,
+        newElo: elo,
+        timestamp: serverTimestamp(),
+        type: 'initial_placement',
+        placedBy: auth.currentUser.email,
+        gameMode: ladder
+    });
+    
+    return docRef;
+}
+
+function filterPlayerTable() {
+    const searchTerm = document.getElementById('player-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#players-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const username = row.querySelector('.username')?.textContent.toLowerCase() || '';
+        
+        if (username.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    const noResults = document.getElementById('no-results-message');
+    if (noResults) {
+        if (visibleCount === 0 && searchTerm !== '') {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+async function loadEloHistory(page = 1) {
+    const historyTable = document.getElementById('elo-history-table-body');
+    const ladderPrefix = currentLadder.toLowerCase(); // d1 or d2
+    
+    if (!historyTable) return;
+    
+    historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading history...</td></tr>';
+    
+    try {
+        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        const historyRef = collection(db, historyCollection);
+        
+        let q;
+        
+        if (page > eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].lastVisible) {
+            // Next page
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                startAfter(eloHistoryPagination[ladderPrefix].lastVisible),
+                limit(PAGE_SIZE)
+            );
+        } else if (page < eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].firstVisible) {
+            // Previous page
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                endBefore(eloHistoryPagination[ladderPrefix].firstVisible),
+                limitToLast(PAGE_SIZE)
+            );
+        } else {
+            // First page or reset
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                limit(PAGE_SIZE)
+            );
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No ELO history found</td></tr>';
+            document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
+            return;
+        }
+        
+        // Update pagination controls
+        eloHistoryPagination[ladderPrefix].page = page;
+        
+        // Store first and last documents for pagination
+        eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
+        eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+        // Render table
+        historyTable.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const history = doc.data();
+            const row = document.createElement('tr');
+            
+            const timestamp = history.timestamp 
+                ? new Date(history.timestamp.seconds * 1000).toLocaleString() 
+                : 'N/A';
+            
+            const eloChange = history.newElo - history.previousElo;
+            const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
+            const changeSign = eloChange > 0 ? '+' : '';
+            
+            row.innerHTML = `
+                <td class="timestamp">${timestamp}</td>
+                <td class="player">${history.player || 'N/A'}</td>
+                <td class="previous-elo">${history.previousElo || 'N/A'}</td>
+                <td class="new-elo">${history.newElo || 'N/A'}</td>
+                <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
+                <td class="type">${formatHistoryType(history.type)}</td>
+                <td class="admin-action">
+                    ${history.modifiedBy || history.promotedBy || history.demotedBy || 'System'}
+                </td>
+            `;
+            
+            historyTable.appendChild(row);
+        });
+        
+        // Update page indicator
+        document.getElementById(`${ladderPrefix}-page-indicator`).textContent = `Page ${page}`;
+        
+        // Enable/disable pagination buttons
+        const prevButton = document.getElementById(`${ladderPrefix}-prev-page`);
+        const nextButton = document.getElementById(`${ladderPrefix}-next-page`);
+        
+        if (prevButton) prevButton.disabled = page <= 1;
+        
+        // Check if there are more records
+        const nextPageCheck = query(
+            historyRef, 
+            orderBy('timestamp', 'desc'),
+            startAfter(eloHistoryPagination[ladderPrefix].lastVisible),
+            limit(1)
+        );
+        const nextPageSnapshot = await getDocs(nextPageCheck);
+        
+        if (nextButton) nextButton.disabled = nextPageSnapshot.empty;
+        
+    } catch (error) {
+        console.error("Error loading ELO history:", error);
+        historyTable.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error loading history: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function formatHistoryType(type) {
+    switch(type) {
+        case 'match_result':
+            return 'Match Result';
+        case 'promotion':
+            return 'Promotion';
+        case 'demotion':
+            return 'Demotion';
+        case 'admin_modification':
+            return 'Admin Adjustment';
+        case 'initial_placement':
+            return 'Initial Placement';
+        default:
+            return type || 'Unknown';
+    }
+}
+
+function setupEloHistorySection() {
+    // Pagination buttons for D1
+    document.getElementById('d1-prev-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d1.page - 1);
+    });
+    
+    document.getElementById('d1-next-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d1.page + 1);
+    });
+    
+    // Pagination buttons for D2
+    document.getElementById('d2-prev-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d2.page - 1);
+    });
+    
+    document.getElementById('d2-next-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d2.page + 1);
+    });
+    
+    // Search functionality
+    const historySearch = document.getElementById('elo-history-search');
+    if (historySearch) {
+        historySearch.addEventListener('input', debounce(filterEloHistoryTable, 300));
+    }
+    
+    // Date filters
+    const startDateFilter = document.getElementById('history-start-date');
+    const endDateFilter = document.getElementById('history-end-date');
+    
+    if (startDateFilter && endDateFilter) {
+        startDateFilter.addEventListener('change', applyEloHistoryFilters);
+        endDateFilter.addEventListener('change', applyEloHistoryFilters);
+    }
+    
+    // Type filter
+    const typeFilter = document.getElementById('history-type-filter');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', applyEloHistoryFilters);
+    }
+    
+    // Reset filters
+    const resetFiltersBtn = document.getElementById('reset-history-filters');
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetEloHistoryFilters);
+    }
+}
+
+function filterEloHistoryTable() {
+    const searchTerm = document.getElementById('elo-history-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#elo-history-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.classList.contains('loading-cell') || row.classList.contains('empty-state') || row.classList.contains('error-state')) {
+            return;
+        }
+        
+        const player = row.querySelector('.player')?.textContent.toLowerCase() || '';
+        const type = row.querySelector('.type')?.textContent.toLowerCase() || '';
+        const admin = row.querySelector('.admin-action')?.textContent.toLowerCase() || '';
+        
+        if (player.includes(searchTerm) || type.includes(searchTerm) || admin.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+async function applyEloHistoryFilters() {
+    const startDate = document.getElementById('history-start-date').value;
+    const endDate = document.getElementById('history-end-date').value;
+    const typeFilter = document.getElementById('history-type-filter').value;
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    eloHistoryPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    const historyTable = document.getElementById('elo-history-table-body');
+    historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Applying filters...</td></tr>';
+    
+    try {
+        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        const historyRef = collection(db, historyCollection);
+        
+        // Build query constraints
+        let constraints = [orderBy('timestamp', 'desc')];
+        
+        if (startDate) {
+            const startDateTime = new Date(startDate);
+            startDateTime.setHours(0, 0, 0, 0);
+            constraints.push(where('timestamp', '>=', startDateTime));
+        }
+        
+        if (endDate) {
+            const endDateTime = new Date(endDate);
+            endDateTime.setHours(23, 59, 59, 999);
+            constraints.push(where('timestamp', '<=', endDateTime));
+        }
+        
+        if (typeFilter && typeFilter !== 'all') {
+            constraints.push(where('type', '==', typeFilter));
+        }
+        
+        // Add pagination limit
+        constraints.push(limit(PAGE_SIZE));
+        
+        const q = query(historyRef, ...constraints);
+        const querySnapshot = await getDocs(q);
+        
+        // Update pagination
+        if (!querySnapshot.empty) {
+            eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
+            eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Render results
+        historyTable.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found for the selected filters</td></tr>';
+            return;
+        }
+        
+        querySnapshot.forEach(doc => {
+            const history = doc.data();
+            const row = document.createElement('tr');
+            
+            const timestamp = history.timestamp 
+                ? new Date(history.timestamp.seconds * 1000).toLocaleString() 
+                : 'N/A';
+            
+            const eloChange = history.newElo - history.previousElo;
+            const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
+            const changeSign = eloChange > 0 ? '+' : '';
+            
+            row.innerHTML = `
+                <td class="timestamp">${timestamp}</td>
+                <td class="player">${history.player || 'N/A'}</td>
+                <td class="previous-elo">${history.previousElo || 'N/A'}</td>
+                <td class="new-elo">${history.newElo || 'N/A'}</td>
+                <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
+                <td class="type">${formatHistoryType(history.type)}</td>
+                <td class="admin-action">
+                    ${history.modifiedBy || history.promotedBy || history.demotedBy || 'System'}
+                </td>
+            `;
+            
+            historyTable.appendChild(row);
+        });
+        
+        // Update page indicator
+        document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
+        
+    } catch (error) {
+        console.error("Error applying filters:", error);
+        historyTable.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error applying filters: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function resetEloHistoryFilters() {
+    document.getElementById('history-start-date').value = '';
+    document.getElementById('history-end-date').value = '';
+    document.getElementById('history-type-filter').value = 'all';
+    document.getElementById('elo-history-search').value = '';
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    eloHistoryPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload history
+    loadEloHistory(1);
+}
+
+function setupRankControls() {
+    // Promote player modal
+    const promoteBtn = document.getElementById('promote-player-btn');
+    const promoteModal = document.getElementById('promote-modal');
+    const promoteForm = document.getElementById('promote-form');
+    
+    if (promoteBtn && promoteModal && promoteForm) {
+        promoteBtn.addEventListener('click', () => {
+            promoteModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        promoteModal.addEventListener('click', (e) => {
+            if (e.target === promoteModal) {
+                promoteModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+        promoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('promote-username');
+            const ladderSelect = document.getElementById('promote-ladder');
+            
+            const username = usernameInput.value.trim();
+            const ladder = ladderSelect.value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+            
+            try {
+                await promotePlayer(username, ladder);
+                promoteModal.classList.remove('active');
+                usernameInput.value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-promote-btn').addEventListener('click', () => {
+            promoteModal.classList.remove('active');
+        });
+    }
+    
+    // Demote player modal
+    const demoteBtn = document.getElementById('demote-player-btn');
+    const demoteModal = document.getElementById('demote-modal');
+    const demoteForm = document.getElementById('demote-form');
+    
+    if (demoteBtn && demoteModal && demoteForm) {
+        demoteBtn.addEventListener('click', () => {
+            demoteModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        demoteModal.addEventListener('click', (e) => {
+            if (e.target === demoteModal) {
+                demoteModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+        demoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('demote-username');
+            const ladderSelect = document.getElementById('demote-ladder');
+            
+            const username = usernameInput.value.trim();
+            const ladder = ladderSelect.value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+            
+            try {
+                await demotePlayer(username, ladder);
+                demoteModal.classList.remove('active');
+                usernameInput.value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-demote-btn').addEventListener('click', () => {
+            demoteModal.classList.remove('active');
+        });
+    }
+    
+    // Set custom ELO modal
+    const setEloBtn = document.getElementById('set-elo-btn');
+    const setEloModal = document.getElementById('set-elo-modal');
+    const setEloForm = document.getElementById('set-elo-form');
+    
+    if (setEloBtn && setEloModal && setEloForm) {
+        setEloBtn.addEventListener('click', () => {
+            setEloModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        setEloModal.addEventListener('click', (e) => {
+            if (e.target === setEloModal) {
+                setEloModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+        setEloForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('set-elo-username');
+            const eloInput = document.getElementById('set-elo-value');
+            const ladderSelect = document.getElementById('set-elo-ladder');
+            
+            const username = usernameInput.value.trim();
+            const elo = parseInt(eloInput.value);
+            const ladder = ladderSelect.value;
+            
+            if (!username || isNaN(elo)) {
+                showNotification('Please enter valid username and ELO', 'error');
+                return;
+            }
+            
+            try {
+                await setCustomElo(username, elo, ladder);
+                setEloModal.classList.remove('active');
+                usernameInput.value = '';
+                eloInput.value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-set-elo-btn').addEventListener('click', () => {
+            setEloModal.classList.remove('active');
+        });
+    }
+}
+
+async function promotePlayer(username, ladder) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
@@ -425,13 +1307,17 @@ async function promotePlayer(username) {
             throw new Error('Unauthorized: Admin access required');
         }
 
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+        
         // Get player data
-        const playersRef = collection(db, 'players');
+        const playersRef = collection(db, collectionName);
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            throw new Error('Player not found');
+            throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
@@ -450,42 +1336,65 @@ async function promotePlayer(username) {
         let nextThreshold = thresholds.find(t => t.elo > currentElo);
         
         if (!nextThreshold) {
-            throw new Error('Player is already at maximum rank (Emerald)');
+            throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
         }
 
-        // First update the player document
-        await updateDoc(doc(db, 'players', playerDoc.id), {
+        // Begin transaction
+        const batch = writeBatch(db);
+        
+        // Update player document
+        batch.update(doc(db, collectionName, playerDoc.id), {
             eloRating: nextThreshold.elo,
-            lastPromotedAt: new Date(),
+            lastPromotedAt: serverTimestamp(),
             promotedBy: user.email
         });
 
-        // Then add promotion history separately
-        await addDoc(collection(db, 'eloHistory'), {
+        // Add history entry
+        const historyRef = doc(collection(db, historyCollection));
+        batch.set(historyRef, {
             player: username,
             previousElo: currentElo,
             newElo: nextThreshold.elo,
-            timestamp: new Date(),
+            timestamp: serverTimestamp(),
             type: 'promotion',
             rankAchieved: nextThreshold.name,
-            promotedBy: user.email
+            promotedBy: user.email,
+            gameMode: ladder
         });
 
-        // Check and record promotion
-        await promotionManager.checkAndRecordPromotion(playerDoc.id, nextThreshold.elo, currentElo, {
-            source: 'admin',
-            adminUser: user.email
-        });
+        await batch.commit();
 
-        // Update UI
-        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
+        // Add a promotion record for banner notification
+        try {
+            const promotionData = {
+                id: `promotion_${username}_${Date.now()}`,
+                player: username,
+                playerId: playerDoc.id,
+                previousRank: getRankFromElo(currentElo),
+                newRank: nextThreshold.name,
+                previousElo: currentElo,
+                newElo: nextThreshold.elo,
+                timestamp: new Date(),
+                type: 'promotion',
+                rankAchieved: nextThreshold.name,
+                promotedBy: user.email,
+                gameMode: ladder
+            };
+            
+            await addDoc(collection(db, 'promotionHistory'), promotionData);
+        } catch (e) {
+            console.warn('Failed to record promotion for banner display:', e);
+            // Don't fail the main operation if this fails
+        }
+
+        showNotification(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`, 'success');
         
-        // Refresh displays
-        await Promise.all([
-            loadPlayers(),
-            loadEloRatings(),
-            loadEloHistory()
-        ]);
+        // Refresh relevant data if same ladder is active
+        if (currentLadder === ladder) {
+            loadDashboardOverview();
+            loadPlayersData();
+            loadEloHistory(1);
+        }
 
         return true;
     } catch (error) {
@@ -494,94 +1403,7 @@ async function promotePlayer(username) {
     }
 }
 
-// Update the setupPromotePlayerButton function to handle the cancel button
-function setupPromotePlayerButton() {
-    const promoteBtn = document.getElementById('promote-player');
-    if (!promoteBtn) return;
-    
-    // Clean up old event listeners
-    const newPromoteBtn = promoteBtn.cloneNode(true);
-    promoteBtn.parentNode.replaceChild(newPromoteBtn, promoteBtn);
-    
-    // Add fresh event listener
-    newPromoteBtn.addEventListener('click', () => {
-        const promoteDialog = document.getElementById('promote-dialog');
-        if (promoteDialog) promoteDialog.style.display = 'block';
-    });
-    
-    // Same for confirmation button
-    const confirmBtn = document.getElementById('confirm-promote');
-    if (confirmBtn) {
-        const newConfirmBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-        
-        newConfirmBtn.addEventListener('click', async () => {
-            const username = document.getElementById('promote-username-1').value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            try {
-                await promotePlayer(username);
-                document.getElementById('promote-dialog').style.display = 'none';
-                document.getElementById('promote-username-1').value = '';
-            } catch (error) {
-                console.error('Error promoting player:', error);
-                alert('Failed to promote player: ' + error.message);
-            }
-        });
-    }
-    
-    // Handle cancel button
-    const cancelBtn = document.getElementById('cancel-promote');
-    if (cancelBtn) {
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-        
-        newCancelBtn.addEventListener('click', () => {
-            const promoteDialog = document.getElementById('promote-dialog');
-            if (promoteDialog) promoteDialog.style.display = 'none';
-            document.getElementById('promote-username-1').value = '';
-        });
-    }
-}
-
-// Add a new function to handle the manage players section setup
-function setupManagePlayersSection() {
-    const section = document.getElementById('manage-players-section');
-    if (!section) return;
-
-    // Set initial display state
-    section.style.display = 'none';
-
-    // Setup add player functionality
-    const addPlayerBtn = document.getElementById('add-player-btn');
-    if (addPlayerBtn) {
-        addPlayerBtn.addEventListener('click', async () => {
-            const usernameInput = document.getElementById('new-player-username');
-            const eloInput = document.getElementById('new-player-elo');
-            if (!usernameInput || !eloInput) return;
-
-            const username = usernameInput.value.trim();
-            const eloRating = parseInt(eloInput.value);
-
-            if (!username || isNaN(eloRating)) {
-                alert('Please enter both username and ELO rating');
-                return;
-            }
-
-            try {
-                // Rest of the add player logic...
-            } catch (error) {
-                console.error('Error adding player:', error);
-                alert('Failed to add player: ' + error.message);
-            }
-        });
-    }
-}
-
-// Add demote player function with proper async operations
-async function demotePlayer(username) {
+async function demotePlayer(username, ladder) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
@@ -589,13 +1411,17 @@ async function demotePlayer(username) {
             throw new Error('Unauthorized: Admin access required');
         }
 
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+
         // Get player data
-        const playersRef = collection(db, 'players');
+        const playersRef = collection(db, collectionName);
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            throw new Error('Player not found');
+            throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
@@ -614,36 +1440,65 @@ async function demotePlayer(username) {
         let prevThreshold = thresholds.find(t => t.elo < currentElo);
         
         if (!prevThreshold) {
-            throw new Error('Player is already at minimum rank (Unranked)');
+            throw new Error(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
         }
 
+        // Begin transaction
+        const batch = writeBatch(db);
+        
         // Update player document
-        await updateDoc(doc(db, 'players', playerDoc.id), {
+        batch.update(doc(db, collectionName, playerDoc.id), {
             eloRating: prevThreshold.elo,
-            lastDemotedAt: new Date(),
+            lastDemotedAt: serverTimestamp(),
             demotedBy: user.email
         });
 
-        // Add demotion history
-        await addDoc(collection(db, 'eloHistory'), {
+        // Add history entry
+        const historyRef = doc(collection(db, historyCollection));
+        batch.set(historyRef, {
             player: username,
             previousElo: currentElo,
             newElo: prevThreshold.elo,
-            timestamp: new Date(),
+            timestamp: serverTimestamp(),
             type: 'demotion',
             rankAchieved: prevThreshold.name,
-            demotedBy: user.email
+            demotedBy: user.email,
+            gameMode: ladder
         });
 
-        // Update UI
-        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
+        await batch.commit();
+
+        // Add a demotion record for banner notification
+        try {
+            const demotionData = {
+                id: `demotion_${username}_${Date.now()}`,
+                player: username,
+                playerId: playerDoc.id,
+                previousRank: getRankFromElo(currentElo),
+                newRank: prevThreshold.name,
+                previousElo: currentElo,
+                newElo: prevThreshold.elo,
+                timestamp: new Date(),
+                type: 'demotion',
+                rankAchieved: prevThreshold.name,
+                demotedBy: user.email,
+                gameMode: ladder
+            };
+            
+            await addDoc(collection(db, 'promotionHistory'), demotionData);
+        } catch (e) {
+            console.warn('Failed to record demotion for banner display:', e);
+            // Don't fail the main operation if this fails
+        }
+
+        showNotification(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`, 'success');
         
-        // Refresh displays
-        await Promise.all([
-            loadPlayers(),
-            loadEloRatings(),
-            loadEloHistory()
-        ]);
+        // Refresh relevant data if same ladder is active
+        if (currentLadder === ladder) {
+            loadDashboardOverview();
+            loadPlayersData();
+            loadEloHistory(1);
+        }
 
         return true;
     } catch (error) {
@@ -652,190 +1507,63 @@ async function demotePlayer(username) {
     }
 }
 
-// Replace the setupDemotePlayerButton function with this fixed version
-function setupDemotePlayerButton() {
-    const demoteBtn = document.getElementById('demote-player');
-    if (!demoteBtn) return;
-    
-    // Clean up old event listeners by cloning and replacing
-    const newDemoteBtn = demoteBtn.cloneNode(true);
-    demoteBtn.parentNode.replaceChild(newDemoteBtn, demoteBtn);
-    
-    // Add fresh event listener to the new button
-    newDemoteBtn.addEventListener('click', () => {
-        const demoteDialog = document.getElementById('demote-dialog');
-        if (demoteDialog) demoteDialog.style.display = 'block';
-    });
-    
-    // Also replace the confirm button to prevent duplicate listeners
-    const confirmBtn = document.getElementById('confirm-demote');
-    if (confirmBtn) {
-        const newConfirmBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-        
-        newConfirmBtn.addEventListener('click', async () => {
-            const username = document.getElementById('demote-username-1').value.trim();
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            try {
-                await demotePlayer(username);
-                document.getElementById('demote-dialog').style.display = 'none';
-                document.getElementById('demote-username-1').value = '';
-            } catch (error) {
-                console.error('Error demoting player:', error);
-                alert('Failed to demote player: ' + error.message);
-            }
-        });
-    }
-    
-    // Replace cancel button too
-    const cancelBtn = document.getElementById('cancel-demote');
-    if (cancelBtn) {
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-        
-        newCancelBtn.addEventListener('click', () => {
-            const demoteDialog = document.getElementById('demote-dialog');
-            if (demoteDialog) demoteDialog.style.display = 'none';
-            document.getElementById('demote-username-1').value = '';
-        });
-    }
-}
-
-// Add to your setupManagePlayersSection function or where other admin buttons are initialized
-function setupTestReportButton() {
-    const createTestReportBtn = document.getElementById('create-test-report');
-    if (!createTestReportBtn) return;
-
-    createTestReportBtn.addEventListener('click', async () => {
-        try {
-            const testReport = {
-                winnerEmail: 'test5@email.com',
-                winnerUsername: 'test5',
-                loserEmail: 'code@email.com',
-                loserUsername: 'Code',
-                winnerScore: '21',
-                loserScore: '18',
-                mapPlayed: '1',
-                winnerSuicides: '0',
-                loserSuicides: '0',
-                winnerComment: 'Test match',
-                loserComment: 'Test match',
-                approved: false,
-                createdAt: serverTimestamp(),
-                reportedBy: 'Admin (Test)',
-                matchId: Date.now().toString()
-            };
-
-            await addDoc(collection(db, 'pendingMatches'), testReport);
-            alert('Test report created! Login as test5 to approve it.');
-
-        } catch (error) {
-            console.error('Error creating test report:', error);
-            alert('Failed to create test report: ' + error.message);
-        }
-    });
-}
-
-// Add this to your initialization code
-document.addEventListener('DOMContentLoaded', () => {
-    // ...existing initialization code...
-    setupTestReportButton();
-});
-
-// Add this function to handle ELO history display
-async function displayEloHistory() {
-    const historyContainer = document.querySelector('#elo-history-table tbody');
-    if (!historyContainer) return;
-
+async function setCustomElo(username, elo, ladder) {
     try {
-        const { entries } = await getEloHistory();
-        historyContainer.innerHTML = ''; // Clear existing entries
-
-        entries.forEach(entry => {
-            const row = document.createElement('tr');
-            const changeClass = entry.change > 0 ? 'positive-change' : entry.change < 0 ? 'negative-change' : '';
-            
-            row.innerHTML = `
-                <td>${entry.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
-                <td>${entry.playerUsername}</td>
-                <td>${entry.previousElo}</td>
-                <td>${entry.newElo}</td>
-                <td class="${changeClass}">
-                    ${entry.change > 0 ? '+' : ''}${entry.change}
-                </td>
-                <td>${entry.opponentUsername}</td>
-                <td>${entry.matchResult}</td>
-            `;
-            historyContainer.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error displaying ELO history:', error);
-        historyContainer.innerHTML = '<tr><td colspan="7">Error loading history</td></tr>';
-    }
-}
-
-// Add this to your initialization code
-document.getElementById('view-elo-history').addEventListener('click', () => {
-    displayEloHistory();
-});
-
-// Add this function to handle setting custom ELO
-async function setCustomElo(username, newElo) {
-    try {
+        // Check if current user is admin
         const user = auth.currentUser;
         if (!user || !isAdmin(user.email)) {
             throw new Error('Unauthorized: Admin access required');
         }
 
-        const playersRef = collection(db, 'players');
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+
+        // Get player data
+        const playersRef = collection(db, collectionName);
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            throw new Error('Player not found');
+            throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
-        const currentElo = playerDoc.data().eloRating || 1200;
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
 
+        // Begin transaction
         const batch = writeBatch(db);
         
         // Update player document
-        batch.update(doc(db, 'players', playerDoc.id), {
-            eloRating: newElo,
+        batch.update(doc(db, collectionName, playerDoc.id), {
+            eloRating: elo,
             lastModifiedAt: serverTimestamp(),
-            modifiedBy: user.email
+            lastModifiedBy: user.email
         });
 
-        // Add ELO history entry
-        batch.set(doc(collection(db, 'eloHistory')), {
-            type: 'admin_modification',
+        // Add history entry
+        const historyRef = doc(collection(db, historyCollection));
+        batch.set(historyRef, {
             player: username,
             previousElo: currentElo,
-            newElo: newElo,
+            newElo: elo,
             timestamp: serverTimestamp(),
-            change: newElo - currentElo,
-            modifiedBy: user.email
+            type: 'admin_modification',
+            modifiedBy: user.email,
+            gameMode: ladder
         });
 
         await batch.commit();
 
-        // Check and record promotion
-        await promotionManager.checkAndRecordPromotion(playerDoc.id, newElo, currentElo, {
-            source: 'admin',
-            adminUser: user.email
-        });
+        showNotification(`ELO rating for ${username} was updated from ${currentElo} to ${elo}`, 'success');
         
-        // Refresh displays after successful update
-        await Promise.all([
-            loadPlayers(),
-            loadEloRatings(),
-            loadEloHistory()
-        ]);
+        // Refresh relevant data if same ladder is active
+        if (currentLadder === ladder) {
+            loadDashboardOverview();
+            loadPlayersData();
+            loadEloHistory(1);
+        }
 
         return true;
     } catch (error) {
@@ -844,222 +1572,51 @@ async function setCustomElo(username, newElo) {
     }
 }
 
-// Add this function to setup the custom ELO dialog
-function setupSetEloButton() {
-    const setEloBtn = document.getElementById('set-elo-player');
-    const setEloDialog = document.getElementById('set-elo-dialog');
-    const confirmSetEloBtn = document.getElementById('confirm-set-elo');
-    const cancelSetEloBtn = document.getElementById('cancel-set-elo');
-    const eloUsernameInput = document.getElementById('set-elo-username');
-    const eloValueInput = document.getElementById('set-elo-value');
-
-    if (!setEloBtn || !setEloDialog || !confirmSetEloBtn || !cancelSetEloBtn || !eloUsernameInput || !eloValueInput) {
-        console.error('Missing set ELO dialog elements');
-        return;
-    }
-
-    setEloBtn.addEventListener('click', () => {
-        setEloDialog.style.display = 'block';
-    });
-
-    cancelSetEloBtn.addEventListener('click', () => {
-        setEloDialog.style.display = 'none';
-        eloUsernameInput.value = '';
-        eloValueInput.value = '';
-    });
-
-    // Close modal if clicked outside
-    setEloDialog.addEventListener('click', (e) => {
-        if (e.target === setEloDialog) {
-            setEloDialog.style.display = 'none';
-            eloUsernameInput.value = '';
-            eloValueInput.value = '';
-        }
-    });
-
-    confirmSetEloBtn.addEventListener('click', async () => {
-        const username = eloUsernameInput.value.trim();
-        const newElo = parseInt(eloValueInput.value);
-        
-        if (!username || isNaN(newElo)) {
-            alert('Please enter both username and valid ELO value');
-            return;
-        }
-        
-        try {
-            await setCustomElo(username, newElo);
-            setEloDialog.style.display = 'none';
-            eloUsernameInput.value = '';
-            eloValueInput.value = '';
-        } catch (error) {
-            console.error('Error setting ELO:', error);
-            alert('Failed to set ELO: ' + error.message);
-        }
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="close-notification">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Display animation
+    setTimeout(() => {
+        notification.classList.add('active');
+    }, 10);
+    
+    // Auto-remove after delay
+    const timeout = setTimeout(() => {
+        closeNotification(notification);
+    }, 5000);
+    
+    // Close button
+    notification.querySelector('.close-notification').addEventListener('click', () => {
+        clearTimeout(timeout);
+        closeNotification(notification);
     });
 }
 
-// Add to your initialization code
-document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (user && isAdmin(user.email)) {
-            // ... existing initialization code ...
-            setupSetEloButton();
-        }
-    });
-});
-
-// Add this function with your other setup functions
-function setupArchiveButton() {
-    const archiveBtn = document.getElementById('archive-season');
-    const archiveDialog = document.getElementById('archive-dialog');
-    const confirmArchiveBtn = document.getElementById('confirm-archive');
-    const cancelArchiveBtn = document.getElementById('cancel-archive');
-    const statusDiv = document.getElementById('archive-status');
-
-    if (!archiveBtn || !archiveDialog || !confirmArchiveBtn || !cancelArchiveBtn) {
-        console.error('Missing archive dialog elements');
-        return;
-    }
-
-    archiveBtn.addEventListener('click', () => {
-        archiveDialog.style.display = 'block';
-    });
-
-    cancelArchiveBtn.addEventListener('click', () => {
-        archiveDialog.style.display = 'none';
-        statusDiv.textContent = '';
-    });
-
-    archiveDialog.addEventListener('click', (e) => {
-        if (e.target === archiveDialog) {
-            archiveDialog.style.display = 'none';
-            statusDiv.textContent = '';
-        }
-    });
-
-    confirmArchiveBtn.addEventListener('click', async () => {
-        try {
-            confirmArchiveBtn.disabled = true;
-            statusDiv.textContent = 'Archiving season...';
-            
-            await archiveSeason0();
-            
-            statusDiv.textContent = 'Season successfully archived!';
-            setTimeout(() => {
-                archiveDialog.style.display = 'none';
-                statusDiv.textContent = '';
-            }, 2000);
-        } catch (error) {
-            console.error('Error archiving season:', error);
-            statusDiv.textContent = 'Failed to archive season: ' + error.message;
-        } finally {
-            confirmArchiveBtn.disabled = false;
-        }
-    });
-}
-
-// Add to your initialization code where other admin buttons are setup
-document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (user && isAdmin(user.email)) {
-            // ...existing initialization code...
-            setupCollapsibleButtons();
-            setupPromotePlayerButton();
-            setupDemotePlayerButton();
-            setupManagePlayersSection();
-            setupTestReportButton();
-            setupSetEloButton();
-            setupArchiveButton(); // Add this line
-        }
-    });
-});
-
-// Add this function
-async function clearPromotionCache() {
-    try {
-        const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
-            throw new Error('Unauthorized: Admin access required');
-        }
-
-        // Get all documents from promotionViews collection
-        const promotionViewsRef = collection(db, 'promotionViews');
-        const snapshot = await getDocs(promotionViewsRef);
-        
-        // Count documents for reporting
-        const totalDocs = snapshot.size;
-        
-        // Delete all documents
-        const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(deletePromises);
-        
-        alert(`Successfully cleared ${totalDocs} promotion banner records`);
-        console.log(`Cleared ${totalDocs} promotion banner records`);
-        
-    } catch (error) {
-        console.error('Error clearing promotion cache:', error);
-        alert('Failed to clear promotion cache: ' + error.message);
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success': return 'fa-check-circle';
+        case 'error': return 'fa-exclamation-circle';
+        case 'warning': return 'fa-exclamation-triangle';
+        case 'info':
+        default: return 'fa-info-circle';
     }
 }
 
-// Add setup function
-function setupClearCacheButton() {
-    const clearCacheBtn = document.getElementById('clear-promotion-cache');
-    if (!clearCacheBtn) return;
-
-    clearCacheBtn.addEventListener('click', async () => {
-        if (confirm('Are you sure you want to clear all promotion banner records? This will reset view counts for all promotions.')) {
-            await clearPromotionCache();
-        }
-    });
+function closeNotification(notification) {
+    notification.classList.remove('active');
+    setTimeout(() => {
+        notification.remove();
+    }, 300);
 }
 
-// Add to initialization
-document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(async (user) => {
-        if (user && isAdmin(user.email)) {
-            // ...existing initialization code...
-            setupCollapsibleButtons();
-            setupPromotePlayerButton();
-            setupDemotePlayerButton();
-            setupManagePlayersSection();
-            setupTestReportButton();
-            setupSetEloButton();
-            setupArchiveButton();
-            setupClearCacheButton(); // Add this line
-        }
-    });
-});
-
-import { getEloHistoryD2, resetPaginationD2 } from './elo-history-d2.js';
-
-export async function displayEloHistoryD2() {
-    const historyContainer = document.querySelector('#elo-history-d2-table tbody');
-    if (!historyContainer) return;
-
-    try {
-        const { entries } = await getEloHistoryD2();
-        historyContainer.innerHTML = ''; // Clear existing entries
-
-        entries.forEach(entry => {
-            const row = document.createElement('tr');
-            const changeClass = entry.change > 0 ? 'positive-change' : entry.change < 0 ? 'negative-change' : '';
-            
-            row.innerHTML = `
-                <td>${entry.timestamp?.toDate().toLocaleString() || 'N/A'}</td>
-                <td>${entry.playerUsername}</td>
-                <td>${entry.previousElo}</td>
-                <td>${entry.newElo}</td>
-                <td class="${changeClass}">
-                    ${entry.change > 0 ? '+' : ''}${entry.change}
-                </td>
-                <td>${entry.opponentUsername}</td>
-                <td>${entry.matchResult}</td>
-            `;
-            historyContainer.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error displaying D2 ELO history:', error);
-        historyContainer.innerHTML = '<tr><td colspan="7">Error loading D2 history</td></tr>';
-    }
-}
+export { promotePlayer, demotePlayer };

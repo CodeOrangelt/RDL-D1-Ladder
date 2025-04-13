@@ -172,20 +172,24 @@ class PromotionManager {
                 
                 // Check if permanently ignored
                 if (data.ignored) {
+                    console.log(`Promotion ${promotionId} is permanently ignored`);
                     return false;
                 }
                 
-                // Check if within time window
+                // Check if user dismissed within time window (24 hours)
                 const now = Date.now();
-                if (now - data.timestamp < this.DISPLAY_HOURS * 60 * 60 * 1000) {
-                    // Only prevent showing if the user explicitly dismissed it
-                    if (data.userDismissed) {
-                        return false;
-                    }
+                if (data.userDismissed && (now - data.timestamp < this.DISPLAY_HOURS * 60 * 60 * 1000)) {
+                    console.log(`Promotion ${promotionId} was dismissed by user within last ${this.DISPLAY_HOURS} hours`);
+                    return false;
+                }
+                
+                // Check if system dismissed within a shorter window (1 hour)
+                if (data.systemDismissed && (now - data.timestamp < 60 * 60 * 1000)) {
+                    console.log(`Promotion ${promotionId} was auto-dismissed within last hour`);
+                    return false;
                 }
             }
             
-            // IMPORTANT: Don't set timestamp here - we'll set it when actually showing the banner
             return true;
         } catch (error) {
             console.error('Error checking promotion visibility:', error);
@@ -215,24 +219,51 @@ class PromotionManager {
         // Resolve user ID to username if needed
         this.resolveUserId(data)
             .then(resolvedData => {
-                // Record that we're showing this banner now
                 const storageKey = `promotion_${data.id}`;
-                localStorage.setItem(storageKey, JSON.stringify({
-                    timestamp: Date.now(),
-                    ignored: false,
-                    userDismissed: false
-                }));
+                
+                // Check if this promotion was EVER shown before
+                const existingData = localStorage.getItem(storageKey);
+                let seenBefore = false;
+                
+                if (existingData) {
+                    try {
+                        const parsed = JSON.parse(existingData);
+                        seenBefore = true;
+                        
+                        // If user already explicitly dismissed this, don't show again
+                        if (parsed.userDismissed) {
+                            const now = Date.now();
+                            if (now - parsed.timestamp < this.DISPLAY_HOURS * 60 * 60 * 1000) {
+                                console.log(`Skipping previously dismissed promotion: ${data.id}`);
+                                return;
+                            }
+                        }
+                    } catch (e) {}
+                }
+                
+                // Only reset userDismissed if this is the first time showing 
+                // or if the dismissal time window has expired
+                if (!seenBefore) {
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        timestamp: Date.now(),
+                        ignored: false,
+                        userDismissed: false,
+                        systemDismissed: false
+                    }));
+                }
                 
                 // Ensure we never exceed 3 banners
                 while (this.bannerContainer.children.length >= 3) {
                     this.bannerContainer.removeChild(this.bannerContainer.firstChild);
                 }
                 
+                // Create banner DOM element
                 const bannerDiv = document.createElement('div');
                 bannerDiv.className = 'promotion-banner';
                 bannerDiv.setAttribute('data-rank', resolvedData.rankAchieved);
                 bannerDiv.setAttribute('data-id', resolvedData.id);
                 
+                // Create banner content
                 const details = document.createElement('div');
                 details.className = 'promotion-details';
                 
@@ -256,6 +287,13 @@ class PromotionManager {
                 dismissBtn.innerHTML = '&times;';
                 dismissBtn.title = 'Dismiss';
                 
+                // Add another button to dismiss forever
+                const ignoreBtn = document.createElement('button');
+                ignoreBtn.className = 'ignore-btn';
+                ignoreBtn.textContent = 'Don\'t show again';
+                ignoreBtn.title = 'Never show this promotion again';
+                
+                actions.appendChild(ignoreBtn);
                 actions.appendChild(dismissBtn);
                 
                 bannerDiv.appendChild(details);
@@ -263,13 +301,13 @@ class PromotionManager {
                 this.bannerContainer.appendChild(bannerDiv);
                 this.bannerContainer.style.display = 'block';
                 
-                // Dismiss button handler - ALWAYS mark as user-dismissed
+                // Dismiss button - user dismissed for 24 hours
                 dismissBtn.addEventListener('click', () => {
-                    // Any manual dismissal means "don't show for 24 hours"
                     localStorage.setItem(storageKey, JSON.stringify({
                         timestamp: Date.now(),
                         ignored: false,
-                        userDismissed: true
+                        userDismissed: true,
+                        systemDismissed: false
                     }));
                     
                     bannerDiv.classList.add('dismissing');
@@ -281,7 +319,25 @@ class PromotionManager {
                     }, 300);
                 });
                 
-                // Auto-dismiss should NOT update the timestamp
+                // Ignore button - user dismissed permanently
+                ignoreBtn.addEventListener('click', () => {
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        timestamp: Date.now(),
+                        ignored: true,
+                        userDismissed: true,
+                        systemDismissed: false
+                    }));
+                    
+                    bannerDiv.classList.add('dismissing');
+                    setTimeout(() => {
+                        bannerDiv.remove();
+                        if (this.bannerContainer.children.length === 0) {
+                            this.bannerContainer.style.display = 'none';
+                        }
+                    }, 300);
+                });
+                
+                // Auto-dismiss after 10 seconds - mark as system dismissed in localStorage
                 setTimeout(() => {
                     bannerDiv.classList.add('new-rank-change');
                     
@@ -290,6 +346,15 @@ class PromotionManager {
                         bannerDiv.classList.remove('new-rank-change');
                         setTimeout(() => {
                             if (bannerDiv.parentNode) {
+                                // Update storage with system dismiss
+                                localStorage.setItem(storageKey, JSON.stringify({
+                                    timestamp: Date.now(),
+                                    ignored: false,
+                                    userDismissed: false,
+                                    systemDismissed: true
+                                }));
+                                
+                                // Remove from DOM
                                 bannerDiv.remove();
                                 if (this.bannerContainer.children.length === 0) {
                                     this.bannerContainer.style.display = 'none';
