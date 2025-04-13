@@ -2,246 +2,454 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/x-icon" href="../images/laddericon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Backend</title>
-    <link rel="stylesheet" href="../CSS/style.css">
-    <link rel="stylesheet" href="../CSS/nav.css">
+    <title>Admin Dashboard | Descent Nexus</title>
     <link rel="stylesheet" href="../CSS/admin.css">
-    <link rel="stylesheet" href="../CSS/footer.css">
-    
-    <!-- Initialize Firebase using ES modules -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from '../JS/firebase-config.js';
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Make Firebase services available globally
-        window.auth = auth;
-        window.db = db;
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <!-- Add promotion banner container -->
-    <div id="promotion-banner-container"></div>
-    
-    <div id="nav-placeholder"></div>
-    <main>
-        <div class="container">
-            <h1>Admin Backend</h1>
-            <div id="admin-actions" class="admin-buttons">
-                <button id="toggle-manage-players" class="collapse-btn" data-target="manage-players-section">
-                    Manage Players
+<body data-ladder="D1">
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="../images/RDL.png" alt="Logo" class="logo">
+                <h2>Admin Dashboard</h2>
+            </div>
+            
+            <div class="ladder-selector">
+                <p>Select Ladder</p>
+                <div class="ladder-switch">
+                    <input type="radio" id="d1-switch" name="ladder" value="D1" checked>
+                    <label for="d1-switch">D1</label>
+                    
+                    <input type="radio" id="d2-switch" name="ladder" value="D2">
+                    <label for="d2-switch">D2</label>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
                 </button>
-                <button id="view-elo-ratings" class="collapse-btn" data-target="elo-ratings">View ELO Ratings</button>
-                <button id="view-elo-history" class="collapse-btn" data-target="elo-history">View ELO History</button>
-                <button id="reset-season" class="danger-button">Reset Season</button>
-                <button id="promote-player" class="danger-button">Promote Player</button>
-                <button id="demote-player" class="danger-button">Demote Player</button>
-                <button id="test-report-btn" class="collapse-btn" data-target="test-report-section">Test Report</button>
-                <button id="set-elo-player" class="admin-button">Set Player ELO</button>
-                <button id="archive-season" class="admin-button">Archive Season</button>
-                <button id="clear-promotion-cache" class="admin-button">Clear Promotion Banner Cache</button>
-            </div>
+                
+                <button class="nav-item" data-section="players">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Players</span>
+                </button>
+                
+                <button class="nav-item" data-section="elo-history">
+                    <i class="fas fa-history"></i>
+                    <span>ELO History</span>
+                </button>
+                
+                <button class="nav-item" data-section="manage-ranks">
+                    <i class="fas fa-trophy"></i>
+                    <span>Manage Ranks</span>
+                </button>
+            </nav>
             
-            <!-- Dialog elements for promote/demote actions -->
-            <div id="promote-dialog" class="modal">
-                <div class="modal-content">
-                    <h3>Promote Player</h3>
-                    <input type="text" id="promote-username-1" placeholder="Enter username" class="admin-input">
-                    <div class="button-group">
-                        <button id="confirm-promote" class="danger-button">Promote</button>
-                        <button id="cancel-promote" class="secondary-button">Cancel</button>
-                    </div>
-                </div>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <a href="./index.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Main Site
+            </a>
 
-            <div id="demote-dialog" class="modal">
-                <div class="modal-content">
-                    <h3>Demote Player</h3>
-                    <input type="text" id="demote-username-1" placeholder="Enter username" class="admin-input">
-                    <div class="button-group">
-                        <button id="confirm-demote" class="danger-button">Demote</button>
-                        <button id="cancel-demote" class="secondary-button">Cancel</button>
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section">
+                <div class="section-header">
+                    <h1>Dashboard Overview</h1>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stat-cards">
+                    <div class="stat-card players">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Players</h3>
+                            <p class="stat-value" id="player-count">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card matches">
+                        <div class="stat-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Matches</h3>
+                            <p class="stat-value" id="match-count">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card pending">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Pending Matches</h3>
+                            <p class="stat-value" id="pending-count">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card rejected">
+                        <div class="stat-icon">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Rejected Matches</h3>
+                            <p class="stat-value" id="rejected-count">0</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+                
+                <!-- Charts -->
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Rank Distribution</h3>
+                        <canvas id="rank-distribution-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>ELO History (30 Days)</h3>
+                        <canvas id="elo-history-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Weekly Activity</h3>
+                        <canvas id="activity-chart"></canvas>
+                    </div>
+                </div>
+            </section>
             
-            <!-- ELO ratings section -->
-            <div id="elo-ratings" style="display: none;">
-                <h2>Player ELO Ratings</h2>
-                <table id="elo-table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>ELO Rating</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- ELO ratings will be populated here by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- ELO history section -->
-            <div id="elo-history" style="display: none;">
-                <h2>ELO Rating History</h2>
-                <table id="elo-history-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Player</th>
-                            <th>Previous ELO</th>
-                            <th>New ELO</th>
-                            <th>Change</th>
-                            <th>Opponent</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- ELO history will be populated here -->
-                    </tbody>
-                </table>
-                <div id="pagination"></div>
-            </div>
-            
-            <!-- D2 ELO history section -->
-            <div id="elo-history-d2" class="admin-section" style="display: none;">
-                <h2>D2 ELO Rating History</h2>
-                <table id="elo-history-d2-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Player</th>
-                            <th>Previous ELO</th>
-                            <th>New ELO</th>
-                            <th>Change</th>
-                            <th>Opponent</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- D2 ELO history will be populated here -->
-                    </tbody>
-                </table>
-                <div id="pagination-d2"></div>
-            </div>
-            
-            <!-- Template ladder section -->
-            <div id="template-ladder" style="display: none;">
-                <h2>Template Ladder</h2>
-                <table id="template-table">
-                    <thead>
-                        <tr>
-                            <th>Position</th>
-                            <th>Username</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Template ladder will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Manage players section -->
-            <div id="manage-players-section" class="admin-section">
-                <h2>Manage Ladder Players</h2>
-                <div class="players-table-container">
-                    <table id="players-table" class="admin-table">
+            <!-- Players Management Section -->
+            <section id="players" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Manage Players</h1>
+                    <select id="players-ladder-selector" class="ladder-select">
+                        <option value="D1">D1 Ladder</option>
+                        <option value="D2">D2 Ladder</option>
+                    </select>
+                </div>
+                
+                <!-- Add Player Form -->
+                <div class="add-player-container">
+                    <h3>Add New Player</h3>
+                    <form id="add-player-form" class="add-player-form">
+                        <div class="form-group">
+                            <label for="new-player-username">Username:</label>
+                            <input type="text" id="new-player-username" placeholder="Enter username" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new-player-elo">Initial ELO:</label>
+                            <input type="number" id="new-player-elo" value="1200" min="1000" max="3000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ladder:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="new-player-d1" name="new-player-ladder" value="D1" checked>
+                                <label for="new-player-d1">D1</label>
+                                
+                                <input type="radio" id="new-player-d2" name="new-player-ladder" value="D2">
+                                <label for="new-player-d2">D2</label>
+                                
+                                <input type="radio" id="new-player-both" name="new-player-ladder" value="BOTH">
+                                <label for="new-player-both">Both</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Add Player</button>
+                    </form>
+                </div>
+                
+                <!-- Player Search -->
+                <div class="search-container">
+                    <input type="text" id="player-search" placeholder="Search players...">
+                    <div id="no-results-message" class="no-results" style="display: none;">
+                        No players found matching your search.
+                    </div>
+                </div>
+                
+                <!-- Players Table -->
+                <div class="table-container">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Position</th>
                                 <th>Username</th>
-                                <th>ELO Rating</th>
+                                <th>ELO</th>
+                                <th>Rank</th>
+                                <th>W/L</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody id="players-table-body">
+                            <!-- Player rows will be inserted here -->
+                        </tbody>
                     </table>
                 </div>
-                <div class="form-group">
-                    <input type="text" id="new-player-username" placeholder="Enter username" class="admin-input">
-                    <input type="number" id="new-player-elo" placeholder="Enter ELO rating" min="0" max="3000" class="admin-input">
-                    <button id="add-player-btn" class="action-btn">Add Player</button>
-                </div>
-            </div>
+            </section>
             
-            <!-- Reset confirmation dialog -->
-            <div id="reset-confirmation" class="confirmation-dialog">
-                <p>⚠️ Warning: This will reset all player rankings and start a new season.</p>
-                <p>Please enter your password to confirm:</p>
-                <input type="password" id="reset-password" class="password-input" placeholder="Enter your password">
-                <div class="button-group">
-                    <button id="confirm-reset" class="danger-button">Reset Season</button>
-                    <button id="cancel-reset" class="secondary-button">Cancel</button>
+            <!-- ELO History Section -->
+            <section id="elo-history" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>ELO Rating History</h1>
                 </div>
-            </div>
-            
-            <!-- Test report section -->
-            <div id="test-report-section" class="admin-section" style="display: none;">
-                <h2>Create Test Report</h2>
-                <div class="form-group">
-                    <button id="create-test-report" class="action-btn">Generate Test Report for Test5</button>
-                </div>
-            </div>
-            
-            <!-- Set ELO dialog -->
-            <div id="set-elo-dialog" class="modal">
-                <div class="modal-content">
-                    <h2>Set Player ELO</h2>
-                    <div class="input-group">
-                        <input type="text" id="set-elo-username" placeholder="Username">
-                        <input type="number" id="set-elo-value" placeholder="New ELO Value">
+                
+                <!-- Filters -->
+                <div class="filter-controls">
+                    <div class="search-box">
+                        <input type="text" id="elo-history-search" placeholder="Search player or type...">
                     </div>
-                    <div class="button-group">
-                        <button id="confirm-set-elo">Update ELO</button>
-                        <button id="cancel-set-elo">Cancel</button>
+                    
+                    <div class="date-filter">
+                        <label>From:</label>
+                        <input type="date" id="history-start-date">
                     </div>
+                    
+                    <div class="date-filter">
+                        <label>To:</label>
+                        <input type="date" id="history-end-date">
+                    </div>
+                    
+                    <div class="type-filter">
+                        <label>Type:</label>
+                        <select id="history-type-filter">
+                            <option value="all">All Types</option>
+                            <option value="match_result">Match Result</option>
+                            <option value="promotion">Promotion</option>
+                            <option value="demotion">Demotion</option>
+                            <option value="admin_modification">Admin Adjustment</option>
+                            <option value="initial_placement">Initial Placement</option>
+                        </select>
+                    </div>
+                    
+                    <button id="reset-history-filters" class="reset-filters-btn">
+                        <i class="fas fa-undo"></i> Reset Filters
+                    </button>
                 </div>
-            </div>
+                
+                <!-- ELO History Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Player</th>
+                                <th>Previous ELO</th>
+                                <th>New ELO</th>
+                                <th>Change</th>
+                                <th>Type</th>
+                                <th>Modified By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="elo-history-table-body">
+                            <!-- History rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination d1-pagination">
+                    <button id="d1-prev-page" class="page-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="d1-page-indicator">Page 1</span>
+                    <button id="d1-next-page" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="pagination d2-pagination" style="display: none;">
+                    <button id="d2-prev-page" class="page-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="d2-page-indicator">Page 1</span>
+                    <button id="d2-next-page" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
             
-            <!-- Archive dialog -->
-            <div id="archive-dialog" class="modal">
-                <div class="modal-content">
-                    <h2>Archive Season 0</h2>
-                    <p>This will copy all current player data to the season0 collection.</p>
-                    <div class="button-container">
-                        <button id="confirm-archive">Archive</button>
-                        <button id="cancel-archive">Cancel</button>
-                    </div>
-                    <div id="archive-status"></div>
+            <!-- Manage Ranks Section -->
+            <section id="manage-ranks" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Manage Player Ranks</h1>
                 </div>
+                
+                <div class="rank-controls">
+                    <button id="promote-player-btn" class="action-button promote">
+                        <i class="fas fa-arrow-up"></i> Promote Player
+                    </button>
+                    
+                    <button id="demote-player-btn" class="action-button demote">
+                        <i class="fas fa-arrow-down"></i> Demote Player
+                    </button>
+                    
+                    <button id="set-elo-btn" class="action-button set-elo">
+                        <i class="fas fa-edit"></i> Set Custom ELO
+                    </button>
+                </div>
+                
+                <div class="rank-info">
+                    <h3>Rank Thresholds</h3>
+                    <div class="rank-thresholds">
+                        <div class="rank-item unranked">
+                            <span class="rank-name">Unranked</span>
+                            <span class="rank-value">Below 1400 ELO</span>
+                        </div>
+                        <div class="rank-item bronze">
+                            <span class="rank-name">Bronze</span>
+                            <span class="rank-value">1400-1599 ELO</span>
+                        </div>
+                        <div class="rank-item silver">
+                            <span class="rank-name">Silver</span>
+                            <span class="rank-value">1600-1799 ELO</span>
+                        </div>
+                        <div class="rank-item gold">
+                            <span class="rank-name">Gold</span>
+                            <span class="rank-value">1800-1999 ELO</span>
+                        </div>
+                        <div class="rank-item emerald">
+                            <span class="rank-name">Emerald</span>
+                            <span class="rank-value">2000+ ELO</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <!-- Edit Player Modal -->
+    <div id="edit-player-modal" class="modal">
+        <div class="modal-content">
+            <h2>Edit Player</h2>
+            <div class="form-group">
+                <label for="edit-username">Username:</label>
+                <input type="text" id="edit-username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="edit-elo">ELO Rating:</label>
+                <input type="number" id="edit-elo" min="1000" max="3000">
+            </div>
+            <div class="form-group">
+                <label for="edit-wins">Wins:</label>
+                <input type="number" id="edit-wins" min="0">
+            </div>
+            <div class="form-group">
+                <label for="edit-losses">Losses:</label>
+                <input type="number" id="edit-losses" min="0">
+            </div>
+            <div class="modal-buttons">
+                <button id="save-player-btn" class="button primary">Save Changes</button>
+                <button id="cancel-edit-btn" class="button">Cancel</button>
             </div>
         </div>
-    </main>
-    <div id="footer-placeholder"></div>
-
-    <!-- Scripts -->
-    <script type="module" src="../JS/firebase-config.js"></script>
-    <script type="module" src="../JS/current-user.js"></script>
-    <script type="module" src="../JS/logout.js"></script>
-    <script type="module" src="../JS/pagination.js"></script>
+    </div>
+    
+    <!-- Promote Player Modal -->
+    <div id="promote-modal" class="modal">
+        <div class="modal-content">
+            <h2>Promote Player</h2>
+            <form id="promote-form">
+                <div class="form-group">
+                    <label for="promote-username">Username:</label>
+                    <input type="text" id="promote-username" placeholder="Enter username" required>
+                </div>
+                
+                <div class="form-group ladder-selection">
+                    <label>Select Ladder:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="promote-d1-ladder" name="promote-ladder" value="D1" checked>
+                        <label for="promote-d1-ladder">D1 Ladder</label>
+                        
+                        <input type="radio" id="promote-d2-ladder" name="promote-ladder" value="D2">
+                        <label for="promote-d2-ladder">D2 Ladder</label>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="button primary">Promote</button>
+                    <button id="cancel-promote-btn" type="button" class="button">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Demote Player Modal -->
+    <div id="demote-modal" class="modal">
+        <div class="modal-content">
+            <h2>Demote Player</h2>
+            <form id="demote-form">
+                <div class="form-group">
+                    <label for="demote-username">Username:</label>
+                    <input type="text" id="demote-username" placeholder="Enter username" required>
+                </div>
+                
+                <div class="form-group ladder-selection">
+                    <label>Select Ladder:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="demote-d1-ladder" name="demote-ladder" value="D1" checked>
+                        <label for="demote-d1-ladder">D1 Ladder</label>
+                        
+                        <input type="radio" id="demote-d2-ladder" name="demote-ladder" value="D2">
+                        <label for="demote-d2-ladder">D2 Ladder</label>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="button primary">Demote</button>
+                    <button id="cancel-demote-btn" type="button" class="button">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Set Custom ELO Modal -->
+    <div id="set-elo-modal" class="modal">
+        <div class="modal-content">
+            <h2>Set Custom ELO</h2>
+            <form id="set-elo-form">
+                <div class="form-group">
+                    <label for="set-elo-username">Username:</label>
+                    <input type="text" id="set-elo-username" placeholder="Enter username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="set-elo-value">ELO Rating:</label>
+                    <input type="number" id="set-elo-value" min="1000" max="3000" required>
+                </div>
+                
+                <div class="form-group ladder-selection">
+                    <label>Select Ladder:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="set-elo-d1-ladder" name="set-elo-ladder" value="D1" checked>
+                        <label for="set-elo-d1-ladder">D1 Ladder</label>
+                        
+                        <input type="radio" id="set-elo-d2-ladder" name="set-elo-ladder" value="D2">
+                        <label for="set-elo-d2-ladder">D2 Ladder</label>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="button primary">Set ELO</button>
+                    <button id="cancel-set-elo-btn" type="button" class="button">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script type="module" src="../JS/adminbackend.js"></script>
-    <script type="module" src="../JS/ladderalgorithm.js"></script>
-    <script type="module" src="../JS/promotions.js"></script>
-
-    <script>
-        Promise.all([
-            fetch('../HTML/nav.html').then(response => response.text()),
-            fetch('../HTML/footer.html').then(response => response.text())
-        ]).then(([navData, footerData]) => {
-            document.getElementById('nav-placeholder').innerHTML = navData;
-            document.getElementById('footer-placeholder').innerHTML = footerData;
-        }).catch(error => {
-            console.error('Error loading nav/footer:', error);
-        });
-    </script>
 </body>
 </html>
-``` 
