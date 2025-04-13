@@ -207,6 +207,43 @@
     <script type="module" src="../JS/promotions.js"></script>
     <script type="module" src="../JS/ladder-join.js"></script>
     <script type="module" src="../JS/ladder-retire.js"></script>
+
+    <!-- Add this new script to check for pending matches on index page -->
+    <script type="module">
+        import { auth } from '../JS/firebase-config.js';
+        import { checkPendingMatches } from '../JS/checkPendingMatches.js';
+        
+        // Wait for nav to load since it's dynamically inserted
+        document.addEventListener('DOMContentLoaded', () => {
+            // First wait for nav to be fully loaded
+            const checkNavLoaded = setInterval(() => {
+                const reportMatchLink = document.querySelector('.nav-notification');
+                if (reportMatchLink) {
+                    clearInterval(checkNavLoaded);
+                    console.log('Nav loaded on index page, checking for pending matches');
+                    
+                    // Run notification check with a little delay
+                    setTimeout(() => {
+                        try {
+                            checkPendingMatches();
+                        } catch (err) {
+                            console.error('Error checking pending matches on index page:', err);
+                        }
+                    }, 1000);
+                    
+                    // Also check when auth state changes
+                    auth.onAuthStateChanged(user => {
+                        if (user) {
+                            setTimeout(() => checkPendingMatches(), 1000);
+                        }
+                    });
+                }
+            }, 200); // Check every 200ms
+            
+            // Timeout the check after 10 seconds to avoid infinite loop
+            setTimeout(() => clearInterval(checkNavLoaded), 10000);
+        });
+    </script>
 </body>
 
 </html>
