@@ -1,3 +1,10 @@
+/* Add this to your style.css file or in the <style> section of index.html */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
 body {
     font-family: Arial, sans-serif;
     background: url('../images/backgroundrdl.png');
