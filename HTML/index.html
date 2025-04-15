@@ -28,6 +28,7 @@
             justify-content: center;
             margin-bottom: 15px;
             gap: 10px;
+            flex-wrap: wrap; /* Allow wrapping for mobile */
         }
 
         .ladder-toggle button {
@@ -45,10 +46,40 @@
             background-color: #444;
         }
 
-        .ladder-toggle button.active {
-            background-color: #4CAF50;
+        /* D1 Button - Pumpkin Orange when active */
+        .ladder-toggle button#d1-toggle.active {
+            background-color: #FF8C00; /* Pumpkin Orange */
             color: white;
-            border-color: #4CAF50;
+            border-color: #FF6D00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+        }
+
+        /* D2 Button - Cobalt Blue when active */
+        .ladder-toggle button#d2-toggle.active {
+            background-color: #0047AB; /* Cobalt Blue */
+            color: white;
+            border-color: #003399;
+            box-shadow: 0 0 10px rgba(0, 71, 171, 0.4);
+        }
+
+        /* Coming soon button style */
+        .ladder-toggle button.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .ladder-toggle button.coming-soon::after {
+            content: "Coming Soon";
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         /* Hide inactive ladders */
@@ -68,9 +99,21 @@
         <div id="promotion-banner-container" class="promotion-container"></div>
         <div class="ribbon-1 left">RDL - Beta Release</div>
         <!-- Add ladder mode toggle buttons -->
-        <div class="ladder-toggle">
-            <button id="d1-toggle" class="active">D1 Ladder</button>
-            <button id="d2-toggle">D2 Ladder</button>
+        <div class="ladder-switch">
+            <input type="radio" id="d1-switch" name="ladder" value="D1" checked>
+            <label for="d1-switch">D1 Solo's</label>
+            
+            <input type="radio" id="d2-switch" name="ladder" value="D2">
+            <label for="d2-switch">D2 Solo's</label>
+            
+            <input type="radio" id="d3-switch" name="ladder" value="D3" disabled>
+            <label for="d3-switch" class="coming-soon">D3 Solo's</label>
+            
+            <input type="radio" id="duos-switch" name="ladder" value="DUOS" disabled>
+            <label for="duos-switch" class="coming-soon">Duo's</label>
+            
+            <input type="radio" id="ctf-switch" name="ladder" value="CTF" disabled>
+            <label for="ctf-switch" class="coming-soon">CTF</label>
         </div>
 
         <div class="outer-container">
