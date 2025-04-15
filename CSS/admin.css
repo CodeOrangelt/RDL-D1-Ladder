@@ -388,7 +388,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 24x;
+    margin-top: 15px;
+    margin-right: 200px; /* Make room for back button */
 }
 
 .ladder-switch {
@@ -822,8 +824,8 @@ body {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(33, 33, 33, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: #e0e0e0;
     padding: 8px 16px;
     border-radius: 4px;
@@ -834,6 +836,7 @@ body {
     font-weight: 500;
     transition: all 0.2s ease;
     text-decoration: none;
+    z-index: 10;
 }
 
 .back-button:hover {
@@ -1461,4 +1464,41 @@ input[id="d1-switch"]:checked ~ .ladder-background {
 input[id="d2-switch"]:checked ~ .ladder-background {
     left: calc(50% + 0px);
     background: linear-gradient(135deg, rgba(25, 118, 210, 0.9), rgba(25, 118, 210, 0.7));
+}
+
+/* Load Data Button */
+.load-data-btn {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.7), rgba(33, 150, 243, 0.9));
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-top: -15px;
+
+}
+
+.load-data-btn:hover {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.8), rgba(33, 150, 243, 1));
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.load-data-btn i {
+    font-size: 14px;
+}
+
+.load-data-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.load-data-btn.loading i {
+    animation: spin 1s linear infinite;
 }
