@@ -28,6 +28,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Fix setupSidebarNavigation function
+function setupSidebarNavigation() {
+    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    const sections = document.querySelectorAll('.admin-section');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // Get the section ID from data attribute
+            const sectionId = item.getAttribute('data-section');
+            
+            // Update active state in navigation
+            navItems.forEach(navItem => navItem.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Hide all sections and show the selected one
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                
+                // Don't auto-load data anymore, user will click the load button
+                console.log(`Switched to ${sectionId} section`);
+            }
+        });
+    });
+    
+    // Log initialization
+    console.log('Sidebar navigation initialized');
+}
+
+// Modify initializeAdminDashboard function
 function initializeAdminDashboard() {
     // Initialize sidebar navigation
     setupSidebarNavigation();
@@ -35,41 +69,121 @@ function initializeAdminDashboard() {
     // Initialize ladder selector
     setupLadderSelector();
     
-    // Initialize dashboard overview
-    loadDashboardOverview();
+    // Initialize dashboard overview (but don't load data)
+    setupDashboardSection();
     
-    // Initialize player management
+    // Initialize player management (but don't load data)
     setupManagePlayersSection();
     
-    // Initialize elo history
+    // Initialize elo history (but don't load data)
     setupEloHistorySection();
     
     // Initialize promote/demote controls
     setupRankControls();
-}
-
-function setupSidebarNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.admin-section');
     
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // Update active nav item
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Show selected section, hide others
-            const targetSection = item.dataset.section;
-            sections.forEach(section => {
-                section.style.display = section.id === targetSection ? 'block' : 'none';
-            });
-            
-            // Load section data if needed
-            loadSectionData(targetSection);
-        });
-    });
+    // Set up "Load Data" buttons
+    setupDataLoadButtons();
 }
 
+// Fix setupDataLoadButtons function
+function setupDataLoadButtons() {
+    // Dashboard load button
+    const loadDashboardBtn = document.getElementById('load-dashboard-data');
+    if (loadDashboardBtn) {
+        loadDashboardBtn.addEventListener('click', function() {
+            console.log('Load dashboard data clicked');
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadDashboardOverview()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
+                    }, 3000);
+                });
+        });
+    } else {
+        console.error('Dashboard load button not found');
+    }
+    
+    // Players load button
+    const loadPlayersBtn = document.getElementById('load-players-data');
+    if (loadPlayersBtn) {
+        loadPlayersBtn.addEventListener('click', function() {
+            console.log('Load players data clicked');
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadPlayersData()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
+                })
+                .catch(error => {
+                    console.error('Error loading players:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
+                    }, 3000);
+                });
+        });
+    } else {
+        console.error('Players load button not found');
+    }
+    
+    // ELO history load button
+    const loadHistoryBtn = document.getElementById('load-elo-history-data');
+    if (loadHistoryBtn) {
+        loadHistoryBtn.addEventListener('click', function() {
+            console.log('Load history data clicked');
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadEloHistory(1)
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
+                })
+                .catch(error => {
+                    console.error('Error loading history:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
+                    }, 3000);
+                });
+        });
+    } else {
+        console.error('History load button not found');
+    }
+    
+    console.log('Data load buttons initialized');
+}
+
+// Remove automatic data loading from section changes
+function loadSectionData(sectionId) {
+    // This now does nothing - data loading is triggered by buttons only
+    return;
+}
+
+// Add new setupDashboardSection function 
+function setupDashboardSection() {
+    // Just set up the UI without loading data
+    document.getElementById('player-count').textContent = '-';
+    document.getElementById('match-count').textContent = '-';
+    document.getElementById('pending-count').textContent = '-';
+    document.getElementById('rejected-count').textContent = '-';
+}
+
+// Modify setupLadderSelector function to not auto-load data
 function setupLadderSelector() {
     const ladderSwitches = document.querySelectorAll('.ladder-switch input');
     
@@ -78,42 +192,47 @@ function setupLadderSelector() {
             currentLadder = switchInput.value;
             document.body.setAttribute('data-ladder', currentLadder);
             
-            // Refresh active section data
-            const activeSection = document.querySelector('.admin-section[style="display: block;"]');
-            if (activeSection) {
-                loadSectionData(activeSection.id);
+            // Reset dashboard stats without loading
+            document.getElementById('player-count').textContent = '-';
+            document.getElementById('match-count').textContent = '-';
+            document.getElementById('pending-count').textContent = '-';
+            document.getElementById('rejected-count').textContent = '-';
+            
+            // Reset charts
+            if (charts.rankDistribution) {
+                charts.rankDistribution.destroy();
+                charts.rankDistribution = null;
             }
+            
+            if (charts.activity) {
+                charts.activity.destroy();
+                charts.activity = null;
+            }
+            
+            // No automatic data loading
+            showNotification(`Switched to ${currentLadder} ladder. Click "Load Data" to refresh.`, 'info');
         });
     });
 }
 
-function loadSectionData(sectionId) {
-    switch(sectionId) {
-        case 'dashboard':
-            loadDashboardOverview();
-            break;
-        case 'players':
-            loadPlayersData();
-            break;
-        case 'elo-history':
-            loadEloHistory();
-            break;
-        case 'manage-ranks':
-            // Nothing to preload
-            break;
-    }
-}
-
+// Update loadDashboardOverview function
 async function loadDashboardOverview() {
     try {
-        // Show loading states
-        document.querySelectorAll('.stat-card .stat-value').forEach(el => {
-            el.innerHTML = '<span class="loading-spinner"></span>';
-        });
+        console.log('Loading dashboard overview data...');
+        
+        // Show loading placeholders
+        document.getElementById('player-count').textContent = '-';
+        document.getElementById('match-count').textContent = '-';
+        document.getElementById('pending-count').textContent = '-';
+        document.getElementById('rejected-count').textContent = '-';
 
         // Get collection names based on current ladder
         const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
         const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        const pendingCollection = currentLadder === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        const rejectedCollection = currentLadder === 'D1' ? 'RejectedD1' : 'RejectedD2';
+        
+        console.log(`Using collections for ${currentLadder}: ${playerCollection}, ${matchesCollection}`);
         
         // Get player count
         const playersSnapshot = await getDocs(collection(db, playerCollection));
@@ -124,12 +243,10 @@ async function loadDashboardOverview() {
         const matchCount = matchesSnapshot.size;
         
         // Get pending matches count
-        const pendingCollection = currentLadder === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
         const pendingSnapshot = await getDocs(collection(db, pendingCollection));
         const pendingCount = pendingSnapshot.size;
         
         // Get rejected matches count
-        const rejectedCollection = currentLadder === 'D1' ? 'RejectedD1' : 'RejectedD2';
         const rejectedSnapshot = await getDocs(collection(db, rejectedCollection));
         const rejectedCount = rejectedSnapshot.size;
         
@@ -140,12 +257,15 @@ async function loadDashboardOverview() {
         document.getElementById('rejected-count').textContent = rejectedCount;
         
         // Create dashboard charts
-        createRankDistributionChart();
-        createActivityChart();
+        await createRankDistributionChart();
+        await createActivityChart();
+        
+        console.log('Dashboard data loaded successfully');
+        return true;
         
     } catch (error) {
         console.error("Error loading dashboard data:", error);
-        showNotification('Failed to load dashboard overview', 'error');
+        throw error;
     }
 }
 
