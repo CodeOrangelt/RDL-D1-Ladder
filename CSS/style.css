@@ -395,7 +395,7 @@ tr:nth-child(even) {
     right: 20px;
     bottom: 20px;
     z-index: 1000;
-    margin: 5px 0; /* Adjusted margin */
+    margin: -5px; /* Adjusted margin */
 }
 
 .discord-toggle {
