@@ -4,7 +4,6 @@ on:
     branches:
       - main
 
-# Add permissions section
 permissions:
   contents: write
   pages: write
@@ -15,30 +14,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v3
 
       - name: Prepare root files
         run: |
-          cp ./HTML/index.html ./index.html
+          # Copy all HTML files to root, preserving subdirectories
           cp -r ./HTML/* ./
-          # Update relative paths in the copied files
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update all relative paths in HTML files
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
-          # Add URL cleaner script to all HTML files
-          cat <<'EOT' > url-cleaner.js
-          // Check if we're already at the root URL
-          if (window.location.pathname.includes('/HTML/')) {
-            // Replace the URL in browser history without refreshing
-            const cleanUrl = window.location.href.replace('/HTML/index.html', '/').replace('/HTML/', '/');
-            window.history.replaceState({}, document.title, cleanUrl);
-          }
-          EOT
-          find . -type f -name "*.html" -exec sed -i '/<\/head>/i <script>'"$(cat url-cleaner.js)"'</script>' {} \;
+          
+          # Copy other assets to root level to match new paths
+          cp -r ./CSS ./root-css
+          cp -r ./JS ./root-js
+          cp -r ./images ./root-images
+          
+          # Add debug information to index.html
+          echo "<!-- GitHub Pages root index.html $(date) -->" >> ./index.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: .
-          clean: true  # Automatically remove deleted files from the deployment
