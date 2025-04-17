@@ -17,18 +17,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3  # Updated to v3
 
-      - name: Create root index.html
+      - name: Prepare root files
         run: |
-          echo '<!DOCTYPE html>
-          <html>
-            <head>
-              <meta http-equiv="refresh" content="0; url=./HTML/index.html">
-              <title>Redux Descent League</title>
-            </head>
-            <body>
-              <p>Redirecting to <a href="./HTML/index.html">Redux Descent League</a>...</p>
-            </body>
-          </html>' > index.html
+          cp ./HTML/index.html ./index.html
+          cp -r ./HTML/* ./
+          # Update relative paths in the copied files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
