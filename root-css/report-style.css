@@ -43,7 +43,7 @@ nav ul li a:hover {
     max-width: 700px; /* Add max-width constraint */
     min-width: 300px; /* Ensure minimum size on mobile */
     padding: 15px;
-    min-height: 700px; /* Reduced height */
+    min-height: 600px; /* Reduced height */
     overflow: hidden;
 }
 
