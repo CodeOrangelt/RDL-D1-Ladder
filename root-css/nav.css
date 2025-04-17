@@ -1,0 +1,438 @@
+/* Navigation Bar Styling */
+nav {
+    background: linear-gradient(to bottom,
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 0, 0, 0.5)),
+        url('../images/backgroundrdl.png');
+    background-size: 100px;
+    background-position: center;
+    background-repeat: repeat;
+    color: #fff;
+    padding: 10px 0;
+    width: 100%;
+    position: relative; /* Ensure nav has positioning context */
+    z-index: 100;
+    top: 0;      /* Ensure nav starts at the top */
+    left: 0;
+}
+
+#nav-placeholder {
+    width: 100%;
+    display: block;
+    margin: 0;    /* Ensure no margins */
+    padding: 0;   /* Ensure no padding */
+}
+
+nav::after {
+    content: '';
+    position: absolute;
+    bottom: 0;  /* Changed to 0 to connect with banner */
+    left: -10px;   /* Extend past the left edge */
+    width: calc(100% + 20px); /* Extend past both edges */
+    height: 4px;   /* Increased from 2px for thicker line */
+    background: rgba(128, 128, 128, 0.6);  /* Slightly more opaque */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);  /* Enhanced shadow */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-around; /* Distribute items evenly */
+    width: 100%; /* Make the ul take up the full width */
+    align-items: center; /* Vertically align items */
+}
+
+nav li {
+    margin: 0; /* Remove default list item margins */
+    flex: 1; /* Distribute list items evenly */
+    text-align: center; /* Center the text in each list item */
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 15px; /* Adjust padding for better spacing */
+    display: block; /* Make the entire list item clickable */
+    transition: background-color 0.3s ease;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+nav a:hover {
+    background-color: #555;
+}
+
+/* Sign Out Container Styling */
+#sign-out-container {
+    display: flex;
+    align-items: center;
+}
+
+#current-user {
+    margin-left: 5px;
+    font-weight: bold;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Style for the user menu */
+#user-menu {
+    position: relative;
+    display: inline-block; /* Change to inline-block */
+}
+
+#user-menu #sign-out-container {
+    position: absolute;
+    top: 100%;
+    left: 50%; /* Center the sign-out container horizontally */
+    transform: translateX(-50%); /* Center the sign-out container horizontally */
+    background-color: #333;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: none; /* Hide by default */
+    z-index: 1; /* Ensure it's above other content */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+#user-menu:hover #sign-out-container {
+    display: block; /* Show on hover */
+}
+
+#user-menu #sign-out-container a {
+    display: block;
+    padding: 8px 15px;
+    text-decoration: none;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+#user-menu #sign-out-container a:hover {
+    background-color: #555;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;  /* Remove the 60px top padding */
+}
+
+.user-menu {
+    margin-left: auto;
+    padding: 0 20px;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.auth-link {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.auth-link:hover {
+    background-color: #555;
+}
+
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.user-dropdown span {
+    color: white;
+    padding: 10px;
+    display: inline-block;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #333;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.user-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.dropdown-content a:hover {
+    background-color: #555;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    padding: 0 20px;
+}
+
+.auth-section {
+    margin-left: auto;
+}
+
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.user-dropdown span {
+    color: white;
+    padding: 10px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #333;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.user-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #555;
+}
+
+.auth-link {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+}
+
+/* Update game banner styles */
+.game-banner {
+    width: 100%;
+    height: 20px; /* Reduced from 30px */
+    background: linear-gradient(90deg, #881e8e, #b026b9);
+    color: white;
+    padding: 2px 0; /* Reduced from 5px */
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative; /* Changed from fixed */
+    z-index: 97; /* Below nav and nav::after */
+    display: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    margin-top: -4px; /* Connect with nav border */
+    margin-bottom: 10px; /* Reduced space below */
+}
+
+.game-banner-content {
+    display: inline-flex;
+    width: 100%;
+    line-height: 20px; /* Match new height */
+    text-align: center;
+    animation: scroll-left 15s linear;
+}
+
+.game-banner-text {
+    font-family: Arial, sans-serif;
+    font-size: 12px; /* Reduced from 14px */
+    font-weight: bold;
+    white-space: nowrap;
+    padding: 0 50px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slide-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes scroll-left {
+    0% { opacity: 0; transform: translateX(100%); }
+    10% { opacity: 1; transform: translateX(80%); }
+    90% { opacity: 1; transform: translateX(-80%); }
+    100% { opacity: 0; transform: translateX(-100%); }
+}
+
+/* Add loading state styles */
+.loading {
+    color: #fff;
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+/* Styling for the user dropdown in the navbar */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-username {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: inherit;
+    transition: color 0.3s;
+}
+
+.nav-username:hover {
+    color: #4CAF50; /* Green hover effect matching other links */
+}
+
+.nav-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #0f0f0f;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    right: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.nav-dropdown:hover .nav-dropdown-content {
+    display: block;
+}
+
+.nav-dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    z-index: 100;
+    border-bottom: 1px solid #222;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.nav-dropdown-content a:hover {
+    background-color: #222;
+    color: #4CAF50;
+}
+
+/* Fix for the older dropdown class used in fallback error state */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    z-index: 100;
+}
+
+.username-display {
+    display: inline-block;
+    color: white;
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #0f0f0f;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    right: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    z-index: 100;
+    border-bottom: 1px solid #222;
+    transition: background-color 0.2s;
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #222;
+    color: #4CAF50;
+}
+
+/* Notification indicator styles */
+.nav-notification {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 0;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  display: none; /* Hidden by default */
+}

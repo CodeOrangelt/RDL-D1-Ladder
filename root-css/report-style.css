@@ -1,0 +1,341 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    background-color: #333;
+    color: #fff;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+nav ul li {
+    float: left;
+}
+
+nav ul li a {
+    display: block;
+    padding: 14px 20px;
+    color: white;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    background-color: #111;
+}
+
+/* Update container styles to match style.css */
+.container {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 5px solid white;
+    margin: 0 auto;
+    border-radius: 15px;
+    width: 75%; /* Reduced from 85% */
+    padding: 20px;
+    min-height: 800px;
+    overflow: hidden;
+}
+
+/* Update form and text colors for dark background */
+h1, label, p {
+    color: white;
+}
+
+#auth-warning {
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #a94442;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Update form and text colors for dark background */
+#report-form {
+    background: transparent;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+.form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Update form and text colors for dark background */
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.username-display {
+    font-weight: bold;
+}
+
+/* Update form inputs */
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    margin-top: 5px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+textarea {
+    resize: vertical; /* Allows vertical resizing */
+    height: 120px;
+}
+
+.form-group select {
+    height: 40px;
+    color: black; /* Changed text color to black */
+    background-color: rgba(255, 255, 255, 0.9); /* Made background more opaque */
+}
+
+.form-group select option {
+    color: black; /* Ensure dropdown options are also black */
+    background-color: white; /* White background for dropdown */
+}
+
+.btn {
+    background-color: #881e8e; /* Changed to match nav purple */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #b026b9; /* Lighter purple on hover */
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+#report-error {
+    color: #a94442;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Update table styles */
+#ladder {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#ladder th, #ladder td {
+    border: none;
+    padding: 8px;
+    text-align: left;
+    color: white;
+    background-color: transparent;
+}
+
+#ladder th {
+    background-color: transparent;
+    font-weight: bold;
+}
+
+#ladder tr:nth-child(even) {
+    background-color: transparent;
+}
+
+/* Styles for the report lightbox */
+#report-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+}
+
+#report-lightbox.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+#report-lightbox .lightbox-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(20, 20, 20, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    padding: 30px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+#report-lightbox h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+    font-size: 1.4rem;
+}
+
+#report-lightbox p {
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+}
+
+#report-lightbox span {
+    font-weight: bold;
+    color: white;
+}
+
+#report-lightbox textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    font-size: 1rem;
+    color: white;
+    resize: vertical;
+    height: 120px;
+}
+
+/* Update the lightbox button styles */
+#report-lightbox .lightbox-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+/* Base button style for all lightbox buttons */
+#report-lightbox button {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin: 0 8px;
+    color: white;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 0; /* Override the original margin-top */
+}
+
+/* Remove default hover since we're adding specific ones */
+#report-lightbox button:hover {
+    transform: translateY(-2px);
+}
+
+/* Red reject button */
+#report-lightbox #reject-button {
+    background-color: #d32f2f;
+    border-radius: 8px;
+    border: 2px solid #b71c1c;
+}
+
+#report-lightbox #reject-button:hover {
+    background-color: #b71c1c;
+}
+
+/* Green approve button */
+#report-lightbox #approve-button {
+    background-color: #2e7d32;
+    border: 2px solid #1b5e20;
+}
+
+#report-lightbox #approve-button:hover {
+    background-color: #1b5e20;
+}
+
+/* Purple cancel button */
+#report-lightbox #cancel-button {
+    background-color: #881e8e; 
+    border: 2px solid #6a1b9a;
+}
+
+#report-lightbox #cancel-button:hover {
+    background-color: #6a1b9a;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.table th {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.danger-button {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.danger-button:hover {
+    background-color: #b71c1c;
+}
