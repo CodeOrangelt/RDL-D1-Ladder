@@ -25,6 +25,16 @@ jobs:
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
+          # Add URL cleaner script to all HTML files
+          cat <<'EOT' > url-cleaner.js
+          // Check if we're already at the root URL
+          if (window.location.pathname.includes('/HTML/')) {
+            // Replace the URL in browser history without refreshing
+            const cleanUrl = window.location.href.replace('/HTML/index.html', '/').replace('/HTML/', '/');
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+          EOT
+          find . -type f -name "*.html" -exec sed -i '/<\/head>/i <script>'"$(cat url-cleaner.js)"'</script>' {} \;
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
