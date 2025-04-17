@@ -18,44 +18,24 @@ jobs:
 
       - name: Prepare root files
         run: |
-          # First, copy CSS, JS and images directly to root
-          cp -r ./CSS ./
-          cp -r ./JS ./
-          cp -r ./images ./
+          # Copy all HTML files to root, preserving subdirectories
+          cp -r ./HTML/* ./
           
-          # Keep the root index.html as is
+          # Make a proper root index.html
           cp ./HTML/index.html ./index.html
           
-          # Update paths in the root index.html (no ../ needed)
-          sed -i 's/\.\.\/CSS/CSS/g' ./index.html
-          sed -i 's/\.\.\/JS/JS/g' ./index.html
-          sed -i 's/\.\.\/images/images/g' ./index.html
+          # Update all relative paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
           
-          # Handle all other HTML files - create folder structure
-          for file in ./HTML/*.html; do
-            if [ "$(basename "$file")" != "index.html" ]; then
-              # Get filename without extension
-              filename=$(basename "$file" .html)
-              
-              # Create directory for the file
-              mkdir -p "./$filename"
-              
-              # Copy file as index.html in that directory
-              cp "$file" "./$filename/index.html"
-              
-              # Update paths in the copied file
-              sed -i 's/\.\.\/CSS/\/CSS/g' "./$filename/index.html"
-              sed -i 's/\.\.\/JS/\/JS/g' "./$filename/index.html"
-              sed -i 's/\.\.\/images/\/images/g' "./$filename/index.html"
-              
-              # Update internal links to other HTML pages
-              sed -i 's/href="[^\.]*\.html"/href="\/&/g' "./$filename/index.html"
-              sed -i 's/\.html"/"/g' "./$filename/index.html"
-            fi
-          done
+          # Copy other assets to root level to match new paths
+          cp -r ./CSS ./root-css
+          cp -r ./JS ./root-js
+          cp -r ./images ./root-images
           
-          # Add debug information
-          echo "<!-- GitHub Pages clean URLs deployment $(date) -->" >> ./index.html
+          # Add debug information to index.html
+          echo "<!-- GitHub Pages root index.html $(date) -->" >> ./index.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
