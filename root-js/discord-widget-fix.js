@@ -4,14 +4,20 @@
  * - Handles widget toggle functionality
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // First, completely remove the iframe to prevent CORS errors
+    const widgetContainer = document.getElementById('discord-widget');
+    if (widgetContainer) {
+        // Clear any existing iframe
+        widgetContainer.innerHTML = '';
+    }
+
     // Get widget elements
-    const discordWidget = document.getElementById('discord-widget');
     const toggleButton = document.getElementById('toggle-discord');
     
     // Initialize toggle functionality
-    if (toggleButton && discordWidget) {
+    if (toggleButton && widgetContainer) {
         toggleButton.addEventListener('click', function() {
-            discordWidget.classList.toggle('collapsed');
+            widgetContainer.classList.toggle('collapsed');
         });
     }
     
@@ -71,15 +77,57 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(styleEl);
     
-    // Console error silencer - this won't fix CORS but will reduce console spam
-    const originalError = console.error;
+    // Much more comprehensive error suppression
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleLog = console.log;
+    
+    // Enhanced error handler that catches ALL discord-related errors
     console.error = function() {
-        // Ignore CORS errors from Discord widget
-        if (arguments[0] && 
-            typeof arguments[0] === 'string' && 
-            arguments[0].includes('cdn.discordapp.com/widget-avatars')) {
+        // Ignore ANY Discord-related errors by checking for various patterns
+        if (arguments[0] && typeof arguments[0] === 'string' && (
+            arguments[0].includes('discord') ||
+            arguments[0].includes('widget-avatars') ||
+            arguments[0].includes('CORS policy') ||
+            arguments[0].includes('blocked by CORS')
+        )) {
+            return; // Silently ignore the error
+        }
+        originalConsoleError.apply(console, arguments);
+    };
+    
+    // Also suppress warnings that might be related
+    console.warn = function() {
+        if (arguments[0] && typeof arguments[0] === 'string' && (
+            arguments[0].includes('discord') ||
+            arguments[0].includes('CORS')
+        )) {
             return;
         }
-        originalError.apply(console, arguments);
+        originalConsoleWarn.apply(console, arguments);
     };
+
+    // Suppress CORS-related logs
+    console.log = function() {
+        if (arguments[0] && typeof arguments[0] === 'string' && 
+            arguments[0].includes('Failed to load resource')) {
+            return;
+        }
+        originalConsoleLog.apply(console, arguments);
+    };
+
+    // Load custom Discord widget
+    loadDiscordWidget();
+    
+    // Add a global error handler for more coverage
+    window.addEventListener('error', function(e) {
+        if (e.message && (
+            e.message.includes('discord') ||
+            e.message.includes('CORS') ||
+            e.filename.includes('discord')
+        )) {
+            e.preventDefault();
+            return true; // Prevent the error from showing in console
+        }
+    }, true);
 });
