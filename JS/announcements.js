@@ -1,4 +1,4 @@
-// Announcement Lightbox System
+// Announcement Lightbox System V2
 
 // Configuration
 const ANNOUNCEMENT = {
