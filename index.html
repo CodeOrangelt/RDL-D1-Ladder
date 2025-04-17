@@ -1,10 +1,292 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="refresh" content="0; url=./HTML/index.html">
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Add these security headers -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <!-- Your existing meta tags -->
     <title>Redux Descent League</title>
-  </head>
-  <body>
-    <p>Redirecting to <a href="./HTML/index.html">Redux Descent League</a>...</p>
-  </body>
+    <link rel="icon" type="image/x-icon" href="images/laddericon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="CSS/nav.css">
+    <link rel="stylesheet" href="CSS/footer.css">
+    <link rel="stylesheet" href="CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        main {
+            padding-top: 20px;
+            /* Add space after banner */
+        }
+
+        /* Ladder mode toggle buttons */
+        .ladder-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap; /* Allow wrapping for mobile */
+        }
+
+        .ladder-toggle button {
+            padding: 8px 20px;
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .ladder-toggle button:hover {
+            background-color: #444;
+        }
+
+        /* D1 Button - Pumpkin Orange when active */
+        .ladder-toggle button#d1-toggle.active {
+            background-color: #FF8C00; /* Pumpkin Orange */
+            color: white;
+            border-color: #FF6D00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+        }
+
+        /* D2 Button - Cobalt Blue when active */
+        .ladder-toggle button#d2-toggle.active {
+            background-color: #0047AB; /* Cobalt Blue */
+            color: white;
+            border-color: #003399;
+            box-shadow: 0 0 10px rgba(0, 71, 171, 0.4);
+        }
+
+        /* Coming soon button style */
+        .ladder-toggle button.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .ladder-toggle button.coming-soon::after {
+            content: "Coming Soon";
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Hide inactive ladders */
+        .ladder-container {
+            display: none;
+        }
+
+        .ladder-container.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div id="promotion-banner-container" class="promotion-container"></div>
+        <div class="ribbon-1 left">RDL - Beta Release</div>
+        <!-- Add ladder mode toggle buttons -->
+        <div class="ladder-switch">
+            <input type="radio" id="d1-switch" name="ladder" value="D1" checked>
+            <label for="d1-switch">D1 Solo's</label>
+            
+            <input type="radio" id="d2-switch" name="ladder" value="D2">
+            <label for="d2-switch">D2 Solo's</label>
+            
+            <input type="radio" id="d3-switch" name="ladder" value="D3" disabled>
+            <label for="d3-switch" class="coming-soon">D3 Solo's</label>
+            
+            <input type="radio" id="duos-switch" name="ladder" value="DUOS" disabled>
+            <label for="duos-switch" class="coming-soon">Duo's</label>
+            
+            <input type="radio" id="ctf-switch" name="ladder" value="CTF" disabled>
+            <label for="ctf-switch" class="coming-soon">CTF</label>
+        </div>
+
+        <div class="outer-container">
+            <img src="images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
+
+            <!-- D1 Ladder Container -->
+            <div id="d1-ladder-container" class="ladder-container table-container active">
+                <table id="ladder">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D1 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- D2 Ladder Container -->
+            <div id="d2-ladder-container" class="ladder-container table-container">
+                <table id="ladder-d2">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D2 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Inside your outer-container, after the ladder tables -->
+            <!-- Adjust placement as needed -->
+            <div id="ladder-retire-tiny-container">
+                <button id="tiny-retire-button" class="tiny-retire-button" style="display: none;">Retire</button>
+            </div>
+
+            <!-- Tiny join button container, positioned at the bottom right of the ladder container -->
+            <div id="ladder-join-tiny-container">
+                <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
+            </div>
+        </div>
+
+        <!-- Add new container for queue display -->
+        <div class="queue-section">
+            <div id="queue-container">
+                <div class="queue-box">
+                    <h2>Waiting for a game</h2>
+                    <div class="queue-list">
+                        <!-- Dynamic content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove the original ladder-join-prompt div and add this below the outer-container div -->
+        <div id="ladder-join-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Want to join the <span id="join-ladder-type"></span> ladder?</p>
+                <div class="join-form">
+                    <label for="join-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="join-username-input" placeholder="Your username">
+                    <button id="join-ladder-button" class="join-ladder-button">Join</button>
+                </div>
+                <span id="ladder-join-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Add this section where you want the retire ladder functionality to appear -->
+        <div id="ladder-retire-section" class="section">
+        </div>
+
+        <div id="ladder-retire-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Are you sure you want to retire from the <span id="retire-ladder-type"></span> ladder?</p>
+                <p class="retire-warning">This will remove you from the ladder rankings. Your records will be preserved
+                    but you will need to re-register if you want to participate again.</p>
+                <div class="join-form">
+                    <label for="retire-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="retire-username-input" placeholder="Your username">
+                    <button id="retire-ladder-button" class="join-ladder-button danger-button">Retire from
+                        Ladder</button>
+                </div>
+                <span id="ladder-retire-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+        </div>
+
+        <div class="discord-container">
+            <button id="toggle-discord" class="discord-toggle">
+                <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor"
+                        d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
+                </svg>
+                RDL Server
+            </button>
+            <div id="discord-widget" class="discord-widget collapsed">
+                <iframe src="https://discord.com/widget?id=739546894946271242&theme=dark" width="350" height="500"
+                    allowtransparency="true" frameborder="0"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+                </iframe>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Single promotion-banner-container -->
+    <div id="promotion-banner-container"></div>
+    
+    <!-- Scripts -->
+    
+    <!-- Firebase and core app scripts -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+
+    <!-- Page components (navigation, footer, Discord widget) -->
+    <script src="JS/page-components.js"></script>
+
+    <!-- Application scripts -->
+    <script type="module" src="JS/firebase-config.js"></script>
+    <script type="module" src="JS/firebase-cache.js"></script>
+    <script type="module" src="JS/current-user.js"></script>
+    <script type="module" src="JS/logout.js"></script>
+    <script type="module" src="JS/ladder.js"></script>
+    <script type="module" src="JS/ladderd2.js"></script>
+    <script type="module" src="JS/queue.js"></script>
+    <script type="module" src="JS/promotions.js"></script>
+    <script type="module" src="JS/ladder-join.js"></script>
+    <script type="module" src="JS/ladder-retire.js"></script>
+
+    <!-- Add this new script to check for pending matches on index page -->
+    <script type="module">
+        import { auth } from 'JS/firebase-config.js';
+        import { checkPendingMatches } from 'JS/checkPendingMatches.js';
+        
+        // Wait for nav to load since it's dynamically inserted
+        document.addEventListener('DOMContentLoaded', () => {
+            // First wait for nav to be fully loaded
+            const checkNavLoaded = setInterval(() => {
+                const reportMatchLink = document.querySelector('.nav-notification');
+                if (reportMatchLink) {
+                    clearInterval(checkNavLoaded);
+                    console.log('Nav loaded on index page, checking for pending matches');
+                    
+                    // Run notification check with a little delay
+                    setTimeout(() => {
+                        try {
+                            checkPendingMatches();
+                        } catch (err) {
+                            console.error('Error checking pending matches on index page:', err);
+                        }
+                    }, 1000);
+                    
+                    // Also check when auth state changes
+                    auth.onAuthStateChanged(user => {
+                        if (user) {
+                            setTimeout(() => checkPendingMatches(), 1000);
+                        }
+                    });
+                }
+            }, 200); // Check every 200ms
+            
+            // Timeout the check after 10 seconds to avoid infinite loop
+            setTimeout(() => clearInterval(checkNavLoaded), 10000);
+        });
+    </script>
+</body>
+
 </html>
