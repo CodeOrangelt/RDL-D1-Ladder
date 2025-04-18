@@ -1,5 +1,5 @@
 <head>
-    <script type="module" src="JS/idle-timeout.js"></script>
+    <script type="module" src="./JS/idle-timeout.js"></script>
 </head>
 <nav>
     <ul class="nav-links">
@@ -25,8 +25,8 @@
 
 <!-- Notification management script - IMPROVED VERSION -->
 <script type="module">
-    import { auth } from 'JS/firebase-config.js';
-    import { checkPendingMatches } from 'JS/checkPendingMatches.js';
+    import { auth } from './JS/firebase-config.js';
+    import { checkPendingMatches } from './JS/checkPendingMatches.js';
     
     // Run this script after DOM is fully loaded and parsed
     document.addEventListener('DOMContentLoaded', () => {

@@ -8,13 +8,13 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <!-- Your existing meta tags -->
     <title>Redux Descent League</title>
-    <link rel="icon" type="image/x-icon" href="images/laddericon.ico">
+    <link rel="icon" type="image/x-icon" href="./images/laddericon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="CSS/style.css">
-    <link rel="stylesheet" href="CSS/promotionlightbox.css">
-    <link rel="stylesheet" href="CSS/nav.css">
-    <link rel="stylesheet" href="CSS/footer.css">
-    <link rel="stylesheet" href="CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/promotionlightbox.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         main {
@@ -116,7 +116,7 @@
         </div>
 
         <div class="outer-container">
-            <img src="images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
+            <img src="./images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
 
             <!-- D1 Ladder Container -->
             <div id="d1-ladder-container" class="ladder-container table-container active">
@@ -240,24 +240,24 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
 
     <!-- Page components (navigation, footer, Discord widget) -->
-    <script src="JS/page-components.js"></script>
+    <script src="./JS/page-components.js"></script>
 
     <!-- Application scripts -->
-    <script type="module" src="JS/firebase-config.js"></script>
-    <script type="module" src="JS/current-user.js"></script>
-    <script type="module" src="JS/logout.js"></script>
-    <script type="module" src="JS/ladder.js"></script>
-    <script type="module" src="JS/ladderd2.js"></script>
-    <script type="module" src="JS/queue.js"></script>
-    <script type="module" src="JS/promotions.js"></script>
-    <script type="module" src="JS/ladder-join.js"></script>
-    <script type="module" src="JS/ladder-retire.js"></script>
-    <script src="JS/announcements.js" defer></script> <!--announcement template-->
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <script type="module" src="./JS/current-user.js"></script>
+    <script type="module" src="./JS/logout.js"></script>
+    <script type="module" src="./JS/ladder.js"></script>
+    <script type="module" src="./JS/ladderd2.js"></script>
+    <script type="module" src="./JS/queue.js"></script>
+    <script type="module" src="./JS/promotions.js"></script>
+    <script type="module" src="./JS/ladder-join.js"></script>
+    <script type="module" src="./JS/ladder-retire.js"></script>
+    <script src="./JS/announcements.js" defer></script> <!--announcement template-->
 
     <!-- Add this new script to check for pending matches on index page -->
     <script type="module">
-        import { auth } from 'JS/firebase-config.js';
-        import { checkPendingMatches } from 'JS/checkPendingMatches.js';
+        import { auth } from './JS/firebase-config.js';
+        import { checkPendingMatches } from './JS/checkPendingMatches.js';
         
         // Wait for nav to load since it's dynamically inserted
         document.addEventListener('DOMContentLoaded', () => {
