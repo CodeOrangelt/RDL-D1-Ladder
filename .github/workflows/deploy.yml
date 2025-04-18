@@ -18,24 +18,24 @@ jobs:
 
       - name: Prepare root files
         run: |
-          # Copy all HTML files to root, preserving subdirectories
+          # Copy all HTML files to root 
           cp -r ./HTML/* ./
           
           # Make a proper root index.html
           cp ./HTML/index.html ./index.html
           
-          # Update all relative paths in HTML files
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
           
-          # Copy other assets to root level to match new paths
-          cp -r ./CSS ./root-css
-          cp -r ./JS ./root-js
-          cp -r ./images ./root-images
+          # CRITICAL: Fix import paths in JavaScript files too
+          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
           
-          # Add debug information to index.html
-          echo "<!-- GitHub Pages root index.html $(date) -->" >> ./index.html
+          # Don't create duplicate directories with different names
+          # cp -r ./CSS ./root-css  # Remove this
+          # cp -r ./JS ./root-js    # Remove this
+          # cp -r ./images ./root-images  # Remove this
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
