@@ -74,6 +74,9 @@
                                 <label>Timezone</label>
                                 <span id="timezone-view" class="view-text"></span>
                             </div>
+                            <div class="profile-field">
+                                <span id="home-levels-view">Not set</span>
+                            </div>
 
                             <button id="edit-profile" class="edit-btn">Edit Profile</button>
                         </div>
@@ -133,8 +136,24 @@
                                         <option value="D3">D3</option>
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label for="home-level-1">Home Level 1:</label>
+                                    <input type="text" id="home-level-1" placeholder="Enter your first home level">
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label for="home-level-2">Home Level 2:</label>
+                                    <input type="text" id="home-level-2" placeholder="Enter your second home level">
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label for="home-level-3">Home Level 3:</label>
+                                    <input type="text" id="home-level-3" placeholder="Enter your third home level">
+                                </div>
+                                <br>
+                                <label for="motto">Whats your motto?</label>
                                 <input type="text" id="motto" name="motto" placeholder="Your motto">
-                                <!-- Stats will be inserted here automatically -->
+
                                 <div class="button-group">
                                     <button type="submit" class="save-btn">Save Changes</button>
                                     <button type="button" class="cancel-btn">Cancel</button>
