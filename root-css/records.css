@@ -1,141 +1,635 @@
-.container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: rgba(17, 17, 17, 0.95);
-    border: 1px solid #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+/* Main layout */
+main {
+    padding: 0 0 2rem;
 }
 
-h1 {
-    color: white;
-    text-align: center;
-    font-size: 2.5rem;
+/* Game selector - MODERNIZED */
+.game-selector {
+    background: linear-gradient(to right, rgba(34, 10, 65, 0.5), rgba(56, 55, 56, 0.5)), 
+                url('../images/2022-10-25.02-42-00.png');
+    background-size: cover;
+    background-position: center;
+    padding: 2.5rem;
     margin-bottom: 2rem;
-    text-transform: uppercase;
-    border-bottom: 2px solid rgb(255, 255, 255);
-    padding-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.records-section {
-    margin-top: 2rem;
-    width: 100%;
-}
-
-h2 {
-    color: white;
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-}
-
-.record-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    padding: 1rem;
-    max-width: 1000px;
+/* Container sizing - STANDARDIZED */
+.selector-container, .dashboard-header, .dashboard-grid {
+    max-width: 1800px;
     margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.record-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    height: 150px;
+.selector-container {
+    padding: 0 1rem;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
 
+.selector-container h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    border: none;
+    padding: 0;
+    color: white; /* Explicitly set header text to white */
+}
+
+.game-toggle {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.3rem;
+    border-radius: 8px;
+}
+
+.toggle-btn {
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Dashboard header */
+.dashboard-header {
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+}
+
+.stat-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+/* Summary items with white borders */
+.summary-item {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(24, 24, 24, 0.95));
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.summary-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.summary-icon {
+    font-size: 1.8rem;
+    margin-right: 1rem;
+    background: rgba(116, 10, 132, 0.2);
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.summary-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1.2;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+    padding: 0 2rem;
+    gap: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Dashboard panels - WHITE BORDERS */
+.dashboard-panel {
+    background: rgba(22, 22, 22, 0.95);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-header h2 {
+    color: white; /* Explicitly set panel header text to white */
+    font-size: 1.3rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.filter-control select, .chart-controls button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-control select:hover, .chart-controls button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.refresh-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: rotate(30deg);
+}
+
+/* Panel sizing */
+.player-records {
+    grid-column: span 2;
+    width: 100%;
+}
+
+.map-panel {
+    grid-column: span 1;
+}
+
+.top-players {
+    grid-column: span 1;
+}
+
+/* Record cards - WHITE BORDERS */
+.record-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Keep cards wide */
+    gap: 2rem; /* Increased from 1.5rem for more space between cards */
+    padding: 2rem 3rem; /* Increased padding around the entire grid */
+}
+
+.player-records .record-grid {
+    padding: 2rem 3rem; /* Match the spacing */
+}
+
+.record-card {
+    background: rgba(26, 26, 26, 0.8);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0rem 1rem; /* Slightly increased vertical padding */
+    text-align: center;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    margin-bottom: 0.5rem; /* Added bottom margin */
+}
+
 .record-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px #740a84;
-    border-color: #740a84;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(116, 10, 132, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.record-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #740a84, #a8189a);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.record-card:hover::after {
+    transform: scaleX(1);
+}
+
+.record-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
 }
 
 .record-card h3 {
-    color: #ffffff;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    color: white;
+    font-size: 1rem;
+    margin: 0 0 0.8rem;
     text-transform: uppercase;
-    flex: 0 0 auto;
+    letter-spacing: 0.5px;
 }
 
 .record-value {
-    color: #fff;
-    font-size: 1.4rem;
+    color: white;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 0.8rem;
-    background: rgba(11, 1, 12, 0.8);
+    padding: 0.4rem 0.8rem;
+    background: rgba(0, 0, 0, 0.5); /* Darker background for better contrast */
     border-radius: 4px;
-    border: 1px solid rgba(79, 5, 83, 0.3);
-    width: 80%;
-    margin: 0 auto;
-    flex: 0 0 auto;
+    min-width: 80%;
+    margin: auto auto 0;
+    width: fit-content;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Player rank colors - including DEFAULT */
+.player-name {
+    font-weight: bold;
+    padding-left: 0.2rem;
+}
+
+.emerald-rank {
+    color: #50C878 !important; /* Emerald green */
+    text-shadow: 0 0 10px rgba(80, 200, 120, 0.7);
+    font-weight: bold;
+}
+
+.gold-rank {
+    color: #FFD700 !important; /* Gold */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    font-weight: bold;
+}
+
+.silver-rank {
+    color: #E0E0E0 !important; /* Brighter silver */
+    text-shadow: 0 0 10px rgba(224, 224, 224, 0.7);
+    font-weight: bold;
+}
+
+.bronze-rank {
+    color: #CD7F32 !important; /* Bronze */
+    text-shadow: 0 0 10px rgba(205, 127, 50, 0.7);
+    font-weight: bold;
+}
+
+/* Default rank for players without a tier */
+.default-rank {
+    color: #FFFFFF !important; /* White */
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+}
+
+.record-stat {
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.85);
+    margin-left: 0.3rem;
+}
+
+/* Chart containers */
+.chart-container {
+    padding: 1.8rem;
+    height: 300px;
+    position: relative;
+}
+
+.activity-chart {
+    height: 250px;
+}
+
+/* Recent matches table */
+.table-container {
+    padding: 0.5rem 1.5rem 1.5rem;
+    overflow-x: auto;
+}
+
+.matches-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+
+.matches-table th {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.8rem;
+    text-align: left;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.matches-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
+}
+
+.matches-table tr:hover td {
+    background: rgba(116, 10, 132, 0.1);
+}
+
+.matches-table .winner {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.matches-table .loser {
+    color: #F44336;
+}
+
+.loading-row td {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Tier rankings */
+.tier-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    height: calc(100% - 66px); /* Account for panel header */
+    overflow-y: auto;
+}
+
+/* Tier container with white borders */
+.tier {
+    background: rgba(26, 26, 26, 0.8);
+    border-radius: 8px;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-left: 4px solid;
+    min-height: 120px;
+}
+
+.tier.emerald {
+    border-color: #50C878;
+}
+
+.tier.gold {
+    border-color: #FFD700;
+}
+
+.tier.silver {
+    border-color: #C0C0C0;
+}
+
+.tier.bronze {
+    border-color: #CD7F32;
+}
+
+.tier h3 {
+    text-align: center;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.1rem;
+    color: white;
+}
+
+.tier-players {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 150px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(116, 10, 132, 0.5) rgba(0, 0, 0, 0.2);
+}
+
+/* Add scrollbar styling for tier-players */
+.tier-players::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tier-players::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.tier-players::-webkit-scrollbar-thumb {
+    background-color: rgba(116, 10, 132, 0.5);
+    border-radius: 3px;
+}
+
+.tier-player {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.tier-player:hover {
+    background: rgba(0, 0, 0, 0.3);
+    transform: translateX(3px);
+}
+
+.tier-player.top-player {
+    background: linear-gradient(145deg, rgba(40, 40, 40, 0.8), rgba(30, 30, 30, 0.8));
+    padding: 0.8rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tier-player.top-player:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(116, 10, 132, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.player-badge {
+    font-size: 0.75rem;
+    background: rgba(116, 10, 132, 0.85); /* More opaque */
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.tier-count {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75); /* Brighter for better visibility */
+    text-align: center;
+    margin-top: 0.8rem;
+    font-style: italic;
+}
+
+.player-rank {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.player-name {
+    font-size: 0.95rem;
+    color: white; /* Already white, but keeping for clarity */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); /* Add text shadow for better readability */
+}
+
+.player-elo {
+    font-size: 0.9rem;
+    color: #e4a0ff; /* Lighter purple for better contrast */
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.4); /* Darker background */
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    margin-left: auto;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.loading-msg {
+    text-align: center;
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
 }
 
 /* Loading animation */
-.record-value:empty::after,
-.record-value:contains("Loading...") {
-    content: "Loading...";
-    animation: pulse 1.5s infinite;
-}
-
 @keyframes pulse {
     0% { opacity: 0.6; }
     50% { opacity: 1; }
     100% { opacity: 0.6; }
 }
 
-/* Responsive Design */
-@media (max-width: 992px) {
+.record-value:contains("Loading..."), .loading-msg {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive design - MAINTAIN WIDE CONTAINERS */
+@media (max-width: 1400px) {
+    .dashboard-grid {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .player-records, .map-panel, .top-players {
+        grid-column: span 1;
+    }
+    
+    /* Keep record cards in grid with 2 columns minimum at this size */
     .record-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem; /* Still maintain decent spacing on smaller screens */
+        padding: 1.5rem 2rem;
     }
 }
 
 @media (max-width: 768px) {
-    .container {
-        margin: 1rem;
-        padding: 1rem;
+    .selector-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
     }
+    
+    .stat-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .record-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 1.5rem 1rem;
+        gap: 1.2rem; /* Keep reasonable spacing on mobile */
+    }
+    
+    .tier-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-grid,
+    .dashboard-header {
+        padding: 0 1rem;
+    }
+}
 
+@media (max-width: 576px) {
+    .stat-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .panel-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .matches-table {
+        font-size: 0.8rem;
+    }
+    
+    .matches-table th, .matches-table td {
+        padding: 0.5rem;
+    }
+    
     .record-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
     }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    .record-card {
-        height: 130px;
-        padding: 1rem;
-    }
-}
-
-/* Add these styles */
-.map-stats-container {
-    margin-top: 2rem;
-}
-
-.chart-container {
-    position: relative;
-    height: 400px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-#mapStatsChart {
-    background: rgba(26, 26, 26, 0.8);
-    border-radius: 8px;
-    padding: 1rem;
 }
