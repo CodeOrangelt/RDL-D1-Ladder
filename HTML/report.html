@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="../CSS/style.css">
     <script type="module" src="../JS/firebase-config.js"></script>
     <style>
+        
+        /* Keep container with lower z-index */
+        .container {
+            position: relative;
+            margin-top: 50px;
+        }
+        
         /* Game mode toggle buttons */
         .game-mode-toggle {
             display: flex;
@@ -34,10 +41,11 @@
         }
         
         .game-mode-toggle button.active {
-            background-color: #4CAF50;
+            background-color: #b026b9; /* Purple to match theme */
             color: white;
-            border-color: #4CAF50;
+            border-color: #b026b9;
         }
+        
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -47,89 +55,84 @@
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <script>
-        fetch('../HTML/nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-placeholder').innerHTML = data;
-            });
-    </script>
-    <br>
-    <br>
-    <br>
-    <div class="container">
-        <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
-        
-        <!-- Game Mode Toggle Buttons -->
-        <div class="game-mode-toggle" id="game-mode-toggle">
-            <button id="d1-mode" class="active">D1</button>
-            <button id="d2-mode">D2</button>
-        </div>
-        
-        <!-- Report Form -->
-        <form id="report-form" class="form" style="display: none;">
-            <div class="form-group">
-                <span id="loser-username" class="username-display"></span>
+    
+    <script src="../JS/page-components.js"></script>
+    
+    <main>
+        <div class="container">
+            <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
+            
+            <!-- Game Mode Toggle Buttons -->
+            <div class="game-mode-toggle" id="game-mode-toggle">
+                <button id="d1-mode" class="active">D1</button>
+                <button id="d2-mode">D2</button>
             </div>
-            <div class="form-group">
-                <label for="winner-username">Opponent:</label>
-                <select id="winner-username" required>
-                    <option value="">Select Winner</option>
-                    <!-- Options will be populated by JavaScript -->
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="loser-score">Your Score:</label>
-                <input type="number" id="loser-score" placeholder="Loser Score" required>
-            </div>
-            <div class="form-group">
-                <label for="suicides">Suicides:</label>
-                <input type="number" id="suicides" placeholder="Suicides" required>
-            </div>
-            <div class="form-group">
-                <label for="map-played">Map Played:</label>
-                <input type="text" id="map-played" placeholder="Map Played" required>
-            </div>
-            <div class="form-group">
-                <label for="loser-comment">Your Comment:</label>
-                <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
-            </div>
-            <button type="submit" class="btn">Report Game</button>
-        </form>
-        <div id="report-error" class="error"></div>
+            
+            <!-- Report Form -->
+            <form id="report-form" class="form" style="display: none;">
+                <div class="form-group">
+                    <span id="loser-username" class="username-display"></span>
+                </div>
+                <div class="form-group">
+                    <label for="winner-username">Opponent:</label>
+                    <select id="winner-username" required>
+                        <option value="">Select Winner</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="loser-score">Your Score:</label>
+                    <input type="number" id="loser-score" placeholder="Loser Score" required>
+                </div>
+                <div class="form-group">
+                    <label for="suicides">Suicides:</label>
+                    <input type="number" id="suicides" placeholder="Suicides" required>
+                </div>
+                <div class="form-group">
+                    <label for="map-played">Map Played:</label>
+                    <input type="text" id="map-played" placeholder="Map Played" required>
+                </div>
+                <div class="form-group">
+                    <label for="loser-comment">Your Comment:</label>
+                    <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
+                </div>
+                <button type="submit" class="btn">Report Game</button>
+            </form>
+            <div id="report-error" class="error"></div>
 
-        <div id="report-lightbox" class="report-lightbox">
-            <div class="lightbox-content">
-                <h2>Report Details</h2>
-                <p>Game Mode: <span id="lightbox-game-mode"></span></p>
-                <p>Winner: <span id="lightbox-winner"></span></p>
-                <p>Loser: <span id="lightbox-loser"></span></p>
-                <p>Loser Score: <span id="lightbox-loser-score"></span></p>
-                <p>Suicides: <span id="lightbox-suicides"></span></p>
-                <p>Map: <span id="lightbox-map"></span></p>
-                <p>Loser Comment: <span id="lightbox-comment"></span></p>
-                
-                <div class="form-group">
-                    <label for="winner-score">Winner Score:</label>
-                    <input type="number" id="winner-score" required>
-                </div>
-                <div class="form-group">
-                    <label for="winner-suicides">Winner Suicides:</label>
-                    <input type="number" id="winner-suicides" required>
-                </div>
-                <div class="form-group">
-                    <label for="winner-comment">Winner Comment:</label>
-                    <textarea id="winner-comment" required></textarea>
-                </div>
-                
-                <div class="lightbox-buttons">
-                    <button id="approve-button" class="button">Approve</button>
-                    <button id="cancel-button" class="button">Cancel</button>
-                    <!-- Reject button will be added here -->
+            <div id="report-lightbox" class="report-lightbox">
+                <div class="lightbox-content">
+                    <h2>Report Details</h2>
+                    <p>Game Mode: <span id="lightbox-game-mode"></span></p>
+                    <p>Winner: <span id="lightbox-winner"></span></p>
+                    <p>Loser: <span id="lightbox-loser"></span></p>
+                    <p>Loser Score: <span id="lightbox-loser-score"></span></p>
+                    <p>Suicides: <span id="lightbox-suicides"></span></p>
+                    <p>Map: <span id="lightbox-map"></span></p>
+                    <p>Loser Comment: <span id="lightbox-comment"></span></p>
+                    
+                    <div class="form-group">
+                        <label for="winner-score">Winner Score:</label>
+                        <input type="number" id="winner-score" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="winner-suicides">Winner Suicides:</label>
+                        <input type="number" id="winner-suicides" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="winner-comment">Winner Comment:</label>
+                        <textarea id="winner-comment" required></textarea>
+                    </div>
+                    
+                    <div class="lightbox-buttons">
+                        <button id="approve-button" class="button">Approve</button>
+                        <button id="cancel-button" class="button">Cancel</button>
+                        <!-- Reject button will be added here -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Update script tags to use type="module" -->
     <script type="module" src="../JS/firebase-config.js"></script>
@@ -139,6 +142,14 @@
     <script type="module" src="../JS/reports.js"></script>
 
     <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const d1Button = document.getElementById('d1-mode');
+            // ...code that uses these elements...
+            
+            const gameMode = d1Button.classList.contains('active') ? 'D1' : 'D2';
+            // This runs before navigation is loaded
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const d1Button = document.getElementById('d1-mode');
             const d2Button = document.getElementById('d2-mode');
@@ -168,16 +179,5 @@
     </script>
 
     <div id="footer-placeholder"></div>
-    <script>
-        Promise.all([
-            fetch('../HTML/nav.html').then(response => response.text()),
-            fetch('../HTML/footer.html').then(response => response.text())
-        ]).then(([navData, footerData]) => {
-            document.getElementById('nav-placeholder').innerHTML = navData;
-            document.getElementById('footer-placeholder').innerHTML = footerData;
-        }).catch(error => {
-            console.error('Error loading nav/footer:', error);
-        });
-    </script>
 </body>
 </html>
