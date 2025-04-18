@@ -310,7 +310,7 @@ async function handleLogin(e) {
                     
                     // Short delay to show success message before redirecting
                     setTimeout(() => {
-                        window.location.href = '../HTML/index.html';
+                        window.location.href = '../index.html';
                     }, 2000);
                     return;
                 } 
