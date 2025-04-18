@@ -338,7 +338,7 @@ async function handleLogin(e) {
         }
 
         // Existing user, redirect to index.html
-        window.location.href = '../HTML/index.html';
+        window.location.href = '../index.html';
     } catch (error) {
         console.error('Login error:', error);
         errorElement.textContent = 'Login failed: ' + error.message;
@@ -356,7 +356,7 @@ function loginFormHandler(event) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       console.log("User signed in:", userCredential.user);
-      window.location.href = "index.html";
+      window.location.href = "../index.html";
     })
     .catch((error) => {
       console.error("Login error:", error);
