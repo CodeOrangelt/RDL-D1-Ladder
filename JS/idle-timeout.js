@@ -2,7 +2,7 @@
 import firebaseIdle, { enhanceIdleTimeout } from './firebase-idle-wrapper.js';
 
 // Configuration
-const IDLE_TIMEOUT = 5 * 60 * 1000; // Increased to 5 minutes for better UX
+const IDLE_TIMEOUT = 60000; // Increased to 5 minutes for better UX
 let idleTimer = null;
 let isSessionSuspended = false;
 let networkErrorRetryCount = 0;
@@ -46,7 +46,7 @@ function createIdleOverlay() {
     message.style.cssText = 'color: #50C878; margin-bottom: 20px; font-size: 24px;';
     
     const subMessage = document.createElement('p');
-    subMessage.textContent = 'Your session has been suspended after 5 minutes of inactivity for security reasons.';
+    subMessage.textContent = 'Your session has been suspended after 1 minutes of inactivity for security reasons.';
     subMessage.style.cssText = 'color: #fff; margin-bottom: 30px;';
     
     const button = document.createElement('button');
@@ -325,6 +325,28 @@ function initIdleTimeout() {
     
     // Enhance with Firebase idle functionality
     enhanceIdleTimeout();
+    
+    // NEW: Add diagnostic tools to window for testing
+    window.checkFirebaseIdleStatus = function() {
+        console.log('Session suspended:', window.RDL_SESSION_SUSPENDED);
+        console.log('Network error:', window.RDL_NETWORK_ERROR);
+        console.log('Active listeners:', firebaseIdle.activeListeners.size);
+        console.log('Pending operations:', firebaseIdle.pendingOperations.size);
+        console.log('Blocked operations:', firebaseIdle.blockedOperations || 0);
+        return {
+            suspended: window.RDL_SESSION_SUSPENDED,
+            networkError: window.RDL_NETWORK_ERROR,
+            activeListeners: Array.from(firebaseIdle.activeListeners.keys()),
+            pendingOperations: Array.from(firebaseIdle.pendingOperations.keys()),
+            blockedCount: firebaseIdle.blockedOperations || 0
+        };
+    };
+    
+    // NEW: Force immediate timeout for testing (add to your dev tools)
+    window.forceIdleTimeout = function() {
+        console.log('Forcing idle timeout...');
+        suspendSession();
+    };
 }
 
 // Export functions
