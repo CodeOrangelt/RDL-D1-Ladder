@@ -53,16 +53,17 @@ nav li {
 nav a {
     color: #fff;
     text-decoration: none;
-    padding: 10px 15px; /* Adjust padding for better spacing */
-    display: block; /* Make the entire list item clickable */
-    transition: background-color 0.3s ease;
+    padding: 10px 15px;
+    display: block;
+    transition: color 0.3s ease; /* Changed from background-color to color */
     font-family: Helvetica, Arial, sans-serif;
     font-weight: bold;
     text-transform: uppercase;
 }
 
 nav a:hover {
-    background-color: #555;
+    color: #b026b9; /* Purple text highlight instead of background */
+    background-color: transparent; /* Remove background highlight */
 }
 
 /* Sign Out Container Styling */
@@ -111,7 +112,8 @@ nav a:hover {
 }
 
 #user-menu #sign-out-container a:hover {
-    background-color: #555;
+    background-color: transparent; /* Remove background */
+    color: #b026b9; /* Add purple text */
 }
 
 .hidden {
@@ -149,7 +151,8 @@ body {
 }
 
 .auth-link:hover {
-    background-color: #555;
+    color: #b026b9; /* Text highlight */
+    background-color: transparent; /* Remove background */
 }
 
 .user-dropdown {
@@ -196,7 +199,8 @@ body {
 }
 
 .dropdown-content a:hover {
-    background-color: #555;
+    background-color: #222;
+    color: #b026b9; /* Changed from #4CAF50 (green) to purple */
 }
 
 .nav-links {
@@ -251,7 +255,8 @@ body {
 }
 
 .dropdown-content a:hover {
-    background-color: #555;
+    background-color: #222;
+    color: #b026b9; /* Changed from #4CAF50 (green) to purple */
 }
 
 .auth-link {
@@ -330,7 +335,7 @@ body {
 }
 
 .nav-username:hover {
-    color: #4CAF50; /* Green hover effect matching other links */
+    color: #b026b9; /* Changed from #4CAF50 (green) to purple */
 }
 
 .nav-dropdown-content {
@@ -366,7 +371,7 @@ body {
 
 .nav-dropdown-content a:hover {
     background-color: #222;
-    color: #4CAF50;
+    color: #b026b9; /* Changed from #4CAF50 (green) to purple */
 }
 
 /* Fix for the older dropdown class used in fallback error state */
@@ -417,7 +422,7 @@ body {
 
 .dropdown-content a:hover {
     background-color: #222;
-    color: #4CAF50;
+    color: #b026b9; /* Changed from #4CAF50 (green) to purple */
 }
 
 /* Notification indicator styles */
