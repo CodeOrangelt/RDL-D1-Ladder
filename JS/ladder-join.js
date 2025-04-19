@@ -22,24 +22,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize references to elements
     const d1Toggle = document.getElementById('d1-toggle');
     const d2Toggle = document.getElementById('d2-toggle');
-    const joinPrompt = document.getElementById('ladder-join-prompt');
-    const joinButton = document.getElementById('join-ladder-button');
-    const joinStatus = document.getElementById('ladder-join-status');
     
-    // Setup click handlers for the toggle buttons to update current ladder
-    if (d1Toggle && d2Toggle) {
-        d1Toggle.addEventListener('click', () => {
-            currentLadder = 'D1';
-            checkUserLadderStatus();
-        });
+    // Alternative selectors if IDs don't match
+    const d1Button = document.querySelector('.d1-button') || document.querySelector('[data-ladder="D1"]');
+    const d2Button = document.querySelector('.d2-button') || document.querySelector('[data-ladder="D2"]');
+    
+    // Debug logging - see if buttons are found
+    console.log("Ladder join: D1 button found:", !!d1Toggle || !!d1Button);
+    console.log("Ladder join: D2 button found:", !!d2Toggle || !!d2Button);
+    
+    // Setup click handlers for the toggle buttons
+    function setupToggleButtons() {
+        // Try primary IDs first
+        if (d1Toggle) {
+            d1Toggle.addEventListener('click', () => {
+                console.log("D1 toggle clicked");
+                currentLadder = 'D1';
+                checkUserLadderStatus();
+            });
+        }
         
-        d2Toggle.addEventListener('click', () => {
-            currentLadder = 'D2';
-            checkUserLadderStatus();
-        });
+        if (d2Toggle) {
+            d2Toggle.addEventListener('click', () => {
+                console.log("D2 toggle clicked");
+                currentLadder = 'D2';
+                checkUserLadderStatus();
+            });
+        }
+        
+        // Try alternative selectors if primary IDs didn't work
+        if (!d1Toggle && d1Button) {
+            d1Button.addEventListener('click', () => {
+                console.log("D1 button (alt) clicked");
+                currentLadder = 'D1';
+                checkUserLadderStatus();
+            });
+        }
+        
+        if (!d2Toggle && d2Button) {
+            d2Button.addEventListener('click', () => {
+                console.log("D2 button (alt) clicked");
+                currentLadder = 'D2';
+                checkUserLadderStatus();
+            });
+        }
     }
     
+    // Call the setup function
+    setupToggleButtons();
+    
     // Setup join button click handler
+    const joinButton = document.getElementById('join-ladder-button');
     if (joinButton) {
         joinButton.addEventListener('click', handleJoinLadder);
     }
@@ -49,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             checkUserLadderStatus();
         } else {
+            const joinPrompt = document.getElementById('ladder-join-prompt');
             if (joinPrompt) {
                 joinPrompt.style.display = 'none';
             }
@@ -56,8 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Update the checkUserLadderStatus function with additional security checks
+// Update the checkUserLadderStatus function with additional security checks and a debug log
 async function checkUserLadderStatus() {
+    console.log("Checking user status for ladder:", currentLadder);
+
     const user = auth.currentUser;
     const joinPrompt = document.getElementById('ladder-join-prompt');
     const joinLadderType = document.getElementById('join-ladder-type');

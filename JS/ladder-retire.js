@@ -14,25 +14,101 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentLadderMode = 'D1'; // Default to D1
     
-    // Listen for ladder toggle changes
+    // Improve button selection with alternative selectors
     const d1Toggle = document.getElementById('d1-toggle');
     const d2Toggle = document.getElementById('d2-toggle');
+    const d1Button = document.querySelector('.d1-button') || document.querySelector('[data-ladder="D1"]');
+    const d2Button = document.querySelector('.d2-button') || document.querySelector('[data-ladder="D2"]');
     
-    if (d1Toggle) {
-        d1Toggle.addEventListener('click', () => {
-            currentLadderMode = 'D1';
-            updateRetireButtonVisibility();
-            if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D1';
-        });
+    // Debug logging - see if buttons are found
+    console.log("Ladder retire: D1 button found:", !!d1Toggle || !!d1Button);
+    console.log("Ladder retire: D2 button found:", !!d2Toggle || !!d2Button);
+    
+    // Fix event listeners for ladder toggles
+    function setupToggleButtons() {
+        // Try primary IDs first
+        if (d1Toggle) {
+            d1Toggle.addEventListener('click', () => {
+                console.log("D1 toggle clicked (retire)");
+                currentLadderMode = 'D1';
+                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D1';
+                updateRetireButtonVisibility();
+            });
+        }
+        
+        if (d2Toggle) {
+            d2Toggle.addEventListener('click', () => {
+                console.log("D2 toggle clicked (retire)");
+                currentLadderMode = 'D2';
+                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D2';
+                updateRetireButtonVisibility();
+            });
+        }
+        
+        // Try alternative selectors if primary IDs didn't work
+        if (!d1Toggle && d1Button) {
+            d1Button.addEventListener('click', () => {
+                console.log("D1 button (alt) clicked (retire)");
+                currentLadderMode = 'D1';
+                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D1';
+                updateRetireButtonVisibility();
+            });
+        }
+        
+        if (!d2Toggle && d2Button) {
+            d2Button.addEventListener('click', () => {
+                console.log("D2 button (alt) clicked (retire)");
+                currentLadderMode = 'D2';
+                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D2';
+                updateRetireButtonVisibility();
+            });
+        }
     }
     
-    if (d2Toggle) {
-        d2Toggle.addEventListener('click', () => {
-            currentLadderMode = 'D2';
-            updateRetireButtonVisibility();
-            if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D2';
-        });
+    // Call setup function
+    setupToggleButtons();
+    
+    // Fix the updateRetireButtonVisibility function to not create multiple listeners
+    function updateRetireButtonVisibility() {
+        console.log("Checking retire visibility for ladder:", currentLadderMode);
+        
+        const user = auth.currentUser;
+        if (!user || !tinyRetireButton) return;
+        
+        // Check player status without adding new auth listeners
+        checkPlayerStatus(user);
     }
+    
+    // Separate function to check player status
+    async function checkPlayerStatus(user) {
+        try {
+            const playerCollection = currentLadderMode === 'D1' ? 'players' : 'playersD2';
+            console.log(`Checking if user is in ${playerCollection} collection`);
+            
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (playerDoc.exists()) {
+                console.log(`User is on the ${currentLadderMode} ladder`);
+                tinyRetireButton.style.display = 'block';
+            } else {
+                console.log(`User is NOT on the ${currentLadderMode} ladder`);
+                tinyRetireButton.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error checking player status:", error);
+            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+        }
+    }
+    
+    // Set up a single auth state listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            checkPlayerStatus(user);
+        } else {
+            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+        }
+    });
     
     // Toggle retire form visibility when tiny retire button is clicked
     if (tinyRetireButton) {
@@ -44,34 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clear previous feedback
             retireStatusSpan.textContent = '';
             retireUsernameInput.value = '';
-        });
-    }
-    
-    // Function to check if current user is on ladder and show/hide retire button
-    function updateRetireButtonVisibility() {
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    // Determine which collection to check based on ladder mode
-                    const playerCollection = currentLadderMode === 'D1' ? 'players' : 'playersD2';
-                    const playerRef = doc(db, playerCollection, user.uid);
-                    const playerDoc = await getDoc(playerRef);
-                    
-                    if (playerDoc.exists()) {
-                        // User is on the ladder, show retire button
-                        tinyRetireButton.style.display = 'block';
-                    } else {
-                        // User not on this ladder, hide button
-                        tinyRetireButton.style.display = 'none';
-                    }
-                } catch (error) {
-                    console.error("Error checking player status:", error);
-                    tinyRetireButton.style.display = 'none';
-                }
-            } else {
-                // No user logged in, hide button
-                tinyRetireButton.style.display = 'none';
-            }
         });
     }
     
