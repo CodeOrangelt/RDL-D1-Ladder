@@ -15,6 +15,22 @@ const db = getFirestore(app);
 const playerDataCache = new Map();
 const containerReferences = {};
 
+// Add this helper function within the file or import if shared
+function getContrastColor(hexColor) {
+    if (!hexColor) return '#ffffff';
+    hexColor = hexColor.replace('#', '');
+    if (hexColor.length === 3) {
+        hexColor = hexColor.split('').map(char => char + char).join('');
+    }
+    if (hexColor.length !== 6) return '#ffffff';
+
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
 class ProfileViewer {
     constructor() {
         this.currentProfileData = null;
@@ -466,24 +482,71 @@ class ProfileViewer {
         const isNonParticipant = data.isNonParticipant === true;
         const isFormerPlayer = data.isFormerPlayer === true;
         
-        // Add status indicator
-        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
-        statusContainer.className = 'profile-status';
+        // Check for user roles
+        const userRole = data.role; // 'admin', 'moderator', 'owner', 'helper', 'staff', etc.
+
+        // Read custom role data
+        const roleName = data.roleName;
+        const roleColor = data.roleColor;
         
+        // Role container (separate from status for styling purposes)
+        let roleContainer = document.querySelector('.role-container');
+        if (!roleContainer && (userRole || roleName)) {
+            roleContainer = document.createElement('div');
+            roleContainer.className = 'role-container';
+        }
+        
+        // Handle role badges if present
+        if (roleName && roleContainer) {
+            // Use custom name and color
+            roleContainer.innerHTML = `
+                <div class="role-badge" style="background-color: ${roleColor || '#808080'}; color: ${getContrastColor(roleColor || '#808080')};">
+                    ${roleName}
+                </div>
+            `;
+            if (!document.querySelector('.role-container')) {
+                container.insertBefore(roleContainer, container.firstChild);
+            }
+        } else if (userRole && roleContainer) {
+            // Format role name for display (capitalize first letter)
+            const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+            
+            roleContainer.innerHTML = `
+                <div class="role-badge ${userRole.toLowerCase()}">${displayRole}</div>
+            `;
+            
+            // Insert role container at the top of the profile content
+            if (!document.querySelector('.role-container')) {
+                container.insertBefore(roleContainer, container.firstChild);
+            }
+        } else if (roleContainer) {
+            // Remove role container if no role is present
+            roleContainer.remove();
+        }
+        
+        // Continue with existing non-participant or former player handling
         if (isNonParticipant) {
+            const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+            statusContainer.className = 'profile-status';
             statusContainer.innerHTML = `
                 <div class="status-badge non-participant">NON-PARTICIPANT</div>
-                <p class="status-message">This player is registered but not participating in the ladder.</p>
+                <p class="status-message">
+                    ${data.autoRegistered ? 
+                    'This player has an account but has not joined any ladder.' : 
+                    'This player is registered but not participating in the ladder.'}
+                </p>
             `;
             container.classList.add('non-participant-profile');
-            container.insertBefore(statusContainer, container.firstChild);
+            container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
         } else if (isFormerPlayer) {
+            const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+            statusContainer.className = 'profile-status';
             statusContainer.innerHTML = `
                 <div class="status-badge former-player">FORMER PLAYER</div>
                 <p class="status-message">This player was previously on the ladder. Showing historical data.</p>
             `;
             container.classList.add('former-player-profile');
-            container.insertBefore(statusContainer, container.firstChild);
+            container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
         } else {
             // Remove status indicator if player is active
             if (document.querySelector('.profile-status')) {

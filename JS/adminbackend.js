@@ -1,11 +1,27 @@
 import { 
     collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
     serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
-    limitToLast, onSnapshot
+    limitToLast, onSnapshot, deleteField
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import { isAdmin } from './admin-check.js';
+
+// Helper function to determine text color based on background
+function getContrastColor(hexColor) {
+    if (!hexColor) return '#ffffff'; // Default to white
+    hexColor = hexColor.replace('#', '');
+    if (hexColor.length === 3) {
+        hexColor = hexColor.split('').map(char => char + char).join('');
+    }
+    if (hexColor.length !== 6) return '#ffffff'; // Invalid format
+
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff'; // Return black for light colors, white for dark
+}
 
 // Initialize charts container
 const charts = {};
@@ -61,28 +77,112 @@ function setupSidebarNavigation() {
     console.log('Sidebar navigation initialized');
 }
 
+// Add setupTabNavigation function
+function setupTabNavigation() {
+    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    const sections = document.querySelectorAll('.main-content .admin-section'); // Use .admin-section if that's your container class
+
+    if (navItems.length === 0 || sections.length === 0) {
+        console.error("Tab navigation elements not found!");
+        return;
+    }
+
+    console.log(`Found ${navItems.length} nav items and ${sections.length} sections.`);
+
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const sectionId = item.getAttribute('data-section');
+            console.log(`Nav item clicked: data-section=${sectionId}`);
+
+            if (!sectionId) {
+                console.error("Nav item missing data-section attribute:", item);
+                return;
+            }
+
+            // Remove active class from all items and sections
+            navItems.forEach(nav => nav.classList.remove('active'));
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            // Add active class to the clicked item and corresponding section
+            item.classList.add('active');
+            const targetSection = document.getElementById(sectionId);
+
+            if (targetSection) {
+                console.log(`Activating section: #${sectionId}`);
+                targetSection.classList.add('active');
+                // Optional: Update header title based on active section
+                const headerTitle = document.querySelector('.content-header h1');
+                if (headerTitle && item.querySelector('span')) {
+                    headerTitle.textContent = item.querySelector('span').textContent;
+                }
+            } else {
+                console.error(`Target section #${sectionId} not found!`);
+            }
+        });
+    });
+
+    // Activate the first tab by default (or a specific one)
+    const defaultActiveNavItem = document.querySelector('.sidebar-nav .nav-item[data-section="dashboard-section"]') || navItems[0];
+    if (defaultActiveNavItem) {
+        defaultActiveNavItem.click(); // Simulate a click to activate the default tab
+        console.log("Default tab activated.");
+    } else {
+        console.error("Could not find default tab to activate.");
+    }
+}
+
 // Modify initializeAdminDashboard function
 function initializeAdminDashboard() {
     // Initialize sidebar navigation
     setupSidebarNavigation();
-    
+
+    // Initialize tab navigation
+    try {
+        setupTabNavigation(); // Ensure this is called
+    } catch (error) {
+        console.error("Error setting up tab navigation:", error);
+    }
+
     // Initialize ladder selector
     setupLadderSelector();
     
     // Initialize dashboard overview (but don't load data)
-    setupDashboardSection();
+    try {
+        setupDashboardSection();
+    } catch (error) {
+        console.error("Error setting up dashboard section:", error);
+    }
     
     // Initialize player management (but don't load data)
-    setupManagePlayersSection();
+    try {
+        setupManagePlayersSection();
+    } catch (error) {
+        console.error("Error setting up player management section:", error);
+    }
     
     // Initialize elo history (but don't load data)
-    setupEloHistorySection();
+    try {
+        setupEloHistorySection();
+    } catch (error) {
+        console.error("Error setting up ELO history section:", error);
+    }
     
     // Initialize promote/demote controls
-    setupRankControls();
+    try {
+        setupRankControls();
+    } catch (error) {
+        console.error("Error setting up rank controls:", error);
+    }
     
     // Set up "Load Data" buttons
     setupDataLoadButtons();
+    
+    // Initialize user roles section
+    try {
+        setupUserRolesSection(); // Ensure this is also wrapped
+    } catch (error) {
+        console.error("Error setting up user roles section:", error);
+    }
 }
 
 // Fix setupDataLoadButtons function
@@ -1329,6 +1429,53 @@ function setupRankControls() {
             setEloModal.classList.remove('active');
         });
     }
+    
+    // Role assignment modal (Update this part)
+    const setRoleModal = document.getElementById('set-role-modal');
+    const setRoleForm = document.getElementById('set-role-form');
+
+    if (setRoleModal && setRoleForm) {
+        // Close when clicking outside
+        setRoleModal.addEventListener('click', (e) => {
+            if (e.target === setRoleModal) {
+                closeModalHandler();
+            }
+        });
+
+        // Handle form submit
+        setRoleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('role-username');
+            const roleNameInput = document.getElementById('role-name'); // New input
+            const roleColorInput = document.getElementById('role-color'); // New input
+
+            const username = usernameInput.value.trim();
+            const roleName = roleNameInput.value.trim(); // Get custom name
+            const roleColor = roleColorInput.value; // Get custom color
+
+            if (!username) { // Only username is strictly required to identify the user
+                showNotification('Username is missing', 'error');
+                return;
+            }
+
+            try {
+                // Call updated function
+                await setUserRole(username, roleName, roleColor);
+                closeModalHandler();
+                loadUsersWithRoles(); // Refresh the table
+            } catch (error) {
+                // Error is already handled in setUserRole
+            }
+        });
+
+        // Cancel button (ensure closeModalHandler is used)
+        const cancelBtn = document.getElementById('cancel-role-btn');
+        if (cancelBtn) {
+            cancelBtn.removeEventListener('click', closeModalHandler);
+            cancelBtn.addEventListener('click', closeModalHandler);
+        }
+    }
 }
 
 // Replace the promotePlayer function with this implementation
@@ -1620,6 +1767,72 @@ async function setCustomElo(username, elo, ladder) {
     }
 }
 
+// Updated setUserRole function
+async function setUserRole(username, roleName, roleColor) { // Modified signature
+    try {
+        const user = auth.currentUser;
+        if (!user || !isAdmin(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Normalize inputs
+        const finalRoleName = roleName ? roleName.trim() : null;
+        const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null; // Default color if name exists but color doesn't
+
+        const [d1Query, d2Query] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('username', '==', username))),
+            getDocs(query(collection(db, 'playersD2'), where('username', '==', username)))
+        ]);
+        const nonParticipantQuery = await getDocs(
+            query(collection(db, 'nonParticipants'), where('username', '==', username))
+        );
+        const userProfilesQuery = await getDocs(
+            query(collection(db, 'userProfiles'), where('username', '==', username))
+        );
+
+        const userDocs = [];
+        if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref});
+        if (!d2Query.empty) userDocs.push({ref: d2Query.docs[0].ref});
+        if (!nonParticipantQuery.empty) userDocs.push({ref: nonParticipantQuery.docs[0].ref});
+        if (!userProfilesQuery.empty) userDocs.push({ref: userProfilesQuery.docs[0].ref});
+
+        if (userDocs.length === 0) {
+            throw new Error(`User "${username}" not found in any collection`);
+        }
+
+        const batch = writeBatch(db);
+
+        userDocs.forEach(docInfo => {
+            if (!finalRoleName) { // If roleName is empty, remove role fields
+                batch.update(docInfo.ref, {
+                    roleName: deleteField(),
+                    roleColor: deleteField(),
+                    roleAssignedBy: deleteField(),
+                    roleAssignedAt: deleteField()
+                });
+            } else { // Otherwise, set the custom role fields
+                batch.update(docInfo.ref, {
+                    roleName: finalRoleName,
+                    roleColor: finalRoleColor,
+                    roleAssignedBy: user.email,
+                    roleAssignedAt: serverTimestamp()
+                });
+            }
+        });
+
+        await batch.commit();
+
+        const actionMessage = finalRoleName ? `Role "${finalRoleName}" set` : "Role removed";
+        showNotification(`${actionMessage} for user "${username}"`, 'success');
+        return true;
+
+    } catch (error) {
+        console.error('Error setting user role:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -1665,6 +1878,305 @@ function closeNotification(notification) {
     setTimeout(() => {
         notification.remove();
     }, 300);
+}
+
+
+// Add this new function
+function setupUserRolesSection() {
+    // Set up the load button
+    const loadUsersBtn = document.getElementById('load-users-data');
+    if (loadUsersBtn) {
+        loadUsersBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadUsersWithRoles()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Add new role button
+    const addRoleBtn = document.getElementById('add-new-role-btn');
+    if (addRoleBtn) {
+        addRoleBtn.addEventListener('click', () => {
+            const modal = document.getElementById('set-role-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        });
+    }
+    
+    // Set up search filter
+    const userSearch = document.getElementById('user-search');
+    if (userSearch) {
+        userSearch.addEventListener('input', debounce(filterUsersTable, 300));
+    }
+    
+    // Set up role filter
+    const roleFilter = document.getElementById('role-filter');
+    if (roleFilter) {
+        roleFilter.addEventListener('change', filterUsersTable);
+    }
+}
+
+// Function to load users with roles
+async function loadUsersWithRoles() {
+    const tableBody = document.getElementById('users-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading users...</td></tr>';
+    
+    try {
+        // Get all users from various collections
+        const [d1Players, d2Players, nonParticipants, userProfiles] = await Promise.all([
+            getDocs(collection(db, 'players')),
+            getDocs(collection(db, 'playersD2')),
+            getDocs(collection(db, 'nonParticipants')),
+            getDocs(collection(db, 'userProfiles'))
+        ]);
+        
+        // Consolidate users into a map with username as key
+        const usersMap = new Map();
+        
+        // Function to process documents and add to map
+        function processDocuments(snapshot, source) {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (!data.username) return;
+                
+                if (!usersMap.has(data.username)) {
+                    usersMap.set(data.username, {
+                        username: data.username,
+                        role: data.role || null,
+                        roleAssignedBy: data.roleAssignedBy || null,
+                        roleAssignedAt: data.roleAssignedAt || null,
+                        sources: [source]
+                    });
+                } else {
+                    const user = usersMap.get(data.username);
+                    // Take role data if this document has it and the map entry doesn't
+                    if (data.role && !user.role) {
+                        user.role = data.role;
+                        user.roleAssignedBy = data.roleAssignedBy;
+                        user.roleAssignedAt = data.roleAssignedAt;
+                    }
+                    if (!user.sources.includes(source)) {
+                        user.sources.push(source);
+                    }
+                }
+            });
+        }
+        
+        // Process all collections
+        processDocuments(d1Players, 'D1');
+        processDocuments(d2Players, 'D2');
+        processDocuments(nonParticipants, 'Non-Participant');
+        processDocuments(userProfiles, 'Profile');
+        
+        // Convert map to array and sort by username
+        const usersArray = Array.from(usersMap.values()).sort((a, b) => 
+            a.username.localeCompare(b.username)
+        );
+        
+        if (usersArray.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+            return;
+        }
+        
+        // Render user table
+        tableBody.innerHTML = '';
+        
+        usersArray.forEach(user => {
+            const row = document.createElement('tr');
+            row.dataset.username = user.username;
+            row.dataset.role = user.role || 'none';
+            
+            const formattedDate = user.roleAssignedAt ? 
+                new Date(user.roleAssignedAt.seconds * 1000).toLocaleDateString() : 
+                'N/A';
+                
+            const roleBadge = user.role ? 
+                `<span class="role-badge ${user.role}">${user.role}</span>` : 
+                '<span class="no-role">None</span>';
+                
+            row.innerHTML = `
+                <td>${user.username} <span class="user-source">(${user.sources.join(', ')})</span></td>
+                <td>${roleBadge}</td>
+                <td>${user.roleAssignedBy || 'N/A'}</td>
+                <td>${formattedDate}</td>
+                <td class="actions">
+                    <button class="edit-role-btn" data-username="${user.username}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${user.role ? `
+                        <button class="remove-role-btn" data-username="${user.username}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners to action buttons
+        document.querySelectorAll('.edit-role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const username = btn.dataset.username;
+                openRoleEditModal(username);
+            });
+        });
+
+        document.querySelectorAll('.remove-role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const username = btn.dataset.username;
+                if (confirm(`Are you sure you want to remove the role from ${username}?`)) {
+                    setUserRole(username, 'none')
+                        .then(() => loadUsersWithRoles())
+                        .catch(error => console.error('Error removing role:', error));
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error loading users:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading users</td></tr>';
+    }
+}
+
+// Modify openRoleEditModal
+function openRoleEditModal(username) {
+    console.log('Attempting to open role edit modal for:', username); // Log start
+    const modal = document.getElementById('set-role-modal');
+    const usernameInput = document.getElementById('role-username');
+    const roleSelect = document.getElementById('user-role');
+
+    if (!modal) {
+        console.error('CRITICAL: Role modal element (#set-role-modal) not found in the DOM!');
+        alert('Error: Could not find the role editing dialog.'); // User feedback
+        return;
+    }
+    console.log('Modal element found:', modal); // Log success
+
+    // Pre-fill the username
+    if (usernameInput) {
+        usernameInput.value = username;
+        console.log(`Username input set to: ${username}`);
+    } else {
+        console.warn('Username input field (#role-username) not found in modal.');
+    }
+
+    // Find current role from table row data attribute
+    const userRow = document.querySelector(`#users-table-body tr[data-username="${username}"]`);
+    if (userRow && roleSelect) {
+        const currentRole = userRow.dataset.role;
+        roleSelect.value = currentRole === 'none' ? '' : currentRole;
+        console.log(`Role select set to: ${roleSelect.value} (based on data-role: ${currentRole})`);
+    } else {
+        if (!userRow) console.warn(`Table row for user ${username} not found.`);
+        if (!roleSelect) console.warn('Role select field (#user-role) not found in modal.');
+        if (roleSelect) roleSelect.value = ''; // Default to empty if row not found
+    }
+
+    // Show the modal using only the active class
+    console.log('Adding "active" class to modal.');
+    modal.classList.add('active');
+
+    // Add the cancel button event listener
+    const cancelBtn = document.getElementById('cancel-role-btn');
+    if (cancelBtn) {
+        console.log('Attaching cancel button listener.');
+        // Remove previous listener to prevent duplicates
+        cancelBtn.removeEventListener('click', closeModalHandler);
+        cancelBtn.addEventListener('click', closeModalHandler);
+    } else {
+        console.warn('Cancel button (#cancel-role-btn) not found in modal.');
+    }
+
+    // Add listener to close modal on background click
+    console.log('Attaching background click listener.');
+    modal.removeEventListener('click', closeModalBackgroundHandler); // Prevent duplicates
+    modal.addEventListener('click', closeModalBackgroundHandler);
+}
+
+// Define the handler for background click
+function closeModalBackgroundHandler(event) {
+    // Only close if the click is directly on the modal background
+    if (event.target === this) {
+        closeModalHandler();
+    }
+}
+
+// Modify closeModalHandler
+function closeModalHandler() {
+    const modal = document.getElementById('set-role-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Remove the background click listener when closed
+        modal.removeEventListener('click', closeModalBackgroundHandler);
+    }
+}
+
+// Add this function after loadUsersWithRoles
+
+// Function to filter user table
+function filterUsersTable() {
+    const searchTerm = document.getElementById('user-search')?.value.toLowerCase() || '';
+    const roleFilter = document.getElementById('role-filter')?.value || 'all';
+    const rows = document.querySelectorAll('#users-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        // Skip special rows
+        if (row.querySelector('.loading-cell') || row.querySelector('.empty-state') || row.querySelector('.error-state')) {
+            return;
+        }
+        
+        const username = row.dataset.username?.toLowerCase() || '';
+        const role = row.dataset.role || 'none';
+        
+        // Check if row matches filters
+        const matchesSearch = username.includes(searchTerm);
+        const matchesRole = roleFilter === 'all' || role === roleFilter;
+        
+        if (matchesSearch && matchesRole) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && rows.length > 0) {
+        const tableBody = document.getElementById('users-table-body');
+        if (tableBody) {
+            // Only add if there's no existing message
+            if (!tableBody.querySelector('.no-results')) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.classList.add('no-results');
+                noResultsRow.innerHTML = '<td colspan="5" class="empty-state">No users match your filters</td>';
+                tableBody.appendChild(noResultsRow);
+            }
+        }
+    } else {
+        // Remove no results message if it exists
+        const noResultsRow = document.querySelector('.no-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
 }
 
 export { promotePlayer, demotePlayer };

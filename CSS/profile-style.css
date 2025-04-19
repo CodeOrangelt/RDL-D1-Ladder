@@ -588,3 +588,27 @@
     color: #AAA;
 }
 
+/* Role badge styling */
+.role-badge {
+    display: inline-block;
+    padding: 5px 10px; /* Or your preferred padding */
+    border-radius: 4px;
+    font-size: 12px; /* Or your preferred size */
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1; /* Ensure consistent height */
+    text-align: center;
+}
+
+/* Style for when no role is assigned in admin table */
+.data-table .no-role {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Special container for roles */
+.role-container {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
