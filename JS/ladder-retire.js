@@ -14,72 +14,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentLadderMode = 'D1'; // Default to D1
     
-    // Improve button selection with alternative selectors
-    const d1Toggle = document.getElementById('d1-toggle');
-    const d2Toggle = document.getElementById('d2-toggle');
-    const d1Button = document.querySelector('.d1-button') || document.querySelector('[data-ladder="D1"]');
-    const d2Button = document.querySelector('.d2-button') || document.querySelector('[data-ladder="D2"]');
-    
-    // Debug logging - see if buttons are found
-    console.log("Ladder retire: D1 button found:", !!d1Toggle || !!d1Button);
-    console.log("Ladder retire: D2 button found:", !!d2Toggle || !!d2Button);
-    
-    // Fix event listeners for ladder toggles
-    function setupToggleButtons() {
-        // Try primary IDs first
-        if (d1Toggle) {
-            d1Toggle.addEventListener('click', () => {
-                console.log("D1 toggle clicked (retire)");
-                currentLadderMode = 'D1';
-                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D1';
-                updateRetireButtonVisibility();
+    // Listen for radio button changes instead of button clicks
+    function setupRadioListeners() {
+        document.querySelectorAll('input[name="ladder"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    currentLadderMode = e.target.value;
+                    console.log(`Retire: Ladder changed to: ${currentLadderMode}`);
+                    
+                    // Update UI elements
+                    if (retireLadderTypeSpan) {
+                        retireLadderTypeSpan.textContent = currentLadderMode;
+                    }
+                    
+                    // Check if we should show the retire button
+                    updateRetireButtonVisibility();
+                }
             });
-        }
-        
-        if (d2Toggle) {
-            d2Toggle.addEventListener('click', () => {
-                console.log("D2 toggle clicked (retire)");
-                currentLadderMode = 'D2';
-                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D2';
-                updateRetireButtonVisibility();
-            });
-        }
-        
-        // Try alternative selectors if primary IDs didn't work
-        if (!d1Toggle && d1Button) {
-            d1Button.addEventListener('click', () => {
-                console.log("D1 button (alt) clicked (retire)");
-                currentLadderMode = 'D1';
-                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D1';
-                updateRetireButtonVisibility();
-            });
-        }
-        
-        if (!d2Toggle && d2Button) {
-            d2Button.addEventListener('click', () => {
-                console.log("D2 button (alt) clicked (retire)");
-                currentLadderMode = 'D2';
-                if (retireLadderTypeSpan) retireLadderTypeSpan.textContent = 'D2';
-                updateRetireButtonVisibility();
-            });
-        }
+        });
     }
     
-    // Call setup function
-    setupToggleButtons();
+    // Call the setup function
+    setupRadioListeners();
     
-    // Fix the updateRetireButtonVisibility function to not create multiple listeners
+    // Function to show/hide retire button based on ladder membership
     function updateRetireButtonVisibility() {
         console.log("Checking retire visibility for ladder:", currentLadderMode);
         
         const user = auth.currentUser;
         if (!user || !tinyRetireButton) return;
         
-        // Check player status without adding new auth listeners
         checkPlayerStatus(user);
     }
     
-    // Separate function to check player status
+    // Check if player is on the selected ladder
     async function checkPlayerStatus(user) {
         try {
             const playerCollection = currentLadderMode === 'D1' ? 'players' : 'playersD2';
@@ -101,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Set up a single auth state listener
+    // Set up auth state listener
     onAuthStateChanged(auth, (user) => {
         if (user) {
             checkPlayerStatus(user);

@@ -19,57 +19,31 @@ import { auth, db } from './firebase-config.js';
 let currentLadder = 'D1';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize references to elements
-    const d1Toggle = document.getElementById('d1-toggle');
-    const d2Toggle = document.getElementById('d2-toggle');
+    // Listen for radio button changes instead of button clicks
+    const d1Radio = document.getElementById('d1-switch');
+    const d2Radio = document.getElementById('d2-switch');
     
-    // Alternative selectors if IDs don't match
-    const d1Button = document.querySelector('.d1-button') || document.querySelector('[data-ladder="D1"]');
-    const d2Button = document.querySelector('.d2-button') || document.querySelector('[data-ladder="D2"]');
+    console.log("Ladder join: D1 radio found:", !!d1Radio);
+    console.log("Ladder join: D2 radio found:", !!d2Radio);
     
-    // Debug logging - see if buttons are found
-    console.log("Ladder join: D1 button found:", !!d1Toggle || !!d1Button);
-    console.log("Ladder join: D2 button found:", !!d2Toggle || !!d2Button);
-    
-    // Setup click handlers for the toggle buttons
-    function setupToggleButtons() {
-        // Try primary IDs first
-        if (d1Toggle) {
-            d1Toggle.addEventListener('click', () => {
-                console.log("D1 toggle clicked");
-                currentLadder = 'D1';
-                checkUserLadderStatus();
+    // Setup radio change handlers
+    function setupRadioListeners() {
+        // Create a single handler for all radio changes
+        document.querySelectorAll('input[name="ladder"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    currentLadder = e.target.value;
+                    console.log(`Ladder changed to: ${currentLadder}`);
+                    
+                    // Update join button and other UI elements
+                    checkUserLadderStatus();
+                }
             });
-        }
-        
-        if (d2Toggle) {
-            d2Toggle.addEventListener('click', () => {
-                console.log("D2 toggle clicked");
-                currentLadder = 'D2';
-                checkUserLadderStatus();
-            });
-        }
-        
-        // Try alternative selectors if primary IDs didn't work
-        if (!d1Toggle && d1Button) {
-            d1Button.addEventListener('click', () => {
-                console.log("D1 button (alt) clicked");
-                currentLadder = 'D1';
-                checkUserLadderStatus();
-            });
-        }
-        
-        if (!d2Toggle && d2Button) {
-            d2Button.addEventListener('click', () => {
-                console.log("D2 button (alt) clicked");
-                currentLadder = 'D2';
-                checkUserLadderStatus();
-            });
-        }
+        });
     }
     
     // Call the setup function
-    setupToggleButtons();
+    setupRadioListeners();
     
     // Setup join button click handler
     const joinButton = document.getElementById('join-ladder-button');
