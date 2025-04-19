@@ -1779,16 +1779,12 @@ async function setUserRole(username, roleName, roleColor) { // Modified signatur
         const finalRoleName = roleName ? roleName.trim() : null;
         const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null; // Default color if name exists but color doesn't
 
-        const [d1Query, d2Query] = await Promise.all([
+        const [d1Query, d2Query, nonParticipantQuery, userProfilesQuery] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', username))),
-            getDocs(query(collection(db, 'playersD2'), where('username', '==', username)))
+            getDocs(query(collection(db, 'playersD2'), where('username', '==', username))),
+            getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
+            getDocs(query(collection(db, 'userProfiles'), where('username', '==', username)))
         ]);
-        const nonParticipantQuery = await getDocs(
-            query(collection(db, 'nonParticipants'), where('username', '==', username))
-        );
-        const userProfilesQuery = await getDocs(
-            query(collection(db, 'userProfiles'), where('username', '==', username))
-        );
 
         const userDocs = [];
         if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref});
@@ -1954,20 +1950,22 @@ async function loadUsersWithRoles() {
             snapshot.forEach(doc => {
                 const data = doc.data();
                 if (!data.username) return;
-                
+
                 if (!usersMap.has(data.username)) {
                     usersMap.set(data.username, {
                         username: data.username,
-                        role: data.role || null,
+                        roleName: data.roleName || null, // Read roleName
+                        roleColor: data.roleColor || null, // Read roleColor
                         roleAssignedBy: data.roleAssignedBy || null,
                         roleAssignedAt: data.roleAssignedAt || null,
                         sources: [source]
                     });
                 } else {
                     const user = usersMap.get(data.username);
-                    // Take role data if this document has it and the map entry doesn't
-                    if (data.role && !user.role) {
-                        user.role = data.role;
+                    // Prioritize role data if found
+                    if (data.roleName && !user.roleName) {
+                        user.roleName = data.roleName;
+                        user.roleColor = data.roleColor;
                         user.roleAssignedBy = data.roleAssignedBy;
                         user.roleAssignedAt = data.roleAssignedAt;
                     }
@@ -1977,7 +1975,7 @@ async function loadUsersWithRoles() {
                 }
             });
         }
-        
+
         // Process all collections
         processDocuments(d1Players, 'D1');
         processDocuments(d2Players, 'D2');
@@ -2000,16 +1998,19 @@ async function loadUsersWithRoles() {
         usersArray.forEach(user => {
             const row = document.createElement('tr');
             row.dataset.username = user.username;
-            row.dataset.role = user.role || 'none';
-            
-            const formattedDate = user.roleAssignedAt ? 
-                new Date(user.roleAssignedAt.seconds * 1000).toLocaleDateString() : 
+            // Store custom role data in dataset for the modal
+            row.dataset.roleName = user.roleName || '';
+            row.dataset.roleColor = user.roleColor || '#808080';
+
+            const formattedDate = user.roleAssignedAt ?
+                new Date(user.roleAssignedAt.seconds * 1000).toLocaleDateString() :
                 'N/A';
-                
-            const roleBadge = user.role ? 
-                `<span class="role-badge ${user.role}">${user.role}</span>` : 
+
+            // Generate badge with custom name and color
+            const roleBadge = user.roleName ?
+                `<span class="role-badge" style="background-color: ${user.roleColor}; color: ${getContrastColor(user.roleColor)};">${user.roleName}</span>` :
                 '<span class="no-role">None</span>';
-                
+
             row.innerHTML = `
                 <td>${user.username} <span class="user-source">(${user.sources.join(', ')})</span></td>
                 <td>${roleBadge}</td>
@@ -2019,14 +2020,14 @@ async function loadUsersWithRoles() {
                     <button class="edit-role-btn" data-username="${user.username}">
                         <i class="fas fa-edit"></i>
                     </button>
-                    ${user.role ? `
-                        <button class="remove-role-btn" data-username="${user.username}">
-                            <i class="fas fa-trash-alt"></i>
+                    ${user.roleName ? `
+                        <button class="remove-role-btn" data-username="${user.username}" title="Remove Role">
+                            <i class="fas fa-times"></i> <!-- Changed icon -->
                         </button>
                     ` : ''}
                 </td>
             `;
-            
+
             tableBody.appendChild(row);
         });
 
@@ -2038,12 +2039,14 @@ async function loadUsersWithRoles() {
             });
         });
 
+        // Update event listeners for remove button
         document.querySelectorAll('.remove-role-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const username = btn.dataset.username;
                 if (confirm(`Are you sure you want to remove the role from ${username}?`)) {
-                    setUserRole(username, 'none')
-                        .then(() => loadUsersWithRoles())
+                    // Call setUserRole with nulls to remove
+                    setUserRole(username, null, null)
+                        .then(() => loadUsersWithRoles()) // Refresh table on success
                         .catch(error => console.error('Error removing role:', error));
                 }
             });
