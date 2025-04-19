@@ -1350,22 +1350,52 @@ class ProfileViewer {
     }
     
     setupEditProfile() {
-        // Get references to edit controls
-        const elements = {
-            'edit-profile': element => element.addEventListener('click', () => this.toggleEditMode(true)),
-            'cancel-btn': element => element.addEventListener('click', () => this.toggleEditMode(false)),
-            'profile-form': element => element.addEventListener('submit', e => this.handleSubmit(e))
-        };
-        
-        // Add event listeners
-        for (const [id, handler] of Object.entries(elements)) {
-            const element = document.getElementById(id) || document.querySelector(`.${id}`);
-            if (element) {
-                // Remove old listeners by cloning
-                const newElement = element.cloneNode(true);
-                element.parentNode.replaceChild(newElement, element);
-                handler(newElement);
-            }
+        const editButton = document.getElementById('edit-profile');
+        const cancelButton = document.querySelector('.cancel-btn'); // Use querySelector for class
+        const profileForm = document.getElementById('profile-form');
+        const viewMode = document.querySelector('.view-mode');
+        const editMode = document.querySelector('.edit-mode');
+
+        if (!editButton || !cancelButton || !profileForm || !viewMode || !editMode) {
+            console.warn("Edit profile elements not found, skipping setup.");
+            return;
+        }
+
+        // --- Check if the current user is viewing their own profile ---
+        const currentUser = auth.currentUser;
+        const isOwnProfile = currentUser && this.currentProfileData && currentUser.uid === this.currentProfileData.userId;
+
+        if (isOwnProfile) {
+            // Show the edit button only if it's the user's own profile
+            editButton.style.display = 'inline-block'; // Or 'block' depending on your CSS
+
+            // --- Add Event Listeners ---
+            // Use cloning to ensure old listeners are removed if this runs multiple times
+            const newEditButton = editButton.cloneNode(true);
+            editButton.parentNode.replaceChild(newEditButton, editButton);
+            newEditButton.addEventListener('click', () => this.toggleEditMode(true));
+
+            const newCancelButton = cancelButton.cloneNode(true);
+            cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+            newCancelButton.addEventListener('click', () => this.toggleEditMode(false));
+
+            const newProfileForm = profileForm.cloneNode(true);
+            // Need to re-attach children if cloneNode(true) doesn't handle form elements well,
+            // but usually it's okay. If form submission breaks, revisit this.
+            profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+            newProfileForm.addEventListener('submit', e => this.handleSubmit(e));
+
+            // Ensure view mode is visible initially, edit mode is hidden
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+
+        } else {
+            // Hide the edit button if it's not the user's own profile
+            editButton.style.display = 'none';
+            // Ensure edit mode is hidden
+            editMode.style.display = 'none';
+            // Ensure view mode is visible
+            viewMode.style.display = 'block';
         }
     }
 
@@ -1405,5 +1435,17 @@ class ProfileViewer {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    new ProfileViewer();
+    // Wait for Firebase Auth state to be ready before initializing
+    auth.onAuthStateChanged(user => {
+        console.log("Auth state changed, user:", user ? user.uid : 'none');
+        // Initialize ProfileViewer regardless of login state,
+        // the viewer logic will handle showing/hiding edit button.
+        if (!window.profileViewerInstance) { // Prevent multiple initializations
+             window.profileViewerInstance = new ProfileViewer();
+        } else {
+             // If already initialized, maybe reload profile if user logs in/out?
+             // Or rely on page refresh. For now, just log.
+             console.log("ProfileViewer already initialized.");
+        }
+    });
 });
