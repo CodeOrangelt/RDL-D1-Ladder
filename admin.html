@@ -50,6 +50,11 @@
                     <i class="fas fa-trophy"></i>
                     <span>Manage Ranks</span>
                 </button>
+
+                <div class="nav-item" data-section="user-roles-section">
+                    <i class="fas fa-user-tag"></i>
+                    <span>User Roles</span>
+                </div>
             </nav>
             
             <div class="sidebar-footer">
@@ -198,6 +203,13 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="set-user-role-btn" class="action-button role">
+                        <i class="fas fa-user-tag"></i> Assign User Role
+                    </button>
+                </div>
             </section>
             
             <!-- ELO History Section -->
@@ -330,6 +342,63 @@
                     </div>
                 </div>
             </section>
+
+            <!-- User Roles Section -->
+            <div id="user-roles-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h2>User Role Management</h2>
+                    <div class="action-buttons">
+                        <button id="load-users-data" class="action-button">
+                            <i class="fas fa-sync-alt"></i> Load Users Data
+                        </button>
+                        <button id="add-new-role-btn" class="action-button primary">
+                            <i class="fas fa-plus"></i> Assign New Role
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filter-options">
+                    <div class="search-container">
+                        <input type="text" id="user-search" placeholder="Search users..." />
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="role-filter">
+                            <option value="all">All Roles</option>
+                            <option value="owner">Owner</option>
+                            <option value="admin">Admin</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="helper">Helper</option>
+                            <option value="staff">Staff</option>
+                            <option value="none">No Role</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Current Role</th>
+                                <th>Assigned By</th>
+                                <th>Assigned Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="5" class="empty-state">Click "Load Users Data" to view users</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Keep the existing modal for quick role assignment -->
+                <div id="set-role-modal" class="modal">
+                    <!-- Modal content remains the same -->
+                </div>
+            </div>
         </div>
     </div>
     
