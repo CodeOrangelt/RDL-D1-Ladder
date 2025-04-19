@@ -6,7 +6,7 @@ const ANNOUNCEMENT = {
     title: "Redux Descent League Beta Release",
     content: `
         <p>I've waited for this day for 5 years... after continuous development, website after website, ditched concept after ditched concept, promise after promise. I am proud to announce the RDL beta release. Do keep in mind that this is the Beta, and things may... break. I am not an expert web designer, but I've put my blood, sweat, and tears into this, and I'm so happy you're here to see it launch! Thank you for being such an amazing community and, more importantly, thank you for not giving up on me as I was figuring out just how to make this project happen.</p>
-        <p>Beta Release - April 21st 2025</p>
+        <p>Beta Release - April 19th 2025</p>
         <ul>
             <li>D1 and D2 competitive ladder</li>
              <li>Chess-like ELO with Descent tweaks</li>
