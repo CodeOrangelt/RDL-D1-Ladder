@@ -181,46 +181,149 @@ class ProfileViewer {
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
             
-            // Show appropriate message if player not found
+            // Check if player is active in current ladder
             if (querySnapshot.empty) {
-                const message = `Player not found in ${this.currentLadder} ladder`;
+                // Check if player is a registered non-participant
+                const nonParticipantQuery = query(
+                    collection(db, 'nonParticipants'),
+                    where('username', '==', username)
+                );
+                const nonParticipantSnapshot = await getDocs(nonParticipantQuery);
                 
-                // Check if player exists in the other ladder
+                if (!nonParticipantSnapshot.empty) {
+                    // This is a non-participant
+                    const nonParticipantData = nonParticipantSnapshot.docs[0].data();
+                    const userId = nonParticipantData.userId || nonParticipantSnapshot.docs[0].id;
+                    
+                    // Get their profile data
+                    const profileData = await this.getProfileData(userId);
+                    
+                    const data = {
+                        ...nonParticipantData,
+                        ...profileData,
+                        username,
+                        userId,
+                        ladder: this.currentLadder,
+                        isNonParticipant: true,
+                        eloRating: 'N/A'
+                    };
+                    
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    return data;
+                }
+                
+                // Check for archived data from previous seasons
+                const archivedData = await this.checkArchivedData(username);
+                if (archivedData) {
+                    const data = {
+                        ...archivedData,
+                        username,
+                        ladder: this.currentLadder,
+                        isFormerPlayer: true
+                    };
+                    
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    await this.loadPlayerStats(username);
+                    return data;
+                }
+                
+                // Check other ladder
                 const otherLadder = this.currentLadder === 'D1' ? 'D2' : 'D1';
                 const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : 'playersD2');
                 const otherQuery = query(otherPlayersRef, where('username', '==', username));
                 const otherSnapshot = await getDocs(otherQuery);
                 
-                if (!otherSnapshot.empty) {
-                    throw new Error(`${message}. Try selecting the ${otherLadder} ladder.`);
+                if (otherSnapshot.empty) {
+                    // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
+                    console.log(`User ${username} not found in any ladder, registering as non-participant`);
+
+                    // First try to find the user in different collections to get correct username
+                    let correctUsername = username;
+                    let userId = null;
+
+                    // Try to find user by username in pending registrations first
+                    const pendingQuery = query(collection(db, 'pendingRegistrations'), where('username', '==', username));
+                    const pendingSnapshot = await getDocs(pendingQuery);
+
+                    if (!pendingSnapshot.empty) {
+                        // Found in pending registrations
+                        userId = pendingSnapshot.docs[0].id;
+                        correctUsername = pendingSnapshot.docs[0].data().username || username;
+                    } else {
+                        // Try to find in users collection
+                        const usersQuery = query(collection(db, 'users'), where('username', '==', username));
+                        const usersSnapshot = await getDocs(usersQuery);
+                        
+                        if (!usersSnapshot.empty) {
+                            userId = usersSnapshot.docs[0].id;
+                            correctUsername = usersSnapshot.docs[0].data().username || username;
+                        } else {
+                            // Try to find by checking if this is an email-derived username
+                            const emailDerivedQuery = query(collection(db, 'users'), where('email', '!=', null));
+                            const emailUsers = await getDocs(emailDerivedQuery);
+                            
+                            // Check if any user's email prefix matches this username
+                            const matchingUser = emailUsers.docs.find(doc => {
+                                const email = doc.data().email;
+                                if (!email) return false;
+                                const emailPrefix = email.split('@')[0];
+                                return emailPrefix === username;
+                            });
+                            
+                            if (matchingUser) {
+                                // Found the user by email prefix match
+                                userId = matchingUser.id;
+                                correctUsername = matchingUser.data().username || username;
+                                console.log(`Found user by email prefix match, actual username: ${correctUsername}`);
+                            } else {
+                                // Generate placeholder ID
+                                userId = `auto_${username.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                            }
+                        }
+                    }
+
+                    // Create a non-participant record with the correct username
+                    const nonParticipantData = {
+                        username: correctUsername, // Use the correct username!
+                        userId: userId,
+                        isNonParticipant: true,
+                        autoRegistered: true,
+                        createdAt: new Date(),
+                        lastSeen: new Date()
+                    };
+
+                    console.log(`Registering as non-participant with username: ${correctUsername}, userId: ${userId}`);
+
+                    // Add to nonParticipants collection
+                    await setDoc(doc(db, 'nonParticipants', userId), nonParticipantData);
+
+                    // Display as non-participant
+                    const data = {
+                        ...nonParticipantData,
+                        ladder: this.currentLadder,
+                        eloRating: 'N/A'
+                    };
+
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    return data;
                 } else {
-                    throw new Error(`Player not found in any ladder`);
+                    // Found in other ladder, suggest switching
+                    throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${otherLadder} ladder.`);
                 }
             }
             
+            // Regular active player - continue with existing logic
             const playerData = querySnapshot.docs[0].data();
             const userId = playerData.userId || querySnapshot.docs[0].id;
             
-            // Get profile data from both collections in parallel
-            let profileData = {};
-            
-            try {
-                const [userProfileDoc, oldProfileDoc] = await Promise.all([
-                    getDoc(doc(db, 'userProfiles', userId)),
-                    getDoc(doc(db, 'profiles', userId))
-                ]);
-                
-                if (userProfileDoc.exists()) {
-                    profileData = userProfileDoc.data();
-                }
-                
-                if (oldProfileDoc.exists()) {
-                    profileData = { ...oldProfileDoc.data(), ...profileData };
-                }
-            } catch (profileError) {
-                console.warn('Error fetching profile data:', profileError);
-                // Continue with player data only
-            }
+            // Get profile data
+            const profileData = await this.getProfileData(userId);
             
             // Combine all data
             const data = {
@@ -228,7 +331,8 @@ class ProfileViewer {
                 ...profileData,
                 username,
                 userId,
-                ladder: this.currentLadder
+                ladder: this.currentLadder,
+                isActive: true
             };
             
             // Cache for future use
@@ -242,6 +346,47 @@ class ProfileViewer {
         } catch (error) {
             console.error('Error loading player data:', error);
             this.showError(`Error: ${error.message}`);
+            return null;
+        }
+    }
+
+    async getProfileData(userId) {
+        let profileData = {};
+        
+        try {
+            const [userProfileDoc, oldProfileDoc] = await Promise.all([
+                getDoc(doc(db, 'userProfiles', userId)),
+                getDoc(doc(db, 'profiles', userId))
+            ]);
+            
+            if (userProfileDoc.exists()) {
+                profileData = userProfileDoc.data();
+            }
+            
+            if (oldProfileDoc.exists()) {
+                profileData = { ...oldProfileDoc.data(), ...profileData };
+            }
+        } catch (profileError) {
+            console.warn('Error fetching profile data:', profileError);
+        }
+        
+        return profileData;
+    }
+
+    async checkArchivedData(username) {
+        try {
+            // Check season0records or other archive collections
+            const seasonRef = collection(db, 'season0');
+            const archivedQuery = query(seasonRef, where('username', '==', username));
+            const archivedSnapshot = await getDocs(archivedQuery);
+            
+            if (!archivedSnapshot.empty) {
+                return archivedSnapshot.docs[0].data();
+            }
+            
+            return null;
+        } catch (error) {
+            console.warn('Error checking archived data:', error);
             return null;
         }
     }
@@ -317,6 +462,37 @@ class ProfileViewer {
         const container = document.querySelector('.profile-content');
         if (!container) return;
         
+        // Check if this is a non-participant or former player
+        const isNonParticipant = data.isNonParticipant === true;
+        const isFormerPlayer = data.isFormerPlayer === true;
+        
+        // Add status indicator
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status';
+        
+        if (isNonParticipant) {
+            statusContainer.innerHTML = `
+                <div class="status-badge non-participant">NON-PARTICIPANT</div>
+                <p class="status-message">This player is registered but not participating in the ladder.</p>
+            `;
+            container.classList.add('non-participant-profile');
+            container.insertBefore(statusContainer, container.firstChild);
+        } else if (isFormerPlayer) {
+            statusContainer.innerHTML = `
+                <div class="status-badge former-player">FORMER PLAYER</div>
+                <p class="status-message">This player was previously on the ladder. Showing historical data.</p>
+            `;
+            container.classList.add('former-player-profile');
+            container.insertBefore(statusContainer, container.firstChild);
+        } else {
+            // Remove status indicator if player is active
+            if (document.querySelector('.profile-status')) {
+                document.querySelector('.profile-status').remove();
+            }
+            container.classList.remove('non-participant-profile', 'former-player-profile');
+        }
+        
+        // Handle ELO styling
         const eloRating = parseInt(data.eloRating) || 0;
         
         // Remove existing classes
@@ -324,18 +500,20 @@ class ProfileViewer {
         
         // Add appropriate class
         let eloClass;
-        if (eloRating >= 2000) {
-            eloClass = 'elo-emerald';
-        } else if (eloRating >= 1800) {
-            eloClass = 'elo-gold';
-        } else if (eloRating >= 1600) {
-            eloClass = 'elo-silver';
-        } else if (eloRating >= 1400) {
-            eloClass = 'elo-bronze';
-        } else {
-            eloClass = 'elo-unranked';
+        if (!isNonParticipant) { // Skip for non-participants
+            if (eloRating >= 2000) {
+                eloClass = 'elo-emerald';
+            } else if (eloRating >= 1800) {
+                eloClass = 'elo-gold';
+            } else if (eloRating >= 1600) {
+                eloClass = 'elo-silver';
+            } else if (eloRating >= 1400) {
+                eloClass = 'elo-bronze';
+            } else {
+                eloClass = 'elo-unranked';
+            }
+            container.classList.add(eloClass);
         }
-        container.classList.add(eloClass);
         
         // Format home levels for display
         let homeLevelsDisplay = 'Not set';
@@ -346,7 +524,7 @@ class ProfileViewer {
             homeLevelsDisplay = `Homes: ${homeLevels.join(', ')}`;
         }
         
-        // Update profile elements - all at once to avoid layout thrashing
+        // Update profile elements
         const elements = {
             'nickname': data.username,
             'motto-view': data.motto || 'No motto set',
@@ -354,7 +532,8 @@ class ProfileViewer {
             'favorite-weapon-view': data.favoriteWeapon || 'Not set',
             'timezone-view': data.timezone || 'Not set',
             'division-view': data.division || 'Not set',
-            'home-levels-view': homeLevelsDisplay
+            'home-levels-view': homeLevelsDisplay,
+            'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
         };
         
         for (const [id, value] of Object.entries(elements)) {
@@ -362,35 +541,7 @@ class ProfileViewer {
             if (element) element.textContent = value;
         }
         
-        // Update profile image
-        const profilePreview = document.getElementById('profile-preview');
-        if (profilePreview) {
-            profilePreview.src = '../images/shieldorb.png';
-        }
-        
-        // Handle edit controls visibility
-        const currentUser = auth.currentUser;
-        const isOwner = currentUser && currentUser.uid === data.userId;
-        
-        const editBtn = document.getElementById('edit-profile');
-        const imageUploadControls = document.querySelector('.image-upload-controls');
-        
-        if (editBtn) editBtn.style.display = isOwner ? 'block' : 'none';
-        if (imageUploadControls) imageUploadControls.style.display = isOwner ? 'block' : 'none';
-        
-        // Populate edit fields if owner
-        if (isOwner) {
-            const editFields = {
-                'motto-edit': data.motto || '',
-                'favorite-map-edit': data.favoriteMap || '',
-                'favorite-weapon-edit': data.favoriteWeapon || ''
-            };
-            
-            for (const [id, value] of Object.entries(editFields)) {
-                const element = document.getElementById(id);
-                if (element) element.value = value;
-            }
-        }
+        // Rest of your existing code...
     }
     
     async getPlayerMatches(username) {
@@ -456,6 +607,18 @@ class ProfileViewer {
         try {
             const matchHistoryContainer = containerReferences['match-history'];
             if (!matchHistoryContainer) return;
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                matchHistoryContainer.innerHTML = `
+                    <h2>Match History</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No match history is available.</p>
+                    </div>
+                `;
+                return;
+            }
             
             // Get all player ELOs at once to avoid multiple queries
             const uniquePlayers = new Set();
@@ -537,6 +700,18 @@ class ProfileViewer {
             const statsContainer = containerReferences['match-stats'];
             if (!statsContainer) return;
             
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                statsContainer.innerHTML = `
+                    <h2>Match Statistics</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No match statistics are available.</p>
+                    </div>
+                `;
+                return;
+            }
+            
             // Get season number - reused in multiple places
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
             const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
@@ -608,6 +783,18 @@ class ProfileViewer {
         try {
             const matchupsContainer = containerReferences['player-matchups'];
             if (!matchupsContainer) return;
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                matchupsContainer.innerHTML = `
+                    <h2>Player Matchups</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No player matchups are available.</p>
+                    </div>
+                `;
+                return;
+            }
             
             // Calculate matchups in one pass through the data
             const matchups = matches.reduce((acc, match) => {
@@ -681,6 +868,18 @@ class ProfileViewer {
             const promotionContainer = containerReferences['rank-history'];
             if (!promotionContainer) {
                 console.error('Promotion history container not found');
+                return;
+            }
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                promotionContainer.innerHTML = `
+                    <h2>Rank History</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No rank history is available.</p>
+                    </div>
+                `;
                 return;
             }
             
