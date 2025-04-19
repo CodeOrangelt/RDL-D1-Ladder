@@ -541,3 +541,50 @@
     border-radius: 0 4px 4px 0;
 }
 
+/* Status indicators for special player types */
+.profile-status {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.status-badge.non-participant {
+    background-color: #607D8B;
+    color: white;
+}
+
+.status-badge.former-player {
+    background-color: #9C27B0;
+    color: white;
+}
+
+.status-message {
+    font-size: 14px;
+    color: #AAA;
+}
+
+/* Container styles for special player types */
+.non-participant-profile {
+    opacity: 0.9;
+}
+
+.former-player-profile {
+    opacity: 0.95;
+}
+
+.non-participant-notice {
+    padding: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    color: #AAA;
+}
+
