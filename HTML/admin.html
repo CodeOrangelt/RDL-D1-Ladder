@@ -393,10 +393,30 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                <!-- Keep the existing modal for quick role assignment -->
-                <div id="set-role-modal" class="modal">
-                    <!-- Modal content remains the same -->
+            <!-- MODALS SHOULD BE HERE (or near end of body) -->
+            <div id="set-role-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Set User Role</h2>
+                    <form id="set-role-form">
+                        <div class="form-group">
+                            <label for="role-username">Username:</label>
+                            <input type="text" id="role-username" placeholder="Username" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-name">Role Name:</label>
+                            <input type="text" id="role-name" placeholder="e.g., Moderator, VIP (leave blank to remove)">
+                        </div>
+                        <div class="form-group">
+                            <label for="role-color">Role Color:</label>
+                            <input type="color" id="role-color" value="#808080"> <!-- Default to gray -->
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="button primary">Save Role</button>
+                            <button type="button" id="cancel-role-btn" class="button">Cancel</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
