@@ -29,6 +29,7 @@ let currentLadder = 'D1'; // Default ladder mode
 let eloHistoryPagination = { d1: { page: 1, lastVisible: null, firstVisible: null }, d2: { page: 1, lastVisible: null, firstVisible: null } };
 const PAGE_SIZE = 15; // Items per page for history tables
 
+// In your DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
@@ -36,23 +37,167 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        if (isAdmin(user.email)) {
-            initializeAdminDashboard();
-        } else {
-            window.location.href = 'index.html';
+        try {
+            // Just initialize the dashboard - permissions will be checked inside
+            await initializeAdminDashboard();
+        } catch (error) {
+            console.error('Error initializing dashboard:', error);
+            showNotification('Error setting up admin dashboard', 'error');
         }
     });
 });
 
+// Add this function after the initialization code
+
+// Define tab permissions by role
+function getUserTabPermissions(user) {
+  if (!user) return [];
+  
+  // Check if user is a system admin (has full access)
+  if (isAdmin(user.email)) {
+    console.log(`User ${user.email} is a system admin - full access granted`);
+    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section'];
+  }
+  
+  // For non-admins, check for role-based permissions
+  const email = user.email;
+  
+  return new Promise(async (resolve) => {
+    try {
+      console.log(`Looking for user role information for ${email} in all collections...`);
+      let roleInfo = null;
+      
+      // 1. FIRST check in players collections (D1 and D2) since that's where roles are stored
+      // Check D1 players
+      const playersRef = collection(db, 'players');
+      let q1 = query(playersRef, where('email', '==', email));
+      let snapshot1 = await getDocs(q1);
+      
+      // If no match by email in D1, try by username
+      if (snapshot1.empty) {
+        q1 = query(playersRef, where('username', '==', email.toLowerCase()));
+        snapshot1 = await getDocs(q1);
+      }
+      
+      // If found in D1 players
+      if (!snapshot1.empty) {
+        const userData = snapshot1.docs[0].data();
+        roleInfo = {
+          role: userData.roleName?.toLowerCase() || 'none',
+          source: 'D1 Players'
+        };
+        console.log(`Found user in D1 Players with role: ${roleInfo.role}`);
+      }
+      
+      // 2. If not found in D1, check D2 players
+      if (!roleInfo) {
+        const playersD2Ref = collection(db, 'playersD2');
+        let q2 = query(playersD2Ref, where('email', '==', email));
+        let snapshot2 = await getDocs(q2);
+        
+        // If no match by email in D2, try by username
+        if (snapshot2.empty) {
+          q2 = query(playersD2Ref, where('username', '==', email.toLowerCase()));
+          snapshot2 = await getDocs(q2);
+        }
+        
+        // If found in D2 players
+        if (!snapshot2.empty) {
+          const userData = snapshot2.docs[0].data();
+          roleInfo = {
+            role: userData.roleName?.toLowerCase() || 'none',
+            source: 'D2 Players'
+          };
+          console.log(`Found user in D2 Players with role: ${roleInfo.role}`);
+        }
+      }
+      
+      // 3. As a last resort, check userProfiles (which might not have roles yet)
+      if (!roleInfo) {
+        const userProfilesRef = collection(db, 'userProfiles');
+        let q3 = query(userProfilesRef, where('email', '==', email));
+        let snapshot3 = await getDocs(q3);
+        
+        // If no match by email, try username
+        if (snapshot3.empty) {
+          q3 = query(userProfilesRef, where('username', '==', email.toLowerCase()));
+          snapshot3 = await getDocs(q3);
+        }
+        
+        // If found in userProfiles
+        if (!snapshot3.empty) {
+          const userData = snapshot3.docs[0].data();
+          roleInfo = {
+            role: userData.roleName?.toLowerCase() || 'none',
+            source: 'User Profiles'
+          };
+          console.log(`Found user in userProfiles with role: ${roleInfo.role}`);
+        }
+      }
+      
+      // Determine permissions based on role
+      if (roleInfo) {
+        console.log(`Setting permissions based on role: ${roleInfo.role} (from ${roleInfo.source})`);
+        
+        // Assign permissions based on role
+        switch (roleInfo.role) {
+          case 'owner':
+            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section']);
+            break;
+          case 'council':
+            resolve(['dashboard', 'elo-history']);
+            break;
+          case 'creative lead':
+            resolve(['dashboard', 'elo-history', 'manage-articles']);
+            break;
+          default:
+            console.log(`Role '${roleInfo.role}' has no special permissions, giving default access`);
+            resolve(['dashboard']); // Minimal access
+        }
+      } else {
+        console.log(`User ${email} not found in any collection - giving default access`);
+        resolve(['dashboard']);
+      }
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      resolve(['dashboard']);
+    }
+  });
+}
+
+// Update the setupSidebarNavigation function
+
 // Fix setupSidebarNavigation function
-function setupSidebarNavigation() {
+function setupSidebarNavigation(allowedTabs = []) {
     const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
     const sections = document.querySelectorAll('.admin-section');
     
+    // Default to showing dashboard only if no permissions provided
+    if (!allowedTabs || allowedTabs.length === 0) {
+        allowedTabs = ['dashboard'];
+    }
+    
+    // Hide or show navigation items based on permissions
     navItems.forEach(item => {
+        const sectionId = item.getAttribute('data-section');
+        
+        // Show or hide based on permissions
+        if (allowedTabs.includes(sectionId)) {
+            item.style.display = 'flex'; // Show this nav item
+        } else {
+            item.style.display = 'none'; // Hide this nav item
+        }
+        
+        // Setup click events for visible items
         item.addEventListener('click', () => {
             // Get the section ID from data attribute
             const sectionId = item.getAttribute('data-section');
+            
+            // Verify user has permission to access this section
+            if (!allowedTabs.includes(sectionId)) {
+                showNotification('You do not have permission to access this section', 'error');
+                return;
+            }
             
             // Update active state in navigation
             navItems.forEach(navItem => navItem.classList.remove('active'));
@@ -66,15 +211,19 @@ function setupSidebarNavigation() {
             const targetSection = document.getElementById(sectionId);
             if (targetSection) {
                 targetSection.style.display = 'block';
-                
-                // Don't auto-load data anymore, user will click the load button
                 console.log(`Switched to ${sectionId} section`);
             }
         });
     });
     
+    // Activate the first allowed tab
+    const firstAllowedTab = document.querySelector(`.sidebar-nav .nav-item[data-section="${allowedTabs[0]}"]`);
+    if (firstAllowedTab) {
+        firstAllowedTab.click();
+    }
+    
     // Log initialization
-    console.log('Sidebar navigation initialized');
+    console.log('Sidebar navigation initialized with permissions');
 }
 
 // Add setupTabNavigation function
@@ -131,70 +280,62 @@ function setupTabNavigation() {
     }
 }
 
-// Modify initializeAdminDashboard function
-function initializeAdminDashboard() {
-    // Initialize sidebar navigation
-    setupSidebarNavigation();
-
-    // Initialize tab navigation
+// Modify initializeAdminDashboard to use permissions correctly
+async function initializeAdminDashboard() {
     try {
-        setupTabNavigation(); // Ensure this is called
-    } catch (error) {
-        console.error("Error setting up tab navigation:", error);
-    }
-
-    // Initialize ladder selector
-    setupLadderSelector();
-    
-    // Initialize dashboard overview (but don't load data)
-    try {
+        // Get current user and their permissions
+        const user = auth.currentUser;
+        const allowedTabs = await getUserTabPermissions(user);
+        console.log(`User ${user.email} allowed tabs:`, allowedTabs);
+        
+        // Store permissions globally for reference in other functions
+        window.userAllowedTabs = allowedTabs;
+        
+        // Initialize sidebar navigation WITH permissions
+        setupSidebarNavigation(allowedTabs);
+        
+        // Initialize ladder selector
+        setupLadderSelector();
+        
+        // Initialize sections conditionally based on permissions
         setupDashboardSection();
+        
+        if (allowedTabs.includes('players')) {
+            setupManagePlayersSection();
+        }
+        
+        if (allowedTabs.includes('elo-history')) {
+            setupEloHistorySection();
+        }
+        
+        if (allowedTabs.includes('manage-ranks')) {
+            setupRankControls();
+        }
+        
+        if (allowedTabs.includes('manage-articles')) {
+            setupManageArticlesSection();
+        }
+        
+        if (allowedTabs.includes('user-roles-section')) {
+            setupUserRolesSection();
+        }
+        
+        // Set up data load buttons with permissions
+        setupDataLoadButtons(allowedTabs);
+        
     } catch (error) {
-        console.error("Error setting up dashboard section:", error);
-    }
-    
-    // Initialize player management (but don't load data)
-    try {
-        setupManagePlayersSection();
-    } catch (error) {
-        console.error("Error setting up player management section:", error);
-    }
-    
-    // Initialize elo history (but don't load data)
-    try {
-        setupEloHistorySection();
-    } catch (error) {
-        console.error("Error setting up ELO history section:", error);
-    }
-    
-    // Initialize promote/demote controls
-    try {
-        setupRankControls();
-    } catch (error) {
-        console.error("Error setting up rank controls:", error);
-    }
-    
-    // Initialize article management
-    try {
-        setupManageArticlesSection();
-    } catch (error) {
-        console.error("Error setting up article management section:", error);
-    }
-    
-    // Set up "Load Data" buttons
-    setupDataLoadButtons();
-    
-    // Initialize user roles section
-    try {
-        setupUserRolesSection();
-    } catch (error) {
-        console.error("Error setting up user roles section:", error);
+        console.error("Error initializing admin dashboard:", error);
     }
 }
 
 // Fix setupDataLoadButtons function
-function setupDataLoadButtons() {
-    // Dashboard load button
+function setupDataLoadButtons(allowedTabs = []) {
+    // Default to showing dashboard only if no permissions provided
+    if (!allowedTabs || allowedTabs.length === 0) {
+        allowedTabs = ['dashboard'];
+    }
+    
+    // Dashboard load button - always available since dashboard is the minimum
     const loadDashboardBtn = document.getElementById('load-dashboard-data');
     if (loadDashboardBtn) {
         loadDashboardBtn.addEventListener('click', function() {
@@ -216,63 +357,113 @@ function setupDataLoadButtons() {
                     }, 3000);
                 });
         });
-    } else {
-        console.error('Dashboard load button not found');
     }
     
     // Players load button
-    const loadPlayersBtn = document.getElementById('load-players-data');
-    if (loadPlayersBtn) {
-        loadPlayersBtn.addEventListener('click', function() {
-            console.log('Load players data clicked');
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            
-            loadPlayersData()
-                .then(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
-                })
-                .catch(error => {
-                    console.error('Error loading players:', error);
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                    setTimeout(() => {
+    if (allowedTabs.includes('players')) {
+        const loadPlayersBtn = document.getElementById('load-players-data');
+        if (loadPlayersBtn) {
+            loadPlayersBtn.addEventListener('click', function() {
+                console.log('Load players data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadPlayersData()
+                    .then(() => {
+                        this.classList.remove('loading');
                         this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
-                    }, 3000);
-                });
-        });
-    } else {
-        console.error('Players load button not found');
+                    })
+                    .catch(error => {
+                        console.error('Error loading players:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
+                        }, 3000);
+                    });
+            });
+        }
     }
     
     // ELO history load button
-    const loadHistoryBtn = document.getElementById('load-elo-history-data');
-    if (loadHistoryBtn) {
-        loadHistoryBtn.addEventListener('click', function() {
-            console.log('Load history data clicked');
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            
-            loadEloHistory(1)
-                .then(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
-                })
-                .catch(error => {
-                    console.error('Error loading history:', error);
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                    setTimeout(() => {
+    if (allowedTabs.includes('elo-history')) {
+        const loadHistoryBtn = document.getElementById('load-elo-history-data');
+        if (loadHistoryBtn) {
+            loadHistoryBtn.addEventListener('click', function() {
+                console.log('Load history data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadEloHistory(1)
+                    .then(() => {
+                        this.classList.remove('loading');
                         this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
-                    }, 3000);
-                });
-        });
-    } else {
-        console.error('History load button not found');
+                    })
+                    .catch(error => {
+                        console.error('Error loading history:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
+                        }, 3000);
+                    });
+            });
+        }
     }
     
-    console.log('Data load buttons initialized');
+    // Articles load button
+    if (allowedTabs.includes('manage-articles')) {
+        const loadArticlesBtn = document.getElementById('load-articles-data');
+        if (loadArticlesBtn) {
+            loadArticlesBtn.addEventListener('click', function() {
+                console.log('Load articles data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadArticles()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading articles:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    // Users load button
+    if (allowedTabs.includes('user-roles-section')) {
+        const loadUsersBtn = document.getElementById('load-users-data');
+        if (loadUsersBtn) {
+            loadUsersBtn.addEventListener('click', function() {
+                console.log('Load users data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadUsersWithRoles()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    console.log('Data load buttons initialized based on permissions');
 }
 
 // Remove automatic data loading from section changes
@@ -1051,9 +1242,12 @@ async function loadEloHistory(page = 1) {
             const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
             const changeSign = eloChange > 0 ? '+' : '';
             
+            // Make sure we're using player, not userId or email
+            const playerName = history.player || history.username || history.userId || 'N/A';
+            
             row.innerHTML = `
                 <td class="timestamp">${timestamp}</td>
-                <td class="player">${history.player || 'N/A'}</td>
+                <td class="player">${playerName}</td>
                 <td class="previous-elo">${history.previousElo || 'N/A'}</td>
                 <td class="new-elo">${history.newElo || 'N/A'}</td>
                 <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
@@ -1253,9 +1447,12 @@ async function applyEloHistoryFilters() {
             const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
             const changeSign = eloChange > 0 ? '+' : '';
             
+            // Make sure we're using player, not userId or email
+            const playerName = history.player || history.username || history.userId || 'N/A';
+            
             row.innerHTML = `
                 <td class="timestamp">${timestamp}</td>
-                <td class="player">${history.player || 'N/A'}</td>
+                <td class="player">${playerName}</td>
                 <td class="previous-elo">${history.previousElo || 'N/A'}</td>
                 <td class="new-elo">${history.newElo || 'N/A'}</td>
                 <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
@@ -1774,8 +1971,9 @@ async function setCustomElo(username, elo, ladder) {
     }
 }
 
-// Updated setUserRole function
-async function setUserRole(username, roleName, roleColor) { // Modified signature
+// Update setUserRole function to focus on players collections
+
+async function setUserRole(username, roleName, roleColor) {
     try {
         const user = auth.currentUser;
         if (!user || !isAdmin(user.email)) {
@@ -1784,20 +1982,30 @@ async function setUserRole(username, roleName, roleColor) { // Modified signatur
 
         // Normalize inputs
         const finalRoleName = roleName ? roleName.trim() : null;
-        const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null; // Default color if name exists but color doesn't
+        const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null;
 
-        const [d1Query, d2Query, nonParticipantQuery, userProfilesQuery] = await Promise.all([
+        // UPDATED: Prioritize looking in player collections
+        const [d1Query, d2Query] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', username))),
-            getDocs(query(collection(db, 'playersD2'), where('username', '==', username))),
-            getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
-            getDocs(query(collection(db, 'userProfiles'), where('username', '==', username)))
+            getDocs(query(collection(db, 'playersD2'), where('username', '==', username)))
         ]);
 
         const userDocs = [];
-        if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref});
-        if (!d2Query.empty) userDocs.push({ref: d2Query.docs[0].ref});
-        if (!nonParticipantQuery.empty) userDocs.push({ref: nonParticipantQuery.docs[0].ref});
-        if (!userProfilesQuery.empty) userDocs.push({ref: userProfilesQuery.docs[0].ref});
+        
+        // Store player doc references if found
+        if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref, source: 'D1'});
+        if (!d2Query.empty) userDocs.push({ref: d2Query.docs[0].ref, source: 'D2'});
+        
+        // If no player docs found, check other collections as backup
+        if (userDocs.length === 0) {
+            const [nonParticipantQuery, userProfilesQuery] = await Promise.all([
+                getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
+                getDocs(query(collection(db, 'userProfiles'), where('username', '==', username)))
+            ]);
+            
+            if (!nonParticipantQuery.empty) userDocs.push({ref: nonParticipantQuery.docs[0].ref, source: 'NonParticipant'});
+            if (!userProfilesQuery.empty) userDocs.push({ref: userProfilesQuery.docs[0].ref, source: 'UserProfile'});
+        }
 
         if (userDocs.length === 0) {
             throw new Error(`User "${username}" not found in any collection`);
@@ -1806,14 +2014,16 @@ async function setUserRole(username, roleName, roleColor) { // Modified signatur
         const batch = writeBatch(db);
 
         userDocs.forEach(docInfo => {
-            if (!finalRoleName) { // If roleName is empty, remove role fields
+            console.log(`Updating role for ${username} in ${docInfo.source}`);
+            
+            if (!finalRoleName) {
                 batch.update(docInfo.ref, {
                     roleName: deleteField(),
                     roleColor: deleteField(),
                     roleAssignedBy: deleteField(),
                     roleAssignedAt: deleteField()
                 });
-            } else { // Otherwise, set the custom role fields
+            } else {
                 batch.update(docInfo.ref, {
                     roleName: finalRoleName,
                     roleColor: finalRoleColor,
@@ -1961,21 +2171,28 @@ async function loadUsersWithRoles() {
                 if (!usersMap.has(data.username)) {
                     usersMap.set(data.username, {
                         username: data.username,
-                        roleName: data.roleName || null, // Read roleName
-                        roleColor: data.roleColor || null, // Read roleColor
+                        roleName: data.roleName || null,
+                        roleColor: data.roleColor || null,
                         roleAssignedBy: data.roleAssignedBy || null,
                         roleAssignedAt: data.roleAssignedAt || null,
                         sources: [source]
                     });
                 } else {
                     const user = usersMap.get(data.username);
-                    // Prioritize role data if found
-                    if (data.roleName && !user.roleName) {
+                    
+                    // UPDATED: Prioritize roles from players collections over other sources
+                    // This ensures D1/D2 player roles take precedence
+                    if (data.roleName && (
+                        !user.roleName || 
+                        source === 'D1' || 
+                        source === 'D2'
+                    )) {
                         user.roleName = data.roleName;
                         user.roleColor = data.roleColor;
                         user.roleAssignedBy = data.roleAssignedBy;
                         user.roleAssignedAt = data.roleAssignedAt;
                     }
+                    
                     if (!user.sources.includes(source)) {
                         user.sources.push(source);
                     }

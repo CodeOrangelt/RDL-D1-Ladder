@@ -4,7 +4,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     doc, 
-    getDoc 
+    getDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
@@ -137,6 +141,58 @@ async function updateAuthSection(user) {
     }
 }
 
+// Check if user should have admin access (admins + council + creative leads)
+async function checkAdminAccess(user) {
+    if (!user || !user.email) return false;
+    
+    // Check if user is a system admin first (fastest check)
+    if (isAdmin(user.email)) {
+        console.log(`${user.email} is a system admin - granting admin access`);
+        return true;
+    }
+    
+    // Check for role-based access
+    try {
+        // Check collections where roles might be stored
+        const collections = [
+            'players',     // D1
+            'playersD2', 
+            'nonParticipants'
+        ];
+        
+        for (const collectionName of collections) {
+            const playersRef = collection(db, collectionName);
+            
+            // Try to find by email
+            let q = query(playersRef, where('email', '==', user.email));
+            let snapshot = await getDocs(q);
+            
+            // If not found, try by username
+            if (snapshot.empty) {
+                q = query(playersRef, where('username', '==', user.email.toLowerCase()));
+                snapshot = await getDocs(q);
+            }
+            
+            // If found in this collection
+            if (!snapshot.empty) {
+                const userData = snapshot.docs[0].data();
+                const roleName = userData.roleName?.toLowerCase();
+                
+                if (roleName === 'council' || roleName === 'creative lead' || roleName === 'owner') {
+                    console.log(`${user.email} has role ${roleName} - granting admin access`);
+                    return true;
+                }
+            }
+        }
+        
+        console.log(`${user.email} has no admin access role`);
+        return false;
+    } catch (error) {
+        console.error('Error checking admin access:', error);
+        return false;
+    }
+}
+
 // Initialize auth state listener
 const auth = getAuth();
 console.log('Auth object initialized:', !!auth);
@@ -153,13 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             await updateAuthSection(user);
             
-            // Update admin link visibility
+            // Update admin link visibility - UPDATED CODE HERE
             const adminLinks = document.querySelectorAll('.admin-only');
             if (adminLinks.length > 0 && user) {
-                const shouldShowAdmin = isAdmin(user.email);
-                console.log('Updating admin link visibility:', shouldShowAdmin);
+                // Check both admin status and roles
+                const hasAdminAccess = await checkAdminAccess(user);
+                console.log('Updating admin link visibility:', hasAdminAccess);
                 adminLinks.forEach(link => {
-                    link.style.display = shouldShowAdmin ? 'block' : 'none';
+                    link.style.display = hasAdminAccess ? 'block' : 'none';
                 });
             }
         });
