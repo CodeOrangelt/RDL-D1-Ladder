@@ -56,6 +56,25 @@ service cloud.firestore {
       allow delete: if request.auth != null && isAdminEmail();
     }
 
+    // Match Comments Collection - NEW
+    match /matchComments/{commentId} {
+      // Anyone can read comments
+      allow read: if true;
+      
+      // Only allow creation if user is authenticated and the userId field matches auth ID
+      allow create: if request.auth != null && 
+                     request.resource.data.userId == request.auth.uid &&
+                     request.resource.data.keys().hasAll(['matchId', 'userId', 'username', 'text', 'timestamp']);
+      
+      // Only allow updates by the original comment author
+      allow update: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only allow deletion by the original comment author or admins
+      allow delete: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
     // --- Your Existing Rules ---
 
     // isAdmin function (Consider removing if isAdminEmail is sufficient)
