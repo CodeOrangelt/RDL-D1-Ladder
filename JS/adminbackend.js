@@ -174,12 +174,19 @@ function initializeAdminDashboard() {
         console.error("Error setting up rank controls:", error);
     }
     
+    // Initialize article management
+    try {
+        setupManageArticlesSection();
+    } catch (error) {
+        console.error("Error setting up article management section:", error);
+    }
+    
     // Set up "Load Data" buttons
     setupDataLoadButtons();
     
     // Initialize user roles section
     try {
-        setupUserRolesSection(); // Ensure this is also wrapped
+        setupUserRolesSection();
     } catch (error) {
         console.error("Error setting up user roles section:", error);
     }
@@ -1526,7 +1533,7 @@ async function promotePlayer(username, ladder) {
             throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
         }
 
-        console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
+        console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo})`);
         
         // Update player document
         await updateDoc(doc(db, collectionName, playerDoc.id), {
@@ -1548,7 +1555,7 @@ async function promotePlayer(username, ladder) {
         });
 
         // Show success message
-        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo} ELO)`);
+        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo})`);
         
         // Refresh relevant data
         if (currentLadder === ladder) {
@@ -1638,7 +1645,7 @@ async function demotePlayer(username, ladder) {
             throw new Error(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
         }
 
-        console.log(`Demoting player to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
+        console.log(`Demoting player to ${prevThreshold.name} (${prevThreshold.elo})`);
         
         // Update player document
         await updateDoc(doc(db, collectionName, playerDoc.id), {
@@ -1660,7 +1667,7 @@ async function demotePlayer(username, ladder) {
         });
 
         // Show success message
-        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo} ELO)`);
+        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo})`);
         
         // Refresh relevant data
         if (currentLadder === ladder) {
@@ -2178,6 +2185,333 @@ function filterUsersTable() {
         const noResultsRow = document.querySelector('.no-results');
         if (noResultsRow) {
             noResultsRow.remove();
+        }
+    }
+}
+
+// Add this function to setup the article management section
+function setupManageArticlesSection() {
+    // Load Articles button
+    const loadArticlesBtn = document.getElementById('load-articles-data');
+    if (loadArticlesBtn) {
+        loadArticlesBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadArticles()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles';
+                    
+                    // Check permissions and show create button if authorized
+                    checkArticlePermissions();
+                })
+                .catch(error => {
+                    console.error('Error loading articles:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Create New Article button
+    const createArticleBtn = document.getElementById('create-new-article-btn');
+    if (createArticleBtn) {
+        createArticleBtn.addEventListener('click', () => {
+            openArticleModal();
+        });
+    }
+    
+    // Article form submit
+    const articleForm = document.getElementById('article-form');
+    if (articleForm) {
+        articleForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveArticle();
+        });
+    }
+    
+    // Cancel button
+    const cancelArticleBtn = document.getElementById('cancel-article-btn');
+    if (cancelArticleBtn) {
+        cancelArticleBtn.addEventListener('click', () => {
+            closeArticleModal();
+        });
+    }
+    
+    // Modal close button
+    const closeBtn = document.querySelector('#article-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeArticleModal();
+        });
+    }
+    
+    // Modal background click
+    const articleModal = document.getElementById('article-modal');
+    if (articleModal) {
+        articleModal.addEventListener('click', (e) => {
+            if (e.target === articleModal) {
+                closeArticleModal();
+            }
+        });
+    }
+}
+
+// Check if user has permissions to create/edit articles
+async function checkArticlePermissions() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        // Check if user has permission to create articles
+        if (isAdmin(user.email)) {
+            const createBtn = document.getElementById('create-new-article-btn');
+            if (createBtn) {
+                createBtn.style.display = 'block';
+            }
+        } else {
+            // Check for specific roles that can manage articles
+            const userDocRef = doc(db, 'userProfiles', user.uid);
+            const userSnapshot = await getDoc(userDocRef);
+            
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.data();
+                const role = userData.roleName?.toLowerCase();
+                
+                if (role === 'admin' || role === 'owner' || role === 'creative lead') {
+                    const createBtn = document.getElementById('create-new-article-btn');
+                    if (createBtn) {
+                        createBtn.style.display = 'block';
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error checking article permissions:", error);
+    }
+}
+
+// Load articles from Firestore
+async function loadArticles() {
+    const articlesTable = document.getElementById('articles-table-body');
+    if (!articlesTable) return;
+    
+    articlesTable.innerHTML = '<tr><td colspan="4" class="loading-cell">Loading articles...</td></tr>';
+    
+    try {
+        const articlesRef = collection(db, 'articles');
+        const q = query(articlesRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            articlesTable.innerHTML = '<tr><td colspan="4" class="empty-state">No articles found</td></tr>';
+            return;
+        }
+        
+        articlesTable.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const article = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format the timestamp
+            const timestamp = article.createdAt 
+                ? new Date(article.createdAt.seconds * 1000).toLocaleString() 
+                : 'N/A';
+                
+            row.innerHTML = `
+                <td>${article.title || 'Untitled'}</td>
+                <td>${article.author || 'Unknown'}</td>
+                <td>${timestamp}</td>
+                <td class="actions">
+                    <button class="edit-article-btn" data-id="${doc.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-article-btn" data-id="${doc.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            articlesTable.appendChild(row);
+        });
+        
+        // Add event listeners to buttons
+        setupArticleActionButtons();
+        
+    } catch (error) {
+        console.error("Error loading articles:", error);
+        articlesTable.innerHTML = `
+            <tr>
+                <td colspan="4" class="error-state">
+                    Error loading articles: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Setup action buttons for article rows
+function setupArticleActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-article-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const articleId = e.currentTarget.dataset.id;
+            openArticleModal(articleId);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-article-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const articleId = e.currentTarget.dataset.id;
+            confirmDeleteArticle(articleId);
+        });
+    });
+}
+
+// Open the article modal for creating or editing
+function openArticleModal(articleId = null) {
+    const modal = document.getElementById('article-modal');
+    const titleElement = document.getElementById('article-modal-title');
+    const form = document.getElementById('article-form');
+    const idInput = document.getElementById('article-id');
+    
+    // Clear form
+    form.reset();
+    idInput.value = '';
+    
+    if (articleId) {
+        // Edit existing article
+        titleElement.textContent = 'Edit Article';
+        idInput.value = articleId;
+        
+        // Load article data
+        loadArticleData(articleId);
+    } else {
+        // Create new article
+        titleElement.textContent = 'Create Article';
+        
+        // Pre-fill author with current user if available
+        const user = auth.currentUser;
+        if (user) {
+            const authorInput = document.getElementById('article-author');
+            if (authorInput && user.displayName) {
+                authorInput.value = user.displayName;
+            } else if (authorInput) {
+                authorInput.value = user.email;
+            }
+        }
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+}
+
+// Load article data for editing
+async function loadArticleData(articleId) {
+    try {
+        const articleRef = doc(db, 'articles', articleId);
+        const articleSnap = await getDoc(articleRef);
+        
+        if (!articleSnap.exists()) {
+            showNotification('Article not found', 'error');
+            return;
+        }
+        
+        const article = articleSnap.data();
+        
+        // Populate form fields
+        document.getElementById('article-title').value = article.title || '';
+        document.getElementById('article-author').value = article.author || '';
+        document.getElementById('article-image-url').value = article.imageUrl || '';
+        document.getElementById('article-content').value = article.content || '';
+        
+    } catch (error) {
+        console.error("Error loading article data:", error);
+        showNotification('Failed to load article data', 'error');
+    }
+}
+
+// Save article to Firestore
+async function saveArticle() {
+    try {
+        const articleId = document.getElementById('article-id').value;
+        const title = document.getElementById('article-title').value.trim();
+        const author = document.getElementById('article-author').value.trim();
+        const imageUrl = document.getElementById('article-image-url').value.trim();
+        const content = document.getElementById('article-content').value.trim();
+        
+        if (!title || !content) {
+            showNotification('Title and content are required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to save articles', 'error');
+            return;
+        }
+        
+        const articleData = {
+            title,
+            author,
+            imageUrl: imageUrl || null,
+            content,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: user.email
+        };
+        
+        if (!articleId) {
+            // Create new article
+            articleData.createdAt = serverTimestamp();
+            articleData.createdBy = user.email;
+            
+            await addDoc(collection(db, 'articles'), articleData);
+            showNotification('Article created successfully', 'success');
+        } else {
+            // Update existing article
+            await updateDoc(doc(db, 'articles', articleId), articleData);
+            showNotification('Article updated successfully', 'success');
+        }
+        
+        // Close modal and refresh list
+        closeArticleModal();
+        loadArticles();
+        
+    } catch (error) {
+        console.error("Error saving article:", error);
+        showNotification(`Failed to save article: ${error.message}`, 'error');
+    }
+}
+
+// Close the article modal
+function closeArticleModal() {
+    const modal = document.getElementById('article-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Confirm and delete an article
+async function confirmDeleteArticle(articleId) {
+    if (confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+        try {
+            await deleteDoc(doc(db, 'articles', articleId));
+            
+            // Refresh article list
+            loadArticles();
+            
+            showNotification('Article deleted successfully', 'success');
+            
+        } catch (error) {
+            console.error("Error deleting article:", error);
+            showNotification('Failed to delete article: ' + error.message, 'error');
         }
     }
 }

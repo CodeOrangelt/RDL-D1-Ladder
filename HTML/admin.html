@@ -51,6 +51,11 @@
                     <span>Manage Ranks</span>
                 </button>
 
+                <button class="nav-item" data-section="manage-articles">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Manage Articles</span>
+                </button>
+
                 <div class="nav-item" data-section="user-roles-section">
                     <i class="fas fa-user-tag"></i>
                     <span>User Roles</span>
@@ -343,6 +348,39 @@
                 </div>
             </section>
 
+            <!-- Manage Articles Section -->
+            <section id="manage-articles" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Manage Articles</h1>
+                    <div class="action-buttons">
+                        <button id="load-articles-data" class="action-button">
+                            <i class="fas fa-sync-alt"></i> Load Articles
+                        </button>
+                        <button id="create-new-article-btn" class="action-button primary" style="display: none;"> <!-- Initially hidden, JS will show if permitted -->
+                            <i class="fas fa-plus"></i> Create New Article
+                        </button>
+                    </div>
+                </div>
+                <!-- Table container for articles -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="articles-table-body">
+                            <tr>
+                                <td colspan="4" class="empty-state">Click "Load Articles" to view content.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- User Roles Section -->
             <div id="user-roles-section" class="admin-section" style="display: none;">
                 <div class="section-header">
@@ -419,125 +457,160 @@
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Edit Player Modal -->
-    <div id="edit-player-modal" class="modal">
-        <div class="modal-content">
-            <h2>Edit Player</h2>
-            <div class="form-group">
-                <label for="edit-username">Username:</label>
-                <input type="text" id="edit-username" placeholder="Enter username">
-            </div>
-            <div class="form-group">
-                <label for="edit-elo">ELO Rating:</label>
-                <input type="number" id="edit-elo" min="1000" max="3000">
-            </div>
-            <div class="form-group">
-                <label for="edit-wins">Wins:</label>
-                <input type="number" id="edit-wins" min="0">
-            </div>
-            <div class="form-group">
-                <label for="edit-losses">Losses:</label>
-                <input type="number" id="edit-losses" min="0">
-            </div>
-            <div class="modal-buttons">
-                <button id="save-player-btn" class="button primary">Save Changes</button>
-                <button id="cancel-edit-btn" class="button">Cancel</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Promote Player Modal -->
-    <div id="promote-modal" class="modal">
-        <div class="modal-content">
-            <h2>Promote Player</h2>
-            <form id="promote-form">
-                <div class="form-group">
-                    <label for="promote-username">Username:</label>
-                    <input type="text" id="promote-username" placeholder="Enter username" required>
+
+            <div id="article-modal" class="modal">
+                <div class="modal-content large">
+                    <span class="close-btn">&times;</span>
+                    <h2 id="article-modal-title">Create Article</h2>
+                    <form id="article-form">
+                        <input type="hidden" id="article-id">
+
+                        <div class="form-group">
+                            <label for="article-title">Title:</label>
+                            <input type="text" id="article-title" placeholder="Enter article title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="article-author">Author Name:</label>
+                            <input type="text" id="article-author" placeholder="Enter author name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="article-image-url">Header Image URL (Optional):</label>
+                            <input type="url" id="article-image-url" placeholder="https://example.com/image.png">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="article-content">Content:</label>
+                            <textarea id="article-content" rows="15" placeholder="Enter article content here. Basic HTML is allowed."></textarea>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button type="submit" id="save-article-btn" class="button primary">Save Article</button>
+                            <button type="button" id="cancel-article-btn" class="button">Cancel</button>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="form-group ladder-selection">
-                    <label>Select Ladder:</label>
-                    <div class="radio-group">
-                        <input type="radio" id="promote-d1-ladder" name="promote-ladder" value="D1" checked>
-                        <label for="promote-d1-ladder">D1 Ladder</label>
-                        
-                        <input type="radio" id="promote-d2-ladder" name="promote-ladder" value="D2">
-                        <label for="promote-d2-ladder">D2 Ladder</label>
+            </div>
+
+            <!-- Edit Player Modal -->
+            <div id="edit-player-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Edit Player</h2>
+                    <div class="form-group">
+                        <label for="edit-username">Username:</label>
+                        <input type="text" id="edit-username" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-elo">ELO Rating:</label>
+                        <input type="number" id="edit-elo" min="1000" max="3000">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-wins">Wins:</label>
+                        <input type="number" id="edit-wins" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-losses">Losses:</label>
+                        <input type="number" id="edit-losses" min="0">
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="save-player-btn" class="button primary">Save Changes</button>
+                        <button id="cancel-edit-btn" class="button">Cancel</button>
                     </div>
                 </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="button primary">Promote</button>
-                    <button id="cancel-promote-btn" type="button" class="button">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Demote Player Modal -->
-    <div id="demote-modal" class="modal">
-        <div class="modal-content">
-            <h2>Demote Player</h2>
-            <form id="demote-form">
-                <div class="form-group">
-                    <label for="demote-username">Username:</label>
-                    <input type="text" id="demote-username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group ladder-selection">
-                    <label>Select Ladder:</label>
-                    <div class="radio-group">
-                        <input type="radio" id="demote-d1-ladder" name="demote-ladder" value="D1" checked>
-                        <label for="demote-d1-ladder">D1 Ladder</label>
+            </div>
+            
+            <!-- Promote Player Modal -->
+            <div id="promote-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Promote Player</h2>
+                    <form id="promote-form">
+                        <div class="form-group">
+                            <label for="promote-username">Username:</label>
+                            <input type="text" id="promote-username" placeholder="Enter username" required>
+                        </div>
                         
-                        <input type="radio" id="demote-d2-ladder" name="demote-ladder" value="D2">
-                        <label for="demote-d2-ladder">D2 Ladder</label>
-                    </div>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="button primary">Demote</button>
-                    <button id="cancel-demote-btn" type="button" class="button">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Set Custom ELO Modal -->
-    <div id="set-elo-modal" class="modal">
-        <div class="modal-content">
-            <h2>Set Custom ELO</h2>
-            <form id="set-elo-form">
-                <div class="form-group">
-                    <label for="set-elo-username">Username:</label>
-                    <input type="text" id="set-elo-username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="set-elo-value">ELO Rating:</label>
-                    <input type="number" id="set-elo-value" min="1000" max="3000" required>
-                </div>
-                
-                <div class="form-group ladder-selection">
-                    <label>Select Ladder:</label>
-                    <div class="radio-group">
-                        <input type="radio" id="set-elo-d1-ladder" name="set-elo-ladder" value="D1" checked>
-                        <label for="set-elo-d1-ladder">D1 Ladder</label>
+                        <div class="form-group ladder-selection">
+                            <label>Select Ladder:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="promote-d1-ladder" name="promote-ladder" value="D1" checked>
+                                <label for="promote-d1-ladder">D1 Ladder</label>
+                                
+                                <input type="radio" id="promote-d2-ladder" name="promote-ladder" value="D2">
+                                <label for="promote-d2-ladder">D2 Ladder</label>
+                            </div>
+                        </div>
                         
-                        <input type="radio" id="set-elo-d2-ladder" name="set-elo-ladder" value="D2">
-                        <label for="set-elo-d2-ladder">D2 Ladder</label>
-                    </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="button primary">Promote</button>
+                            <button id="cancel-promote-btn" type="button" class="button">Cancel</button>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="button primary">Set ELO</button>
-                    <button id="cancel-set-elo-btn" type="button" class="button">Cancel</button>
+            </div>
+            
+            <!-- Demote Player Modal -->
+            <div id="demote-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Demote Player</h2>
+                    <form id="demote-form">
+                        <div class="form-group">
+                            <label for="demote-username">Username:</label>
+                            <input type="text" id="demote-username" placeholder="Enter username" required>
+                        </div>
+                        
+                        <div class="form-group ladder-selection">
+                            <label>Select Ladder:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="demote-d1-ladder" name="demote-ladder" value="D1" checked>
+                                <label for="demote-d1-ladder">D1 Ladder</label>
+                                
+                                <input type="radio" id="demote-d2-ladder" name="demote-ladder" value="D2">
+                                <label for="demote-d2-ladder">D2 Ladder</label>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button type="submit" class="button primary">Demote</button>
+                            <button id="cancel-demote-btn" type="button" class="button">Cancel</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
+            
+            <!-- Set Custom ELO Modal -->
+            <div id="set-elo-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Set Custom ELO</h2>
+                    <form id="set-elo-form">
+                        <div class="form-group">
+                            <label for="set-elo-username">Username:</label>
+                            <input type="text" id="set-elo-username" placeholder="Enter username" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="set-elo-value">ELO Rating:</label>
+                            <input type="number" id="set-elo-value" min="1000" max="3000" required>
+                        </div>
+                        
+                        <div class="form-group ladder-selection">
+                            <label>Select Ladder:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="set-elo-d1-ladder" name="set-elo-ladder" value="D1" checked>
+                                <label for="set-elo-d1-ladder">D1 Ladder</label>
+                                
+                                <input type="radio" id="set-elo-d2-ladder" name="set-elo-ladder" value="D2">
+                                <label for="set-elo-d2-ladder">D2 Ladder</label>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button type="submit" class="button primary">Set ELO</button>
+                            <button id="cancel-set-elo-btn" type="button" class="button">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     
