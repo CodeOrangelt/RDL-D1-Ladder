@@ -10,7 +10,8 @@ import {
   serverTimestamp,
   getDoc,
   doc,
-  where
+  where,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- State for PREVIEW SECTION ---
@@ -489,8 +490,28 @@ async function renderMatchCards(docsData) {
                 // Use default username if not provided
                 const username = comment.username || 'Anonymous';
                 
-                // Create the compact format
-                commentEl.innerHTML = `<strong>${username}:</strong> "${displayText}"`;
+                // Create the compact format with delete button for user's own comments
+                const currentUser = window.auth.currentUser;
+                const isOwnComment = currentUser && comment.userId === currentUser.uid;
+                
+                // Add delete button for user's own comments
+                let deleteButton = '';
+                if (isOwnComment) {
+                    deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                }
+                
+                commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
+                
+                // Add click handler for delete button
+                if (isOwnComment) {
+                    const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Prevent opening the comment popup
+                            deleteComment(comment.id, commentEl);
+                        });
+                    }
+                }
                 
                 // Add click handler to show full comment in lightbox
                 commentEl.addEventListener('click', () => {
@@ -506,6 +527,63 @@ async function renderMatchCards(docsData) {
 
         container.appendChild(cardClone);
     });
+}
+
+/**
+ * Deletes a user comment after confirmation
+ * @param {string} commentId - The ID of the comment to delete
+ * @param {HTMLElement} commentElement - The DOM element to remove on success
+ */
+async function deleteComment(commentId, commentElement) {
+    // Check if user is authenticated
+    const currentUser = window.auth.currentUser;
+    if (!currentUser) {
+        alert("You need to be signed in to delete comments");
+        return;
+    }
+    
+    // Confirm deletion
+    if (!confirm("Are you sure you want to delete this comment?")) {
+        return;
+    }
+    
+    try {
+        // Get comment reference
+        const commentRef = doc(window.db, "matchComments", commentId);
+        
+        // Verify ownership before deletion
+        const commentSnap = await getDoc(commentRef);
+        if (!commentSnap.exists()) {
+            alert("Comment not found. It may have already been deleted.");
+            return;
+        }
+        
+        const commentData = commentSnap.data();
+        if (commentData.userId !== currentUser.uid) {
+            alert("You can only delete your own comments");
+            return;
+        }
+        
+        // Delete the comment
+        await deleteDoc(commentRef);
+        
+        // Remove from UI if element provided
+        if (commentElement && commentElement.parentNode) {
+            commentElement.parentNode.removeChild(commentElement);
+            
+            // Check if this was the last comment
+            const commentsContainer = commentElement.closest('.comments-container');
+            if (commentsContainer && !commentsContainer.querySelector('.comment-item')) {
+                const noCommentsMsg = commentsContainer.querySelector('.no-comments-message');
+                if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+            }
+        }
+        
+        console.log("Comment deleted successfully");
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        alert(`Failed to delete comment: ${error.message}`);
+    }
 }
 
 /**
@@ -543,7 +621,7 @@ async function getAllCommentsForMatch(matchId) {
 }
 
 /**
- * Submits a comment to Firebase
+ * Submits a comment to Firebase with the correct username
  * @param {Event} event Form submit event
  */
 async function submitComment(event) {
@@ -588,16 +666,82 @@ async function submitComment(event) {
     }
     
     try {
-        // Prepare comment data according to security rules requirements
+        // IMPROVED USERNAME DETECTION: Use multiple sources to find the real username
+        let username = currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous';
+        
+        // Try to get the username from various places
+        try {
+            // 1. First check if there's a displayName in Firebase Auth
+            if (currentUser.displayName && currentUser.displayName.toLowerCase() !== 'admin') {
+                username = currentUser.displayName;
+            } 
+            // 2. Then check Firestore user profile
+            else {
+                const userProfileRef = doc(window.db, "userProfiles", currentUser.uid);
+                const userProfileSnap = await getDoc(userProfileRef);
+                
+                if (userProfileSnap.exists()) {
+                    const profileData = userProfileSnap.data();
+                    
+                    // Check for fields in order of preference
+                    const possibleNameFields = [
+                        'username', 
+                        'displayName', 
+                        'nickname',
+                        'preferredName', 
+                        'name',
+                        'gamertag',
+                        'userName',
+                        'pilotName'
+                    ];
+                    
+                    // Use the first non-empty field that doesn't equal "admin"
+                    for (const field of possibleNameFields) {
+                        if (profileData[field] && 
+                            profileData[field].toLowerCase() !== 'admin') {
+                            username = profileData[field];
+                            break;
+                        }
+                    }
+                    
+                    // If still using "admin" as username, try email or other fields
+                    if (username.toLowerCase() === 'admin') {
+                        // Use email prefix or UID as fallback
+                        if (currentUser.email) {
+                            username = currentUser.email.split('@')[0];
+                        } else {
+                            // Last resort: use a portion of their UID
+                            username = `User_${currentUser.uid.substring(0, 4)}`;
+                        }
+                    }
+                }
+            }
+            
+            // 3. Try to get it from the UI if still using "admin"
+            if (username.toLowerCase() === 'admin') {
+                // Look for username in navbar or other UI elements
+                const navUsername = document.querySelector('.current-user-name')?.textContent?.trim() || 
+                                   document.querySelector('.user-display-name')?.textContent?.trim() ||
+                                   document.querySelector('.nav-username')?.textContent?.trim();
+                
+                if (navUsername && navUsername.toLowerCase() !== 'admin') {
+                    username = navUsername;
+                }
+            }
+        } catch (profileError) {
+            console.warn("Failed to fetch user profile, using default username:", profileError);
+        }
+        
+        // Prepare comment data with properly detected username
         const commentData = {
             matchId: matchId,
             userId: currentUser.uid,
-            username: currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous',
+            username: username,
             text: commentText,
             timestamp: serverTimestamp()
         };
         
-        console.log("Submitting comment:", commentData);
+        console.log("Submitting comment as:", username);
         
         // Add the document to Firebase
         const commentsRef = collection(window.db, "matchComments");

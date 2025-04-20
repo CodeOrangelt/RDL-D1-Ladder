@@ -210,7 +210,6 @@ function updateRecordDisplay(playerStats) {
     let bestDiff = { username: 'N/A', value: -Infinity, elo: 0 };
     let mostLosses = { username: 'N/A', value: 0, elo: 0 };
     let leastSuicides = { username: 'N/A', value: Infinity, elo: 0 };
-    let leastLosses = { username: 'N/A', value: Infinity, elo: 0 };
     let mostKills = { username: 'N/A', value: 0, elo: 0 };
     let bestElo = { username: 'N/A', value: 0, elo: 0 };
 
@@ -231,17 +230,14 @@ function updateRecordDisplay(playerStats) {
         if (stats.losses > mostLosses.value) mostLosses = { username, value: stats.losses, elo };
         // Least Suicides (with min matches, non-negative)
         if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.totalSuicides >= 0 && stats.totalSuicides < leastSuicides.value) leastSuicides = { username, value: stats.totalSuicides, elo };
-        // Least Losses (with min matches)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.losses < leastLosses.value) leastLosses = { username, value: stats.losses, elo };
         // Most Kills
         if (stats.totalKills > mostKills.value) mostKills = { username, value: stats.totalKills, elo };
         // Best ELO
         if (stats.eloRating > bestElo.value) bestElo = { username, value: Math.round(stats.eloRating), elo }; // Use rounded ELO for display value
     }
 
-    // Handle cases where no player met criteria (value remains Infinity)
+    // Handle case where no player met criteria (value remains Infinity)
     if (leastSuicides.value === Infinity) leastSuicides = { username: 'N/A', value: 0, elo: 0 };
-    if (leastLosses.value === Infinity) leastLosses = { username: 'N/A', value: 0, elo: 0 };
 
     // --- Update DOM using helper ---
     updateRecordCard('most-wins', mostWins);
@@ -251,9 +247,8 @@ function updateRecordDisplay(playerStats) {
     updateRecordCard('best-differential', bestDiff, '', true); // Format sign
     updateRecordCard('most-losses', mostLosses);
     updateRecordCard('least-suicides', leastSuicides);
-    updateRecordCard('least-losses', leastLosses);
-    updateRecordCard('most-kills', mostKills); // Assumes element ID 'most-kills' exists
-    updateRecordCard('best-elo', bestElo);     // Assumes element ID 'best-elo' exists
+    updateRecordCard('most-kills', mostKills); 
+    updateRecordCard('best-elo', bestElo);
 
     // Update hidden stats div for potential season archiving
     updateHiddenStatsDiv(playerStats);
