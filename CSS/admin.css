@@ -486,6 +486,7 @@ body {
     border-radius: 4px;
     border: none;
     color: white;
+    background-color: var(--primary-color);
     cursor: pointer;
     font-size: 0.8rem;
     display: flex;
@@ -573,7 +574,7 @@ body {
 }
 
 .primary-btn {
-    background-color: var(--primary-color);
+    background-color: black;
     color: white;
 }
 
@@ -1674,3 +1675,29 @@ input[id="d2-switch"]:checked ~ .ladder-background {
 .notification.is-error {
     background-color: #f44336; /* Red */
 }
+
+/* Override for Load Users Data button - Add this at the end of the file */
+#load-users-data {
+    background-color: #2196F3 !important; /* Bright blue */
+    color: white !important;
+    border-color: #1976D2 !important;
+}
+
+#load-users-data:hover {
+    background-color: #1976D2 !important; /* Darker blue on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* For Load Articles button as well */
+#load-articles-data {
+    background-color: #2196F3 !important; /* Bright blue */
+    color: white !important;
+    border-color: #1976D2 !important;
+}
+
+#load-articles-data:hover {
+    background-color: #1976D2 !important; /* Darker blue on hover */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+
