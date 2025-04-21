@@ -13,216 +13,196 @@ import {
 import { db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
 
-// Add debugging for imports
-console.log('Auth imports loaded:', { onAuthStateChanged: !!onAuthStateChanged });
-
-// Add admin emails array at the top of the file
+// Admin emails (quick access)
 const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
 
-// Add loading state function
-function showLoadingState() {
+// Cache for auth state to avoid unnecessary checks
+const userCache = {
+    uid: null,
+    username: null,
+    isAdmin: false,
+    hasCheckedCollections: false,
+    lastChecked: 0
+};
+
+// Update auth section without database checks
+function updateAuthSectionImmediate(user, isAdmin = false) {
     const authSection = document.getElementById('auth-section');
-    if (authSection) {
-        authSection.innerHTML = '<span>Loading...</span>';
+    if (!authSection) return;
+    
+    // Show admin links immediately if we know they're an admin
+    if (user && isAdmin) {
+        document.querySelectorAll('.admin-only').forEach(link => {
+            link.style.display = 'block';
+        });
+    } else if (!user) {
+        document.querySelectorAll('.admin-only').forEach(link => {
+            link.style.display = 'none';
+        });
+    }
+    
+    // Update auth section UI
+    if (user) {
+        // Use cached username or email initially
+        const displayName = userCache.username || 
+                           (user.email ? user.email.split('@')[0] : 'User');
+        
+        authSection.innerHTML = `
+            <div class="nav-dropdown">
+                <a href="#" class="nav-username">${displayName}${isAdmin ? ' (Admin)' : ''}</a>
+                <div class="nav-dropdown-content">
+                    <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
+                    <a href="#" id="logout-link">Sign Out</a>
+                </div>
+            </div>
+        `;
+        
+        // Set up logout handler
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const auth = getAuth();
+                
+                // Don't reload - just update UI first
+                updateAuthSectionImmediate(null);
+                
+                // Then sign out
+                auth.signOut().catch(error => {
+                    console.error('Error signing out:', error);
+                });
+            });
+        }
+    } else {
+        // No user - always show login
+        authSection.innerHTML = `<a href="login.html" class="login-link">Login</a>`;
     }
 }
 
+// Main auth section update with database checks
 async function updateAuthSection(user) {
-    const authSection = document.getElementById('auth-section');
+    // Update UI immediately with what we know
+    const quickAdminCheck = user && isAdmin(user.email);
+    updateAuthSectionImmediate(user, quickAdminCheck);
     
-    if (!authSection) {
-        console.log('Auth section element not found in DOM');
+    // Exit early if no user
+    if (!user) {
+        userCache.uid = null;
+        userCache.username = null;
+        userCache.isAdmin = false;
+        userCache.hasCheckedCollections = false;
         return;
     }
     
-    console.log('Updating auth section. Current user:', user ? 'logged in' : 'not logged in');
+    // If user hasn't changed and we've checked collections recently, don't recheck
+    const now = Date.now();
+    if (user.uid === userCache.uid && 
+        userCache.hasCheckedCollections && 
+        now - userCache.lastChecked < 300000) { // 5 minutes
+        return;
+    }
     
-    // Add loading indication
-    showLoadingState();
-    
-    if (user) {
-        try {
-            // Check all possible collections
-            const collections = [
-                'players',     // D1
-                'playersD2', 
-                'playersD3', 
-                'playersDuos', 
-                'playersCTF',
-                'nonParticipants'
-            ];
+    try {
+        // Update cache with current user ID
+        userCache.uid = user.uid;
+        userCache.lastChecked = now;
+        
+        // Check admin status first (fastest)
+        const isUserAdmin = isAdmin(user.email);
+        userCache.isAdmin = isUserAdmin;
+        
+        if (!isUserAdmin) {
+            // Check for admin roles if not already an admin
+            const hasAdminRole = await checkAdminRoles(user);
+            userCache.isAdmin = hasAdminRole;
             
-            let username = null;
-            let isNonParticipant = false;
-            
-            // Check each collection until we find the user
-            for (const collection of collections) {
-                try {
-                    const userDocRef = doc(db, collection, user.uid);
-                    const userDoc = await getDoc(userDocRef);
-                    
-                    if (userDoc.exists()) {
-                        username = userDoc.data().username;
-                        isNonParticipant = collection === 'nonParticipants';
-                        console.log(`Username found in ${collection} collection:`, username);
-                        break;
-                    }
-                } catch (collectionError) {
-                    // Log error but continue trying other collections
-                    console.warn(`Error checking ${collection} collection:`, collectionError);
-                }
-            }
-            
-            // If not found in any collection, fallback to email
-            if (!username) {
-                username = user.email ? user.email.split('@')[0] : 'User';
-                console.log('Username not found in any collection, using fallback:', username);
-            }
-            
-            const isUserAdmin = isAdmin(user.email);
-            console.log('User admin status:', isUserAdmin);
-            
-            // Update the UI with dropdown - consistent styling
-            authSection.innerHTML = `
-                <div class="nav-dropdown">
-                    <a href="#" class="nav-username">${username}${isUserAdmin ? ' (Admin)' : ''}</a>
-                    <div class="nav-dropdown-content">
-                        <a href="profile.html?username=${encodeURIComponent(username)}">Profile</a>
-                        <a href="#" id="logout-link">Sign Out</a>
-                    </div>
-                </div>
-            `;
-            
-            // Add event listener to logout link
-            const logoutLink = document.getElementById('logout-link');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    auth.signOut().then(() => {
-                        console.log('User signed out');
-                        window.location.reload();
-                    }).catch(error => {
-                        console.error('Error signing out:', error);
-                    });
-                });
-            }
-            
-        } catch (error) {
-            console.error('Error updating auth section:', error);
-            // Still provide basic functionality even if there's an error
-            const username = user.email ? user.email.split('@')[0] : 'User';
-            
-            authSection.innerHTML = `
-                <div class="nav-dropdown">
-                    <a href="#" class="nav-username">${username}</a>
-                    <div class="nav-dropdown-content">
-                        <a href="#" id="logout-link">Sign Out</a>
-                    </div>
-                </div>
-            `;
-            
-            // Add event listener to logout link
-            const logoutLink = document.getElementById('logout-link');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    auth.signOut().then(() => {
-                        console.log('User signed out');
-                        window.location.reload();
-                    }).catch(error => {
-                        console.error('Error signing out:', error);
-                    });
+            // Update admin links if role check found admin privileges
+            if (hasAdminRole) {
+                document.querySelectorAll('.admin-only').forEach(link => {
+                    link.style.display = 'block';
                 });
             }
         }
-    } else {
-        // No user signed in
-        authSection.innerHTML = `<a href="login.html">Login</a>`;
+        
+        // Check collections in parallel for username
+        const collections = [
+            'players',
+            'playersD2', 
+            'playersD3', 
+            'playersDuos', 
+            'playersCTF',
+            'nonParticipants',
+            'userProfiles' // Check userProfiles too for username
+        ];
+        
+        const checkPromises = collections.map(collection => 
+            getDoc(doc(db, collection, user.uid))
+                .then(doc => doc.exists() ? { collection, data: doc.data() } : null)
+                .catch(() => null)
+        );
+        
+        const results = await Promise.all(checkPromises);
+        const validResults = results.filter(result => result !== null);
+        
+        // Find username from results
+        let username = null;
+        for (const result of validResults) {
+            if (result.data.username) {
+                username = result.data.username;
+                break;
+            }
+        }
+        
+        // Update cache
+        userCache.username = username || (user.email ? user.email.split('@')[0] : 'User');
+        userCache.hasCheckedCollections = true;
+        
+        // Final UI update with complete info
+        updateAuthSectionImmediate(user, userCache.isAdmin);
+        
+    } catch (error) {
+        console.error('Error in full auth update:', error);
     }
 }
 
-// Check if user should have admin access (admins + council + creative leads)
-async function checkAdminAccess(user) {
+// Simplified admin role check
+async function checkAdminRoles(user) {
     if (!user || !user.email) return false;
     
-    // Check if user is a system admin first (fastest check)
-    if (isAdmin(user.email)) {
-        console.log(`${user.email} is a system admin - granting admin access`);
-        return true;
-    }
-    
-    // Check for role-based access
     try {
-        // Check collections where roles might be stored
-        const collections = [
-            'players',     // D1
-            'playersD2', 
-            'nonParticipants'
-        ];
+        // Check critical collections in parallel
+        const collections = ['players', 'playersD2', 'nonParticipants'];
         
-        for (const collectionName of collections) {
+        const queries = collections.map(async (collectionName) => {
             const playersRef = collection(db, collectionName);
-            
-            // Try to find by email
-            let q = query(playersRef, where('email', '==', user.email));
-            let snapshot = await getDocs(q);
-            
-            // If not found, try by username
-            if (snapshot.empty) {
-                q = query(playersRef, where('username', '==', user.email.toLowerCase()));
-                snapshot = await getDocs(q);
-            }
-            
-            // If found in this collection
-            if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data();
-                const roleName = userData.roleName?.toLowerCase();
-                
-                if (roleName === 'council' || roleName === 'creative lead' || roleName === 'owner') {
-                    console.log(`${user.email} has role ${roleName} - granting admin access`);
-                    return true;
+            const q = query(playersRef, where('email', '==', user.email));
+            return getDocs(q).then(snapshot => {
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    const roleName = userData.roleName?.toLowerCase();
+                    return roleName === 'council' || 
+                           roleName === 'creative lead' || 
+                           roleName === 'owner';
                 }
-            }
-        }
+                return false;
+            }).catch(() => false);
+        });
         
-        console.log(`${user.email} has no admin access role`);
-        return false;
-    } catch (error) {
-        console.error('Error checking admin access:', error);
+        const results = await Promise.all(queries);
+        return results.includes(true);
+    } catch {
         return false;
     }
 }
 
 // Initialize auth state listener
-const auth = getAuth();
-console.log('Auth object initialized:', !!auth);
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, setting up auth state listener');
+    const auth = getAuth();
     
-    try {
-        onAuthStateChanged(auth, async (user) => {
-            console.log('Auth state changed:', {
-                userExists: !!user,
-                authObject: !!auth,
-                timestamp: new Date().toISOString()
-            });
-            await updateAuthSection(user);
-            
-            // Update admin link visibility - UPDATED CODE HERE
-            const adminLinks = document.querySelectorAll('.admin-only');
-            if (adminLinks.length > 0 && user) {
-                // Check both admin status and roles
-                const hasAdminAccess = await checkAdminAccess(user);
-                console.log('Updating admin link visibility:', hasAdminAccess);
-                adminLinks.forEach(link => {
-                    link.style.display = hasAdminAccess ? 'block' : 'none';
-                });
-            }
-        });
-    } catch (error) {
-        console.error('Error in auth state listener setup:', error);
-    }
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        await updateAuthSection(user);
+    });
 });
 
 export { updateAuthSection };
