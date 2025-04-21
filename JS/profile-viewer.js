@@ -15,6 +15,9 @@ const db = getFirestore(app);
 const playerDataCache = new Map();
 const containerReferences = {};
 
+// Define constants at the file level (outside the class)
+const DEFAULT_PROFILE_IMAGE = "../images/default-profile.png"; // Path to your blue circular image
+
 // Add this helper function within the file or import if shared
 function getContrastColor(hexColor) {
     if (!hexColor) return '#ffffff';
@@ -462,13 +465,40 @@ async getProfileData(userId) {
             return null;
         }
     }
+
+// Then update the displayProfile function
+displayProfile(data) {
+    this.currentProfileData = data;
     
-    displayProfile(data) {
-        this.currentProfileData = data;
-        
-        // Apply ELO rating styles
-        const container = document.querySelector('.profile-content');
-        if (!container) return;
+    // Apply ELO rating styles
+    const container = document.querySelector('.profile-content');
+    if (!container) return;
+    
+    // Use custom profile image URL or default
+    const profileImageUrl = data.profileImageUrl || DEFAULT_PROFILE_IMAGE;
+    
+    // OPTION 1: Modern design - update the new profile image
+    const profileHeaderSection = document.querySelector('.profile-header') || document.createElement('div');
+    profileHeaderSection.className = 'profile-header';
+    
+    profileHeaderSection.innerHTML = `
+        <div class="profile-image-container">
+            <img src="${profileImageUrl}" alt="Profile Image" 
+                 class="profile-image" 
+                 onerror="this.src='${DEFAULT_PROFILE_IMAGE}';">
+        </div>
+    `;
+    
+    // Insert at the beginning of the container if not already there
+    if (!document.querySelector('.profile-header')) {
+        container.insertBefore(profileHeaderSection, container.firstChild);
+    }
+    
+    // OPTION 2: Hide the legacy profile image section completely
+    const legacyProfileSection = document.querySelector('.profile-image-section');
+    if (legacyProfileSection) {
+        legacyProfileSection.style.display = 'none';
+    }
         
         // Check if this is a non-participant or former player
         const isNonParticipant = data.isNonParticipant === true;
@@ -1272,6 +1302,7 @@ async getProfileData(userId) {
         if (isEditing && this.currentProfileData) {
             // Update form fields
             const editFields = {
+                'profile-image-url': this.currentProfileData.profileImageUrl || '',
                 'motto-edit': this.currentProfileData.motto || '',
                 'favorite-map-edit': this.currentProfileData.favoriteMap || '',
                 'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
@@ -1284,6 +1315,9 @@ async getProfileData(userId) {
                 const element = document.getElementById(id);
                 if (element) element.value = value;
             }
+            
+            // Initialize the preview
+            updateProfileImagePreview();
             
             // Show edit mode
             viewMode.style.display = 'none';
@@ -1320,6 +1354,7 @@ async handleSubmit(event) {
         const profileData = {
             ...existingData, // Preserve ALL existing fields
             username: username, // Add username to profile document
+            profileImageUrl: document.getElementById('profile-image-url').value.trim(),
             motto: document.getElementById('motto-edit').value,
             favoriteMap: document.getElementById('favorite-map-edit').value,
             favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
@@ -1569,6 +1604,22 @@ setupEditProfile() {
                     <p class="empty-trophy-case">Error loading trophies</p>
                 `;
             }
+        }
+    }
+}
+
+// Also update the preview function
+function updateProfileImagePreview() {
+    const imageUrl = document.getElementById('profile-image-url').value.trim();
+    const previewImg = document.getElementById('profile-image-preview');
+    
+    if (previewImg) {
+        if (imageUrl) {
+            previewImg.src = imageUrl;
+            previewImg.style.display = 'block';
+        } else {
+            previewImg.src = DEFAULT_PROFILE_IMAGE;
+            previewImg.style.display = 'block';
         }
     }
 }
