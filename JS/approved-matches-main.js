@@ -666,70 +666,34 @@ async function submitComment(event) {
     }
     
     try {
-        // IMPROVED USERNAME DETECTION: Use multiple sources to find the real username
-        let username = currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous';
+        // SIMPLIFIED USERNAME DETECTION - prioritize userProfiles
+        let username = 'Anonymous';
         
-        // Try to get the username from various places
         try {
-            // 1. First check if there's a displayName in Firebase Auth
-            if (currentUser.displayName && currentUser.displayName.toLowerCase() !== 'admin') {
-                username = currentUser.displayName;
-            } 
-            // 2. Then check Firestore user profile
-            else {
-                const userProfileRef = doc(window.db, "userProfiles", currentUser.uid);
-                const userProfileSnap = await getDoc(userProfileRef);
+            // First check userProfiles collection (most reliable source)
+            const userProfileRef = doc(window.db, "userProfiles", currentUser.uid);
+            const userProfileSnap = await getDoc(userProfileRef);
+            
+            if (userProfileSnap.exists()) {
+                const profileData = userProfileSnap.data();
                 
-                if (userProfileSnap.exists()) {
-                    const profileData = userProfileSnap.data();
-                    
-                    // Check for fields in order of preference
-                    const possibleNameFields = [
-                        'username', 
-                        'displayName', 
-                        'nickname',
-                        'preferredName', 
-                        'name',
-                        'gamertag',
-                        'userName',
-                        'pilotName'
-                    ];
-                    
-                    // Use the first non-empty field that doesn't equal "admin"
-                    for (const field of possibleNameFields) {
-                        if (profileData[field] && 
-                            profileData[field].toLowerCase() !== 'admin') {
-                            username = profileData[field];
-                            break;
-                        }
-                    }
-                    
-                    // If still using "admin" as username, try email or other fields
-                    if (username.toLowerCase() === 'admin') {
-                        // Use email prefix or UID as fallback
-                        if (currentUser.email) {
-                            username = currentUser.email.split('@')[0];
-                        } else {
-                            // Last resort: use a portion of their UID
-                            username = `User_${currentUser.uid.substring(0, 4)}`;
-                        }
-                    }
+                // Use the username field if available
+                if (profileData.username) {
+                    username = profileData.username;
                 }
             }
             
-            // 3. Try to get it from the UI if still using "admin"
-            if (username.toLowerCase() === 'admin') {
-                // Look for username in navbar or other UI elements
-                const navUsername = document.querySelector('.current-user-name')?.textContent?.trim() || 
-                                   document.querySelector('.user-display-name')?.textContent?.trim() ||
-                                   document.querySelector('.nav-username')?.textContent?.trim();
-                
-                if (navUsername && navUsername.toLowerCase() !== 'admin') {
-                    username = navUsername;
-                }
+            // If still not found, try Firebase Auth display name
+            if (username === 'Anonymous' && currentUser.displayName) {
+                username = currentUser.displayName;
             }
+            
         } catch (profileError) {
-            console.warn("Failed to fetch user profile, using default username:", profileError);
+            console.warn("Failed to fetch user profile:", profileError);
+            // Fall back to displayName if profile fetch fails
+            if (currentUser.displayName) {
+                username = currentUser.displayName;
+            }
         }
         
         // Prepare comment data with properly detected username
