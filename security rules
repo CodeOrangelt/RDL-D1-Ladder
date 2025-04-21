@@ -380,6 +380,19 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /userTrophies/{trophyId} {
+      allow read: if true;  // Anyone can see which trophies users have
+      allow create, update: if request.auth != null && 
+                              (isAdmin() || 
+                               request.auth.token.email == request.resource.data.awardedBy);
+      allow delete: if request.auth != null && isAdmin();
+    }
+    
+    // Also add a rule for the trophy definitions
+    match /trophyDefinitions/{trophyId} {
+      allow read: if true;  // Anyone can view trophy definitions
+      allow create, update, delete: if request.auth != null && isAdmin();
+    }
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore
 // NO CHARACTERS OR BRACES BELOW THIS LINE

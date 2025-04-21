@@ -130,6 +130,38 @@ body {
     background-color: rgba(211, 47, 47, 0.2);
 }
 
+/* Fix for trophy management button */
+.sidebar-item[data-section="manage-trophies"] {
+    display: flex !important;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    color: #e0e0e0;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.sidebar-item[data-section="manage-trophies"]:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-item[data-section="manage-trophies"].active {
+    background-color: #2a3a55;
+    color: #ffffff;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-item[data-section="manage-trophies"] i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
 /* Main Content Area */
 .main-content {
     flex: 1;
@@ -1700,4 +1732,102 @@ input[id="d2-switch"]:checked ~ .ladder-background {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Trophy Management Styles */
+.trophy-preview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.trophy-preview img {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+}
+
+.trophy-preview h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.trophy-preview p {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #bbb;
+}
+
+.trophy-rarity {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.trophy-rarity.common {
+    background-color: rgba(128, 128, 128, 0.3);
+    color: #ccc;
+}
+
+.trophy-rarity.uncommon {
+    background-color: rgba(30, 255, 0, 0.2);
+    color: #9dff7a;
+}
+
+.trophy-rarity.rare {
+    background-color: rgba(0, 112, 221, 0.2);
+    color: #66b3ff;
+}
+
+.trophy-rarity.epic {
+    background-color: rgba(163, 53, 238, 0.2);
+    color: #d9a9ff;
+}
+
+.trophy-rarity.legendary {
+    background-color: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+}
+
+.trophy-image-cell {
+    width: 60px;
+}
+
+.trophy-image-cell img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+#trophies-table-body .trophy-name {
+    font-weight: bold;
+}
+
+.data-table .trophy-rarity-cell {
+    text-align: center;
+    width: 100px;
+}
+
+/* Add this to your CSS file */
+.trophy-preview-container {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    text-align: center;
+}
+
+#trophy-preview-img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+#trophy-preview-img.error {
+    border: 2px solid #f44336;
+}
 
