@@ -557,41 +557,48 @@ async function getPlayersLastEloChangesD2(usernames) {
 function setupRawLadderFeed() {
     const playersRef = collection(db, 'playersD2');
     
-    // Set up real-time listener for player changes
-    firebaseIdle.onSnapshotWithIdleHandling(playersRef, (snapshot) => {
+    // Use the standard onSnapshot directly instead of the non-existent wrapper
+    onSnapshot(playersRef, (snapshot) => {
         try {
-            if (window.location.pathname.includes('rawleaderboardD2.html')) {
-                console.log("Raw D2 leaderboard snapshot received");
-                
-                // Extract player data
-                const players = [];
-                snapshot.forEach((doc) => {
-                    const playerData = doc.data();
-                    players.push({
-                        username: playerData.username,
-                        elo: parseInt(playerData.eloRating) || 0,
-                        position: playerData.position || Number.MAX_SAFE_INTEGER
-                    });
+            console.log("Raw D2 leaderboard snapshot received");
+            
+            // Extract player data
+            const players = [];
+            snapshot.forEach((doc) => {
+                const playerData = doc.data();
+                players.push({
+                    username: playerData.username,
+                    elo: parseInt(playerData.eloRating) || 0,
+                    position: playerData.position || Number.MAX_SAFE_INTEGER
                 });
-                
-                // Sort players by ELO rating (highest to lowest)
-                players.sort((a, b) => b.elo - a.elo);
-                
-                // Create raw text representation
-                let rawText = 'NGS D2 LADDER - RAW DATA\n\n';
-                players.forEach((player, index) => {
-                    rawText += `${index + 1}. ${player.username} (${player.elo})\n`;
-                });
-                
+            });
+            
+            // Sort players by ELO rating (highest to lowest)
+            players.sort((a, b) => b.elo - a.elo);
+            
+            // Assign positions sequentially
+            players.forEach((player, index) => {
+                player.position = index + 1;
+            });
+            
+            // Create raw text representation
+            let rawText = 'NGS LADDER D2 - RAW DATA\n\n';
+            players.forEach(player => {
+                rawText += `${player.position}. ${player.username} (${player.elo})\n`;
+            });
+            
+            // Update the page content if we're on the raw leaderboard page
+            if (window.location.pathname.includes('../HTML/rawleaderboardd2.html')) {
+                console.log("Updating raw D2 leaderboard content");
                 document.body.innerText = rawText;
             }
         } catch (error) {
             console.error("Error updating raw D2 ladder feed:", error);
-            if (window.location.pathname.includes('rawleaderboardD2.html')) {
-                document.body.innerText = `Error loading ladder data: ${error.message}`;
+            if (window.location.pathname.includes('../HTML/rawleaderboardd2.html')) {
+                document.body.innerText = `Error loading D2 ladder data: ${error.message}`;
             }
         }
-    }, { includeMetadataChanges: false }); // Reduce unnecessary updates
+    });
 }
 
 // Set up on document load
