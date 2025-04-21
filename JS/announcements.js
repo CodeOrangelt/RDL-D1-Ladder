@@ -13,14 +13,17 @@ const ANNOUNCEMENT = {
                 <li>Complete recent matches re-design.</li>
                 <li>Match result community comments.</li>
                 <li>Event/accomodation trophy case.</li>
-                <li>News/Events Page.</li> <br>
+                <li>Custom profile pictures.</li>
+                <li>News/events Page.</li> <br>
             <p3>KNOWN BUGS</p>
                 <li>Username discrepancies, contact me if affected.</li>
+                <li>Bad nav loading</li>
+                <li>Login button dissapears randomly.</li> 
         </ul>
 
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
-    buttonText: "Got it"
+    buttonText: "Let me in!"
 };
 
 // Create and show lightbox when document is ready
