@@ -16,7 +16,7 @@ const playerDataCache = new Map();
 const containerReferences = {};
 
 // Define constants at the file level (outside the class)
-const DEFAULT_PROFILE_IMAGE = "../images/default-profile.png"; // Path to your blue circular image
+const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png"; // Path to your blue circular image
 
 // Add this helper function within the file or import if shared
 function getContrastColor(hexColor) {
@@ -466,7 +466,7 @@ async getProfileData(userId) {
         }
     }
 
-// Then update the displayProfile function
+// Update the displayProfile function to add a special class when using default image
 displayProfile(data) {
     this.currentProfileData = data;
     
@@ -477,15 +477,18 @@ displayProfile(data) {
     // Use custom profile image URL or default
     const profileImageUrl = data.profileImageUrl || DEFAULT_PROFILE_IMAGE;
     
+    // Check if using default image to apply special class
+    const isUsingDefaultImage = !data.profileImageUrl || data.profileImageUrl === DEFAULT_PROFILE_IMAGE;
+    
     // OPTION 1: Modern design - update the new profile image
     const profileHeaderSection = document.querySelector('.profile-header') || document.createElement('div');
     profileHeaderSection.className = 'profile-header';
     
     profileHeaderSection.innerHTML = `
-        <div class="profile-image-container">
+        <div class="profile-image-container ${isUsingDefaultImage ? 'default-image' : ''}">
             <img src="${profileImageUrl}" alt="Profile Image" 
                  class="profile-image" 
-                 onerror="this.src='${DEFAULT_PROFILE_IMAGE}';">
+                 onerror="this.src='${DEFAULT_PROFILE_IMAGE}'; this.parentElement.classList.add('default-image');">
         </div>
     `;
     

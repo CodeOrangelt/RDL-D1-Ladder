@@ -55,6 +55,12 @@
     text-align: center;
 }
 
+/* Add this to your CSS file */
+.profile-image-container.default-image {
+    border: none !important;
+    box-shadow: none !important;
+}
+
 .profile-image-preview {
     max-width: 150px;
     max-height: 150px;
