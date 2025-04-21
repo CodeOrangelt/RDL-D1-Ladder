@@ -105,11 +105,8 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             return;
         }
 
-        console.log(`Match result: ${winnerUsername}(${winner.position}) beat ${loserUsername}(${loser.position})`);
-
         // Only update positions if winner is below loser in the ladder
         if (winner.position > loser.position) {
-            console.log(`Winner ${winnerUsername} is moving up from position ${winner.position} to ${loser.position}`);
             const winnerNewPosition = loser.position;
             
             // Update positions for players between winner and loser
@@ -119,7 +116,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     await updateDoc(doc(db, 'players', player.id), {
                         position: player.position + 1
                     });
-                    console.log(`Moving ${player.username} down to position ${player.position + 1}`);
                 }
             }
 
@@ -127,7 +123,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             await updateDoc(doc(db, 'players', winner.id), {
                 position: winnerNewPosition
             });
-            console.log(`Updated ${winnerUsername} to position ${winnerNewPosition}`);
 
             // Handle #1 position streak tracking
             if (winnerNewPosition === 1) {
@@ -139,7 +134,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     await updateDoc(winnerDoc, {
                         firstPlaceDate: Timestamp.now()
                     });
-                    console.log(`${winnerUsername} reached #1 for the first time, setting firstPlaceDate`);
                 }
             }
 
@@ -149,11 +143,7 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                 await updateDoc(loserDoc, {
                     firstPlaceDate: null // Reset their streak
                 });
-                console.log(`${loserUsername} lost #1 position, resetting firstPlaceDate`);
             }
-        } else {
-            // If winner is already above loser or equal, maintain positions
-            console.log(`No position change needed: winner ${winnerUsername}(${winner.position}) is already above or equal to loser ${loserUsername}(${loser.position})`);
         }
     } catch (error) {
         console.error("Error updating player positions:", error);
@@ -169,8 +159,7 @@ function calculateStreakDays(startDate) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// Update the updateLadderDisplay function
-
+// Update the updateLadderDisplay function - remove debug logs
 async function updateLadderDisplay(ladderData) {
     // Sort by position before displaying
     ladderData.sort((a, b) => a.position - b.position);
@@ -402,7 +391,6 @@ async function updateLadderDisplay(ladderData) {
                             indicator.style.fontSize = '0.7em';
                             
                             eloCell.appendChild(indicator);
-                            console.log(`D1: Added ELO indicator ${formattedChange} to ${username}`);
                         }
                     }
                 }
@@ -411,8 +399,7 @@ async function updateLadderDisplay(ladderData) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Updated function that prioritizes regular match ELO changes over promotions/demotions
-
+// Clean up getPlayersLastEloChanges function
 async function getPlayersLastEloChanges(usernames) {
     // Initialize map with default values
     const changes = new Map();
@@ -427,7 +414,6 @@ async function getPlayersLastEloChanges(usernames) {
         
         // Process all entries and associate them with usernames
         entries.forEach(entry => {
-            // The playerUsername field is already populated by getEloHistory()
             const username = entry.playerUsername;
             
             if (usernames.includes(username)) {
@@ -437,7 +423,6 @@ async function getPlayersLastEloChanges(usernames) {
                 
                 entriesByUsername.get(username).push({
                     ...entry,
-                    // Ensure we have timestamp in the right format
                     timestamp: entry.timestamp?.seconds || 0
                 });
             }
@@ -446,19 +431,6 @@ async function getPlayersLastEloChanges(usernames) {
         // For each player, find and record their most recent ELO change
         entriesByUsername.forEach((playerEntries, username) => {
             if (playerEntries.length > 0) {
-                // Entries are already sorted by timestamp (newest first) from getEloHistory()
-                
-                // Debug log showing what we found
-                console.log(`${username} has ${playerEntries.length} entries:`, 
-                    playerEntries.slice(0, 3).map(e => ({
-                        type: e.type,
-                        timestamp: new Date(e.timestamp * 1000).toLocaleString(),
-                        change: e.change,
-                        newElo: e.newElo,
-                        previousElo: e.previousElo
-                    }))
-                );
-                
                 // Use the first (most recent) entry that has valid change information
                 const recentEntry = playerEntries.find(entry => 
                     entry.change !== undefined || 
@@ -477,16 +449,7 @@ async function getPlayersLastEloChanges(usernames) {
                     if (eloChange !== undefined) {
                         // Store the change
                         changes.set(username, eloChange);
-                        
-                        // Log for debugging
-                        const date = recentEntry.timestamp ? 
-                            new Date(recentEntry.timestamp * 1000).toLocaleString() : 
-                            'unknown date';
-                        
-                        console.log(`Selected for ${username}: ${eloChange} (${recentEntry.type || 'match'}) from ${date}`);
                     }
-                } else {
-                    console.log(`${username}: No valid entries found`);
                 }
             }
         });
@@ -574,8 +537,6 @@ function setupRawLadderFeed() {
     // Set up real-time listener for player changes
     onSnapshot(playersRef, (snapshot) => {
         try {
-            console.log("Raw leaderboard snapshot received");
-            
             // Extract player data
             const players = [];
             snapshot.forEach((doc) => {
@@ -603,7 +564,6 @@ function setupRawLadderFeed() {
             
             // Update the page content if we're on the raw leaderboard page
             if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
-                console.log("Updating raw leaderboard content");
                 document.body.innerText = rawText;
             }
         } catch (error) {
@@ -615,7 +575,7 @@ function setupRawLadderFeed() {
     });
 }
 
-// Initialize both functions when DOM is loaded
+// Initialize functions when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Only run displayLadder if we're on a page with the ladder element
     if (document.querySelector('#ladder')) {
@@ -624,11 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Always set up the raw ladder feed listener
     setupRawLadderFeed();
-    
-    // Add debug info for raw leaderboard page
-    if (window.location.pathname.includes('../HTML/rawleaderboard.html')) {
-        console.log("Raw leaderboard page detected");
-    }
     
     // Add toggle functionality for ladder selection
     const d1Toggle = document.getElementById('d1-switch');
@@ -662,7 +617,6 @@ document.addEventListener('DOMContentLoaded', () => {
             d1Container.classList.remove('active');
             
             // Ensure D2 ladder is displayed
-            // This calls the displayLadderD2 function from ladderd2.js
             if (document.querySelector('#ladder-d2')) {
                 if (typeof displayLadderD2 === 'function') {
                     displayLadderD2();
