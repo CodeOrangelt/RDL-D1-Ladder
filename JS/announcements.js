@@ -2,25 +2,23 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release",
+    id: "beta-release 1.1", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.1",
     content: `
-        <p>I've waited for this day for 5 years... after continuous development, website after website, ditched concept after ditched concept, promise after promise. I am proud to announce the RDL beta release. Do keep in mind that this is the Beta, and things may... break. I am not an expert web designer, but I've put my blood, sweat, and tears into this, and I'm so happy you're here to see it launch! Thank you for being such an amazing community and, more importantly, thank you for not giving up on me as I was figuring out just how to make this project happen.</p>
-        <p>Beta Release - April 19th 2025</p>
+        <h2>News, Trophies, Comments and more!</h2>
+        <p>Beta Release 1.1 - April 21st 2025</p>
         <ul>
-            <li>D1 and D2 competitive ladder</li>
-             <li>Chess-like ELO with Descent tweaks</li>
-              <li>5 Ranks to climb</li>
-               <li>Customizable user profiles</li>
-                <li>Dynamic Match history with pagination</li>
-                 <li>Statistical breakdown per user</li>
-                   <li>RDL to Discord commands/webhooks</li>
-                    <li>descentnexus.com user account integration</li>
-                     <li>RDL Discord Bot</li>
-                      <li>AND MORE TO COME...</li>
+            <p>FEATURES ADDED</p> 
+                <li>User roles, wanna get involved? Contact me!</li>
+                <li>Complete recent matches re-design.</li>
+                <li>Match result community comments.</li>
+                <li>Event/accomodation trophy case.</li>
+                <li>News/Events Page.</li> <br>
+            <p3>KNOWN BUGS</p>
+                <li>Username discrepancies, contact me if affected.</li>
         </ul>
 
-        <p><span style="color: #FFD700; font-weight: bold;">- Code</span></p>
+        <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Got it"
 };
