@@ -612,3 +612,102 @@
     text-align: center;
 }
 
+.trophies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.trophy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px; /* Reduced from 120px */
+    background-color: rgba(40, 40, 40, 0.3);
+    border-radius: 4px;
+    padding: 6px;
+    transition: transform 0.2s;
+    position: relative;
+    border: 1px solid transparent; /* Will be overridden by rarity classes */
+}
+
+.trophy:hover {
+    transform: translateY(-3px); /* Reduced from -5px */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.trophy-image {
+    width: 50px; /* Reduced from 75px */
+    height: 50px; /* Reduced from 75px */
+    margin-bottom: 4px;
+    object-fit: contain;
+}
+
+.trophy-name {
+    font-weight: 500;
+    font-size: 0.8em;
+    color: #ddd;
+    text-align: center;
+    margin: 0;
+}
+
+.trophy-date {
+    font-size: 0.65em;
+    color: #888;
+    margin-top: 2px;
+    text-align: center;
+}
+
+.empty-trophy-case {
+    color: #777;
+    font-style: italic;
+    padding: 15px 0;
+    font-size: 0.9em;
+}
+
+/* Trophy hover tooltip - more compact */
+.trophy .trophy-tooltip {
+    visibility: hidden;
+    background-color: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    padding: 6px 10px;
+    position: absolute;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    width: 180px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    font-size: 0.85em;
+}
+
+.trophy:hover .trophy-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Trophy rarity indicators - simplified to just borders */
+.trophy.legendary {
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.trophy.epic {
+    border-color: rgba(163, 53, 238, 0.6);
+}
+
+.trophy.rare {
+    border-color: rgba(0, 112, 221, 0.6);
+}
+
+.trophy.uncommon {
+    border-color: rgba(30, 255, 0, 0.6);
+}
+
+.trophy.common {
+    border-color: rgba(128, 128, 128, 0.6);
+}

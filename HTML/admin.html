@@ -61,6 +61,11 @@
                     <i class="fas fa-user-tag"></i>
                     <span>User Roles</span>
                 </div>
+
+                <button class="nav-item" data-section="manage-trophies">
+                    <i class="fas fa-award"></i>
+                    <span>Trophy Management</span>
+                </button>
             </nav>
             
             <div class="sidebar-footer">
@@ -374,7 +379,7 @@
                     </table>
                 </div>
             </section>
-
+            
             <!-- User Roles Section -->
             <div id="user-roles-section" class="admin-section" style="display: none;">
                 <div class="section-header">
@@ -423,6 +428,126 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Trophy Management Section -->
+            <section id="manage-trophies" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Trophy Management</h1>
+                    <div class="action-buttons">
+                        <button id="load-trophies-data" class="action-button">
+                            <i class="fas fa-sync-alt"></i> Load Trophies
+                        </button>
+                        <button id="create-new-trophy-btn" class="action-button primary">
+                            <i class="fas fa-plus"></i> Create New Trophy
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Table container for trophies -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Trophy</th>
+                                <th>Name</th>
+                                <th>Rarity</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trophies-table-body">
+                            <tr>
+                                <td colspan="5" class="empty-state">Click "Load Trophies" to view trophy definitions.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Create/Edit Trophy Modal -->
+                <div id="trophy-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h2 id="trophy-modal-title">Create New Trophy</h2>
+                        <form id="trophy-form">
+                            <input type="hidden" id="trophy-id">
+                            
+                            <div class="form-group">
+                                <label for="trophy-name">Trophy Name:</label>
+                                <input type="text" id="trophy-name" placeholder="Enter trophy name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trophy-description">Description:</label>
+                                <textarea id="trophy-description" rows="3" placeholder="Enter trophy description" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trophy-image-url">Trophy Image URL:</label>
+                                <input type="url" id="trophy-image-url" placeholder="https://example.com/image.png" required>
+                                <small>Enter a URL to an image (PNG, JPG, etc.)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trophy-rarity">Rarity:</label>
+                                <select id="trophy-rarity" required>
+                                    <option value="common">Common</option>
+                                    <option value="uncommon">Uncommon</option>
+                                    <option value="rare">Rare</option>
+                                    <option value="epic">Epic</option>
+                                    <option value="legendary">Legendary</option>
+                                </select>
+                            </div>
+                            
+                            <div class="modal-buttons">
+                                <button type="submit" id="save-trophy-btn" class="button primary">Save Trophy</button>
+                                <button type="button" id="cancel-trophy-btn" class="button">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Assign Trophy Modal -->
+                <div id="assign-trophy-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h2>Assign Trophy to Player</h2>
+                        <form id="assign-trophy-form">
+                            <input type="hidden" id="assign-trophy-id">
+                            <input type="hidden" id="assign-trophy-name">
+                            
+                            <div class="trophy-preview">
+                                <img id="assign-trophy-image" src="" alt="Trophy">
+                                <div>
+                                    <h3 id="assign-trophy-title"></h3>
+                                    <p id="assign-trophy-description"></p>
+                                    <span class="trophy-rarity" id="assign-trophy-rarity"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="assign-player-username">Player Username:</label>
+                                <input type="text" id="assign-player-username" placeholder="Enter player's username" required>
+                            </div>
+                            
+                            <div class="form-group ladder-selection">
+                                <label>Player Ladder:</label>
+                                <div class="radio-group">
+                                    <input type="radio" id="assign-d1-ladder" name="assign-ladder" value="D1" checked>
+                                    <label for="assign-d1-ladder">D1 Ladder</label>
+                                    
+                                    <input type="radio" id="assign-d2-ladder" name="assign-ladder" value="D2">
+                                    <label for="assign-d2-ladder">D2 Ladder</label>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-buttons">
+                                <button type="submit" id="confirm-assign-btn" class="button primary">Assign Trophy</button>
+                                <button type="button" id="cancel-assign-btn" class="button">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
             <!-- MODALS SHOULD BE HERE (or near end of body) -->
             <div id="set-role-modal" class="modal">

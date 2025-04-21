@@ -23,9 +23,6 @@ function getContrastColor(hexColor) {
     return (yiq >= 128) ? '#000000' : '#ffffff'; // Return black for light colors, white for dark
 }
 
-// This is the base64 encoded string for a simple trophy icon
-const DEFAULT_TROPHY_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAADHUlEQVR4nO2XS0hUURjHf3fGnPGB+cBkzEAFRSglH5mQEiitIFoYEW6iFrWJoE20SReCQUGbXrRqEVFB0SIKKnrhM3wUldmQjc5Yk46Njjpz7+06cO50vTP3jplJ0fnDYe75zpnz/e73+L5zFf4n+X1SUoAM624GUoA0IAjw+IS5BWwgCIwCbuAn0AcMWOsP4NHE+BlqEjmxDZQCq4H5QCoQsALMWJjLWgMTvN8FPALuWWs38MhnfCoQoBvIBY4Du4EVwCyPDj7L+ptA/S/WX4EW4ALQMM1g/k8FmA5UAPuBZYCK94wRyXmU6TlwDEFzwDHgltOHnQKcBWwFjgL5jglOTTeBI8BtuwdVmweLgCvAAsckpq8XwDagzQ7QboPZQC1Q7JjA7KgX2AJ02zkwmjINuAzUzHCyGnAFmDMZ4DqgERHNTEsBDmvT0eVSYNgx1PSl28pOldcGvw/WAOeB+Y6pzEwPEJV1zOvBPcAJx0RmLg3YGw0Yu80G4LRjErOjU0BxJGARcB1Y6JjE7GgQKAD6w4FmAM3AUscE4pMuozqigrMa52RUKiK+ipxKDRkVRAYSoiDwDLiLKKU9iqKMgiQRH2wElsdxwDPgLPAAOZ4Fo/YV5BNkAXXIvFgLXAS+2wDnAU2MZEmsJOIK8NqG/wEVwClEoREmLeKP50hn5FSvgT3AY5v+J5HmHVZ4iY+pNG0E1wEss+FbjXS2vjgeUJETzYLJE5+gz5aHXSzlQBnQFQ9gCPH5F4lL94B2G3yl0QE+jwdwBJgH9ESSMgrcteG7HNJihk1A3AMOAgeBT9E7NE0LAkEnEkYHqEa162QMn+02/LJsxpg0YLexURTl3cSgmqYFTNMccPJ1uIDPxuYScDyG31Ls1+EbK6muSIAul8tQ7Jrq5BoGWhVFCQJ7kQkjlnIQFR1TKowNGY6JomnMQkSoGviXvAWWKIoSjgVxPdLtvwKwQ1GUD7ECugBDURTPeHUBfIwVUNO0EWPyWT+mNGBQ13WXN6CqKoOGYYT8fj8+n2NCCYyLiooC8f75D86ukgTJZSGcAAAAAElFTkSuQmCC";
-
 // Initialize charts container
 const charts = {};
 let currentLadder = 'D1'; // Default ladder mode
@@ -56,11 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function getUserTabPermissions(user) {
   if (!user) return [];
   
-  // Update permissions for admin
-if (isAdmin(user.email)) {
+  // Check if user is a system admin (has full access)
+  if (isAdmin(user.email)) {
     console.log(`User ${user.email} is a system admin - full access granted`);
-    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies'];
-}
+    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section'];
+  }
   
   // For non-admins, check for role-based permissions
   const email = user.email;
@@ -144,9 +141,8 @@ if (isAdmin(user.email)) {
         
         // Assign permissions based on role
         switch (roleInfo.role) {
-          case 'admin':
           case 'owner':
-            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies']);
+            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section']);
             break;
           case 'council':
             resolve(['dashboard', 'elo-history']);
@@ -284,7 +280,7 @@ function setupTabNavigation() {
     }
 }
 
-// Modify initializeAdminDashboard to include the trophy management section
+// Modify initializeAdminDashboard to use permissions correctly
 async function initializeAdminDashboard() {
     try {
         // Get current user and their permissions
@@ -324,11 +320,6 @@ async function initializeAdminDashboard() {
             setupUserRolesSection();
         }
         
-        // Add trophy management section initialization
-        if (allowedTabs.includes('manage-trophies')) {
-            setupTrophyManagementSection();
-        }
-        
         // Set up data load buttons with permissions
         setupDataLoadButtons(allowedTabs);
         
@@ -337,7 +328,7 @@ async function initializeAdminDashboard() {
     }
 }
 
-// Fix setupDataLoadButtons function to include trophies
+// Fix setupDataLoadButtons function
 function setupDataLoadButtons(allowedTabs = []) {
     // Default to showing dashboard only if no permissions provided
     if (!allowedTabs || allowedTabs.length === 0) {
@@ -348,6 +339,7 @@ function setupDataLoadButtons(allowedTabs = []) {
     const loadDashboardBtn = document.getElementById('load-dashboard-data');
     if (loadDashboardBtn) {
         loadDashboardBtn.addEventListener('click', function() {
+            console.log('Load dashboard data clicked');
             this.classList.add('loading');
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
             
@@ -365,32 +357,6 @@ function setupDataLoadButtons(allowedTabs = []) {
                     }, 3000);
                 });
         });
-    }
-    
-    // Trophy management load button
-    if (allowedTabs.includes('manage-trophies')) {
-        const loadTrophiesBtn = document.getElementById('load-trophies-data');
-        if (loadTrophiesBtn) {
-            loadTrophiesBtn.addEventListener('click', function() {
-                console.log('Load trophies data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadTrophyDefinitions()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading trophies:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
-                        }, 3000);
-                    });
-            });
-        }
     }
     
     // Players load button
@@ -2767,500 +2733,4 @@ async function confirmDeleteArticle(articleId) {
     }
 }
 
-// Add this function to setup the trophy management section
-function setupTrophyManagementSection() {
-    // Load Trophies button
-    const loadTrophiesBtn = document.getElementById('load-trophies-data');
-    if (loadTrophiesBtn) {
-        loadTrophiesBtn.addEventListener('click', function() {
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-
-                // Add error handler to trophy image in assign modal
-                const assignTrophyImage = document.getElementById('assign-trophy-image');
-                if (assignTrophyImage) {
-                    assignTrophyImage.onerror = function() {
-                        this.src = DEFAULT_TROPHY_IMAGE;
-                    };
-                }
-            
-            loadTrophyDefinitions()
-                .then(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies';
-                })
-                .catch(error => {
-                    console.error('Error loading trophies:', error);
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                    setTimeout(() => {
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies';
-                    }, 3000);
-                });
-        });
-    }
-    
-    // Create New Trophy button
-    const createTrophyBtn = document.getElementById('create-new-trophy-btn');
-    if (createTrophyBtn) {
-        createTrophyBtn.addEventListener('click', () => {
-            openTrophyModal();
-        });
-    }
-    
-    // Trophy form submit
-    const trophyForm = document.getElementById('trophy-form');
-    if (trophyForm) {
-        trophyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveTrophyDefinition();
-        });
-    }
-    
-    // Cancel button
-    const cancelTrophyBtn = document.getElementById('cancel-trophy-btn');
-    if (cancelTrophyBtn) {
-        cancelTrophyBtn.addEventListener('click', () => {
-            closeTrophyModal();
-        });
-    }
-    
-    // Modal close buttons
-    document.querySelectorAll('#trophy-modal .close-btn, #assign-trophy-modal .close-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeTrophyModal();
-            closeAssignTrophyModal();
-        });
-    });
-    
-    // Modal background click
-    const trophyModal = document.getElementById('trophy-modal');
-    if (trophyModal) {
-        trophyModal.addEventListener('click', (e) => {
-            if (e.target === trophyModal) {
-                closeTrophyModal();
-            }
-        });
-    }
-    
-    // Assign trophy modal
-    const assignTrophyModal = document.getElementById('assign-trophy-modal');
-    if (assignTrophyModal) {
-        assignTrophyModal.addEventListener('click', (e) => {
-            if (e.target === assignTrophyModal) {
-                closeAssignTrophyModal();
-            }
-        });
-    }
-    
-    // Assign trophy form submit
-    const assignTrophyForm = document.getElementById('assign-trophy-form');
-    if (assignTrophyForm) {
-        assignTrophyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            assignTrophyToPlayer();
-        });
-    }
-    
-    // Cancel assign button
-    const cancelAssignBtn = document.getElementById('cancel-assign-btn');
-    if (cancelAssignBtn) {
-        cancelAssignBtn.addEventListener('click', () => {
-            closeAssignTrophyModal();
-        });
-    }
-
-    // Add image preview functionality for trophy creation/editing
-    const trophyImageUrlInput = document.getElementById('trophy-image-url');
-    if (trophyImageUrlInput) {
-        trophyImageUrlInput.addEventListener('input', updateTrophyImagePreview);
-        trophyImageUrlInput.addEventListener('paste', () => {
-            setTimeout(updateTrophyImagePreview, 10); // Small delay to ensure paste completes
-        });
-    }
-}
-
-// Add this new function to handle trophy image preview
-function updateTrophyImagePreview() {
-    const imageUrl = document.getElementById('trophy-image-url').value.trim();
-    const previewContainer = document.getElementById('trophy-image-preview');
-    
-    // Create preview container if it doesn't exist
-    if (!previewContainer) {
-        const formGroup = document.getElementById('trophy-image-url').closest('.form-group');
-        const newPreviewContainer = document.createElement('div');
-        newPreviewContainer.id = 'trophy-image-preview';
-        newPreviewContainer.className = 'trophy-preview-container';
-        formGroup.appendChild(newPreviewContainer);
-        
-        // Add image element
-        const previewImg = document.createElement('img');
-        previewImg.id = 'trophy-preview-img';
-        previewImg.alt = 'Trophy Preview';
-        previewImg.onerror = function() {
-            this.src = DEFAULT_TROPHY_IMAGE;
-            this.classList.add('error');
-        };
-        newPreviewContainer.appendChild(previewImg);
-    }
-    
-    // Update the preview image
-    const previewImg = document.getElementById('trophy-preview-img');
-    if (imageUrl) {
-        previewImg.src = imageUrl;
-        previewImg.style.display = 'block';
-        previewImg.classList.remove('error');
-    } else {
-        previewImg.src = DEFAULT_TROPHY_IMAGE;
-        previewImg.style.display = 'block';
-    }
-}
-
-// Load trophy definitions from Firestore
-async function loadTrophyDefinitions() {
-    const trophiesTable = document.getElementById('trophies-table-body');
-    if (!trophiesTable) return;
-    
-    trophiesTable.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading trophies...</td></tr>';
-    
-    try {
-        const trophiesRef = collection(db, 'trophyDefinitions');
-        const q = query(trophiesRef, orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            trophiesTable.innerHTML = '<tr><td colspan="5" class="empty-state">No trophy definitions found</td></tr>';
-            return;
-        }
-        
-        trophiesTable.innerHTML = '';
-        
-        querySnapshot.forEach(doc => {
-            const trophy = doc.data();
-            const row = document.createElement('tr');
-            
-            // Format the timestamp
-            const timestamp = trophy.createdAt 
-                ? new Date(trophy.createdAt.seconds * 1000).toLocaleString() 
-                : 'N/A';
-                
-            row.innerHTML = `
-                <td class="trophy-image-cell">
-                    <img src="${trophy.image || DEFAULT_TROPHY_IMAGE}" 
-                         alt="${trophy.name}" 
-                         onerror="this.src='${DEFAULT_TROPHY_IMAGE}';">
-                </td>
-                <td class="trophy-name">${trophy.name || 'Untitled Trophy'}</td>
-                <td class="trophy-rarity-cell">
-                    <span class="trophy-rarity ${trophy.rarity || 'common'}">${trophy.rarity || 'common'}</span>
-                </td>
-                <td>${timestamp}</td>
-                <td class="actions">
-                    <button class="edit-trophy-btn" data-id="${doc.id}">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <button class="assign-trophy-btn" data-id="${doc.id}">
-                        <i class="fas fa-user-plus" title="Assign to player"></i>
-                    </button>
-                    <button class="delete-trophy-btn" data-id="${doc.id}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-            
-            trophiesTable.appendChild(row);
-        });
-        
-        // Add event listeners to buttons
-        setupTrophyActionButtons();
-        
-    } catch (error) {
-        console.error("Error loading trophy definitions:", error);
-        trophiesTable.innerHTML = `
-            <tr>
-                <td colspan="5" class="error-state">
-                    Error loading trophies: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-
-// Setup action buttons for trophy rows
-function setupTrophyActionButtons() {
-    // Edit buttons
-    document.querySelectorAll('.edit-trophy-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const trophyId = e.currentTarget.dataset.id;
-            openTrophyModal(trophyId);
-        });
-    });
-    
-    // Assign buttons
-    document.querySelectorAll('.assign-trophy-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const trophyId = e.currentTarget.dataset.id;
-            openAssignTrophyModal(trophyId);
-        });
-    });
-    
-    // Delete buttons
-    document.querySelectorAll('.delete-trophy-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const trophyId = e.currentTarget.dataset.id;
-            confirmDeleteTrophy(trophyId);
-        });
-    });
-}
-
-// Open the trophy modal for creating or editing
-function openTrophyModal(trophyId = null) {
-    const modal = document.getElementById('trophy-modal');
-    const titleElement = document.getElementById('trophy-modal-title');
-    const form = document.getElementById('trophy-form');
-    const idInput = document.getElementById('trophy-id');
-    
-    // Clear form
-    form.reset();
-    idInput.value = '';
-    
-    // Clear image preview if it exists
-    const previewImg = document.getElementById('trophy-preview-img');
-    if (previewImg) {
-        previewImg.src = DEFAULT_TROPHY_IMAGE;
-        previewImg.classList.remove('error');
-    }
-    
-    if (trophyId) {
-        // Edit existing trophy
-        titleElement.textContent = 'Edit Trophy';
-        idInput.value = trophyId;
-        
-        // Load trophy data
-        loadTrophyData(trophyId);
-    } else {
-        // Create new trophy
-        titleElement.textContent = 'Create New Trophy';
-    }
-    
-    // Show modal
-    modal.classList.add('active');
-}
-
-// Load trophy data for editing
-async function loadTrophyData(trophyId) {
-    try {
-        const trophyRef = doc(db, 'trophyDefinitions', trophyId);
-        const trophySnap = await getDoc(trophyRef);
-        
-        if (!trophySnap.exists()) {
-            showNotification('Trophy not found', 'error');
-            return;
-        }
-        
-        const trophy = trophySnap.data();
-        
-        // Populate form fields
-        document.getElementById('trophy-name').value = trophy.name || '';
-        document.getElementById('trophy-description').value = trophy.description || '';
-        document.getElementById('trophy-image-url').value = trophy.image || '';
-        document.getElementById('trophy-rarity').value = trophy.rarity || 'common';
-        
-        // Trigger image preview update
-        updateTrophyImagePreview();
-        
-    } catch (error) {
-        console.error("Error loading trophy data:", error);
-        showNotification('Failed to load trophy data', 'error');
-    }
-}
-
-// Save trophy definition to Firestore
-async function saveTrophyDefinition() {
-    try {
-        const trophyId = document.getElementById('trophy-id').value;
-        const name = document.getElementById('trophy-name').value.trim();
-        const description = document.getElementById('trophy-description').value.trim();
-        const imageUrl = document.getElementById('trophy-image-url').value.trim();
-        const rarity = document.getElementById('trophy-rarity').value;
-        
-        if (!name || !description || !imageUrl) {
-            showNotification('All fields are required', 'error');
-            return;
-        }
-        
-        // Check authorization
-        const user = auth.currentUser;
-        if (!user) {
-            showNotification('You must be logged in to save trophies', 'error');
-            return;
-        }
-        
-        const trophyData = {
-            name,
-            description,
-            image: imageUrl,
-            rarity,
-            lastModifiedAt: serverTimestamp(),
-            lastModifiedBy: user.email
-        };
-        
-        if (!trophyId) {
-            // Create new trophy
-            trophyData.createdAt = serverTimestamp();
-            trophyData.createdBy = user.email;
-            
-            await addDoc(collection(db, 'trophyDefinitions'), trophyData);
-            showNotification('Trophy created successfully', 'success');
-        } else {
-            // Update existing trophy
-            await updateDoc(doc(db, 'trophyDefinitions', trophyId), trophyData);
-            showNotification('Trophy updated successfully', 'success');
-        }
-        
-        // Close modal and refresh list
-        closeTrophyModal();
-        loadTrophyDefinitions();
-        
-    } catch (error) {
-        console.error("Error saving trophy:", error);
-        showNotification(`Failed to save trophy: ${error.message}`, 'error');
-    }
-}
-
-// Close the trophy modal
-function closeTrophyModal() {
-    const modal = document.getElementById('trophy-modal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-// Open the assign trophy modal
-async function openAssignTrophyModal(trophyId) {
-    try {
-        const trophyRef = doc(db, 'trophyDefinitions', trophyId);
-        const trophySnap = await getDoc(trophyRef);
-        
-        if (!trophySnap.exists()) {
-            showNotification('Trophy not found', 'error');
-            return;
-        }
-        
-        const trophy = trophySnap.data();
-        
-        // Populate form fields
-        document.getElementById('assign-trophy-id').value = trophyId;
-        document.getElementById('assign-trophy-name').value = trophy.name;
-        document.getElementById('assign-trophy-image').src = trophy.image || DEFAULT_TROPHY_IMAGE;
-        document.getElementById('assign-trophy-title').textContent = trophy.name || 'Unnamed Trophy';
-        document.getElementById('assign-trophy-description').textContent = trophy.description || 'No description';
-        
-        const rarityElement = document.getElementById('assign-trophy-rarity');
-        rarityElement.textContent = trophy.rarity || 'common';
-        rarityElement.className = `trophy-rarity ${trophy.rarity || 'common'}`;
-        
-        // Show modal
-        const modal = document.getElementById('assign-trophy-modal');
-        modal.classList.add('active');
-        
-    } catch (error) {
-        console.error("Error opening assign trophy modal:", error);
-        showNotification('Failed to load trophy data', 'error');
-    }
-}
-
-// Close the assign trophy modal
-function closeAssignTrophyModal() {
-    const modal = document.getElementById('assign-trophy-modal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-// Assign trophy to player
-async function assignTrophyToPlayer() {
-    try {
-        const trophyId = document.getElementById('assign-trophy-id').value;
-        const trophyName = document.getElementById('assign-trophy-name').value;
-        const username = document.getElementById('assign-player-username').value.trim();
-        const ladder = document.querySelector('input[name="assign-ladder"]:checked').value;
-        
-        if (!trophyId || !username) {
-            showNotification('Trophy ID and username are required', 'error');
-            return;
-        }
-        
-        // Check authorization
-        const user = auth.currentUser;
-        if (!user) {
-            showNotification('You must be logged in to assign trophies', 'error');
-            return;
-        }
-        
-        // Find the player
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const playersRef = collection(db, collectionName);
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            showNotification(`Player "${username}" not found in ${ladder} ladder`, 'error');
-            return;
-        }
-        
-        const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const userId = playerDoc.id;
-        
-        // Check if player already has this trophy
-        const userTrophiesRef = collection(db, 'userTrophies');
-        const existingTrophyQuery = query(
-            userTrophiesRef, 
-            where('userId', '==', userId),
-            where('trophyId', '==', trophyId)
-        );
-        
-        const existingTrophySnapshot = await getDocs(existingTrophyQuery);
-        
-        if (!existingTrophySnapshot.empty) {
-            showNotification(`Player "${username}" already has this trophy`, 'warning');
-            return;
-        }
-        
-        // Add trophy to user
-        await addDoc(collection(db, 'userTrophies'), {
-            userId: userId,
-            playerUsername: username,
-            trophyId: trophyId,
-            awardedAt: serverTimestamp(),
-            awardedBy: user.email,
-            ladder: ladder
-        });
-        
-        showNotification(`Trophy "${trophyName}" awarded to ${username}`, 'success');
-        closeAssignTrophyModal();
-        
-    } catch (error) {
-        console.error("Error assigning trophy:", error);
-        showNotification(`Failed to assign trophy: ${error.message}`, 'error');
-    }
-}
-
-// Confirm and delete a trophy
-async function confirmDeleteTrophy(trophyId) {
-    if (confirm('Are you sure you want to delete this trophy? This action cannot be undone.')) {
-        try {
-            await deleteDoc(doc(db, 'trophyDefinitions', trophyId));
-            
-            // Refresh trophy list
-            loadTrophyDefinitions();
-            
-            showNotification('Trophy deleted successfully', 'success');
-            
-        } catch (error) {
-            console.error("Error deleting trophy:", error);
-            showNotification('Failed to delete trophy: ' + error.message, 'error');
-        }
-    }
-}
+export { promotePlayer, demotePlayer };
