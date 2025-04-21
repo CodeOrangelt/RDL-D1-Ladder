@@ -367,28 +367,26 @@ class ProfileViewer {
         }
     }
 
-    async getProfileData(userId) {
-        let profileData = {};
+    // When READING profiles - only reads from userProfiles collection
+async getProfileData(userId) {
+    let profileData = {};
+    
+    try {
+        // Only read from userProfiles collection
+        const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
         
-        try {
-            const [userProfileDoc, oldProfileDoc] = await Promise.all([
-                getDoc(doc(db, 'userProfiles', userId)),
-                getDoc(doc(db, 'profiles', userId))
-            ]);
-            
-            if (userProfileDoc.exists()) {
-                profileData = userProfileDoc.data();
-            }
-            
-            if (oldProfileDoc.exists()) {
-                profileData = { ...oldProfileDoc.data(), ...profileData };
-            }
-        } catch (profileError) {
-            console.warn('Error fetching profile data:', profileError);
+        if (userProfileDoc.exists()) {
+            profileData = userProfileDoc.data();
+            console.log(`Found profile data for user ${userId} in userProfiles`);
+        } else {
+            console.log(`No profile data found for user ${userId} in userProfiles`);
         }
-        
-        return profileData;
+    } catch (profileError) {
+        console.warn('Error fetching profile data:', profileError);
     }
+    
+    return profileData;
+}
 
     async checkArchivedData(username) {
         try {
@@ -432,21 +430,14 @@ class ProfileViewer {
             const playerData = querySnapshot.docs[0].data();
             const userId = playerData.userId || querySnapshot.docs[0].id;
             
-            // Get profile data from both collections in parallel
+            // Get profile data from userProfiles only
             let profileData = {};
             
             try {
-                const [userProfileDoc, oldProfileDoc] = await Promise.all([
-                    getDoc(doc(db, 'userProfiles', userId)),
-                    getDoc(doc(db, 'profiles', userId))
-                ]);
+                const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
                 
                 if (userProfileDoc.exists()) {
                     profileData = userProfileDoc.data();
-                }
-                
-                if (oldProfileDoc.exists()) {
-                    profileData = { ...oldProfileDoc.data(), ...profileData };
                 }
             } catch (profileError) {
                 console.warn('Error fetching profile data:', profileError);
@@ -1304,101 +1295,166 @@ class ProfileViewer {
         }
     }
     
-    async handleSubmit(event) {
-        event.preventDefault();
-        const user = auth.currentUser;
-        
-        if (!user) {
-            this.showError('You must be logged in to edit your profile');
-            return;
-        }
-
-        try {
-            // Get form data
-            const profileData = {
-                motto: document.getElementById('motto-edit').value,
-                favoriteMap: document.getElementById('favorite-map-edit').value,
-                favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
-                lastUpdated: new Date().toISOString(),
-                timezone: document.getElementById('timezone-edit').value,
-                division: document.getElementById('division-edit').value,
-                homeLevel1: document.getElementById('home-level-1').value.trim(),
-                homeLevel2: document.getElementById('home-level-2').value.trim(),
-                homeLevel3: document.getElementById('home-level-3').value.trim()
-            };
-
-            // Save to Firestore
-            await setDoc(doc(db, 'userProfiles', user.uid), profileData, { merge: true });
-            
-            // Update cache
-            if (user.displayName && playerDataCache.has(user.displayName)) {
-                const cachedData = playerDataCache.get(user.displayName);
-                playerDataCache.set(user.displayName, { ...cachedData, ...profileData });
-            }
-            
-            // Update display
-            this.toggleEditMode(false);
-            this.displayProfile({
-                ...this.currentProfileData,
-                ...profileData,
-                username: user.displayName || 'Anonymous',
-                userId: user.uid
-            });
-        } catch (error) {
-            console.error('Error saving profile:', error);
-            this.showError('Failed to save profile changes');
-        }
-    }
+    // When SAVING profiles - preserves all existing data in userProfiles
+async handleSubmit(event) {
+    event.preventDefault();
+    const user = auth.currentUser;
     
-    setupEditProfile() {
-        const editButton = document.getElementById('edit-profile');
-        const cancelButton = document.querySelector('.cancel-btn'); // Use querySelector for class
-        const profileForm = document.getElementById('profile-form');
-        const viewMode = document.querySelector('.view-mode');
-        const editMode = document.querySelector('.edit-mode');
-
-        if (!editButton || !cancelButton || !profileForm || !viewMode || !editMode) {
-            console.warn("Edit profile elements not found, skipping setup.");
-            return;
-        }
-
-        // --- Check if the current user is viewing their own profile ---
-        const currentUser = auth.currentUser;
-        const isOwnProfile = currentUser && this.currentProfileData && currentUser.uid === this.currentProfileData.userId;
-
-        if (isOwnProfile) {
-            // Show the edit button only if it's the user's own profile
-            editButton.style.display = 'inline-block'; // Or 'block' depending on your CSS
-
-            // --- Add Event Listeners ---
-            // Use cloning to ensure old listeners are removed if this runs multiple times
-            const newEditButton = editButton.cloneNode(true);
-            editButton.parentNode.replaceChild(newEditButton, editButton);
-            newEditButton.addEventListener('click', () => this.toggleEditMode(true));
-
-            const newCancelButton = cancelButton.cloneNode(true);
-            cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
-            newCancelButton.addEventListener('click', () => this.toggleEditMode(false));
-
-            const newProfileForm = profileForm.cloneNode(true);
-            // Need to re-attach children if cloneNode(true) doesn't handle form elements well,
-            // but usually it's okay. If form submission breaks, revisit this.
-            profileForm.parentNode.replaceChild(newProfileForm, profileForm);
-            newProfileForm.addEventListener('submit', e => this.handleSubmit(e));
-
-            // Ensure view mode is visible initially, edit mode is hidden
-            viewMode.style.display = 'block';
-            editMode.style.display = 'none';
-
-        } else {
-            // Hide the edit button if it's not the user's own profile
-            editButton.style.display = 'none';
-            // Ensure edit mode is hidden
-            editMode.style.display = 'none';
-            // Ensure view mode is visible
-            viewMode.style.display = 'block';
-        }
+    if (!user) {
+        this.showError('You must be logged in to edit your profile');
+        return;
     }
+
+    try {
+        // First, get ALL existing profile data
+        let existingData = {};
+        const userProfileDoc = await getDoc(doc(db, 'userProfiles', user.uid));
+        if (userProfileDoc.exists()) {
+            existingData = userProfileDoc.data();
+        }
+        
+        // Get current username - either from Firebase Auth or existing data
+        const username = user.displayName || existingData.username || this.currentProfileData?.username || 'Anonymous';
+        
+        // Get form data and merge with existing data
+        const profileData = {
+            ...existingData, // Preserve ALL existing fields
+            username: username, // Add username to profile document
+            motto: document.getElementById('motto-edit').value,
+            favoriteMap: document.getElementById('favorite-map-edit').value,
+            favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
+            lastUpdated: new Date().toISOString(),
+            timezone: document.getElementById('timezone-edit').value,
+            division: document.getElementById('division-edit').value,
+            homeLevel1: document.getElementById('home-level-1').value.trim(),
+            homeLevel2: document.getElementById('home-level-2').value.trim(),
+            homeLevel3: document.getElementById('home-level-3').value.trim()
+        };
+
+        // Save to Firestore - ONLY to userProfiles
+        await setDoc(doc(db, 'userProfiles', user.uid), profileData);
+        
+        // Update cache
+        if (username && playerDataCache.has(username)) {
+            const cachedData = playerDataCache.get(username);
+            playerDataCache.set(username, { ...cachedData, ...profileData });
+        }
+        
+        // Update display
+        this.toggleEditMode(false);
+        this.displayProfile({
+            ...this.currentProfileData,
+            ...profileData,
+            username: username,
+            userId: user.uid
+        });
+        
+        // Show success message
+        this.showSuccessMessage('Profile updated successfully');
+    } catch (error) {
+        console.error('Error saving profile:', error);
+        this.showError('Failed to save profile changes');
+    }
+}
+
+// Add this helper method for success messages
+showSuccessMessage(message) {
+    // You can implement this to show a green success notification
+    const container = document.querySelector('.profile-container');
+    if (container) {
+        const notification = document.createElement('div');
+        notification.className = 'success-message';
+        notification.textContent = message;
+        container.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+}
+    
+    // Updated setupEditProfile method to fix cancel button functionality
+setupEditProfile() {
+    const editButton = document.getElementById('edit-profile');
+    const cancelButton = document.querySelector('.cancel-btn');
+    const profileForm = document.getElementById('profile-form');
+    const viewMode = document.querySelector('.view-mode');
+    const editMode = document.querySelector('.edit-mode');
+
+    if (!editButton || !cancelButton || !profileForm || !viewMode || !editMode) {
+        console.warn("Edit profile elements not found, skipping setup.");
+        return;
+    }
+
+    // Check if the current user is viewing their own profile
+    const currentUser = auth.currentUser;
+    const isOwnProfile = currentUser && this.currentProfileData && 
+                        currentUser.uid === this.currentProfileData.userId;
+
+    if (isOwnProfile) {
+        // Show the edit button only if it's the user's own profile
+        editButton.style.display = 'inline-block';
+        
+        // Clear existing listeners 
+        const newEditButton = editButton.cloneNode(false); // Clone without children
+        newEditButton.textContent = editButton.textContent;
+        editButton.parentNode.replaceChild(newEditButton, editButton);
+        
+        // Store reference to 'this' for event handlers
+        const self = this;
+        
+        // Add click handler to edit button
+        newEditButton.addEventListener('click', function() {
+            self.toggleEditMode(true);
+        });
+        
+        // Clear cancel button listeners and recreate
+        const newCancelButton = cancelButton.cloneNode(false);
+        newCancelButton.textContent = cancelButton.textContent;
+        cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+        
+        // Important: Add event listener with explicit preventDefault and 'this' binding
+        newCancelButton.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            e.stopPropagation(); // Stop event bubbling
+            self.toggleEditMode(false);
+        });
+        
+        // Update form with new submit handler
+        const newProfileForm = document.createElement('form');
+        newProfileForm.id = 'profile-form';
+        newProfileForm.className = profileForm.className;
+        newProfileForm.innerHTML = profileForm.innerHTML;
+        profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+        
+        // Re-acquire the cancel button from the new form
+        const newFormCancelBtn = newProfileForm.querySelector('.cancel-btn');
+        if (newFormCancelBtn) {
+            newFormCancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                self.toggleEditMode(false);
+            });
+        }
+        
+        // Add form submit handler
+        newProfileForm.addEventListener('submit', function(e) {
+            self.handleSubmit(e);
+        });
+
+        // Ensure view mode is visible initially, edit mode is hidden
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    } else {
+        // Hide the edit button if it's not the user's own profile
+        editButton.style.display = 'none';
+        // Ensure edit mode is hidden
+        editMode.style.display = 'none';
+        // Ensure view mode is visible
+        viewMode.style.display = 'block';
+    }
+}
 
     async checkDualLadderStatus(username) {
         try {
