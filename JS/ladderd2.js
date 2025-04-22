@@ -62,6 +62,32 @@ async function displayLadderD2(forceRefresh = false) {
             }
         });
         
+        // Fetch profiles for flags
+        const profilesRef = collection(db, 'userProfiles');
+        const profilesSnapshot = await getDocs(profilesRef);
+
+        // Create a map of username -> profile data
+        const profilesByUsername = new Map();
+        profilesSnapshot.forEach((doc) => {
+            const profileData = doc.data();
+            if (profileData.username) {
+                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+            }
+        });
+
+        // Match profiles to players
+        for (const player of players) {
+            const username = player.username.toLowerCase();
+            if (profilesByUsername.has(username)) {
+                const profile = profilesByUsername.get(username);
+                
+                // Set country from profile
+                if (profile.country) {
+                    player.country = profile.country.toLowerCase();
+                }
+            }
+        }
+        
         // Sort players by position
         players.sort((a, b) => {
             if (!a.position) return 1;
@@ -381,7 +407,8 @@ async function fetchBatchMatchStatsD2(usernames) {
     return matchStats;
 }
 
-// Create player row using string template for performance
+// Modify the createPlayerRowD2 function - fix link styling and ensure ELO color stays
+
 function createPlayerRowD2(player, stats) {
     // Set ELO-based colors
     const elo = parseFloat(player.elo) || 0;
@@ -397,27 +424,51 @@ function createPlayerRowD2(player, stats) {
         usernameColor = '#CD7F32';  // Bronze
     }
     
-    // Special styling for #1 position
-    let streakHtml = '';
-    if (player.position === 1 && player.firstPlaceDate && elo >= 2100) {
+    // Create username cell with styling
+    const usernameCell = document.createElement('td');
+
+    // Create username link with color styling applied directly
+    const usernameLink = document.createElement('a');
+    usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}&ladder=d2`;
+    usernameLink.textContent = player.username;
+    usernameLink.style.color = usernameColor; // Apply ELO color to username
+    usernameLink.style.textDecoration = 'none'; // Remove underline
+    usernameCell.appendChild(usernameLink);
+
+    // Add streak display for #1 position
+    if (player.position === 1 && player.firstPlaceDate) {
         const streakDays = calculateStreakDays(player.firstPlaceDate);
         if (streakDays > 0) {
-            streakHtml = `<span style="font-size:0.9em; color:#FF4500; margin-left:5px;">🔥 ${streakDays}d</span>`;
+            const streakSpan = document.createElement('span');
+            streakSpan.innerHTML = ` ${streakDays}d`;
+            streakSpan.style.fontSize = '0.9em';
+            streakSpan.style.color = '#FF4500';
+            streakSpan.style.marginLeft = '-79px';
+            usernameCell.appendChild(streakSpan);
         }
     }
-    
-    // Construct and return the HTML for this row
+
+    // Add flag AFTER username
+    if (player.country) {
+        const flagImg = document.createElement('img');
+        const flagPath = `../images/flags/${player.country.toLowerCase()}.png`;
+        flagImg.src = flagPath;
+        flagImg.alt = player.country;
+        flagImg.className = 'player-flag';
+        
+        // Add error handling for images
+        flagImg.onerror = () => {
+            console.error(`Flag image not found for ${player.country}: ${flagPath}`);
+            flagImg.style.display = 'none'; // Hide broken image icon
+        };
+        
+        usernameCell.appendChild(flagImg);
+    }
+
     return `
         <tr>
             <td>${player.position}</td>
-            <td>
-                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
-                   style="color:${usernameColor}; text-decoration:none; 
-                   ${player.position === 1 && elo >= 2100 ? 'text-shadow:0 0 5px '+usernameColor+'; animation:glow 2s ease-in-out infinite;' : ''}">
-                    ${player.username}
-                </a>
-                ${streakHtml}
-            </td>
+            <td>${usernameCell.innerHTML}</td>
             <td style="color:${usernameColor};">${elo}</td>
             <td>${stats.totalMatches}</td>
             <td>${stats.wins}</td>
@@ -557,48 +608,41 @@ async function getPlayersLastEloChangesD2(usernames) {
 function setupRawLadderFeed() {
     const playersRef = collection(db, 'playersD2');
     
-    // Use the standard onSnapshot directly instead of the non-existent wrapper
-    onSnapshot(playersRef, (snapshot) => {
+    // Set up real-time listener for player changes
+    firebaseIdle.onSnapshotWithIdleHandling(playersRef, (snapshot) => {
         try {
-            console.log("Raw D2 leaderboard snapshot received");
-            
-            // Extract player data
-            const players = [];
-            snapshot.forEach((doc) => {
-                const playerData = doc.data();
-                players.push({
-                    username: playerData.username,
-                    elo: parseInt(playerData.eloRating) || 0,
-                    position: playerData.position || Number.MAX_SAFE_INTEGER
+            if (window.location.pathname.includes('rawleaderboardD2.html')) {
+                console.log("Raw D2 leaderboard snapshot received");
+                
+                // Extract player data
+                const players = [];
+                snapshot.forEach((doc) => {
+                    const playerData = doc.data();
+                    players.push({
+                        username: playerData.username,
+                        elo: parseInt(playerData.eloRating) || 0,
+                        position: playerData.position || Number.MAX_SAFE_INTEGER
+                    });
                 });
-            });
-            
-            // Sort players by ELO rating (highest to lowest)
-            players.sort((a, b) => b.elo - a.elo);
-            
-            // Assign positions sequentially
-            players.forEach((player, index) => {
-                player.position = index + 1;
-            });
-            
-            // Create raw text representation
-            let rawText = 'NGS LADDER D2 - RAW DATA\n\n';
-            players.forEach(player => {
-                rawText += `${player.position}. ${player.username} (${player.elo})\n`;
-            });
-            
-            // Update the page content if we're on the raw leaderboard page
-            if (window.location.pathname.includes('../HTML/rawleaderboardd2.html')) {
-                console.log("Updating raw D2 leaderboard content");
+                
+                // Sort players by ELO rating (highest to lowest)
+                players.sort((a, b) => b.elo - a.elo);
+                
+                // Create raw text representation
+                let rawText = 'NGS D2 LADDER - RAW DATA\n\n';
+                players.forEach((player, index) => {
+                    rawText += `${index + 1}. ${player.username} (${player.elo})\n`;
+                });
+                
                 document.body.innerText = rawText;
             }
         } catch (error) {
             console.error("Error updating raw D2 ladder feed:", error);
-            if (window.location.pathname.includes('../HTML/rawleaderboardd2.html')) {
-                document.body.innerText = `Error loading D2 ladder data: ${error.message}`;
+            if (window.location.pathname.includes('rawleaderboardD2.html')) {
+                document.body.innerText = `Error loading ladder data: ${error.message}`;
             }
         }
-    });
+    }, { includeMetadataChanges: false }); // Reduce unnecessary updates
 }
 
 // Set up on document load
