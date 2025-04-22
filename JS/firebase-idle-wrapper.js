@@ -3,7 +3,7 @@ import { handleNetworkError } from './idle-timeout.js';
 import { 
     getDoc, getDocs, collection, doc, query, where, orderBy, limit, 
     startAfter, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
-    getCountFromServer, writeBatch, serverTimestamp
+    getCountFromServer, writeBatch, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 /**
