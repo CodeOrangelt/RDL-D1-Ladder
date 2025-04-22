@@ -186,16 +186,16 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             if (winnerNewPosition === 1) {
                 // Check if this is the first time reaching #1
                 const winnerDoc = doc(db, 'playersD2', winner.id);
-                const winnerData = await firebaseIdle.getDocument(winnerDoc);
+                const winnerData = await getDoc(winnerDoc);
                 
                 if (!winnerData.data().firstPlaceDate) {
+                    // Use firebaseIdle wrapper like in the rest of your code
                     await firebaseIdle.updateDocument(winnerDoc, {
                         firstPlaceDate: Timestamp.now()
                     });
-                    console.log(`${winnerUsername} reached #1 for the first time, setting firstPlaceDate`);
+                    console.log(`Set firstPlaceDate for ${winnerUsername} at position #1`);
                 }
             }
-
             // If the previous #1 player is displaced
             if (loser.position === 1) {
                 const loserDoc = doc(db, 'playersD2', loser.id);
@@ -423,52 +423,25 @@ function createPlayerRowD2(player, stats) {
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32';  // Bronze
     }
-    
-    // Create username cell with styling
-    const usernameCell = document.createElement('td');
-
-    // Create username link with color styling applied directly
-    const usernameLink = document.createElement('a');
-    usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}&ladder=d2`;
-    usernameLink.textContent = player.username;
-    usernameLink.style.color = usernameColor; // Apply ELO color to username
-    usernameLink.style.textDecoration = 'none'; // Remove underline
-    usernameCell.appendChild(usernameLink);
-
-    // Add streak display for #1 position
-    if (player.position === 1 && player.firstPlaceDate) {
-        const streakDays = calculateStreakDays(player.firstPlaceDate);
-        if (streakDays > 0) {
-            const streakSpan = document.createElement('span');
-            streakSpan.innerHTML = ` ${streakDays}d`;
-            streakSpan.style.fontSize = '0.9em';
-            streakSpan.style.color = '#FF4500';
-            streakSpan.style.marginLeft = '-79px';
-            usernameCell.appendChild(streakSpan);
-        }
-    }
-
-    // Add flag AFTER username
-    if (player.country) {
-        const flagImg = document.createElement('img');
-        const flagPath = `../images/flags/${player.country.toLowerCase()}.png`;
-        flagImg.src = flagPath;
-        flagImg.alt = player.country;
-        flagImg.className = 'player-flag';
-        
-        // Add error handling for images
-        flagImg.onerror = () => {
-            console.error(`Flag image not found for ${player.country}: ${flagPath}`);
-            flagImg.style.display = 'none'; // Hide broken image icon
-        };
-        
-        usernameCell.appendChild(flagImg);
-    }
 
     return `
         <tr>
             <td>${player.position}</td>
-            <td>${usernameCell.innerHTML}</td>
+            <td style="position: relative;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
+                   style="color:${usernameColor}; text-decoration:none">
+                    ${player.username}
+                </a>
+                ${player.country ? 
+                  `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                       alt="${player.country}" class="player-flag" 
+                       style="margin-left: 5px; vertical-align: middle;" 
+                       onerror="this.style.display='none'">` : ''}
+                ${player.position === 1 && player.firstPlaceDate ? 
+                  `<span style="font-size:0.9em; color:#FF4500; margin-left:-117px">
+                     ${calculateStreakDays(player.firstPlaceDate)}d
+                   </span>` : ''}
+            </td>
             <td style="color:${usernameColor};">${elo}</td>
             <td>${stats.totalMatches}</td>
             <td>${stats.wins}</td>
