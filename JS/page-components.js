@@ -42,22 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Create and add Nexus footer link
-    createNexusFooterLink();
-    
-    // --- Discord Widget Enhancement ---
-    
-    // Get widget elements
-    const discordWidget = document.getElementById('discord-widget');
-    const toggleButton = document.getElementById('toggle-discord');
-    
-    // Initialize toggle functionality
-    if (toggleButton && discordWidget) {
-        toggleButton.addEventListener('click', function() {
-            discordWidget.classList.toggle('collapsed');
-        });
-    }
-    
     // Console error silencer - this won't fix CORS but will reduce console spam
     const originalError = console.error;
     console.error = function() {
