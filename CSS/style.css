@@ -1197,9 +1197,120 @@ tr:nth-child(even) {
     }
 }
 
-/* Loading indicator styling */
 .loading-cell {
     text-align: center;
     padding: 20px;
     color: rgba(255, 255, 255, 0.7);
+}
+
+.player-flag {
+    margin-left: 12px;  /* Changed from margin-right to margin-left */
+    width: 20px;       /* Reduced from 16px to 12px */
+    height: auto;
+    vertical-align: middle;
+}
+
+.profile-country-flag {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 24px;
+    height: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Make sure profile image container is positioned relative */
+.profile-image-container {
+    position: relative;
+}
+
+/* Add streak indicator styles */
+.streak-indicator {
+    font-size: 0.75em; /* Make it even smaller */
+    color: #FF4500;
+    margin-right: 4px; /* Reduce margin */
+    font-weight: normal; /* Remove bold */
+    white-space: nowrap;
+    display: inline-block;
+    padding: 0 4px 0 0;
+    animation: pulse 2s infinite;
+}
+
+/* Make the fire emoji smaller */
+.streak-indicator .emoji {
+    font-size: 0.85em;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Player username link styles - remove default link appearance while preserving ELO colors */
+.player-username-link {
+    text-decoration: none !important;
+    color: inherit; /* Use the color set by ELO class */
+}
+
+/* Remove link styling even for visited/hover/active states */
+.player-username-link:visited,
+.player-username-link:hover,
+.player-username-link:active,
+.player-username-link:focus {
+    text-decoration: none !important;
+    /* Keep the ELO-based color */
+    color: inherit;
+}
+
+/* ELO-based class colors */
+.elo-diamond {
+    color: #50C878 !important;
+    font-weight: 700;
+}
+
+.elo-gold {
+    color: #FFD700 !important;
+    font-weight: 600;
+}
+
+.elo-silver {
+    color: #C0C0C0 !important;
+    font-weight: 500;
+}
+
+.elo-bronze {
+    color: #CD7F32 !important;
+}
+
+.elo-standard {
+    color: gray !important;
+}
+
+/* Username cell positioning */
+.username-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Username positioning container */
+.username-cell-container {
+    position: relative;
+}
+
+.username-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Absolutely positioned streak indicator */
+.streak-indicator-absolute {
+    position: absolute;
+    left: -60px; /* Position it to the left of the username */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.65em; /* Very small */
+    color: #FF4500;
+    white-space: nowrap;
 }
