@@ -13,8 +13,10 @@ const ANNOUNCEMENT = {
                 <li>Complete recent matches re-design.</li>
                 <li>Match result community comments.</li>
                 <li>Event/accomodation trophy case.</li>
+                <li>Select you country on profile</li>
                 <li>Custom profile pictures.</li>
-                <li>News/events Page.</li> <br>
+                <li>News/events Page.</li>
+                <li>#1 day counter</li> <br>
             <p3>KNOWN BUGS</p>
                 <li>Username discrepancies, contact me if affected.</li>
                 <li>Bad nav loading</li>
