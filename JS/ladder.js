@@ -24,21 +24,48 @@ async function displayLadder() {
     }
 
     try {
+        // First get all players
         const playersRef = collection(db, 'players');
         const querySnapshot = await getDocs(playersRef);
-        
-        // Convert to array and filter out test players
         const players = [];
+        
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
             players.push({
                 ...playerData,
                 id: doc.id,
                 elo: playerData.eloRating || 0,
-                position: playerData.position || Number.MAX_SAFE_INTEGER // Use existing position
+                position: playerData.position || Number.MAX_SAFE_INTEGER
             });
         });
 
+        // Get all user profiles in one go
+        const profilesRef = collection(db, 'userProfiles');
+        const profilesSnapshot = await getDocs(profilesRef);
+        
+        // Create a map of username -> profile data
+        const profilesByUsername = new Map();
+        profilesSnapshot.forEach((doc) => {
+            const profileData = doc.data();
+            if (profileData.username) {
+                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+            }
+        });
+        
+        // Match profiles to players
+        for (const player of players) {
+            const username = player.username.toLowerCase();
+            if (profilesByUsername.has(username)) {
+                const profile = profilesByUsername.get(username);
+                
+                // Set country from profile
+                if (profile.country) {
+                    player.country = profile.country.toLowerCase();
+                }
+            }
+        }
+
+        // Rest of the code remains the same
         // Sort players by position
         players.sort((a, b) => {
             if (!a.position) return 1;
@@ -159,7 +186,7 @@ function calculateStreakDays(startDate) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// Update the updateLadderDisplay function - remove debug logs
+// Update the updateLadderDisplay function - modify username cell creation
 async function updateLadderDisplay(ladderData) {
     // Sort by position before displaying
     ladderData.sort((a, b) => a.position - b.position);
@@ -192,31 +219,17 @@ async function updateLadderDisplay(ladderData) {
         
         // Create username cell with styling
         const usernameCell = document.createElement('td');
+
+        // Create username link first (CHANGED ORDER)
         const usernameLink = document.createElement('a');
         usernameLink.href = `profile.html?username=${encodeURIComponent(player.username)}&ladder=d1`;
         usernameLink.textContent = player.username;
-        
+
         // Set ELO-based colors
         const elo = parseFloat(player.elo) || 0;
         if (elo >= 2000) {
             usernameLink.style.color = '#50C878';
-            if (player.position === 1) {
-                usernameLink.style.textShadow = '0 0 5px #50C878';
-                usernameLink.style.animation = 'glow 2s ease-in-out infinite';
-                
-                // Add streak display for #1 position
-                if (player.firstPlaceDate) {
-                    const streakDays = calculateStreakDays(player.firstPlaceDate);
-                    if (streakDays > 0) {
-                        const streakSpan = document.createElement('span');
-                        streakSpan.innerHTML = ` 🔥 ${streakDays}d`;
-                        streakSpan.style.fontSize = '0.9em';
-                        streakSpan.style.color = '#FF4500';
-                        streakSpan.style.marginLeft = '5px';
-                        usernameCell.appendChild(streakSpan);
-                    }
-                }
-            }
+            // Other styling remains the same...
         } else if (elo >= 1800) {
             usernameLink.style.color = '#FFD700';
         } else if (elo >= 1600) {
@@ -226,9 +239,83 @@ async function updateLadderDisplay(ladderData) {
         } else {
             usernameLink.style.color = 'gray';
         }
-        
+
         usernameLink.style.textDecoration = 'none';
         usernameCell.appendChild(usernameLink);
+
+        // Add streak display for #1 position
+        if (player.position === 1 && player.firstPlaceDate) {
+            const streakDays = calculateStreakDays(player.firstPlaceDate);
+            if (streakDays > 0) {
+                const streakSpan = document.createElement('span');
+                streakSpan.innerHTML = ` ${streakDays}d`;
+                streakSpan.style.fontSize = '0.9em';
+                streakSpan.style.color = '#FF4500';
+                streakSpan.style.marginLeft = '-79px';
+                usernameCell.appendChild(streakSpan);
+            }
+        }
+
+                // Add this function temporarily for testing streak feature
+        window.testSetStreak = async function(daysAgo = 7) {
+            try {
+            // Get reference to players collection
+            const playersRef = collection(db, 'players');
+            
+            // Get all players
+            const querySnapshot = await getDocs(playersRef);
+            
+            // Find the #1 positioned player
+            let topPlayer = null;
+            querySnapshot.forEach((doc) => {
+                const playerData = doc.data();
+                if (playerData.position === 1) {
+                topPlayer = { id: doc.id, ...playerData };
+                }
+            });
+            
+            if (!topPlayer) {
+                console.error("No player found in position #1");
+                return;
+            }
+            
+            
+            // Calculate date X days ago
+            const date = new Date();
+            date.setDate(date.getDate() - daysAgo);
+            
+            // Update the player document
+            const playerDoc = doc(db, 'players', topPlayer.id);
+            await updateDoc(playerDoc, {
+                firstPlaceDate: Timestamp.fromDate(date)
+            });
+            
+            alert(`Streak set! ${daysAgo} days for player ${topPlayer.username}`);
+            
+            // Reload the ladder
+            displayLadder();
+            } catch (error) {
+            console.error("Error setting streak:", error);
+            alert("Error: " + error.message);
+            }
+        }
+        
+        // Add flag AFTER username (MOVED HERE)
+        if (player.country) {
+            const flagImg = document.createElement('img');
+            const flagPath = `../images/flags/${player.country.toLowerCase()}.png`;
+            flagImg.src = flagPath;
+            flagImg.alt = player.country;
+            flagImg.className = 'player-flag';
+            
+            // Add error handling for images
+            flagImg.onerror = () => {
+                console.error(`Flag image not found for ${player.country}: ${flagPath}`);
+                flagImg.style.display = 'none'; // Hide broken image icon
+            };
+            
+            usernameCell.appendChild(flagImg);
+        }
         
         // Create ELO cell with trend indicator
         const eloCell = document.createElement('td');

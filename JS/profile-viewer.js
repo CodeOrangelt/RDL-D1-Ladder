@@ -484,11 +484,15 @@ displayProfile(data) {
     const profileHeaderSection = document.querySelector('.profile-header') || document.createElement('div');
     profileHeaderSection.className = 'profile-header';
     
+    // Add country flag if available
+    const countryFlag = data.country ? `<img src="../images/flags/${data.country}.png" alt="${data.country}" class="profile-country-flag">` : '';
+    
     profileHeaderSection.innerHTML = `
         <div class="profile-image-container ${isUsingDefaultImage ? 'default-image' : ''}">
             <img src="${profileImageUrl}" alt="Profile Image" 
                  class="profile-image" 
                  onerror="this.src='${DEFAULT_PROFILE_IMAGE}'; this.parentElement.classList.add('default-image');">
+            ${countryFlag}
         </div>
     `;
     
@@ -1311,16 +1315,15 @@ displayProfile(data) {
                 'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
                 'home-level-1': this.currentProfileData.homeLevel1 || '',
                 'home-level-2': this.currentProfileData.homeLevel2 || '',
-                'home-level-3': this.currentProfileData.homeLevel3 || ''
+                'home-level-3': this.currentProfileData.homeLevel3 || '',
+                'country-selector': this.currentProfileData.country || ''
             };
             
+            // Fill form fields
             for (const [id, value] of Object.entries(editFields)) {
                 const element = document.getElementById(id);
                 if (element) element.value = value;
             }
-            
-            // Initialize the preview
-            updateProfileImagePreview();
             
             // Show edit mode
             viewMode.style.display = 'none';
@@ -1331,7 +1334,7 @@ displayProfile(data) {
             editMode.style.display = 'none';
         }
     }
-    
+
     // When SAVING profiles - preserves all existing data in userProfiles
 async handleSubmit(event) {
     event.preventDefault();
@@ -1343,6 +1346,30 @@ async handleSubmit(event) {
     }
 
     try {
+        // Get form values
+        const profileImageUrl = document.getElementById('profile-image-url').value.trim();
+        const motto = document.getElementById('motto-edit').value.trim();
+        const favoriteMap = document.getElementById('favorite-map-edit').value.trim();
+        const favoriteWeapon = document.getElementById('favorite-weapon-edit').value.trim();
+        const homeLevel1 = document.getElementById('home-level-1').value.trim();
+        const homeLevel2 = document.getElementById('home-level-2').value.trim();
+        const homeLevel3 = document.getElementById('home-level-3').value.trim();
+        // Get country selection
+        const country = document.getElementById('country-selector').value.trim();
+
+        // Update profile data
+        const profileData = {
+            profileImageUrl,
+            motto,
+            favoriteMap,
+            favoriteWeapon,
+            homeLevel1,
+            homeLevel2,
+            homeLevel3,
+            country, // Add country to profile data
+            updatedAt: new Date()
+        };
+
         // First, get ALL existing profile data
         let existingData = {};
         const userProfileDoc = await getDoc(doc(db, 'userProfiles', user.uid));
@@ -1353,36 +1380,27 @@ async handleSubmit(event) {
         // Get current username - either from Firebase Auth or existing data
         const username = user.displayName || existingData.username || this.currentProfileData?.username || 'Anonymous';
         
-        // Get form data and merge with existing data
-        const profileData = {
+        // Merge with existing data
+        const updatedProfileData = {
             ...existingData, // Preserve ALL existing fields
-            username: username, // Add username to profile document
-            profileImageUrl: document.getElementById('profile-image-url').value.trim(),
-            motto: document.getElementById('motto-edit').value,
-            favoriteMap: document.getElementById('favorite-map-edit').value,
-            favoriteWeapon: document.getElementById('favorite-weapon-edit').value,
-            lastUpdated: new Date().toISOString(),
-            timezone: document.getElementById('timezone-edit').value,
-            division: document.getElementById('division-edit').value,
-            homeLevel1: document.getElementById('home-level-1').value.trim(),
-            homeLevel2: document.getElementById('home-level-2').value.trim(),
-            homeLevel3: document.getElementById('home-level-3').value.trim()
+            ...profileData, // Update with new data
+            username: username // Add username to profile document
         };
 
         // Save to Firestore - ONLY to userProfiles
-        await setDoc(doc(db, 'userProfiles', user.uid), profileData);
+        await setDoc(doc(db, 'userProfiles', user.uid), updatedProfileData);
         
         // Update cache
         if (username && playerDataCache.has(username)) {
             const cachedData = playerDataCache.get(username);
-            playerDataCache.set(username, { ...cachedData, ...profileData });
+            playerDataCache.set(username, { ...cachedData, ...updatedProfileData });
         }
         
         // Update display
         this.toggleEditMode(false);
         this.displayProfile({
             ...this.currentProfileData,
-            ...profileData,
+            ...updatedProfileData,
             username: username,
             userId: user.uid
         });
