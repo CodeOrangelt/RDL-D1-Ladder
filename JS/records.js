@@ -264,10 +264,21 @@ async function loadMapStats() {
         const matchesSnapshot = await getDocs(approvedMatchesRef);
 
         const mapCounts = new Map();
+        const mapCasings = new Map(); // Track preferred casing for each map
+
+        // First, normalize all map names and count them
         matchesSnapshot.forEach(doc => {
             const map = doc.data().mapPlayed;
             if (map) { // Only count if map name exists
-                mapCounts.set(map, (mapCounts.get(map) || 0) + 1);
+                // Normalize to lowercase for counting
+                const normalizedMap = map.toLowerCase();
+                mapCounts.set(normalizedMap, (mapCounts.get(normalizedMap) || 0) + 1);
+                
+                // Track original casing to preserve the most common one
+                if (!mapCasings.has(normalizedMap)) {
+                    mapCasings.set(normalizedMap, {});
+                }
+                mapCasings.get(normalizedMap)[map] = (mapCasings.get(normalizedMap)[map] || 0) + 1;
             }
         });
 
@@ -276,7 +287,23 @@ async function loadMapStats() {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10);
 
-        const labels = sortedMaps.map(([map]) => map);
+        // Use the most common casing for display
+        const labels = sortedMaps.map(([normalizedMap]) => {
+            // Find the most frequently used casing
+            const casings = mapCasings.get(normalizedMap);
+            let preferredCasing = normalizedMap;
+            let maxCount = 0;
+            
+            for (const [casing, count] of Object.entries(casings)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    preferredCasing = casing;
+                }
+            }
+            
+            return preferredCasing;
+        });
+        
         const data = sortedMaps.map(([, count]) => count);
 
         // Create or update the chart
