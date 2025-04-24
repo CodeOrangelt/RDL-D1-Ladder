@@ -559,10 +559,21 @@ async function loadDashboardOverview() {
         document.getElementById('rejected-count').textContent = '-';
 
         // Get collection names based on current ladder
-        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
-        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-        const pendingCollection = currentLadder === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
-        const rejectedCollection = currentLadder === 'D1' ? 'RejectedD1' : 'RejectedD2';
+        const playerCollection = 
+            currentLadder === 'D1' ? 'players' : 
+            currentLadder === 'D2' ? 'playersD2' : 'playersD3';
+            
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+            
+        const pendingCollection = 
+            currentLadder === 'D1' ? 'pendingMatches' : 
+            currentLadder === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+            
+        const rejectedCollection = 
+            currentLadder === 'D1' ? 'RejectedD1' : 
+            currentLadder === 'D2' ? 'RejectedD2' : 'RejectedD3';
         
         console.log(`Using collections for ${currentLadder}: ${playerCollection}, ${matchesCollection}`);
         
