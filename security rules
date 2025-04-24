@@ -1,4 +1,5 @@
 rules_version = '2';
+//persm for d3 ladder retirement
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -116,15 +117,16 @@ service cloud.firestore {
 
     match /playersD3/{playerId} {
       allow read: if true;
-      allow create: if isVerifiedUser(); // isVerifiedUser checks request.auth
-      allow update: if request.auth != null && ( // Ensure outer request.auth check
+      allow create: if isVerifiedUser();
+      allow update: if request.auth != null && (
                    isAdmin() ||
                    request.auth.uid == playerId ||
                    // Simplified rule for match updates
                    request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['eloRating', 'lastMatch', 'wins', 'losses', 'lastEloChange', 'position'])
                    );
-      allow delete: if isAdmin();
+      // Update this line to match D1/D2 permissions
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
     match /playersDuos/{playerId} {

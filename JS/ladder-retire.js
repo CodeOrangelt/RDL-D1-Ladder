@@ -114,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Get player doc to verify username
                 const playerCollection = 
-                    currentLadderMode === 'D1' ? 'players' : 
-                    currentLadderMode === 'D2' ? 'playersD2' : 'playersD3';
+                currentLadderMode === 'D1' ? 'players' : 
+                currentLadderMode === 'D2' ? 'playersD2' : 'playersD3';
                 const playerRef = doc(db, playerCollection, user.uid);
                 const playerDoc = await getDoc(playerRef);
                 
