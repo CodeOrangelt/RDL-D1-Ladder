@@ -1,5 +1,6 @@
 import { approveReport } from './ladderalgorithm.js';
 import { approveReportD2 } from './ladderalgorithm-d2.js';
+import { approveReportD3 } from './ladderalgorithm-d3.js';
 import { checkPendingMatches, updatePendingMatchNotification, updateNotificationDot } from './checkPendingMatches.js';
 import { 
     collection, getDocs, query, where, 
@@ -38,18 +39,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Game mode toggle buttons
     const d1Button = document.getElementById('d1-mode');
     const d2Button = document.getElementById('d2-mode');
+    const d3Button = document.getElementById('d3-mode');
 
     // Setup toggle button event listeners
     d1Button.addEventListener('click', () => {
         setGameMode('D1');
         d1Button.classList.add('active');
         d2Button.classList.remove('active');
+        d3Button.classList.remove('active');
     });
 
     d2Button.addEventListener('click', () => {
         setGameMode('D2');
         d2Button.classList.add('active');
         d1Button.classList.remove('active');
+        d3Button.classList.remove('active');
+    });
+
+    d3Button.addEventListener('click', () => {
+        setGameMode('D3');
+        d3Button.classList.add('active');
+        d1Button.classList.remove('active');
+        d2Button.classList.remove('active');
     });
 
     // Function to change the game mode and reload opponents
@@ -146,15 +157,19 @@ async function handleUserSignedIn(user, elements) {
                         currentGameMode = 'D1';
                         const d1Button = document.getElementById('d1-mode');
                         const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
                         d1Button.classList.add('active');
                         d2Button.classList.remove('active');
+                        d3Button.classList.remove('active');
                     } else if (collectionName === 'playersD2' && currentGameMode !== 'D2') {
                         // User exists in D2 collection but current mode is not D2
                         currentGameMode = 'D2';
                         const d1Button = document.getElementById('d1-mode');
                         const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
                         d2Button.classList.add('active');
                         d1Button.classList.remove('active');
+                        d3Button.classList.remove('active');
                     }
                     break;
                 }
@@ -184,8 +199,11 @@ async function handleUserSignedIn(user, elements) {
             console.warn(`User is not in the ${currentGameMode} ladder. Checking other ladders.`);
             
             // Try to find a ladder where the user exists
-            for (const collection of ['players', 'playersD2']) {
-                if (collection === (currentGameMode === 'D1' ? 'players' : 'playersD2')) {
+            for (const collection of ['players', 'playersD2', 'playersD3']) {
+                if (collection === (
+                    currentGameMode === 'D1' ? 'players' : 
+                    currentGameMode === 'D2' ? 'playersD2' : 'playersD3'
+                )) {
                     continue; // Skip the current mode's collection as we already checked
                 }
                 
@@ -194,19 +212,26 @@ async function handleUserSignedIn(user, elements) {
                     const playerDoc = await getDoc(playerRef);
                     if (playerDoc.exists()) {
                         // Update game mode to the one where user exists
-                        const newMode = collection === 'players' ? 'D1' : 'D2';
+                        const newMode = collection === 'players' ? 'D1' : collection === 'playersD2' ? 'D2' : 'D3';
                         console.log(`User found in ${collection}, switching to ${newMode} mode`);
                         
                         // Update UI to reflect the new mode
                         const d1Button = document.getElementById('d1-mode');
                         const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
                         
                         if (newMode === 'D1') {
                             d1Button.classList.add('active');
                             d2Button.classList.remove('active');
-                        } else {
+                            d3Button.classList.remove('active');
+                        } else if (newMode === 'D2') {
                             d2Button.classList.add('active');
                             d1Button.classList.remove('active');
+                            d3Button.classList.remove('active');
+                        } else {
+                            d3Button.classList.add('active');
+                            d1Button.classList.remove('active');
+                            d2Button.classList.remove('active');
                         }
                         
                         // Set the mode and check again
@@ -286,7 +311,9 @@ function setupReportForm(elements) {
 // --- Inside your submitReport function ---
 async function submitReport(elements) {
     // Use the appropriate collection based on current game mode
-    const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+    const pendingMatchesCollection = 
+        currentGameMode === 'D1' ? 'pendingMatches' : 
+        currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
     const pendingMatchesRef = collection(db, pendingMatchesCollection);
     const newMatchRef = doc(pendingMatchesRef);
     
@@ -295,7 +322,9 @@ async function submitReport(elements) {
         const user = auth.currentUser;
         if (!user) throw new Error("User not authenticated");
         const userUid = user.uid;
-        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        const playersCollection = 
+            currentGameMode === 'D1' ? 'players' : 
+            currentGameMode === 'D2' ? 'playersD2' : 'playersD3';
         
         // Get current user's document
         const loserDoc = await getDoc(doc(db, playersCollection, userUid));
@@ -355,7 +384,10 @@ async function checkForOutstandingReports(username, elements, collectionName = n
     console.log(`Checking reports for user: ${username} in ${collectionName || 'default collection'}`);
     
     // Use the passed collection name or determine based on current game mode
-    const pendingCollection = collectionName || (currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2');
+    const pendingCollection = collectionName || (
+        currentGameMode === 'D1' ? 'pendingMatches' : 
+        currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3'
+    );
     console.log(`Using collection: ${pendingCollection}`);
     
     try {
@@ -447,7 +479,9 @@ function autoFillReportForm(reportData) {
         
         // Determine game mode and corresponding players collection
         const gameMode = reportData.gameMode || currentGameMode;
-        const playersCollection = gameMode === 'D1' ? 'players' : 'playersD2';
+        const playersCollection = 
+            gameMode === 'D1' ? 'players' : 
+            gameMode === 'D2' ? 'playersD2' : 'playersD3';
         
         console.log(`Using players collection: ${playersCollection} for game mode: ${gameMode}`);
         
@@ -574,7 +608,9 @@ function autoFillReportForm(reportData) {
                             const gameMode = reportData.gameMode || currentGameMode;
 
                             // Call the appropriate function based on game mode
-                            if (gameMode === 'D2') {
+                            if (gameMode === 'D3') {
+                                await approveReportD3(reportData.id, winnerScore, winnerSuicides, winnerComment);
+                            } else if (gameMode === 'D2') {
                                 await approveReportD2(reportData.id, winnerScore, winnerSuicides, winnerComment);
                             } else {
                                 await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
@@ -677,8 +713,12 @@ function hideLightbox() {
 async function rejectReport(reportId, rejectionReason) {
     try {
         // Determine which collections to use based on game mode
-        const pendingCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
-        const rejectedCollection = currentGameMode === 'D1' ? 'RejectedD1' : 'RejectedD2';
+        const pendingCollection = 
+            currentGameMode === 'D1' ? 'pendingMatches' : 
+            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+        const rejectedCollection = 
+            currentGameMode === 'D1' ? 'RejectedD1' : 
+            currentGameMode === 'D2' ? 'RejectedD2' : 'RejectedD3';
         
         console.log(`Rejecting match ${reportId} from ${pendingCollection} to ${rejectedCollection}`);
         
@@ -764,10 +804,13 @@ async function loadOpponentsList(userUid) {
         }
         
         // Get current user's document from the appropriate collection
-        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        const playersCollection = 
+            currentGameMode === 'D1' ? 'players' : 
+            currentGameMode === 'D2' ? 'playersD2' : 'playersD3';
+        
         console.log(`Loading opponents from collection: ${playersCollection}`);
         
-        // Get current user's document
+        // Get current user's document from the appropriate collection
         const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
         
         if (!currentUserDoc.exists()) {
@@ -816,7 +859,7 @@ async function loadOpponentsList(userUid) {
     }
 }
 
-// New function to check if user is in the selected ladder and load opponents if so
+// Function to check if user is in the selected ladder and load opponents
 async function checkUserInLadderAndLoadOpponents(userUid) {
     try {
         const reportError = document.getElementById('report-error');
@@ -830,7 +873,10 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         reportError.style.color = 'white';
         
         // Get current user's document from the appropriate collection
-        const playersCollection = currentGameMode === 'D1' ? 'players' : 'playersD2';
+        const playersCollection = 
+            currentGameMode === 'D1' ? 'players' : 
+            currentGameMode === 'D2' ? 'playersD2' : 'playersD3';
+            
         console.log(`Checking if user exists in collection: ${playersCollection}`);
         
         // Get current user's document
@@ -867,7 +913,10 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         await loadOpponentsList(userUid);
         
         // Check for outstanding reports in this game mode
-        const pendingMatchesCollection = currentGameMode === 'D1' ? 'pendingMatches' : 'pendingMatchesD2';
+        const pendingMatchesCollection = 
+            currentGameMode === 'D1' ? 'pendingMatches' : 
+            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+            
         await checkForOutstandingReports(currentUserData.email, null, pendingMatchesCollection);
         
         return true;

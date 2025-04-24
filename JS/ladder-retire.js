@@ -50,7 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if player is on the selected ladder
     async function checkPlayerStatus(user) {
         try {
-            const playerCollection = currentLadderMode === 'D1' ? 'players' : 'playersD2';
+            const playerCollection = 
+                currentLadderMode === 'D1' ? 'players' : 
+                currentLadderMode === 'D2' ? 'playersD2' : 'playersD3';
             console.log(`Checking if user is in ${playerCollection} collection`);
             
             const playerRef = doc(db, playerCollection, user.uid);
@@ -111,7 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // Get player doc to verify username
-                const playerCollection = currentLadderMode === 'D1' ? 'players' : 'playersD2';
+                const playerCollection = 
+                    currentLadderMode === 'D1' ? 'players' : 
+                    currentLadderMode === 'D2' ? 'playersD2' : 'playersD3';
                 const playerRef = doc(db, playerCollection, user.uid);
                 const playerDoc = await getDoc(playerRef);
                 

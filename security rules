@@ -120,11 +120,9 @@ service cloud.firestore {
       allow update: if request.auth != null && ( // Ensure outer request.auth check
                    isAdmin() ||
                    request.auth.uid == playerId ||
-                   (request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastMatchDate', 'position'])) ||
-                   (isAdmin() &&
-                    request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']))
+                   // Simplified rule for match updates
+                   request.resource.data.diff(resource.data).affectedKeys()
+                    .hasAny(['eloRating', 'lastMatch', 'wins', 'losses', 'lastEloChange', 'position'])
                    );
       allow delete: if isAdmin();
     }
@@ -234,6 +232,11 @@ service cloud.firestore {
     match /eloHistoryD2/{document=**} {
       allow read: if true;
       allow write: if request.auth != null; // Should only admin write history?
+    }
+
+    match /eloHistoryD3/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null; // Allow any authenticated user to write
     }
 
     match /pendingMatchesD3/{matchId} {
@@ -392,6 +395,19 @@ service cloud.firestore {
     match /trophyDefinitions/{trophyId} {
       allow read: if true;  // Anyone can view trophy definitions
       allow create, update, delete: if request.auth != null && isAdmin();
+    }
+
+        // Add this if you're using RejectedD3 collection
+    match /RejectedD3/{matchId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && (
+        request.resource.data.winnerId == request.auth.uid ||
+        request.resource.data.winnerEmail == request.auth.token.email ||
+        (exists(/databases/$(database)/documents/playersD3/$(request.auth.uid)) &&
+        request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD3/$(request.auth.uid)).data.username) ||
+        isAdmin()
+      );
+      allow update, delete: if isAdmin();
     }
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore

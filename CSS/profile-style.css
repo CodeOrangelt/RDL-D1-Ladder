@@ -555,9 +555,27 @@
 .profile-ladder-toggle {
     display: flex;
     justify-content: center;
-    margin-bottom: 15px;
-    padding: 10px;
-    width: 100%;
+    margin: 15px 0;
+    gap: 10px;
+}
+
+.ladder-toggle-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.ladder-toggle-btn.active {
+    background-color: #4CAF50;
+    font-weight: bold;
+}
+
+.ladder-toggle-btn:hover {
+    background-color: #555;
 }
 
 .profile-ladder-toggle button {
