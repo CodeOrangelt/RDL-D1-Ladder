@@ -105,8 +105,8 @@
             <input type="radio" id="d2-switch" name="ladder" value="D2">
             <label for="d2-switch">D2 Solo's</label>
             
-            <input type="radio" id="d3-switch" name="ladder" value="D3" disabled>
-            <label for="d3-switch" class="coming-soon">D3 Solo's</label>
+            <input type="radio" id="d3-switch" name="ladder" value="D3">
+            <label for="d3-switch">D3 Solo's</label>
             
             <input type="radio" id="duos-switch" name="ladder" value="DUOS" disabled>
             <label for="duos-switch" class="coming-soon">Duo's</label>
@@ -144,6 +144,21 @@
                     </thead>
                     <tbody>
                         <!-- D2 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+                        <!-- D3 Ladder Container -->
+            <div id="d3-ladder-container" class="ladder-container table-container">
+                <table id="ladder-d3">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D3 Ladder rankings will be populated here -->
                     </tbody>
                 </table>
             </div>
@@ -232,6 +247,7 @@
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/ladder.js"></script>
     <script type="module" src="../JS/ladderd2.js"></script>
+    <script type="module" src="../JS/ladderd3.js"></script>
     <script type="module" src="../JS/queue.js"></script>
     <script type="module" src="../JS/promotions.js"></script>
     <script type="module" src="../JS/ladder-join.js"></script>

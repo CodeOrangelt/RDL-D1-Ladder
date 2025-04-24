@@ -35,12 +35,13 @@ export async function checkPendingMatches(forceCheck = false) {
     
     try {
         // Use Promise.all for parallel queries
-        const [pendingD1, pendingD2] = await Promise.all([
+        const [pendingD1, pendingD2, pendingD3] = await Promise.all([
             checkForPendingMatchesInCollection(user, 'pendingMatches'),
-            checkForPendingMatchesInCollection(user, 'pendingMatchesD2')
+            checkForPendingMatchesInCollection(user, 'pendingMatchesD2'),
+            checkForPendingMatchesInCollection(user, 'pendingMatchesD3')
         ]);
         
-        const hasPendingMatches = pendingD1 || pendingD2;
+        const hasPendingMatches = pendingD1 || pendingD2 || pendingD3;
         
         // Update UI and cache the result
         updateNotificationDot(hasPendingMatches);
@@ -111,11 +112,12 @@ async function getUsernameFromAllSources(user) {
         return cachedUsername;
     }
     
-    // Try players collections (D1 & D2)
+    // Try players collections (D1, D2 & D3)
     try {
-        const [d1Snapshot, d2Snapshot] = await Promise.all([
+        const [d1Snapshot, d2Snapshot, d3Snapshot] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('userId', '==', user.uid))),
-            getDocs(query(collection(db, 'playersD2'), where('userId', '==', user.uid)))
+            getDocs(query(collection(db, 'playersD2'), where('userId', '==', user.uid))),
+            getDocs(query(collection(db, 'playersD3'), where('userId', '==', user.uid)))
         ]);
         
         if (!d1Snapshot.empty) {
@@ -126,6 +128,12 @@ async function getUsernameFromAllSources(user) {
         
         if (!d2Snapshot.empty) {
             const username = d2Snapshot.docs[0].data().username;
+            localStorage.setItem('currentUsername', username);
+            return username;
+        }
+        
+        if (!d3Snapshot.empty) {
+            const username = d3Snapshot.docs[0].data().username;
             localStorage.setItem('currentUsername', username);
             return username;
         }

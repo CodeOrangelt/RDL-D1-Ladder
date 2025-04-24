@@ -28,14 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Setup radio change handlers
     function setupRadioListeners() {
-        // Create a single handler for all radio changes
         document.querySelectorAll('input[name="ladder"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 if (e.target.checked) {
                     currentLadder = e.target.value;
                     console.log(`Ladder changed to: ${currentLadder}`);
-                    
-                    // Update join button and other UI elements
                     checkUserLadderStatus();
                 }
             });
@@ -64,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Update the checkUserLadderStatus function with additional security checks and a debug log
+// Update the checkUserLadderStatus function with additional security checks
 async function checkUserLadderStatus() {
     console.log("Checking user status for ladder:", currentLadder);
 
@@ -92,7 +89,14 @@ async function checkUserLadderStatus() {
         }
         
         // Get the collection name based on the current ladder
-        const collectionName = currentLadder === 'D1' ? 'players' : 'playersD2';
+        let collectionName;
+        if (currentLadder === 'D1') {
+            collectionName = 'players';
+        } else if (currentLadder === 'D2') {
+            collectionName = 'playersD2';
+        } else if (currentLadder === 'D3') {
+            collectionName = 'playersD3';
+        }
         
         // Check if user exists in this ladder collection
         const userDocRef = doc(db, collectionName, user.uid);
@@ -219,7 +223,15 @@ async function handleJoinLadder() {
         joinStatus.textContent = `Joining ${currentLadder} ladder...`;
         
         // Get the collection name based on the current ladder
-        const collectionName = currentLadder === 'D1' ? 'players' : 'playersD2';
+        let collectionName;
+        if (currentLadder === 'D1') {
+            collectionName = 'players';
+        } else if (currentLadder === 'D2') {
+            collectionName = 'playersD2';
+        } else if (currentLadder === 'D3') {
+            collectionName = 'playersD3';
+        }
+    
         
         // Check if user already exists in this ladder collection
         const userDocRef = doc(db, collectionName, user.uid);

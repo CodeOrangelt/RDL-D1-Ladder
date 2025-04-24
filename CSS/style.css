@@ -154,8 +154,10 @@ tr:nth-child(even) {
     background-color: transparent; /* Remove alternating row color */
 }
 
-/* Update glow effect for #1 player */
-#ladder tr:first-child td:first-child {
+/* Update glow effect for #1 player across all ladders */
+#ladder tr:first-child td:first-child,
+#ladder-d2 tr:first-child td:first-child,
+#ladder-d3 tr:first-child td:first-child {
     position: relative;
     font-weight: bold;
     color: #FFD700;  /* Gold color */
@@ -164,6 +166,16 @@ tr:nth-child(even) {
     background-color: transparent;
     border: none;
     text-align: center; /* Keep rank centered */
+}
+
+/* Make sure the glow is contained within the cell - for all ladders */
+#ladder td:first-child,
+#ladder-d2 td:first-child,
+#ladder-d3 td:first-child {
+    width: 50px;
+    text-align: center;
+    position: relative;
+    overflow: visible;  /* Changed from hidden to allow glow to show */
 }
 
 /* Make sure the glow is contained within the cell */
@@ -1314,3 +1326,22 @@ tr:nth-child(even) {
     color: #FF4500;
     white-space: nowrap;
 }
+
+/* Make sure ladder containers are completely hidden when not active */
+.ladder-container {
+    display: none; /* Hidden by default */
+    width: 100%;
+  }
+  
+  /* Only show the active ladder container */
+  .ladder-container.active {
+    display: block !important;
+  }
+  
+  /* Remove any container visibility conflicts */
+  #ladder-container, 
+  #d2-ladder-container, 
+  #d3-ladder-container {
+    position: relative;
+    width: 100%;
+  }

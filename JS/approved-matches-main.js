@@ -115,9 +115,12 @@ export function updatePreviewLadderModeUI() {
     const ladderModeSpan = document.getElementById('preview-ladder-mode');
     const d1Button = document.getElementById('preview-d1-button');
     const d2Button = document.getElementById('preview-d2-button');
+    const d3Button = document.getElementById('preview-d3-button');
+    
     if (ladderModeSpan) ladderModeSpan.textContent = previewState.currentMode;
     if (d1Button) d1Button.classList.toggle('active', previewState.currentMode === 'D1');
     if (d2Button) d2Button.classList.toggle('active', previewState.currentMode === 'D2');
+    if (d3Button) d3Button.classList.toggle('active', previewState.currentMode === 'D3');
 }
 
 function updatePreviewPaginationControls(hasNextPage) {
@@ -235,8 +238,12 @@ export async function loadRecentMatchesPreview(direction = 'current') {
     setPreviewLoadingState(true);
     container.innerHTML = '<div class="matches-loading">Loading recent matches...</div>';
     
-    const collectionName = previewState.currentMode === "D1" ? "approvedMatches" : "approvedMatchesD2";
-    const orderField = previewState.currentMode === "D1" ? "createdAt" : "approvedAt";
+    const collectionName = 
+        previewState.currentMode === "D1" ? "approvedMatches" : 
+        previewState.currentMode === "D2" ? "approvedMatchesD2" : "approvedMatchesD3";
+    
+    const orderField = 
+        previewState.currentMode === "D1" ? "createdAt" : "approvedAt";
     
     try {
         const matchesRef = collection(window.db, collectionName);
@@ -873,12 +880,13 @@ export function setupPreviewEventListeners() {
     const nextButton = document.getElementById('previewNextPage');
     const d1Button = document.getElementById('preview-d1-button');
     const d2Button = document.getElementById('preview-d2-button');
+    const d3Button = document.getElementById('preview-d3-button');
     const filterSection = document.getElementById('filterSection');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
     const clearFilterBtn = document.getElementById('clearFilterBtn');
     const filterUsernameInput = document.getElementById('filterUsername');
 
-    if (!prevButton || !nextButton || !d1Button || !d2Button || !filterSection || !applyFilterBtn || !clearFilterBtn || !filterUsernameInput) {
+    if (!prevButton || !nextButton || !d1Button || !d2Button || !d3Button || !filterSection || !applyFilterBtn || !clearFilterBtn || !filterUsernameInput) {
         console.warn("Preview UI or Filter elements not found, cannot attach listeners.");
         return;
     }
@@ -900,6 +908,13 @@ export function setupPreviewEventListeners() {
     d2Button.addEventListener('click', () => {
         if (previewState.currentMode !== 'D2' && !previewState.isLoading) {
             previewState.currentMode = 'D2';
+            updatePreviewLadderModeUI();
+            loadRecentMatchesPreview('current');
+        }
+    });
+    d3Button.addEventListener('click', () => {
+        if (previewState.currentMode !== 'D3' && !previewState.isLoading) {
+            previewState.currentMode = 'D3';
             updatePreviewLadderModeUI();
             loadRecentMatchesPreview('current');
         }

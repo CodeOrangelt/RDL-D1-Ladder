@@ -41,40 +41,85 @@ class ProfileViewer {
         this.init();
     }
     
+    // Make sure D3 URL parameter is properly handled in the init() function
     init() {
-        // Get username and optional ladder from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const username = urlParams.get('username');
-        const ladder = urlParams.get('ladder');
+    // Get username and optional ladder from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    const ladder = urlParams.get('ladder');
+    
+    // Set initial ladder from URL if present
+    if (ladder && ladder.toUpperCase() === 'D2') {
+        this.currentLadder = 'D2';
+    } else if (ladder && ladder.toUpperCase() === 'D3') {
+        this.currentLadder = 'D3';
+    }
+    
+    // Create toggle buttons if they don't exist
+    const toggleContainer = document.querySelector('.profile-ladder-toggle');
+    if (!toggleContainer) {
+        // Create the container
+        const newToggleContainer = document.createElement('div');
+        newToggleContainer.className = 'profile-ladder-toggle';
         
-        // Set initial ladder from URL if present
-        if (ladder && ladder.toUpperCase() === 'D2') {
-            this.currentLadder = 'D2';
-        }
+        // Create the buttons
+        const buttons = [
+            { id: 'profile-d1-toggle', text: 'D1' },
+            { id: 'profile-d2-toggle', text: 'D2' },
+            { id: 'profile-d3-toggle', text: 'D3' }
+        ];
         
-        if (username) {
-            this.setupToggleButtons();
-            this.loadProfile(username);
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.id = btn.id;
+            button.className = 'ladder-toggle-btn';
+            button.textContent = btn.text;
+            newToggleContainer.appendChild(button);
+        });
+        
+        // Insert after the profile header
+        const profileHeader = document.querySelector('.profile-header');
+        if (profileHeader && profileHeader.parentNode) {
+            profileHeader.parentNode.insertBefore(newToggleContainer, profileHeader.nextSibling);
         } else {
-            const container = document.querySelector('.content');
-            if (container) {
-                container.innerHTML = '<div class="error-message">No username specified.</div>';
+            // Fallback - insert at the start of content
+            const content = document.querySelector('.content');
+            if (content) {
+                content.insertBefore(newToggleContainer, content.firstChild);
             }
         }
     }
     
+    if (username) {
+        this.setupToggleButtons();
+        this.loadProfile(username);
+    } else {
+        const container = document.querySelector('.content');
+        if (container) {
+            container.innerHTML = '<div class="error-message">No username specified.</div>';
+        }
+    }
+}
+    
     setupToggleButtons() {
         const d1Button = document.getElementById('profile-d1-toggle');
         const d2Button = document.getElementById('profile-d2-toggle');
+        const d3Button = document.getElementById('profile-d3-toggle');
         
-        if (d1Button && d2Button) {
+        if (d1Button && d2Button && d3Button) {
             // Set initial active state
             if (this.currentLadder === 'D1') {
                 d1Button.classList.add('active');
                 d2Button.classList.remove('active');
-            } else {
+                d3Button.classList.remove('active');
+            } else if (this.currentLadder === 'D2') {
                 d2Button.classList.add('active');
                 d1Button.classList.remove('active');
+                d3Button.classList.remove('active');
+            } else {
+                d3Button.classList.add('active');
+                d1Button.classList.remove('active');
+                d2Button.classList.remove('active');
             }
             
             // Add click handlers
@@ -83,6 +128,7 @@ class ProfileViewer {
                     this.currentLadder = 'D1';
                     d1Button.classList.add('active');
                     d2Button.classList.remove('active');
+                    d3Button.classList.remove('active');
                     
                     // Get current username
                     const username = this.currentProfileData?.username;
@@ -97,8 +143,25 @@ class ProfileViewer {
                     this.currentLadder = 'D2';
                     d2Button.classList.add('active');
                     d1Button.classList.remove('active');
+                    d3Button.classList.remove('active');
                     
                     // Get current username
+                    const username = this.currentProfileData?.username;
+                    if (username) {
+                        this.loadProfile(username);
+                    }
+                }
+            });
+
+            d3Button.addEventListener('click', () => {
+                if (this.currentLadder !== 'D3') {
+                    console.log("Switching to D3 ladder view");
+                    this.currentLadder = 'D3';
+                    d3Button.classList.add('active');
+                    d1Button.classList.remove('active');
+                    d2Button.classList.remove('active');
+                    
+                    // Get current username and reload profile
                     const username = this.currentProfileData?.username;
                     if (username) {
                         this.loadProfile(username);
@@ -112,12 +175,13 @@ class ProfileViewer {
         console.log(`Loading profile for ${username} in ${this.currentLadder} ladder`);
         try {
             // Check which ladders the player is registered in
-            const { inD1, inD2 } = await this.checkDualLadderStatus(username);
+            const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
             
             // If not found in current ladder but found in other, switch ladders
-            if ((this.currentLadder === 'D1' && !inD1 && inD2) || 
-                (this.currentLadder === 'D2' && !inD2 && inD1)) {
-                this.currentLadder = this.currentLadder === 'D1' ? 'D2' : 'D1';
+            if ((this.currentLadder === 'D1' && !inD1 && (inD2 || inD3)) || 
+                (this.currentLadder === 'D2' && !inD2 && (inD1 || inD3)) ||
+                (this.currentLadder === 'D3' && !inD3 && (inD1 || inD2))) {
+                this.currentLadder = inD1 ? 'D1' : (inD2 ? 'D2' : 'D3');
                 this.setupToggleButtons(); // Update active button
             }
             
@@ -196,7 +260,7 @@ class ProfileViewer {
             }
             
             // Get player details from the appropriate collection
-            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
             const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
@@ -251,91 +315,93 @@ class ProfileViewer {
                     return data;
                 }
                 
-                // Check other ladder
-                const otherLadder = this.currentLadder === 'D1' ? 'D2' : 'D1';
-                const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : 'playersD2');
-                const otherQuery = query(otherPlayersRef, where('username', '==', username));
-                const otherSnapshot = await getDocs(otherQuery);
+                // Check other ladders
+                const otherLadders = ['D1', 'D2', 'D3'].filter(ladder => ladder !== this.currentLadder);
+                for (const otherLadder of otherLadders) {
+                    const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : (otherLadder === 'D2' ? 'playersD2' : 'playersD3'));
+                    const otherQuery = query(otherPlayersRef, where('username', '==', username));
+                    const otherSnapshot = await getDocs(otherQuery);
+                    
+                    if (!otherSnapshot.empty) {
+                        // Found in other ladder, suggest switching
+                        throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${otherLadder} ladder.`);
+                    }
+                }
                 
-                if (otherSnapshot.empty) {
-                    // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
-                    console.log(`User ${username} not found in any ladder, registering as non-participant`);
+                // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
+                console.log(`User ${username} not found in any ladder, registering as non-participant`);
 
-                    // First try to find the user in different collections to get correct username
-                    let correctUsername = username;
-                    let userId = null;
+                // First try to find the user in different collections to get correct username
+                let correctUsername = username;
+                let userId = null;
 
-                    // Try to find user by username in pending registrations first
-                    const pendingQuery = query(collection(db, 'pendingRegistrations'), where('username', '==', username));
-                    const pendingSnapshot = await getDocs(pendingQuery);
+                // Try to find user by username in pending registrations first
+                const pendingQuery = query(collection(db, 'pendingRegistrations'), where('username', '==', username));
+                const pendingSnapshot = await getDocs(pendingQuery);
 
-                    if (!pendingSnapshot.empty) {
-                        // Found in pending registrations
-                        userId = pendingSnapshot.docs[0].id;
-                        correctUsername = pendingSnapshot.docs[0].data().username || username;
+                if (!pendingSnapshot.empty) {
+                    // Found in pending registrations
+                    userId = pendingSnapshot.docs[0].id;
+                    correctUsername = pendingSnapshot.docs[0].data().username || username;
+                } else {
+                    // Try to find in users collection
+                    const usersQuery = query(collection(db, 'users'), where('username', '==', username));
+                    const usersSnapshot = await getDocs(usersQuery);
+                    
+                    if (!usersSnapshot.empty) {
+                        userId = usersSnapshot.docs[0].id;
+                        correctUsername = usersSnapshot.docs[0].data().username || username;
                     } else {
-                        // Try to find in users collection
-                        const usersQuery = query(collection(db, 'users'), where('username', '==', username));
-                        const usersSnapshot = await getDocs(usersQuery);
+                        // Try to find by checking if this is an email-derived username
+                        const emailDerivedQuery = query(collection(db, 'users'), where('email', '!=', null));
+                        const emailUsers = await getDocs(emailDerivedQuery);
                         
-                        if (!usersSnapshot.empty) {
-                            userId = usersSnapshot.docs[0].id;
-                            correctUsername = usersSnapshot.docs[0].data().username || username;
+                        // Check if any user's email prefix matches this username
+                        const matchingUser = emailUsers.docs.find(doc => {
+                            const email = doc.data().email;
+                            if (!email) return false;
+                            const emailPrefix = email.split('@')[0];
+                            return emailPrefix === username;
+                        });
+                        
+                        if (matchingUser) {
+                            // Found the user by email prefix match
+                            userId = matchingUser.id;
+                            correctUsername = matchingUser.data().username || username;
+                            console.log(`Found user by email prefix match, actual username: ${correctUsername}`);
                         } else {
-                            // Try to find by checking if this is an email-derived username
-                            const emailDerivedQuery = query(collection(db, 'users'), where('email', '!=', null));
-                            const emailUsers = await getDocs(emailDerivedQuery);
-                            
-                            // Check if any user's email prefix matches this username
-                            const matchingUser = emailUsers.docs.find(doc => {
-                                const email = doc.data().email;
-                                if (!email) return false;
-                                const emailPrefix = email.split('@')[0];
-                                return emailPrefix === username;
-                            });
-                            
-                            if (matchingUser) {
-                                // Found the user by email prefix match
-                                userId = matchingUser.id;
-                                correctUsername = matchingUser.data().username || username;
-                                console.log(`Found user by email prefix match, actual username: ${correctUsername}`);
-                            } else {
-                                // Generate placeholder ID
-                                userId = `auto_${username.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-                            }
+                            // Generate placeholder ID
+                            userId = `auto_${username.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
                         }
                     }
-
-                    // Create a non-participant record with the correct username
-                    const nonParticipantData = {
-                        username: correctUsername, // Use the correct username!
-                        userId: userId,
-                        isNonParticipant: true,
-                        autoRegistered: true,
-                        createdAt: new Date(),
-                        lastSeen: new Date()
-                    };
-
-                    console.log(`Registering as non-participant with username: ${correctUsername}, userId: ${userId}`);
-
-                    // Add to nonParticipants collection
-                    await setDoc(doc(db, 'nonParticipants', userId), nonParticipantData);
-
-                    // Display as non-participant
-                    const data = {
-                        ...nonParticipantData,
-                        ladder: this.currentLadder,
-                        eloRating: 'N/A'
-                    };
-
-                    // Cache and display
-                    playerDataCache.set(cacheKey, data);
-                    this.displayProfile(data);
-                    return data;
-                } else {
-                    // Found in other ladder, suggest switching
-                    throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${otherLadder} ladder.`);
                 }
+
+                // Create a non-participant record with the correct username
+                const nonParticipantData = {
+                    username: correctUsername, // Use the correct username!
+                    userId: userId,
+                    isNonParticipant: true,
+                    autoRegistered: true,
+                    createdAt: new Date(),
+                    lastSeen: new Date()
+                };
+
+                console.log(`Registering as non-participant with username: ${correctUsername}, userId: ${userId}`);
+
+                // Add to nonParticipants collection
+                await setDoc(doc(db, 'nonParticipants', userId), nonParticipantData);
+
+                // Display as non-participant
+                const data = {
+                    ...nonParticipantData,
+                    ladder: this.currentLadder,
+                    eloRating: 'N/A'
+                };
+
+                // Cache and display
+                playerDataCache.set(cacheKey, data);
+                this.displayProfile(data);
+                return data;
             }
             
             // Regular active player - continue with existing logic
@@ -420,7 +486,7 @@ async getProfileData(userId) {
             }
             
             // Get player details from the appropriate collection
-            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
             const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
@@ -638,7 +704,7 @@ displayProfile(data) {
     
     async getPlayerMatches(username) {
         try {
-            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
             const approvedMatchesRef = collection(db, matchesCollection);
             
             // Use separate queries to avoid index requirements
@@ -683,7 +749,7 @@ displayProfile(data) {
         }
         
         try {
-            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
             const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
@@ -976,7 +1042,7 @@ displayProfile(data) {
             }
             
             // Update to use ladder-specific collections
-            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
             const eloHistoryRef = collection(db, eloHistoryCollection);
             const q = query(
                 eloHistoryRef,
@@ -1188,7 +1254,7 @@ displayProfile(data) {
 
         try {
             // Direct Firebase query for player data - bypass cache
-            const playersCollection = this.currentLadder === 'D1' ? 'players' : 'playersD2';
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
             const playersRef = collection(db, playersCollection);
             const q = query(playersRef, where('username', '==', username));
             const querySnapshot = await getDocs(q);
@@ -1203,7 +1269,7 @@ displayProfile(data) {
             console.log(`Found player data for ${username}:`, playerData);
             
             // Rest of your existing code for matches...
-            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
             const approvedMatchesRef = collection(db, matchesCollection);
             
             const [winnerMatches, loserMatches] = await Promise.all([
@@ -1514,34 +1580,44 @@ setupEditProfile() {
 
     async checkDualLadderStatus(username) {
         try {
-            // Check if player exists in both ladders
-            const [d1Snapshot, d2Snapshot] = await Promise.all([
+            // Check if player exists in all ladders
+            const [d1Snapshot, d2Snapshot, d3Snapshot] = await Promise.all([
                 getDocs(query(collection(db, 'players'), where('username', '==', username), limit(1))),
-                getDocs(query(collection(db, 'playersD2'), where('username', '==', username), limit(1)))
+                getDocs(query(collection(db, 'playersD2'), where('username', '==', username), limit(1))),
+                getDocs(query(collection(db, 'playersD3'), where('username', '==', username), limit(1)))
             ]);
             
             const inD1 = !d1Snapshot.empty;
             const inD2 = !d2Snapshot.empty;
+            const inD3 = !d3Snapshot.empty;
             
             // Update toggle button visibility based on registration
             const d1Button = document.getElementById('profile-d1-toggle');
             const d2Button = document.getElementById('profile-d2-toggle');
+            const d3Button = document.getElementById('profile-d3-toggle');
             
-            if (d1Button && d2Button) {
-                d1Button.style.display = inD1 ? 'block' : 'none';
-                d2Button.style.display = inD2 ? 'block' : 'none';
+            if (d1Button && d2Button && d3Button) {
+                // Use inline-block instead of block for better button styling
+                d1Button.style.display = inD1 ? 'inline-block' : 'none';
+                d2Button.style.display = inD2 ? 'inline-block' : 'none';
+                d3Button.style.display = inD3 ? 'inline-block' : 'none';
                 
-                // If only registered in one ladder, hide toggle completely
+                // Fix the toggle container visibility logic
                 const toggleContainer = document.querySelector('.profile-ladder-toggle');
                 if (toggleContainer) {
-                    toggleContainer.style.display = (inD1 && inD2) ? 'flex' : 'none';
+                    // Show container if player is in ANY ladder
+                    const inAnyLadder = inD1 || inD2 || inD3;
+                    // Only show multiple toggle buttons if in more than one ladder
+                    toggleContainer.style.display = inAnyLadder ? 'flex' : 'none';
                 }
+                
+                console.log(`Ladder registration - D1: ${inD1}, D2: ${inD2}, D3: ${inD3}`);
             }
             
-            return { inD1, inD2 };
+            return { inD1, inD2, inD3 };
         } catch (error) {
-            console.error('Error checking dual ladder status:', error);
-            return { inD1: true, inD2: false }; // Default to D1 only on error
+            console.error('Error checking ladder status:', error);
+            return { inD1: false, inD2: false, inD3: false };
         }
     }
 
