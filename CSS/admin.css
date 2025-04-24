@@ -7,6 +7,7 @@
     --danger-color: #d32f2f;
     --d1-color: #d32f2f;
     --d2-color: #1976d2;
+    --d3-color: #4CAF50; /* Green for D3 ladder */
     --background: #131e29;
     --card-bg: #1a2733;
     --sidebar-bg: #0f1923;
@@ -258,6 +259,10 @@ body {
     background-color: var(--d2-color);
 }
 
+.stat-icon.d3-icon {
+    background-color: var(--d3-color);
+}
+
 .stat-icon i {
     font-size: 1.8rem;
     color: white;
@@ -425,31 +430,108 @@ body {
     margin-right: 200px; /* Make room for back button */
 }
 
+/* Enhanced Ladder Selector Styling - Simplified Version */
+.ladder-selector {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ladder-selector p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin: 0 0 12px 0;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* New simpler ladder switch styling */
 .ladder-switch {
     display: flex;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    max-width: 350px;
+    margin: 0 auto;
 }
 
-.switch-btn {
-    padding: 8px 16px;
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+/* Hide radio buttons */
+.ladder-switch input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Style labels as buttons */
+.ladder-switch label {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 8px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
     transition: all 0.2s ease;
+    z-index: 2;
+    user-select: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.switch-btn:first-child {
-    border-radius: 6px 0 0 6px;
-    border-right: none;
+/* D1 ladder button */
+.ladder-switch label[for="d1-switch"] {
+    background: rgba(211, 47, 47, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(211, 47, 47, 0.5);
 }
 
-.switch-btn:last-child {
-    border-radius: 0 6px 6px 0;
-}
-
-.switch-btn.active {
-    background-color: var(--primary-color);
+.ladder-switch input[type="radio"]:checked + label[for="d1-switch"] {
+    background: linear-gradient(135deg, rgba(211, 47, 47, 0.9), rgba(211, 47, 47, 0.7));
     color: white;
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.4);
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+/* D2 ladder button */
+.ladder-switch label[for="d2-switch"] {
+    background: rgba(25, 118, 210, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(25, 118, 210, 0.5);
+}
+
+.ladder-switch input[type="radio"]:checked + label[for="d2-switch"] {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.9), rgba(25, 118, 210, 0.7));
+    color: white;
+    box-shadow: 0 0 15px rgba(25, 118, 210, 0.4);
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+/* D3 ladder button */
+.ladder-switch label[for="d3-switch"] {
+    background: rgba(76, 175, 80, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.ladder-switch input[type="radio"]:checked + label[for="d3-switch"] {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(76, 175, 80, 0.7));
+    color: white;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+/* Hover effects */
+.ladder-switch label:hover {
+    transform: translateY(-1px);
+}
+
+/* Focus styling for accessibility */
+.ladder-switch input[type="radio"]:focus + label {
+    outline: 2px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 2px;
 }
 
 .search-bar {
@@ -820,15 +902,19 @@ body {
     border-color: rgba(25, 118, 210, 0.5);
 }
 
-/* Style for "Both" radio button */
-.radio-group label[for="new-player-both"] {
+/* Style for D3 radio button */
+.radio-group label[for$="d3-ladder"],
+.radio-group label[for$="d3"],
+.radio-group label[for="set-elo-d3-ladder"] {
     color: #c8e6c9;
-    border-color: rgba(46, 125, 50, 0.3);
+    border-color: rgba(76, 175, 80, 0.3);
 }
 
-.radio-group label[for="new-player-both"]:hover {
-    background: rgba(46, 125, 50, 0.15);
-    border-color: rgba(46, 125, 50, 0.5);
+.radio-group label[for$="d3-ladder"]:hover,
+.radio-group label[for$="d3"]:hover,
+.radio-group label[for="set-elo-d3-ladder"]:hover {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.5);
 }
 
 /* Selected state for D1 */
@@ -848,6 +934,16 @@ body {
     background: rgba(25, 118, 210, 0.3);
     border-color: #1976d2;
     box-shadow: 0 0 15px rgba(25, 118, 210, 0.4);
+    color: white;
+}
+
+/* Selected state for D3 */
+.radio-group input[type="radio"]:checked + label[for$="d3-ladder"],
+.radio-group input[type="radio"]:checked + label[for$="d3"],
+.radio-group input[type="radio"]:checked + label[for="set-elo-d3-ladder"] {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: #4CAF50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
     color: white;
 }
 
@@ -1371,136 +1467,6 @@ body {
 
 .modal-buttons .button:not(.primary):hover {
     background: rgba(255, 255, 255, 0.2);
-}
-
-/* Enhanced Ladder Selector Styling */
-.ladder-selector {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.ladder-selector p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-    margin: 0 0 12px 0;
-    text-align: center;
-    letter-spacing: 0.5px;
-}
-
-.ladder-switch {
-    display: flex;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 30px;
-    padding: 4px;
-    position: relative;
-    max-width: 200px;
-    margin: 0 auto;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.ladder-switch input[type="radio"] {
-    opacity: 0;
-    position: absolute;
-    width: 0;
-    height: 0;
-}
-
-.ladder-switch label {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 15px;
-    transition: all 0.3s ease;
-    z-index: 2;
-    user-select: none;
-}
-
-/* D1 ladder styling */
-.ladder-switch label[for="d1-switch"] {
-    color: rgba(211, 47, 47, 0.8);
-}
-
-.ladder-switch input[type="radio"]:checked + label[for="d1-switch"] {
-    color: white;
-    box-shadow: 0 0 15px rgba(211, 47, 47, 0.4);
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
-}
-
-/* D2 ladder styling */
-.ladder-switch label[for="d2-switch"] {
-    color: rgba(25, 118, 210, 0.8);
-}
-
-.ladder-switch input[type="radio"]:checked + label[for="d2-switch"] {
-    color: white;
-    box-shadow: 0 0 15px rgba(25, 118, 210, 0.4);
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
-}
-
-/* Active background indicator */
-.ladder-switch:before {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: calc(50% - 4px);
-    height: calc(100% - 8px);
-    background: linear-gradient(135deg, rgba(211, 47, 47, 0.9), rgba(211, 47, 47, 0.7));
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    z-index: 1;
-}
-
-/* Add this for the sliding background */
-.ladder-background {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: calc(50% - 4px);
-    height: calc(100% - 8px);
-    background: linear-gradient(135deg, rgba(211, 47, 47, 0.9), rgba(211, 47, 47, 0.7));
-    border-radius: 25px;
-    transition: all 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-    z-index: 1;
-}
-
-.ladder-switch input[id="d2-switch"]:checked ~ :before {
-    left: calc(50% + 0px);
-    background: linear-gradient(135deg, rgba(25, 118, 210, 0.9), rgba(25, 118, 210, 0.7));
-}
-
-/* Hover effects */
-.ladder-switch label:hover {
-    transform: translateY(-1px);
-}
-
-/* Focus styling for accessibility */
-.ladder-switch input[type="radio"]:focus + label {
-    outline: 2px solid rgba(255, 255, 255, 0.3);
-    outline-offset: 2px;
-}
-
-/* Fixed background indicator position (fixes the above selector) */
-#d2-switch:checked ~ .ladder-switch::before {
-    left: calc(50% + 0px);
-    background: linear-gradient(135deg, rgba(25, 118, 210, 0.9), rgba(25, 118, 210, 0.7));
-}
-
-/* Alternative implementation using direct sibling selectors */
-input[id="d1-switch"]:checked ~ .ladder-background {
-    left: 4px;
-    background: linear-gradient(135deg, rgba(211, 47, 47, 0.9), rgba(211, 47, 47, 0.7));
-}
-
-input[id="d2-switch"]:checked ~ .ladder-background {
-    left: calc(50% + 0px);
-    background: linear-gradient(135deg, rgba(25, 118, 210, 0.9), rgba(25, 118, 210, 0.7));
 }
 
 /* Load Data Button */
