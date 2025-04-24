@@ -65,15 +65,38 @@ async function displayLadder() {
             }
         }
 
-        // Rest of the code remains the same
-        // Sort players by position
+        // Get match counts for all players first
+        const playerMatchCounts = new Map();
+        const getMatchCounts = await Promise.all(players.map(async (player) => {
+            const username = player.username;
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
+            ]);
+            const totalMatches = winnerMatches.size + loserMatches.size;
+            playerMatchCounts.set(username, totalMatches);
+            return totalMatches;
+        }));
+
+        // Sort players: first by having matches (players with matches first),
+        // then by position for those with the same match status
         players.sort((a, b) => {
+            const aMatches = playerMatchCounts.get(a.username) || 0;
+            const bMatches = playerMatchCounts.get(b.username) || 0;
+            
+            // First check: put players with no matches at the bottom
+            if ((aMatches === 0) !== (bMatches === 0)) {
+                return aMatches === 0 ? 1 : -1;
+            }
+            
+            // Then sort by position for players in the same category
             if (!a.position) return 1;
             if (!b.position) return -1;
             return a.position - b.position;
         });
 
-        // Reassign positions sequentially
+        // Reassign positions sequentially based on our new sort order
         players.forEach((player, index) => {
             player.position = index + 1;
         });
