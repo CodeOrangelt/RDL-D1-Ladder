@@ -242,7 +242,7 @@ function createPlayerRow(player, stats) {
     if (player.position === 1 && player.firstPlaceDate) {
         const streakDays = calculateStreakDays(player.firstPlaceDate);
         if (streakDays > 0) {
-            streakHtml = `<span style="font-size:0.9em; color:#FF4500; margin-left:-79px;">${streakDays}d</span>`;
+            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
         }
     }
     
@@ -252,6 +252,7 @@ function createPlayerRow(player, stats) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
                         alt="${player.country}" 
                         class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle;"
                         onerror="this.style.display='none'">`;
     }
     
@@ -259,12 +260,14 @@ function createPlayerRow(player, stats) {
     <tr>
         <td>${player.position}</td>
         <td style="position: relative;">
-            <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
-               style="color: ${usernameColor}; text-decoration: none;">
-                ${player.username}
-            </a>
-            ${streakHtml}
-            ${flagHtml}
+            <div style="display: flex; align-items: center; position: relative;">
+                ${streakHtml}
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+            </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">${elo}</td>
         <td>${stats.totalMatches}</td>
