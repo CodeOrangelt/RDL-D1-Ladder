@@ -457,79 +457,136 @@ async function renderMatchCards(docsData) {
         }
 
         // Now handle the community comments section
-        const commentsSection = wrapper.querySelector('.community-comments-section');
-        const commentsContainer = commentsSection.querySelector('.comments-container');
-        const noCommentsMsg = commentsContainer.querySelector('.no-comments-message');
-        const addCommentBtn = commentsSection.querySelector('.add-comment-btn');
+        // Safely get elements with null checks
+        const commentsSection = wrapper?.querySelector('.community-comments-section');
+        if (!commentsSection) {
+            console.warn('Comments section not found in template');
+            // Continue with the rest of the card setup
+        } else {
+            const commentsContainer = commentsSection.querySelector('.comments-container');
+            const noCommentsMsg = commentsContainer?.querySelector('.no-comments-message');
+            const addCommentBtn = commentsSection.querySelector('.add-comment-btn');
 
-        // Get the comments for this match
-        const matchComments = commentsMap[match.id] || [];
+            // Only proceed with comments setup if container exists
+            if (commentsContainer) {
+                // Clear existing comments if any
+                while (commentsContainer.firstChild && commentsContainer.firstChild !== noCommentsMsg) {
+                    commentsContainer.removeChild(commentsContainer.firstChild);
+                }
 
-        // Clear existing comments if any
-        while (commentsContainer.firstChild && commentsContainer.firstChild !== noCommentsMsg) {
-            commentsContainer.removeChild(commentsContainer.firstChild);
+                // Setup add comment button
+                if (addCommentBtn) {
+                    addCommentBtn.addEventListener('click', () => {
+                        showAddCommentPopup(match.id);
+                    });
+                }
+
+                // Get the comments for this match
+                const matchComments = commentsMap[match.id] || [];
+
+                // If there are comments, hide the "no comments" message and add them
+                if (matchComments.length > 0) {
+                    if (noCommentsMsg) noCommentsMsg.style.display = 'none';
+                    
+                    // Helper function to truncate to 15 words
+                    const truncateToWords = (text, maxWords) => {
+                        const words = text.split(' ');
+                        if (words.length <= maxWords) return text;
+                        return words.slice(0, maxWords).join(' ') + '...';
+                    };
+                    
+                    // Add each comment in compact format
+                    matchComments.forEach(comment => {
+                        const commentEl = document.createElement('div');
+                        commentEl.className = 'comment-item';
+                        
+                        // Get truncated text for display
+                        const displayText = truncateToWords(comment.text || "", 15);
+                        
+                        // Use default username if not provided
+                        const username = comment.username || 'Anonymous';
+                        
+                        // Create the compact format with delete button for user's own comments
+                        const currentUser = window.auth.currentUser;
+                        const isOwnComment = currentUser && comment.userId === currentUser.uid;
+                        
+                        // Add delete button for user's own comments
+                        let deleteButton = '';
+                        if (isOwnComment) {
+                            deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                        }
+                        
+                        commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
+                        
+                        // Add click handler for delete button
+                        if (isOwnComment) {
+                            const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+                            if (deleteBtn) {
+                                deleteBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation(); // Prevent opening the comment popup
+                                    deleteComment(comment.id, commentEl);
+                                });
+                            }
+                        }
+                        
+                        // Add click handler to show full comment in lightbox
+                        commentEl.addEventListener('click', () => {
+                            showFullCommentLightbox(comment);
+                        });
+                        
+                        // Insert at the beginning to show newest first (assuming they're sorted by time)
+                        commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
+                    });
+                } else {
+                    if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+                }
+            }
         }
 
-        // Setup add comment button
-        addCommentBtn.addEventListener('click', () => {
-            showAddCommentPopup(match.id);
-        });
-
-        // If there are comments, hide the "no comments" message and add them
-        if (matchComments.length > 0) {
-            if (noCommentsMsg) noCommentsMsg.style.display = 'none';
+        // Handle demo links with robust error checking
+        const demoLinksContainer = card.querySelector('.match-demo-links');
+        if (demoLinksContainer) {
+            const winnerDemoLink = card.querySelector('.winner-demo-link');
+            const loserDemoLink = card.querySelector('.loser-demo-link');
             
-            // Helper function to truncate to 15 words
-            const truncateToWords = (text, maxWords) => {
-                const words = text.split(' ');
-                if (words.length <= maxWords) return text;
-                return words.slice(0, maxWords).join(' ') + '...';
-            };
+            // Define both URLs outside if blocks so they're available in the whole function scope
+            const winnerDemoLinkUrl = match.winnerDemoLink || null;
+            const loserDemoLinkUrl = match.loserDemoLink || match.demoLink || null;
             
-            // Add each comment in compact format
-            matchComments.forEach(comment => {
-                const commentEl = document.createElement('div');
-                commentEl.className = 'comment-item';
-                
-                // Get truncated text for display
-                const displayText = truncateToWords(comment.text || "", 15);
-                
-                // Use default username if not provided
-                const username = comment.username || 'Anonymous';
-                
-                // Create the compact format with delete button for user's own comments
-                const currentUser = window.auth.currentUser;
-                const isOwnComment = currentUser && comment.userId === currentUser.uid;
-                
-                // Add delete button for user's own comments
-                let deleteButton = '';
-                if (isOwnComment) {
-                    deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
-                }
-                
-                commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
-                
-                // Add click handler for delete button
-                if (isOwnComment) {
-                    const deleteBtn = commentEl.querySelector('.delete-comment-btn');
-                    if (deleteBtn) {
-                        deleteBtn.addEventListener('click', (e) => {
-                            e.stopPropagation(); // Prevent opening the comment popup
-                            deleteComment(comment.id, commentEl);
-                        });
-                    }
-                }
-                
-                // Add click handler to show full comment in lightbox
-                commentEl.addEventListener('click', () => {
-                    showFullCommentLightbox(comment);
-                });
-                
-                // Insert at the beginning to show newest first (assuming they're sorted by time)
-                commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
+            // Debug what we found
+            console.log(`Match ${match.id} demo links:`, {
+                winner: winnerDemoLinkUrl,
+                loser: loserDemoLinkUrl
             });
-        } else {
-            if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+            
+            // Handle winner link
+            if (winnerDemoLink) {
+                if (winnerDemoLinkUrl) {
+                    winnerDemoLink.href = winnerDemoLinkUrl;
+                    winnerDemoLink.style.display = 'flex'; // Change to flex for proper SVG centering
+                    winnerDemoLink.title = `${match.winnerUsername}'s Demo`; // Dynamic tooltip
+                } else {
+                    winnerDemoLink.style.display = 'none';
+                }
+            }
+            
+            // Handle loser link 
+            if (loserDemoLink) {
+                if (loserDemoLinkUrl) {
+                    loserDemoLink.href = loserDemoLinkUrl;
+                    loserDemoLink.style.display = 'flex'; // Change to flex for proper SVG centering
+                    loserDemoLink.title = `${match.loserUsername}'s Demo`; // Dynamic tooltip
+                } else {
+                    loserDemoLink.style.display = 'none';
+                }
+            }
+
+            // Make sure the container is visible if at least one link exists
+            if ((winnerDemoLinkUrl && winnerDemoLink) || (loserDemoLinkUrl && loserDemoLink)) {
+                demoLinksContainer.style.display = 'flex';
+            } else {
+                demoLinksContainer.style.display = 'none';
+            }
         }
 
         container.appendChild(cardClone);

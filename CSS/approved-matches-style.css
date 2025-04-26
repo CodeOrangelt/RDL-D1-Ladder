@@ -778,3 +778,40 @@ body {
         width: 100%;
     }
 }
+
+/* Update the match-demo-links styles to use proper positioning */
+.match-demo-links {
+    display: flex;
+    justify-content: space-between;
+    position: relative; /* Add positioning context */
+    height: 13px; /* Set a fixed height */
+}
+
+/* Position the buttons on the sides */
+.video-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.85;
+    position: absolute; /* Position absolutely */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.video-button:hover {
+    transform: translateY(-50%) scale(1.15);
+    opacity: 1;
+}
+
+/* Position one button on each side */
+.winner-demo-link {
+    right: 15px; /* Position on the right side */
+}
+
+.loser-demo-link {
+    left: 15px; /* Position on the left side */
+}

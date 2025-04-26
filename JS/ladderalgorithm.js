@@ -183,56 +183,33 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     }
 }
 
-export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment) {
+export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment, winnerDemoLink) {
     try {
-        console.log('Starting approveReport function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+        // Get the report data
+        const reportRef = doc(db, 'pendingMatches', reportId);
+        const reportSnapshot = await getDoc(reportRef);
         
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            console.log('No user logged in');
-            throw new Error('You must be logged in to approve matches');
-        }
-        console.log('Current user:', currentUser.email);
-
-        // Get user's player document
-        const userDoc = await getDoc(doc(db, 'players', currentUser.uid));
-        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
-        console.log('Current username:', currentUsername);
-
-        // Get the pending match
-        const pendingMatchRef = doc(db, 'pendingMatches', reportId);
-        const reportSnapshot = await getDoc(pendingMatchRef);
-
         if (!reportSnapshot.exists()) {
-            console.log('Report not found with ID:', reportId);
-            throw new Error('Match report not found');
+            throw new Error('Report not found');
         }
-
-        const reportData = reportSnapshot.data();
-        console.log('Report data:', reportData);
         
-        // Check if user is the winner
-        if (currentUsername !== reportData.winnerUsername) {
-            throw new Error('Only the winner can approve matches');
-        }
-
-        // Add winner details to report data
+        const reportData = reportSnapshot.data();
+        
+        // Create updated report data
         const updatedReportData = {
             ...reportData,
             winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides,
+            winnerSuicides: winnerSuicides, 
             winnerComment: winnerComment,
+            winnerDemoLink: winnerDemoLink, // Make sure this line exists!
             approved: true,
             approvedAt: serverTimestamp(),
-            approvedBy: currentUsername,
-            createdAt: reportData.createdAt || serverTimestamp(),
-            winnerUsername: reportData.winnerUsername,
-            loserUsername: reportData.loserUsername
+            approvedBy: auth.currentUser.uid
         };
-
+        
         // Move match to approved collection first
         await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
-        await deleteDoc(pendingMatchRef);
+        await deleteDoc(reportRef);
 
         console.log('Match moved to approved collection');
 
@@ -256,7 +233,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         return true;
 
     } catch (error) {
-        console.error('Error in approveReport:', error);
+        console.error("Error approving report:", error);
         throw error;
     }
 }
