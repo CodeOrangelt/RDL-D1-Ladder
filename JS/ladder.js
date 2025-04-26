@@ -269,7 +269,12 @@ function createPlayerRow(player, stats) {
                 ${flagHtml}
             </div>
         </td>
-        <td style="color: ${usernameColor}; position: relative;">${elo}</td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
         <td>${stats.totalMatches}</td>
         <td>${stats.wins}</td>
         <td>${stats.losses}</td>
@@ -282,32 +287,72 @@ function createPlayerRow(player, stats) {
 
 // Function to get the last ELO change for each player
 async function getPlayersLastEloChanges(usernames) {
-    // Initialize map with default values
+    // Initialize changes map first
     const changes = new Map();
-    usernames.forEach(username => changes.set(username, 0));
+    usernames.forEach(username => {
+        changes.set(username, 0);
+    });
     
     try {
+        // First step: Create a mapping between user IDs and usernames
+        const playersRef = collection(db, 'players');
+        const playersSnapshot = await getDocs(playersRef);
+        
+        // Create two mappings: id→username and username→id (both case-insensitive)
+        const userIdToUsername = new Map();
+        const usernameToUserId = new Map();
+        
+        playersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.username) {
+                userIdToUsername.set(doc.id, userData.username);
+                usernameToUserId.set(userData.username.toLowerCase(), doc.id);
+            }
+        });
+        
+        
         // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistory');
-        const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
+        const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(300));
         const eloSnapshot = await getDocs(eloQuery);
         
         if (eloSnapshot.empty) {
             console.log('ELO history collection is empty');
             return changes;
         }
+                
+        // Log sample entry structure
+        if (eloSnapshot.docs.length > 0) {
+            const sample = eloSnapshot.docs[0].data();
+            // Check if the player field is a user ID
+            if (sample.player && userIdToUsername.has(sample.player)) {
+            }
+        }
         
-        console.log(`Found ${eloSnapshot.size} ELO history entries`);
-        
-        // Process entries and find most recent change for each player
+        // Process entries and group by username
         const entriesByUsername = new Map();
+        let matchCount = 0;
         
         eloSnapshot.forEach(doc => {
             const entry = doc.data();
-            // Try multiple field names for username
-            const username = entry.player || entry.playerUsername || entry.username;
+            let username = null;
+            
+            // First try: Direct user ID match in the player field
+            if (entry.player && userIdToUsername.has(entry.player)) {
+                username = userIdToUsername.get(entry.player);
+            }
+            // Second try: Look for username field in case some entries use that
+            else if (entry.username && usernameToUserId.has(entry.username.toLowerCase())) {
+                username = entry.username;
+            }
+            // Third try: Try playerUsername field
+            else if (entry.playerUsername && usernameToUserId.has(entry.playerUsername.toLowerCase())) {
+                username = entry.playerUsername;
+            }
             
             if (username && usernames.includes(username)) {
+                matchCount++;
+                
                 if (!entriesByUsername.has(username)) {
                     entriesByUsername.set(username, []);
                 }
@@ -328,26 +373,30 @@ async function getPlayersLastEloChanges(usernames) {
                 // Use the first (most recent) entry that has valid change information
                 const recentEntry = playerEntries.find(entry => 
                     entry.change !== undefined || 
-                    (entry.newElo !== undefined && entry.previousElo !== undefined)
+                    (entry.newElo !== undefined && entry.previousElo !== undefined) ||
+                    (entry.newEloRating !== undefined && entry.oldEloRating !== undefined)
                 );
                 
                 if (recentEntry) {
-                    // Calculate ELO change
+                    // Calculate ELO change from available fields
                     let eloChange;
+                    
                     if (recentEntry.change !== undefined) {
-                        eloChange = recentEntry.change;
-                    } else if (recentEntry.newElo !== undefined && recentEntry.previousElo !== undefined) {
-                        eloChange = recentEntry.newElo - recentEntry.previousElo;
+                        eloChange = parseInt(recentEntry.change);
+                    } else if (recentEntry.newElo !== undefined && entry.previousElo !== undefined) {
+                        eloChange = parseInt(recentEntry.newElo) - parseInt(recentEntry.previousElo);
+                    } else if (recentEntry.newEloRating !== undefined && entry.oldEloRating !== undefined) {
+                        eloChange = parseInt(recentEntry.newEloRating) - parseInt(recentEntry.oldEloRating);
                     }
                     
-                    if (eloChange !== undefined) {
+                    if (!isNaN(eloChange) && eloChange !== 0) {
                         // Store the change
                         changes.set(username, eloChange);
-                        console.log(`${username} ELO change: ${eloChange}`);
                     }
                 }
             }
         });
+            
     } catch (error) {
         console.error('Error fetching ELO history:', error);
     }
@@ -419,43 +468,19 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
                         // Format the change value with + or - sign
                         const formattedChange = change > 0 ? `+${change}` : `${change}`;
                         
-                        // Clear any existing indicators
-                        const existingIndicator = eloCell.querySelector('.trend-indicator');
-                        if (existingIndicator) {
-                            existingIndicator.remove();
+                        // Find the indicator element that's already in the DOM
+                        const indicator = eloCell.querySelector('.trend-indicator');
+                        if (indicator) {                            
+                            // Update the existing indicator
+                            indicator.textContent = formattedChange;
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.85em'; // Make slightly larger
+                            indicator.style.display = 'inline'; // Ensure it's displayed
+                            indicator.style.visibility = 'visible';
+                            indicator.style.opacity = '1';
+                        } else {
                         }
-                        
-                        // Convert eloCell to use flexbox for alignment
-                        eloCell.style.display = 'flex';
-                        eloCell.style.alignItems = 'center';
-                        
-                        // Create a wrapper for the ELO value to maintain alignment
-                        const eloValue = document.createElement('span');
-                        eloValue.textContent = eloCell.textContent;
-                        eloValue.style.flexGrow = '1';
-                        
-                        // Clear the cell and add the value back
-                        eloCell.textContent = '';
-                        eloCell.appendChild(eloValue);
-                        
-                        // Add numeric indicator with the actual value
-                        const indicator = document.createElement('span');
-                        indicator.className = 'trend-indicator';
-                        indicator.textContent = formattedChange;
-                        
-                        // Use absolute positioning
-                        eloCell.style.position = 'relative'; // Make the cell a positioned container
-                        
-                        // Style based on positive/negative change
-                        indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-                        indicator.style.position = 'absolute';
-                        indicator.style.right = '5px';
-                        indicator.style.top = '50%';
-                        indicator.style.transform = 'translateY(-50%)';
-                        indicator.style.fontWeight = 'bold';
-                        indicator.style.fontSize = '0.7em';
-                        
-                        eloCell.appendChild(indicator);
                     }
                 }
             });
