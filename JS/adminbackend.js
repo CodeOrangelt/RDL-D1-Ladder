@@ -1,7 +1,7 @@
 import { 
     collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
     serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
-    limitToLast, onSnapshot, deleteField
+    limitToLast, onSnapshot, deleteField, or 
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -59,7 +59,7 @@ function getUserTabPermissions(user) {
   // Update permissions for admin
 if (isAdmin(user.email)) {
     console.log(`User ${user.email} is a system admin - full access granted`);
-    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies'];
+    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies', 'inactive-players'];
 }
   
   // For non-admins, check for role-based permissions
@@ -146,7 +146,7 @@ if (isAdmin(user.email)) {
         switch (roleInfo.role) {
           case 'admin':
           case 'owner':
-            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies']);
+            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies', 'inactive-players']);
             break;
           case 'council':
             resolve(['dashboard', 'elo-history']);
@@ -328,7 +328,10 @@ async function initializeAdminDashboard() {
         if (allowedTabs.includes('manage-trophies')) {
             setupTrophyManagementSection();
         }
-        
+
+        if (allowedTabs.includes('inactive-players')) {
+            setupInactivePlayersSection();
+        }
         // Set up data load buttons with permissions
         setupDataLoadButtons(allowedTabs);
         
@@ -491,6 +494,32 @@ function setupDataLoadButtons(allowedTabs = []) {
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                         setTimeout(() => {
                             this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+        // Add inside setupDataLoadButtons function
+    if (allowedTabs.includes('inactive-players')) {
+        const loadInactiveBtn = document.getElementById('load-inactive-players-data');
+        if (loadInactiveBtn) {
+            loadInactiveBtn.addEventListener('click', function() {
+                console.log('Load inactive players data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadInactivePlayersData()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
+                    })
+                    .catch(error => {
+                        console.error('Error loading inactive players:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
                         }, 3000);
                     });
             });
@@ -1964,7 +1993,7 @@ async function setCustomElo(username, elo, ladder) {
         const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
 
         // Get player data
-        const playersRef = collection(db, collectionName);
+        const playersRef = collection(db, collectionName)        
         const q = query(playersRef, where('username', '==', username));
         const querySnapshot = await getDocs(q);
 
@@ -2137,7 +2166,6 @@ function closeNotification(notification) {
         notification.remove();
     }, 300);
 }
-
 
 // Add this new function
 function setupUserRolesSection() {
@@ -3258,20 +3286,239 @@ async function assignTrophyToPlayer() {
     }
 }
 
-// Confirm and delete a trophy
-async function confirmDeleteTrophy(trophyId) {
-    if (confirm('Are you sure you want to delete this trophy? This action cannot be undone.')) {
-        try {
-            await deleteDoc(doc(db, 'trophyDefinitions', trophyId));
+// Add this function to setup the inactive players section
+function setupInactivePlayersSection() {
+    // Load button is already handled in setupDataLoadButtons
+    
+    // Add filter event handlers
+    const daysFilter = document.getElementById('inactive-days-filter');
+    if (daysFilter) {
+        daysFilter.addEventListener('change', function() {
+            // Get the current button to preserve loading state
+            const loadBtn = document.getElementById('load-inactive-players-data');
+            if (loadBtn) loadBtn.click();
+        });
+    }
+    
+    // Handle ladder selection for inactive players
+    const ladderSelector = document.querySelector('.ladder-switch input[value="D1"]');
+    const ladderSelector2 = document.querySelector('.ladder-switch input[value="D2"]');
+    
+    if (ladderSelector && ladderSelector2) {
+        ladderSelector.addEventListener('change', function() {
+            if (this.checked) {
+                currentLadder = 'D1';
+                // Reload inactive players if we're on that tab
+                if (document.getElementById('inactive-players').style.display !== 'none') {
+                    const loadBtn = document.getElementById('load-inactive-players-data');
+                    if (loadBtn) loadBtn.click();
+                }
+            }
+        });
+        
+        ladderSelector2.addEventListener('change', function() {
+            if (this.checked) {
+                currentLadder = 'D2';
+                // Reload inactive players if we're on that tab
+                if (document.getElementById('inactive-players').style.display !== 'none') {
+                    const loadBtn = document.getElementById('load-inactive-players-data');
+                    if (loadBtn) loadBtn.click();
+                }
+            }
+        });
+    }
+    
+    // Setup players search functionality
+    const searchInput = document.getElementById('inactive-players-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const rows = document.querySelectorAll('#inactive-players-table-body tr');
             
-            // Refresh trophy list
-            loadTrophyDefinitions();
-            
-            showNotification('Trophy deleted successfully', 'success');
-            
-        } catch (error) {
-            console.error("Error deleting trophy:", error);
-            showNotification('Failed to delete trophy: ' + error.message, 'error');
+            rows.forEach(row => {
+                if (row.querySelector('.loading-cell') || 
+                    row.querySelector('.empty-state') || 
+                    row.querySelector('.error-state')) {
+                    return;
+                }
+                
+                const username = row.cells[0]?.textContent.toLowerCase() || '';
+                const lastMatch = row.cells[5]?.textContent.toLowerCase() || '';
+                
+                if (username.includes(searchTerm) || lastMatch.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }, 300));
+    }
+    
+    // Setup view player buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-player-btn')) {
+            const button = e.target.closest('.view-player-btn');
+            const username = button.dataset.username;
+            if (username) {
+                alert(`View player details for ${username} - Feature coming soon`);
+                // Here you could implement a modal to show player details
+            }
         }
+    });
+    
+    console.log('Inactive players section initialized');
+}
+
+// Load inactive players and show their last match
+async function loadInactivePlayersData() {
+    const tableBody = document.getElementById('inactive-players-table-body');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading inactive players...</td></tr>';
+
+    try {
+        // Get minimum days threshold from filter if it exists
+        const daysFilter = document.getElementById('inactive-days-filter');
+        const minInactiveDays = daysFilter ? parseInt(daysFilter.value) || 0 : 0;
+        
+        // Fetch all players from the current ladder
+        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
+        const playersSnapshot = await getDocs(playersRef);
+
+        if (playersSnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No players found in this ladder</td></tr>';
+            return;
+        }
+
+        // Prepare array of player data
+        const players = [];
+        playersSnapshot.forEach(doc => {
+            const player = doc.data();
+            players.push({ 
+                ...player, 
+                id: doc.id,
+                username: player.username || 'Unknown Player'
+            });
+        });
+
+        console.log(`Found ${players.length} total players in the ${currentLadder} ladder`);
+
+        // Fetch last match for each player
+        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        const lastMatchPromises = players.map(async player => {
+            try {
+                const matchesRef = collection(db, matchesCollection);
+                const q = query(
+                    matchesRef,
+                    or(
+                        where('winnerUsername', '==', player.username),
+                        where('loserUsername', '==', player.username)
+                    ),
+                    orderBy('approvedAt', 'desc'),
+                    limit(1)
+                );
+                
+                const matchSnap = await getDocs(q);
+                
+                if (!matchSnap.empty) {
+                    const match = matchSnap.docs[0].data();
+                    const matchDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : null;
+                    const now = new Date();
+                    const daysSinceMatch = matchDate ? 
+                        Math.floor((now - matchDate) / (1000 * 60 * 60 * 24)) : null;
+                    
+                    const opponent = match.winnerUsername === player.username ? 
+                        match.loserUsername : match.winnerUsername;
+                    
+                    const result = match.winnerUsername === player.username ? 'Won' : 'Lost';
+                    
+                    return { 
+                        ...player, 
+                        lastMatch: { 
+                            date: matchDate ? matchDate.toLocaleDateString() : 'N/A',
+                            opponent: opponent || 'Unknown',
+                            result,
+                            timestamp: matchDate || new Date(0),
+                            daysSinceMatch: daysSinceMatch || Number.MAX_SAFE_INTEGER
+                        } 
+                    };
+                } else {
+                    // No matches found for this player
+                    return { 
+                        ...player, 
+                        lastMatch: { 
+                            date: 'Never played',
+                            opponent: 'N/A',
+                            result: 'N/A',
+                            timestamp: new Date(0),
+                            daysSinceMatch: Number.MAX_SAFE_INTEGER
+                        } 
+                    };
+                }
+            } catch (error) {
+                console.error(`Error fetching matches for ${player.username}:`, error);
+                return { 
+                    ...player, 
+                    lastMatch: { 
+                        date: 'Error',
+                        opponent: 'Error',
+                        result: 'Error',
+                        timestamp: new Date(0),
+                        daysSinceMatch: 0
+                    } 
+                };
+            }
+        });
+
+        let playersWithLastMatch = await Promise.all(lastMatchPromises);
+        
+        // Sort by days since last match (most inactive first)
+        playersWithLastMatch.sort((a, b) => b.lastMatch.daysSinceMatch - a.lastMatch.daysSinceMatch);
+        
+        // Filter based on minimum days inactive if specified
+        if (minInactiveDays > 0) {
+            playersWithLastMatch = playersWithLastMatch.filter(
+                player => player.lastMatch.daysSinceMatch >= minInactiveDays
+            );
+        }
+
+        // Render table
+        tableBody.innerHTML = '';
+        
+        if (playersWithLastMatch.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No inactive players match your criteria</td></tr>';
+            return;
+        }
+        
+        playersWithLastMatch.forEach(player => {
+            const row = document.createElement('tr');
+            
+            // Style for very inactive players (>30 days)
+            const inactiveClass = player.lastMatch.daysSinceMatch > 30 ? 'highly-inactive' : 
+                                player.lastMatch.daysSinceMatch > 14 ? 'moderately-inactive' : '';
+            
+            row.className = inactiveClass;
+            row.innerHTML = `
+                <td>${player.username}</td>
+                <td>${player.eloRating || 1200}</td>
+                <td>${player.lastMatch.date}</td>
+                <td>${player.lastMatch.daysSinceMatch === Number.MAX_SAFE_INTEGER ? 'N/A' : player.lastMatch.daysSinceMatch}</td>
+                <td>${currentLadder}</td>
+                <td>${player.lastMatch.date === 'Never played' ? 'No matches found' : 
+                    `${player.lastMatch.result} vs ${player.lastMatch.opponent}`}</td>
+                <td>
+                    <button class="view-player-btn" data-username="${player.username}" title="View Player Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        console.log(`Displaying ${playersWithLastMatch.length} inactive players`);
+
+    } catch (error) {
+        console.error('Error loading inactive players:', error);
+        tableBody.innerHTML = `<tr><td colspan="7" class="error-state">Error loading inactive players: ${error.message}</td></tr>`;
     }
 }
