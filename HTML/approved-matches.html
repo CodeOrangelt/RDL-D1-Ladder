@@ -48,13 +48,29 @@
         <!-- Match Card Template - Remove community comments -->
         <template id="match-card-template">
             <div class="match-display-wrapper">
-                <!-- Left side: Match card with increased overlap -->
                 <div class="match-container">
                     <div class="match-card">
                         <div class="match-header">
                             <div class="match-map"></div>
                             <div class="match-date"></div>
                         </div>
+                        
+                        <!-- Demo links section - make sure this exists -->
+                        <div class="match-demo-links">
+                            <a href="#" class="winner-demo-link video-button" target="_blank" style="display: none;" title="Winner's Demo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#fff">
+                                    <circle cx="10" cy="10" r="9" fill="#1E90FF" stroke="#fff" stroke-width="1"/>
+                                    <polygon points="8,6 8,14 14,10" fill="#fff"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="loser-demo-link video-button" target="_blank" style="display: none;" title="Loser's Demo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#fff">
+                                    <circle cx="10" cy="10" r="9" fill="#1E90FF" stroke="#fff" stroke-width="1"/>
+                                    <polygon points="8,6 8,14 14,10" fill="#fff"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
                         <div class="match-body">
                             <div class="player winner">
                                 <div class="player-name"></div>
@@ -75,11 +91,9 @@
                     </div>
                 </div>
                 
-                <!-- Right side: Community comments with no header -->
+                <!-- Keep community comments section -->
                 <div class="community-comments-section">
-                    <!-- Header removed as requested -->
                     <div class="comments-container">
-                        <!-- Comments will be added here dynamically -->
                         <div class="no-comments-message">No comments yet</div>
                     </div>
                     <button class="add-comment-btn">Add Comment</button>

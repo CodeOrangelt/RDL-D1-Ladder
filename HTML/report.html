@@ -97,6 +97,12 @@
                     <label for="loser-comment">Your Comment:</label>
                     <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="demo-link">Demo/Playback Link (Optional):</label>
+                    <input type="url" id="demo-link" name="demo-link" class="form-control" 
+                           placeholder="https://example.com/match.dem">
+                    <small class="form-text text-muted">Share a link to your gameplay recording or demo</small>
+                </div>
                 <button type="submit" class="btn">Report Game</button>
             </form>
             <div id="report-error" class="error"></div>
@@ -123,6 +129,11 @@
                     <div class="form-group">
                         <label for="winner-comment">Winner Comment:</label>
                         <textarea id="winner-comment" required></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="winner-demo-link">Winner's Demo/Replay Link (Optional):</label>
+                      <input type="url" id="winner-demo-link" placeholder="https://example.com/replay">
+                      <small>Share a link to gameplay recording or demo from the winner's perspective</small>
                     </div>
                     
                     <div class="lightbox-buttons">
@@ -182,4 +193,3 @@
     <div id="footer-placeholder"></div>
 </body>
 </html>
-``` 
