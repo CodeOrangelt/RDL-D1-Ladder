@@ -1437,7 +1437,9 @@ function filterEloHistoryTable() {
     let visibleCount = 0;
     
     rows.forEach(row => {
-        if (row.classList.contains('loading-cell') || row.classList.contains('empty-state') || row.classList.contains('error-state')) {
+        if (row.classList.contains('loading-cell') || 
+            row.classList.contains('empty-state') || 
+            row.classList.contains('error-state')) {
             return;
         }
         
@@ -1785,6 +1787,7 @@ async function promotePlayer(username, ladder) {
         const playerDoc = querySnapshot.docs[0];
         const playerData = playerDoc.data();
         const currentElo = playerData.eloRating || 1200;
+        const playerId = playerDoc.id;
         
         console.log(`Found player with current ELO: ${currentElo}`);
 
@@ -1803,7 +1806,7 @@ async function promotePlayer(username, ladder) {
             alert(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
             throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
         }
-
+        
         console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo})`);
         
         // Update player document
@@ -1824,6 +1827,37 @@ async function promotePlayer(username, ladder) {
             promotedBy: user.email || 'admin',
             gameMode: ladder
         });
+
+        // Add new code to send Discord notification for promotions
+        try {
+            // Import the promotion manager
+            const { promotionManager } = await import('./promotions.js');
+            
+            // Get old and new rank names
+            const oldRank = promotionManager.getRankName(currentElo);
+            const newRank = nextThreshold.name;
+            
+            // Send notification to Discord bot
+            await promotionManager.sendPromotionNotification(
+                playerId,
+                username,
+                currentElo,
+                nextThreshold.elo,
+                oldRank,
+                newRank,
+                'promotion',
+                {
+                    displayName: username,
+                    source: 'admin',
+                    adminUser: user.email,
+                    ladder: ladder
+                }
+            );
+            console.log('Promotion notification sent to Discord bot');
+        } catch (notificationError) {
+            console.error('Failed to send Discord notification:', notificationError);
+            // Continue execution even if notification fails
+        }
 
         // Show success message
         alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo})`);
@@ -1936,6 +1970,37 @@ async function demotePlayer(username, ladder) {
             demotedBy: user.email || 'admin',
             gameMode: ladder
         });
+
+        // Add new code to send Discord notification for demotions
+        try {
+            // Import the promotion manager
+            const { promotionManager } = await import('./promotions.js');
+            
+            // Get old and new rank names
+            const oldRank = promotionManager.getRankName(currentElo);
+            const newRank = prevThreshold.name;
+            
+            // Send notification to Discord bot
+            await promotionManager.sendPromotionNotification(
+                playerDoc.id,
+                username,
+                currentElo,
+                prevThreshold.elo,
+                oldRank,
+                newRank,
+                'demotion',
+                {
+                    displayName: username,
+                    source: 'admin',
+                    adminUser: user.email,
+                    ladder: ladder
+                }
+            );
+            console.log('Demotion notification sent to Discord bot');
+        } catch (notificationError) {
+            console.error('Failed to send Discord notification:', notificationError);
+            // Continue execution even if notification fails
+        }
 
         // Show success message
         alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo})`);
@@ -2427,8 +2492,6 @@ function closeModalHandler() {
     }
 }
 
-// Add this function after loadUsersWithRoles
-
 // Function to filter user table
 function filterUsersTable() {
     const searchTerm = document.getElementById('user-search')?.value.toLowerCase() || '';
@@ -2439,7 +2502,9 @@ function filterUsersTable() {
     
     rows.forEach(row => {
         // Skip special rows
-        if (row.querySelector('.loading-cell') || row.querySelector('.empty-state') || row.querySelector('.error-state')) {
+        if (row.querySelector('.loading-cell') || 
+            row.querySelector('.empty-state') || 
+            row.querySelector('.error-state')) {
             return;
         }
         
@@ -2515,7 +2580,7 @@ function setupManageArticlesSection() {
         });
     }
     
-    // Article form submit
+    // Trophy form submit
     const articleForm = document.getElementById('article-form');
     if (articleForm) {
         articleForm.addEventListener('submit', (e) => {

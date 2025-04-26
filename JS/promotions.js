@@ -89,15 +89,32 @@ class PromotionManager {
             this.lastFetchTime = now;
             
             const historyRef = collection(db, 'eloHistory');
+            
+            // Increase the limit to fetch more, so we have a better chance of finding new ones
             const q = query(
                 historyRef, 
                 where('type', 'in', ['promotion', 'demotion']),
                 orderBy('timestamp', 'desc'), 
-                limit(5)
+                limit(20)  // Increased from 5 to 20
             );
             
             const snapshot = await getDocs(q);
-            await this.processRankChanges(snapshot);
+            
+            // Pre-filter promotions that should not be shown
+            const eligibleChanges = [];
+            
+            snapshot.forEach(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                if (this.shouldShowPromotion(doc.id) && this.isNewRankChange(data)) {
+                    eligibleChanges.push(data);
+                }
+            });
+            
+            console.log(`Found ${snapshot.size} promotions, ${eligibleChanges.length} are eligible to show`);
+            
+            if (eligibleChanges.length > 0) {
+                await this.processRankChanges(eligibleChanges);
+            }
         } catch (error) {
             console.error('Error fetching promotions:', error);
         }
@@ -106,26 +123,21 @@ class PromotionManager {
     /**
      * Process snapshot of rank changes
      */
-    async processRankChanges(snapshot) {
-        const rankChanges = [];
-        
-        snapshot.forEach(doc => {
-            rankChanges.push({ id: doc.id, ...doc.data() });
-        });
-        
+    async processRankChanges(rankChanges) {
+        // No need to parse the snapshot since we're passing pre-filtered changes
         if (rankChanges.length === 0) {
             return;
         }
         
-        // Sort by timestamp (newest first)
+        // Sort by timestamp (newest first) - in case they're not already
         rankChanges.sort((a, b) => {
             // Handle missing timestamps
-            const aTime = a.timestamp?.toMillis?.() || 0;
-            const bTime = b.timestamp?.toMillis?.() || 0;
+            const aTime = a.timestamp?.toMillis?.() || a.timestamp?.seconds * 1000 || 0;
+            const bTime = b.timestamp?.toMillis?.() || b.timestamp?.seconds * 1000 || 0;
             return bTime - aTime;
         });
         
-        // Determine how many slots are available for new banners
+        // Determine how many slots are available
         const currentBannerCount = this.bannerContainer.children.length;
         const availableSlots = 3 - currentBannerCount;
         
@@ -141,17 +153,14 @@ class PromotionManager {
             const currentUser = auth.currentUser;
             
             try {
-                // Check if we should show this promotion based on localStorage
-                if (this.shouldShowPromotion(rankChange.id)) {
-                    // Stagger banners by 1 second each
-                    setTimeout(() => {
-                        this.showRankChangeBanner(rankChange);
-                    }, i * 1000);
-                    
-                    // Show lightbox for current user's promotions
-                    if (currentUser && rankChange.player === currentUser.displayName) {
-                        this.showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
-                    }
+                // Stagger banners by 1 second each
+                setTimeout(() => {
+                    this.showRankChangeBanner(rankChange);
+                }, i * 1000);
+                
+                // Show lightbox for current user's promotions
+                if (currentUser && rankChange.player === currentUser.displayName) {
+                    this.showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
                 }
             } catch (error) {
                 console.error('Error processing rank change:', error);
@@ -168,10 +177,16 @@ class PromotionManager {
             const storedData = localStorage.getItem(storageKey);
             
             if (storedData) {
-                const data = JSON.parse(storedData);
+                let data;
+                try {
+                    data = JSON.parse(storedData);
+                } catch (e) {
+                    console.warn(`Invalid storage format for ${storageKey}, treating as new`);
+                    return true;
+                }
                 
-                // Check if permanently ignored
-                if (data.ignored) {
+                // ALWAYS respect ignored flag
+                if (data.ignored === true) {
                     console.log(`Promotion ${promotionId} is permanently ignored`);
                     return false;
                 }
@@ -183,9 +198,9 @@ class PromotionManager {
                     return false;
                 }
                 
-                // Check if system dismissed within a shorter window (1 hour)
-                if (data.systemDismissed && (now - data.timestamp < 60 * 60 * 1000)) {
-                    console.log(`Promotion ${promotionId} was auto-dismissed within last hour`);
+                // Check if system dismissed within a shorter window (4 hours instead of 1)
+                if (data.systemDismissed && (now - data.timestamp < 4 * 60 * 60 * 1000)) {
+                    console.log(`Promotion ${promotionId} was auto-dismissed within last 4 hours`);
                     return false;
                 }
             }
@@ -221,36 +236,29 @@ class PromotionManager {
             .then(resolvedData => {
                 const storageKey = `promotion_${data.id}`;
                 
-                // Check if this promotion was EVER shown before
+                // Double-check not ignored (safety check)
                 const existingData = localStorage.getItem(storageKey);
-                let seenBefore = false;
-                
                 if (existingData) {
                     try {
                         const parsed = JSON.parse(existingData);
-                        seenBefore = true;
-                        
-                        // If user already explicitly dismissed this, don't show again
-                        if (parsed.userDismissed) {
-                            const now = Date.now();
-                            if (now - parsed.timestamp < this.DISPLAY_HOURS * 60 * 60 * 1000) {
-                                console.log(`Skipping previously dismissed promotion: ${data.id}`);
-                                return;
-                            }
+                        if (parsed.ignored === true) {
+                            console.log(`Skipping ignored promotion: ${data.id}`);
+                            return;
                         }
                     } catch (e) {}
                 }
                 
-                // Only reset userDismissed if this is the first time showing 
-                // or if the dismissal time window has expired
-                if (!seenBefore) {
-                    localStorage.setItem(storageKey, JSON.stringify({
-                        timestamp: Date.now(),
-                        ignored: false,
-                        userDismissed: false,
-                        systemDismissed: false
-                    }));
-                }
+                // Mark as seen
+                localStorage.setItem(storageKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    ignored: false,
+                    userDismissed: false,
+                    systemDismissed: false,
+                    seenAt: Date.now()  // Add this to track when it was shown
+                }));
+                
+                // Ensure container is visible before adding banner
+                this.bannerContainer.style.display = 'block';
                 
                 // Ensure we never exceed 3 banners
                 while (this.bannerContainer.children.length >= 3) {
@@ -259,7 +267,7 @@ class PromotionManager {
                 
                 // Create banner DOM element
                 const bannerDiv = document.createElement('div');
-                bannerDiv.className = 'promotion-banner';
+                bannerDiv.className = 'promotion-banner'; // Start without animation class
                 bannerDiv.setAttribute('data-rank', resolvedData.rankAchieved);
                 bannerDiv.setAttribute('data-id', resolvedData.id);
                 
@@ -298,8 +306,17 @@ class PromotionManager {
                 
                 bannerDiv.appendChild(details);
                 bannerDiv.appendChild(actions);
+                
+                // Add to DOM first without animation class
                 this.bannerContainer.appendChild(bannerDiv);
-                this.bannerContainer.style.display = 'block';
+                
+                // Force a reflow before adding the animation class
+                void bannerDiv.offsetWidth; 
+                
+                // Now add the animation class
+                setTimeout(() => {
+                    bannerDiv.classList.add('new-rank-change');
+                }, 50);
                 
                 // Dismiss button - user dismissed for 24 hours
                 dismissBtn.addEventListener('click', () => {
@@ -310,59 +327,69 @@ class PromotionManager {
                         systemDismissed: false
                     }));
                     
+                    bannerDiv.classList.remove('new-rank-change');
                     bannerDiv.classList.add('dismissing');
+                    
+                    // Wait for animation to complete before removing
                     setTimeout(() => {
-                        bannerDiv.remove();
-                        if (this.bannerContainer.children.length === 0) {
-                            this.bannerContainer.style.display = 'none';
+                        if (bannerDiv.parentNode) {
+                            bannerDiv.remove();
+                            
+                            // Only hide container if all banners are gone
+                            if (this.bannerContainer.children.length === 0) {
+                                this.bannerContainer.style.display = 'none';
+                            }
                         }
-                    }, 300);
+                    }, 500); // Match this to your CSS transition time
                 });
                 
-                // Ignore button - user dismissed permanently
+                // Ignore button - user dismissed permanently (MUST SET IGNORED TO TRUE)
                 ignoreBtn.addEventListener('click', () => {
                     localStorage.setItem(storageKey, JSON.stringify({
                         timestamp: Date.now(),
-                        ignored: true,
+                        ignored: true,  // Ensure this is true!
                         userDismissed: true,
                         systemDismissed: false
                     }));
                     
+                    bannerDiv.classList.remove('new-rank-change');
                     bannerDiv.classList.add('dismissing');
+                    
                     setTimeout(() => {
-                        bannerDiv.remove();
-                        if (this.bannerContainer.children.length === 0) {
-                            this.bannerContainer.style.display = 'none';
+                        if (bannerDiv.parentNode) {
+                            bannerDiv.remove();
+                            if (this.bannerContainer.children.length === 0) {
+                                this.bannerContainer.style.display = 'none';
+                            }
                         }
-                    }, 300);
+                    }, 500);
                 });
                 
-                // Auto-dismiss after 10 seconds - mark as system dismissed in localStorage
+                // Auto-dismiss after 15 seconds
                 setTimeout(() => {
-                    bannerDiv.classList.add('new-rank-change');
-                    
-                    // Auto-dismiss after 10 seconds
-                    setTimeout(() => {
+                    if (bannerDiv.parentNode) {
                         bannerDiv.classList.remove('new-rank-change');
+                        bannerDiv.classList.add('dismissing');
+                        
+                        // Update storage with system dismiss
+                        localStorage.setItem(storageKey, JSON.stringify({
+                            timestamp: Date.now(),
+                            ignored: false,
+                            userDismissed: false,
+                            systemDismissed: true
+                        }));
+                        
+                        // Remove from DOM after animation
                         setTimeout(() => {
                             if (bannerDiv.parentNode) {
-                                // Update storage with system dismiss
-                                localStorage.setItem(storageKey, JSON.stringify({
-                                    timestamp: Date.now(),
-                                    ignored: false,
-                                    userDismissed: false,
-                                    systemDismissed: true
-                                }));
-                                
-                                // Remove from DOM
                                 bannerDiv.remove();
                                 if (this.bannerContainer.children.length === 0) {
                                     this.bannerContainer.style.display = 'none';
                                 }
                             }
-                        }, 5000);
-                    }, 10000);
-                }, 100);
+                        }, 500);
+                    }
+                }, 15000); // 15 seconds total display time
             });
     }
 
@@ -627,6 +654,23 @@ class PromotionManager {
                     batch.set(promotionHistoryRef, commonFields);
                     
                     await batch.commit();
+
+                    // Send notification for Discord bot
+                    await this.sendPromotionNotification(
+                        userId,
+                        username,
+                        oldElo,
+                        newElo,
+                        oldRank,
+                        newRank,
+                        type,
+                        {
+                            displayName: displayName,
+                            source: source,
+                            matchId: matchId,
+                            ladder: options.ladder || 'D1'
+                        }
+                    );
                     
                     console.log(`Successfully recorded ${type} for ${username} to ${rankAchieved}`);
                     return rankAchieved;
@@ -652,6 +696,23 @@ class PromotionManager {
                             isAutomatic: source !== 'admin'
                         });
                         
+                        // Send notification for Discord bot (fallback path)
+                        await this.sendPromotionNotification(
+                            userId,
+                            username,
+                            oldElo,
+                            newElo,
+                            oldRank,
+                            newRank,
+                            type,
+                            {
+                                displayName: displayName,
+                                source: source,
+                                matchId: matchId,
+                                ladder: options.ladder || 'D1'
+                            }
+                        );
+
                         return rankAchieved;
                     } catch (fallbackError) {
                         console.error('Fallback write failed:', fallbackError);
@@ -685,6 +746,69 @@ class PromotionManager {
     cleanup() {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
+        }
+    }
+    
+    /**
+     * Check if a rank change is actually new/valid
+     */
+    isNewRankChange(change) {
+        // Only consider recent changes (within last 24 hours)
+        if (change.timestamp) {
+            const changeTime = change.timestamp.seconds * 1000;  // Convert to milliseconds
+            const now = Date.now();
+            const ageInHours = (now - changeTime) / (1000 * 60 * 60);
+            
+            // Skip if older than 24 hours
+            if (ageInHours > 24) {
+                return false;
+            }
+        }
+        
+        // Ensure this is actually a change in rank (not just an ELO change)
+        if (change.previousRank && change.newRank && change.previousRank !== change.newRank) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Send promotion notification to the promotionNotifications collection for Discord bot
+     */
+    async sendPromotionNotification(userId, username, oldElo, newElo, oldRank, newRank, type, options = {}) {
+        try {
+            console.log(`STARTING notification for ${username}'s ${type}`);
+            
+            // Create notification document with all details needed for Discord
+            const notificationData = {
+                userId,
+                username,
+                displayName: options.displayName || username,
+                oldElo: parseInt(oldElo),
+                newElo: parseInt(newElo),
+                eloDifference: parseInt(newElo) - parseInt(oldElo),
+                oldRank,
+                newRank,
+                type, // 'promotion' or 'demotion'
+                timestamp: serverTimestamp(),
+                processed: false, // Flag for the bot to mark when processed
+                source: options.source || 'automatic',
+                matchId: options.matchId || null,
+                ladder: options.ladder || 'D1', // Default to D1 if not specified
+                adminUser: options.adminUser || null
+            };
+            
+            console.log(`Creating Discord notification:`, notificationData);
+            
+            // Add to promotionNotifications collection - THIS IS THE IMPORTANT PART
+            const docRef = await addDoc(collection(db, 'promotionNotifications'), notificationData);
+            console.log(`Discord notification sent successfully with ID: ${docRef.id}`);
+            return true;
+        } catch (error) {
+            console.error('Error sending Discord notification:', error);
+            // Don't throw, to prevent promotion from failing if notification fails
+            return false;
         }
     }
 }
