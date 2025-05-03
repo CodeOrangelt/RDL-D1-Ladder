@@ -2557,9 +2557,6 @@ function setupManageArticlesSection() {
                 .then(() => {
                     this.classList.remove('loading');
                     this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles';
-                    
-                    // Check permissions and show create button if authorized
-                    checkArticlePermissions();
                 })
                 .catch(error => {
                     console.error('Error loading articles:', error);
@@ -2572,15 +2569,21 @@ function setupManageArticlesSection() {
         });
     }
     
-    // Create New Article button
+    // Create New Article button - Directly show it since this setup function implies permission
     const createArticleBtn = document.getElementById('create-new-article-btn');
     if (createArticleBtn) {
+        console.log("Setting up Manage Articles section - Found Create Article button."); // Add this log
+        // Show the button because if this function runs, the user has access to the section
+        createArticleBtn.style.display = 'block';
+
         createArticleBtn.addEventListener('click', () => {
             openArticleModal();
         });
+    } else {
+        console.error("Setup Manage Articles: Create Article button not found!"); // Add this error log
     }
     
-    // Trophy form submit
+    // Article form submit (changed from Trophy form submit comment)
     const articleForm = document.getElementById('article-form');
     if (articleForm) {
         articleForm.addEventListener('submit', (e) => {
@@ -2613,40 +2616,6 @@ function setupManageArticlesSection() {
                 closeArticleModal();
             }
         });
-    }
-}
-
-// Check if user has permissions to create/edit articles
-async function checkArticlePermissions() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    try {
-        // Check if user has permission to create articles
-        if (isAdmin(user.email)) {
-            const createBtn = document.getElementById('create-new-article-btn');
-            if (createBtn) {
-                createBtn.style.display = 'block';
-            }
-        } else {
-            // Check for specific roles that can manage articles
-            const userDocRef = doc(db, 'userProfiles', user.uid);
-            const userSnapshot = await getDoc(userDocRef);
-            
-            if (userSnapshot.exists()) {
-                const userData = userSnapshot.data();
-                const role = userData.roleName?.toLowerCase();
-                
-                if (role === 'admin' || role === 'owner' || role === 'creative lead') {
-                    const createBtn = document.getElementById('create-new-article-btn');
-                    if (createBtn) {
-                        createBtn.style.display = 'block';
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking article permissions:", error);
     }
 }
 
@@ -3237,6 +3206,38 @@ function closeTrophyModal() {
     const modal = document.getElementById('trophy-modal');
     if (modal) {
         modal.classList.remove('active');
+    }
+}
+
+// Add this function to handle trophy deletion
+async function confirmDeleteTrophy(trophyId) {
+    if (!trophyId) {
+        console.error("Delete Trophy: No trophy ID provided.");
+        return;
+    }
+
+    if (confirm('Are you sure you want to delete this trophy definition? This action cannot be undone and might affect players who have been awarded this trophy.')) {
+        try {
+            // Check authorization (ensure user is logged in and has permission)
+            const user = auth.currentUser;
+            if (!user) {
+                showNotification('You must be logged in to delete trophies', 'error');
+                return;
+            }
+            // Optional: Add a server-side check or rely on security rules
+
+            console.log(`Attempting to delete trophy definition with ID: ${trophyId}`);
+            await deleteDoc(doc(db, 'trophyDefinitions', trophyId));
+
+            showNotification('Trophy definition deleted successfully', 'success');
+
+            // Refresh the trophy list in the admin panel
+            loadTrophyDefinitions();
+
+        } catch (error) {
+            console.error("Error deleting trophy definition:", error);
+            showNotification(`Failed to delete trophy: ${error.message}`, 'error');
+        }
     }
 }
 
