@@ -152,7 +152,7 @@ if (isAdmin(user.email)) {
             resolve(['dashboard', 'elo-history']);
             break;
           case 'creative lead':
-            resolve(['dashboard', 'elo-history', 'manage-articles, manage-trophies']);
+            resolve(['dashboard', 'elo-history', 'manage-articles', 'manage-trophies']); 
             break;
           default:
             console.log(`Role '${roleInfo.role}' has no special permissions, giving default access`);
