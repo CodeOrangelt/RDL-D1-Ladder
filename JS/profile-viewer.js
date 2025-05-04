@@ -1422,6 +1422,9 @@ async handleSubmit(event) {
         const homeLevel3 = document.getElementById('home-level-3').value.trim();
         // Get country selection
         const country = document.getElementById('country-selector').value.trim();
+        // Add these missing fields
+        const division = document.getElementById('division-edit').value.trim();
+        const timezone = document.getElementById('timezone-edit').value.trim();
 
         // Update profile data
         const profileData = {
@@ -1432,7 +1435,9 @@ async handleSubmit(event) {
             homeLevel1,
             homeLevel2,
             homeLevel3,
-            country, // Add country to profile data
+            country,
+            division,  // Add division (Favorite Descent)
+            timezone,  // Add timezone
             updatedAt: new Date()
         };
 
