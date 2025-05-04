@@ -3,24 +3,15 @@
 // Configuration
 const ANNOUNCEMENT = {
     id: "beta-release 1.1", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.1",
+    title: "Redux Descent League Beta Release 1.2",
     content: `
-        <h2>News, Trophies, Comments and more!</h2>
-        <p>Beta Release 1.1 - April 21st 2025</p>
+        <h2>Cleaning up</h2>
+        <p>Beta Release 1.2 - May 4th 2025</p>
         <ul>
-            <p>FEATURES ADDED</p> 
-                <li>User roles, wanna get involved? Contact me!</li>
-                <li>Complete recent matches re-design.</li>
-                <li>Match result community comments.</li>
-                <li>Event/accomodation trophy case.</li>
-                <li>Select you country on profile</li>
-                <li>Custom profile pictures.</li>
-                <li>News/events Page.</li>
-                <li>#1 day counter</li> <br>
-            <p3>KNOWN BUGS</p>
-                <li>Username discrepancies, contact me if affected.</li>
-                <li>Bad nav loading</li>
-                <li>Login button dissapears randomly.</li> 
+            <p>Bugs Patched</p> 
+                <li>Profile data sometimes not saving</li>
+                <li>Country flag out of place</li>
+                <li>Players placed higher even with no matches</li>
         </ul>
 
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
