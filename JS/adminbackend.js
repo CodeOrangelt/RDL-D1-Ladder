@@ -1,7 +1,7 @@
 import { 
     collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
     serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
-    limitToLast, onSnapshot, deleteField, or 
+    limitToLast, onSnapshot, deleteField, or, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
@@ -145,7 +145,7 @@ async function getUserTabPermissions(userEmail) {
             'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'],
             'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
-            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history'] // Creative Lead can manage articles & trophies
+            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights'] // Creative Lead can manage articles & trophies
         };
         
         // Look up permissions for this role (case insensitive)
@@ -224,58 +224,40 @@ function setupSidebarNavigation(allowedTabs = []) {
     console.log('Sidebar navigation initialized with permissions');
 }
 
-// Add setupTabNavigation function
+// Add lazy loading for tab data
 function setupTabNavigation() {
-    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
-    const sections = document.querySelectorAll('.main-content .admin-section'); // Use .admin-section if that's your container class
-
-    if (navItems.length === 0 || sections.length === 0) {
-        console.error("Tab navigation elements not found!");
-        return;
-    }
-
-    console.log(`Found ${navItems.length} nav items and ${sections.length} sections.`);
-
+    const navItems = document.querySelectorAll('.nav-item');
+    let currentSection = null;
+    let loadedSections = new Set(); // Track which sections have been loaded
+    
     navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const sectionId = item.getAttribute('data-section');
-            console.log(`Nav item clicked: data-section=${sectionId}`);
-
-            if (!sectionId) {
-                console.error("Nav item missing data-section attribute:", item);
-                return;
+        item.addEventListener('click', function() {
+            const targetSection = this.getAttribute('data-section');
+            
+            // Don't do anything if clicking current section
+            if (targetSection === currentSection) return;
+            
+            // Hide current section if exists
+            if (currentSection) {
+                document.getElementById(currentSection).style.display = 'none';
+                navItems.forEach(i => i.classList.remove('active'));
             }
-
-            // Remove active class from all items and sections
-            navItems.forEach(nav => nav.classList.remove('active'));
-            sections.forEach(sec => sec.classList.remove('active'));
-
-            // Add active class to the clicked item and corresponding section
-            item.classList.add('active');
-            const targetSection = document.getElementById(sectionId);
-
-            if (targetSection) {
-                console.log(`Activating section: #${sectionId}`);
-                targetSection.classList.add('active');
-                // Optional: Update header title based on active section
-                const headerTitle = document.querySelector('.content-header h1');
-                if (headerTitle && item.querySelector('span')) {
-                    headerTitle.textContent = item.querySelector('span').textContent;
-                }
-            } else {
-                console.error(`Target section #${sectionId} not found!`);
-            }
+            
+            // Show target section
+            document.getElementById(targetSection).style.display = 'block';
+            this.classList.add('active');
+            currentSection = targetSection;
+            
+            // No automatic data loading - user must click the load button
+            // You can remove this block entirely if you want
         });
     });
+}
 
-    // Activate the first tab by default (or a specific one)
-    const defaultActiveNavItem = document.querySelector('.sidebar-nav .nav-item[data-section="dashboard-section"]') || navItems[0];
-    if (defaultActiveNavItem) {
-        defaultActiveNavItem.click(); // Simulate a click to activate the default tab
-        console.log("Default tab activated.");
-    } else {
-        console.error("Could not find default tab to activate.");
-    }
+// Remove automatic data loading from section changes
+function loadSectionData(sectionId) {
+    // This now does nothing - data loading is triggered by buttons only
+    return;
 }
 
 // Modify initializeAdminDashboard to include the trophy management section
@@ -321,6 +303,11 @@ async function initializeAdminDashboard() {
         // Add trophy management section initialization
         if (allowedTabs.includes('manage-trophies')) {
             setupTrophyManagementSection();
+        }
+
+        // Add highlights management section initialization
+        if (allowedTabs.includes('manage-highlights')) {
+            setupManageHighlightsSection();
         }
 
         if (allowedTabs.includes('inactive-players')) {
@@ -519,15 +506,36 @@ function setupDataLoadButtons(allowedTabs = []) {
             });
         }
     }
+
+    // Add highlights load button
+    if (allowedTabs.includes('manage-highlights')) {
+        const loadHighlightsBtn = document.getElementById('load-highlights-data');
+        if (loadHighlightsBtn) {
+            loadHighlightsBtn.addEventListener('click', function() {
+                console.log('Load highlights data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadHighlightsAdmin()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                    })
+                    .catch(error => {
+                        console.error('Error loading highlights:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                        }, 3000);
+                    });
+            });
+        }
+    }
     
     console.log('Data load buttons initialized based on permissions');
 }
 
-// Remove automatic data loading from section changes
-function loadSectionData(sectionId) {
-    // This now does nothing - data loading is triggered by buttons only
-    return;
-}
 
 // Add new setupDashboardSection function 
 function setupDashboardSection() {
@@ -3616,5 +3624,574 @@ async function loadInactivePlayersData() {
     } catch (error) {
         console.error('Error loading inactive players:', error);
         tableBody.innerHTML = `<tr><td colspan="7" class="error-state">Error loading inactive players: ${error.message}</td></tr>`;
+    }
+}
+// --- HIGHLIGHTS MANAGEMENT SECTION ---
+
+// Setup function for the Manage Highlights section
+function setupManageHighlightsSection() {
+    console.log("Setting up Manage Highlights section...");
+
+    // Add this code to handle the Load Highlights button
+    const loadHighlightsBtn = document.getElementById('load-highlights-data');
+    if (loadHighlightsBtn) {
+        loadHighlightsBtn.addEventListener('click', function() {
+            console.log('Load highlights data clicked');
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadHighlightsAdmin()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                })
+                .catch(error => {
+                    console.error('Error loading highlights:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                    }, 3000);
+                });
+        });
+    }
+
+    // Create New Highlight button
+    const createBtn = document.getElementById('create-new-highlight-btn');
+    if (createBtn) {
+        createBtn.addEventListener('click', () => openHighlightModal());
+    }
+
+    // Modal form submission
+    const highlightForm = document.getElementById('highlight-form');
+    if (highlightForm) {
+        highlightForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveHighlight();
+        });
+    }
+
+    // Modal cancel button
+    const cancelBtn = document.getElementById('cancel-highlight-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeHighlightModal);
+    }
+
+    // Modal close button (top right X)
+    const closeBtn = document.querySelector('#highlight-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeHighlightModal);
+    }
+
+    // Modal background click
+    const highlightModal = document.getElementById('highlight-modal');
+    if (highlightModal) {
+        highlightModal.addEventListener('click', (e) => {
+            if (e.target === highlightModal) {
+                closeHighlightModal();
+            }
+        });
+    }
+
+    // Video ID input listener for preview
+    const videoIdInput = document.getElementById('highlight-video-id');
+    if (videoIdInput) {
+        // Use debounce to avoid excessive updates while typing
+        videoIdInput.addEventListener('input', debounce(updateHighlightVideoPreview, 500));
+        // Also update on paste
+        videoIdInput.addEventListener('paste', () => {
+            setTimeout(updateHighlightVideoPreview, 50); // Short delay after paste
+        });
+    }
+
+    // Setup the highlight type buttons
+    setupHighlightButtons();
+
+    console.log("Manage Highlights section setup complete.");
+}
+
+// Load highlights into the admin table
+async function loadHighlightsAdmin() {
+    const tableBody = document.getElementById('highlights-table-body');
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading highlights...</td></tr>';
+
+    try {
+        const highlightsCol = collection(db, 'highlights');
+        const q = query(highlightsCol, orderBy('createdAt', 'desc')); // Order by creation date
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No highlights found.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = ''; // Clear loading/empty state
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', doc.id);
+
+            const createdAt = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+
+            row.innerHTML = `
+                <td>${data.title || 'No Title'}</td>
+                <td>${createdAt}</td>
+                <td>${data.videoId || 'N/A'}</td>
+                <td>${data.submittedBy || 'Unknown'}</td>
+                <td class="actions">
+                    <button class="edit-highlight-btn" data-id="${doc.id}" title="Edit">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-highlight-btn" data-id="${doc.id}" title="Delete">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        setupHighlightActionButtons(); // Attach listeners to new buttons
+
+    } catch (error) {
+        console.error("Error loading highlights:", error);
+        tableBody.innerHTML = `<tr><td colspan="5" class="error-state">Error loading highlights: ${error.message}</td></tr>`;
+    }
+}
+
+// Setup action buttons for highlight rows
+function setupHighlightActionButtons() {
+    document.querySelectorAll('.edit-highlight-btn').forEach(button => {
+        button.removeEventListener('click', handleEditHighlightClick); // Prevent duplicates
+        button.addEventListener('click', handleEditHighlightClick);
+    });
+    document.querySelectorAll('.delete-highlight-btn').forEach(button => {
+        button.removeEventListener('click', handleDeleteHighlightClick); // Prevent duplicates
+        button.addEventListener('click', handleDeleteHighlightClick);
+    });
+}
+
+function handleEditHighlightClick(e) {
+    const highlightId = e.currentTarget.dataset.id;
+    openHighlightModal(highlightId);
+}
+
+function handleDeleteHighlightClick(e) {
+    const highlightId = e.currentTarget.dataset.id;
+    confirmDeleteHighlight(highlightId);
+}
+
+// Open the highlight modal (for create or edit)
+function openHighlightModal(typeOrId = 'match', data = null) {
+    console.log(`Opening highlight modal with parameter: ${typeOrId}`);
+    const modal = document.getElementById('highlight-modal');
+    const form = document.getElementById('highlight-form');
+    const title = document.getElementById('highlight-modal-title');
+    const idField = document.getElementById('highlight-id');
+    const typeField = document.getElementById('highlight-type');
+    
+    // Clear previous form data
+    form.reset();
+    idField.value = '';
+    
+    // Determine if we're editing (first param is ID) or creating (first param is type)
+    const isEditing = typeOrId && typeOrId.length > 10; // IDs are typically long strings
+    
+    if (isEditing) {
+        // We're editing - load the highlight data first
+        loadHighlightDataAdmin(typeOrId).then(highlightData => {
+            if (!highlightData) return; // Exit if data load failed
+            
+            // Set highlight type from loaded data
+            const type = highlightData.type || 'match';
+            typeField.value = type;
+            
+            // Set ID field for editing
+            idField.value = typeOrId;
+            
+            // Set title based on type
+            title.textContent = `Edit ${getHighlightTypeName(type)}`;
+            
+            // Show/hide appropriate fields
+            toggleHighlightFields(type);
+            
+            // Show the modal
+            modal.classList.add('active');
+        });
+    } else {
+        // We're creating a new highlight
+        const type = typeOrId || 'match';
+        typeField.value = type;
+        
+        // Set title based on type
+        title.textContent = `Create New ${getHighlightTypeName(type)}`;
+        
+        // Show/hide appropriate fields
+        toggleHighlightFields(type);
+        
+        // If user is logged in, pre-fill the submitter field
+        const user = auth.currentUser;
+        if (user) {
+            document.getElementById('highlight-submitted-by').value = user.displayName || user.email;
+        }
+        
+        // Show the modal
+        modal.classList.add('active');
+    }
+}
+
+// Fix for creator highlights to make video optional
+function toggleHighlightFields(type) {
+    console.log(`Toggling fields for highlight type: ${type}`);
+    
+    // Get all form fields
+    const formGroups = document.querySelectorAll('.form-group');
+    const formRows = document.querySelectorAll('.form-row');
+    
+    // First hide ALL fields
+    formGroups.forEach(group => group.style.display = 'none');
+    formRows.forEach(row => row.style.display = 'none');
+    
+    // Common fields to show for all types
+    document.getElementById('highlight-title').closest('.form-group').style.display = 'block';
+    document.getElementById('highlight-description').closest('.form-group').style.display = 'block';
+    document.getElementById('highlight-submitted-by').closest('.form-group').style.display = 'block';
+    
+    // Update modal title
+    document.getElementById('highlight-modal-title').textContent = 
+        type === 'match' ? 'Create Match Highlight' : 
+        type === 'creator' ? 'Create Featured Creator' : 'Create Player Achievement';
+    
+    // Update hidden type field
+    document.getElementById('highlight-type').value = type;
+    
+    // Show fields specific to the selected type
+    switch(type) {
+        case 'match':
+            // Show match-specific fields
+            const matchFields = [
+                'highlight-video-id',
+                'highlight-match-info',
+                'highlight-map',
+                'highlight-winner-name',
+                'highlight-winner-score',
+                'highlight-loser-name',
+                'highlight-loser-score',
+                'highlight-match-link'
+            ];
+            
+            matchFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const parent = el.closest('.form-group') || el.closest('.form-row');
+                    if (parent) parent.style.display = 'block';
+                }
+            });
+            
+            // Make video required for match highlights
+            const videoField = document.querySelector('#highlight-video-id');
+            if (videoField) {
+                videoField.closest('.form-group').style.display = 'block';
+                videoField.parentElement.querySelector('label').innerHTML = 'YouTube Video ID*';
+                videoField.required = true;
+            }
+            break;
+            
+        case 'creator':
+            // Show creator-specific fields
+            const creatorFields = [
+                'highlight-map',
+                'highlight-map-creator',
+                'highlight-map-version',
+                'highlight-creator-image-url'
+            ];
+            
+            creatorFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const parent = el.closest('.form-group') || el.closest('.form-row');
+                    if (parent) parent.style.display = 'block';
+                }
+            });
+            
+            // Make video entirely optional for creator highlights
+            const videoFieldCreator = document.querySelector('#highlight-video-id');
+            if (videoFieldCreator) {
+                // Optional: completely hide the video field
+                videoFieldCreator.closest('.form-group').style.display = 'none';
+                
+                // Or make it optional but visible - uncomment these lines if you want it visible
+                // videoFieldCreator.closest('.form-group').style.display = 'block';
+                // videoFieldCreator.parentElement.querySelector('label').innerHTML = 'YouTube Video ID (Optional)';
+                // videoFieldCreator.required = false;
+            }
+            
+            // Hide the video preview
+            const videoPreview = document.getElementById('highlight-video-preview-container');
+            if (videoPreview) {
+                videoPreview.style.display = 'none';
+            }
+            break;
+            
+        case 'achievement':
+            // Show achievement-specific fields
+            const achievementFields = [
+                'highlight-video-id',
+                'highlight-player-profile-url',
+                'highlight-achievement-player',
+                'highlight-achievement-type',
+                'highlight-achievement-details'
+            ];
+            
+            achievementFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const parent = el.closest('.form-group') || el.closest('.form-row');
+                    if (parent) parent.style.display = 'block';
+                }
+            });
+            break;
+    }
+    
+    // Make sure the preview buttons are properly updated
+    updateHighlightVideoPreview();
+}
+
+// Helper function to get display name for highlight type
+function getHighlightTypeName(type) {
+    switch(type) {
+        case 'match': return 'Match Highlight';
+        case 'creator': return 'Featured Creator';
+        case 'achievement': return 'Player Achievement';
+        default: return 'Highlight';
+    }
+}
+
+// Fix loading highlight data for editing
+async function loadHighlightDataAdmin(highlightId) {
+    try {
+        console.log(`Loading highlight data for ID: ${highlightId}`);
+        const highlightRef = doc(db, 'highlights', highlightId);
+        const highlightDoc = await getDoc(highlightRef);
+        
+        if (!highlightDoc.exists()) {
+            console.error("Highlight document not found");
+            return null;
+        }
+        
+        const data = highlightDoc.data();
+        console.log("Retrieved highlight data:", data);
+        
+        // Set form ID field for edit mode
+        document.getElementById('highlight-id').value = highlightId;
+        document.getElementById('highlight-type').value = data.type || 'match';
+        
+        // Toggle appropriate fields based on highlight type
+        toggleHighlightFields(data.type || 'match');
+        
+        // Common fields
+        document.getElementById('highlight-title').value = data.title || '';
+        document.getElementById('highlight-video-id').value = data.videoId || '';
+        document.getElementById('highlight-description').value = data.description || '';
+        document.getElementById('highlight-submitted-by').value = data.submittedBy || '';
+        
+        // Match fields
+        if (document.getElementById('highlight-match-info'))
+            document.getElementById('highlight-match-info').value = data.matchInfo || '';
+        if (document.getElementById('highlight-map'))
+            document.getElementById('highlight-map').value = data.map || '';
+        
+        // CRITICAL FIX: Make sure these fields are populated AND not disabled
+        if (document.getElementById('highlight-winner-name')) {
+            const winnerNameField = document.getElementById('highlight-winner-name');
+            winnerNameField.value = data.winnerName || '';
+            winnerNameField.disabled = false;
+        }
+        if (document.getElementById('highlight-winner-score')) {
+            const winnerScoreField = document.getElementById('highlight-winner-score');
+            winnerScoreField.value = data.winnerScore || '';
+            winnerScoreField.disabled = false;
+        }
+        if (document.getElementById('highlight-loser-name')) {
+            const loserNameField = document.getElementById('highlight-loser-name');
+            loserNameField.value = data.loserName || '';
+            loserNameField.disabled = false;
+        }
+        if (document.getElementById('highlight-loser-score')) {
+            const loserScoreField = document.getElementById('highlight-loser-score');
+            loserScoreField.value = data.loserScore || '';
+            loserScoreField.disabled = false;
+        }
+        if (document.getElementById('highlight-match-link'))
+            document.getElementById('highlight-match-link').value = data.matchLink || '';
+            
+        // Creator fields
+        if (document.getElementById('highlight-map-creator'))
+            document.getElementById('highlight-map-creator').value = data.mapCreator || '';
+        if (document.getElementById('highlight-map-version'))
+            document.getElementById('highlight-map-version').value = data.mapVersion || '';
+        if (document.getElementById('highlight-creator-image-url'))
+            document.getElementById('highlight-creator-image-url').value = data.creatorImageUrl || '';
+            
+        // Achievement fields
+        if (document.getElementById('highlight-player-profile-url'))
+            document.getElementById('highlight-player-profile-url').value = data.playerProfileUrl || '';
+        if (document.getElementById('highlight-achievement-player'))
+            document.getElementById('highlight-achievement-player').value = data.achievementPlayer || '';
+        if (document.getElementById('highlight-achievement-type'))
+            document.getElementById('highlight-achievement-type').value = data.achievementType || '';
+        if (document.getElementById('highlight-achievement-details'))
+            document.getElementById('highlight-achievement-details').value = data.achievementDetails || '';
+
+        updateHighlightVideoPreview(); // Update preview with loaded video ID
+        
+        return data;
+    } catch (error) {
+        console.error("Error loading highlight data:", error);
+        return null;
+    }
+}
+
+// Save highlight (create or update)
+async function saveHighlight() {
+    const highlightId = document.getElementById('highlight-id').value;
+    const highlightType = document.getElementById('highlight-type').value;
+    const isEditing = !!highlightId;
+
+    // Common fields for all highlight types
+    const data = {
+        title: document.getElementById('highlight-title').value.trim(),
+        videoId: document.getElementById('highlight-video-id').value.trim(),
+        submittedBy: document.getElementById('highlight-submitted-by').value.trim(),
+        type: highlightType,
+        createdAt: isEditing ? serverTimestamp() : serverTimestamp(),
+        updatedAt: serverTimestamp()
+    };
+
+    // Add fields specific to each type
+    switch(highlightType) {
+        case 'match':
+            data.matchInfo = document.getElementById('highlight-match-info').value.trim();
+            data.map = document.getElementById('highlight-map').value.trim();
+            data.winnerName = document.getElementById('highlight-winner-name').value.trim();
+            data.winnerScore = parseInt(document.getElementById('highlight-winner-score').value) || null;
+            data.loserName = document.getElementById('highlight-loser-name').value.trim();
+            data.loserScore = parseInt(document.getElementById('highlight-loser-score').value) || null;
+            data.matchLink = document.getElementById('highlight-match-link').value.trim();
+            break;
+            
+        case 'creator':
+            data.mapCreator = document.getElementById('highlight-map-creator').value.trim();
+            data.mapVersion = document.getElementById('highlight-map-version').value.trim();
+            data.creatorImageUrl = document.getElementById('highlight-creator-image-url').value.trim();
+            data.map = document.getElementById('highlight-map').value.trim();
+            break;
+            
+        case 'achievement':
+            data.playerProfileUrl = document.getElementById('highlight-player-profile-url').value.trim();
+            data.achievementPlayer = document.getElementById('highlight-achievement-player').value.trim();
+            data.achievementType = document.getElementById('highlight-achievement-type').value.trim();
+            data.achievementDetails = document.getElementById('highlight-achievement-details').value.trim();
+            break;
+    }
+
+    // Common description field
+    data.description = document.getElementById('highlight-description').value.trim();
+
+    // Save to Firestore
+    try {
+        if (isEditing) {
+            // Update existing highlight
+            await updateDoc(doc(db, "highlights", highlightId), data);
+            console.log(`Updated highlight ${highlightId}`);
+        } else {
+            // Create new highlight
+            const docRef = await addDoc(collection(db, "highlights"), data);
+            console.log(`Added highlight with ID: ${docRef.id}`);
+        }
+        
+        // Close modal and refresh list
+        closeHighlightModal();
+        loadHighlightsAdmin();
+        
+    } catch (error) {
+        console.error("Error saving highlight:", error);
+        alert("Failed to save highlight. See console for details.");
+    }
+}
+
+// Close the highlight modal
+function closeHighlightModal() {
+    const modal = document.getElementById('highlight-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Confirm and delete a highlight
+async function confirmDeleteHighlight(highlightId) {
+    if (confirm('Are you sure you want to delete this highlight? This cannot be undone.')) {
+        try {
+            await deleteDoc(doc(db, 'highlights', highlightId));
+            showNotification('Highlight deleted successfully', 'success');
+            loadHighlightsAdmin(); // Refresh the table
+        } catch (error) {
+            console.error("Error deleting highlight:", error);
+            showNotification(`Error deleting highlight: ${error.message}`, 'error');
+        }
+    }
+}
+
+// Update video preview in the modal
+function updateHighlightVideoPreview() {
+    const videoIdInput = document.getElementById('highlight-video-id');
+    const previewFrame = document.getElementById('highlight-video-preview');
+    if (!videoIdInput || !previewFrame) return;
+
+    const videoId = videoIdInput.value.trim();
+
+    // Basic check for potential YouTube ID format (simplistic)
+    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+        previewFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        previewFrame.style.display = 'block'; // Ensure it's visible
+    } else {
+        previewFrame.src = ''; // Clear src if ID is invalid or empty
+    }
+}
+
+function setupHighlightButtons() {
+    console.log("Setting up highlight buttons");
+    
+    // Match highlight button
+    const matchHighlightBtn = document.getElementById('create-match-highlight-btn');
+    if (matchHighlightBtn) {
+        matchHighlightBtn.addEventListener('click', function() {
+            console.log("Match highlight button clicked");
+            openHighlightModal('match');
+        });
+    } else {
+        console.error("Match highlight button not found");
+    }
+    
+    // Featured creator button
+    const creatorHighlightBtn = document.getElementById('create-creator-highlight-btn');
+    if (creatorHighlightBtn) {
+        creatorHighlightBtn.addEventListener('click', function() {
+            console.log("Creator highlight button clicked");
+            openHighlightModal('creator');
+        });
+    } else {
+        console.error("Creator highlight button not found");
+    }
+    
+    // Player achievement button
+    const achievementHighlightBtn = document.getElementById('create-achievement-highlight-btn');
+    if (achievementHighlightBtn) {
+        achievementHighlightBtn.addEventListener('click', function() {
+            console.log("Achievement highlight button clicked");
+            openHighlightModal('achievement');
+        });
+    } else {
+        console.error("Achievement highlight button not found");
     }
 }
