@@ -29,7 +29,11 @@ const DEFAULT_TROPHY_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgA
 // Initialize charts container
 const charts = {};
 let currentLadder = 'D1'; // Default ladder mode
-let eloHistoryPagination = { d1: { page: 1, lastVisible: null, firstVisible: null }, d2: { page: 1, lastVisible: null, firstVisible: null } };
+let eloHistoryPagination = { 
+    d1: { page: 1, lastVisible: null, firstVisible: null }, 
+    d2: { page: 1, lastVisible: null, firstVisible: null },
+    d3: { page: 1, lastVisible: null, firstVisible: null } // Add D3 pagination
+};
 const PAGE_SIZE = 15; // Items per page for history tables
 
 // In your DOMContentLoaded event listener
@@ -52,121 +56,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add this function after the initialization code
 
-// Define tab permissions by role
-function getUserTabPermissions(user) {
-  if (!user) return [];
-  
-  // Update permissions for admin
-if (isAdmin(user.email)) {
-    console.log(`User ${user.email} is a system admin - full access granted`);
-    return ['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies', 'inactive-players'];
-}
-  
-  // For non-admins, check for role-based permissions
-  const email = user.email;
-  
-  return new Promise(async (resolve) => {
-    try {
-      console.log(`Looking for user role information for ${email} in all collections...`);
-      let roleInfo = null;
-      
-      // 1. FIRST check in players collections (D1 and D2) since that's where roles are stored
-      // Check D1 players
-      const playersRef = collection(db, 'players');
-      let q1 = query(playersRef, where('email', '==', email));
-      let snapshot1 = await getDocs(q1);
-      
-      // If no match by email in D1, try by username
-      if (snapshot1.empty) {
-        q1 = query(playersRef, where('username', '==', email.toLowerCase()));
-        snapshot1 = await getDocs(q1);
-      }
-      
-      // If found in D1 players
-      if (!snapshot1.empty) {
-        const userData = snapshot1.docs[0].data();
-        roleInfo = {
-          role: userData.roleName?.toLowerCase() || 'none',
-          source: 'D1 Players'
-        };
-        console.log(`Found user in D1 Players with role: ${roleInfo.role}`);
-      }
-      
-      // 2. If not found in D1, check D2 players
-      if (!roleInfo) {
-        const playersD2Ref = collection(db, 'playersD2');
-        let q2 = query(playersD2Ref, where('email', '==', email));
-        let snapshot2 = await getDocs(q2);
-        
-        // If no match by email in D2, try by username
-        if (snapshot2.empty) {
-          q2 = query(playersD2Ref, where('username', '==', email.toLowerCase()));
-          snapshot2 = await getDocs(q2);
-        }
-        
-        // If found in D2 players
-        if (!snapshot2.empty) {
-          const userData = snapshot2.docs[0].data();
-          roleInfo = {
-            role: userData.roleName?.toLowerCase() || 'none',
-            source: 'D2 Players'
-          };
-          console.log(`Found user in D2 Players with role: ${roleInfo.role}`);
-        }
-      }
-      
-      // 3. As a last resort, check userProfiles (which might not have roles yet)
-      if (!roleInfo) {
-        const userProfilesRef = collection(db, 'userProfiles');
-        let q3 = query(userProfilesRef, where('email', '==', email));
-        let snapshot3 = await getDocs(q3);
-        
-        // If no match by email, try username
-        if (snapshot3.empty) {
-          q3 = query(userProfilesRef, where('username', '==', email.toLowerCase()));
-          snapshot3 = await getDocs(q3);
-        }
-        
-        // If found in userProfiles
-        if (!snapshot3.empty) {
-          const userData = snapshot3.docs[0].data();
-          roleInfo = {
-            role: userData.roleName?.toLowerCase() || 'none',
-            source: 'User Profiles'
-          };
-          console.log(`Found user in userProfiles with role: ${roleInfo.role}`);
-        }
-      }
-      
-      // Determine permissions based on role
-      if (roleInfo) {
-        console.log(`Setting permissions based on role: ${roleInfo.role} (from ${roleInfo.source})`);
-        
-        // Assign permissions based on role
-        switch (roleInfo.role) {
-          case 'admin':
-          case 'owner':
-            resolve(['dashboard', 'players', 'elo-history', 'manage-ranks', 'manage-articles', 'user-roles-section', 'manage-trophies', 'inactive-players']);
-            break;
-          case 'council':
-            resolve(['dashboard', 'elo-history']);
-            break;
-          case 'creative lead':
-            resolve(['dashboard', 'elo-history', 'manage-articles', 'manage-trophies']); 
-            break;
-          default:
-            console.log(`Role '${roleInfo.role}' has no special permissions, giving default access`);
-            resolve(['dashboard']); // Minimal access
-        }
-      } else {
-        console.log(`User ${email} not found in any collection - giving default access`);
-        resolve(['dashboard']);
-      }
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      resolve(['dashboard']);
+// Function to check user permissions and return allowed tabs
+async function getUserTabPermissions(userEmail) {
+    if (!userEmail) return ['dashboard']; // Default minimum access
+    
+    console.log(`Looking for user role information for ${userEmail} in all collections...`);
+    
+    // Admin emails get full access
+    if (isAdmin(userEmail)) {
+        console.log('User is admin by email, granting full access');
+        return ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'];
     }
-  });
+    
+    // Define collections to check in priority order
+    const collectionsToCheck = [
+        { name: 'userProfiles', displayName: 'User Profiles' },
+        { name: 'players', displayName: 'D1 Players' },
+        { name: 'playersD2', displayName: 'D2 Players' },
+        { name: 'playersD3', displayName: 'D3 Players' },
+        { name: 'nonParticipants', displayName: 'Non-Participants' }
+    ];
+    
+    // First try to find by UID if user is authenticated
+    // CHANGED: Use the imported auth object instead of getAuth()
+    const user = auth.currentUser;
+    
+    let role = null;
+    let roleSource = null;
+    
+    // Check all collections before deciding on permissions
+    // This way we don't miss a role if it's in a different collection
+    for (const collection of collectionsToCheck) {
+        try {
+            // If authenticated, try direct user ID lookup first
+            if (user) {
+                const docRef = doc(db, collection.name, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    // Log what we found for debugging
+                    console.log(`Found user in ${collection.displayName} by UID:`, userData);
+                    
+                    // Use roleName if available, otherwise fall back to role
+                    // Make sure to normalize by converting to lowercase
+                    const foundRole = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (foundRole && foundRole !== 'none') {
+                        role = foundRole;
+                        roleSource = collection.displayName;
+                        console.log(`Found specific role: ${role} in ${roleSource}`);
+                    }
+                }
+            }
+            
+            // If no role found by UID (or no authenticated user), try email lookup
+            if (!role) {
+                const usersRef = collection(db, collection.name);
+                const q = query(usersRef, where('email', '==', userEmail));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const userData = querySnapshot.docs[0].data();
+                    console.log(`Found user in ${collection.displayName} with email ${userEmail}:`, userData);
+                    
+                    // Use roleName if available, otherwise fall back to role
+                    const foundRole = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (foundRole && foundRole !== 'none') {
+                        role = foundRole;
+                        roleSource = collection.displayName;
+                        console.log(`Found specific role: ${role} in ${roleSource}`);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error checking ${collection.displayName}:`, error);
+        }
+    }
+    
+    // If we found a role in any collection, use it to set permissions
+    if (role) {
+        console.log(`Setting permissions based on role: ${role} (from ${roleSource})`);
+        
+        // Define role-based permissions
+        // Make sure all role names are lowercase for consistency
+        const rolePermissions = {
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'],
+            'council': ['dashboard', 'manage-players', 'manage-matches'],
+            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history'] // Creative Lead can manage articles & trophies
+        };
+        
+        // Look up permissions for this role (case insensitive)
+        if (rolePermissions[role]) {
+            console.log(`Role '${role}' has permissions:`, rolePermissions[role]);
+            return rolePermissions[role];
+        } else {
+            console.log(`Role '${role}' has no defined permissions, giving default access`);
+            return ['dashboard'];
+        }
+    }
+    
+    // No role information found, return default access
+    console.log(`No role found for user ${userEmail}, giving default access`);
+    return ['dashboard'];
 }
 
 // Update the setupSidebarNavigation function
@@ -289,7 +283,7 @@ async function initializeAdminDashboard() {
     try {
         // Get current user and their permissions
         const user = auth.currentUser;
-        const allowedTabs = await getUserTabPermissions(user);
+        const allowedTabs = await getUserTabPermissions(user.email);
         console.log(`User ${user.email} allowed tabs:`, allowedTabs);
         
         // Store permissions globally for reference in other functions
@@ -553,6 +547,12 @@ function setupLadderSelector() {
             currentLadder = switchInput.value;
             document.body.setAttribute('data-ladder', currentLadder);
             
+            // Update the current ladder display for adding players
+            const currentLadderDisplay = document.getElementById('current-ladder-display');
+            if (currentLadderDisplay) {
+                currentLadderDisplay.textContent = currentLadder;
+            }
+            
             // Reset dashboard stats without loading
             document.getElementById('player-count').textContent = '-';
             document.getElementById('match-count').textContent = '-';
@@ -574,6 +574,12 @@ function setupLadderSelector() {
             showNotification(`Switched to ${currentLadder} ladder. Click "Load Data" to refresh.`, 'info');
         });
     });
+    
+    // Initialize the display with the current ladder
+    const currentLadderDisplay = document.getElementById('current-ladder-display');
+    if (currentLadderDisplay) {
+        currentLadderDisplay.textContent = currentLadder;
+    }
 }
 
 // Update loadDashboardOverview function
@@ -821,7 +827,16 @@ async function loadPlayersData() {
     playerTable.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading players...</td></tr>';
     
     try {
-        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        // Modified to handle D3 correctly
+        let playerCollection = 'players'; // Default to D1
+        
+        if (currentLadder === 'D2') {
+            playerCollection = 'playersD2';
+        } else if (currentLadder === 'D3') {
+            playerCollection = 'playersD3';
+        }
+        
+        console.log(`Loading players from ${playerCollection} collection...`);
         const playersRef = collection(db, playerCollection);
         const q = query(playersRef, orderBy('eloRating', 'desc'));
         const querySnapshot = await getDocs(q);
@@ -1092,7 +1107,6 @@ async function addNewPlayer() {
     try {
         const usernameInput = document.getElementById('new-player-username');
         const eloInput = document.getElementById('new-player-elo');
-        const ladder = document.querySelector('input[name="new-player-ladder"]:checked').value;
         
         const username = usernameInput.value.trim();
         const elo = parseInt(eloInput.value) || 1200;
@@ -1102,94 +1116,61 @@ async function addNewPlayer() {
             return;
         }
         
-        console.log(`Adding player ${username} with ELO ${elo} to ${ladder} ladder(s)`);
+        console.log(`Adding player ${username} with ELO ${elo} to ${currentLadder} ladder`);
         
-        // Determine which collection(s) to use
-        const addToD1 = ladder === 'D1' || ladder === 'BOTH';
-        const addToD2 = ladder === 'D2' || ladder === 'BOTH';
+        // Determine which collection to use based on currentLadder
+        let playerCollection = 'players'; // Default to D1
+        let historyCollection = 'eloHistory';
         
-        // Check if username exists in the collections
-        if (addToD1) {
-            const d1Query = query(collection(db, 'players'), where('username', '==', username));
-            const d1Snap = await getDocs(d1Query);
-            if (!d1Snap.empty) {
-                alert(`Username ${username} already exists in D1 ladder`);
-                return;
-            }
+        if (currentLadder === 'D2') {
+            playerCollection = 'playersD2';
+            historyCollection = 'eloHistoryD2';
+        } else if (currentLadder === 'D3') {
+            playerCollection = 'playersD3';
+            historyCollection = 'eloHistoryD3';
         }
         
-        if (addToD2) {
-            const d2Query = query(collection(db, 'playersD2'), where('username', '==', username));
-            const d2Snap = await getDocs(d2Query);
-            if (!d2Snap.empty) {
-                alert(`Username ${username} already exists in D2 ladder`);
-                return;
-            }
+        // Check if username exists in the collection
+        const playerQuery = query(collection(db, playerCollection), where('username', '==', username));
+        const playerSnap = await getDocs(playerQuery);
+        if (!playerSnap.empty) {
+            alert(`Username ${username} already exists in ${currentLadder} ladder`);
+            return;
         }
         
-        // Add the player to selected ladder(s)
-        const promises = [];
+        // Add the player to the selected ladder
         const user = auth.currentUser;
         
-        if (addToD1) {
-            const playerData = {
-                username,
-                eloRating: elo,
-                wins: 0,
-                losses: 0,
-                createdAt: serverTimestamp(),
-                createdBy: user ? user.email : 'admin',
-                gameMode: 'D1'
-            };
-            
-            promises.push(addDoc(collection(db, 'players'), playerData));
-            
-            // Record initial ELO in history
-            promises.push(addDoc(collection(db, 'eloHistory'), {
-                player: username,
-                previousElo: 1200,
-                newElo: elo,
-                timestamp: serverTimestamp(),
-                type: 'initial_placement',
-                placedBy: user ? user.email : 'admin',
-                gameMode: 'D1'
-            }));
-        }
+        const playerData = {
+            username,
+            eloRating: elo,
+            wins: 0,
+            losses: 0,
+            createdAt: serverTimestamp(),
+            createdBy: user ? user.email : 'admin',
+            gameMode: currentLadder
+        };
         
-        if (addToD2) {
-            const playerData = {
-                username,
-                eloRating: elo,
-                wins: 0,
-                losses: 0,
-                createdAt: serverTimestamp(),
-                createdBy: user ? user.email : 'admin',
-                gameMode: 'D2'
-            };
-            
-            promises.push(addDoc(collection(db, 'playersD2'), playerData));
-            
-            // Record initial ELO in history
-            promises.push(addDoc(collection(db, 'eloHistoryD2'), {
-                player: username,
-                previousElo: 1200,
-                newElo: elo,
-                timestamp: serverTimestamp(),
-                type: 'initial_placement',
-                placedBy: user ? user.email : 'admin',
-                gameMode: 'D2'
-            }));
-        }
+        // Add player to collection
+        await addDoc(collection(db, playerCollection), playerData);
         
-        await Promise.all(promises);
+        // Record initial ELO in history
+        await addDoc(collection(db, historyCollection), {
+            player: username,
+            previousElo: 1200,
+            newElo: elo,
+            timestamp: serverTimestamp(),
+            type: 'initial_placement',
+            placedBy: user ? user.email : 'admin',
+            gameMode: currentLadder
+        });
         
         // Reset form and refresh display
         usernameInput.value = '';
         eloInput.value = '1200';
-        document.querySelector('input[id="new-player-d1"]').checked = true;
         
         // Show success message
-        alert(`Player ${username} added successfully!`);
+        alert(`Player ${username} added successfully to ${currentLadder} ladder!`);
         
         // Refresh player list
         loadPlayersData();
@@ -1249,14 +1230,18 @@ function debounce(func, wait) {
 
 async function loadEloHistory(page = 1) {
     const historyTable = document.getElementById('elo-history-table-body');
-    const ladderPrefix = currentLadder.toLowerCase(); // d1 or d2
+    const ladderPrefix = currentLadder.toLowerCase(); // d1 or d2 or d3
     
     if (!historyTable) return;
     
     historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading history...</td></tr>';
     
     try {
-        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        // Update this line to handle D3
+        const historyCollection = 
+            currentLadder === 'D1' ? 'eloHistory' : 
+            currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        
         const historyRef = collection(db, historyCollection);
         
         let q;
@@ -1292,7 +1277,7 @@ async function loadEloHistory(page = 1) {
             historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No ELO history found</td></tr>';
             document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
             return;
-        }
+        }   
         
         // Update pagination controls
         eloHistoryPagination[ladderPrefix].page = page;
@@ -1301,10 +1286,48 @@ async function loadEloHistory(page = 1) {
         eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
         eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
         
+        // Create a cache for userId-to-username lookups to avoid repeated queries
+        const usernameCache = new Map();
+        
         // Render table
         historyTable.innerHTML = '';
         
-        querySnapshot.forEach(doc => {
+        // Function to convert userIds to usernames if needed
+        const resolveUsername = async (playerField) => {
+            // If it's already clearly a username (contains non-alphanumeric chars or is short)
+            if (typeof playerField !== 'string' || 
+                playerField.length < 20 || // Most userIds are longer than typical usernames
+                /[^a-zA-Z0-9-_]/.test(playerField)) { // Contains special chars
+                return playerField;
+            }
+            
+            // Check if we've already resolved this ID
+            if (usernameCache.has(playerField)) {
+                return usernameCache.get(playerField);
+            }
+            
+            // Try to find the username in multiple collections
+            try {
+                // Try all player collections 
+                for (const collection of ['players', 'playersD2', 'playersD3', 'nonParticipants']) {
+                    const userDoc = await getDoc(doc(db, collection, playerField));
+                    if (userDoc.exists() && userDoc.data().username) {
+                        const username = userDoc.data().username;
+                        usernameCache.set(playerField, username);
+                        return username;
+                    }
+                }
+                
+                // If we get here, we couldn't resolve the username
+                return playerField;
+            } catch (error) {
+                console.warn(`Error resolving username for ${playerField}:`, error);
+                return playerField;
+            }
+        };
+        
+        // Process entries and render rows with proper username resolution
+        for (const doc of querySnapshot.docs) {
             const history = doc.data();
             const row = document.createElement('tr');
             
@@ -1316,8 +1339,9 @@ async function loadEloHistory(page = 1) {
             const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
             const changeSign = eloChange > 0 ? '+' : '';
             
-            // Make sure we're using player, not userId or email
-            const playerName = history.player || history.username || history.userId || 'N/A';
+            // Try to resolve the player name if it might be a userId
+            const playerNameField = history.player || history.username || history.userId || 'N/A';
+            const playerName = await resolveUsername(playerNameField);
             
             row.innerHTML = `
                 <td class="timestamp">${timestamp}</td>
@@ -1332,7 +1356,7 @@ async function loadEloHistory(page = 1) {
             `;
             
             historyTable.appendChild(row);
-        });
+        }
         
         // Update page indicator
         document.getElementById(`${ladderPrefix}-page-indicator`).textContent = `Page ${page}`;
@@ -1384,7 +1408,7 @@ function formatHistoryType(type) {
 }
 
 function setupEloHistorySection() {
-    // Pagination buttons for D1
+    // Existing D1 and D2 pagination buttons
     document.getElementById('d1-prev-page').addEventListener('click', () => {
         loadEloHistory(eloHistoryPagination.d1.page - 1);
     });
@@ -1393,7 +1417,6 @@ function setupEloHistorySection() {
         loadEloHistory(eloHistoryPagination.d1.page + 1);
     });
     
-    // Pagination buttons for D2
     document.getElementById('d2-prev-page').addEventListener('click', () => {
         loadEloHistory(eloHistoryPagination.d2.page - 1);
     });
@@ -1402,22 +1425,29 @@ function setupEloHistorySection() {
         loadEloHistory(eloHistoryPagination.d2.page + 1);
     });
     
+    // Add D3 pagination buttons if they exist in your HTML
+    const d3PrevPage = document.getElementById('d3-prev-page');
+    const d3NextPage = document.getElementById('d3-next-page');
+    
+    if (d3PrevPage) {
+        d3PrevPage.addEventListener('click', () => {
+            loadEloHistory(eloHistoryPagination.d3.page - 1);
+        });
+    }
+    
+    if (d3NextPage) {
+        d3NextPage.addEventListener('click', () => {
+            loadEloHistory(eloHistoryPagination.d3.page + 1);
+        });
+    }
+    
     // Search functionality
     const historySearch = document.getElementById('elo-history-search');
     if (historySearch) {
         historySearch.addEventListener('input', debounce(filterEloHistoryTable, 300));
     }
     
-    // Date filters
-    const startDateFilter = document.getElementById('history-start-date');
-    const endDateFilter = document.getElementById('history-end-date');
-    
-    if (startDateFilter && endDateFilter) {
-        startDateFilter.addEventListener('change', applyEloHistoryFilters);
-        endDateFilter.addEventListener('change', applyEloHistoryFilters);
-    }
-    
-    // Type filter
+    // Type filter functionality
     const typeFilter = document.getElementById('history-type-filter');
     if (typeFilter) {
         typeFilter.addEventListener('change', applyEloHistoryFilters);

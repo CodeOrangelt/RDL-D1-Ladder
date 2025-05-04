@@ -22,10 +22,11 @@ const userCache = {
     username: null,
     isAdmin: false,
     hasCheckedCollections: false,
-    lastChecked: 0
+    lastChecked: 0,
+    role: null // Add this line to store the user's role
 };
 
-// Update auth section without database checks
+// Modify updateAuthSectionImmediate to display the role instead of just "(Admin)"
 function updateAuthSectionImmediate(user, isAdmin = false) {
     const authSection = document.getElementById('auth-section');
     if (!authSection) return;
@@ -47,9 +48,12 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
         const displayName = userCache.username || 
                            (user.email ? user.email.split('@')[0] : 'User');
         
+        // Use the specific role if available, otherwise use "(Admin)" if they're an admin
+        const roleDisplay = userCache.role ? ` (${userCache.role})` : (isAdmin ? ' (Admin)' : '');
+        
         authSection.innerHTML = `
             <div class="nav-dropdown">
-                <a href="#" class="nav-username">${displayName}${isAdmin ? ' (Admin)' : ''}</a>
+                <a href="#" class="nav-username">${displayName}</a>
                 <div class="nav-dropdown-content">
                     <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
                     <a href="#" id="logout-link">Sign Out</a>
@@ -79,7 +83,90 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
     }
 }
 
-// Main auth section update with database checks
+// Update the checkAdminRoles function to return the role, not just a boolean
+async function checkAdminRoles(user) {
+    if (!user || !user.email) return { isAdmin: false, role: null };
+    
+    try {
+        // Set up logging for debugging
+        console.log(`Checking roles for user: ${user.email}`);
+        
+        const collections = ['players', 'playersD2', 'playersD3', 'nonParticipants', 'userProfiles'];
+        const adminRoles = ['council', 'creative lead', 'owner', 'admin'];
+        
+        // 1. First try direct user ID lookup
+        for (const collectionName of collections) {
+            try {
+                const docRef = doc(db, collectionName, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    console.log(`Found user in ${collectionName} by UID:`, userData);
+                    
+                    let roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    let originalRoleName = userData.roleName || userData.role || '';
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        console.log(`Found admin role: ${roleName} in ${collectionName}`);
+                        
+                        const displayRole = originalRoleName.split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                        
+                        return { isAdmin: true, role: displayRole };
+                    }
+                }
+            } catch (err) {
+                console.error(`Error checking ${collectionName} by UID:`, err);
+            }
+        }
+        
+        // 2. Then try email lookup (case insensitive)
+        for (const collectionName of collections) {
+            try {
+                const colRef = collection(db, collectionName);
+                // First try exact match
+                let q = query(colRef, where('email', '==', user.email));
+                let snapshot = await getDocs(q);
+                
+                // If no results, try lowercase
+                if (snapshot.empty) {
+                    q = query(colRef, where('email', '==', user.email.toLowerCase()));
+                    snapshot = await getDocs(q);
+                }
+                
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    console.log(`Found user in ${collectionName} by email:`, userData);
+                    
+                    let roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    let originalRoleName = userData.roleName || userData.role || '';
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        console.log(`Found admin role: ${roleName} in ${collectionName}`);
+                        
+                        const displayRole = originalRoleName.split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                        
+                        return { isAdmin: true, role: displayRole };
+                    }
+                }
+            } catch (err) {
+                console.error(`Error checking ${collectionName} by email:`, err);
+            }
+        }
+        
+        console.log("No admin roles found for user");
+        return { isAdmin: false, role: null };
+    } catch (error) {
+        console.error('Error in checkAdminRoles:', error);
+        return { isAdmin: false, role: null };
+    }
+}
+
+// Update the main updateAuthSection function to use the new role info
 async function updateAuthSection(user) {
     // Update UI immediately with what we know
     const quickAdminCheck = user && isAdmin(user.email);
@@ -91,6 +178,7 @@ async function updateAuthSection(user) {
         userCache.username = null;
         userCache.isAdmin = false;
         userCache.hasCheckedCollections = false;
+        userCache.role = null; // Reset role
         return;
     }
     
@@ -112,15 +200,19 @@ async function updateAuthSection(user) {
         userCache.isAdmin = isUserAdmin;
         
         if (!isUserAdmin) {
-            // Check for admin roles if not already an admin
-            const hasAdminRole = await checkAdminRoles(user);
+            // Check for admin roles if not already an admin by email
+            const { isAdmin: hasAdminRole, role } = await checkAdminRoles(user);
             userCache.isAdmin = hasAdminRole;
+            userCache.role = role;
             
             // Update admin links if role check found admin privileges
             if (hasAdminRole) {
                 document.querySelectorAll('.admin-only').forEach(link => {
                     link.style.display = 'block';
                 });
+                
+                // Update the UI immediately with the role
+                updateAuthSectionImmediate(user, true);
             }
         }
         
@@ -162,36 +254,6 @@ async function updateAuthSection(user) {
         
     } catch (error) {
         console.error('Error in full auth update:', error);
-    }
-}
-
-// Simplified admin role check
-async function checkAdminRoles(user) {
-    if (!user || !user.email) return false;
-    
-    try {
-        // Check critical collections in parallel
-        const collections = ['players', 'playersD2', 'nonParticipants'];
-        
-        const queries = collections.map(async (collectionName) => {
-            const playersRef = collection(db, collectionName);
-            const q = query(playersRef, where('email', '==', user.email));
-            return getDocs(q).then(snapshot => {
-                if (!snapshot.empty) {
-                    const userData = snapshot.docs[0].data();
-                    const roleName = userData.roleName?.toLowerCase();
-                    return roleName === 'council' || 
-                           roleName === 'creative lead' || 
-                           roleName === 'owner';
-                }
-                return false;
-            }).catch(() => false);
-        });
-        
-        const results = await Promise.all(queries);
-        return results.includes(true);
-    } catch {
-        return false;
     }
 }
 

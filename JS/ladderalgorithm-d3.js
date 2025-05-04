@@ -206,9 +206,10 @@ function calculateEloChange(winnerElo, loserElo, winnerScore, loserScore) {
         if (ratio >= 2) scoreFactor = 1.25; // 25% bonus for dominating win
     }
     
-    // Calculate ELO changes
+    // Calculate ELO changes - FIX THE LOSER CHANGE CALCULATION
     const winnerChange = Math.round(K * (1 - expectedWinner) * scoreFactor);
-    const loserChange = -Math.round(K * (0 - expectedLoser) * scoreFactor);
+    // Correct formula for loser's ELO change
+    const loserChange = Math.round(K * (0 - expectedLoser) * scoreFactor);
     
     const newWinnerElo = Math.round(winnerElo + winnerChange);
     const newLoserElo = Math.max(1000, Math.round(loserElo + loserChange)); // Floor of 1000

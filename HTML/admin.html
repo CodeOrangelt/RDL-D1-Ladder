@@ -164,34 +164,18 @@
                 </div>
                 
                 <!-- Add Player Form -->
-                <div class="add-player-container">
-                    <h3>Add New Player</h3>
-                    <form id="add-player-form" class="add-player-form">
+                <div class="add-player-form-container">
+                    <form id="add-player-form">
                         <div class="form-group">
-                            <label for="new-player-username">Username:</label>
+                            <label for="new-player-username">Username</label>
                             <input type="text" id="new-player-username" placeholder="Enter username" required>
                         </div>
-                        
                         <div class="form-group">
-                            <label for="new-player-elo">Initial ELO:</label>
-                            <input type="number" id="new-player-elo" value="1200" min="1000" max="3000" required>
+                            <label for="new-player-elo">Initial ELO Rating</label>
+                            <input type="number" id="new-player-elo" value="1200" min="1000" max="3000">
                         </div>
-                        
-                        <div class="form-group">
-                            <label>Ladder:</label>
-                            <div class="radio-group">
-                                <input type="radio" id="new-player-d1" name="new-player-ladder" value="D1" checked>
-                                <label for="new-player-d1">D1</label>
-                                
-                                <input type="radio" id="new-player-d2" name="new-player-ladder" value="D2">
-                                <label for="new-player-d2">D2</label>
-                                
-                                <input type="radio" id="new-player-both" name="new-player-ladder" value="BOTH">
-                                <label for="new-player-both">Both</label>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">Add Player</button>
+                        <p class="help-text">Player will be added to the currently selected ladder: <span id="current-ladder-display">D1</span></p>
+                        <button type="submit" class="btn btn-primary">Add Player</button>
                     </form>
                 </div>
                 
