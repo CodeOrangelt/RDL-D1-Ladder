@@ -103,11 +103,24 @@ async function displayLadderD3(forceRefresh = false) {
             }
         }
         
-        // Sort players by position
+        // Get all usernames for batch processing
+        const usernames = players.map(p => p.username);
+        
+        // Pre-fetch all match statistics in a single batch operation
+        const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
+        
+        // Sort players: players with 0 matches at the bottom
         players.sort((a, b) => {
-            if (!a.position) return 1;
-            if (!b.position) return -1;
-            return a.position - b.position;
+            const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
+            const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
+            
+            // First check: put players with no matches at the bottom
+            if ((aMatches === 0) !== (bMatches === 0)) {
+                return aMatches === 0 ? 1 : -1;
+            }
+            
+            // Then sort by position for players in the same category
+            return (a.position || 999) - (b.position || 999);
         });
         
         // Reassign positions sequentially
