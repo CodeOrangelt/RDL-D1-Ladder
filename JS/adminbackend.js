@@ -65,7 +65,9 @@ async function getUserTabPermissions(userEmail) {
     // Admin emails get full access
     if (isAdmin(userEmail)) {
         console.log('User is admin by email, granting full access');
-        return ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'settings'];
+        return ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 
+                'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 
+                'elo-history', 'manage-highlights', 'user-roles-section'];
     }
     
     // Define collections to check in priority order
@@ -142,8 +144,8 @@ async function getUserTabPermissions(userEmail) {
         // Define role-based permissions
         // Make sure all role names are lowercase for consistency
         const rolePermissions = {
-            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights']
-            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights']
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
             'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights'] // Creative Lead can manage articles & trophies
         };
@@ -280,7 +282,7 @@ async function initializeAdminDashboard() {
         // Initialize sections conditionally based on permissions
         setupDashboardSection();
         
-        if (allowedTabs.includes('players')) {
+        if (allowedTabs.includes('manage-players')) {
             setupManagePlayersSection();
         }
         
@@ -378,7 +380,7 @@ function setupDataLoadButtons(allowedTabs = []) {
     }
     
     // Players load button
-    if (allowedTabs.includes('players')) {
+    if (allowedTabs.includes('manage-players')) {
         const loadPlayersBtn = document.getElementById('load-players-data');
         if (loadPlayersBtn) {
             loadPlayersBtn.addEventListener('click', function() {
