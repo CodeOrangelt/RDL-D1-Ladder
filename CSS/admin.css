@@ -1941,3 +1941,66 @@ body {
     flex: 1;
     min-width: 200px;
 }
+
+/* Add this to your CSS/admin.css file */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    background-color: #3a3f44;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #24272a;
+}
+
+.page-indicator {
+    padding: 0 15px;
+    font-weight: bold;
+}
+
+.unload-btn {
+    padding: 8px 12px;
+    background-color: #721c24;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+.unload-btn:hover {
+    background-color: #5a171c;
+}
+
+.freshness-indicator {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 15px;
+}
+
+.freshness-indicator.fresh {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.freshness-indicator.stale {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
