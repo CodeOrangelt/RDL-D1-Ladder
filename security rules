@@ -1,48 +1,41 @@
 rules_version = '2';
+//persm for HIGHLIGHTS VIDEO
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- Helper Functions ---
 
-    // Checks admin emails
+    // Checks admin emails (replace with your actual list)
     function isAdminEmail() {
+      // Ensure request.auth is not null before accessing token.email
       return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
     }
 
-    // Function to safely get role from a path (Moved outside hasRole)
-    // Note: Firestore rules don't support nested function definitions like this.
-    // We will integrate this logic directly into hasRole or keep it separate if needed elsewhere.
-    // For now, let's integrate it.
-
-    // Checks user profile for specific roles - UPDATED to check multiple collections
+    // Checks user profile for specific roles
     function hasRole(userId, allowedRoles) {
-      // Define paths
       let profilePath = /databases/$(database)/documents/userProfiles/$(userId);
-      let playerD1Path = /databases/$(database)/documents/players/$(userId);
-      let playerD2Path = /databases/$(database)/documents/playersD2/$(userId);
-
-      // Get roles safely, prioritizing roleName over role
-      let roleFromProfile = exists(profilePath) ? (get(profilePath).data.get('roleName', '') != '' ? get(profilePath).data.get('roleName', '') : get(profilePath).data.get('role', '')).lower() : '';
-      let roleFromD1 = exists(playerD1Path) ? (get(playerD1Path).data.get('roleName', '') != '' ? get(playerD1Path).data.get('roleName', '') : get(playerD1Path).data.get('role', '')).lower() : '';
-      let roleFromD2 = exists(playerD2Path) ? (get(playerD2Path).data.get('roleName', '') != '' ? get(playerD2Path).data.get('roleName', '') : get(playerD2Path).data.get('role', '')).lower() : '';
-
-      // Determine the effective role based on priority
-      let effectiveRole = roleFromProfile != '' ? roleFromProfile :
-                          roleFromD1 != '' ? roleFromD1 :
-                          roleFromD2; // roleFromD2 can be '' if not found
-
-      // Check if the effective role is in the allowed list
-      return effectiveRole in allowedRoles;
+      // Check existence first.
+      return exists(profilePath) &&
+             // Directly access data and perform checks if profile exists
+             (
+               // Calculate effective role directly using safe gets and ternary operator
+               (
+                 (get(profilePath).data.get('roleName', '') != '' ?
+                  get(profilePath).data.get('roleName', '') :
+                  get(profilePath).data.get('role', '')
+                 )
+                 .lower() // Convert the chosen role to lower case
+               )
+               // Check if the effective role is in the allowed list
+               in allowedRoles
+             );
     }
 
-    // Function to check if user can manage articles - uses updated hasRole
+    // Function to check if user can manage articles
     function canManageArticles(userId) {
-      return request.auth != null && (isAdminEmail() || hasRole(userId, ['admin', 'owner', 'creative lead']));
-    }
-
-    // Function to check if user can manage trophies - uses updated hasRole
-    function canManageTrophies(userId) {
+      // Allow if user is admin by email OR has specific roles in their profile
+      // Ensure request.auth is not null before checking email or roles
       return request.auth != null && (isAdminEmail() || hasRole(userId, ['admin', 'owner', 'creative lead']));
     }
 
@@ -50,7 +43,9 @@ service cloud.firestore {
 
     // Articles Collection
     match /articles/{articleId} {
+      // Anyone can read articles
       allow read: if true;
+      // Only authorized roles can create, update, delete
       allow create, update, delete: if request.auth != null && canManageArticles(request.auth.uid);
     }
 
@@ -58,298 +53,259 @@ service cloud.firestore {
     match /userProfiles/{userId} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == userId;
-      // Allow update by self or someone who can manage articles (which includes admins/creative leads)
       allow update: if request.auth != null && (request.auth.uid == userId || canManageArticles(request.auth.uid));
       allow delete: if request.auth != null && isAdminEmail();
     }
 
-    // Match Comments Collection
+    // Match Comments Collection - NEW
     match /matchComments/{commentId} {
+      // Anyone can read comments
       allow read: if true;
-      allow create: if request.auth != null &&
+      
+      // Only allow creation if user is authenticated and the userId field matches auth ID
+      allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid &&
                      request.resource.data.keys().hasAll(['matchId', 'userId', 'username', 'text', 'timestamp']);
-      // Allow update only by the original author
-      // Use resource (existing data) not request.resource (incoming data) for ownership check
-      allow update: if request.auth != null &&
+      
+      // Only allow updates by the original comment author
+      allow update: if request.auth != null && 
                      resource.data.userId == request.auth.uid;
-      // Allow deletion by the original author or admins (using isAdminEmail)
-      allow delete: if request.auth != null &&
-                     (resource.data.userId == request.auth.uid || isAdminEmail());
+      
+      // Only allow deletion by the original comment author or admins
+      allow delete: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Trophy Definitions Collection
-    match /trophyDefinitions/{trophyId} {
-      allow read: if true;
-      allow create, update, delete: if request.auth != null && canManageTrophies(request.auth.uid);
+    // --- Your Existing Rules ---
+
+    // isAdmin function (Consider removing if isAdminEmail is sufficient)
+    function isAdmin() {
+      // Ensure request.auth check
+      return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
     }
 
-    // User Trophies Collection
-    match /userTrophies/{trophyId} {
-      allow read: if true;
-      // Allow create/update by admins or the awarding user (check email)
-      allow create, update: if request.auth != null &&
-                              (isAdminEmail() ||
-                               (request.auth.token.email != null && request.auth.token.email == request.resource.data.awardedBy)); // Ensure email exists before comparing
-      allow delete: if request.auth != null && isAdminEmail();
-    }
-
-    // --- Your Existing Helper Functions (Simplified) ---
-
-    // isAdmin function (Redundant if isAdminEmail is used consistently)
-    // function isAdmin() {
-    //   return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
-    // }
-
-    // Function to check if a user is signed in
+    // Function to check if a user is signed in (used by other rules)
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // isVerifiedUser function (Redundant, same as isSignedIn)
-    // function isVerifiedUser() {
-    //   return request.auth != null;
-    // }
+    // isVerifiedUser function (Identical to isSignedIn, consider removing if not specifically needed elsewhere)
+    function isVerifiedUser() {
+      return request.auth != null;
+    }
 
-    // --- Player Collections ---
+    // --- Existing Match Blocks ---
     match /players/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn(); // Use helper function
-      allow update: if isSignedIn() && (
-        isAdminEmail() ||
+      allow create: if request.auth != null;
+      // Ensure request.auth != null for all parts of update rule
+      allow update: if request.auth != null && (
+        isAdmin() || // isAdmin() already checks request.auth
         request.auth.uid == playerId ||
-        // Allow specific fields update for match processing
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId', 'wins', 'losses'])
       );
-      allow delete: if isSignedIn() && (request.auth.uid == playerId || isAdminEmail());
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
     match /playersD2/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      // More specific update rule needed here - currently allows any signed-in user to update anything
-      allow update: if isSignedIn() && (isAdminEmail() || request.auth.uid == playerId); // Example: Allow self or admin
-      allow delete: if isSignedIn() && (request.auth.uid == playerId || isAdminEmail());
+      allow create: if request.auth != null;
+      allow update: if request.auth != null; // Consider more specific rules
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
     match /playersD3/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn(); // Use helper function
-      allow update: if isSignedIn() && (
-                   isAdminEmail() ||
+      allow create: if isVerifiedUser();
+      allow update: if request.auth != null && (
+                   isAdmin() ||
                    request.auth.uid == playerId ||
-                   // Allow specific fields update for match processing
+                   // Simplified rule for match updates
                    request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['eloRating', 'lastMatch', 'wins', 'losses', 'lastEloChange', 'position'])
                    );
-      allow delete: if isSignedIn() && (request.auth.uid == playerId || isAdminEmail());
+      // Update this line to match D1/D2 permissions
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
     match /playersDuos/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
-                   isAdminEmail() ||
+      allow create: if isVerifiedUser();
+      allow update: if request.auth != null && ( // Ensure outer request.auth check
+                   isAdmin() ||
                    request.auth.uid == playerId ||
-                   // Allow specific fields update for match processing
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position'])) ||
-                   // Allow admin to update promotion fields
-                   (isAdminEmail() &&
+                   (isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']))
                    );
-      allow delete: if isAdminEmail(); // Only admin can delete Duos players? Adjust if needed.
+      allow delete: if isAdmin();
     }
 
     match /playersCTF/{playerId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
-                   isAdminEmail() ||
+      allow create: if isVerifiedUser();
+      allow update: if request.auth != null && ( // Ensure outer request.auth check
+                   isAdmin() ||
                    request.auth.uid == playerId ||
-                   // Allow specific fields update for match processing
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAll(['eloRating', 'lastMatchDate', 'position'])) ||
-                   // Allow admin to update promotion fields
-                   (isAdminEmail() &&
+                   (isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']))
                    );
-      allow delete: if isAdminEmail(); // Only admin can delete CTF players? Adjust if needed.
+      allow delete: if isAdmin();
     }
-
-    // --- Other Collections (Review Permissions) ---
 
     match /nonParticipants/{userId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (isAdminEmail() || request.auth.uid == userId);
-      allow delete: if isAdminEmail();
+      allow create: if isVerifiedUser();
+      allow update: if request.auth != null && (isAdmin() || request.auth.uid == userId);
+      allow delete: if isAdmin();
     }
 
     match /pendingRegistrations/{registrationId} {
-      allow read: if true; // Should admin also be able to read?
-      allow create: if isSignedIn();
-      // Allow update by the user who created it (assuming registrationId == userId) or admin
-      allow update: if isSignedIn() &&
-                   (request.auth.uid == registrationId || isAdminEmail());
-      allow delete: if isAdminEmail();
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+                   (request.auth.uid == registrationId || isAdmin());
+      allow delete: if isAdmin();
     }
 
-    // Deprecated? Consider removing if not used
     match /nexus_users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /player-status/{document=**} {
       allow read: if true;
-      allow write: if isSignedIn(); // Any signed-in user can write to any status? Be careful.
+      allow write: if request.auth != null;
     }
 
     match /invites/{userId} {
-      allow read, write: if true; // VERY open. Any user can read/write any invite. Restrict this.
-      // Example restriction: allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if true; // Consider restricting write access
     }
 
     match /processedMatches/{matchId} {
-      allow read, write: if isSignedIn(); // Any signed-in user can write? Restrict to admin or system process.
-      // Example restriction: allow read: if isSignedIn(); allow write: if isAdminEmail();
+      allow read, write: if request.auth != null; // Consider restricting write access
     }
 
     match /readyPlayers/{userId} {
-      allow read, write: if true; // VERY open. Restrict this.
-      // Example restriction: allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if true; // Consider restricting write access
     }
 
     match /playerStats/{userId} {
       allow read: if true;
-      allow write: if isSignedIn() &&
-        (request.auth.uid == userId || isAdminEmail());
+      allow write: if isSignedIn() && // isSignedIn checks request.auth
+        (request.auth.uid == userId || isAdmin());
     }
 
     match /system/{document} {
-      allow read, write: if true; // VERY open. Restrict write access.
-      // Example restriction: allow read: if true; allow write: if isAdminEmail();
+      allow read, write: if true; // Consider restricting write access, maybe only isAdmin()
     }
 
-    // --- Match Collections (D1) ---
     match /pendingMatches/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      // Allow update/delete by participants or admin
-      allow update, delete: if isSignedIn() &&
-                             (isAdminEmail() ||
-                              resource.data.winnerId == request.auth.uid ||
-                              resource.data.loserId == request.auth.uid); // Check existing doc for participants
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      // Allow update/delete only by participants or admin?
+      allow update, delete: if request.auth != null; // Consider more specific rules
     }
 
     match /approvedMatches/{matchId} {
       allow read: if true;
-      // Only admin should create/update/delete approved matches
-      allow create, update, delete: if isAdminEmail();
+      allow create: if request.auth != null; // Should only admin create approved matches?
+      allow update, delete: if isAdmin();
     }
 
-    // --- Match Collections (D2) ---
     match /pendingMatchesD2/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() &&
-                             (isAdminEmail() ||
-                              resource.data.winnerId == request.auth.uid ||
-                              resource.data.loserId == request.auth.uid);
+      allow read: if true; // Should this be request.auth != null?
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null; // Consider more specific rules
     }
 
     match /approvedMatchesD2/{matchId} {
       allow read: if true;
-      allow create, update, delete: if isAdminEmail(); // Only admin
+      allow create, update: if request.auth != null; // Should only admin create/update approved?
+      allow delete: if isAdmin();
     }
 
     match /eloHistoryD2/{document=**} {
       allow read: if true;
-      allow write: if isAdminEmail(); // Only admin should write history
+      allow write: if request.auth != null; // Should only admin write history?
     }
 
-    // --- Match Collections (D3) ---
     match /eloHistoryD3/{document=**} {
       allow read: if true;
-      allow write: if isAdminEmail(); // Only admin should write history
+      allow write: if request.auth != null; // Allow any authenticated user to write
     }
 
     match /pendingMatchesD3/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() &&
-                             (isAdminEmail() ||
-                              resource.data.winnerId == request.auth.uid ||
-                              resource.data.loserId == request.auth.uid);
+      allow read: if true; // Should this be request.auth != null?
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null; // Consider more specific rules
     }
 
     match /approvedMatchesD3/{matchId} {
       allow read: if true;
-      allow create, update: if isAdminEmail(); // Only admin
+      allow create, update: if request.auth != null; // Should only admin create/update approved?
       allow delete: if false; // Explicitly disallowed
     }
 
-    // --- Match Collections (Duos) ---
     match /pendingMatchesDuos/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn(); // Needs refinement - check participants/admin
+      allow read: if true; // Should this be request.auth != null?
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null; // Consider more specific rules
     }
 
     match /approvedMatchesDuos/{matchId} {
       allow read: if true;
-      allow create, update: if isAdminEmail(); // Only admin
+      allow create, update: if request.auth != null; // Should only admin create/update approved?
       allow delete: if false; // Explicitly disallowed
     }
 
-    // --- Match Collections (CTF) ---
     match /pendingMatchesCTF/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn(); // Needs refinement - check participants/admin
+      allow read: if true; // Should this be request.auth != null?
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null; // Consider more specific rules
     }
 
     match /approvedMatchesCTF/{matchId} {
       allow read: if true;
-      allow create, update: if isAdminEmail(); // Only admin
+      allow create, update: if request.auth != null; // Should only admin create/update approved?
       allow delete: if false; // Explicitly disallowed
     }
 
-    // --- Other History/Metadata ---
     match /eloHistory/{historyId} {
       allow read: if true;
-      allow create, update, delete: if isAdminEmail(); // Only admin
+      allow create: if request.auth != null; // Should only admin create history?
+      allow update, delete: if isAdmin();
     }
 
     match /retroTracker/{docId} {
       allow read: if true;
-      // Allow create with specific fields
-      allow create: if isSignedIn() &&
+      allow create: if request.auth != null &&
                    request.resource.data.keys().hasAll([
                      'gameName', 'players', 'timestamp'
                    ]);
-      // Restrict general write access
-      allow update, delete: if isAdminEmail(); // Example: Only admin can modify/delete
+      allow write: if request.auth != null; // Consider restricting write access
     }
 
     match /metadata/seasonCount {
       allow read: if true;
-      allow write: if isAdminEmail();
+      allow write: if isAdmin();
     }
 
     match /seasons/{seasonId} {
       allow read: if true;
-      allow write: if isAdminEmail();
+      allow write: if isAdmin();
     }
 
     match /promotionViews/{docId} {
-      allow read: if isSignedIn();
-      // Allow write only if docId matches user's email part and fields are correct
-      allow write: if isSignedIn() &&
+      allow read: if request.auth != null;
+      // Ensure request.auth.token.email is not null before split
+      allow write: if request.auth != null &&
                    request.auth.token.email != null &&
                    docId.matches('promotion_.*_' + request.auth.token.email.split('@')[0]) &&
                    request.resource.data.keys().hasAll(['promotionId', 'playerName', 'views', 'createdAt', 'updatedAt']) &&
@@ -360,21 +316,20 @@ service cloud.firestore {
     }
 
     match /season0/{document=**} {
-      allow read: if isSignedIn();
-      allow write: if isAdminEmail();
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     match /season0records/{document} {
-      allow read: if isSignedIn();
-      allow write: if isAdminEmail() &&
+      allow read: if request.auth != null;
+      allow write: if isAdmin() &&
                   request.resource.data.keys().hasAll(['records', 'archivedAt']) &&
                   request.resource.data.records is list;
     }
 
     match /promotionHistory/{document} {
-      allow read: if isSignedIn();
-      // Allow creation with specific data structures
-      allow create: if isSignedIn() && (
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && (
         (
           request.resource.data.keys().hasAll(['username', 'rank', 'timestamp']) &&
           request.resource.data.timestamp is timestamp &&
@@ -395,55 +350,89 @@ service cloud.firestore {
       allow update, delete: if false; // Explicitly disallowed
     }
 
-    // Deprecated? Consider removing if not used
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /notifiedMatches/{matchId} {
-      allow read, write: if true; // VERY open. Restrict write access.
-      // Example: allow read: if true; allow write: if isAdminEmail();
+      allow read, write: if true; // Consider restricting write access
     }
 
-    // --- Rejected Matches ---
     match /RejectedD1/{matchId} {
-      allow read: if isSignedIn();
-      // Allow create by winner or admin
-      allow create: if isSignedIn() && (
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && (
         request.resource.data.winnerId == request.auth.uid ||
-        (request.auth.token.email != null && request.resource.data.winnerEmail == request.auth.token.email) ||
+        request.resource.data.winnerEmail == request.auth.token.email ||
+        // Safely check player existence before getting data
         (exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
-        isAdminEmail()
+        isAdmin()
       );
-      allow update, delete: if isAdminEmail();
+      allow update, delete: if isAdmin();
     }
 
     match /RejectedD2/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && (
         request.resource.data.winnerId == request.auth.uid ||
-        (request.auth.token.email != null && request.resource.data.winnerEmail == request.auth.token.email) ||
+        request.resource.data.winnerEmail == request.auth.token.email ||
+        // Safely check player existence before getting data
         (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
-        isAdminEmail()
+        isAdmin()
       );
-      allow update, delete: if isAdminEmail();
+      allow update, delete: if isAdmin();
     }
 
+    match /userTrophies/{trophyId} {
+      allow read: if true;  // Anyone can see which trophies users have
+      allow create, update: if request.auth != null && 
+                              (isAdmin() || 
+                               request.auth.token.email == request.resource.data.awardedBy);
+      allow delete: if request.auth != null && isAdmin();
+    }
+    
+    // Also add a rule for the trophy definitions
+    match /trophyDefinitions/{trophyId} {
+      allow read: if true;  // Anyone can view trophy definitions
+      allow create, update, delete: if request.auth != null && isAdmin();
+    }
+
+        // Add this if you're using RejectedD3 collection
     match /RejectedD3/{matchId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && (
         request.resource.data.winnerId == request.auth.uid ||
-        (request.auth.token.email != null && request.resource.data.winnerEmail == request.auth.token.email) ||
+        request.resource.data.winnerEmail == request.auth.token.email ||
         (exists(/databases/$(database)/documents/playersD3/$(request.auth.uid)) &&
         request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD3/$(request.auth.uid)).data.username) ||
-        isAdminEmail()
+        isAdmin()
       );
-      allow update, delete: if isAdminEmail();
+      allow update, delete: if isAdmin();
     }
-
+    
+    match /promotionNotifications/{document=**} 
+    	{
+      	allow write: if request.auth != null;
+      }
+      
+          // Add this rule to allow access to promotionNotifications
+    match /promotionNotifications/{document=**} {
+      allow read, write: if true; // For testing only - restrict this in production
+    }
+    
+    // Also make sure processedPromotions is accessible
+    match /processedPromotions/{document=**} {
+      allow read, write: if true; // For testing only - restrict this in production
+    }
+    
+        // Allow public read access to highlights
+    match /highlights/{highlightId} {
+      allow read: if true; // Anyone can read highlights
+      allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
+    }
+      
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore
 // NO CHARACTERS OR BRACES BELOW THIS LINE
