@@ -46,6 +46,68 @@
             border-color: #b026b9;
         }
         
+        /* Rank Thresholds Display */
+        .rank-thresholds {
+            background: transparent;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 650px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        
+        .rank-thresholds h3 {
+            color: white;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+        
+        .thresholds-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .threshold {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+        
+        .rank-badge {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .rank-name {
+            color: white;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+        
+        .rank-value {
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+        
+        /* Rank badge colors */
+        .emerald { background: linear-gradient(135deg, #50C878, #2E8B57); }
+        .gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .silver { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); }
+        .bronze { background: linear-gradient(135deg, #CD7F32, #A0522D); }
+        .unranked { background: linear-gradient(135deg, #555555, #333333); }
+        
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -145,6 +207,38 @@
             </div>
         </div>
     </main>
+
+    <!-- Rank Thresholds Display - Move it inside the container -->
+            <div class="rank-thresholds">
+                <h3>Rank Thresholds</h3>
+                <div class="thresholds-container">
+                    <div class="threshold">
+                        <div class="rank-badge emerald"></div>
+                        <span class="rank-name">Emerald</span>
+                        <span class="rank-value">2000+</span>
+                    </div>
+                    <div class="threshold">
+                        <div class="rank-badge gold"></div>
+                        <span class="rank-name">Gold</span>
+                        <span class="rank-value">1800+</span>
+                    </div>
+                    <div class="threshold">
+                        <div class="rank-badge silver"></div>
+                        <span class="rank-name">Silver</span>
+                        <span class="rank-value">1600+</span>
+                    </div>
+                    <div class="threshold">
+                        <div class="rank-badge bronze"></div>
+                        <span class="rank-name">Bronze</span>
+                        <span class="rank-value">1400+</span>
+                    </div>
+                    <div class="threshold">
+                        <div class="rank-badge unranked"></div>
+                        <span class="rank-name">Unranked</span>
+                        <span class="rank-value">&lt;1400</span>
+                    </div>
+                </div>
+            </div>
 
     <!-- Update script tags to use type="module" -->
     <script type="module" src="./JS/firebase-config.js"></script>
