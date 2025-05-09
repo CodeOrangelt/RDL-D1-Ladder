@@ -15,7 +15,10 @@ import {
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import { displayLadderD2 } from './ladderd2.js';
-import { displayLadderD3 } from './ladderd3.js'; // Add this import
+import { displayLadderD3 } from './ladderd3.js'; 
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const auth = getAuth();
 
 // Add caching system like D2/D3 ladders
 const playerCache = {
@@ -283,6 +286,15 @@ function createPlayerRow(player, stats) {
     </tr>`;
 }
 
+// Add this function to determine the player's rank name by ELO
+function getPlayerRankName(elo) {
+    if (elo >= 2000) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
+}
+
 // Add this function right before updateLadderDisplay function (around line 280)
 
 // Function to get the last ELO change for each player
@@ -531,6 +543,7 @@ function initLadderToggles() {
             
             // Load ladder data
             displayLadder();
+            findBestOpponent('d1');
         });
     }
     
@@ -553,6 +566,7 @@ function initLadderToggles() {
             
             // Load ladder data
             displayLadderD2();
+            findBestOpponent('d2');
         });
     }
     
@@ -574,6 +588,7 @@ function initLadderToggles() {
             
             // Load ladder data
             displayLadderD3();
+            findBestOpponent('d3');
         });
     }
 }
@@ -582,7 +597,155 @@ function initLadderToggles() {
 document.addEventListener('DOMContentLoaded', () => {
     initLadderToggles();
     displayLadder();  // Initial display of the ladder
+    findBestOpponent('d1'); // Initial opponent recommendation
 });
 
 // Export the displayLadder function so it can be called from other modules
 export { displayLadder };
+
+// Add this function to ladder.js
+// Add this after the updateLadderDisplay function
+
+// Find the best opponent for the current user
+async function findBestOpponent(currentLadder = 'd1') {
+    // Get the current user
+    const user = auth.currentUser;
+    if (!user) {
+        document.getElementById('elo-recommendation-text').textContent = '';
+        return;
+    }
+
+    try {
+        // Get the user's profile
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        const profileDoc = await getDoc(profileRef);
+        
+        if (!profileDoc.exists()) {
+            console.log('No user profile found');
+            document.getElementById('elo-recommendation-text').textContent = 'Complete your profile to see recommended opponents';
+            return;
+        }
+        
+        const profile = profileDoc.data();
+        const username = profile.username;
+        
+        if (!username) {
+            document.getElementById('elo-recommendation-text').textContent = 'Set your username to see recommended opponents';
+            return;
+        }
+        
+        // Determine which collection to query based on current ladder
+        const ladderCollection = currentLadder === 'd1' ? 'players' : 
+                               currentLadder === 'd2' ? 'playersD2' : 'playersD3';
+        
+        // Get the user's ELO from the appropriate ladder
+        const playersRef = collection(db, ladderCollection);
+        const playerQuery = query(playersRef, where('username', '==', username));
+        const playerSnapshot = await getDocs(playerQuery);
+        
+        if (playerSnapshot.empty) {
+            document.getElementById('elo-recommendation-text').textContent = 
+                `You're not registered on the ${currentLadder.toUpperCase()} ladder`;
+            return;
+        }
+        
+        const playerData = playerSnapshot.docs[0].data();
+        const userElo = parseInt(playerData.eloRating) || 1500;
+        
+        // Get all players to find best match
+        const allPlayersSnapshot = await getDocs(playersRef);
+        let bestMatch = null;
+        let bestMatchScore = -1; // Use a score-based approach instead
+        
+        // Get user's rank tier
+        const userRankTier = getPlayerRankName(userElo);
+        
+        allPlayersSnapshot.forEach(doc => {
+            const potentialOpponent = doc.data();
+            
+            // Skip if this is the current user
+            if (potentialOpponent.username === username) return;
+            
+            const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
+            const opponentRankTier = getPlayerRankName(opponentElo);
+            
+            // Calculate ELO difference (absolute value)
+            const eloDifference = Math.abs(opponentElo - userElo);
+            
+            // Calculate expected ELO gain using the ELO formula
+            const K = 32;
+            const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400));
+            const potentialEloGain = Math.round(K * (1 - expectedScore));
+            
+            // Skip opponents where you wouldn't gain any ELO
+            if (potentialEloGain <= 0) return;
+            
+            // Calculate match quality score - balances closeness and potential gain
+            // Lower ELO difference is better, but we still want some gain
+            // Perfect score would be someone very close to your ELO but slightly higher
+            let matchScore = 0;
+            
+            // 1. Base score from ELO proximity - closer is better
+            // Maximum proximity score for players within 100 ELO points
+            const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
+            
+            // 2. ELO gain score - some gain is good, but we don't want to overweight it
+            // Maximum gain score for 5-10 point gains
+            const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
+                             potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
+            
+            // 3. Same rank tier bonus
+            const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
+            
+            // Calculate final score
+            matchScore = proximityScore + gainScore + tierBonus;
+            
+            // Update best match if we found a better one
+            if (matchScore > bestMatchScore) {
+                bestMatch = potentialOpponent;
+                bestMatchScore = matchScore;
+            }
+        });
+        
+        const recommendationEl = document.getElementById('elo-recommendation-text');
+        if (bestMatch) {
+            const opponentElo = parseInt(bestMatch.eloRating) || 1500;
+            
+            // Set ELO-based colors (same logic used in createPlayerRow)
+            let usernameColor = 'gray'; // Default for unranked
+            if (opponentElo >= 2000) {
+                usernameColor = '#50C878'; // Emerald Green
+            } else if (opponentElo >= 1800) {
+                usernameColor = '#FFD700'; // Gold
+            } else if (opponentElo >= 1600) {
+                usernameColor = '#C0C0C0'; // Silver
+            } else if (opponentElo >= 1400) {
+                usernameColor = '#CD7F32'; // Bronze
+            }
+            
+            // Apply color directly to username without showing rank text
+            recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
+        } else {
+            recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
+        }
+            
+        // Update class directly on the text element
+        recommendationEl.className = `elo-recommendation-text ladder-${currentLadder}`;
+            
+    } catch (error) {
+        console.error('Error finding best opponent:', error);
+        document.getElementById('elo-recommendation-text').textContent = 
+            'Error finding recommended opponent';
+    }
+}
+
+// Listen for auth state changes to update recommendations
+auth.onAuthStateChanged(user => {
+    // Get current active ladder
+    const d1Active = document.getElementById('d1-ladder-container').classList.contains('active');
+    const d2Active = document.getElementById('d2-ladder-container').classList.contains('active');
+    const d3Active = document.getElementById('d3-ladder-container').classList.contains('active');
+    
+    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : 'd3';
+    findBestOpponent(currentLadder);
+});
