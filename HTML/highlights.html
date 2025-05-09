@@ -43,6 +43,7 @@
                 <p class="loading-message">Loading player achievement...</p>
             </div>
         </section>
+
     </main>
 
     <div id="footer-placeholder"></div>
@@ -413,7 +414,7 @@ function renderMatchHighlight(highlightData, highlightId, container) {
     container.appendChild(card);
 }
 
-// Function to render a creator highlight
+// Function to render a creator highlight (NO match fields)
 function renderCreatorHighlight(highlightData, highlightId, container) {
     const title = highlightData.title || "Featured Creator";
     const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
@@ -448,14 +449,6 @@ function renderCreatorHighlight(highlightData, highlightId, container) {
                     ${mapVersion ? `<p><strong>Version:</strong> ${mapVersion}</p>` : ''}
                 </div>
             </div>
-            
-            ${videoId ? `
-            <div class="highlight-video-section">
-                <div class="youtube-player" id="youtube-player-${highlightId}" data-video-id="${videoId}">
-                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #555; background: #111;">Loading Video...</div>
-                </div>
-            </div>` : '<p style="text-align:center; color:#888;">No video available for this highlight.</p>'}
-
             ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
         </div>
         <div class="highlight-footer">
@@ -466,7 +459,7 @@ function renderCreatorHighlight(highlightData, highlightId, container) {
     container.appendChild(card);
 }
 
-// Function to render an achievement highlight
+// Function to render an achievement highlight (NO match fields)
 function renderAchievementHighlight(highlightData, highlightId, container) {
     const title = highlightData.title || "Player Achievement";
     const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
@@ -503,14 +496,6 @@ function renderAchievementHighlight(highlightData, highlightId, container) {
                 </div>
                 ${achievementDetails ? `<p class="achievement-description">${achievementDetails}</p>` : ''}
             </div>
-            
-            ${videoId ? `
-            <div class="highlight-video-section">
-                <div class="youtube-player" id="youtube-player-${highlightId}" data-video-id="${videoId}">
-                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #555; background: #111;">Loading Video...</div>
-                </div>
-            </div>` : '<p style="text-align:center; color:#888;">No video available for this highlight.</p>'}
-
             ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
         </div>
         <div class="highlight-footer">

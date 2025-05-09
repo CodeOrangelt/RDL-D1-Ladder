@@ -50,15 +50,30 @@ class PromotionManager {
         console.log('Promotion manager initializing...');
         this.setupBannerContainer();
         
-        // Initial fetch of promotions
-        this.fetchRecentPromotions();
+        // Check if we've already fetched promotions in this session
+        const sessionKey = 'promotions_checked_' + new Date().toDateString();
+        const alreadyChecked = sessionStorage.getItem(sessionKey);
         
-        // Set up polling instead of real-time listener
-        this.pollingInterval = setInterval(() => {
+        if (!alreadyChecked) {
+            // Only fetch once per session
             this.fetchRecentPromotions();
-        }, this.fetchInterval);
+            // Mark as checked for this session
+            sessionStorage.setItem(sessionKey, 'true');
+            console.log('Checking promotions for the first time in this session');
+        } else {
+            console.log('Promotions already checked in this session, skipping');
+        }
         
-        // Clean up on page unload
+        // Remove the polling mechanism entirely - we only want to check once per session
+        // Optional: You can still use the visibility API to check when the page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !sessionStorage.getItem(sessionKey)) {
+                this.fetchRecentPromotions();
+                sessionStorage.setItem(sessionKey, 'true');
+            }
+        });
+        
+        // Clean up event listener on unload
         window.addEventListener('beforeunload', () => {
             if (this.pollingInterval) {
                 clearInterval(this.pollingInterval);
