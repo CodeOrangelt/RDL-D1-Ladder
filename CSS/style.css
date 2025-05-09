@@ -1345,3 +1345,28 @@ tr:nth-child(even) {
     position: relative;
     width: 100%;
   }
+
+/* Add this to your style.css file */
+.elo-recommendation-text {
+    text-align: center;
+    margin: 15px auto;
+    padding: 5px;
+    font-weight: bold;
+    color: #ddd;
+    max-width: 80%;
+}
+
+/* Keep the highlight styles */
+.recommendation-highlight {
+    color: #FF8C00; /* Pumpkin orange to match D1 button */
+    font-weight: bold;
+}
+
+/* We'll use these classes by adding them directly to the text element in JS */
+.ladder-d2 .recommendation-highlight {
+    color: #0047AB; /* Cobalt blue to match D2 button */
+}
+
+.ladder-d3 .recommendation-highlight {
+    color: #4CAF50; /* Green to match D3 button */
+}
