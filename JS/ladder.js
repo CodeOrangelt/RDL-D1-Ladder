@@ -536,6 +536,11 @@ function initLadderToggles() {
                 d1Container.style.display = 'block';
             }
             
+            // Show D1 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+            
             // Update button UI
             if (d1Toggle) d1Toggle.classList.add('active');
             if (d2Toggle) d2Toggle.classList.remove('active');
@@ -553,11 +558,15 @@ function initLadderToggles() {
             console.log("D2 toggle clicked");
             hideAllLadders(); // Hide all ladders first
             
-            // Show D2 ladder
             if (d2Container) {
                 d2Container.classList.add('active');
                 d2Container.style.display = 'block';
             }
+            
+            // Show D2 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
             
             // Update button UI
             if (d2Toggle) d2Toggle.classList.add('active');
@@ -575,11 +584,15 @@ function initLadderToggles() {
             console.log("D3 toggle clicked");
             hideAllLadders(); // Hide all ladders first
             
-            // Show D3 ladder
             if (d3Container) {
                 d3Container.classList.add('active');
                 d3Container.style.display = 'block';
             }
+            
+            // Show D3 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'block';
             
             // Update button UI
             if (d3Toggle) d3Toggle.classList.add('active');
@@ -598,6 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initLadderToggles();
     displayLadder();  // Initial display of the ladder
     findBestOpponent('d1'); // Initial opponent recommendation
+    
+    // Show only D1 recommendation initially (D1 is the default ladder)
+    document.getElementById('elo-recommendation-text-d1').style.display = 'block';
 });
 
 // Export the displayLadder function so it can be called from other modules
@@ -608,10 +624,19 @@ export { displayLadder };
 
 // Find the best opponent for the current user
 async function findBestOpponent(currentLadder = 'd1') {
+    // Get the appropriate recommendation element based on ladder type
+    const recommendationElId = `elo-recommendation-text-${currentLadder}`;
+    const recommendationEl = document.getElementById(recommendationElId);
+    
+    if (!recommendationEl) {
+        console.error(`Recommendation element for ${currentLadder} not found`);
+        return;
+    }
+    
     // Get the current user
     const user = auth.currentUser;
     if (!user) {
-        document.getElementById('elo-recommendation-text').textContent = '';
+        recommendationEl.textContent = '';
         return;
     }
 
@@ -622,7 +647,7 @@ async function findBestOpponent(currentLadder = 'd1') {
         
         if (!profileDoc.exists()) {
             console.log('No user profile found');
-            document.getElementById('elo-recommendation-text').textContent = 'Complete your profile to see recommended opponents';
+            recommendationEl.textContent = 'Complete your profile to see recommended opponents';
             return;
         }
         
@@ -630,7 +655,7 @@ async function findBestOpponent(currentLadder = 'd1') {
         const username = profile.username;
         
         if (!username) {
-            document.getElementById('elo-recommendation-text').textContent = 'Set your username to see recommended opponents';
+            recommendationEl.textContent = 'Set your username to see recommended opponents';
             return;
         }
         
@@ -644,7 +669,7 @@ async function findBestOpponent(currentLadder = 'd1') {
         const playerSnapshot = await getDocs(playerQuery);
         
         if (playerSnapshot.empty) {
-            document.getElementById('elo-recommendation-text').textContent = 
+            recommendationEl.textContent = 
                 `You're not registered on the ${currentLadder.toUpperCase()} ladder`;
             return;
         }
@@ -707,7 +732,6 @@ async function findBestOpponent(currentLadder = 'd1') {
             }
         });
         
-        const recommendationEl = document.getElementById('elo-recommendation-text');
         if (bestMatch) {
             const opponentElo = parseInt(bestMatch.eloRating) || 1500;
             
@@ -723,19 +747,14 @@ async function findBestOpponent(currentLadder = 'd1') {
                 usernameColor = '#CD7F32'; // Bronze
             }
             
-            // Apply color directly to username without showing rank text
             recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
         } else {
             recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
         }
             
-        // Update class directly on the text element
-        recommendationEl.className = `elo-recommendation-text ladder-${currentLadder}`;
-            
     } catch (error) {
         console.error('Error finding best opponent:', error);
-        document.getElementById('elo-recommendation-text').textContent = 
-            'Error finding recommended opponent';
+        recommendationEl.textContent = 'Error finding recommended opponent';
     }
 }
 
