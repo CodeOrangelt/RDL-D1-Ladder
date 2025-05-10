@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         suicides: document.getElementById('suicides'),
         mapPlayed: document.getElementById('map-played'),
         loserComment: document.getElementById('loser-comment'),
-        demoLink: document.getElementById('demo-link'), // Add this line
         reportError: document.getElementById('report-error'),
         reportLightbox: document.getElementById('report-lightbox')
     };
@@ -309,7 +308,7 @@ function setupReportForm(elements) {
     });
 }
 
-// First, fix the submitReport function by updating it to get the demo link value
+// --- Inside your submitReport function ---
 async function submitReport(elements) {
     // Use the appropriate collection based on current game mode
     const pendingMatchesCollection = 
@@ -343,10 +342,7 @@ async function submitReport(elements) {
         const winnerData = winnerSnapshot.docs[0].data();
         const winnerId = winnerSnapshot.docs[0].id;
         
-        // Get demo link from the form
-        const demoLink = elements.demoLink ? elements.demoLink.value.trim() : null;
-        
-        // Build reportData including demo link
+        // Build reportData including old Elo ratings and loser suicides (renamed field)
         const reportData = {
             matchId: newMatchRef.id,
             loserUsername: loserDoc.data().username,
@@ -354,10 +350,9 @@ async function submitReport(elements) {
             winnerUsername: winnerData.username,
             winnerId: winnerId,
             loserScore: elements.loserScore.value,
-            loserSuicides: elements.suicides.value,
+            loserSuicides: elements.suicides.value, // renamed field
             mapPlayed: elements.mapPlayed.value,
             loserComment: elements.loserComment.value,
-            demoLink: demoLink, // Now properly getting the demo link from the form
             gameMode: currentGameMode,
             approved: false,
             createdAt: serverTimestamp(),
@@ -475,6 +470,7 @@ async function checkForOutstandingReports(username, elements, collectionName = n
 
 // --- Updated autoFillReportForm function ---
 function autoFillReportForm(reportData) {
+    console.log("Report Data in autoFillReportForm:", reportData);
     if (reportData) {
         // Calculate winner score based on loser score
         const loserScore = parseInt(reportData.loserScore || "0");
@@ -540,58 +536,10 @@ function autoFillReportForm(reportData) {
                 document.getElementById('lightbox-winner').textContent = winnerUsername;
                 document.getElementById('lightbox-loser').textContent = loserUsername;
                 document.getElementById('lightbox-loser-score').textContent = reportData.loserScore || "0";
+                // Use loserSuicides (instead of generic suicides) for display
                 document.getElementById('lightbox-suicides').textContent = reportData.loserSuicides || "0";
                 document.getElementById('lightbox-map').textContent = reportData.mapPlayed || "Not specified";
                 document.getElementById('lightbox-comment').textContent = reportData.loserComment || "No comment";
-                
-                // Add the demo link display for loser
-                const demoLinkElem = document.getElementById('lightbox-demo-link');
-                if (demoLinkElem) {
-                    if (reportData.demoLink) {
-                        demoLinkElem.innerHTML = `<a href="${reportData.demoLink}" target="_blank" rel="noopener noreferrer">Loser's Demo/Playback</a>`;
-                        demoLinkElem.style.display = 'block';
-                    } else {
-                        demoLinkElem.textContent = "No demo provided by loser";
-                        demoLinkElem.style.display = 'block';
-                    }
-                }
-                
-                // Move the buttonsContainer definition outside the conditional block
-                const buttonsContainer = document.querySelector('.lightbox-buttons');
-                
-                // Check if winner demo link field already exists
-                const existingWinnerDemoLink = document.getElementById('winner-demo-link');
-                
-                if (!existingWinnerDemoLink) {
-                    // Only create the field if it doesn't exist in the HTML
-                    const winnerDemoContainer = document.createElement('div');
-                    winnerDemoContainer.className = 'form-group';
-    
-                    const winnerDemoLabel = document.createElement('label');
-                    winnerDemoLabel.htmlFor = 'winner-demo-link'; // Fixed 'for' to 'htmlFor'
-                    winnerDemoLabel.textContent = 'Winner Demo Link (Optional):';
-    
-                    const winnerDemoInput = document.createElement('input');
-                    winnerDemoInput.type = 'url';
-                    winnerDemoInput.id = 'winner-demo-link';
-                    winnerDemoInput.className = 'form-control';
-                    winnerDemoInput.placeholder = 'https://example.com/demo';
-    
-                    winnerDemoContainer.appendChild(winnerDemoLabel);
-                    winnerDemoContainer.appendChild(winnerDemoInput);
-    
-                    // Use the buttonsContainer that's now defined in this scope
-                    if (buttonsContainer) {
-                        buttonsContainer.parentNode.insertBefore(winnerDemoContainer, buttonsContainer);
-                    }
-                } else {
-                    // If it exists, just clear the value (unless there's a saved value to restore)
-                    if (reportData.winnerDemoLink) {
-                        existingWinnerDemoLink.value = reportData.winnerDemoLink;
-                    } else {
-                        existingWinnerDemoLink.value = '';
-                    }
-                }
                 
                 // Set and disable the winner score input field
                 const winnerScoreInput = document.getElementById('winner-score');
@@ -604,7 +552,8 @@ function autoFillReportForm(reportData) {
                 // Show the lightbox
                 showLightbox();
                 
-                // Later in the function, buttonsContainer is now available
+                // Update the lightbox buttons container to include a reject button
+                const buttonsContainer = document.querySelector('.lightbox-buttons');
                 if (buttonsContainer) {
                     console.log("Found buttons container:", buttonsContainer);
                     
@@ -649,19 +598,22 @@ function autoFillReportForm(reportData) {
                             const winnerSuicides = document.getElementById('winner-suicides').value || "0";
                             const winnerComment = document.getElementById('winner-comment').value || "";
                             
-                            // Add this line to get the winner's demo link
-                            const winnerDemoLink = document.getElementById('winner-demo-link')?.value.trim() || null;
-                            console.log("APPROVING WITH WINNER DEMO LINK:", winnerDemoLink);
+                            // Log the current user for debugging
+                            console.log("Current user info:", {
+                                uid: auth.currentUser?.uid,
+                                email: auth.currentUser?.email,
+                                isAdmin: auth.currentUser?.email === 'admin@ladder.com' || auth.currentUser?.email === 'brian2af@outlook.com'
+                            });
                             
                             const gameMode = reportData.gameMode || currentGameMode;
 
                             // Call the appropriate function based on game mode
                             if (gameMode === 'D3') {
-                                await approveReportD3(reportData.id, winnerScore, winnerSuicides, winnerComment, winnerDemoLink);
+                                await approveReportD3(reportData.id, winnerScore, winnerSuicides, winnerComment);
                             } else if (gameMode === 'D2') {
-                                await approveReportD2(reportData.id, winnerScore, winnerSuicides, winnerComment, winnerDemoLink);
+                                await approveReportD2(reportData.id, winnerScore, winnerSuicides, winnerComment);
                             } else {
-                                await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment, winnerDemoLink);
+                                await approveReport(reportData.id, winnerScore, winnerSuicides, winnerComment);
                             }
                             
                             document.getElementById('report-lightbox').style.display = 'none';
@@ -900,9 +852,6 @@ async function loadOpponentsList(userUid) {
                 winnerUsername.appendChild(option);
             }
         });
-        
-        // Add this line to enhance the dropdown after populating it
-        enhanceOpponentDropdown();
     } catch (error) {
         console.error('Error loading opponents list:', error);
         document.getElementById('report-error').textContent = 'Error loading opponents. Please try again later.';
@@ -977,132 +926,4 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         document.getElementById('report-error').style.color = 'red';
         return false;
     }
-}
-
-// Function to enhance the winner username dropdown with autocomplete
-function enhanceOpponentDropdown() {
-    const select = document.getElementById('winner-username');
-    if (!select) return;
-    
-    // Create a container to wrap the select
-    const container = document.createElement('div');
-    container.className = 'autocomplete-container';
-    container.style.position = 'relative';
-    
-    // Create a text input for typing
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'winner-username-input';
-    input.className = select.className; // Copy original select styles
-    input.placeholder = 'Type to search opponents...';
-    
-    // Store the original select options
-    const options = Array.from(select.options).slice(1); // Skip the first "Select Opponent" option
-    
-    // Create a dropdown for the filtered options
-    const dropdown = document.createElement('div');
-    dropdown.className = 'autocomplete-dropdown';
-    dropdown.style.display = 'none';
-    dropdown.style.position = 'absolute';
-    dropdown.style.zIndex = '100';
-    dropdown.style.width = '100%';
-    dropdown.style.maxHeight = '200px';
-    dropdown.style.overflowY = 'auto';
-    dropdown.style.backgroundColor = '#1e1e1e';
-    dropdown.style.border = '1px solid #444';
-    dropdown.style.borderRadius = '4px';
-    dropdown.style.marginTop = '2px';
-    
-    // Replace the select with our new input
-    select.parentNode.insertBefore(container, select);
-    container.appendChild(input);
-    container.appendChild(dropdown);
-    
-    // Hide the original select but keep it in the DOM for form submission
-    select.style.display = 'none';
-    container.appendChild(select);
-    
-    // Function to filter and show options
-    function showFilteredOptions(filterText) {
-        dropdown.innerHTML = '';
-        dropdown.style.display = 'none';
-        
-        if (!filterText) {
-            // Show all options if no filter
-            options.forEach(option => {
-                createOptionElement(option.textContent, option.value, option.dataset.uid);
-            });
-        } else {
-            // Filter options
-            const filtered = options.filter(option => 
-                option.textContent.toLowerCase().includes(filterText.toLowerCase())
-            );
-            
-            if (filtered.length === 0) {
-                const noResults = document.createElement('div');
-                noResults.className = 'autocomplete-option no-results';
-                noResults.textContent = 'No opponents found';
-                noResults.style.padding = '8px 10px';
-                noResults.style.color = '#999';
-                dropdown.appendChild(noResults);
-                dropdown.style.display = 'block';
-            } else {
-                filtered.forEach(option => {
-                    createOptionElement(option.textContent, option.value, option.dataset.uid);
-                });
-            }
-        }
-        
-        if (dropdown.childElementCount > 0) {
-            dropdown.style.display = 'block';
-        }
-    }
-    
-    // Function to create an option element
-    function createOptionElement(text, value, uid) {
-        const optionElement = document.createElement('div');
-        optionElement.className = 'autocomplete-option';
-        optionElement.textContent = text;
-        optionElement.dataset.value = value;
-        optionElement.dataset.uid = uid;
-        optionElement.style.padding = '8px 10px';
-        optionElement.style.cursor = 'pointer';
-        
-        optionElement.addEventListener('mouseover', () => {
-            optionElement.style.backgroundColor = '#333';
-        });
-        
-        optionElement.addEventListener('mouseout', () => {
-            optionElement.style.backgroundColor = 'transparent';
-        });
-        
-        optionElement.addEventListener('click', () => {
-            input.value = text;
-            select.value = value;
-            dropdown.style.display = 'none';
-            
-            // Create a change event on the original select
-            const event = new Event('change', { bubbles: true });
-            select.dispatchEvent(event);
-        });
-        
-        dropdown.appendChild(optionElement);
-    }
-    
-    // Handle input events
-    input.addEventListener('input', () => {
-        showFilteredOptions(input.value);
-    });
-    
-    // Handle click outside to close dropdown
-    document.addEventListener('click', (e) => {
-        if (!container.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
-    
-    // Handle focus to show all options
-    input.addEventListener('focus', () => {
-        showFilteredOptions(input.value);
-    });
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,68 +46,6 @@
             color: white;
             border-color: #b026b9;
         }
-        
-        /* Rank Thresholds Display */
-        .rank-thresholds {
-            background: transparent;
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 650px;
-            margin: 0 auto 20px;
-            text-align: center;
-        }
-        
-        .rank-thresholds h3 {
-            color: white;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 8px;
-        }
-        
-        .thresholds-container {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .threshold {
-            display: flex;
-            align-items: center;
-            padding: 6px 12px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-        }
-        
-        .rank-badge {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .rank-name {
-            color: white;
-            font-size: 0.9rem;
-            margin-right: 8px;
-        }
-        
-        .rank-value {
-            color: #ccc;
-            font-size: 0.85rem;
-        }
-        
-        /* Rank badge colors */
-        .emerald { background: linear-gradient(135deg, #50C878, #2E8B57); }
-        .gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
-        .silver { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); }
-        .bronze { background: linear-gradient(135deg, #CD7F32, #A0522D); }
-        .unranked { background: linear-gradient(135deg, #555555, #333333); }
         
     </style>
     <script type="module">
@@ -159,12 +98,6 @@
                     <label for="loser-comment">Your Comment:</label>
                     <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="demo-link">Demo/Playback Link (Optional):</label>
-                    <input type="url" id="demo-link" name="demo-link" class="form-control" 
-                           placeholder="https://example.com/match.dem">
-                    <small class="form-text text-muted">Share a link to your gameplay recording or demo</small>
-                </div>
                 <button type="submit" class="btn">Report Game</button>
             </form>
             <div id="report-error" class="error"></div>
@@ -192,11 +125,6 @@
                         <label for="winner-comment">Winner Comment:</label>
                         <textarea id="winner-comment" required></textarea>
                     </div>
-                    <div class="form-group">
-                      <label for="winner-demo-link">Winner's Demo/Replay Link (Optional):</label>
-                      <input type="url" id="winner-demo-link" placeholder="https://example.com/replay">
-                      <small>Share a link to gameplay recording or demo from the winner's perspective</small>
-                    </div>
                     
                     <div class="lightbox-buttons">
                         <button id="approve-button" class="button">Approve</button>
@@ -207,38 +135,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Rank Thresholds Display - Move it inside the container -->
-            <div class="rank-thresholds">
-                <h3>Rank Thresholds</h3>
-                <div class="thresholds-container">
-                    <div class="threshold">
-                        <div class="rank-badge emerald"></div>
-                        <span class="rank-name">Emerald</span>
-                        <span class="rank-value">2000+</span>
-                    </div>
-                    <div class="threshold">
-                        <div class="rank-badge gold"></div>
-                        <span class="rank-name">Gold</span>
-                        <span class="rank-value">1800+</span>
-                    </div>
-                    <div class="threshold">
-                        <div class="rank-badge silver"></div>
-                        <span class="rank-name">Silver</span>
-                        <span class="rank-value">1600+</span>
-                    </div>
-                    <div class="threshold">
-                        <div class="rank-badge bronze"></div>
-                        <span class="rank-name">Bronze</span>
-                        <span class="rank-value">1400+</span>
-                    </div>
-                    <div class="threshold">
-                        <div class="rank-badge unranked"></div>
-                        <span class="rank-name">Unranked</span>
-                        <span class="rank-value">&lt;1400</span>
-                    </div>
-                </div>
-            </div>
 
     <!-- Update script tags to use type="module" -->
     <script type="module" src="../JS/firebase-config.js"></script>
@@ -287,3 +183,4 @@
     <div id="footer-placeholder"></div>
 </body>
 </html>
+``` 
