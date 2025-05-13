@@ -2,17 +2,17 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.1", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.2",
+    id: "beta-release 1.", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.3",
     content: `
-        <h2>Cleaning up</h2>
-        <p>Beta Release 1.2 - May 4th 2025</p>
-        <ul>
-            <p>Bugs Patched</p> 
-                <li>Profile data sometimes not saving</li>
-                <li>Country flag out of place</li>
-                <li>Players placed higher even with no matches</li>
-        </ul>
+        <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
+            <li>Elo Tracking/Recomendations </li>
+            <li>View, edit, and rescind outstanding/waiting reports</li>
+            <li>Fixed bugs related to item tracking.</li>
+            <br>
+
+        <p1 style="color:#ffffff; font-weight: bold;">UPCOMING EVENT:</p1><br></br>
+             <li> Our Creative Lead Blarget has announced the first RDL Mapping Community Event! Stay tuned for more details!</li>
 
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
