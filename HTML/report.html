@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,10 +11,19 @@
     <script type="module" src="../JS/firebase-config.js"></script>
     <style>
         
-        /* Keep container with lower z-index */
+        /* Make container position relative to properly position the absolute button */
         .container {
             position: relative;
-            margin-top: 50px;
+            background-color: rgba(0, 0, 0, 0.75);
+            border: 5px solid white;
+            margin: 50px auto 0; /* Added top margin to make room for the button */
+            border-radius: 15px;
+            width: 50%;
+            max-width: 700px;
+            min-width: 300px;
+            padding: 15px;
+            min-height: 600px;
+            overflow: hidden;
         }
         
         /* Game mode toggle buttons */
@@ -47,6 +55,35 @@
             border-color: #b026b9;
         }
         
+        /* Modal specific styles */
+        .report-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .report-lightbox.show {
+            display: flex;
+        }
+        
+        .lightbox-content {
+            background-color: #222;
+            color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 20px rgba(176, 38, 185, 0.5);
+        }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -58,17 +95,17 @@
     <div id="nav-placeholder"></div>
     
     <script src="../JS/page-components.js"></script>
-    
+
     <main>
-        <div class="container">
-            <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
-            
+        <div class="container">           
             <!-- Game Mode Toggle Buttons -->
             <div class="game-mode-toggle" id="game-mode-toggle">
                 <button id="d1-mode" class="active">D1</button>
                 <button id="d2-mode">D2</button>
                 <button id="d3-mode">D3</button>
             </div>
+            
+            <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
             
             <!-- Report Form -->
             <form id="report-form" class="form" style="display: none;">
@@ -98,7 +135,13 @@
                     <label for="loser-comment">Your Comment:</label>
                     <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
                 </div>
-                <button type="submit" class="btn">Report Game</button>
+                <!-- Report form submit button and Outstanding Matches button in a row -->
+                <div class="button-container">
+                    <button type="submit" class="btn">Report Game</button>
+                    <div id="view-outstanding-container" style="display: none;">
+                        <button type="button" id="view-outstanding-btn" class="btn">View Your Outstanding Matches</button>
+                    </div>
+                </div>
             </form>
             <div id="report-error" class="error"></div>
 
@@ -129,58 +172,33 @@
                     <div class="lightbox-buttons">
                         <button id="approve-button" class="button">Approve</button>
                         <button id="cancel-button" class="button">Cancel</button>
-                        <!-- Reject button will be added here -->
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Update script tags to use type="module" -->
+    <!-- Outstanding Matches Modal -->
+    <div id="outstanding-modal" class="report-lightbox">
+        <div class="lightbox-content">
+            <h2>Your Outstanding Matches</h2>
+            <p>These matches are waiting patiently:</p>
+            <div id="outstanding-matches-list" class="matches-list">
+                <!-- Matches will be populated here -->
+                <div class="loading">Loading your matches...</div>
+            </div>
+            <div class="lightbox-buttons">
+                <button id="close-outstanding-btn" class="button">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="../JS/firebase-config.js"></script>
     <script type="module" src="../JS/ladderalgorithm.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     <script type="module" src="../JS/reports.js"></script>
-
-    <script type="module">
-        document.addEventListener('DOMContentLoaded', () => {
-            const d1Button = document.getElementById('d1-mode');
-            // ...code that uses these elements...
-            
-            const gameMode = d1Button.classList.contains('active') ? 'D1' : 'D2';
-            // This runs before navigation is loaded
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const d1Button = document.getElementById('d1-mode');
-            const d2Button = document.getElementById('d2-mode');
-
-            // Ensure the buttons exist before using them
-            if (d1Button && d2Button) {
-                d1Button.addEventListener('click', () => {
-                    d1Button.classList.add('active');
-                    d2Button.classList.remove('active');
-                    // For example, update game mode display elements here
-                    // document.getElementById('lightbox-game-mode').textContent = 'D1';
-                });
-
-                d2Button.addEventListener('click', () => {
-                    d2Button.classList.add('active');
-                    d1Button.classList.remove('active');
-                    // For example, update game mode display elements here
-                    // document.getElementById('lightbox-game-mode').textContent = 'D2';
-                });
-            } else {
-                console.error('D1 or D2 mode button not found');
-            }
-
-            const gameMode = d1Button.classList.contains('active') ? 'D1' : 'D2';
-            const playersCollectionName = gameMode === 'D1' ? 'players' : 'playersD2';
-        });
-    </script>
-
+    
     <div id="footer-placeholder"></div>
 </body>
 </html>
-``` 

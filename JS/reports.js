@@ -15,6 +15,9 @@ let confirmationNotification = null; // Also adding this to fix potential undefi
 let outstandingReportData = null; // And this one
 let currentGameMode = 'D1'; // Add global variable to track current game mode
 
+// Outstanding matches state variables
+let outstandingMatches = [];
+
 document.addEventListener('DOMContentLoaded', async () => {
     const elements = {
         authWarning: document.getElementById('auth-warning'),
@@ -927,3 +930,458 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         return false;
     }
 }
+
+// Add these functions and variables to your existing reports.js file
+
+// Function to fetch outstanding matches
+export async function fetchOutstandingMatches() {
+    const user = auth.currentUser;
+    if (!user) return [];
+    
+    try {
+        const matches = [];
+        
+        // Determine which collection to use based on game mode
+        const pendingCollection = 
+            currentGameMode === 'D1' ? 'pendingMatches' : 
+            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+        
+        const pendingMatchesRef = collection(db, pendingCollection);
+        
+        // Define our queries - focus on both reports the user initiated and reports against the user
+        const userQueries = [
+            // Reports initiated by user (as loser)
+            query(pendingMatchesRef, where('loserId', '==', user.uid), where('approved', '==', false)),
+            query(pendingMatchesRef, where('loserEmail', '==', user.email), where('approved', '==', false)),
+            
+            // Reports where user is winner (needs to approve)
+            query(pendingMatchesRef, where('winnerId', '==', user.uid), where('approved', '==', false)),
+            query(pendingMatchesRef, where('winnerEmail', '==', user.email), where('approved', '==', false))
+        ];
+        
+        // Get username for additional query
+        const userCollection = 
+            currentGameMode === 'D1' ? 'players' : 
+            currentGameMode === 'D2' ? 'playersD2' : 'playersD3';
+        
+        const userDoc = await getDocs(query(collection(db, userCollection), where('email', '==', user.email)));
+        let username = null;
+        
+        if (!userDoc.empty) {
+            username = userDoc.docs[0].data().username;
+            // Add query by username
+            if (username) {
+                userQueries.push(
+                    query(pendingMatchesRef, where('loserUsername', '==', username), where('approved', '==', false)),
+                    query(pendingMatchesRef, where('winnerUsername', '==', username), where('approved', '==', false))
+                );
+            }
+        }
+        
+        // Execute all queries
+        for (const q of userQueries) {
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                snapshot.forEach(doc => {
+                    // Add document if not already in the array
+                    if (!matches.some(match => match.id === doc.id)) {
+                        matches.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Sort by creation date
+        matches.sort((a, b) => {
+            const dateA = a.createdAt?.toDate() || new Date(0);
+            const dateB = b.createdAt?.toDate() || new Date(0);
+            return dateB - dateA; // Most recent first
+        });
+        
+        outstandingMatches = matches;
+        return matches;
+        
+    } catch (error) {
+        console.error('Error fetching outstanding matches:', error);
+        return [];
+    }
+}
+
+// Function to render the matches in the modal
+export function renderOutstandingMatches() {
+    const matchesList = document.getElementById('outstanding-matches-list');
+    
+    if (outstandingMatches.length === 0) {
+        matchesList.innerHTML = '<p>No outstanding matches found in the current game mode.</p>';
+        return;
+    }
+    
+    let html = '';
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    
+    outstandingMatches.forEach(match => {
+        const date = match.createdAt?.toDate() 
+            ? match.createdAt.toDate().toLocaleDateString() 
+            : 'Unknown date';
+        
+        // Check if current user is the initiator of this report
+        const isInitiator = 
+            (match.loserEmail === currentUser.email) || 
+            (match.loserId === currentUser.uid);
+        
+        html += `
+        <div class="match-item" data-id="${match.id}">
+            <h3>${match.winnerUsername || 'Winner'} vs ${match.loserUsername || 'Loser'}</h3>
+            <div class="match-details">
+                <span class="match-detail-item">Map: ${match.mapPlayed || 'Unknown'}</span>
+                <span class="match-detail-item">Date: ${date}</span>
+                <span class="match-detail-item">Score: ? - ${match.loserScore || '0'}</span>
+            </div>
+            <div class="match-actions">
+                <button class="btn view-detail-btn" data-id="${match.id}">View Details</button>
+                ${isInitiator ? `
+                <button class="btn edit-report-btn" data-id="${match.id}">Edit Report</button>
+                <button class="btn danger-button rescind-report-btn" data-id="${match.id}">Rescind Report</button>
+                ` : ''}
+            </div>
+        </div>
+        `;
+    });
+    
+    matchesList.innerHTML = html;
+    
+    // Add event listeners to the buttons
+    document.querySelectorAll('.view-detail-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const matchId = this.getAttribute('data-id');
+            const match = outstandingMatches.find(m => m.id === matchId);
+            
+            // Hide the modal
+            document.getElementById('outstanding-modal').classList.remove('show');
+            
+            // Show match details
+            showMatchLightbox(match);
+        });
+    });
+    
+    // Add edit button listeners
+    document.querySelectorAll('.edit-report-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const matchId = this.getAttribute('data-id');
+            const match = outstandingMatches.find(m => m.id === matchId);
+            
+            // Hide the modal
+            document.getElementById('outstanding-modal').classList.remove('show');
+            
+            // Populate form with match data for editing
+            editReport(match);
+        });
+    });
+    
+    // Add rescind button listeners
+    document.querySelectorAll('.rescind-report-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const matchId = this.getAttribute('data-id');
+            const match = outstandingMatches.find(m => m.id === matchId);
+            
+            // Confirm before rescinding
+            if (confirm(`Are you sure you want to rescind this match report against ${match.winnerUsername || 'opponent'}?`)) {
+                rescindReport(match);
+            }
+        });
+    });
+}
+
+// Function to rescind (delete) a report
+export async function rescindReport(match) {
+    try {
+        // Determine which collection to use based on game mode
+        const pendingCollection = 
+            currentGameMode === 'D1' ? 'pendingMatches' : 
+            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+        
+        // Reference to the document
+        const reportRef = doc(db, pendingCollection, match.id);
+        
+        // Delete the document
+        await deleteDoc(reportRef);
+        
+        // Show success message
+        alert('Report has been successfully rescinded.');
+        
+        // Refresh the matches list
+        await fetchOutstandingMatches();
+        renderOutstandingMatches();
+        
+    } catch (error) {
+        console.error('Error rescinding report:', error);
+        alert('Failed to rescind report. Please try again.');
+    }
+}
+
+// Function to edit a report - update to properly handle cancellation
+export function editReport(match) {
+    // Get the report form elements
+    const reportForm = document.getElementById('report-form');
+    const loserScore = document.getElementById('loser-score');
+    const suicides = document.getElementById('suicides');
+    const mapPlayed = document.getElementById('map-played');
+    const loserComment = document.getElementById('loser-comment');
+    
+    // Make sure form is visible
+    reportForm.style.display = 'block';
+    document.getElementById('auth-warning').style.display = 'none';
+    
+    // Populate form with match data
+    if (match.loserScore) loserScore.value = match.loserScore;
+    if (match.loserSuicides) suicides.value = match.loserSuicides;
+    if (match.mapPlayed) mapPlayed.value = match.mapPlayed;
+    if (match.loserComment) loserComment.value = match.loserComment;
+    
+    // Set the appropriate opponent in the dropdown if available
+    const winnerDropdown = document.getElementById('winner-username');
+    if (winnerDropdown && match.winnerUsername) {
+        // Find and select the correct option
+        Array.from(winnerDropdown.options).forEach(option => {
+            if (option.text === match.winnerUsername) {
+                option.selected = true;
+            }
+        });
+    }
+    
+    // Store the match ID in a data attribute for use when submitting
+    reportForm.setAttribute('data-edit-id', match.id);
+    
+    // Change the submit button text to indicate editing
+    const submitBtn = reportForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Update Report';
+    
+    // Add a cancel button if it doesn't exist
+    if (!document.getElementById('cancel-edit-btn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.id = 'cancel-edit-btn';
+        cancelBtn.className = 'btn';
+        cancelBtn.style.backgroundColor = '#6a1b9a';
+        cancelBtn.style.marginRight = '10px';
+        cancelBtn.textContent = 'Cancel Edit';
+        cancelBtn.type = 'button';
+        
+        // Insert before the submit button
+        submitBtn.parentNode.insertBefore(cancelBtn, submitBtn);
+        
+        // Add event listener to the cancel button
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();  // Ensure it doesn't submit the form
+            
+            // Reset the form
+            reportForm.reset();
+            
+            // Remove the edit ID
+            reportForm.removeAttribute('data-edit-id');
+            
+            // Change button text back
+            submitBtn.textContent = 'Report Game';
+            
+            // Remove the cancel button
+            this.remove();
+            
+            // Re-initialize the form as needed
+            initReportForm();
+        });
+    }
+    
+    // Scroll to the form
+    reportForm.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Helper function to re-initialize the form after cancellation
+function initReportForm() {
+    // Add any necessary initialization code here
+    // This would be specific to your application's needs
+    console.log('Report form reset');
+}
+
+// Function to show match details in a lightbox
+export function showMatchLightbox(match) {
+    // Get the lightbox elements
+    const lightbox = document.getElementById('report-lightbox');
+    
+    // Set the game mode in the lightbox
+    document.getElementById('lightbox-game-mode').textContent = currentGameMode;
+    
+    // Fill in match details
+    document.getElementById('lightbox-winner').textContent = match.winnerUsername || 'Unknown';
+    document.getElementById('lightbox-loser').textContent = match.loserUsername || 'Unknown';
+    document.getElementById('lightbox-loser-score').textContent = match.loserScore || '0';
+    document.getElementById('lightbox-suicides').textContent = match.loserSuicides || '0';
+    document.getElementById('lightbox-map').textContent = match.mapPlayed || 'Unknown';
+    document.getElementById('lightbox-comment').textContent = match.loserComment || 'No comment';
+    
+    // Make lightbox visible
+    lightbox.classList.add('show');
+}
+
+// Function to set the current game mode
+export function setCurrentGameMode(mode) {
+    currentGameMode = mode;
+}
+
+// Initialize outstanding matches functionality
+export function initOutstandingMatches() {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Elements
+        const viewOutstandingBtn = document.getElementById('view-outstanding-btn');
+        const viewOutstandingContainer = document.getElementById('view-outstanding-container');
+        const outstandingModal = document.getElementById('outstanding-modal');
+        const closeOutstandingBtn = document.getElementById('close-outstanding-btn');
+        const regularCancelButton = document.getElementById('cancel-button');
+        const d1Button = document.getElementById('d1-mode');
+        const d2Button = document.getElementById('d2-mode');
+        const d3Button = document.getElementById('d3-mode');
+
+        // Update game mode when buttons are clicked
+        if (d1Button) d1Button.addEventListener('click', () => { setCurrentGameMode('D1'); });
+        if (d2Button) d2Button.addEventListener('click', () => { setCurrentGameMode('D2'); });
+        if (d3Button) d3Button.addEventListener('click', () => { setCurrentGameMode('D3'); });
+
+        // Listen for auth state changes to show/hide the button
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                viewOutstandingContainer.style.display = 'block';
+            } else {
+                viewOutstandingContainer.style.display = 'none';
+            }
+        });
+
+        // Button click handler
+        if (viewOutstandingBtn) {
+            viewOutstandingBtn.addEventListener('click', async () => {
+                outstandingModal.classList.add('show');
+                document.getElementById('outstanding-matches-list').innerHTML = 
+                    '<div class="loading">Loading your matches...</div>';
+                
+                await fetchOutstandingMatches();
+                renderOutstandingMatches();
+            });
+        }
+        
+        // Close outstanding modal button
+        if (closeOutstandingBtn) {
+            closeOutstandingBtn.addEventListener('click', () => {
+                outstandingModal.classList.remove('show');
+            });
+        }
+        
+        // Close main lightbox cancel button
+        if (regularCancelButton) {
+            regularCancelButton.addEventListener('click', () => {
+                document.getElementById('report-lightbox').classList.remove('show');
+            });
+        }
+        
+        // Close modal when clicking outside
+        if (outstandingModal) {
+            outstandingModal.addEventListener('click', (e) => {
+                if (e.target === outstandingModal) {
+                    outstandingModal.classList.remove('show');
+                }
+            });
+        }
+        
+        // Close report lightbox when clicking outside
+        const reportLightbox = document.getElementById('report-lightbox');
+        if (reportLightbox) {
+            reportLightbox.addEventListener('click', (e) => {
+                if (e.target === reportLightbox) {
+                    reportLightbox.classList.remove('show');
+                }
+            });
+        }
+        
+        // Add the form submission handler for editing reports
+        const reportForm = document.getElementById('report-form');
+        if (reportForm) {
+            // Store the original form submission handler
+            const originalSubmitHandler = reportForm.onsubmit;
+            
+            // Replace with our handler that checks for edits
+            reportForm.onsubmit = async function(e) {
+                e.preventDefault();
+                
+                // Check if this is an edit
+                const editId = this.getAttribute('data-edit-id');
+                
+                if (editId) {
+                    // This is an edit
+                    try {
+                        // Get form values
+                        const loserScore = document.getElementById('loser-score').value;
+                        const suicides = document.getElementById('suicides').value;
+                        const mapPlayed = document.getElementById('map-played').value;
+                        const loserComment = document.getElementById('loser-comment').value;
+                        
+                        // Determine which collection to use based on game mode
+                        const pendingCollection = 
+                            currentGameMode === 'D1' ? 'pendingMatches' : 
+                            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+                        
+                        // Reference to the document
+                        const reportRef = doc(db, pendingCollection, editId);
+                        
+                        // Update the document
+                        await updateDoc(reportRef, {
+                            loserScore: Number(loserScore),
+                            loserSuicides: Number(suicides),
+                            mapPlayed: mapPlayed,
+                            loserComment: loserComment,
+                            updatedAt: new Date()
+                        });
+                        
+                        // Show success message
+                        alert('Report has been successfully updated.');
+                        
+                        // Reset the form
+                        this.reset();
+                        
+                        // Remove the edit ID
+                        this.removeAttribute('data-edit-id');
+                        
+                        // Change button text back
+                        const submitBtn = this.querySelector('button[type="submit"]');
+                        submitBtn.textContent = 'Report Game';
+                        
+                        // Remove the cancel button if it exists
+                        const cancelBtn = document.getElementById('cancel-edit-btn');
+                        if (cancelBtn) cancelBtn.remove();
+                        
+                    } catch (error) {
+                        console.error('Error updating report:', error);
+                        document.getElementById('report-error').textContent = 'Failed to update report. Please try again.';
+                    }
+                } else {
+                    // Not an edit, use original handler if available
+                    if (typeof originalSubmitHandler === 'function') {
+                        // Call the original handler in the correct context
+                        originalSubmitHandler.call(this, e);
+                    }
+                }
+            };
+        }
+    });
+}
+
+// Make functions available globally for the button handler
+if (typeof window !== 'undefined') {
+    window.showMatchLightbox = showMatchLightbox;
+    window.editReport = editReport;
+    window.rescindReport = rescindReport;
+    window.fetchOutstandingMatches = fetchOutstandingMatches;
+    window.renderOutstandingMatches = renderOutstandingMatches;
+}
+
+// Call the initialization function
+initOutstandingMatches();
