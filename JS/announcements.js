@@ -8,7 +8,6 @@ const ANNOUNCEMENT = {
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
             <li>Elo Tracking/Recomendations </li>
             <li>View, edit, and rescind outstanding/waiting reports</li>
-            <li>Fixed bugs related to item tracking.</li>
             <br>
 
         <p1 style="color:#ffffff; font-weight: bold;">UPCOMING EVENT:</p1><br></br>
