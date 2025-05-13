@@ -105,8 +105,7 @@ textarea {
 /* Match index.html ladder buttons */
 .btn {
     display: inline-block;
-    padding: 8px 16px;
-    margin: 5px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: bold;
     text-align: center;
@@ -118,6 +117,7 @@ textarea {
     background-color: #a913ce; /* Purple to match site theme */
     transition: background-color 0.3s ease, transform 0.2s;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    min-width: 140px; /* Set minimum width to match buttons */
 }
 
 .btn:hover {
@@ -338,8 +338,52 @@ textarea {
 .button-container {
     display: flex;
     justify-content: center;
+    gap: 15px; /* Increased gap between buttons for better spacing */
+    margin: 20px 0;
+    flex-wrap: wrap; /* Allows wrapping on very small screens */
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .button-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn, #view-outstanding-btn {
+        width: 80%;
+        min-width: 200px;
+        margin: 0;
+    }
+}
+
+/* Match actions button styles - add before the media query */
+.match-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     gap: 10px;
-    margin: 10px 0;
+    margin-top: 10px;
+}
+
+.match-actions .btn {
+    flex: 1;
+    min-width: 100px;
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+.match-actions .danger-button {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.match-actions .danger-button:hover {
+    background-color: #b71c1c;
 }
 
 /* For mobile responsiveness */
@@ -357,4 +401,90 @@ textarea {
     .btn {
         width: 80%;
     }
+    
+    .match-actions {
+        flex-direction: column;
+    }
+    
+    .match-actions .btn {
+        width: 100%;
+    }
+}
+
+
+        /* Outstanding matches modal styles */
+        .matches-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+            color: #fff;
+        }
+        
+        .match-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-left: 4px solid #b026b9;
+        }
+        
+        .match-item h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .match-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .match-detail-item {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .match-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .loading {
+            color: #ccc;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+/* Position button at the bottom of the report form */
+#view-outstanding-container {
+    text-align: center;
+    margin: 0; /* Remove all margins */
+    padding: 0; /* Remove all padding */
+    width: auto; /* Let it size to content */
+    display: inline-block; /* Match display type of other button */
+}
+
+/* Button styling */
+#view-outstanding-btn {
+    background-color: #a913ce; /* Match the report game button */
+    color: white;
+    border: none;
+    padding: 10px 20px; /* Match padding of other button */
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    width: auto; /* Let width be automatic */
+    min-width: 140px; /* Match minimum width */
+}
+
+#view-outstanding-btn:hover {
+    background-color: #8c1e96;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5);
 }
