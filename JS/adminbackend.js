@@ -7,6 +7,13 @@ import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import { isAdmin } from './admin-check.js';
 
+// At the top of adminbackend.js with other global variables
+let matchesPagination = { 
+    d1: { page: 1, lastVisible: null, firstVisible: null }, 
+    d2: { page: 1, lastVisible: null, firstVisible: null },
+    d3: { page: 1, lastVisible: null, firstVisible: null }
+};
+
 // Helper function to determine text color based on background
 function getContrastColor(hexColor) {
     if (!hexColor) return '#ffffff'; // Default to white
@@ -144,8 +151,8 @@ async function getUserTabPermissions(userEmail) {
         // Define role-based permissions
         // Make sure all role names are lowercase for consistency
         const rolePermissions = {
-            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights'],
-            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights'],
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'manage-matches'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'manage-matches'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
             'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights'] // Creative Lead can manage articles & trophies
         };
@@ -315,6 +322,11 @@ async function initializeAdminDashboard() {
         if (allowedTabs.includes('inactive-players')) {
             setupInactivePlayersSection();
         }
+
+        if (allowedTabs.includes('manage-matches')) {
+            setupManageMatchesSection();
+        }
+
         // Set up data load buttons with permissions
         setupDataLoadButtons(allowedTabs);
         
@@ -529,6 +541,32 @@ function setupDataLoadButtons(allowedTabs = []) {
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                         setTimeout(() => {
                             this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+        // Matches load button
+    if (allowedTabs.includes('manage-matches')) {
+        const loadMatchesBtn = document.getElementById('load-matches-data');
+        if (loadMatchesBtn) {
+            loadMatchesBtn.addEventListener('click', function() {
+                console.log('Load matches data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadMatchesData(1)
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
+                    })
+                    .catch(error => {
+                        console.error('Error loading matches:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
                         }, 3000);
                     });
             });
@@ -4202,5 +4240,545 @@ function setupHighlightButtons() {
         });
     } else {
         console.error("Achievement highlight button not found");
+    }
+}
+
+// Setup Manage Matches section
+function setupManageMatchesSection() {
+    console.log('Setting up Manage Matches section');
+    
+    // Pagination buttons
+    document.getElementById('matches-prev-page').addEventListener('click', () => {
+        const ladderPrefix = currentLadder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page - 1);
+    });
+    
+    document.getElementById('matches-next-page').addEventListener('click', () => {
+        const ladderPrefix = currentLadder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page + 1);
+    });
+    
+    // Filter buttons
+    document.getElementById('apply-matches-filters').addEventListener('click', applyMatchesFilters);
+    document.getElementById('reset-matches-filters').addEventListener('click', resetMatchesFilters);
+    
+    // Search functionality
+    const matchesSearch = document.getElementById('matches-search');
+    if (matchesSearch) {
+        matchesSearch.addEventListener('input', debounce(filterMatchesTable, 300));
+    }
+    
+    // Edit match modal events
+    const editMatchModal = document.getElementById('edit-match-modal');
+    const editMatchForm = document.getElementById('edit-match-form');
+    
+    if (editMatchModal) {
+        // Close modal when clicking outside or on close button
+        editMatchModal.addEventListener('click', (e) => {
+            if (e.target === editMatchModal) {
+                closeEditMatchModal();
+            }
+        });
+        
+        const closeBtn = editMatchModal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeEditMatchModal);
+        }
+    }
+    
+    if (editMatchForm) {
+        // Handle form submission
+        editMatchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveEditedMatch();
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-edit-match-btn').addEventListener('click', closeEditMatchModal);
+    }
+    
+    // Delete confirmation modal events
+    const deleteMatchModal = document.getElementById('delete-match-confirm-modal');
+    
+    if (deleteMatchModal) {
+        // Close modal when clicking outside
+        deleteMatchModal.addEventListener('click', (e) => {
+            if (e.target === deleteMatchModal) {
+                closeDeleteMatchModal();
+            }
+        });
+        
+        // Cancel deletion
+        document.getElementById('cancel-delete-match-btn').addEventListener('click', closeDeleteMatchModal);
+        
+        // Confirm deletion
+        document.getElementById('confirm-delete-match-btn').addEventListener('click', confirmDeleteMatch);
+    }
+    
+    console.log('Manage Matches section initialized');
+}
+
+// Load matches data with pagination
+async function loadMatchesData(page = 1) {
+    const tableBody = document.getElementById('matches-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading matches...</td></tr>';
+    
+    try {
+        const ladderPrefix = currentLadder.toLowerCase();
+        const pagination = matchesPagination[ladderPrefix];
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        const matchesRef = collection(db, matchesCollection);
+        
+        // Reset pagination if going back to page 1
+        if (page <= 1) {
+            pagination.page = 1;
+            pagination.firstVisible = null;
+            pagination.lastVisible = null;
+        } else {
+            pagination.page = page;
+        }
+        
+        // Apply filters if any
+        const filters = getMatchesFilters();
+        let q = matchesRef;
+        
+        if (filters.startDate || filters.endDate || filters.searchTerm) {
+            // Create query with filters
+            let queryConstraints = [];
+            
+            if (filters.startDate && filters.endDate) {
+                queryConstraints.push(
+                    where('approvedAt', '>=', filters.startDate),
+                    where('approvedAt', '<=', filters.endDate)
+                );
+                q = query(matchesRef, ...queryConstraints);
+            } else {
+                q = query(matchesRef, orderBy('approvedAt', 'desc'));
+            }
+        } else {
+            // Default ordering
+            q = query(matchesRef, orderBy('approvedAt', 'desc'));
+        }
+        
+        // Add pagination
+        if (page > 1 && pagination.lastVisible) {
+            q = query(q, startAfter(pagination.lastVisible), limit(PAGE_SIZE));
+        } else {
+            q = query(q, limit(PAGE_SIZE));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Update pagination state
+        if (!querySnapshot.empty) {
+            pagination.firstVisible = querySnapshot.docs[0];
+            pagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Check if there are more records for next page
+        let hasNextPage = false;
+        if (!querySnapshot.empty) {
+            const nextPageQuery = query(q, startAfter(pagination.lastVisible), limit(1));
+            const nextPageSnapshot = await getDocs(nextPageQuery);
+            hasNextPage = !nextPageSnapshot.empty;
+        }
+        
+        // Enable/disable pagination buttons
+        document.getElementById('matches-prev-page').disabled = pagination.page <= 1;
+        document.getElementById('matches-next-page').disabled = !hasNextPage;
+        
+        // Update page indicator
+        document.getElementById('matches-page-indicator').textContent = `Page ${pagination.page}`;
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const match = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format date
+            const dateStr = match.approvedAt ? 
+                new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+            
+            row.setAttribute('data-id', doc.id);
+            row.setAttribute('data-ladder', currentLadder);
+            
+            row.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${match.winnerUsername || 'Unknown'}</td>
+                <td>${match.loserUsername || 'Unknown'}</td>
+                <td>${match.winnerScore || 0} - ${match.loserScore || 0}</td>
+                <td>${match.mapPlayed || 'N/A'}</td>
+                <td>${currentLadder}</td>
+                <td class="actions">
+                    <button class="edit-match-btn" data-id="${doc.id}" title="Edit Match">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-match-btn" data-id="${doc.id}" title="Delete Match">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // Add event listeners to action buttons
+        setupMatchesActionButtons();
+        
+        // Apply search filter if there's a term
+        if (filters.searchTerm) {
+            filterMatchesTable();
+        }
+        
+    } catch (error) {
+        console.error('Error loading matches:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error loading matches: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Setup action buttons for matches table
+function setupMatchesActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder;
+            openEditMatchModal(matchId, ladder);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder;
+            openDeleteMatchModal(matchId, ladder);
+        });
+    });
+}
+
+// Filter matches table based on search term
+function filterMatchesTable() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#matches-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.classList.contains('loading-cell') || 
+            row.classList.contains('empty-state') || 
+            row.classList.contains('error-state')) {
+            return;
+        }
+        
+        const winner = row.cells[1].textContent.toLowerCase();
+        const loser = row.cells[2].textContent.toLowerCase();
+        const map = row.cells[4].textContent.toLowerCase();
+        
+        if (winner.includes(searchTerm) || loser.includes(searchTerm) || map.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && rows.length > 0) {
+        const tableBody = document.getElementById('matches-table-body');
+        const hasNoResultsRow = tableBody.querySelector('.no-results');
+        
+        if (!hasNoResultsRow) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results';
+            noResultsRow.innerHTML = `<td colspan="7">No matches found matching '${searchTerm}'</td>`;
+            tableBody.appendChild(noResultsRow);
+        }
+    } else {
+        const noResultsRow = document.querySelector('.no-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+}
+
+// Get filters for matches query
+function getMatchesFilters() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const startDateStr = document.getElementById('matches-start-date').value;
+    const endDateStr = document.getElementById('matches-end-date').value;
+    
+    let startDate = null;
+    let endDate = null;
+    
+    if (startDateStr) {
+        startDate = new Date(startDateStr);
+        startDate.setHours(0, 0, 0, 0);
+        startDate = Timestamp.fromDate(startDate);
+    }
+    
+    if (endDateStr) {
+        endDate = new Date(endDateStr);
+        endDate.setHours(23, 59, 59, 999);
+        endDate = Timestamp.fromDate(endDate);
+    }
+    
+    return { searchTerm, startDate, endDate };
+}
+
+// Apply filters to matches
+async function applyMatchesFilters() {
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload with filters applied
+    await loadMatchesData(1);
+}
+
+// Reset match filters
+function resetMatchesFilters() {
+    document.getElementById('matches-start-date').value = '';
+    document.getElementById('matches-end-date').value = '';
+    document.getElementById('matches-search').value = '';
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload matches
+    loadMatchesData(1);
+}
+
+// Open edit match modal
+async function openEditMatchModal(matchId, ladder) {
+    const modal = document.getElementById('edit-match-modal');
+    if (!modal) return;
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Set form fields
+        document.getElementById('edit-match-id').value = matchId;
+        document.getElementById('edit-match-ladder').value = ladder;
+        document.getElementById('edit-match-winner').value = match.winnerUsername || '';
+        document.getElementById('edit-match-winner-score').value = match.winnerScore || 0;
+        document.getElementById('edit-match-winner-suicides').value = match.winnerSuicides || 0;
+        document.getElementById('edit-match-winner-comment').value = match.winnerComment || '';
+        document.getElementById('edit-match-loser').value = match.loserUsername || '';
+        document.getElementById('edit-match-loser-score').value = match.loserScore || 0;
+        document.getElementById('edit-match-loser-suicides').value = match.loserSuicides || 0;
+        document.getElementById('edit-match-loser-comment').value = match.loserComment || '';
+        document.getElementById('edit-match-map').value = match.mapPlayed || '';
+        document.getElementById('edit-match-winner-demo').value = match.winnerDemoLink || '';
+        document.getElementById('edit-match-loser-demo').value = match.loserDemoLink || match.demoLink || '';
+        
+        // Update title
+        document.getElementById('edit-match-title').textContent = `Edit Match: ${match.winnerUsername} vs ${match.loserUsername}`;
+        
+        // Show the modal
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match data:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close edit match modal
+function closeEditMatchModal() {
+    const modal = document.getElementById('edit-match-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Save edited match
+async function saveEditedMatch() {
+    try {
+        const matchId = document.getElementById('edit-match-id').value;
+        const ladder = document.getElementById('edit-match-ladder').value;
+        
+        if (!matchId || !ladder) {
+            showNotification('Match ID or ladder missing', 'error');
+            return;
+        }
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get form values
+        const winnerUsername = document.getElementById('edit-match-winner').value.trim();
+        const winnerScore = parseInt(document.getElementById('edit-match-winner-score').value);
+        const winnerSuicides = parseInt(document.getElementById('edit-match-winner-suicides').value);
+        const winnerComment = document.getElementById('edit-match-winner-comment').value.trim();
+        const loserUsername = document.getElementById('edit-match-loser').value.trim();
+        const loserScore = parseInt(document.getElementById('edit-match-loser-score').value);
+        const loserSuicides = parseInt(document.getElementById('edit-match-loser-suicides').value);
+        const loserComment = document.getElementById('edit-match-loser-comment').value.trim();
+        const mapPlayed = document.getElementById('edit-match-map').value.trim();
+        const winnerDemoLink = document.getElementById('edit-match-winner-demo').value.trim();
+        const loserDemoLink = document.getElementById('edit-match-loser-demo').value.trim();
+        
+        if (!winnerUsername || !loserUsername) {
+            showNotification('Winner and loser usernames are required', 'error');
+            return;
+        }
+        
+        // Update the match document
+        await updateDoc(doc(db, matchesCollection, matchId), {
+            winnerUsername,
+            winnerScore,
+            winnerSuicides,
+            winnerComment,
+            loserUsername,
+            loserScore,
+            loserSuicides,
+            loserComment,
+            mapPlayed,
+            winnerDemoLink: winnerDemoLink || null,
+            loserDemoLink: loserDemoLink || null,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: auth.currentUser.email,
+            isEdited: true
+        });
+        
+        showNotification('Match updated successfully', 'success');
+        closeEditMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error saving match:', error);
+        showNotification('Failed to save match: ' + error.message, 'error');
+    }
+}
+
+// Open delete match confirmation modal
+async function openDeleteMatchModal(matchId, ladder) {
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Store match ID and ladder for deletion
+        const deleteModal = document.getElementById('delete-match-confirm-modal');
+        deleteModal.dataset.matchId = matchId;
+        deleteModal.dataset.ladder = ladder;
+        
+        // Format date
+        const dateStr = match.approvedAt ? 
+            new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+        
+        // Create match summary
+        const summary = document.getElementById('delete-match-summary');
+        summary.innerHTML = `
+            <p><strong>Date:</strong> ${dateStr}</p>
+            <p><strong>Players:</strong> ${match.winnerUsername} (winner) vs ${match.loserUsername} (loser)</p>
+            <p><strong>Score:</strong> ${match.winnerScore || 0} - ${match.loserScore || 0}</p>
+            <p><strong>Map:</strong> ${match.mapPlayed || 'N/A'}</p>
+            <p><strong>Ladder:</strong> ${ladder}</p>
+        `;
+        
+        // Show the modal
+        deleteModal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match for deletion:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close delete match modal
+function closeDeleteMatchModal() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Clear data attributes
+        modal.removeAttribute('data-match-id');
+        modal.removeAttribute('data-ladder');
+    }
+}
+
+// Confirm and delete match
+async function confirmDeleteMatch() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    const matchId = modal.dataset.matchId;
+    const ladder = modal.dataset.ladder;
+    
+    if (!matchId || !ladder) {
+        showNotification('Match ID or ladder missing', 'error');
+        closeDeleteMatchModal();
+        return;
+    }
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Delete the match
+        await deleteDoc(doc(db, matchesCollection, matchId));
+        
+        showNotification('Match deleted successfully', 'success');
+        closeDeleteMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error deleting match:', error);
+        showNotification('Failed to delete match: ' + error.message, 'error');
     }
 }

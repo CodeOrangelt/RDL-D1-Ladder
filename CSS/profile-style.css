@@ -89,6 +89,7 @@
     margin: 0;
     color: inherit;
     opacity: 0.9;
+    margin-bottom: 5px;
 }
 
 /* Update profile field styling for tighter inline layout */
@@ -386,12 +387,78 @@
     display: none;
 }
 
+/* Stats Grid Styling */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.stat-item {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Next Rank Styling */
+.stat-item.next-rank {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* ELO rank colors */
+.next-rank .elo-unranked {
+    color: #808080;
+}
+
+.next-rank .elo-bronze {
+    color: #CD7F32;
+}
+
+.next-rank .elo-silver {
+    color: #C0C0C0;
+}
+
+.next-rank .elo-gold {
+    color: #FFD700;
+}
+
+.next-rank .elo-emerald {
+    color: #50C878;
+}
+
 .stat-item {
     display: flex;
     align-items: center;
     gap: 5px;
     background: none;
     padding: 0;
+    text-align: center;
+    padding: 10px 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    margin: 5px;
 }
 
 .stat-label {
@@ -424,11 +491,12 @@
 }
 
 .stats-grid {
-    display: grid;  /* Changed from 'none' */
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
     width: 100%;
     margin: 15px 0;
+    margin-top: 15px;
 }
 
 .stat-item {
@@ -475,11 +543,75 @@
 
 /* Stats Grid Layout */
 .stats-grid {
-    display: grid;  /* Changed from 'none' */
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
     width: 100%;
     margin: 15px 0;
+    margin-top: 15px;
+}
+
+/* Next Rank Styling */
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* Add a border around the next rank stat */
+.next-rank {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Next Rank Item Styling - updated to make it more visible */
+.stat-item.next-rank {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 5px;
+}
+
+.next-rank .stat-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.next-rank .stat-value {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: -5px; /* Pull up closer to label */
+}
+
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 0px;
+}
+
+/* Color classes for next rank */
+.next-rank .elo-unranked {
+    color: #808080;
+}
+
+.next-rank .elo-bronze {
+    color: #CD7F32;
+}
+
+.next-rank .elo-silver {
+    color: #C0C0C0;
+}
+
+.next-rank .elo-gold {
+    color: #FFD700;
+}
+
+.next-rank .elo-emerald {
+    color: #50C878;
+}
+
+/* Remove old style as we're using a different approach now */
+.elo-progress-info {
+    display: none;
 }
 
 .stat-item {
@@ -773,4 +905,239 @@
 
 .trophy.common {
     border-color: rgba(128, 128, 128, 0.6);
+}
+
+/* ELO History Container Styles */
+.elo-history-container {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto; /* Center with auto margins */
+    justify-content: center;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.elo-history-container h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.elo-chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.elo-history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.elo-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+}
+
+.elo-history-table th,
+.elo-history-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.elo-history-table th {
+    background-color: rgba(0, 0, 0, 0.4);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: bold;
+    color: #a913ce;
+}
+
+.elo-history-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.elo-change-positive {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.elo-change-negative {
+    color: #F44336;
+    font-weight: bold;
+}
+
+.elo-change-neutral {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.elo-event {
+    display: inline-block;
+    font-size: 0.85em;
+    padding: 3px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.event-match {
+    background-color: rgba(33, 150, 243, 0.3);
+}
+
+.event-promotion {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+.event-demotion {
+    background-color: rgba(244, 67, 54, 0.3);
+}
+
+.event-adjustment {
+    background-color: rgba(255, 193, 7, 0.3);
+}
+
+/* Match the pagination controls to other sections */
+.elo-history-container .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.elo-history-container .page-btn {
+    background-color: #a913ce;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.elo-history-container .page-btn:hover:not(:disabled) {
+    background-color: #8e10b1;
+    transform: translateY(-2px);
+}
+
+.elo-history-container .page-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#elo-history-page-indicator {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Add to your existing profile-style.css */
+
+.elo-progress-info {
+    margin-top: 5px;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 500;
+    text-align: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ELO Rating Progress Color Classes - match the existing ELO classes */
+.elo-progress-info.elo-unranked {
+    color: #808080; /* Gray */
+}
+
+.elo-progress-info.elo-bronze {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-progress-info.elo-silver {
+    color: #C0C0C0; /* Silver */
+}
+
+.elo-progress-info.elo-gold {
+    color: #FFD700; /* Gold */
+}
+
+.elo-progress-info.elo-emerald {
+    color: #50C878; /* Emerald */
+}
+
+/* Ensure the stats row is displayed properly */
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.stats-column {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 5px;
+    min-width: 80px;
+}
+
+.stats-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.stats-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stats-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+/* Add color classes for the next rank column */
+#next-rank-col .elo-unranked {
+    color: #808080; /* Gray */
+}
+
+#next-rank-col .elo-bronze {
+    color: #CD7F32; /* Bronze */
+}
+
+#next-rank-col .elo-silver {
+    color: #C0C0C0; /* Silver */
+}
+
+#next-rank-col .elo-gold {
+    color: #FFD700; /* Gold */
+}
+
+#next-rank-col .elo-emerald {
+    color: #50C878; /* Emerald */
+}
+
+/* Give the next rank column a slightly special appearance */
+#next-rank-col {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 8px 12px;
 }

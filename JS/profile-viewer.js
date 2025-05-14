@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, doc, getDoc, setDoc, collection, 
-    query, where, getDocs, orderBy, limit 
+    query, where, getDocs, orderBy, limit, startAfter 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -38,6 +38,12 @@ class ProfileViewer {
     constructor() {
         this.currentProfileData = null;
         this.currentLadder = 'D1'; // Default to D1
+        this.eloHistoryPagination = { 
+            d1: { page: 1, lastVisible: null, firstVisible: null }, 
+            d2: { page: 1, lastVisible: null, firstVisible: null },
+            d3: { page: 1, lastVisible: null, firstVisible: null }
+        };
+        this.PAGE_SIZE = 10;
         this.init();
     }
     
@@ -124,55 +130,55 @@ class ProfileViewer {
             
             // Add click handlers
             d1Button.addEventListener('click', () => {
-                if (this.currentLadder !== 'D1') {
-                    this.currentLadder = 'D1';
-                    d1Button.classList.add('active');
-                    d2Button.classList.remove('active');
-                    d3Button.classList.remove('active');
-                    
-                    // Get current username
-                    const username = this.currentProfileData?.username;
-                    if (username) {
-                        this.loadProfile(username);
-                    }
-                }
+                this.switchLadder('D1');
             });
             
             d2Button.addEventListener('click', () => {
-                if (this.currentLadder !== 'D2') {
-                    this.currentLadder = 'D2';
-                    d2Button.classList.add('active');
-                    d1Button.classList.remove('active');
-                    d3Button.classList.remove('active');
-                    
-                    // Get current username
-                    const username = this.currentProfileData?.username;
-                    if (username) {
-                        this.loadProfile(username);
-                    }
-                }
+                this.switchLadder('D2');
             });
 
             d3Button.addEventListener('click', () => {
-                if (this.currentLadder !== 'D3') {
-                    console.log("Switching to D3 ladder view");
-                    this.currentLadder = 'D3';
-                    d3Button.classList.add('active');
-                    d1Button.classList.remove('active');
-                    d2Button.classList.remove('active');
-                    
-                    // Get current username and reload profile
-                    const username = this.currentProfileData?.username;
-                    if (username) {
-                        this.loadProfile(username);
-                    }
-                }
+                this.switchLadder('D3');
             });
         }
     }
     
+    async switchLadder(ladder) {
+        // If it's already the current ladder, do nothing
+        if (this.currentLadder === ladder) return;
+        
+        // Set the new ladder
+        this.currentLadder = ladder;
+        
+        // Update active classes on ladder buttons
+        document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
+            if (btn.dataset.ladder === ladder) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // Clear existing stats - important to prevent duplication
+        document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
+        
+        // Show loading state
+        this.showLoadingState();
+        
+        // Get the current username from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        
+        if (username) {
+            // Load the user's profile for the selected ladder
+            await this.loadPlayerData(username);
+        } else {
+            // If no username provided, show an error
+            this.showErrorState('No username provided');
+        }
+    }
+    
     async loadProfile(username) {
-        console.log(`Loading profile for ${username} in ${this.currentLadder} ladder`);
         try {
             // Check which ladders the player is registered in
             const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
@@ -188,17 +194,18 @@ class ProfileViewer {
             // Load player data
             await this.loadPlayerData(username);
             
-            // Initialize containers in the correct order
-            this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
+            // Initialize containers in the correct order - Move elo-history before player-matchups
+            this.createContainers(['rank-history', 'match-stats', 'elo-history', 'player-matchups', 'match-history']);
             
             // Get matches - do this once so we don't repeat the same query
             const matches = await this.getPlayerMatches(username);
             
             // Display sections in parallel for better performance
             await Promise.all([
-                this.displayTrophyCase(username), // Add this line to display trophies
+                this.displayTrophyCase(username),
                 this.displayPromotionHistory(username),
                 this.displayMatchStats(username, matches),
+                this.displayEloHistory(username), // Moved up in the visual order
                 this.displayPlayerMatchups(username, matches),
                 this.displayMatchHistory(username, matches)
             ]);
@@ -246,7 +253,6 @@ class ProfileViewer {
     }
     
     async loadPlayerData(username) {
-        console.log(`Loading player data for ${username} in ${this.currentLadder} ladder`);
         try {
             // Get cache key that includes ladder
             const cacheKey = `${username}_${this.currentLadder}`;
@@ -329,8 +335,6 @@ class ProfileViewer {
                 }
                 
                 // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
-                console.log(`User ${username} not found in any ladder, registering as non-participant`);
-
                 // First try to find the user in different collections to get correct username
                 let correctUsername = username;
                 let userId = null;
@@ -368,7 +372,6 @@ class ProfileViewer {
                             // Found the user by email prefix match
                             userId = matchingUser.id;
                             correctUsername = matchingUser.data().username || username;
-                            console.log(`Found user by email prefix match, actual username: ${correctUsername}`);
                         } else {
                             // Generate placeholder ID
                             userId = `auto_${username.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
@@ -385,8 +388,6 @@ class ProfileViewer {
                     createdAt: new Date(),
                     lastSeen: new Date()
                 };
-
-                console.log(`Registering as non-participant with username: ${correctUsername}, userId: ${userId}`);
 
                 // Add to nonParticipants collection
                 await setDoc(doc(db, 'nonParticipants', userId), nonParticipantData);
@@ -446,7 +447,6 @@ async getProfileData(userId) {
         
         if (userProfileDoc.exists()) {
             profileData = userProfileDoc.data();
-            console.log(`Found profile data for user ${userId} in userProfiles`);
         } else {
             console.log(`No profile data found for user ${userId} in userProfiles`);
         }
@@ -532,7 +532,8 @@ async getProfileData(userId) {
         }
     }
 
-// Update the displayProfile function to add a special class when using default image
+// Update the displayProfile method to include the next rank info directly in the main stats bar
+
 displayProfile(data) {
     this.currentProfileData = data;
     
@@ -573,135 +574,183 @@ displayProfile(data) {
         legacyProfileSection.style.display = 'none';
     }
         
-        // Check if this is a non-participant or former player
-        const isNonParticipant = data.isNonParticipant === true;
-        const isFormerPlayer = data.isFormerPlayer === true;
-        
-        // Check for user roles
-        const userRole = data.role; // 'admin', 'moderator', 'owner', 'helper', 'staff', etc.
+    // Check if this is a non-participant or former player
+    const isNonParticipant = data.isNonParticipant === true;
+    const isFormerPlayer = data.isFormerPlayer === true;
+    
+    // Check for user roles
+    const userRole = data.role; // 'admin', 'moderator', 'owner', 'helper', 'staff', etc.
 
-        // Read custom role data
-        const roleName = data.roleName;
-        const roleColor = data.roleColor;
-        
-        // Role container (separate from status for styling purposes)
-        let roleContainer = document.querySelector('.role-container');
-        if (!roleContainer && (userRole || roleName)) {
-            roleContainer = document.createElement('div');
-            roleContainer.className = 'role-container';
-        }
-        
-        // Handle role badges if present
-        if (roleName && roleContainer) {
-            // Use custom name and color
-            roleContainer.innerHTML = `
-                <div class="role-badge" style="background-color: ${roleColor || '#808080'}; color: ${getContrastColor(roleColor || '#808080')};">
-                    ${roleName}
-                </div>
-            `;
-            if (!document.querySelector('.role-container')) {
-                container.insertBefore(roleContainer, container.firstChild);
-            }
-        } else if (userRole && roleContainer) {
-            // Format role name for display (capitalize first letter)
-            const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
-            
-            roleContainer.innerHTML = `
-                <div class="role-badge ${userRole.toLowerCase()}">${displayRole}</div>
-            `;
-            
-            // Insert role container at the top of the profile content
-            if (!document.querySelector('.role-container')) {
-                container.insertBefore(roleContainer, container.firstChild);
-            }
-        } else if (roleContainer) {
-            // Remove role container if no role is present
-            roleContainer.remove();
-        }
-        
-        // Continue with existing non-participant or former player handling
-        if (isNonParticipant) {
-            const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
-            statusContainer.className = 'profile-status';
-            statusContainer.innerHTML = `
-                <div class="status-badge non-participant">NON-PARTICIPANT</div>
-                <p class="status-message">
-                    ${data.autoRegistered ? 
-                    'This player has an account but has not joined any ladder.' : 
-                    'This player is registered but not participating in the ladder.'}
-                </p>
-            `;
-            container.classList.add('non-participant-profile');
-            container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
-        } else if (isFormerPlayer) {
-            const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
-            statusContainer.className = 'profile-status';
-            statusContainer.innerHTML = `
-                <div class="status-badge former-player">FORMER PLAYER</div>
-                <p class="status-message">This player was previously on the ladder. Showing historical data.</p>
-            `;
-            container.classList.add('former-player-profile');
-            container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
-        } else {
-            // Remove status indicator if player is active
-            if (document.querySelector('.profile-status')) {
-                document.querySelector('.profile-status').remove();
-            }
-            container.classList.remove('non-participant-profile', 'former-player-profile');
-        }
-        
-        // Handle ELO styling
-        const eloRating = parseInt(data.eloRating) || 0;
-        
-        // Remove existing classes
-        container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
-        
-        // Add appropriate class
-        let eloClass;
-        if (!isNonParticipant) { // Skip for non-participants
-            if (eloRating >= 2000) {
-                eloClass = 'elo-emerald';
-            } else if (eloRating >= 1800) {
-                eloClass = 'elo-gold';
-            } else if (eloRating >= 1600) {
-                eloClass = 'elo-silver';
-            } else if (eloRating >= 1400) {
-                eloClass = 'elo-bronze';
-            } else {
-                eloClass = 'elo-unranked';
-            }
-            container.classList.add(eloClass);
-        }
-        
-        // Format home levels for display
-        let homeLevelsDisplay = 'Not set';
-        const homeLevels = [data.homeLevel1, data.homeLevel2, data.homeLevel3]
-            .filter(level => level && level.trim() !== '');
-        
-        if (homeLevels.length > 0) {
-            homeLevelsDisplay = `Homes: ${homeLevels.join(', ')}`;
-        }
-        
-        // Update profile elements
-        const elements = {
-            'nickname': data.username,
-            'motto-view': data.motto || 'No motto set',
-            'favorite-map-view': data.favoriteMap || 'Not set',
-            'favorite-weapon-view': data.favoriteWeapon || 'Not set',
-            'timezone-view': data.timezone || 'Not set',
-            'division-view': data.division || 'Not set',
-            'home-levels-view': homeLevelsDisplay,
-            'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
-        };
-        
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) element.textContent = value;
-        }
-        
-        // Rest of your existing code...
+    // Read custom role data
+    const roleName = data.roleName;
+    const roleColor = data.roleColor;
+    
+    // Role container (separate from status for styling purposes)
+    let roleContainer = document.querySelector('.role-container');
+    if (!roleContainer && (userRole || roleName)) {
+        roleContainer = document.createElement('div');
+        roleContainer.className = 'role-container';
     }
     
+    // Handle role badges if present
+    if (roleName && roleContainer) {
+        // Use custom name and color
+        roleContainer.innerHTML = `
+            <div class="role-badge" style="background-color: ${roleColor || '#808080'}; color: ${getContrastColor(roleColor || '#808080')};">
+                ${roleName}
+            </div>
+        `;
+        if (!document.querySelector('.role-container')) {
+            container.insertBefore(roleContainer, container.firstChild);
+        }
+    } else if (userRole && roleContainer) {
+        // Format role name for display (capitalize first letter)
+        const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+        
+        roleContainer.innerHTML = `
+            <div class="role-badge ${userRole.toLowerCase()}">${displayRole}</div>
+        `;
+        
+        // Insert role container at the top of the profile content
+        if (!document.querySelector('.role-container')) {
+            container.insertBefore(roleContainer, container.firstChild);
+        }
+    } else if (roleContainer) {
+        // Remove role container if no role is present
+        roleContainer.remove();
+    }
+    
+    // Continue with existing non-participant or former player handling
+    if (isNonParticipant) {
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status';
+        statusContainer.innerHTML = `
+            <div class="status-badge non-participant">NON-PARTICIPANT</div>
+            <p class="status-message">
+                ${data.autoRegistered ? 
+                'This player has an account but has not joined any ladder.' : 
+                'This player is registered but not participating in the ladder.'}
+            </p>
+        `;
+        container.classList.add('non-participant-profile');
+        container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
+    } else if (isFormerPlayer) {
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status';
+        statusContainer.innerHTML = `
+            <div class="status-badge former-player">FORMER PLAYER</div>
+            <p class="status-message">This player was previously on the ladder. Showing historical data.</p>
+        `;
+        container.classList.add('former-player-profile');
+        container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
+    } else {
+        // Remove status indicator if player is active
+        if (document.querySelector('.profile-status')) {
+            document.querySelector('.profile-status').remove();
+        }
+        container.classList.remove('non-participant-profile', 'former-player-profile');
+    }
+    
+    // Handle ELO styling
+    const eloRating = parseInt(data.eloRating) || 0;
+    
+    // Remove existing classes
+    container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+    
+    // Add appropriate class
+    let eloClass;
+    let nextRank = '';
+    let eloNeeded = 0;
+    
+    if (!isNonParticipant) { // Skip for non-participants
+        if (eloRating >= 2000) {
+            eloClass = 'elo-emerald';
+            nextRank = 'Emerald';
+            eloNeeded = 0;
+        } else if (eloRating >= 1800) {
+            eloClass = 'elo-gold';
+            nextRank = 'Emerald';
+            eloNeeded = 2000 - eloRating;
+        } else if (eloRating >= 1600) {
+            eloClass = 'elo-silver';
+            nextRank = 'Gold';
+            eloNeeded = 1800 - eloRating;
+        } else if (eloRating >= 1400) {
+            eloClass = 'elo-bronze';
+            nextRank = 'Silver';
+            eloNeeded = 1600 - eloRating;
+        } else {
+            eloClass = 'elo-unranked';
+            nextRank = 'Bronze';
+            eloNeeded = 1400 - eloRating;
+        }
+        container.classList.add(eloClass);
+    }
+    
+    // Format home levels for display
+    let homeLevelsDisplay = 'Not set';
+    const homeLevels = [data.homeLevel1, data.homeLevel2, data.homeLevel3]
+        .filter(level => level && level.trim() !== '');
+    
+    if (homeLevels.length > 0) {
+        homeLevelsDisplay = `Homes: ${homeLevels.join(', ')}`;
+    }
+    
+    // Update profile elements
+    const elements = {
+        'nickname': data.username,
+        'motto-view': data.motto || 'No motto set',
+        'favorite-map-view': data.favoriteMap || 'Not set',
+        'favorite-weapon-view': data.favoriteWeapon || 'Not set',
+        'timezone-view': data.timezone || 'Not set',
+        'division-view': data.division || 'Not set',
+        'home-levels-view': homeLevelsDisplay,
+        'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
+    };
+    
+    for (const [id, value] of Object.entries(elements)) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    }
+
+    // Create or update the Next Rank element directly in the main stats row
+    if (!isNonParticipant && eloRating > 0) {
+        // First, check if we need to create a main stats row
+        let mainStatsRow = document.querySelector('.stats-row');
+        if (!mainStatsRow) {
+            // Create main stats row if it doesn't exist
+            mainStatsRow = document.createElement('div');
+            mainStatsRow.className = 'stats-row';
+            container.appendChild(mainStatsRow);
+        }
+
+        // Look for existing Next Rank element or create it
+        let nextRankElement = document.getElementById('next-rank-col');
+        if (!nextRankElement) {
+            nextRankElement = document.createElement('div');
+            nextRankElement.id = 'next-rank-col';
+            nextRankElement.className = 'stats-column';
+            
+            // Add to the main stats row
+            mainStatsRow.appendChild(nextRankElement);
+        }
+
+        // Update Next Rank content
+        if (eloRating >= 2000) {
+            nextRankElement.innerHTML = `
+                <div class="stats-label">CURRENT RANK</div>
+                <div id="next-rank-value" class="stats-value ${eloClass}">${nextRank}</div>
+            `;
+        } else {
+            nextRankElement.innerHTML = `
+                <div class="stats-label">NEXT RANK</div>
+                <div id="next-rank-value" class="stats-value ${eloClass}">${nextRank}</div>
+                <div class="stats-progress ${eloClass}">${eloNeeded} ELO needed</div>
+            `;
+        }
+    }
+}
+
     async getPlayerMatches(username) {
         try {
             const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
@@ -1250,8 +1299,6 @@ displayProfile(data) {
     
     async loadPlayerStats(username) {
         if (!username) return;
-        console.log(`Loading stats for ${username} in ${this.currentLadder} ladder`);
-
         try {
             // Direct Firebase query for player data - bypass cache
             const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
@@ -1260,44 +1307,36 @@ displayProfile(data) {
             const querySnapshot = await getDocs(q);
             
             if (querySnapshot.empty) {
-                console.warn(`No player found for ${username} in ${playersCollection}`);
                 this.setDefaultStats();
                 return;
             }
             
             const playerData = querySnapshot.docs[0].data();
-            console.log(`Found player data for ${username}:`, playerData);
             
-            // Rest of your existing code for matches...
-            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
-            const approvedMatchesRef = collection(db, matchesCollection);
-            
-            const [winnerMatches, loserMatches] = await Promise.all([
-                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
-                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
-            ]);
+            // Get matches for this player
+            const matches = await this.getPlayerMatches(username);
             
             // Calculate stats
             const stats = {
-                wins: winnerMatches.size,
-                losses: loserMatches.size,
+                wins: 0,
+                losses: 0,
                 totalKills: 0,
                 totalDeaths: 0,
-                totalMatches: winnerMatches.size + loserMatches.size
+                totalMatches: matches.length
             };
             
-            // Process winner matches
-            winnerMatches.forEach(doc => {
-                const match = doc.data();
-                stats.totalKills += parseInt(match.winnerScore) || 0;
-                stats.totalDeaths += parseInt(match.loserScore) || 0;
-            });
-            
-            // Process loser matches
-            loserMatches.forEach(doc => {
-                const match = doc.data();
-                stats.totalKills += parseInt(match.loserScore) || 0;
-                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+            // Process match data
+            matches.forEach(match => {
+                const isWinner = match.winnerUsername === username;
+                if (isWinner) {
+                    stats.wins++;
+                    stats.totalKills += parseInt(match.winnerScore) || 0;
+                    stats.totalDeaths += parseInt(match.loserScore) || 0;
+                } else {
+                    stats.losses++;
+                    stats.totalKills += parseInt(match.loserScore) || 0;
+                    stats.totalDeaths += parseInt(match.winnerScore) || 0;
+                }
             });
             
             // Calculate derived stats
@@ -1308,26 +1347,148 @@ displayProfile(data) {
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
             
-            // Update DOM elements
-            const elements = {
-                'stats-matches': stats.totalMatches,
-                'stats-wins': stats.wins,
-                'stats-losses': stats.losses,
-                'stats-kd': stats.kda,
-                'stats-winrate': `${stats.winRate}%`,
-                'stats-elo': playerData.eloRating || 'N/A'
+            // Add next rank calculation
+            const eloRating = parseInt(playerData.eloRating) || 0;
+            let nextRank = '';
+            let eloNeeded = 0;
+            let eloClass = '';
+            
+            if (eloRating >= 2000) {
+                nextRank = 'Emerald';
+                eloNeeded = 0;
+                eloClass = 'elo-emerald';
+            } else if (eloRating >= 1800) {
+                nextRank = 'Emerald';
+                eloNeeded = 2000 - eloRating;
+                eloClass = 'elo-gold';
+            } else if (eloRating >= 1600) {
+                nextRank = 'Gold';
+                eloNeeded = 1800 - eloRating;
+                eloClass = 'elo-silver';
+            } else if (eloRating >= 1400) {
+                nextRank = 'Silver';
+                eloNeeded = 1600 - eloRating;
+                eloClass = 'elo-bronze';
+            } else {
+                nextRank = 'Bronze';
+                eloNeeded = 1400 - eloRating;
+                eloClass = 'elo-unranked';
+            }
+            
+            // IMPORTANT: Check if we already have stats at the bottom of the page
+            // and remove them if they exist to prevent duplication
+            const existingBottomStatsGrid = document.querySelector('.profile-content > .stats-grid:last-child');
+            if (existingBottomStatsGrid) {
+                existingBottomStatsGrid.remove();
+            }
+            
+            // Update the existing stats if they exist
+            const updateExistingStats = () => {
+                const elements = {
+                    'stats-matches': stats.totalMatches,
+                    'stats-wins': stats.wins,
+                    'stats-losses': stats.losses,
+                    'stats-kd': stats.kda,
+                    'stats-winrate': `${stats.winRate}%`,
+                    'stats-elo': playerData.eloRating || 'N/A'
+                };
+                
+                // Update all elements at once
+                for (const [id, value] of Object.entries(elements)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    }
+                }
+                
+                // Update or add the next rank item
+                const statsGrid = document.querySelector('.stats-grid');
+                if (statsGrid) {
+                    let nextRankItem = statsGrid.querySelector('.next-rank');
+                    if (!nextRankItem) {
+                        nextRankItem = document.createElement('div');
+                        nextRankItem.className = 'stat-item next-rank';
+                        statsGrid.appendChild(nextRankItem);
+                    }
+                    
+                    // Set the content for next rank
+                    if (eloRating >= 2000) {
+                        nextRankItem.innerHTML = `
+                            <div class="stat-label">CURRENT RANK</div>
+                            <div class="stat-value ${eloClass}">${nextRank}</div>
+                        `;
+                    } else {
+                        nextRankItem.innerHTML = `
+                            <div class="stat-label">NEXT RANK</div>
+                            <div class="stat-value ${eloClass}">${nextRank}</div>
+                            <div class="stat-progress ${eloClass}">${eloNeeded} ELO needed</div>
+                        `;
+                    }
+                }
             };
             
-            // Update all elements at once
-            for (const [id, value] of Object.entries(elements)) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = value;
-                }
+            // If we have existing stats (top row), just update them
+            if (document.getElementById('stats-matches')) {
+                updateExistingStats();
+            } else {
+                // Create a new stats grid with all stats
+                this.createStatsGrid(stats, playerData.eloRating, nextRank, eloNeeded, eloClass);
             }
         } catch (error) {
-            console.error('Error loading player stats:', error);
             this.setDefaultStats();
+        }
+    }
+
+    // New helper method to create stats grid
+    createStatsGrid(stats, eloRating, nextRank, eloNeeded, eloClass) {
+        // Create the stats grid
+        const statsGrid = document.createElement('div');
+        statsGrid.className = 'stats-grid';
+        
+        // Create the standard stat items
+        const statItems = [
+            { id: 'stats-matches', label: 'MATCHES', value: stats.totalMatches },
+            { id: 'stats-wins', label: 'WINS', value: stats.wins },
+            { id: 'stats-losses', label: 'LOSSES', value: stats.losses },
+            { id: 'stats-kd', label: 'K/D', value: stats.kda },
+            { id: 'stats-winrate', label: 'WIN RATE', value: `${stats.winRate}%` },
+            { id: 'stats-elo', label: 'ELO RATING', value: eloRating || 'N/A' }
+        ];
+        
+        // Add all stat items to the grid
+        statItems.forEach(item => {
+            const statItem = document.createElement('div');
+            statItem.className = 'stat-item';
+            statItem.innerHTML = `
+                <div class="stat-label">${item.label}</div>
+                <div id="${item.id}" class="stat-value">${item.value}</div>
+            `;
+            statsGrid.appendChild(statItem);
+        });
+        
+        // Add the next rank item
+        const nextRankItem = document.createElement('div');
+        nextRankItem.className = 'stat-item next-rank';
+        
+        if (eloRating >= 2000) {
+            nextRankItem.innerHTML = `
+                <div class="stat-label">CURRENT RANK</div>
+                <div class="stat-value ${eloClass}">${nextRank}</div>
+            `;
+        } else {
+            nextRankItem.innerHTML = `
+                <div class="stat-label">NEXT RANK</div>
+                <div class="stat-value ${eloClass}">${nextRank}</div>
+                <div class="stat-progress ${eloClass}">${eloNeeded} ELO needed</div>
+            `;
+        }
+        
+        statsGrid.appendChild(nextRankItem);
+        
+        // Find where to insert the stats grid - at the end of the profile content
+        const content = document.querySelector('.profile-content');
+        if (content) {
+            content.appendChild(statsGrid);
         }
     }
     
@@ -1708,6 +1869,312 @@ setupEditProfile() {
             }
         }
     }
+
+    // Update the displayEloHistory method to display the 5 most recent entries from eloHistory collections
+async displayEloHistory(username) {
+    try {
+        // Get the container reference
+        const eloHistoryContainer = containerReferences['elo-history'];
+        if (!eloHistoryContainer) return;
+        
+        // Get season information
+        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+        
+        // Check for non-participant
+        if (this.currentProfileData?.isNonParticipant) {
+            eloHistoryContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>ELO History</h2>
+                <div class="non-participant-notice">
+                    <p>This player is not participating in the ladder.</p>
+                    <p>No ELO history is available.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Create initial structure with a more compact layout
+        eloHistoryContainer.innerHTML = `
+            <div class="season-label">S${currentSeason}</div>
+            <h2>ELO History</h2>
+            <div class="elo-history-content">
+                <div class="elo-history-table-container">
+                    <table class="elo-history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Change</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="elo-history-table-body">
+                            <tr><td colspan="5" class="loading-cell">Loading ELO history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Initial load of ELO history
+        await this.loadEloHistory(username);
+        
+    } catch (error) {
+        console.error('Error setting up ELO history:', error);
+        this.showErrorInContainer('elo-history', 'Failed to load ELO history');
+    }
+}
+
+// Update loadEloHistory to use a single query per ladder (updated)
+async loadEloHistory(username) {
+    const tableBody = document.getElementById('elo-history-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading ELO history...</td></tr>';
+    
+    try {
+        // First get the player ID from the current profile data
+        const playerId = this.currentProfileData?.userId;
+        
+        if (!playerId) {
+            console.log(`No player ID found for ${username}, using username directly`);
+        }
+                
+        // Collection name based on ladder
+        const eloHistoryCollection = 
+            this.currentLadder === 'D1' ? 'eloHistory' : 
+            this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        
+        const eloHistoryRef = collection(db, eloHistoryCollection);
+        
+        // Use a single composite query with OR condition (in operator)
+        let querySnapshot;
+        
+        // Build search terms array with all possible identifier fields
+        const searchTerms = [username]; // Always include username
+        
+        if (playerId) {
+            searchTerms.push(playerId); // Include user ID if available
+        }
+        
+        // Make a single query using 'in' operator on the 'player' field
+        // This field is the most commonly used identifier across your database
+        querySnapshot = await getDocs(query(
+            eloHistoryRef,
+            where('player', 'in', searchTerms),
+            orderBy('timestamp', 'desc'),
+            limit(30) // Limit to reasonable number to avoid excessive reads
+        ));
+                
+        // If no results from the main query, we don't need to query again
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No ELO history found</td></tr>';
+            return;
+        }
+        
+        // Process the results - all docs from the query
+        const allRecords = querySnapshot.docs.map(doc => doc.data());
+        
+        // Log types of entries found
+        const typeCounts = {};
+        allRecords.forEach(record => {
+            const type = record.type || 'unknown';
+            typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });        
+        // Split into initial (5 most recent) and additional entries (older ones)
+        const initialEntries = allRecords.slice(0, 5);
+        const additionalEntries = allRecords.slice(5);
+        const hasMoreEntries = additionalEntries.length > 0;
+                
+        // Create cache for username lookups to avoid repeated queries
+        const usernameCache = new Map();
+        
+        // Function to resolve usernames from IDs
+        const resolveUsername = async (userId) => {
+            if (typeof userId !== 'string' || !userId || userId.length < 2) {
+                return 'Unknown';
+            }
+            
+            if (usernameCache.has(userId)) {
+                return usernameCache.get(userId);
+            }
+            
+            try {
+                // Use a direct query to users collection for efficiency
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (userDoc.exists()) {
+                    const username = userDoc.data().username || userDoc.data().displayName;
+                    if (username) {
+                        usernameCache.set(userId, username);
+                        return username;
+                    }
+                }
+                
+                // If not in users, check players collection
+                const playerDoc = await getDoc(doc(db, this.currentLadder === 'D1' ? 'players' : 
+                    (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3'), userId));
+                    
+                if (playerDoc.exists()) {
+                    const username = playerDoc.data().username;
+                    if (username) {
+                        usernameCache.set(userId, username);
+                        return username;
+                    }
+                }
+                
+                // If we can't resolve it, just return the ID
+                return userId;
+            } catch (error) {
+                console.warn(`Error resolving username for ${userId}:`, error);
+                return userId;
+            }
+        };
+        
+        // Helper function to format history type
+        const formatHistoryType = (type) => {
+            if (!type) return 'Match';
+            
+            // Format the type for display
+            switch (type.toLowerCase()) {
+                case 'match':
+                case 'match_win':
+                case 'match_loss':
+                case 'match_result': return 'Match';
+                case 'admin_modification': return 'Admin';
+                case 'initial_placement': return 'Initial';
+                case 'promotion': return 'Promotion';
+                case 'demotion': return 'Demotion';
+                default: return type.charAt(0).toUpperCase() + type.slice(1);
+            }
+        };
+        
+        // Process initial entries (5 most recent)
+        const initialRowsHTML = await Promise.all(initialEntries.map(async (record) => {
+            // Format timestamp - more compact date format
+            const timestamp = record.timestamp ? 
+                new Date(record.timestamp.seconds * 1000).toLocaleDateString(undefined, {
+                    month: 'short', 
+                    day: 'numeric'
+                }) : 'N/A';
+            
+            // Calculate ELO change and style it
+            const eloChange = record.newElo - record.previousElo;
+            const changeClass = eloChange > 0 ? 'elo-change-positive' : 
+                              eloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+            const changeDisplay = eloChange > 0 ? `+${eloChange}` : eloChange.toString();
+            
+            // Format type and get opponent
+            const typeDisplay = formatHistoryType(record.type);
+            let opponentDisplay = '';
+            
+            // Check both opponentId and opponent fields for backwards compatibility
+            const opponentId = record.opponentId || record.opponent;
+            
+            if (opponentId) {
+                const opponentName = await resolveUsername(opponentId);
+                if (opponentName) {
+                    opponentDisplay = ` vs. ${opponentName}`;
+                }
+            }
+            
+            return `
+                <tr>
+                    <td>${timestamp}</td>
+                    <td class="${changeClass}">${changeDisplay}</td>
+                    <td>${record.previousElo}</td>
+                    <td>${record.newElo}</td>
+                    <td><span class="elo-event event-${record.type || 'match'}">${typeDisplay}${opponentDisplay}</span></td>
+                </tr>
+            `;
+        }));
+        
+        // Add initial entries and "Show More" button if needed
+        tableBody.innerHTML = initialRowsHTML.join('');
+        
+        // Add Show More button if there are additional entries
+        if (hasMoreEntries) {
+            const showMoreRow = document.createElement('tr');
+            showMoreRow.id = 'show-more-elo-row';
+            showMoreRow.className = 'show-more-row';
+            showMoreRow.innerHTML = `
+                <td colspan="5" class="show-more-cell">
+                    <button id="show-more-elo-btn" class="show-more-btn">
+                        Show More (${additionalEntries.length})
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(showMoreRow);
+            
+            // Add click handler for "Show More" button
+            const showMoreBtn = document.getElementById('show-more-elo-btn');
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', async () => {
+                    showMoreBtn.textContent = 'Loading...';
+                    showMoreBtn.disabled = true;
+                    
+                    try {
+                        // Process and render additional entries
+                        const additionalRowsHTML = await Promise.all(additionalEntries.map(async (record) => {
+                            const timestamp = record.timestamp ? 
+                                new Date(record.timestamp.seconds * 1000).toLocaleDateString(undefined, {
+                                    month: 'short', 
+                                    day: 'numeric'
+                                }) : 'N/A';
+                            
+                            const eloChange = record.newElo - record.previousElo;
+                            const changeClass = eloChange > 0 ? 'elo-change-positive' : 
+                                              eloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+                            const changeDisplay = eloChange > 0 ? `+${eloChange}` : eloChange.toString();
+                            
+                            const typeDisplay = formatHistoryType(record.type);
+                            let opponentDisplay = '';
+                            
+                            const opponentId = record.opponentId || record.opponent;
+                            
+                            if (opponentId) {
+                                const opponentName = await resolveUsername(opponentId);
+                                if (opponentName) {
+                                    opponentDisplay = ` vs. ${opponentName}`;
+                                }
+                            }
+                            
+                            return `
+                                <tr>
+                                    <td>${timestamp}</td>
+                                    <td class="${changeClass}">${changeDisplay}</td>
+                                    <td>${record.previousElo}</td>
+                                    <td>${record.newElo}</td>
+                                    <td><span class="elo-event event-${record.type || 'match'}">${typeDisplay}${opponentDisplay}</span></td>
+                                </tr>
+                            `;
+                        }));
+                        
+                        // Replace "Show More" row with additional entries
+                        showMoreRow.remove();
+                        tableBody.insertAdjacentHTML('beforeend', additionalRowsHTML.join(''));
+                    } catch (error) {
+                        console.error('Error loading additional entries:', error);
+                        showMoreBtn.textContent = `Show More (${additionalEntries.length})`;
+                        showMoreBtn.disabled = false;
+                    }
+                });
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading ELO history:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="error-state">
+                    Error loading ELO history: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
 }
 
 // Also update the preview function
@@ -1738,7 +2205,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
              // If already initialized, maybe reload profile if user logs in/out?
              // Or rely on page refresh. For now, just log.
-             console.log("ProfileViewer already initialized.");
         }
     });
 });
