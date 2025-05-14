@@ -2,12 +2,14 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.3",
+    id: "beta-release 1.3.2", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.3.2",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
             <li>Elo Tracking/Recomendations </li>
+            <li>ELO Goals now on profiles</li>
             <li>View, edit, and rescind outstanding/waiting reports</li>
+            <li>Elo history and type of elo entry on profiles (across all ladders)</li>
             <br>
 
         <p1 style="color:#ffffff; font-weight: bold;">UPCOMING EVENT:</p1><br></br>
