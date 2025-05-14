@@ -723,137 +723,133 @@
                 </div>
             </div>
 
-            <!-- Add/Edit Highlight Modal -->
-            <div id="highlight-modal" class="modal">
-                <div class="modal-content large">
-                    <span class="close-btn">&times;</span>
-                    <h2 id="highlight-modal-title">Create/Edit Highlight</h2>
-                    <form id="highlight-form">
-                        <input type="hidden" id="highlight-id">
-                        <input type="hidden" id="highlight-type" value="match">
-
-                        <!-- Standard fields for all highlight types -->
-                        <div class="form-row">
-                            <div class="form-group common-field">
-                                <label for="highlight-title">Title*</label>
-                                <input type="text" id="highlight-title" required>
-                            </div>
-                            <div class="form-group match-field">
-                                <label for="highlight-match-info">Match Info (e.g., D1 Ladder, Tournament)</label>
-                                <input type="text" id="highlight-match-info">
-                            </div>
-                        </div>
-
-                        <!-- Video ID field (common to all) -->
-                        <div class="form-group common-field">
-                            <label for="highlight-video-id">YouTube Video ID*</label>
-                            <input type="text" id="highlight-video-id" required>
-                            <div id="highlight-video-preview-container" class="video-preview-container">
-                                <p>Video Preview:</p>
-                                <iframe id="highlight-video-preview" width="100%" height="315" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                <small>Preview updates when you paste or stop typing.</small>
-                            </div>
-                        </div>
-
-                        <!-- Map Fields - Match + Creator -->
-                        <div class="form-row">
-                            <div class="form-group match-field creator-field">
-                                <label for="highlight-map">Map</label>
-                                <input type="text" id="highlight-map">
-                            </div>
-                            <div class="form-group match-field">
-                                <label for="highlight-match-date">Match Date (Optional)</label>
-                                <input type="date" id="highlight-match-date">
-                            </div>
-                        </div>
-
-                        <!-- Match-only fields -->
-                        <div class="form-row match-field">
-                            <div class="form-group">
-                                <label for="highlight-winner-name">Winner Name</label>
-                                <input type="text" id="highlight-winner-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="highlight-winner-score">Winner Score</label>
-                                <input type="number" id="highlight-winner-score">
-                            </div>
-                        </div>
-
-                        <div class="form-row match-field">
-                            <div class="form-group">
-                                <label for="highlight-loser-name">Loser Name</label>
-                                <input type="text" id="highlight-loser-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="highlight-loser-score">Loser Score</label>
-                                <input type="number" id="highlight-loser-score">
-                            </div>
-                        </div>
-
-                        <!-- Common description field -->
-                        <div class="form-group common-field">
-                            <label for="highlight-description">Description</label>
-                            <textarea id="highlight-description" rows="4"></textarea>
-                        </div>
-
-                        <!-- Creator-only fields -->
-                        <div class="form-group creator-field">
-                            <label for="highlight-map-creator">Map Creator</label>
-                            <input type="text" id="highlight-map-creator">
-                        </div>
-
-                        <div class="form-group creator-field">
-                            <label for="highlight-map-version">Map Version</label>
-                            <input type="text" id="highlight-map-version">
-                        </div>
-
-                        <div class="form-group creator-field">
-                            <label for="highlight-creator-image-url">Creator Image URL</label>
-                            <input type="url" id="highlight-creator-image-url" placeholder="https://example.com/creator-image.jpg">
-                            <div class="image-preview" id="creator-image-preview"></div>
-                        </div>
-
-                        <!-- Achievement-only fields -->
-                        <div class="form-group achievement-field">
-                            <label for="highlight-player-profile-url">Player Profile Image URL</label>
-                            <input type="url" id="highlight-player-profile-url" placeholder="https://example.com/player-image.jpg">
-                            <div class="image-preview" id="player-profile-preview"></div>
-                        </div>
-
-                        <div class="form-group achievement-field">
-                            <label for="highlight-achievement-player">Achievement Player</label>
-                            <input type="text" id="highlight-achievement-player">
-                        </div>
-
-                        <div class="form-group achievement-field">
-                            <label for="highlight-achievement-type">Achievement Type</label>
-                            <input type="text" id="highlight-achievement-type" placeholder="e.g., Hat Trick, Perfect Game">
-                        </div>
-
-                        <div class="form-group achievement-field">
-                            <label for="highlight-achievement-details">Achievement Details</label>
-                            <textarea id="highlight-achievement-details" rows="3"></textarea>
-                        </div>
-
-                        <!-- Common fields for submission info -->
-                        <div class="form-row">
-                            <div class="form-group common-field">
-                                <label for="highlight-submitted-by">Submitted By</label>
-                                <input type="text" id="highlight-submitted-by">
-                            </div>
-                            <div class="form-group match-field">
-                                <label for="highlight-match-link">Link to Full Match (Optional)</label>
-                                <input type="url" id="highlight-match-link" placeholder="https://example.com/match/123">
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" id="save-highlight-btn" class="save-btn">Save Highlight</button>
-                            <button type="button" id="cancel-highlight-btn" class="cancel-btn">Cancel</button>
-                        </div>
-                    </form>
+  <!-- Highlight Modal -->
+<div id="highlight-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="highlight-modal-title">Create New Match Highlight</h2>
+        <form id="highlight-form">
+            <!-- Hidden fields -->
+            <input type="hidden" id="highlight-id">
+            <input type="hidden" id="highlight-type" value="match">
+            
+            <!-- Common fields for all highlights -->
+            <div id="highlight-title-container" class="form-group">
+                <label for="highlight-title">Title*</label>
+                <input type="text" id="highlight-title" required>
+            </div>
+            
+            <div id="highlight-description-container" class="form-group">
+                <label for="highlight-description">Description</label>
+                <textarea id="highlight-description"></textarea>
+            </div>
+            
+            <div id="highlight-submitted-by-container" class="form-group">
+                <label for="highlight-submitted-by">Submitted By</label>
+                <input type="text" id="highlight-submitted-by">
+            </div>
+            
+            <div id="highlight-video-container" class="form-group">
+                <label for="highlight-video-id">YouTube Video ID</label>
+                <input type="text" id="highlight-video-id" placeholder="e.g., dQw4w9WgXcQ">
+                <div id="highlight-video-preview-container" class="video-preview">
+                    <iframe id="highlight-video-preview" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
+            
+            <!-- Match highlight specific fields -->
+            <div id="highlight-match-info-container" class="form-group">
+                <label for="highlight-match-info">Match Info</label>
+                <input type="text" id="highlight-match-info" placeholder="e.g., Tournament Final">
+            </div>
+            
+            <div id="highlight-map-container" class="form-group">
+                <label for="highlight-map">Map</label>
+                <input type="text" id="highlight-map">
+            </div>
+            
+            <div id="highlight-match-date-container" class="form-group">
+                <label for="highlight-match-date">Match Date</label>
+                <input type="date" id="highlight-match-date">
+            </div>
+            
+            <div id="highlight-players-container" class="form-row">
+                <div class="form-group half">
+                    <label for="highlight-winner-name">Winner Name</label>
+                    <input type="text" id="highlight-winner-name">
+                </div>
+                <div class="form-group half">
+                    <label for="highlight-winner-score">Winner Score</label>
+                    <input type="number" id="highlight-winner-score" min="0">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group half">
+                    <label for="highlight-loser-name">Loser Name</label>
+                    <input type="text" id="highlight-loser-name">
+                </div>
+                <div class="form-group half">
+                    <label for="highlight-loser-score">Loser Score</label>
+                    <input type="number" id="highlight-loser-score" min="0">
+                </div>
+            </div>
+            
+            <div id="highlight-match-link-container" class="form-group">
+                <label for="highlight-match-link">Match Link</label>
+                <input type="url" id="highlight-match-link" placeholder="https://...">
+            </div>
+            
+            <!-- Creator highlight specific fields -->
+            <div id="highlight-map-creator-container" class="form-group">
+                <label for="highlight-map-creator">Map Creator</label>
+                <input type="text" id="highlight-map-creator">
+            </div>
+            
+            <div id="highlight-map-version-container" class="form-group">
+                <label for="highlight-map-version">Map Version</label>
+                <input type="text" id="highlight-map-version">
+            </div>
+            
+            <div id="highlight-creator-image-container" class="form-group">
+                <label for="highlight-creator-image">Creator Image URL</label>
+                <input type="url" id="highlight-creator-image" placeholder="https://...">
+            </div>
+            
+            <!-- Achievement highlight specific fields -->
+            <div id="highlight-achievement-player-container" class="form-group">
+                <label for="highlight-achievement-player">Player Name</label>
+                <input type="text" id="highlight-achievement-player">
+            </div>
+            
+            <div id="highlight-achievement-type-container" class="form-group">
+                <label for="highlight-achievement-type">Achievement Type</label>
+                <input type="text" id="highlight-achievement-type" placeholder="e.g., Ace Player">
+            </div>
+            
+            <div id="highlight-achievement-details-container" class="form-group">
+                <label for="highlight-achievement-details">Achievement Details</label>
+                <textarea id="highlight-achievement-details"></textarea>
+            </div>
+            
+            <div id="highlight-player-profile-container" class="form-group">
+                <label for="highlight-player-profile">Player Profile Image URL</label>
+                <input type="url" id="highlight-player-profile" placeholder="https://...">
+            </div>
+
+            <div id="highlight-achievement-image-container" class="form-group">
+                <label for="highlight-achievement-image">Achievement Image URL</label>
+                <input type="url" id="highlight-achievement-image" placeholder="https://example.com/achievement-image.png">
+                <small>URL to an image representing this achievement</small>
+            </div>
+                    
+            <div class="form-actions">
+                <button type="submit" id="save-highlight-btn" class="btn primary">Save Highlight</button>
+                <button type="button" id="cancel-highlight-btn" class="btn secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
 
             <!-- Edit Player Modal -->
             <div id="edit-player-modal" class="modal">
