@@ -2004,3 +2004,189 @@ body {
     background-color: rgba(255, 193, 7, 0.2);
     color: #ffc107;
 }
+
+/* Match management styles */
+#matches-table-body td.actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.delete-confirm {
+    max-width: 500px;
+    text-align: center;
+}
+
+.delete-confirm p.warning {
+    color: #ff5555;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.delete-confirm .match-summary {
+    text-align: left;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.delete-confirm .match-summary p {
+    margin: 5px 0;
+}
+
+#delete-match-confirm-modal .form-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+#edit-match-form .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+#edit-match-form .form-row .form-group {
+    flex: 1;
+}
+
+/* ELO History Container Styles */
+.elo-history-container {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.elo-history-container h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.elo-chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+.elo-history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.elo-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+}
+
+.elo-history-table th,
+.elo-history-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.elo-history-table th {
+    background-color: rgba(0, 0, 0, 0.4);
+    position: sticky;
+    top: 0;
+}
+
+.elo-history-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.elo-change-positive {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.elo-change-negative {
+    color: #F44336;
+    font-weight: bold;
+}
+
+.elo-change-neutral {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.elo-event {
+    font-size: 0.85em;
+    padding: 3px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.event-match {
+    background-color: rgba(33, 150, 243, 0.3);
+}
+
+.event-promotion {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+.event-demotion {
+    background-color: rgba(244, 67, 54, 0.3);
+}
+
+.event-adjustment {
+    background-color: rgba(255, 193, 7, 0.3);
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.page-btn {
+    background-color: #a913ce;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: #8e10b1;
+    transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#elo-history-page-indicator {
+    color: #fff;
+    font-weight: bold;
+}
+
+.loading-cell {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.error-state {
+    text-align: center;
+    padding: 20px;
+    color: #F44336;
+}
