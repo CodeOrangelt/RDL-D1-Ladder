@@ -11,44 +11,45 @@
     <link rel="stylesheet" href="./CSS/footer.css">
     <!-- Page Specific Styles -->
     <link rel="stylesheet" href="./CSS/highlights.css">
-    <!-- Font Awesome (if needed for icons) -->
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div id="nav-placeholder"></div>
 
     <main class="highlights-main">
-        <h1>Highlights</h1>
+        <h1 class="page-title"><i class="fas fa-trophy"></i> RDL Highlights</h1>
 
-        <!-- Match Highlight Section -->
-        <section class="highlight-section match-section">
-            <h2 class="section-title">Match Highlight</h2>
-            <div id="match-highlight-container" class="highlight-container">
-                <p class="loading-message">Loading match highlight...</p>
-            </div>
-        </section>
-        
-        <!-- Featured Creator Section -->
-        <section class="highlight-section creator-section">
-            <h2 class="section-title">Featured Map Creator</h2>
-            <div id="creator-highlight-container" class="highlight-container">
-                <p class="loading-message">Loading featured creator...</p>
-            </div>
-        </section>
-        
-        <!-- Player Achievement Section -->
-        <section class="highlight-section achievement-section">
-            <h2 class="section-title">Player Achievement</h2>
-            <div id="achievement-highlight-container" class="highlight-container">
-                <p class="loading-message">Loading player achievement...</p>
-            </div>
-        </section>
-
+        <div class="highlights-container">
+            <!-- Match Highlight Section -->
+            <section class="highlight-section match-section">
+                <h2 class="section-title"><i class="fas fa-gamepad"></i> Match Highlight</h2>
+                <div id="match-highlight-container" class="highlight-container">
+                    <p class="loading-message"><i class="fas fa-spinner fa-pulse"></i> Loading match highlight...</p>
+                </div>
+            </section>
+            
+            <!-- Featured Creator Section -->
+            <section class="highlight-section creator-section">
+                <h2 class="section-title"><i class="fas fa-map"></i> Featured Map Creator</h2>
+                <div id="creator-highlight-container" class="highlight-container">
+                    <p class="loading-message"><i class="fas fa-spinner fa-pulse"></i> Loading featured creator...</p>
+                </div>
+            </section>
+            
+            <!-- Player Achievement Section -->
+            <section class="highlight-section achievement-section">
+                <h2 class="section-title"><i class="fas fa-award"></i> Player Achievement</h2>
+                <div id="achievement-highlight-container" class="highlight-container">
+                    <p class="loading-message"><i class="fas fa-spinner fa-pulse"></i> Loading player achievement...</p>
+                </div>
+            </section>
+        </div>
     </main>
 
     <div id="footer-placeholder"></div>
 
-    <!-- Firebase and Core JS (adjust path as needed) -->
+    <!-- Firebase and Core JS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -57,36 +58,126 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Function to render a single highlight card
-        function renderHighlightCard(highlightData, highlightId) {
-            const container = document.getElementById('highlights-container');
-            if (!container) return;
+        // Load highlights from Firestore
+        async function loadHighlights() {
+            try {
+                console.log("Fetching highlights from Firestore...");
+                const highlightsCol = collection(db, 'highlights');
+                
+                // Create queries for each highlight type - latest first
+                const matchQuery = query(
+                    highlightsCol, 
+                    where("type", "==", "match"),
+                    orderBy('createdAt', 'desc'), 
+                    limit(1)
+                );
+                
+                const creatorQuery = query(
+                    highlightsCol, 
+                    where("type", "==", "creator"),
+                    orderBy('createdAt', 'desc'), 
+                    limit(1)
+                );
+                
+                const achievementQuery = query(
+                    highlightsCol, 
+                    where("type", "==", "achievement"),
+                    orderBy('createdAt', 'desc'), 
+                    limit(1)
+                );
+                
+                // Execute all queries in parallel
+                const [matchSnapshot, creatorSnapshot, achievementSnapshot] = await Promise.all([
+                    getDocs(matchQuery),
+                    getDocs(creatorQuery),
+                    getDocs(achievementQuery)
+                ]);
 
-            // --- Safely get data, provide defaults ---
-            const title = highlightData.title || "Highlight";
-            const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
-            const matchInfo = highlightData.matchInfo || "Match"; // e.g., "D1 Ladder", "Tournament Final"
-            const videoId = highlightData.videoId; // Expecting a YouTube video ID
-            const map = highlightData.map || "Unknown Map";
-            const matchDate = highlightData.matchDate ? new Date(highlightData.matchDate.seconds * 1000).toLocaleDateString() : "";
-            const winnerName = highlightData.winnerName || "Player 1";
-            const winnerScore = highlightData.winnerScore ?? "-";
-            const loserName = highlightData.loserName || "Player 2";
-            const loserScore = highlightData.loserScore ?? "-";
-            const description = highlightData.description || "";
-            const submittedBy = highlightData.submittedBy || "System";
-            const matchDetailsLink = highlightData.matchLink || "#"; // Link to the full match page
+                // Process match highlight
+                renderHighlightSection(
+                    matchSnapshot, 
+                    'match-highlight-container', 
+                    renderMatchHighlight, 
+                    'No match highlights available yet.'
+                );
+                
+                // Process creator highlight
+                renderHighlightSection(
+                    creatorSnapshot, 
+                    'creator-highlight-container', 
+                    renderCreatorHighlight, 
+                    'No featured creators available yet.'
+                );
+                
+                // Process achievement highlight
+                renderHighlightSection(
+                    achievementSnapshot, 
+                    'achievement-highlight-container', 
+                    renderAchievementHighlight, 
+                    'No player achievements available yet.'
+                );
+                
+                // Set up YouTube embeds after all highlights are rendered
+                setupYouTubeEmbeds();
+
+            } catch (error) {
+                console.error("Error loading highlights:", error);
+                handleLoadError();
+            }
+        }
+        
+        // Helper function to render a highlight section
+        function renderHighlightSection(snapshot, containerId, renderFunction, emptyMessage) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
             
-            // New data fields for map creator and player achievement
-            const mapCreator = highlightData.mapCreator || "Unknown";
-            const mapVersion = highlightData.mapVersion || "";
-            const achievementPlayer = highlightData.achievementPlayer || winnerName;
-            const achievementType = highlightData.achievementType || "";
-            const achievementDetails = highlightData.achievementDetails || "";
+            container.innerHTML = '';
+            
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                renderFunction(doc.data(), doc.id, container);
+            } else {
+                container.innerHTML = `<p class="empty-message">${emptyMessage}</p>`;
+            }
+        }
+        
+        // Handle loading errors
+        function handleLoadError() {
+            const containers = [
+                document.getElementById('match-highlight-container'),
+                document.getElementById('creator-highlight-container'),
+                document.getElementById('achievement-highlight-container')
+            ];
+            
+            containers.forEach(container => {
+                if (container) {
+                    container.innerHTML = `
+                        <p class="error-message">
+                            Error loading highlights. Please try again later.
+                        </p>`;
+                }
+            });
+        }
+
+        // Function to render a match highlight
+        function renderMatchHighlight(data, id, container) {
+            const title = data.title || "Match Highlight";
+            const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
+            const matchInfo = data.matchInfo || "Match";
+            const videoId = data.videoId;
+            const map = data.map || "Unknown Map";
+            const matchDate = data.matchDate ? new Date(data.matchDate.seconds * 1000).toLocaleDateString() : "";
+            const winnerName = data.winnerName || "Player 1";
+            const winnerScore = data.winnerScore ?? "-";
+            const loserName = data.loserName || "Player 2";
+            const loserScore = data.loserScore ?? "-";
+            const description = data.description || "";
+            const submittedBy = data.submittedBy || "System";
+            const matchLink = data.matchLink || "#";
 
             const card = document.createElement('div');
-            card.className = 'highlight-card';
-            card.setAttribute('data-highlight-id', highlightId);
+            card.className = 'highlight-card match-card';
+            card.setAttribute('data-highlight-id', id);
 
             card.innerHTML = `
                 <div class="highlight-header">
@@ -99,10 +190,10 @@
                 <div class="highlight-body">
                     ${videoId ? `
                     <div class="highlight-video-section">
-                        <div class="youtube-player" id="youtube-player-${highlightId}" data-video-id="${videoId}">
-                             <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #555; background: #111;">Loading Video...</div>
+                        <div class="youtube-player" id="youtube-player-${id}" data-video-id="${videoId}">
+                             <div class="video-loading">Loading Video...</div>
                         </div>
-                    </div>` : '<p style="text-align:center; color:#888;">No video available for this highlight.</p>'}
+                    </div>` : '<p class="no-video">No video available for this highlight.</p>'}
 
                     <div class="highlight-match-card">
                         <div class="hmc-header">
@@ -123,388 +214,188 @@
                     </div>
 
                     ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
-                    
-                    <!-- Featured Creator Section (Moved below) -->
-                    <div class="featured-creator-section">
-                        <h3>Featured Creator</h3>
-                        <div class="featured-creator-content">
-                            ${highlightData.creatorImageUrl ? 
-                                `<div class="creator-image">
-                                    <img src="${highlightData.creatorImageUrl}" alt="${mapCreator}">
-                                 </div>` : ''
-                            }
-                            <div class="creator-info">
-                                <p><strong>Map:</strong> ${map}</p>
-                                <p><strong>Created by:</strong> ${mapCreator}</p>
-                                ${mapVersion ? `<p><strong>Version:</strong> ${mapVersion}</p>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Player Achievement Section (Moved below) -->
-                    <div class="player-achievement-section">
-                        <h3>Player Achievement</h3>
-                        <div class="achievement-content">
-                            <div class="achievement-player-info">
-                                ${highlightData.playerProfileUrl ? 
-                                    `<div class="player-profile">
-                                        <img src="${highlightData.playerProfileUrl}" alt="${achievementPlayer}">
-                                     </div>` : ''
-                                }
-                                <div class="player-details">
-                                    <p><strong>Player:</strong> ${achievementPlayer}</p>
-                                    ${achievementType ? `<p><strong>Achievement:</strong> ${achievementType}</p>` : ''}
-                                </div>
-                            </div>
-                            ${achievementDetails ? `<p class="achievement-description">${achievementDetails}</p>` : ''}
-                        </div>
-                    </div>
                 </div>
                 <div class="highlight-footer">
                     <span class="submitted-by">Submitted by: ${submittedBy}</span>
-                    <a href="${matchDetailsLink}" class="view-full-match" title="View full match details">View Full Match</a>
+                    ${matchLink !== '#' ? `<a href="${matchLink}" class="view-full-match">View Full Match</a>` : ''}
                 </div>
             `;
 
             container.appendChild(card);
         }
 
-        async function loadHighlights() {
-            try {
-                console.log("Fetching highlights from Firestore...");
-                const highlightsCol = collection(db, 'highlights');
-                
-                // Load latest match highlight
-                let matchQuery = query(
-                    highlightsCol, 
-                    where("type", "==", "match"),
-                    orderBy('createdAt', 'desc'), 
-                    limit(1)
-                );
-                
-                // Load latest creator highlight
-                let creatorQuery = query(
-                    highlightsCol, 
-                    where("type", "==", "creator"),
-                    orderBy('createdAt', 'desc'), 
-                    limit(1)
-                );
-                
-                // Load latest achievement highlight
-                let achievementQuery = query(
-                    highlightsCol, 
-                    where("type", "==", "achievement"),
-                    orderBy('createdAt', 'desc'), 
-                    limit(1)
-                );
-                
-                // Execute all queries in parallel
-                const [matchSnapshot, creatorSnapshot, achievementSnapshot] = await Promise.all([
-                    getDocs(matchQuery),
-                    getDocs(creatorQuery),
-                    getDocs(achievementQuery)
-                ]);
+        // Function to render a creator highlight
+        function renderCreatorHighlight(data, id, container) {
+            const title = data.title || "Featured Creator";
+            const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
+            const map = data.map || "Unknown Map";
+            const mapCreator = data.mapCreator || "Unknown";
+            const mapVersion = data.mapVersion || "";
+            const description = data.description || "";
+            const submittedBy = data.submittedBy || "System";
+            const creatorImage = data.creatorImageUrl || "";
+            const videoId = data.videoId; // Optional for creators
 
-                // Process match highlight
-                const matchContainer = document.getElementById('match-highlight-container');
-                if (matchContainer) {
-                    matchContainer.innerHTML = '';
-                    if (!matchSnapshot.empty) {
-                        const doc = matchSnapshot.docs[0];
-                        renderMatchHighlight(doc.data(), doc.id, matchContainer);
-                    } else {
-                        matchContainer.innerHTML = '<p class="empty-message">No match highlights available yet.</p>';
-                    }
-                }
-                
-                // Process creator highlight
-                const creatorContainer = document.getElementById('creator-highlight-container');
-                if (creatorContainer) {
-                    creatorContainer.innerHTML = '';
-                    if (!creatorSnapshot.empty) {
-                        const doc = creatorSnapshot.docs[0];
-                        renderCreatorHighlight(doc.data(), doc.id, creatorContainer);
-                    } else {
-                        creatorContainer.innerHTML = '<p class="empty-message">No featured creators available yet.</p>';
-                    }
-                }
-                
-                // Process achievement highlight
-                const achievementContainer = document.getElementById('achievement-highlight-container');
-                if (achievementContainer) {
-                    achievementContainer.innerHTML = '';
-                    if (!achievementSnapshot.empty) {
-                        const doc = achievementSnapshot.docs[0];
-                        renderAchievementHighlight(doc.data(), doc.id, achievementContainer);
-                    } else {
-                        achievementContainer.innerHTML = '<p class="empty-message">No player achievements available yet.</p>';
-                    }
-                }
-                
-                // Set up YouTube embeds after all highlights are rendered
-                setupYouTubeEmbeds();
+            const card = document.createElement('div');
+            card.className = 'highlight-card creator-card';
+            card.setAttribute('data-highlight-id', id);
 
-            } catch (error) {
-                console.error("Error loading highlights:", error);
-                const containers = [
-                    document.getElementById('match-highlight-container'),
-                    document.getElementById('creator-highlight-container'),
-                    document.getElementById('achievement-highlight-container')
-                ];
-                
-                containers.forEach(container => {
-                    if (container) {
-                        container.innerHTML = `<p class="empty-message" style="color: red;">
-                            Error loading highlights. Please try again later.
-                        </p>`;
-                    }
-                });
-            }
-        }
-
-        function setupYouTubeEmbeds() {
-            const videoContainers = document.querySelectorAll('.youtube-player');
-            videoContainers.forEach(function(container) {
-                let videoId = container.getAttribute('data-video-id');
-                if (!videoId) return;
-                
-                // Extract video ID if a full URL was provided
-                if (videoId.includes('youtube.com') || videoId.includes('youtu.be')) {
-                    // Parse YouTube URL to get just the ID
-                    const url = new URL(videoId);
-                    
-                    if (videoId.includes('youtube.com')) {
-                        // Regular youtube.com URL
-                        videoId = url.searchParams.get('v');
-                    } else if (videoId.includes('youtu.be')) {
-                        // Shortened youtu.be URL
-                        videoId = url.pathname.substring(1);
-                    }
-                    
-                    // Get timestamp if present
-                    const timestamp = url.searchParams.get('t');
-                    if (timestamp) {
-                        // Add timestamp to the embed URL
-                        videoId = videoId + '?start=' + timestamp.replace('s', '');
-                    }
-                }
-                
-                if (!videoId) {
-                    console.error("Could not extract valid YouTube ID");
-                    return;
-                }
-                
-                try {
-                    // Set container dimensions and styling first
-                    container.style.position = 'relative';
-                    container.style.paddingTop = '56.25%'; // 16:9 aspect ratio
-                    
-                    // Build the embed URL
-                    let embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                    
-                    // Add parameters if not already in the videoId (from timestamp extraction)
-                    if (!videoId.includes('?')) {
-                        embedUrl += '?rel=0&modestbranding=1';
-                    } else {
-                        embedUrl += '&rel=0&modestbranding=1';
-                    }
-                    
-                    // Simplified YouTube embed with privacy enhancements
-                    const iframe = document.createElement('iframe');
-                    iframe.setAttribute('src', embedUrl);
-                    iframe.setAttribute('frameborder', '0');
-                    iframe.setAttribute('allowfullscreen', '');
-                    iframe.setAttribute('loading', 'lazy');
-                    
-                    // Apply proper styling to iframe
-                    iframe.style.position = 'absolute';
-                    iframe.style.top = '0';
-                    iframe.style.left = '0';
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                    
-                    // Clear container and add iframe
-                    container.innerHTML = '';
-                    container.appendChild(iframe);
-                    
-                    console.log(`YouTube embed created for video ID: ${videoId}`);
-                } catch (error) {
-                    console.error(`Failed to create YouTube embed for ${videoId}:`, error);
-                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: red;">
-                        Video playback error. Try refreshing the page.</div>`;
-                }
-            });
-        }
-
-        // Load Nav/Footer and then Highlights
-        Promise.all([
-            fetch("../HTML/nav.html").then(response => response.ok ? response.text() : Promise.reject('Failed to load nav')),
-            fetch("../HTML/footer.html").then(response => response.ok ? response.text() : Promise.reject('Failed to load footer'))
-        ]).then(([navData, footerData]) => {
-            document.getElementById("nav-placeholder").innerHTML = navData;
-            document.getElementById("footer-placeholder").innerHTML = footerData;
-            loadHighlights(); // Load highlights after nav/footer
-        }).catch(error => {
-            console.error("Error loading nav/footer:", error);
-            loadHighlights(); // Still try to load highlights
-        });
-
-        // Function to render a match highlight
-function renderMatchHighlight(highlightData, highlightId, container) {
-    const title = highlightData.title || "Match Highlight";
-    const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
-    const matchInfo = highlightData.matchInfo || "Match";
-    const videoId = highlightData.videoId;
-    const map = highlightData.map || "Unknown Map";
-    const matchDate = highlightData.matchDate ? new Date(highlightData.matchDate.seconds * 1000).toLocaleDateString() : "";
-    const winnerName = highlightData.winnerName || "Player 1";
-    const winnerScore = highlightData.winnerScore ?? "-";
-    const loserName = highlightData.loserName || "Player 2";
-    const loserScore = highlightData.loserScore ?? "-";
-    const description = highlightData.description || "";
-    const submittedBy = highlightData.submittedBy || "System";
-    const matchDetailsLink = highlightData.matchLink || "#";
-
-    const card = document.createElement('div');
-    card.className = 'highlight-card';
-    card.setAttribute('data-highlight-id', highlightId);
-
-    card.innerHTML = `
-        <div class="highlight-header">
-            <h2 class="highlight-title">${title}</h2>
-            <div class="highlight-meta">
-                <span class="date">${date}</span>
-                <span class="match-info">${matchInfo}</span>
-            </div>
-        </div>
-        <div class="highlight-body">
-            ${videoId ? `
-            <div class="highlight-video-section">
-                <div class="youtube-player" id="youtube-player-${highlightId}" data-video-id="${videoId}">
-                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #555; background: #111;">Loading Video...</div>
-                </div>
-            </div>` : '<p style="text-align:center; color:#888;">No video available for this highlight.</p>'}
-
-            <div class="highlight-match-card">
-                <div class="hmc-header">
-                    <span class="hmc-map">Map: ${map}</span>
-                    ${matchDate ? `<span class="hmc-date">Played: ${matchDate}</span>` : ''}
-                </div>
-                <div class="hmc-body">
-                    <div class="hmc-player winner">
-                        <span class="hmc-player-name">${winnerName}</span>
-                        <span class="hmc-player-score">${winnerScore}</span>
-                    </div>
-                    <span class="hmc-vs">VS</span>
-                    <div class="hmc-player loser">
-                        <span class="hmc-player-score">${loserScore}</span>
-                        <span class="hmc-player-name">${loserName}</span>
+            card.innerHTML = `
+                <div class="highlight-header">
+                    <h2 class="highlight-title">${title}</h2>
+                    <div class="highlight-meta">
+                        <span class="date">${date}</span>
                     </div>
                 </div>
-            </div>
+                <div class="highlight-body">
+                    <div class="featured-creator-content">
+                        ${creatorImage ? `
+                        <div class="creator-image">
+                            <img src="${creatorImage}" alt="${mapCreator}" 
+                                onerror="this.src='./images/default-creator.png';">
+                        </div>` : ''}
+                        <div class="creator-info">
+                            <p><strong>Map:</strong> ${map}</p>
+                            <p><strong>Created by:</strong> ${mapCreator}</p>
+                            ${mapVersion ? `<p><strong>Version:</strong> ${mapVersion}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    ${videoId ? `
+                    <div class="highlight-video-section">
+                        <div class="youtube-player" id="youtube-player-${id}" data-video-id="${videoId}">
+                             <div class="video-loading">Loading Video...</div>
+                        </div>
+                    </div>` : ''}
 
-            ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
-        </div>
-        <div class="highlight-footer">
-            <span class="submitted-by">Submitted by: ${submittedBy}</span>
-            <a href="${matchDetailsLink}" class="view-full-match" title="View full match details">View Full Match</a>
-        </div>
-    `;
-
-    container.appendChild(card);
-}
-
-// Function to render a creator highlight (NO match fields)
-function renderCreatorHighlight(highlightData, highlightId, container) {
-    const title = highlightData.title || "Featured Creator";
-    const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
-    const videoId = highlightData.videoId;
-    const map = highlightData.map || "Unknown Map";
-    const mapCreator = highlightData.mapCreator || "Unknown";
-    const mapVersion = highlightData.mapVersion || "";
-    const description = highlightData.description || "";
-    const submittedBy = highlightData.submittedBy || "System";
-
-    const card = document.createElement('div');
-    card.className = 'highlight-card creator-card';
-    card.setAttribute('data-highlight-id', highlightId);
-
-    card.innerHTML = `
-        <div class="highlight-header">
-            <h2 class="highlight-title">${title}</h2>
-            <div class="highlight-meta">
-                <span class="date">${date}</span>
-            </div>
-        </div>
-        <div class="highlight-body">
-            <div class="featured-creator-content">
-                ${highlightData.creatorImageUrl ? 
-                    `<div class="creator-image">
-                        <img src="${highlightData.creatorImageUrl}" alt="${mapCreator}">
-                     </div>` : ''
-                }
-                <div class="creator-info">
-                    <p><strong>Map:</strong> ${map}</p>
-                    <p><strong>Created by:</strong> ${mapCreator}</p>
-                    ${mapVersion ? `<p><strong>Version:</strong> ${mapVersion}</p>` : ''}
+                    ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
                 </div>
-            </div>
-            ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
-        </div>
-        <div class="highlight-footer">
-            <span class="submitted-by">Submitted by: ${submittedBy}</span>
-        </div>
-    `;
+                <div class="highlight-footer">
+                    <span class="submitted-by">Submitted by: ${submittedBy}</span>
+                </div>
+            `;
 
-    container.appendChild(card);
-}
+            container.appendChild(card);
+        }
 
-// Function to render an achievement highlight (NO match fields)
-function renderAchievementHighlight(highlightData, highlightId, container) {
-    const title = highlightData.title || "Player Achievement";
-    const date = highlightData.createdAt ? new Date(highlightData.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
-    const videoId = highlightData.videoId;
-    const achievementPlayer = highlightData.achievementPlayer || "Unknown Player";
-    const achievementType = highlightData.achievementType || "";
-    const achievementDetails = highlightData.achievementDetails || "";
-    const description = highlightData.description || "";
-    const submittedBy = highlightData.submittedBy || "System";
+        function renderAchievementHighlight(data, id, container) {
+    const title = data.title || "Player Achievement";
+    const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : "Unknown Date";
+    const player = data.achievementPlayer || "Unknown Player";
+    const achievementType = data.achievementType || "";
+    const details = data.achievementDetails || "";
+    const description = data.description || "";
+    const submittedBy = data.submittedBy || "System";
+    const profileImage = data.playerProfileUrl || "";
+    const achievementImage = data.achievementImageUrl || ""; // Add this line
+    const videoId = data.videoId; // Optional for achievements
 
     const card = document.createElement('div');
     card.className = 'highlight-card achievement-card';
-    card.setAttribute('data-highlight-id', highlightId);
+    card.setAttribute('data-highlight-id', id);
 
     card.innerHTML = `
-        <div class="highlight-header">
-            <h2 class="highlight-title">${title}</h2>
-            <div class="highlight-meta">
+        <div class="achievement-header">
+            <h2 class="achievement-title">${title}</h2>
+            <div class="achievement-meta">
                 <span class="date">${date}</span>
             </div>
         </div>
-        <div class="highlight-body">
+        
+        <div class="achievement-body">
             <div class="achievement-content">
-                <div class="achievement-player-info">
-                    ${highlightData.playerProfileUrl ? 
-                        `<div class="player-profile">
-                            <img src="${highlightData.playerProfileUrl}" alt="${achievementPlayer}">
-                         </div>` : ''
-                    }
-                    <div class="player-details">
-                        <p><strong>Player:</strong> ${achievementPlayer}</p>
-                        ${achievementType ? `<p><strong>Achievement:</strong> ${achievementType}</p>` : ''}
+                <div class="achievement-main">
+                    ${achievementImage ? `
+                    <div class="achievement-image">
+                        <img src="${achievementImage}" alt="${achievementType}" 
+                            onerror="this.src='./images/default-achievement.png';">
+                    </div>` : ''}
+                    
+                    <div class="achievement-info">
+                        <div class="achievement-player">
+                            ${profileImage ? `
+                            <div class="player-avatar">
+                                <img src="${profileImage}" alt="${player}" 
+                                    onerror="this.src='./images/default-player.png';">
+                            </div>` : ''}
+                            <div class="player-details">
+                                <h3 class="player-name">${player}</h3>
+                                <div class="achievement-badge">
+                                    <span class="achievement-type">${achievementType}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${details ? `
+                        <div class="achievement-details">
+                            <p>${details}</p>
+                        </div>` : ''}
                     </div>
                 </div>
-                ${achievementDetails ? `<p class="achievement-description">${achievementDetails}</p>` : ''}
+                
+                ${videoId ? `
+                <div class="achievement-video-section">
+                    <div class="youtube-player" id="youtube-player-${id}" data-video-id="${videoId}">
+                         <div class="video-loading">Loading Video...</div>
+                    </div>
+                </div>` : ''}
+
+                ${description ? `
+                <div class="achievement-description">
+                    <p>${description.replace(/\n/g, '</p><p>')}</p>
+                </div>` : ''}
             </div>
-            ${description ? `<div class="highlight-description"><p>${description.replace(/\n/g, '</p><p>')}</p></div>` : ''}
         </div>
-        <div class="highlight-footer">
+        
+        <div class="achievement-footer">
             <span class="submitted-by">Submitted by: ${submittedBy}</span>
         </div>
     `;
 
     container.appendChild(card);
 }
+
+        // Set up YouTube embeds for video highlights
+        function setupYouTubeEmbeds() {
+            const players = document.querySelectorAll('.youtube-player');
+            
+            players.forEach(player => {
+                const videoId = player.getAttribute('data-video-id');
+                if (!videoId) return;
+                
+                // Create iframe element
+                const iframe = document.createElement('iframe');
+                iframe.setAttribute('src', `https://www.youtube.com/embed/${videoId}?rel=0`);
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allowfullscreen', '');
+                iframe.setAttribute('loading', 'lazy');
+                
+                // Clear container and add iframe
+                player.innerHTML = '';
+                player.appendChild(iframe);
+            });
+        }
+
+        // Load everything once the DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load navigation and footer
+            fetch("../HTML/nav.html")
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("nav-placeholder").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading navigation:", error));
+                
+            fetch("../HTML/footer.html")
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("footer-placeholder").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading footer:", error));
+            
+            // Load highlights data
+            loadHighlights();
+        });
     </script>
 </body>
 </html>
