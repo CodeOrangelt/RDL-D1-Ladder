@@ -1756,31 +1756,47 @@ function setupRankControls() {
         });
         
         // Handle form submit
-        setEloForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const usernameInput = document.getElementById('set-elo-username');
-            const eloInput = document.getElementById('set-elo-value');
-            const ladderSelect = document.getElementById('set-elo-ladder');
-            
-            const username = usernameInput.value.trim();
-            const elo = parseInt(eloInput.value);
-            const ladder = ladderSelect.value;
-            
-            if (!username || isNaN(elo)) {
-                showNotification('Please enter valid username and ELO', 'error');
-                return;
-            }
-            
-            try {
-                await setCustomElo(username, elo, ladder);
-                setEloModal.classList.remove('active');
-                usernameInput.value = '';
-                eloInput.value = '';
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        });
+setEloForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const usernameInput = document.getElementById('set-elo-username');
+    const eloInput = document.getElementById('set-elo-value');
+    
+    // Fix: Check if it's a radio button group instead of a select element
+    let ladder;
+    const ladderSelect = document.getElementById('set-elo-ladder');
+    const ladderRadio = document.querySelector('input[name="set-elo-ladder"]:checked');
+    
+    if (ladderSelect) {
+        ladder = ladderSelect.value;
+    } else if (ladderRadio) {
+        ladder = ladderRadio.value;
+    } else {
+        ladder = 'D1'; // Default to D1 if no selection found
+    }
+    
+    if (!usernameInput || !eloInput) {
+        showNotification('Form elements are missing', 'error');
+        return;
+    }
+    
+    const username = usernameInput.value.trim();
+    const elo = parseInt(eloInput.value);
+    
+    if (!username || isNaN(elo)) {
+        showNotification('Please enter valid username and ELO', 'error');
+        return;
+    }
+    
+    try {
+        await setCustomElo(username, elo, ladder);
+        setEloModal.classList.remove('active');
+        usernameInput.value = '';
+        eloInput.value = '';
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+});
         
         // Cancel button
         document.getElementById('cancel-set-elo-btn').addEventListener('click', () => {
@@ -3927,15 +3943,15 @@ async function loadHighlightDataAdmin(highlightId) {
 
 async function saveHighlight() {
     try {
-        const highlightId = document.getElementById('highlight-id').value;
-        const highlightType = document.getElementById('highlight-type').value;
+        const highlightId = document.getElementById('highlight-id')?.value || '';
+        const highlightType = document.getElementById('highlight-type')?.value || 'match';
         
         // Get common fields
         const data = {
-            title: document.getElementById('highlight-title').value.trim(),
-            description: document.getElementById('highlight-description').value.trim(),
-            submittedBy: document.getElementById('highlight-submitted-by').value.trim(),
-            videoId: document.getElementById('highlight-video-id')?.value.trim() || null,
+            title: document.getElementById('highlight-title')?.value?.trim() || '',
+            description: document.getElementById('highlight-description')?.value?.trim() || '',
+            submittedBy: document.getElementById('highlight-submitted-by')?.value?.trim() || '',
+            videoId: document.getElementById('highlight-video-id')?.value?.trim() || null,
             type: highlightType
         };
         
@@ -3948,17 +3964,18 @@ async function saveHighlight() {
         // Add type-specific fields
         if (highlightType === 'match') {
             // For match highlights
-            data.matchInfo = document.getElementById('highlight-match-info').value.trim();
-            data.map = document.getElementById('highlight-map').value.trim();
+            data.matchInfo = document.getElementById('highlight-match-info')?.value?.trim() || '';
+            data.map = document.getElementById('highlight-map')?.value?.trim() || '';
             
-            const matchDateValue = document.getElementById('highlight-match-date').value;
+            const matchDateInput = document.getElementById('highlight-match-date');
+            const matchDateValue = matchDateInput?.value || '';
             data.matchDate = matchDateValue ? Timestamp.fromDate(new Date(matchDateValue)) : null;
             
-            data.winnerName = document.getElementById('highlight-winner-name').value.trim();
-            data.winnerScore = document.getElementById('highlight-winner-score').value.trim();
-            data.loserName = document.getElementById('highlight-loser-name').value.trim();
-            data.loserScore = document.getElementById('highlight-loser-score').value.trim();
-            data.matchLink = document.getElementById('highlight-match-link').value.trim();
+            data.winnerName = document.getElementById('highlight-winner-name')?.value?.trim() || '';
+            data.winnerScore = document.getElementById('highlight-winner-score')?.value?.trim() || '';
+            data.loserName = document.getElementById('highlight-loser-name')?.value?.trim() || '';
+            data.loserScore = document.getElementById('highlight-loser-score')?.value?.trim() || '';
+            data.matchLink = document.getElementById('highlight-match-link')?.value?.trim() || '';
             
             // Validate required match fields
             if (!data.videoId) {
@@ -3968,10 +3985,10 @@ async function saveHighlight() {
             
         } else if (highlightType === 'creator') {
             // For creator highlights
-            data.map = document.getElementById('highlight-map').value.trim();
-            data.mapCreator = document.getElementById('highlight-map-creator').value.trim();
-            data.mapVersion = document.getElementById('highlight-map-version').value.trim();
-            data.creatorImageUrl = document.getElementById('highlight-creator-image').value.trim();
+            data.map = document.getElementById('highlight-map')?.value?.trim() || '';
+            data.mapCreator = document.getElementById('highlight-map-creator')?.value?.trim() || '';
+            data.mapVersion = document.getElementById('highlight-map-version')?.value?.trim() || '';
+            data.creatorImageUrl = document.getElementById('highlight-creator-image')?.value?.trim() || '';
             
             // Validate required creator fields
             if (!data.mapCreator) {
@@ -3981,11 +3998,11 @@ async function saveHighlight() {
             
         } else if (highlightType === 'achievement') {
             // For achievement highlights
-            data.achievementPlayer = document.getElementById('highlight-achievement-player').value.trim();
-            data.achievementType = document.getElementById('highlight-achievement-type').value.trim();
-            data.achievementDetails = document.getElementById('highlight-achievement-details').value.trim();
-            data.playerProfileUrl = document.getElementById('highlight-player-profile').value.trim();
-            data.achievementImageUrl = document.getElementById('highlight-achievement-image').value.trim(); // Add this line
+            data.achievementPlayer = document.getElementById('highlight-achievement-player')?.value?.trim() || '';
+            data.achievementType = document.getElementById('highlight-achievement-type')?.value?.trim() || '';
+            data.achievementDetails = document.getElementById('highlight-achievement-details')?.value?.trim() || '';
+            data.playerProfileUrl = document.getElementById('highlight-player-profile')?.value?.trim() || '';
+            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; 
             
             // Validate required achievement fields
             if (!data.achievementPlayer) {
