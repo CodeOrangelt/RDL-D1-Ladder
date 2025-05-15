@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descent Champions ELO Dashboard</title>
+    <style>
+        :root {
+            --emerald-color: #50c878;
+            --diamond-color: #b9f2ff;
+            --gold-color: #ffd700;
+            --silver-color: #c0c0c0;
+            --bronze-color: #cd7f32;
+            --unranked-color: #808080;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #aaaaaa;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .search {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: #2a2a2a;
+            color: white;
+            width: 250px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background-color: #333;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background-color: #444;
+        }
+
+        .filter-btn.active {
+            background-color: #0078d7;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #252525;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: #303030;
+        }
+        
+        th::after {
+            content: "↕";
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #252525;
+        }
+        
+        tr:hover {
+            background-color: #2c2c2c;
+        }
+        
+        .emerald {
+            color: var(--emerald-color);
+            font-weight: bold;
+        }
+
+        .diamond {
+            color: var(--diamond-color);
+            font-weight: bold;
+        }
+        
+        .gold {
+            color: var(--gold-color);
+            font-weight: bold;
+        }
+        
+        .silver {
+            color: var(--silver-color);
+            font-weight: bold;
+        }
+        
+        .bronze {
+            color: var(--bronze-color);
+            font-weight: bold;
+        }
+        
+        .unranked {
+            color: var(--unranked-color);
+            font-style: italic;
+        }
+        
+        .high-confidence {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .medium-confidence {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        .low-confidence {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .stat-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-primary {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .stat-secondary {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .kd-ratio {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 3px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #777;
+            font-size: 12px;
+        }
+        
+        .data-source {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .dcl {
+            background-color: #2c3e50;
+        }
+        
+        .rdl {
+            background-color: #27ae60;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Descent Champions ELO Dashboard</h1>
+            <div class="subtitle">Player rankings and performance analytics (Combined DCL/RDL Data)</div>
+            <div style="margin-top: 10px;">
+                <span class="data-source dcl">DCL: 2015-2020</span>
+                <span class="data-source rdl">RDL: 2025-Present</span>
+            </div>
+        </header>
+        
+        <div class="controls">
+            <input type="text" class="search" id="playerSearch" placeholder="Search for players...">
+            <div class="filter-controls">
+                <button class="filter-btn active" data-rank="all">All</button>
+                <button class="filter-btn" data-rank="emerald">Emerald</button>
+                <button class="filter-btn" data-rank="diamond">Diamond</button>
+                <button class="filter-btn" data-rank="gold">Gold</button>
+                <button class="filter-btn" data-rank="silver">Silver</button>
+                <button class="filter-btn" data-rank="bronze">Bronze</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="playersTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Player</th>
+                        <th onclick="sortTable(1)">ELO</th>
+                        <th onclick="sortTable(2)">Rank</th>
+                        <th onclick="sortTable(3)">Win Rate</th>
+                        <th onclick="sortTable(4)">Kill %</th>
+                        <th onclick="sortTable(5)">Tier Performance</th>
+                        <th onclick="sortTable(6)">Confidence</th>
+                    </tr>
+                </thead>
+                <tbody id="playerData">
+                    <!-- Data will be populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            © 2025 Descent Champions Ladder | Last updated: May 15, 2025
+        </footer>
+    </div>
+
+    <script>
+    // Updated player data with K-Factor 32 ELO calculations
+    const players = [
+        {
+            name: "Jediluke",
+            elo: 2050,
+            proposedElo: 2050,
+            rank: "Emerald",
+            proposedRank: "Emerald",
+            winRate: 94.5,
+            killRate: 65.3,
+            kd: "133,613 / 70,718",
+            matchesPlayed: 6330,
+            tierWinRates: {
+                diamond: 29.2,
+                gold: 92.9,
+                silver: 98.9,
+                bronze: 99.8
+            },
+            dominanceRatings: {
+                gold: 100,
+                silver: 100
+            }
+        },
+        {
+            name: "Heating",
+            elo: 1850,
+            proposedElo: 1850,
+            rank: "Gold",
+            proposedRank: "Gold",
+            winRate: 61.6,
+            killRate: 53.7,
+            kd: "25,713 / 22,143",
+            matchesPlayed: 1359,
+            tierWinRates: {
+                diamond: 16.6,
+                gold: 40.5,
+                silver: 87.4,
+                bronze: 99.4
+            },
+            dominanceRatings: {
+                diamond: 81.7,
+                gold: 96.7,
+                silver: 99.1
+            }
+        },
+        {
+            name: "B2af",
+            elo: 1750,
+            proposedElo: 1750,
+            rank: "Gold",
+            proposedRank: "Gold",
+            winRate: 41.0,
+            killRate: 47.0,
+            kd: "29,571 / 33,307",
+            matchesPlayed: 1828,
+            tierWinRates: {
+                diamond: 4.2,
+                gold: 30.1,
+                silver: 58.3,
+                bronze: 88.6
+            },
+            dominanceRatings: {
+                diamond: 57.6,
+                gold: 86.8,
+                silver: 90.0
+            }
+        },
+        {
+            name: "Behemoth",
+            elo: 1700,
+            proposedElo: 1700,
+            rank: "Silver",
+            proposedRank: "Silver",
+            winRate: 41.9,
+            killRate: 47.1,
+            kd: "5,268 / 5,917",
+            matchesPlayed: 336,
+            tierWinRates: {
+                diamond: 0,
+                gold: 9.8,
+                silver: 83.1,
+                bronze: 100
+            },
+            dominanceRatings: {
+                gold: 38.6
+            }
+        },
+        {
+            name: "Lee",
+            elo: 1650,
+            proposedElo: 1650,
+            rank: "Silver",
+            proposedRank: "Silver",
+            winRate: 40.3,
+            killRate: 45.7,
+            kd: "31,314 / 37,100",
+            matchesPlayed: 2040,
+            tierWinRates: {
+                diamond: 0,
+                gold: 3.6,
+                silver: 28.7,
+                bronze: 82.9
+            },
+            dominanceRatings: {
+                diamond: 10.9,
+                gold: 37.9,
+                silver: 94.4
+            }
+        },
+        {
+            name: "Blarget",
+            elo: 1575,
+            proposedElo: 1575,
+            rank: "Silver",
+            proposedRank: "Silver",
+            winRate: 23.4,
+            killRate: 38.4,
+            kd: "1,384 / 2,216",
+            matchesPlayed: 126,
+            tierWinRates: {
+                diamond: 0,
+                gold: 0,
+                silver: 52.5,
+                bronze: 35.7
+            }
+        },
+        {
+            name: "Code",
+            elo: 1550,
+            proposedElo: 1550,
+            rank: "Silver", 
+            proposedRank: "Silver",
+            winRate: 26.5,
+            killRate: 41.2,
+            kd: "0.70 (17,511 / 24,951)",
+            matchesPlayed: 1299,
+            longestWinStreak: 12,
+            tierWinRates: {
+                diamond: 0.9,
+                gold: 17.6,
+                silver: 27.1,
+                bronze: 71.6
+            },
+            dominanceRatings: {
+                diamond: 27.8,
+                gold: 70.9,
+                silver: 96.5
+            },
+            playstyle: "Fusion-heavy, high kill counts but inconsistent win rates",
+            bestMaps: ["Tetrafusion", "Ethylene", "Ascend"],
+            worstMaps: ["Logic", "Audacity", "Mindtrix"]
+        },
+        {
+            name: "Daylily",
+            elo: 1350,
+            proposedElo: 1350,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 6.9,
+            killRate: 34.2,
+            kd: "7,112 / 13,648",
+            matchesPlayed: 619,
+            tierWinRates: {
+                diamond: 0,
+                gold: 1.7,
+                silver: 1.5,
+                bronze: 15.6
+            }
+        },
+        {
+            name: "Bobsled",
+            elo: 1250,
+            proposedElo: 1250,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 40.6,
+            killRate: 46.8,
+            kd: "0.88 ratio",
+            matchesPlayed: 32,
+            tierWinRates: {
+                diamond: 0
+            }
+        },
+        {
+            name: "SuperBob",
+            elo: 1225,
+            proposedElo: 1225,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 46.7,
+            killRate: 50.7,
+            kd: "1.03 ratio",
+            matchesPlayed: 15,
+            tierWinRates: {}
+        },
+        {
+            name: "Ricky",
+            elo: 1150,
+            proposedElo: 1150,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 28.6,
+            killRate: 41.6,
+            kd: "Not available",
+            matchesPlayed: 21,
+            tierWinRates: {
+                silver: 0,
+                bronze: 50.0
+            }
+        },
+        {
+            name: "Zyconium",
+            elo: 1084,
+            proposedElo: 1084,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 20.0,
+            killRate: 40.5,
+            kd: "0.68 ratio",
+            matchesPlayed: 10,
+            tierWinRates: {
+                bronze: 25.0
+            }
+        },
+        {
+            name: "Daz",
+            elo: 1000,
+            proposedElo: 1000,
+            rank: "Bronze",
+            proposedRank: "Bronze",
+            winRate: 9.4,
+            killRate: 37.8,
+            kd: "Not available",
+            matchesPlayed: 74,
+            tierWinRates: {
+                diamond: 0,
+                gold: 2.7,
+                bronze: 0
+            }
+        },
+        {
+            name: "Sage",
+            elo: 0,
+            proposedElo: 0,
+            rank: "Unranked",
+            proposedRank: "Unranked",
+            winRate: 0,
+            killRate: 0,
+            kd: "Not available",
+            matchesPlayed: 0,
+            tierWinRates: {}
+        }
+    ];
+
+        // Function to calculate confidence score
+        function calculateConfidence(player) {
+            if (player.rank === "Unranked") return 0;
+            
+            // Base calculation using win rate and kill rate
+            let baseScore = ((player.winRate + player.killRate) / 2);
+            
+            // Factor in tier performance if available
+            let tierBonus = 0;
+            if (player.tierWinRates) {
+                if (player.tierWinRates.diamond) tierBonus += player.tierWinRates.diamond * 0.2;
+                if (player.tierWinRates.gold) tierBonus += player.tierWinRates.gold * 0.1;
+                if (player.tierWinRates.silver) tierBonus += player.tierWinRates.silver * 0.05;
+            }
+            
+            // Experience factor - more matches = more reliable data
+            let experienceFactor = Math.min(1, player.matchesPlayed / 500);
+            
+            // ELO factor - normalize by 2000 as a "perfect" score
+            let eloFactor = player.elo / 2000;
+            
+            // Calculate final score
+            let confidenceScore = Math.round((baseScore + tierBonus) * eloFactor * experienceFactor);
+            
+            // Cap at 100
+            return Math.min(confidenceScore, 100);
+        }
+
+        // Function to get confidence class based on score
+        function getConfidenceClass(score) {
+            if (score >= 70) return "high-confidence";
+            if (score >= 40) return "medium-confidence";
+            return "low-confidence";
+        }
+
+        // Function to get rank class
+        function getRankClass(rank) {
+            const rankLower = rank.toLowerCase();
+            if (rankLower.includes("emerald")) return "emerald";
+            if (rankLower.includes("diamond")) return "diamond";
+            if (rankLower.includes("gold")) return "gold";
+            if (rankLower.includes("silver")) return "silver";
+            if (rankLower.includes("bronze")) return "bronze";
+            return "unranked";
+        }
+
+        // Function to get numeric rank value for sorting
+        function getRankValue(rank) {
+            const rankLower = rank.toLowerCase();
+            if (rankLower.includes("emerald")) return 5;
+            if (rankLower.includes("diamond")) return 4;
+            if (rankLower.includes("gold")) return 3;
+            if (rankLower.includes("silver")) return 2;
+            if (rankLower.includes("bronze")) return 1;
+            return 0; // unranked
+        }
+
+        // Function to display tier performance
+        function getTierPerformance(player) {
+            if (!player.tierWinRates || Object.keys(player.tierWinRates).length === 0) return "N/A";
+            
+            let result = "";
+            if (player.tierWinRates.diamond !== undefined) {
+                result += `<div class="stat-secondary diamond">vs Diamond: ${player.tierWinRates.diamond}%</div>`;
+            }
+            if (player.tierWinRates.gold !== undefined) {
+                result += `<div class="stat-secondary gold">vs Gold: ${player.tierWinRates.gold}%</div>`;
+            }
+            if (player.tierWinRates.silver !== undefined) {
+                result += `<div class="stat-secondary silver">vs Silver: ${player.tierWinRates.silver}%</div>`;
+            }
+            if (player.tierWinRates.bronze !== undefined) {
+                result += `<div class="stat-secondary bronze">vs Bronze: ${player.tierWinRates.bronze}%</div>`;
+            }
+            
+            return result || "N/A";
+        }
+
+        // Function to populate the table
+        function populateTable(filteredPlayers = players) {
+            const tableBody = document.getElementById("playerData");
+            tableBody.innerHTML = "";
+            
+            filteredPlayers.forEach(player => {
+                const confidenceScore = calculateConfidence(player);
+                const confidenceClass = getConfidenceClass(confidenceScore);
+                const rankClass = getRankClass(player.rank);
+                const proposedRankClass = getRankClass(player.proposedRank);
+                
+                let row = document.createElement("tr");
+                row.dataset.rank = player.rank.toLowerCase();
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="stat-container">
+                            <div class="stat-primary">${player.name}</div>
+                            <div class="stat-secondary">Matches: ${player.matchesPlayed}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="stat-container">
+                            <div class="stat-primary">${player.elo}</div>
+                            <div class="stat-secondary">Proposed: ${player.proposedElo}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="stat-container">
+                            <div class="stat-primary ${rankClass}">${player.rank}</div>
+                            <div class="stat-secondary ${proposedRankClass}">Proposed: ${player.proposedRank}</div>
+                        </div>
+                    </td>
+                    <td>${player.winRate}%</td>
+                    <td>
+                        <div class="stat-container">
+                            <div>${player.killRate}%</div>
+                            <div class="kd-ratio">K/D: ${player.kd}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="stat-container">
+                            ${getTierPerformance(player)}
+                        </div>
+                    </td>
+                    <td class="${confidenceClass}">${confidenceScore}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to sort the table
+        function sortTable(n) {
+            let table = document.getElementById("playersTable");
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            switching = true;
+            dir = "asc";
+            
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    
+                    let xContent, yContent;
+                    
+                    // Special handling for rank column
+                    if (n === 2) {
+                        // Get the rank text from the primary div
+                        xContent = getRankValue(x.querySelector('.stat-primary').textContent);
+                        yContent = getRankValue(y.querySelector('.stat-primary').textContent);
+                    } else {
+                        // Normal handling for other columns
+                        xContent = x.textContent.trim().toLowerCase();
+                        yContent = y.textContent.trim().toLowerCase();
+                        
+                        // Check if it's a number and convert for proper sorting
+                        if (!isNaN(parseFloat(xContent))) {
+                            xContent = parseFloat(xContent.replace('%', ''));
+                            yContent = parseFloat(yContent.replace('%', ''));
+                        }
+                    }
+                    
+                    if (dir == "asc") {
+                        if (xContent > yContent) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (xContent < yContent) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        // Search filter function
+        document.getElementById("playerSearch").addEventListener("keyup", function() {
+            const input = this.value.toLowerCase();
+            const activeRankFilter = document.querySelector('.filter-btn.active').dataset.rank;
+            
+            let filtered = players.filter(player => 
+                player.name.toLowerCase().includes(input) && 
+                (activeRankFilter === 'all' || player.rank.toLowerCase() === activeRankFilter)
+            );
+            
+            populateTable(filtered);
+        });
+        
+        // Rank filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const rank = this.dataset.rank;
+                const searchInput = document.getElementById('playerSearch').value.toLowerCase();
+                
+                // Filter players
+                let filtered = players;
+                if (rank !== 'all') {
+                    filtered = players.filter(player => player.rank.toLowerCase() === rank);
+                }
+                
+                // Apply search filter if exists
+                if (searchInput) {
+                    filtered = filtered.filter(player => player.name.toLowerCase().includes(searchInput));
+                }
+                
+                populateTable(filtered);
+            });
+        });
+
+        // Initialize the table
+        populateTable();
+
+        // Sort by Rank descending initially
+        sortTable(2);  // First sort by rank column
+        sortTable(2);  // Second call to make it descending
+    </script>
+</body>
+</html>
+`
