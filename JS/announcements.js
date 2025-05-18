@@ -2,7 +2,7 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.3.2", // Change this ID when you want to show a new announcement
+    id: "beta-release 1.3.3", // Change this ID when you want to show a new announcement
     title: "Redux Descent League Beta Release 1.3.3",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
