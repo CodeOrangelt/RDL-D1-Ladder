@@ -153,22 +153,7 @@
   <!-- Comment Add Popup -->
   <div id="commentAddOverlay" class="comment-popup-overlay"></div>
   <div id="commentAddPopup" class="comment-popup">
-      <span class="close-popup" onclick="closeAddCommentPopup()">&times;</span>
-      <h3 class="comment-popup-title">Add a Comment</h3>
-      
-      <form id="commentForm" onsubmit="event.preventDefault(); submitComment(event);">
-          <input type="hidden" id="commentMatchId">
-          
-          <div class="form-group">
-              <label for="commentText">Your Comment (15 words max):</label>
-              <textarea id="commentText" required maxlength="150"></textarea>
-              <div class="word-counter"><span id="wordCount">0</span>/15 words</div>
-          </div>
-          
-          <div class="form-actions">
-              <button type="submit" class="submit-comment-btn">Submit</button>
-          </div>
-      </form>
+      <!-- Dynamic form will be inserted here by JavaScript -->
   </div>
 
   <div id="footer-placeholder"></div>

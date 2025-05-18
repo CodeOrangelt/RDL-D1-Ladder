@@ -879,7 +879,7 @@ function showAddCommentPopup(matchId) {
             <button id="closeAddCommentPopup" class="close-btn">&times;</button>
         </div>
         <form id="addCommentForm">
-            <input type="hidden" id="commentMatchId" value="${matchId}">
+            <input type="hidden" id="commentMatchId" name="commentMatchId" value="${matchId}">
             
             <div class="option-tabs">
                 <button type="button" class="option-tab active" data-option="comment">Add Comment</button>
@@ -890,7 +890,7 @@ function showAddCommentPopup(matchId) {
             <div class="option-content" id="commentOption">
                 <div class="form-group">
                     <label for="commentText">Your comment (15 words max):</label>
-                    <textarea id="commentText" rows="3" placeholder="Share your thoughts..."></textarea>
+                    <textarea id="commentText" name="commentText" rows="3" placeholder="Share your thoughts..."></textarea>
                     <div class="word-counter"><span id="wordCount">0</span>/15 words</div>
                 </div>
             </div>
@@ -898,11 +898,11 @@ function showAddCommentPopup(matchId) {
             <div class="option-content" id="demoOption" style="display: none;">
                 <div class="form-group">
                     <label for="demoLink">Demo Link:</label>
-                    <input type="url" id="demoLink" placeholder="https://..." required>
+                    <input type="url" id="demoLink" name="demoLink" placeholder="https://..." required>
                 </div>
                 <div class="form-group">
                     <label for="demoDescription">Description (20 words max):</label>
-                    <textarea id="demoDescription" rows="2" placeholder="Describe your demo..."></textarea>
+                    <textarea id="demoDescription" name="demoDescription" rows="2" placeholder="Describe your demo..."></textarea>
                     <div class="word-counter"><span id="demoWordCount">0</span>/20 words</div>
                 </div>
             </div>
@@ -936,8 +936,21 @@ function showAddCommentPopup(matchId) {
             // Show the corresponding content
             const option = this.dataset.option;
             document.getElementById(`${option}Option`).style.display = 'block';
+            
+            // Toggle required attributes based on active tab
+            if (option === 'demo') {
+                document.getElementById('demoLink').setAttribute('required', '');
+                document.getElementById('commentText').removeAttribute('required');
+            } else {
+                document.getElementById('demoLink').removeAttribute('required');
+                document.getElementById('commentText').setAttribute('required', '');
+            }
         });
     });
+    
+    // Set initial required state based on default active tab
+    document.getElementById('commentText').setAttribute('required', '');
+    document.getElementById('demoLink').removeAttribute('required');
     
     // Set up word counters
     setupWordCounter('commentText', 'wordCount', 15);
