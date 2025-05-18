@@ -53,9 +53,10 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
         
         authSection.innerHTML = `
             <div class="nav-dropdown">
-                <a href="#" class="nav-username">${displayName}</a>
+                <a href="#" class="nav-username">${displayName}${roleDisplay}</a>
                 <div class="nav-dropdown-content">
                     <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
+                    <a href="members.html">Members</a>
                     <a href="#" id="logout-link">Sign Out</a>
                 </div>
             </div>
