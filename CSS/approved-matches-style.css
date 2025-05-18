@@ -815,3 +815,76 @@ body {
 .loser-demo-link {
     left: 15px; /* Position on the left side */
 }
+
+
+.option-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.option-tab {
+    padding: 8px 15px;
+    background: #333;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.option-tab.active {
+    background: #9c27b0;
+    color: white;
+}
+
+.option-divider {
+    margin: 0 10px;
+    color: #777;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.demo-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: rgba(30, 30, 30, 0.7);
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.play-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #9c27b0;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.play-icon svg {
+    width: 12px;
+    height: 12px;
+    fill: white;
+}
+
+.demo-info {
+    flex-grow: 1;
+}
+
+.demo-author {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 3px;
+}
+
+.demo-description {
+    font-size: 13px;
+}

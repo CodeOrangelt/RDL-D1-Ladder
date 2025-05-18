@@ -498,43 +498,78 @@ async function renderMatchCards(docsData) {
                     // Add each comment in compact format
                     matchComments.forEach(comment => {
                         const commentEl = document.createElement('div');
-                        commentEl.className = 'comment-item';
                         
-                        // Get truncated text for display
-                        const displayText = truncateToWords(comment.text || "", 15);
-                        
-                        // Use default username if not provided
-                        const username = comment.username || 'Anonymous';
-                        
-                        // Create the compact format with delete button for user's own comments
-                        const currentUser = window.auth.currentUser;
-                        const isOwnComment = currentUser && comment.userId === currentUser.uid;
-                        
-                        // Add delete button for user's own comments
-                        let deleteButton = '';
-                        if (isOwnComment) {
-                            deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
-                        }
-                        
-                        commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
-                        
-                        // Add click handler for delete button
-                        if (isOwnComment) {
-                            const deleteBtn = commentEl.querySelector('.delete-comment-btn');
-                            if (deleteBtn) {
+                        if (comment.type === 'demo') {
+                            // Render as demo link with play icon
+                            commentEl.className = 'demo-link';
+                            commentEl.innerHTML = `
+                                <a href="${comment.demoLink}" target="_blank" class="play-icon">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                                    </svg>
+                                </a>
+                                <div class="demo-info">
+                                    <div class="demo-author">Demo from ${comment.username}</div>
+                                    <div class="demo-description">${comment.description || 'No description provided'}</div>
+                                </div>
+                            `;
+                            
+                            // Handle delete button for user's own demos
+                            const currentUser = window.auth.currentUser;
+                            const isOwn = currentUser && comment.userId === currentUser.uid;
+                            if (isOwn) {
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.className = 'delete-comment-btn';
+                                deleteBtn.innerHTML = '×';
+                                deleteBtn.setAttribute('aria-label', 'Delete demo');
                                 deleteBtn.addEventListener('click', (e) => {
-                                    e.stopPropagation(); // Prevent opening the comment popup
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     deleteComment(comment.id, commentEl);
                                 });
+                                commentEl.appendChild(deleteBtn);
                             }
+                            
+                        } else {
+                            // Render as regular comment (existing code)
+                            commentEl.className = 'comment-item';
+                            
+                            // Get truncated text for display
+                            const displayText = truncateToWords(comment.text || "", 15);
+                            
+                            // Use default username if not provided
+                            const username = comment.username || 'Anonymous';
+                            
+                            // Create the compact format with delete button for user's own comments
+                            const currentUser = window.auth.currentUser;
+                            const isOwnComment = currentUser && comment.userId === currentUser.uid;
+                            
+                            // Add delete button for user's own comments
+                            let deleteButton = '';
+                            if (isOwnComment) {
+                                deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                            }
+                            
+                            commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
+                            
+                            // Add click handler for delete button
+                            if (isOwnComment) {
+                                const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+                                if (deleteBtn) {
+                                    deleteBtn.addEventListener('click', (e) => {
+                                        e.stopPropagation(); // Prevent opening the comment popup
+                                        deleteComment(comment.id, commentEl);
+                                    });
+                                }
+                            }
+                            
+                            // Add click handler to show full comment in lightbox
+                            commentEl.addEventListener('click', () => {
+                                showFullCommentLightbox(comment);
+                            });
                         }
                         
-                        // Add click handler to show full comment in lightbox
-                        commentEl.addEventListener('click', () => {
-                            showFullCommentLightbox(comment);
-                        });
-                        
-                        // Insert at the beginning to show newest first (assuming they're sorted by time)
+                        // Insert at the beginning to show newest first
                         commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
                     });
                 } else {
@@ -807,50 +842,300 @@ function closeAddCommentPopup() {
 }
 
 /**
- * Shows the popup for adding a comment
+ * Shows the popup for adding a comment or demo link
  * @param {string} matchId The ID of the match to comment on
  */
 function showAddCommentPopup(matchId) {
     // Check if user is authenticated
     const currentUser = window.auth.currentUser;
     if (!currentUser) {
-        alert("You need to be signed in to leave a comment");
+        alert("You need to be signed in to leave a comment or add a demo");
         return;
     }
     
-    const popup = document.getElementById('commentAddPopup');
-    const overlay = document.getElementById('commentAddOverlay');
+    // Create or update the popup HTML to include both options
+    let popup = document.getElementById('commentAddPopup');
+    let overlay = document.getElementById('commentAddOverlay');
     
-    if (!popup || !overlay) {
-        console.error("Comment popup elements not found");
-        return;
+    if (!popup) {
+        // Create popup if it doesn't exist
+        popup = document.createElement('div');
+        popup.id = 'commentAddPopup';
+        popup.className = 'comment-popup';
+        document.body.appendChild(popup);
     }
     
-    // Set up the form with match ID
-    const matchIdField = document.getElementById('commentMatchId');
-    if (matchIdField) {
-        matchIdField.value = matchId;
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'commentAddOverlay';
+        overlay.className = 'comment-overlay';
+        document.body.appendChild(overlay);
     }
     
-    // Reset the comment text field
-    const commentTextField = document.getElementById('commentText');
-    if (commentTextField) {
-        commentTextField.value = '';
-    }
-    
-    // Set up word counter if it exists
-    setupWordCounter();
+    // Update popup content with the new dual-option form
+    popup.innerHTML = `
+        <div class="popup-header">
+            <h3>Add Comment or Demo</h3>
+            <button id="closeAddCommentPopup" class="close-btn">&times;</button>
+        </div>
+        <form id="addCommentForm">
+            <input type="hidden" id="commentMatchId" value="${matchId}">
+            
+            <div class="option-tabs">
+                <button type="button" class="option-tab active" data-option="comment">Add Comment</button>
+                <span class="option-divider">OR</span>
+                <button type="button" class="option-tab" data-option="demo">Share Demo Link</button>
+            </div>
+            
+            <div class="option-content" id="commentOption">
+                <div class="form-group">
+                    <label for="commentText">Your comment (15 words max):</label>
+                    <textarea id="commentText" rows="3" placeholder="Share your thoughts..."></textarea>
+                    <div class="word-counter"><span id="wordCount">0</span>/15 words</div>
+                </div>
+            </div>
+            
+            <div class="option-content" id="demoOption" style="display: none;">
+                <div class="form-group">
+                    <label for="demoLink">Demo Link:</label>
+                    <input type="url" id="demoLink" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label for="demoDescription">Description (20 words max):</label>
+                    <textarea id="demoDescription" rows="2" placeholder="Describe your demo..."></textarea>
+                    <div class="word-counter"><span id="demoWordCount">0</span>/20 words</div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-comment-btn">Submit</button>
+            </div>
+        </form>
+    `;
     
     // Show the popup
     popup.style.display = 'block';
     overlay.style.display = 'block';
     
-    // Focus on comment text area
-    if (commentTextField) {
-        commentTextField.focus();
+    // Set up event listeners
+    document.getElementById('closeAddCommentPopup').addEventListener('click', closeAddCommentPopup);
+    overlay.addEventListener('click', closeAddCommentPopup);
+    
+    // Set up tab switching
+    const tabs = popup.querySelectorAll('.option-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Deactivate all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // Hide all content
+            document.querySelectorAll('.option-content').forEach(c => c.style.display = 'none');
+            
+            // Activate this tab
+            this.classList.add('active');
+            
+            // Show the corresponding content
+            const option = this.dataset.option;
+            document.getElementById(`${option}Option`).style.display = 'block';
+        });
+    });
+    
+    // Set up word counters
+    setupWordCounter('commentText', 'wordCount', 15);
+    setupWordCounter('demoDescription', 'demoWordCount', 20);
+    
+    // Set up the form submission
+    document.getElementById('addCommentForm').addEventListener('submit', submitCommentOrDemo);
+}
+
+/**
+ * Sets up word counter for a textarea
+ * @param {string} textareaId The ID of the textarea
+ * @param {string} counterId The ID of the counter element
+ * @param {number} limit The word limit
+ */
+function setupWordCounter(textareaId, counterId, limit) {
+    const textarea = document.getElementById(textareaId);
+    const counter = document.getElementById(counterId);
+    
+    if (!textarea || !counter) return;
+    
+    // Initial count
+    updateCount();
+    
+    // Update on input
+    textarea.addEventListener('input', updateCount);
+    
+    function updateCount() {
+        const text = textarea.value.trim();
+        const count = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
+        
+        counter.textContent = count;
+        
+        // Visual feedback if over limit
+        if (count > limit) {
+            counter.style.color = '#ff4444';
+        } else {
+            counter.style.color = '#aaa';
+        }
+    }
+}
+
+/**
+ * Submits either a comment or demo link based on user selection
+ * @param {Event} event Form submit event
+ */
+async function submitCommentOrDemo(event) {
+    event.preventDefault();
+    
+    // Ensure auth is initialized
+    if (!window.auth || !window.db) {
+        console.error("Firebase not initialized");
+        alert("Unable to submit - system not ready");
+        return;
     }
     
-    console.log("Comment popup opened for match ID:", matchId);
+    // Check if user is authenticated
+    const currentUser = window.auth.currentUser;
+    if (!currentUser) {
+        alert("You must be signed in to continue");
+        return;
+    }
+    
+    // Get form values
+    const matchId = document.getElementById('commentMatchId').value;
+    
+    // Determine which option is active
+    const activeOption = document.querySelector('.option-tab.active').dataset.option;
+    
+    // Get username
+    let username = 'Anonymous';
+    try {
+        const userProfileRef = doc(window.db, "userProfiles", currentUser.uid);
+        const userProfileSnap = await getDoc(userProfileRef);
+        
+        if (userProfileSnap.exists()) {
+            const profileData = userProfileSnap.data();
+            if (profileData.username) {
+                username = profileData.username;
+            }
+        }
+        
+        if (username === 'Anonymous' && currentUser.displayName) {
+            username = currentUser.displayName;
+        }
+    } catch (error) {
+        console.warn("Failed to fetch username:", error);
+        if (currentUser.displayName) {
+            username = currentUser.displayName;
+        }
+    }
+    
+    // Disable submit button
+    const submitButton = document.querySelector('.submit-comment-btn');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
+    }
+    
+    try {
+        if (activeOption === 'comment') {
+            // Handle comment submission
+            const commentText = document.getElementById('commentText').value.trim();
+            
+            // Validate
+            if (!commentText) {
+                alert("Please enter a comment before submitting");
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+                return;
+            }
+            
+            // Check word count
+            const wordCount = commentText.split(/\s+/).filter(word => word.length > 0).length;
+            if (wordCount > 15) {
+                alert("Comments are limited to 15 words maximum. Please shorten your comment.");
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+                return;
+            }
+            
+            // Prepare data - IMPORTANT: Include all required fields per security rules
+            const commentData = {
+                matchId: matchId,
+                userId: currentUser.uid,
+                username: username,
+                text: commentText,
+                type: 'comment',
+                timestamp: serverTimestamp()
+            };
+            
+            // Add to Firebase
+            const commentsRef = collection(window.db, "matchComments");
+            await addDoc(commentsRef, commentData);
+            
+        } else {
+            // Handle demo link submission
+            const demoLink = document.getElementById('demoLink').value.trim();
+            const demoDescription = document.getElementById('demoDescription').value.trim() || "Demo link";
+            
+            // Validate
+            if (!demoLink) {
+                alert("Please enter a demo link");
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+                return;
+            }
+            
+            // Validate URL format
+            try {
+                new URL(demoLink);
+            } catch (e) {
+                alert("Please enter a valid URL for the demo link");
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+                return;
+            }
+            
+            // Check word count for description
+            const wordCount = demoDescription.split(/\s+/).filter(word => word.length > 0).length;
+            if (wordCount > 20) {
+                alert("Demo descriptions are limited to 20 words maximum. Please shorten your description.");
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+                return;
+            }
+            
+            // Prepare data - CRITICAL CHANGE: Include required 'text' field to satisfy security rules
+            const demoData = {
+                matchId: matchId,
+                userId: currentUser.uid,
+                username: username,
+                demoLink: demoLink,
+                description: demoDescription,
+                type: 'demo',
+                text: `Demo: ${demoDescription}`, // Add text field to meet security requirements
+                timestamp: serverTimestamp()
+            };
+            
+            // Add to Firebase
+            const commentsRef = collection(window.db, "matchComments");
+            await addDoc(commentsRef, demoData);
+        }
+        
+        // Close popup and refresh
+        closeAddCommentPopup();
+        loadRecentMatchesPreview('current');
+        
+    } catch (error) {
+        console.error("Error submitting:", error);
+        alert(`Failed to submit: ${error.message}`);
+        
+        // Re-enable submit button
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit";
+        }
+    }
 }
 
 function showPreviewCommentPopup(comment, player, color) {
@@ -900,36 +1185,6 @@ function showFullCommentLightbox(comment) {
 
     popup.style.display = 'block';
     overlay.style.display = 'block';
-}
-
-/**
- * Sets up the word counter for the comment textarea
- */
-function setupWordCounter() {
-    const commentText = document.getElementById('commentText');
-    const wordCount = document.getElementById('wordCount');
-    
-    if (!commentText || !wordCount) return;
-    
-    // Initialize counter
-    updateWordCount();
-    
-    // Update counter on input
-    commentText.addEventListener('input', updateWordCount);
-    
-    function updateWordCount() {
-        const text = commentText.value.trim();
-        const count = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
-        
-        wordCount.textContent = count;
-        
-        // Visual feedback if over limit
-        if (count > 15) {
-            wordCount.style.color = '#ff4444';
-        } else {
-            wordCount.style.color = '#aaa';
-        }
-    }
 }
 
 export function setupPreviewEventListeners() {
@@ -1002,8 +1257,12 @@ export function setupPreviewEventListeners() {
     if (addCommentOverlay) addCommentOverlay.addEventListener('click', closeAddCommentPopup);
     if (addCommentForm) addCommentForm.addEventListener('submit', submitComment);
 
-    // Word counter for comment form
-    setupWordCounter();
+    // Use the parameterized version of setupWordCounter instead of the duplicate one
+    const commentText = document.getElementById('commentText');
+    const wordCount = document.getElementById('wordCount');
+    if (commentText && wordCount) {
+        setupWordCounter('commentText', 'wordCount', 15);
+    }
 }
 
 // Make necessary functions available globally
