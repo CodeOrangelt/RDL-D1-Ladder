@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add this function after the initialization code
 
-// Function to check user permissions and return allowed tabs
 async function getUserTabPermissions(userEmail) {
     if (!userEmail) return ['dashboard']; // Default minimum access
     
@@ -146,7 +145,7 @@ async function getUserTabPermissions(userEmail) {
             'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches'],
             'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'manage-matches'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
-            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights'] // Creative Lead can manage articles & trophies
+            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights']
         };
         
         // Look up permissions for this role (case insensitive)
@@ -160,7 +159,6 @@ async function getUserTabPermissions(userEmail) {
     console.log(`No specific permissions for user ${userEmail}, giving default access`);
     return ['dashboard'];
 }
-
 // Update the setupSidebarNavigation function
 
 // Fix setupSidebarNavigation function
@@ -1953,7 +1951,6 @@ async function promotePlayer(username, ladder) {
 
         return true;
     } catch (error) {
-
         console.error('Error promoting player:', error);
         alert(`Error promoting player: ${error.message}`);
         throw error;
@@ -2492,7 +2489,7 @@ async function loadUsersWithRoles() {
                 if (confirm(`Are you sure you want to remove the role from ${username}?`)) {
                     // Call setUserRole with nulls to remove
                     setUserRole(username, null, null)
-                        .then(() => loadUsersWithRoles()) // Refresh the table on success
+                        .then(() => loadUsersWithRoles()) // Refresh table on success
                         .catch(error => console.error('Error removing role:', error));
                 }
             });
@@ -2610,15 +2607,17 @@ function filterUsersTable() {
     // Show no results message if needed
     if (visibleCount === 0 && rows.length > 0) {
         const tableBody = document.getElementById('users-table-body');
-        const hasNoResultsRow = tableBody.querySelector('.no-results');
-        
-        if (!hasNoResultsRow) {
-            const noResultsRow = document.createElement('tr');
-            noResultsRow.className = 'no-results';
-            noResultsRow.innerHTML = `<td colspan="5">No users found matching '${searchTerm}'</td>`;
-            tableBody.appendChild(noResultsRow);
+        if (tableBody) {
+            // Only add if there's no existing message
+            if (!tableBody.querySelector('.no-results')) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.classList.add('no-results');
+                noResultsRow.innerHTML = '<td colspan="5" class="empty-state">No users match your filters</td>';
+                tableBody.appendChild(noResultsRow);
+            }
         }
     } else {
+        // Remove no results message if it exists
         const noResultsRow = document.querySelector('.no-results');
         if (noResultsRow) {
             noResultsRow.remove();
@@ -3904,9 +3903,9 @@ async function loadHighlightDataAdmin(highlightId) {
             }
             
             document.getElementById('highlight-winner-name').value = data.winnerName || '';
-            document.getElementById('highlight-winner-score').value = data.winnerScore || 0;
+            document.getElementById('highlight-winner-score').value = data.winnerScore || '';
             document.getElementById('highlight-loser-name').value = data.loserName || '';
-            document.getElementById('highlight-loser-score').value = data.loserScore || 0;
+            document.getElementById('highlight-loser-score').value = data.loserScore || '';
             document.getElementById('highlight-match-link').value = data.matchLink || '';
             
         } else if (type === 'creator') {
@@ -3990,7 +3989,7 @@ async function saveHighlight() {
             data.achievementType = document.getElementById('highlight-achievement-type')?.value?.trim() || '';
             data.achievementDetails = document.getElementById('highlight-achievement-details')?.value?.trim() || '';
             data.playerProfileUrl = document.getElementById('highlight-player-profile')?.value?.trim() || '';
-            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; // Add this line
+            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; 
             
             // Validate required achievement fields
             if (!data.achievementPlayer) {
@@ -4003,22 +4002,839 @@ async function saveHighlight() {
         if (highlightId) {
             // Updating existing highlight
             data.updatedAt = serverTimestamp();
-            // To preserve createdAt on update, ensure it's not overwritten if not changed.
-            // If your form doesn't allow editing createdAt, this is fine.
-            // Otherwise, you might need to fetch the original doc to keep original createdAt.
-            const highlightRef = doc(db, 'highlights', highlightId);
-            await updateDoc(highlightRef, data);
+            await updateDoc(doc(db, 'highlights', highlightId), data);
             showNotification('Highlight updated successfully!', 'success');
         } else {
+            // Creating new highlight
             data.createdAt = serverTimestamp();
-            // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
-            // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
             await addDoc(collection(db, 'highlights'), data);
             showNotification('Highlight created successfully!', 'success');
         }
         
         // Close modal and refresh data
         closeHighlightModal();
+        loadHighlightsAdmin();
+        
+    } catch (error) {
+        console.error("Error saving highlight:", error);
+        showNotification(`Error saving highlight: ${error.message}`, 'error');
+    }
+}
+
+function closeHighlightModal() {
+    const modal = document.getElementById('highlight-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function getHighlightTypeName(type) {
+    switch(type) {
+        case 'match': return 'Match Highlight';
+        case 'creator': return 'Featured Creator';
+        case 'achievement': return 'Player Achievement';
+        default: return 'Highlight';
+    }
+}
+
+function updateHighlightVideoPreview() {
+    const videoIdInput = document.getElementById('highlight-video-id');
+    const previewContainer = document.getElementById('highlight-video-preview-container');
+    const previewFrame = document.getElementById('highlight-video-preview');
+    
+    if (!videoIdInput || !previewFrame || !previewContainer) return;
+    
+    const videoId = videoIdInput.value.trim();
+    
+    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+        previewFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        previewContainer.style.display = 'block';
+    } else {
+        previewFrame.src = '';
+        previewContainer.style.display = 'none';
+    }
+}
+
+// Load highlights into the admin table
+async function loadHighlightsAdmin() {
+    const tableBody = document.getElementById('highlights-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading highlights...</td></tr>';
+    
+    try {
+        const q = query(collection(db, 'highlights'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No highlights found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            
+            const createdDate = data.createdAt ? 
+                new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                
+            // Format type for display
+            let typeDisplay = 'Unknown';
+            let typeClass = '';
+            
+            switch(data.type) {
+                case 'match':
+                    typeDisplay = 'Match';
+                    typeClass = 'match-type';
+                    break;
+                case 'creator':
+                    typeDisplay = 'Creator';
+                    typeClass = 'creator-type';
+                    break;
+                case 'achievement':
+                    typeDisplay = 'Achievement';
+                    typeClass = 'achievement-type';
+                    break;
+            }
+            
+            row.innerHTML = `
+                <td>${data.title || 'Untitled'}</td>
+                <td><span class="highlight-type ${typeClass}">${typeDisplay}</span></td>
+                <td>${createdDate}</td>
+                <td>${data.submittedBy || 'Unknown'}</td>
+                <td>${data.videoId ? '<i class="fas fa-video"></i> Yes' : '<i class="fas fa-times"></i> No'}</td>
+                <td class="actions">
+                    <button class="edit-highlight-btn" data-id="${doc.id}" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-highlight-btn" data-id="${doc.id}" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // Add event listeners to buttons
+        document.querySelectorAll('.edit-highlight-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                openHighlightModal(e.currentTarget.dataset.id);
+            });
+        });
+        
+        document.querySelectorAll('.delete-highlight-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                confirmDeleteHighlight(e.currentTarget.dataset.id);
+            });
+        });
+        
+    } catch (error) {
+        console.error("Error loading highlights:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-state">
+                    Error loading highlights: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function confirmDeleteHighlight(highlightId) {
+    if (confirm('Are you sure you want to delete this highlight? This cannot be undone.')) {
+        try {
+            await deleteDoc(doc(db, 'highlights', highlightId));
+            showNotification('Highlight deleted successfully', 'success');
+            loadHighlightsAdmin();
+        } catch (error) {
+            console.error("Error deleting highlight:", error);
+            showNotification(`Error deleting highlight: ${error.message}`, 'error');
+        }
+    }
+}
+
+function setupManageHighlightsSection() {
+    console.log('Setting up Manage Highlights section');
+    
+    // Load highlights button is already set up in setupDataLoadButtons
+    
+    // Create highlight buttons for each type
+    setupHighlightButtons();
+    
+    // Set up the highlight modal form submission
+    const highlightForm = document.getElementById('highlight-form');
+    if (highlightForm) {
+        highlightForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveHighlight();
+        });
+    }
+    
+    // Close button for highlight modal
+    const closeHighlightBtn = document.getElementById('cancel-highlight-btn');
+    if (closeHighlightBtn) {
+        closeHighlightBtn.addEventListener('click', closeHighlightModal);
+    }
+    
+    // Modal close button (X)
+    const closeBtn = document.querySelector('#highlight-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeHighlightModal);
+    }
+    
+    // Modal background click
+    const highlightModal = document.getElementById('highlight-modal');
+    if (highlightModal) {
+        highlightModal.addEventListener('click', (e) => {
+            if (e.target === highlightModal) {
+                closeHighlightModal();
+            }
+        });
+    }
+    
+    // Video ID input for preview update
+    const videoIdInput = document.getElementById('highlight-video-id');
+    if (videoIdInput) {
+        videoIdInput.addEventListener('input', () => {
+            updateHighlightVideoPreview();
+        });
+    }
+    
+    console.log('Manage Highlights section initialized');
+}
+
+// Setup Manage Matches section
+function setupManageMatchesSection() {
+    console.log('Setting up Manage Matches section');
+    
+    // Pagination buttons
+    document.getElementById('matches-prev-page').addEventListener('click', () => {
+        const ladderPrefix = currentLadder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page - 1);
+    });
+    
+    document.getElementById('matches-next-page').addEventListener('click', () => {
+        const ladderPrefix = currentLadder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page + 1);
+    });
+    
+    // Filter buttons
+    document.getElementById('apply-matches-filters').addEventListener('click', applyMatchesFilters);
+    document.getElementById('reset-matches-filters').addEventListener('click', resetMatchesFilters);
+    
+    // Search functionality
+    const matchesSearch = document.getElementById('matches-search');
+    if (matchesSearch) {
+        matchesSearch.addEventListener('input', debounce(filterMatchesTable, 300));
+    }
+    
+    // Edit match modal events
+    const editMatchModal = document.getElementById('edit-match-modal');
+    const editMatchForm = document.getElementById('edit-match-form');
+    
+    if (editMatchModal) {
+        // Close modal when clicking outside or on close button
+        editMatchModal.addEventListener('click', (e) => {
+            if (e.target === editMatchModal) {
+                closeEditMatchModal();
+            }
+        });
+        
+        const closeBtn = editMatchModal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeEditMatchModal);
+        }
+    }
+    
+    if (editMatchForm) {
+        // Handle form submission
+        editMatchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveEditedMatch();
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-edit-match-btn').addEventListener('click', closeEditMatchModal);
+    }
+    
+    // Delete confirmation modal events
+    const deleteMatchModal = document.getElementById('delete-match-confirm-modal');
+    
+    if (deleteMatchModal) {
+        // Close modal when clicking outside
+        deleteMatchModal.addEventListener('click', (e) => {
+            if (e.target === deleteMatchModal) {
+                closeDeleteMatchModal();
+            }
+        });
+        
+        // Cancel deletion
+        document.getElementById('cancel-delete-match-btn').addEventListener('click', closeDeleteMatchModal);
+        
+        // Confirm deletion
+        document.getElementById('confirm-delete-match-btn').addEventListener('click', confirmDeleteMatch);
+    }
+    
+    console.log('Manage Matches section initialized');
+}
+
+// Load matches data with pagination
+async function loadMatchesData(page = 1) {
+    const tableBody = document.getElementById('matches-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading matches...</td></tr>';
+    
+    try {
+        const ladderPrefix = currentLadder.toLowerCase();
+        const pagination = matchesPagination[ladderPrefix];
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        const matchesRef = collection(db, matchesCollection);
+        
+        // Reset pagination if going back to page 1
+        if (page <= 1) {
+            pagination.page = 1;
+            pagination.firstVisible = null;
+            pagination.lastVisible = null;
+        } else {
+            pagination.page = page;
+        }
+        
+        // Apply filters if any
+        const filters = getMatchesFilters();
+        let q = matchesRef;
+        
+        if (filters.startDate || filters.endDate || filters.searchTerm) {
+            // Create query with filters
+            let queryConstraints = [];
+            
+            if (filters.startDate && filters.endDate) {
+                queryConstraints.push(
+                    where('approvedAt', '>=', filters.startDate),
+                    where('approvedAt', '<=', filters.endDate)
+                );
+                q = query(matchesRef, ...queryConstraints);
+            } else {
+                q = query(matchesRef, orderBy('approvedAt', 'desc'));
+            }
+        } else {
+            // Default ordering
+            q = query(matchesRef, orderBy('approvedAt', 'desc'));
+        }
+        
+        // Add pagination
+        if (page > 1 && pagination.lastVisible) {
+            q = query(q, startAfter(pagination.lastVisible), limit(PAGE_SIZE));
+        } else {
+            q = query(q, limit(PAGE_SIZE));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Update pagination state
+        if (!querySnapshot.empty) {
+            pagination.firstVisible = querySnapshot.docs[0];
+            pagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Check if there are more records for next page
+        let hasNextPage = false;
+        if (!querySnapshot.empty) {
+            const nextPageQuery = query(q, startAfter(pagination.lastVisible), limit(1));
+            const nextPageSnapshot = await getDocs(nextPageQuery);
+            hasNextPage = !nextPageSnapshot.empty;
+        }
+        
+        // Enable/disable pagination buttons
+        document.getElementById('matches-prev-page').disabled = pagination.page <= 1;
+        document.getElementById('matches-next-page').disabled = !hasNextPage;
+        
+        // Update page indicator
+        document.getElementById('matches-page-indicator').textContent = `Page ${pagination.page}`;
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const match = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format date
+            const dateStr = match.approvedAt ? 
+                new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+            
+            row.setAttribute('data-id', doc.id);
+            row.setAttribute('data-ladder', currentLadder);
+            
+            row.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${match.winnerUsername || 'Unknown'}</td>
+                <td>${match.loserUsername || 'Unknown'}</td>
+                <td>${match.winnerScore || 0} - ${match.loserScore || 0}</td>
+                <td>${match.mapPlayed || 'N/A'}</td>
+                <td>${currentLadder}</td>
+                <td class="actions">
+                    <button class="edit-match-btn" data-id="${doc.id}" title="Edit Match">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-match-btn" data-id="${doc.id}" title="Delete Match">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // Add event listeners to action buttons
+        setupMatchesActionButtons();
+        
+        // Apply search filter if there's a term
+        if (filters.searchTerm) {
+            filterMatchesTable();
+        }
+        
+    } catch (error) {
+        console.error('Error loading matches:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error loading matches: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Setup action buttons for matches table
+function setupMatchesActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder;
+            openEditMatchModal(matchId, ladder);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder;
+            openDeleteMatchModal(matchId, ladder);
+        });
+    });
+}
+
+// Filter matches table based on search term
+function filterMatchesTable() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#matches-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.classList.contains('loading-cell') || 
+            row.classList.contains('empty-state') || 
+            row.classList.contains('error-state')) {
+            return;
+        }
+        
+        const winner = row.cells[1].textContent.toLowerCase();
+        const loser = row.cells[2].textContent.toLowerCase();
+        const map = row.cells[4].textContent.toLowerCase();
+        
+        if (winner.includes(searchTerm) || loser.includes(searchTerm) || map.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && rows.length > 0) {
+        const tableBody = document.getElementById('matches-table-body');
+        const hasNoResultsRow = tableBody.querySelector('.no-results');
+        
+        if (!hasNoResultsRow) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results';
+            noResultsRow.innerHTML = `<td colspan="7">No matches found matching '${searchTerm}'</td>`;
+            tableBody.appendChild(noResultsRow);
+        }
+    } else {
+        const noResultsRow = document.querySelector('.no-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+}
+
+// Get filters for matches query
+function getMatchesFilters() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const startDateStr = document.getElementById('matches-start-date').value;
+    const endDateStr = document.getElementById('matches-end-date').value;
+    
+    let startDate = null;
+    let endDate = null;
+    
+    if (startDateStr) {
+        startDate = new Date(startDateStr);
+        startDate.setHours(0, 0, 0, 0);
+        startDate = Timestamp.fromDate(startDate);
+    }
+    
+    if (endDateStr) {
+        endDate = new Date(endDateStr);
+        endDate.setHours(23, 59, 59, 999);
+        endDate = Timestamp.fromDate(endDate);
+    }
+    
+    return { searchTerm, startDate, endDate };
+}
+
+// Apply filters to matches
+async function applyMatchesFilters() {
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload with filters applied
+    await loadMatchesData(1);
+}
+
+// Reset match filters
+function resetMatchesFilters() {
+    document.getElementById('matches-start-date').value = '';
+    document.getElementById('matches-end-date').value = '';
+    document.getElementById('matches-search').value = '';
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload matches
+    loadMatchesData(1);
+}
+
+// Open edit match modal
+async function openEditMatchModal(matchId, ladder) {
+    const modal = document.getElementById('edit-match-modal');
+    if (!modal) return;
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Set form fields
+        document.getElementById('edit-match-id').value = matchId;
+        document.getElementById('edit-match-ladder').value = ladder;
+        document.getElementById('edit-match-winner').value = match.winnerUsername || '';
+        document.getElementById('edit-match-winner-score').value = match.winnerScore || 0;
+        document.getElementById('edit-match-winner-suicides').value = match.winnerSuicides || 0;
+        document.getElementById('edit-match-winner-comment').value = match.winnerComment || '';
+        document.getElementById('edit-match-loser').value = match.loserUsername || '';
+        document.getElementById('edit-match-loser-score').value = match.loserScore || 0;
+        document.getElementById('edit-match-loser-suicides').value = match.loserSuicides || 0;
+        document.getElementById('edit-match-loser-comment').value = match.loserComment || '';
+        document.getElementById('edit-match-map').value = match.mapPlayed || '';
+        document.getElementById('edit-match-winner-demo').value = match.winnerDemoLink || '';
+        document.getElementById('edit-match-loser-demo').value = match.loserDemoLink || match.demoLink || '';
+        
+        // Update title
+        document.getElementById('edit-match-title').textContent = `Edit Match: ${match.winnerUsername} vs ${match.loserUsername}`;
+        
+        // Show the modal
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match data:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close edit match modal
+function closeEditMatchModal() {
+    const modal = document.getElementById('edit-match-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Save edited match
+async function saveEditedMatch() {
+    try {
+        const matchId = document.getElementById('edit-match-id').value;
+        const ladder = document.getElementById('edit-match-ladder').value;
+        
+        if (!matchId || !ladder) {
+            showNotification('Match ID or ladder missing', 'error');
+            return;
+        }
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get form values
+        const winnerUsername = document.getElementById('edit-match-winner').value.trim();
+        const winnerScore = parseInt(document.getElementById('edit-match-winner-score').value);
+        const winnerSuicides = parseInt(document.getElementById('edit-match-winner-suicides').value);
+        const winnerComment = document.getElementById('edit-match-winner-comment').value.trim();
+        const loserUsername = document.getElementById('edit-match-loser').value.trim();
+        const loserScore = parseInt(document.getElementById('edit-match-loser-score').value);
+        const loserSuicides = parseInt(document.getElementById('edit-match-loser-suicides').value);
+        const loserComment = document.getElementById('edit-match-loser-comment').value.trim();
+        const mapPlayed = document.getElementById('edit-match-map').value.trim();
+        const winnerDemoLink = document.getElementById('edit-match-winner-demo').value.trim();
+        const loserDemoLink = document.getElementById('edit-match-loser-demo').value.trim();
+        
+        if (!winnerUsername || !loserUsername) {
+            showNotification('Winner and loser usernames are required', 'error');
+            return;
+        }
+        
+        // Update the match document
+        await updateDoc(doc(db, matchesCollection, matchId), {
+            winnerUsername,
+            winnerScore,
+            winnerSuicides,
+            winnerComment,
+            loserUsername,
+            loserScore,
+            loserSuicides,
+            loserComment,
+            mapPlayed,
+            winnerDemoLink: winnerDemoLink || null,
+            loserDemoLink: loserDemoLink || null,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: auth.currentUser.email,
+            isEdited: true
+        });
+        
+        showNotification('Match updated successfully', 'success');
+        closeEditMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error saving match:', error);
+        showNotification('Failed to save match: ' + error.message, 'error');
+    }
+}
+
+// Open delete match confirmation modal
+async function openDeleteMatchModal(matchId, ladder) {
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Store match ID and ladder for deletion
+        const deleteModal = document.getElementById('delete-match-confirm-modal');
+        deleteModal.dataset.matchId = matchId;
+        deleteModal.dataset.ladder = ladder;
+        
+        // Format date
+        const dateStr = match.approvedAt ? 
+            new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+        
+        // Create match summary
+        const summary = document.getElementById('delete-match-summary');
+        summary.innerHTML = `
+            <p><strong>Date:</strong> ${dateStr}</p>
+            <p><strong>Players:</strong> ${match.winnerUsername} (winner) vs ${match.loserUsername} (loser)</p>
+            <p><strong>Score:</strong> ${match.winnerScore || 0} - ${match.loserScore || 0}</p>
+            <p><strong>Map:</strong> ${match.mapPlayed || 'N/A'}</p>
+            <p><strong>Ladder:</strong> ${ladder}</p>
+        `;
+        
+        // Show the modal
+        deleteModal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match for deletion:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close delete match modal
+function closeDeleteMatchModal() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Clear data attributes
+        modal.removeAttribute('data-match-id');
+        modal.removeAttribute('data-ladder');
+    }
+}
+
+// Confirm and delete match
+async function confirmDeleteMatch() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    const matchId = modal.dataset.matchId;
+    const ladder = modal.dataset.ladder;
+    
+    if (!matchId || !ladder) {
+        showNotification('Match ID or ladder missing', 'error');
+        closeDeleteMatchModal();
+        return;
+    }
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Delete the match
+        await deleteDoc(doc(db, matchesCollection, matchId));
+        
+        showNotification('Match deleted successfully', 'success');
+        closeDeleteMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error deleting match:', error);
+        showNotification('Failed to delete match: ' + error.message, 'error');
+    }
+}
+
+async function saveHighlightChanges() {
+    const highlightId = document.getElementById('edit-highlight-id').value;
+    const type = document.getElementById('edit-highlight-type-select').value;
+
+    // Base data object with common fields
+    let highlightData = {
+        title: document.getElementById('edit-highlight-title-input').value.trim(),
+        type: type,
+        description: document.getElementById('edit-highlight-description-input').value.trim(),
+        videoId: document.getElementById('edit-highlight-videoId-input').value.trim(),
+        submittedBy: auth.currentUser.email,
+        // Timestamps will be handled below (createdAt for new, updatedAt for existing)
+    };
+
+    // Populate fields based on type and nullify irrelevant ones
+    if (type === 'match') {
+        highlightData.matchInfo = document.getElementById('edit-highlight-matchInfo-input').value.trim();
+        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim();
+        const matchDateValue = document.getElementById('edit-highlight-matchDate-input').value;
+        highlightData.matchDate = matchDateValue ? Timestamp.fromDate(new Date(matchDateValue)) : null;
+        highlightData.winnerName = document.getElementById('edit-highlight-winnerName-input').value.trim();
+        highlightData.winnerScore = document.getElementById('edit-highlight-winnerScore-input').value.trim();
+        highlightData.loserName = document.getElementById('edit-highlight-loserName-input').value.trim();
+        highlightData.loserScore = document.getElementById('edit-highlight-loserScore-input').value.trim();
+        highlightData.matchLink = document.getElementById('edit-highlight-matchLink-input').value.trim();
+
+        // Nullify creator/achievement specific fields
+        highlightData.mapCreator = null;
+        highlightData.mapVersion = null;
+        highlightData.creatorImageUrl = null;
+        highlightData.achievementPlayer = null;
+        highlightData.achievementType = null;
+        highlightData.achievementDetails = null;
+        highlightData.playerProfileUrl = null;
+
+    } else if (type === 'creator') {
+        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim(); // Map name is relevant for creator
+        highlightData.mapCreator = document.getElementById('edit-highlight-mapCreator-input').value.trim();
+        highlightData.mapVersion = document.getElementById('edit-highlight-mapVersion-input').value.trim();
+        highlightData.creatorImageUrl = document.getElementById('edit-highlight-creatorImageUrl-input').value.trim();
+
+        // Nullify match/achievement specific fields
+        highlightData.matchInfo = null;
+        highlightData.matchDate = null;
+        highlightData.winnerName = null;
+        highlightData.winnerScore = null;
+        highlightData.loserName = null;
+        highlightData.loserScore = null;
+        highlightData.matchLink = null;
+        highlightData.achievementPlayer = null;
+        highlightData.achievementType = null;
+        highlightData.achievementDetails = null;
+        highlightData.playerProfileUrl = null;
+
+    } else if (type === 'achievement') {
+        highlightData.achievementPlayer = document.getElementById('edit-highlight-achievementPlayer-input').value.trim();
+        highlightData.achievementType = document.getElementById('edit-highlight-achievementType-input').value.trim();
+        highlightData.achievementDetails = document.getElementById('edit-highlight-achievementDetails-input').value.trim();
+        highlightData.playerProfileUrl = document.getElementById('edit-highlight-playerProfileUrl-input').value.trim();
+
+        // Nullify match/creator specific fields
+        highlightData.matchInfo = null;
+        highlightData.map = null; // Map name might not be relevant here, nullifying
+        highlightData.matchDate = null;
+        highlightData.winnerName = null;
+        highlightData.winnerScore = null;
+        highlightData.loserName = null;
+        highlightData.loserScore = null;
+        highlightData.matchLink = null;
+        highlightData.mapCreator = null;
+        highlightData.mapVersion = null;
+        highlightData.creatorImageUrl = null;
+    }
+
+    try {
+        if (highlightId) {
+            highlightData.updatedAt = serverTimestamp();
+            // To preserve createdAt on update, ensure it's not overwritten if not changed.
+            // If your form doesn't allow editing createdAt, this is fine.
+            // Otherwise, you might need to fetch the original doc to keep original createdAt.
+            const highlightRef = doc(db, 'highlights', highlightId);
+            await updateDoc(highlightRef, highlightData);
+            showNotification('Highlight updated successfully!', 'success');
+        } else {
+            highlightData.createdAt = serverTimestamp();
+            // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
+            // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
+            await addDoc(collection(db, 'highlights'), highlightData);
+            showNotification('Highlight added successfully!', 'success');
+        }
+        closeEditHighlightModal();
         loadHighlightsAdmin(); // Refresh the admin list of highlights
     } catch (error) {
         console.error('Error saving highlight:', error);
