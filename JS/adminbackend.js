@@ -87,14 +87,12 @@ async function getUserTabPermissions(userEmail) {
     ];
     
     // First try to find by UID if user is authenticated
-    // CHANGED: Use the imported auth object instead of getAuth()
     const user = auth.currentUser;
     
     let role = null;
     let roleSource = null;
     
     // Check all collections before deciding on permissions
-    // This way we don't miss a role if it's in a different collection
     for (const collection of collectionsToCheck) {
         try {
             // If authenticated, try direct user ID lookup first
@@ -122,6 +120,7 @@ async function getUserTabPermissions(userEmail) {
             // If no role found by UID (or no authenticated user), try email lookup
             if (!role) {
                 const usersRef = collection(db, collection.name);
+                // FIX: Use the imported collection function properly
                 const q = query(usersRef, where('email', '==', userEmail));
                 const querySnapshot = await getDocs(q);
                 
@@ -2620,17 +2619,15 @@ function filterUsersTable() {
     // Show no results message if needed
     if (visibleCount === 0 && rows.length > 0) {
         const tableBody = document.getElementById('users-table-body');
-        if (tableBody) {
-            // Only add if there's no existing message
-            if (!tableBody.querySelector('.no-results')) {
-                const noResultsRow = document.createElement('tr');
-                noResultsRow.classList.add('no-results');
-                noResultsRow.innerHTML = '<td colspan="5" class="empty-state">No users match your filters</td>';
-                tableBody.appendChild(noResultsRow);
-            }
+        const hasNoResultsRow = tableBody.querySelector('.no-results');
+        
+        if (!hasNoResultsRow) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results';
+            noResultsRow.innerHTML = `<td colspan="5">No users found matching '${searchTerm}'</td>`;
+            tableBody.appendChild(noResultsRow);
         }
     } else {
-        // Remove no results message if it exists
         const noResultsRow = document.querySelector('.no-results');
         if (noResultsRow) {
             noResultsRow.remove();
@@ -3916,9 +3913,9 @@ async function loadHighlightDataAdmin(highlightId) {
             }
             
             document.getElementById('highlight-winner-name').value = data.winnerName || '';
-            document.getElementById('highlight-winner-score').value = data.winnerScore || '';
+            document.getElementById('highlight-winner-score').value = data.winnerScore || 0;
             document.getElementById('highlight-loser-name').value = data.loserName || '';
-            document.getElementById('highlight-loser-score').value = data.loserScore || '';
+            document.getElementById('highlight-loser-score').value = data.loserScore || 0;
             document.getElementById('highlight-match-link').value = data.matchLink || '';
             
         } else if (type === 'creator') {
@@ -4002,7 +3999,7 @@ async function saveHighlight() {
             data.achievementType = document.getElementById('highlight-achievement-type')?.value?.trim() || '';
             data.achievementDetails = document.getElementById('highlight-achievement-details')?.value?.trim() || '';
             data.playerProfileUrl = document.getElementById('highlight-player-profile')?.value?.trim() || '';
-            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; 
+            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; // Add this line
             
             // Validate required achievement fields
             if (!data.achievementPlayer) {
@@ -4015,21 +4012,25 @@ async function saveHighlight() {
         if (highlightId) {
             // Updating existing highlight
             data.updatedAt = serverTimestamp();
-            await updateDoc(doc(db, 'highlights', highlightId), data);
+            // To preserve createdAt on update, ensure it's not overwritten if not changed.
+            // If your form doesn't allow editing createdAt, this is fine.
+            // Otherwise, you might need to fetch the original doc to keep original createdAt.
+            const highlightRef = doc(db, 'highlights', highlightId);
+            await updateDoc(highlightRef, data);
             showNotification('Highlight updated successfully!', 'success');
         } else {
-            // Creating new highlight
             data.createdAt = serverTimestamp();
+            // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
+            // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
             await addDoc(collection(db, 'highlights'), data);
             showNotification('Highlight created successfully!', 'success');
         }
         
         // Close modal and refresh data
         closeHighlightModal();
-        loadHighlightsAdmin();
-        
+        loadHighlightsAdmin(); // Refresh the admin list of highlights
     } catch (error) {
-        console.error("Error saving highlight:", error);
+        console.error('Error saving highlight:', error);
         showNotification(`Error saving highlight: ${error.message}`, 'error');
     }
 }
@@ -4845,9 +4846,11 @@ async function saveHighlightChanges() {
             // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
             // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
             await addDoc(collection(db, 'highlights'), highlightData);
-            showNotification('Highlight added successfully!', 'success');
+            showNotification('Highlight created successfully!', 'success');
         }
-        closeEditHighlightModal();
+        
+        // Close modal and refresh data
+        closeHighlightModal();
         loadHighlightsAdmin(); // Refresh the admin list of highlights
     } catch (error) {
         console.error('Error saving highlight:', error);
