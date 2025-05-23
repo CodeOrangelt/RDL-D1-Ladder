@@ -432,6 +432,13 @@ service cloud.firestore {
       allow read: if true; // Anyone can read highlights
       allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
     }
+
+    match /articles/{document=**} {
+      allow write: if request.auth != null && 
+        (get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'admin' ||
+        get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'owner' ||
+        get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'creative lead');
+    }
       
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore

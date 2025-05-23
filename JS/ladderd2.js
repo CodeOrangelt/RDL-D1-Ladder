@@ -38,7 +38,6 @@ async function displayLadderD2(forceRefresh = false) {
         // Use cache if available and not expired
         const now = Date.now();
         if (!forceRefresh && playerCacheD2.data && (now - playerCacheD2.timestamp < CACHE_DURATION)) {
-            console.log('Using cached D2 ladder data');
             updateLadderDisplayD2(playerCacheD2.data);
             return;
         }
@@ -171,11 +170,8 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             return;
         }
 
-        console.log(`D2 Match result: ${winnerUsername}(${winner.position}) beat ${loserUsername}(${loser.position})`);
-
         // Only update positions if winner is below loser in the ladder
         if (winner.position > loser.position) {
-            console.log(`Winner ${winnerUsername} is moving up from position ${winner.position} to ${loser.position}`);
             const winnerNewPosition = loser.position;
             
             // Update positions for players between winner and loser
@@ -185,7 +181,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     await firebaseIdle.updateDocument(doc(db, 'playersD2', player.id), {
                         position: player.position + 1
                     });
-                    console.log(`Moving ${player.username} down to position ${player.position + 1}`);
                 }
             }
 
@@ -193,7 +188,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             await firebaseIdle.updateDocument(doc(db, 'playersD2', winner.id), {
                 position: winnerNewPosition
             });
-            console.log(`Updated ${winnerUsername} to position ${winnerNewPosition}`);
 
             // Handle #1 position streak tracking
             if (winnerNewPosition === 1) {
@@ -206,7 +200,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     await firebaseIdle.updateDocument(winnerDoc, {
                         firstPlaceDate: Timestamp.now()
                     });
-                    console.log(`Set firstPlaceDate for ${winnerUsername} at position #1`);
                 }
             }
             // If the previous #1 player is displaced
@@ -215,14 +208,12 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                 await firebaseIdle.updateDocument(loserDoc, {
                     firstPlaceDate: null // Reset their streak
                 });
-                console.log(`${loserUsername} lost #1 position, resetting firstPlaceDate`);
             }
             
             // Invalidate cache to ensure fresh data is loaded
             playerCacheD2.timestamp = 0;
         } else {
             // If winner is already above loser or equal, maintain positions
-            console.log(`No position change needed: winner ${winnerUsername}(${winner.position}) is already above or equal to loser ${loserUsername}(${loser.position})`);
         }
     } catch (error) {
         console.error("Error updating D2 player positions:", error);
@@ -338,7 +329,6 @@ async function updateLadderDisplayD2(ladderData) {
                         eloCell.style.position = 'relative';
                         
                         eloCell.appendChild(indicator);
-                        console.log(`D2: Added ELO indicator ${formattedChange} to ${username}`);
                     }
                 }
             });
@@ -467,7 +457,6 @@ function createPlayerRowD2(player, stats) {
 
 // Function for D2 ELO change tracking - KEEP THIS AS IS
 async function getPlayersLastEloChangesD2(usernames) {
-    console.log('D2: Finding ELO changes for', usernames.length, 'players');
     const changes = new Map();
     usernames.forEach(username => changes.set(username, 0));
     
@@ -476,9 +465,7 @@ async function getPlayersLastEloChangesD2(usernames) {
         const eloHistoryRef = collection(db, 'eloHistoryD2');
         const recentHistoryQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
         const snapshot = await getDocs(recentHistoryQuery);
-        
-        console.log('D2: Found', snapshot.size, 'history entries');
-        
+                
         // Build a player ID to username mapping to improve matching
         const playerIdToUsername = new Map();
         const playersQuery = await getDocs(collection(db, 'playersD2'));
@@ -520,9 +507,7 @@ async function getPlayersLastEloChangesD2(usernames) {
                 });
             }
         });
-        
-        console.log('D2: Found entries for', entriesByUsername.size, 'players');
-        
+                
         entriesByUsername.forEach((entries, username) => {
             if (entries.length > 0) {
                 entries.sort((a, b) => b.timestamp - a.timestamp);
@@ -542,7 +527,6 @@ async function getPlayersLastEloChangesD2(usernames) {
                     
                     if (eloChange !== undefined) {
                         changes.set(username, eloChange);
-                        console.log(`D2: ${username} ELO change: ${eloChange}`);
                     }
                 }
             }
@@ -550,7 +534,6 @@ async function getPlayersLastEloChangesD2(usernames) {
         
         // If we didn't find any changes, try fallback to main eloHistory
         if (entriesByUsername.size === 0) {
-            console.log('D2: No entries found in D2 history, checking main history');
             
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
@@ -580,7 +563,6 @@ async function getPlayersLastEloChangesD2(usernames) {
                     }
                 });
             } catch (fallbackError) {
-                console.log('D2: Error checking fallback history:', fallbackError);
             }
         }
     } catch (error) {
@@ -598,7 +580,6 @@ function setupRawLadderFeed() {
     firebaseIdle.onSnapshotWithIdleHandling(playersRef, (snapshot) => {
         try {
             if (window.location.pathname.includes('rawleaderboardD2.html')) {
-                console.log("Raw D2 leaderboard snapshot received");
                 
                 // Extract player data
                 const players = [];

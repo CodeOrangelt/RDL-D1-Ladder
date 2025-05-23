@@ -89,44 +89,6 @@ async function checkQueueTimeout(player) {
     }
 }
 
-// Set up real-time listener
-console.log('Setting up queue listener...');
-const unsubscribe = onSnapshot(readyPlayersRef, 
-    (snapshot) => {
-        console.log('Queue snapshot received:', {
-            size: snapshot.size,
-            empty: snapshot.empty
-        });
-
-        const activePlayers = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            console.log('Player document:', {
-                id: doc.id,
-                username: data.username,
-                isReady: data.isReady,
-                lastUpdated: data.lastUpdated
-            });
-            
-            if (data.isReady === true) {
-                const player = {
-                    id: doc.id,
-                    username: data.username,
-                    lastUpdated: data.lastUpdated || new Date()
-                };
-                activePlayers.push(player);
-                checkQueueTimeout(player); // Check timeout for each active player
-            }
-        });
-
-        console.log('Processing complete. Active players:', activePlayers);
-        updateQueueDisplay(activePlayers);
-    },
-    (error) => {
-        console.error('Error in queue listener:', error);
-    }
-);
-
 // Cleanup listener on page unload
 window.addEventListener('unload', () => {
     unsubscribe();
