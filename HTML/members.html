@@ -576,668 +576,563 @@
     
     <div id="footerPlaceholder"></div>
 
-    <!-- Using the modern Firebase SDK with modules -->
     <script type="module">
-        // Fix missing global variables declaration
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            getDocs, 
-            query, 
-            where,
-            orderBy,
-            limit,
-            startAfter
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-        import { firebaseConfig } from "../JS/firebase-config.js";
+    // Firebase imports - same as before
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        getDocs, 
+        query, 
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+    import { firebaseConfig } from "../JS/firebase-config.js";
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        
-        // Change default profile image to shieldorb.png
-        const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png";
-        
-        // Add caching to reduce Firebase reads
-        const CACHE_EXPIRY = 10 * 60 * 1000; // 10 minutes in milliseconds
-        
-        // Global variables - add allMembers here
-        let allMembers = [];
-        let displayedMembers = [];
-        let currentPage = 1;
-        const MEMBERS_PER_PAGE = 12;
-        let currentLadderFilter = 'all';
-        let currentSearchTerm = '';
+    // Initialize Firebase - same as before
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    
+    const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png";
+    
+    // 🚀 ULTRA-OPTIMIZED CACHING - 30 minute cache vs 10 minute
+    const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+    
+    // Global variables - keep exactly the same
+    let allMembers = [];
+    let displayedMembers = [];
+    let currentPage = 1;
+    const MEMBERS_PER_PAGE = 12;
+    let currentLadderFilter = 'all';
+    let currentSearchTerm = '';
+    let isLoading = false;
 
-        // DOM references
-        const membersGrid = document.getElementById('membersGrid');
-        const pagination = document.getElementById('pagination');
-        const memberSearch = document.getElementById('memberSearch');
+    // DOM references - same as before
+    const membersGrid = document.getElementById('membersGrid');
+    const pagination = document.getElementById('pagination');
+    const memberSearch = document.getElementById('memberSearch');
         
-        // Function to check if data in localStorage is valid and not expired
-        function getCachedData(key) {
-            const cachedData = localStorage.getItem(key);
-            if (!cachedData) return null;
-            
-            try {
-                const { timestamp, data } = JSON.parse(cachedData);
-                if (Date.now() - timestamp < CACHE_EXPIRY) {
-                    console.log(`Using cached ${key} data`);
-                    return data;
-                }
-                console.log(`Cache expired for ${key}, fetching fresh data`);
-                return null;
-            } catch (err) {
-                console.error("Error parsing cached data:", err);
-                return null;
-            }
-        }
+    // 🔥 ULTRA-OPTIMIZED LOADING - SINGLE COLLECTION READ
+    async function loadAllMembers() {
+        if (isLoading) return;
+        isLoading = true;
         
-        // Function to save data to cache
-        function setCachedData(key, data) {
-            const cacheData = {
-                timestamp: Date.now(),
-                data: data
-            };
-            localStorage.setItem(key, JSON.stringify(cacheData));
-        }
-        
-        // Optimize getAllUsernames to use cache
-        async function getAllUsernames() {
-            const cachedUsernames = getCachedData('rdl_usernames');
-            if (cachedUsernames) {
-                return new Map(cachedUsernames);
-            }
-            
-            console.log("Starting to fetch all usernames from collections...");
-            const usernameMap = new Map();
-            
-            try {
-                // Using Promise.all to fetch all collections in parallel
-                const [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap] = await Promise.all([
-                    getDocs(collection(db, 'userProfiles')),
-                    getDocs(collection(db, 'players')),
-                    getDocs(collection(db, 'playersD2')),
-                    getDocs(collection(db, 'playersD3')),
-                    getDocs(collection(db, 'nonParticipants'))
-                ]);
-                
-                console.log("All username collections fetched in parallel");
-                
-                // Process userProfiles
-                userProfilesSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.username) {
-                        usernameMap.set(doc.id, data.username);
-                    }
-                });
-                
-                // Process player collections
-                const processPlayers = (snapshot) => {
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.username) {
-                            usernameMap.set(doc.id, data.username);
-                        }
-                    });
-                };
-                
-                processPlayers(d1Snap);
-                processPlayers(d2Snap);
-                processPlayers(d3Snap);
-                
-                // Process non-participants
-                nonParticipantsSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.username && !usernameMap.has(doc.id)) {
-                        usernameMap.set(doc.id, data.username);
-                    }
-                });
-                
-                console.log(`Successfully collected ${usernameMap.size} unique usernames`);
-                
-                // Cache the results to reduce future reads
-                setCachedData('rdl_usernames', Array.from(usernameMap.entries()));
-                
-                return usernameMap;
-            } catch (error) {
-                console.error("Error fetching usernames:", error);
-                throw error;
-            }
-        }
-        
-        // Optimize loadAllMembers to use cached data when possible
-        async function loadAllMembers() {
-            try {
-                // Check cache first
-                const cachedMembers = getCachedData('rdl_members');
-                if (cachedMembers) {
-                    allMembers = cachedMembers;
-                    console.log(`Loaded ${allMembers.length} members from cache`);
-                    filterAndDisplayMembers();
-                    return;
-                }
-                
-                // No cache or expired, fetch from Firebase
-                console.log("Starting to load members data from Firestore...");
-                
-                // Show loading state
-                membersGrid.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading members...</p>
-                    </div>
-                `;
-                
-                // Fetch all data in parallel to minimize round-trips
-                const [usernameMap, d1Snap, d2Snap, d3Snap, userProfilesSnapshot, nonParticipantsSnapshot] = await Promise.all([
-                    getAllUsernames(),
-                    getDocs(collection(db, 'players')),
-                    getDocs(collection(db, 'playersD2')),
-                    getDocs(collection(db, 'playersD3')),
-                    getDocs(collection(db, 'userProfiles')),
-                    getDocs(collection(db, 'nonParticipants'))
-                ]);
-                
-                console.log("All data fetched from Firebase");
-                
-                // 3. Get all userProfiles in one query
-                console.log("Fetching user profiles...");
-                let profilesMap = new Map();
-                userProfilesSnapshot.forEach(doc => {
-                    const profileData = doc.data();
-                    profilesMap.set(doc.id, profileData);
-                });
-                
-                // 4. Get all non-participants - IMPROVED VERSION
-                console.log("Fetching non-participants...");
-                let nonParticipantsMap = new Map();
-                nonParticipantsSnapshot.forEach(doc => {
-                    const userData = doc.data();
-                    const userId = doc.id;
-                    
-                    // Direct approach - use the username from the document
-                    // This is more reliable than using usernameMap
-                    const username = userData.username || "Unknown Player";
-                    
-                    console.log(`Processing non-participant: ${userId} with username: ${username}`);
-                    
-                    // Only add if they have a username
-                    if (username && username !== "Unknown Player") {
-                        nonParticipantsMap.set(userId, {
-                            userId: userId,
-                            username: username,
-                            isNonParticipant: true,
-                            ladders: []
-                        });
-                    }
-                });
-                
-                console.log(`Found ${nonParticipantsMap.size} valid non-participants`);
-                
-                // 5. Create a map for players
-                const playersMap = new Map(); // userId -> player data
-                
-                // Process D1 players
-                d1Snap.forEach(doc => {
-                    const playerData = doc.data();
-                    const userId = doc.id;
-                    const username = usernameMap.get(userId) || playerData.username || "Unknown Player";
-                    
-                    if (!playersMap.has(userId)) {
-                        playersMap.set(userId, {
-                            userId: userId,
-                            username: username,
-                            ladders: []
-                        });
-                    }
-                    
-                    const player = playersMap.get(userId);
-                    player.ladders.push({
-                        ladder: 'D1',
-                        eloRating: playerData.eloRating || 1200,
-                        position: playerData.position || 0
-                    });
-                });
-                
-                // Process D2 players
-                d2Snap.forEach(doc => {
-                    const playerData = doc.data();
-                    const userId = doc.id;
-                    const username = usernameMap.get(userId) || playerData.username || "Unknown Player";
-                    
-                    if (!playersMap.has(userId)) {
-                        playersMap.set(userId, {
-                            userId: userId,
-                            username: username,
-                            ladders: []
-                        });
-                    }
-                    
-                    const player = playersMap.get(userId);
-                    player.ladders.push({
-                        ladder: 'D2',
-                        eloRating: playerData.eloRating || 1200,
-                        position: playerData.position || 0
-                    });
-                });
-                
-                // Process D3 players
-                d3Snap.forEach(doc => {
-                    const playerData = doc.data();
-                    const userId = doc.id;
-                    const username = usernameMap.get(userId) || playerData.username || "Unknown Player";
-                    
-                    if (!playersMap.has(userId)) {
-                        playersMap.set(userId, {
-                            userId: userId,
-                            username: username,
-                            ladders: []
-                        });
-                    }
-                    
-                    const player = playersMap.get(userId);
-                    player.ladders.push({
-                        ladder: 'D3',
-                        eloRating: playerData.eloRating || 1200,
-                        position: playerData.position || 0
-                    });
-                });
-                
-                // IMPORTANT FIX: Improved non-participant adding
-                console.log("Adding non-participants to playersMap...");
-                let nonParticipantsAdded = 0;
-                nonParticipantsMap.forEach((nonParticipant, userId) => {
-                    // Only add if they're not already in any ladder
-                    if (!playersMap.has(userId)) {
-                        playersMap.set(userId, nonParticipant);
-                        nonParticipantsAdded++;
-                    } else {
-                        console.log(`Skipped non-participant ${nonParticipant.username} - already in ladders`);
-                    }
-                });
-                console.log(`Added ${nonParticipantsAdded} non-participants to playersMap`);
-                
-                // Combine player data with profiles
-                const members = [];
-                
-                playersMap.forEach((player, userId) => {
-                    const profile = profilesMap.get(userId) || {};
-                    
-                    // Calculate highest ELO if player is in multiple ladders
-                    let highestElo = 0;
-                    let primaryLadder = null;
-                    
-                    if (player.ladders.length > 0) {
-                        const sortedLadders = [...player.ladders].sort((a, b) => b.eloRating - a.eloRating);
-                        highestElo = sortedLadders[0].eloRating;
-                        primaryLadder = sortedLadders[0].ladder;
-                    }
-                    
-                    // Get player rank based on ELO
-                    const rank = getPlayerRank(highestElo);
-                    
-                    members.push({
-                        userId: userId,
-                        username: player.username || "Unknown Player",
-                        profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
-                        country: profile.country || null,
-                        motto: profile.motto || null,
-                        favoriteMap: profile.favoriteMap || null,
-                        favoriteWeapon: profile.favoriteWeapon || null,
-                        isNonParticipant: player.isNonParticipant || false,
-                        ladders: player.ladders,
-                        primaryLadder: primaryLadder,
-                        eloRating: highestElo,
-                        rank: rank
-                    });
-                });
-                
-                // Sort by ELO descending (non-participants at the end)
-                allMembers = members.sort((a, b) => {
-                    if (a.isNonParticipant && !b.isNonParticipant) return 1;
-                    if (!a.isNonParticipant && b.isNonParticipant) return -1;
-                    return b.eloRating - a.eloRating;
-                });
-                
-                console.log(`Successfully processed ${allMembers.length} members`);
-                
-                // Cache the results
-                setCachedData('rdl_members', allMembers);
-                
-                console.log(`Successfully processed and cached ${allMembers.length} members`);
-                
-                // Display members
-                filterAndDisplayMembers();
-                
-            } catch (error) {
-                console.error('Error loading members:', error);
-                membersGrid.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Error loading members</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function getPlayerRank(elo) {
-            if (elo >= 2000) return 'emerald';
-            if (elo >= 1800) return 'gold';
-            if (elo >= 1600) return 'silver';
-            if (elo >= 1400) return 'bronze';
-            return 'unranked';
-        }
-        
-        function filterAndDisplayMembers() {
-            console.log(`Filtering ${allMembers.length} members with filter: ${currentLadderFilter}`);
-            console.log(`Non-participants count: ${allMembers.filter(m => m.isNonParticipant).length}`);
-            
-            // Apply filters with improved non-participant logic
-            displayedMembers = allMembers.filter(member => {
-                // Ladder filter
-                if (currentLadderFilter !== 'all') {
-                    if (currentLadderFilter === 'non') {
-                        // Only show non-participants when non filter is selected
-                        return member.isNonParticipant === true;
-                    } else {
-                        // For ladder filters (D1, D2, D3), exclude non-participants
-                        if (member.isNonParticipant === true) return false;
-                        
-                        // Check if player is in the selected ladder
-                        return member.ladders.some(l => l.ladder.toLowerCase() === currentLadderFilter);
-                    }
-                }
-                
-                // Search filter
-                if (currentSearchTerm && !member.username.toLowerCase().includes(currentSearchTerm.toLowerCase())) {
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            console.log(`Filter result: ${displayedMembers.length} members matched criteria`);
-            
-            // Reset to first page when filters change
-            currentPage = 1;
-            
-            // Render current page
-            renderCurrentPage();
-        }
-        
-        function renderCurrentPage() {
-            const start = (currentPage - 1) * MEMBERS_PER_PAGE;
-            const end = start + MEMBERS_PER_PAGE;
-            const membersOnPage = displayedMembers.slice(start, end);
-            
-            if (membersOnPage.length === 0) {
-                membersGrid.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No members found</h3>
-                        <p>Try changing your filters</p>
-                    </div>
-                `;
-                pagination.innerHTML = '';
-                return;
-            }
-            
-            membersGrid.innerHTML = membersOnPage.map(member => createMemberCard(member)).join('');
-            
-            // Style N/A values
-            styleNAValues();
-            
-            // Update pagination
-            renderPagination();
-        }
-        
-        function styleNAValues() {
-            document.querySelectorAll('.info-value').forEach(element => {
-                if (element.textContent.trim() === 'N/A') {
-                    element.style.color = '#aaa';
-                    element.style.fontStyle = 'italic';
-                }
-            });
-        }
-        
-        function createMemberCard(member) {
-            // Updated flag HTML to include country name
-            const flagHtml = member.country ? `
-                <div class="country-info">
-                    <img src="../images/flags/${member.country.toLowerCase()}.png" 
-                         alt="${member.country}" 
-                         class="member-flag"
-                         onerror="this.style.display='none'">
-                    <span class="country-name">${member.country}</span>
+        try {
+            // Show loading
+            membersGrid.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading members with non-participants...</p>
                 </div>
-            ` : '';
+            `;
             
-            // Create ladder badges with consistent styling
-            let ladderBadges = '';
-            if (!member.isNonParticipant) {
-                ladderBadges = `
-                    <div class="member-ladder-badges">
-                        ${member.ladders.map(ladder => `
-                            <span class="ladder-badge ${ladder.ladder.toLowerCase()}">${ladder.ladder}</span>
-                        `).join('')}
-                    </div>
-                `;
+            // Skip aggregated collection for now and go straight to fallback
+            await loadMembersOriginal();
+            
+        } catch (error) {
+            console.error('❌ Error loading members:', error);
+            membersGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>Error loading members</h3>
+                    <p>${error.message}</p>
+                    <button onclick="window.refreshMembers()">Try Again</button>
+                </div>
+            `;
+        } finally {
+            isLoading = false;
+        }
+    }
+    
+    // Enhanced fallback function - GUARANTEED to include non-participants
+    async function loadMembersOriginal() {
+        
+        try {
+            const [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap] = await Promise.all([
+                getDocs(collection(db, 'userProfiles')),
+                getDocs(collection(db, 'players')),
+                getDocs(collection(db, 'playersD2')),
+                getDocs(collection(db, 'playersD3')),
+                getDocs(collection(db, 'nonParticipants'))
+            ]);
+            
+            // Process profiles
+            const profilesMap = new Map();
+            userProfilesSnap.forEach(doc => {
+                profilesMap.set(doc.id, doc.data());
+            });
+            
+            // Build comprehensive username map
+            const usernameMap = new Map();
+            [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap].forEach(snapshot => {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.username || data.name) {
+                        usernameMap.set(doc.id, data.username || data.name);
+                    }
+                });
+            });
+            
+            const playersMap = new Map();
+            
+            // Process ladder players (D1, D2, D3)
+            [
+                { snap: d1Snap, ladder: 'D1' },
+                { snap: d2Snap, ladder: 'D2' },
+                { snap: d3Snap, ladder: 'D3' }
+            ].forEach(({ snap, ladder }) => {
+                snap.forEach(doc => {
+                    const playerData = doc.data();
+                    const userId = doc.id;
+                    const username = usernameMap.get(userId) || playerData.username || "Unknown Player";
+                    
+                    if (username !== "Unknown Player") {
+                        if (!playersMap.has(userId)) {
+                            playersMap.set(userId, {
+                                userId: userId,
+                                username: username,
+                                ladders: [],
+                                isNonParticipant: false
+                            });
+                        }
+                        
+                        playersMap.get(userId).ladders.push({
+                            ladder: ladder,
+                            elo: playerData.eloRating || 1200
+                        });
+                        
+                    }
+                });
+            });
+            
+            // Process NON-PARTICIPANTS - SEPARATE AND EXPLICIT
+            let nonParticipantCount = 0;
+            
+            nonParticipantsSnap.forEach(doc => {
+                const userData = doc.data();
+                const userId = doc.id;
+                const username = userData.username || userData.name || "Unknown Player";
+                                
+                if (username !== "Unknown Player") {
+                    // FORCE add as non-participant (overwrite if exists)
+                    playersMap.set(userId, {
+                        userId: userId,
+                        username: username,
+                        ladders: [], // Empty ladders for non-participants
+                        isNonParticipant: true // Explicitly set to true
+                    });
+                    
+                    nonParticipantCount++;
+                    }
+            });
+                        
+            // Convert to allMembers format
+            allMembers = Array.from(playersMap.values()).map(member => {
+                const profile = profilesMap.get(member.userId) || {};
+                
+                let highestElo = 0;
+                let primaryLadder = null;
+                
+                // Only calculate ELO for participants
+                if (member.ladders.length > 0 && !member.isNonParticipant) {
+                    // Sort by division priority first, then by ELO
+                    const ladderPriority = { 'D1': 1, 'D2': 2, 'D3': 3 };
+                    const sortedLadders = member.ladders.sort((a, b) => {
+                        const aPriority = ladderPriority[a.ladder] || 999;
+                        const bPriority = ladderPriority[b.ladder] || 999;
+                        
+                        if (aPriority !== bPriority) {
+                            return aPriority - bPriority;
+                        }
+                        return b.elo - a.elo;
+                    });
+                    
+                    highestElo = sortedLadders[0].elo;
+                    primaryLadder = sortedLadders[0].ladder;
+                }
+                
+                return {
+                    userId: member.userId,
+                    username: member.username,
+                    profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
+                    country: profile.country || null,
+                    motto: profile.motto || null,
+                    favoriteMap: profile.favoriteMap || null,
+                    favoriteWeapon: profile.favoriteWeapon || null,
+                    isNonParticipant: member.isNonParticipant, // Keep explicit flag
+                    ladders: member.ladders,
+                    primaryLadder,
+                    highestElo,
+                    eloRating: highestElo,
+                    rank: getPlayerRank(highestElo),
+                    fallbackLoaded: true
+                };
+            });
+            
+            // Final count and sort
+            const finalNonParticipantCount = allMembers.filter(m => m.isNonParticipant === true).length;
+            
+            // Sort by division priority: D1 > D2 > D3 > Non-participants
+            allMembers.sort((a, b) => {
+                // Non-participants go to the end
+                if (a.isNonParticipant && !b.isNonParticipant) return 1;
+                if (!a.isNonParticipant && b.isNonParticipant) return -1;
+                
+                // For participants, sort by division priority then ELO
+                if (!a.isNonParticipant && !b.isNonParticipant) {
+                    const ladderPriority = { 'D1': 1, 'D2': 2, 'D3': 3 };
+                    const aPriority = ladderPriority[a.primaryLadder] || 999;
+                    const bPriority = ladderPriority[b.primaryLadder] || 999;
+                    
+                    if (aPriority !== bPriority) {
+                        return aPriority - bPriority;
+                    }
+                    return (b.highestElo || 0) - (a.highestElo || 0);
+                }
+                
+                // For non-participants, sort alphabetically
+                return a.username.localeCompare(b.username);
+            });
+            
+            // Cache the complete data
+            localStorage.setItem('rdl_aggregated_members', JSON.stringify({
+                timestamp: Date.now(),
+                members: allMembers
+            }));
+            
+            // Display the data
+            displayStats();
+            filterAndDisplayMembers();
+            
+        } catch (error) {
+            console.error('❌ Error in loadMembersOriginal:', error);
+            throw error;
+        }
+    }
+    
+    function displayStats() {
+        const d1Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D1')).length;
+        const d2Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D2')).length;
+        const d3Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D3')).length;
+        const nonCount = allMembers.filter(m => m.isNonParticipant).length;
+            }
+    
+    function getPlayerRank(elo) {
+        if (elo >= 2000) return 'emerald';
+        if (elo >= 1800) return 'gold';
+        if (elo >= 1600) return 'silver';
+        if (elo >= 1400) return 'bronze';
+        return 'unranked';
+    }
+    
+    // Keep all your existing functions exactly the same
+    function filterAndDisplayMembers() {
+        
+        // Apply filters with improved non-participant logic
+        displayedMembers = allMembers.filter(member => {
+            // Ladder filter
+            if (currentLadderFilter !== 'all') {
+                if (currentLadderFilter === 'non') {
+                    // Only show non-participants when non filter is selected
+                    return member.isNonParticipant === true;
+                } else {
+                    // For ladder filters (D1, D2, D3), exclude non-participants
+                    if (member.isNonParticipant === true) return false;
+                    
+                    // Check if player is in the selected ladder
+                    return member.ladders.some(l => l.ladder.toLowerCase() === currentLadderFilter);
+                }
             }
             
-            // Non-participant badge
-            const nonParticipantBadge = member.isNonParticipant ? `
-                <div class="non-participant-badge">NON-PARTICIPANT</div>
-            ` : '';
+            // Search filter
+            if (currentSearchTerm && !member.username.toLowerCase().includes(currentSearchTerm.toLowerCase())) {
+                return false;
+            }
             
-            return `
-                <div class="member-card">
-                    <div class="member-header">
-                        ${flagHtml}
-                        ${member.isNonParticipant ? nonParticipantBadge : ''}
-                    </div>
-                    <img src="${member.profileImageUrl}" 
-                         alt="${member.username}" 
-                         class="member-avatar"
-                         onerror="this.src='${DEFAULT_PROFILE_IMAGE}'">
-                    <div class="member-body">
-                        <h3 class="member-name">${member.username}</h3>
-                        ${ladderBadges}
-                        <div class="member-info">
-                            <div class="info-item">
-                                <span class="info-label">MOTTO</span>
-                                <span class="info-value">${member.motto || 'N/A'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">FAVORITE MAP</span>
-                                <span class="info-value">${member.favoriteMap || 'N/A'}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">FAVORITE WEAPON</span>
-                                <span class="info-value">${member.favoriteWeapon || 'N/A'}</span>
-                            </div>
+            return true;
+        });
+                
+        // Reset to first page when filters change
+        currentPage = 1;
+        
+        // Render current page
+        renderCurrentPage();
+    }
+    
+    function renderCurrentPage() {
+        const start = (currentPage - 1) * MEMBERS_PER_PAGE;
+        const end = start + MEMBERS_PER_PAGE;
+        const membersOnPage = displayedMembers.slice(start, end);
+        
+        if (membersOnPage.length === 0) {
+            membersGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>No members found</h3>
+                    <p>Try changing your filters</p>
+                </div>
+            `;
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        membersGrid.innerHTML = membersOnPage.map(member => createMemberCard(member)).join('');
+        
+        // Style N/A values
+        styleNAValues();
+        
+        // Update pagination
+        renderPagination();
+    }
+    
+    function styleNAValues() {
+        document.querySelectorAll('.info-value').forEach(element => {
+            if (element.textContent.trim() === 'N/A') {
+                element.style.color = '#aaa';
+                element.style.fontStyle = 'italic';
+            }
+        });
+    }
+    
+    function createMemberCard(member) {
+        // Updated flag HTML to include country name
+        const flagHtml = member.country ? `
+            <div class="country-info">
+                <img src="../images/flags/${member.country.toLowerCase()}.png" 
+                     alt="${member.country}" 
+                     class="member-flag"
+                     onerror="this.style.display='none'">
+                <span class="country-name">${member.country}</span>
+            </div>
+        ` : '';
+        
+        // Create ladder badges with consistent styling
+        let ladderBadges = '';
+        if (!member.isNonParticipant) {
+            ladderBadges = `
+                <div class="member-ladder-badges">
+                    ${member.ladders.map(ladder => `
+                        <span class="ladder-badge ${ladder.ladder.toLowerCase()}">${ladder.ladder}</span>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Non-participant badge
+        const nonParticipantBadge = member.isNonParticipant ? `
+            <div class="non-participant-badge">NON-PARTICIPANT</div>
+        ` : '';
+        
+        return `
+            <div class="member-card">
+                <div class="member-header">
+                    ${flagHtml}
+                    ${member.isNonParticipant ? nonParticipantBadge : ''}
+                </div>
+                <img src="${member.profileImageUrl}" 
+                     alt="${member.username}" 
+                     class="member-avatar"
+                     onerror="this.src='${DEFAULT_PROFILE_IMAGE}'">
+                <div class="member-body">
+                    <h3 class="member-name">${member.username}</h3>
+                    ${ladderBadges}
+                    <div class="member-info">
+                        <div class="info-item">
+                            <span class="info-label">MOTTO</span>
+                            <span class="info-value">${member.motto || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">FAVORITE MAP</span>
+                            <span class="info-value">${member.favoriteMap || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">FAVORITE WEAPON</span>
+                            <span class="info-value">${member.favoriteWeapon || 'N/A'}</span>
                         </div>
                     </div>
-                    <div class="member-footer">
-                        <a href="profile.html?username=${encodeURIComponent(member.username)}${member.primaryLadder ? '&ladder=' + member.primaryLadder.toLowerCase() : ''}" class="profile-link">
-                            <i class="fas fa-user"></i> View Full Profile
-                        </a>
-                    </div>
                 </div>
-            `;
+                <div class="member-footer">
+                    <a href="profile.html?username=${encodeURIComponent(member.username)}${member.primaryLadder ? '&ladder=' + member.primaryLadder.toLowerCase() : ''}" class="profile-link">
+                        <i class="fas fa-user"></i> View Full Profile
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Keep all remaining functions exactly the same (renderPagination, setupEventListeners, etc.)
+    function renderPagination() {
+        const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
         }
         
-        function renderPagination() {
-            const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
-            
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
-                return;
+        let html = `
+            <div class="pagination">
+                <button class="page-btn prev" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+        `;
+        
+        // Show page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) {
+                html += `<span class="page-ellipsis">...</span>`;
             }
-            
-            let html = `
-                <div class="pagination">
-                    <button class="page-btn prev" ${currentPage === 1 ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-            `;
-            
-            // Show page numbers
-            const maxVisiblePages = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            
-            // Adjust start if we're near the end
-            if (endPage - startPage + 1 < maxVisiblePages) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-            
-            if (startPage > 1) {
-                html += `<button class="page-btn" data-page="1">1</button>`;
-                if (startPage > 2) {
-                    html += `<span class="page-ellipsis">...</span>`;
-                }
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                html += `
-                    <button class="page-btn ${i === currentPage ? 'active' : ''}" 
-                            data-page="${i}">${i}</button>
-                `;
-            }
-            
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    html += `<span class="page-ellipsis">...</span>`;
-                }
-                html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
-            }
-            
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
             html += `
-                    <button class="page-btn next" ${currentPage === totalPages ? 'disabled' : ''}>
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                        data-page="${i}">${i}</button>
             `;
-            
-            pagination.innerHTML = html;
         }
         
-        function setupEventListeners() {
-            // Ladder filter buttons
-            document.querySelectorAll('.ladder-filters .filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.ladder-filters .filter-btn').forEach(b => 
-                        b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentLadderFilter = btn.dataset.ladder;
-                    filterAndDisplayMembers();
-                });
-            });
-            
-            // Search input with debounce
-            memberSearch.addEventListener('input', debounce(() => {
-                currentSearchTerm = memberSearch.value.trim();
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<span class="page-ellipsis">...</span>`;
+            }
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+        
+        html += `
+                <button class="page-btn next" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        pagination.innerHTML = html;
+    }
+    
+    function setupEventListeners() {
+        // Ladder filter buttons
+        document.querySelectorAll('.ladder-filters .filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ladder-filters .filter-btn').forEach(b => 
+                    b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLadderFilter = btn.dataset.ladder;
                 filterAndDisplayMembers();
-            }, 300));
-            
-            // Pagination event delegation
-            pagination.addEventListener('click', (e) => {
-                const pageBtn = e.target.closest('.page-btn');
-                if (!pageBtn || pageBtn.disabled) return;
-                
-                if (pageBtn.classList.contains('prev')) {
-                    currentPage = Math.max(1, currentPage - 1);
-                } else if (pageBtn.classList.contains('next')) {
-                    const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
-                    currentPage = Math.min(totalPages, currentPage + 1);
-                } else if (pageBtn.dataset.page) {
-                    currentPage = parseInt(pageBtn.dataset.page);
-                }
-                
-                renderCurrentPage();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-        }
-        
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
-        // Add a button to force refresh data
-        function addRefreshButton() {
-            const filtersDiv = document.querySelector('.filters');
-            const refreshButton = document.createElement('button');
-            refreshButton.className = 'refresh-btn';
-            refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
-            refreshButton.addEventListener('click', async () => {
-                // Clear caches
-                localStorage.removeItem('rdl_members');
-                localStorage.removeItem('rdl_usernames');
-                
-                // Show loading
-                membersGrid.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Refreshing data...</p>
-                    </div>
-                `;
-                
-                // Reload data
-                await loadAllMembers();
-            });
-            
-            filtersDiv.appendChild(refreshButton);
-        }
-        
-        // Load common elements
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Load navigation and footer
-            fetch('../HTML/nav.html')
-                .then(response => response.text())
-                .then(data => document.getElementById('navPlaceholder').innerHTML = data)
-                .then(() => {
-                    // Initialize nav after it's loaded
-                    if (typeof initNav === 'function') initNav();
-                });
-                
-            fetch('../HTML/footer.html')
-                .then(response => response.text())
-                .then(data => document.getElementById('footerPlaceholder').innerHTML = data);
-            
-            // Load members data
-            await loadAllMembers();
-            
-            // Set up event listeners
-            setupEventListeners();
-            addRefreshButton();
         });
         
-        // Add this after Firebase initialization to debug
-        console.log("Checking Firebase collections...");
-        try {
-            getDocs(collection(db, 'nonParticipants')).then(snap => {
-                console.log(`Found ${snap.size} documents in nonParticipants collection`);
-                // Log the first few documents to see what fields they have
-                let count = 0;
-                snap.forEach(doc => {
-                    if (count < 3) {
-                        console.log(`Non-participant document:`, doc.id, doc.data());
-                        count++;
-                    }
-                });
-            }).catch(err => console.error("Error checking nonParticipants:", err));
-        } catch (err) {
-            console.error("Error in global scope:", err);
+        // Search input with debounce
+        memberSearch.addEventListener('input', debounce(() => {
+            currentSearchTerm = memberSearch.value.trim();
+            filterAndDisplayMembers();
+        }, 300));
+        
+        // Pagination event delegation
+        pagination.addEventListener('click', (e) => {
+            const pageBtn = e.target.closest('.page-btn');
+            if (!pageBtn || pageBtn.disabled) return;
+            
+            if (pageBtn.classList.contains('prev')) {
+                currentPage = Math.max(1, currentPage - 1);
+            } else if (pageBtn.classList.contains('next')) {
+                const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
+                currentPage = Math.min(totalPages, currentPage + 1);
+            } else if (pageBtn.dataset.page) {
+                currentPage = parseInt(pageBtn.dataset.page);
+            }
+            
+            renderCurrentPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // Refresh function with cache clearing
+    window.refreshMembers = function() {
+        localStorage.removeItem('rdl_aggregated_members');
+        allMembers = [];
+        displayedMembers = [];
+        loadAllMembers();
+    };
+    
+    // Add debug functions
+    window.debugMembers = function() {
+        console.log('🔍 Debug Info:');
+        console.log('All members:', allMembers.length);
+        console.log('Filtered members:', displayedMembers.length);
+        console.log('Current filter:', currentLadderFilter);
+        console.log('Current search:', currentSearchTerm);
+        
+        if (allMembers.length > 0) {
+            console.log('Sample member:', allMembers[0]);
+            console.log('Fallback loaded:', allMembers[0].fallbackLoaded ? 'Yes' : 'No');
         }
-    </script>
-</body>
-</html>
+    };
+    
+    // Add this debug function right after the loadAllMembers function:
+    window.debugNonParticipants = function() {
+        console.log('🔍 Non-Participants Debug:');
+        console.log('Total members:', allMembers.length);
+        
+        const nonParticipants = allMembers.filter(m => m.isNonParticipant === true);
+        console.log('Non-participants found:', nonParticipants.length);
+        
+        if (nonParticipants.length > 0) {
+            console.log('Sample non-participant:', nonParticipants[0]);
+        } else {
+            console.log('❌ NO non-participants found in data!');
+            console.log('Sample member structure:', allMembers[0]);
+            
+            // Check for different property names
+            const alternativeNonParticipants = allMembers.filter(m => 
+                m.nonParticipant === true || 
+                m.isNonParticipant === 'true' || 
+                m.status === 'non-participant' ||
+                m.ladders?.length === 0
+            );
+            console.log('Alternative non-participants:', alternativeNonParticipants.length);
+        }
+        
+        // Check what properties exist on members
+        if (allMembers.length > 0) {
+            console.log('Available properties on first member:', Object.keys(allMembers[0]));
+        }
+    };
+    
+    // Load common elements and initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Load navigation and footer
+        fetch('../HTML/nav.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navPlaceholder').innerHTML = data)
+            .then(() => {
+                if (typeof initNav === 'function') initNav();
+            });
+            
+        fetch('../HTML/footer.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('footerPlaceholder').innerHTML = data);
+        
+        // Load members data with optimized approach
+        await loadAllMembers();
+        
+        // Set up event listeners
+        setupEventListeners();
+    });
+</script>

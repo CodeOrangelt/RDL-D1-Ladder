@@ -46,9 +46,7 @@ class PromotionManager {
             console.error('Promotion banner container not found');
             return;
         }
-        
-        console.log('Promotion manager initializing...');
-        this.setupBannerContainer();
+                this.setupBannerContainer();
         
         // Check if we've already fetched promotions in this session
         const sessionKey = 'promotions_checked_' + new Date().toDateString();
@@ -59,10 +57,7 @@ class PromotionManager {
             this.fetchRecentPromotions();
             // Mark as checked for this session
             sessionStorage.setItem(sessionKey, 'true');
-            console.log('Checking promotions for the first time in this session');
-        } else {
-            console.log('Promotions already checked in this session, skipping');
-        }
+        } 
         
         // Remove the polling mechanism entirely - we only want to check once per session
         // Optional: You can still use the visibility API to check when the page becomes visible again
@@ -124,9 +119,7 @@ class PromotionManager {
                     eligibleChanges.push(data);
                 }
             });
-            
-            console.log(`Found ${snapshot.size} promotions, ${eligibleChanges.length} are eligible to show`);
-            
+                        
             if (eligibleChanges.length > 0) {
                 await this.processRankChanges(eligibleChanges);
             }

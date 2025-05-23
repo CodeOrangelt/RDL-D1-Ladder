@@ -42,8 +42,6 @@ async function displayLadderD3(forceRefresh = false) {
         console.error('D3 Ladder table body not found');
         return;
     }
-
-    console.log("D3 ladder display function called");
     
     // Clear the table first to prevent duplicates
     tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading D3 ladder data...</td></tr>';
@@ -52,7 +50,6 @@ async function displayLadderD3(forceRefresh = false) {
         // Use cache if available and not expired
         const now = Date.now();
         if (!forceRefresh && playerCacheD3.data && (now - playerCacheD3.timestamp < CACHE_DURATION)) {
-            console.log('Using cached D3 ladder data');
             updateLadderDisplayD3(playerCacheD3.data);
             return;
         }
@@ -74,9 +71,7 @@ async function displayLadderD3(forceRefresh = false) {
                 });
             }
         });
-        
-        console.log(`Found ${players.length} players in D3 ladder`);
-        
+                
         // Fetch profiles for flags
         const profilesRef = collection(db, 'userProfiles');
         const profilesSnapshot = await getDocs(profilesRef);
@@ -179,8 +174,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             console.error("Could not find winner or loser in D3 players list");
             return;
         }
-
-        console.log(`D3 Match result: ${winnerUsername}(${winner.position}) beat ${loserUsername}(${loser.position})`);
 
         // Only update positions if winner is below loser in the ladder
         if (winner.position > loser.position) {
@@ -333,9 +326,7 @@ async function updateLadderDisplayD3(ladderData) {
                         indicator.style.fontSize = '0.7em'; // Match D1's font size
                         
                         eloCell.appendChild(indicator);
-                        
-                        console.log(`D3: Added ELO indicator ${formattedChange} to ${username}`);
-                    }
+                                            }
                 }
             });
         })
@@ -485,12 +476,9 @@ async function getPlayersLastEloChangesD3(usernames) {
         const eloSnapshot = await getDocs(eloQuery);
         
         if (eloSnapshot.empty) {
-            console.log('D3: ELO history collection is empty');
             return changes;
         }
-        
-        console.log(`D3: Found ${eloSnapshot.size} ELO history entries`);
-        
+                
         // Process entries and find most recent change for each player
         const entriesByUsername = new Map();
         
@@ -535,16 +523,13 @@ async function getPlayersLastEloChangesD3(usernames) {
                     if (eloChange !== undefined) {
                         // Store the change
                         changes.set(username, eloChange);
-                        console.log(`D3: ${username} ELO change: ${eloChange}`);
                     }
                 }
             }
         });
         
         // If no changes found in D3 history, check main history collection as fallback
-        if (entriesByUsername.size === 0) {
-            console.log('D3: No entries found in D3 history, checking main history');
-            
+        if (entriesByUsername.size === 0) {            
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
                 fallbackRef, 
@@ -555,8 +540,7 @@ async function getPlayersLastEloChangesD3(usernames) {
             
             try {
                 const fallbackSnapshot = await getDocs(fallbackQuery);
-                console.log('D3: Found', fallbackSnapshot.size, 'fallback entries');
-                
+                            
                 fallbackSnapshot.forEach(doc => {
                     const entry = doc.data();
                     const username = entry.player || entry.playerUsername || entry.username;
@@ -590,9 +574,7 @@ function setupRawLadderFeedD3() {
     // Set up real-time listener for player changes
     onSnapshot(playersRef, (snapshot) => {
         try {
-            if (window.location.pathname.includes('rawleaderboardD3.html')) {
-                console.log("Raw D3 leaderboard snapshot received");
-                
+            if (window.location.pathname.includes('rawleaderboardD3.html')) {                
                 // Extract player data
                 const players = [];
                 snapshot.forEach((doc) => {

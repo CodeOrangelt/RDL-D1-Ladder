@@ -1,3 +1,4 @@
+import { db } from './firebase-config.js';
 import { 
     collection, 
     getDocs,
@@ -12,13 +13,115 @@ import {
     orderBy,
     limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import { displayLadderD2 } from './ladderd2.js';
 import { displayLadderD3 } from './ladderd3.js'; 
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getLadderData, 
+    getEloHistoryBatch, 
+    setupEfficientListener 
+} from './services/firebaseService.js';
 
 const auth = getAuth();
+
+// Track active listeners for cleanup
+let activeListeners = [];
+
+// Load ladder data efficiently
+export async function loadLadderData(division = 1) {
+  try {
+    document.getElementById('loading-indicator').style.display = 'block';
+    
+    // Get ladder data with caching
+    const players = await getLadderData(division);
+    
+    // Sort by ELO descending
+    players.sort((a, b) => b.elo - a.elo);
+    
+    // Fetch ELO history in batch
+    const playerIds = players.map(p => p.id);
+    const eloHistoryData = await getEloHistoryBatch(playerIds, division);
+    
+    // Process and display ladder
+    const processedPlayers = players.map((player, index) => {
+      const history = eloHistoryData[player.id] || [];
+      const lastMatches = history
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
+      
+      return {
+        ...player,
+        rank: index + 1,
+        lastMatches: lastMatches,
+        recentActivity: lastMatches.length > 0
+      };
+    });
+    
+    renderLadder(processedPlayers);
+    setupRealTimeUpdates(division);
+    
+  } catch (error) {
+    console.error("Error loading ladder data:", error);
+    document.getElementById('error-message').innerText = "Failed to load ladder data. Please try again.";
+  } finally {
+    document.getElementById('loading-indicator').style.display = 'none';
+  }
+}
+
+// Setup efficient real-time updates
+function setupRealTimeUpdates(division = 1) {
+  // Clear previous listeners
+  activeListeners.forEach(unsubscribe => unsubscribe());
+  activeListeners = [];
+  
+  // Collection references
+  const collectionName = division === 1 ? 'players' : `playersD${division}`;
+  const matchesCollectionName = division === 1 ? 'matches' : `matchesD${division}`;
+  
+  // Listen only for recent matches (last 24 hours)
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  
+  // Set up efficient listeners with constraints
+  const matchListener = setupEfficientListener(
+    matchesCollectionName,
+    [where('date', '>=', oneDayAgo.toISOString()), limit(10), orderBy('date', 'desc')],
+    async (changes) => {
+      // Only refresh ladder data if there are actual match changes
+      if (changes.length > 0) {
+        await loadLadderData(division);
+      }
+    }
+  );
+  
+  activeListeners.push(matchListener);
+}
+
+// Clean up listeners when navigating away
+export function cleanupListeners() {
+  activeListeners.forEach(unsubscribe => unsubscribe());
+  activeListeners = [];
+}
+
+function renderLadder(players) {
+  const ladderContainer = document.getElementById('ladder-container');
+  ladderContainer.innerHTML = '';
+  
+  players.forEach(player => {
+    const playerElement = document.createElement('div');
+    playerElement.className = 'ladder-player';
+    playerElement.innerHTML = `
+      <div class="rank">#${player.rank}</div>
+      <div class="player-name">${player.username || player.id}</div>
+      <div class="player-elo">${player.elo}</div>
+      <div class="player-activity ${player.recentActivity ? 'active' : 'inactive'}">
+        ${player.recentActivity ? 'Active' : 'Inactive'}
+      </div>
+    `;
+    ladderContainer.appendChild(playerElement);
+  });
+}
 
 // Add caching system like D2/D3 ladders
 const playerCache = {
@@ -501,9 +604,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
 }
 
 // Update the ladder toggle function to properly handle container visibility
-function initLadderToggles() {
-    console.log("Initializing ladder toggles...");
-    
+function initLadderToggles() {    
     const d1Toggle = document.getElementById('d1-switch');
     const d2Toggle = document.getElementById('d2-switch');
     const d3Toggle = document.getElementById('d3-switch');
