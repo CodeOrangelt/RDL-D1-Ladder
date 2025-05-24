@@ -1,311 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RDL - Rules</title>
-    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico" />
     <link rel="stylesheet" href="../CSS/nav.css">
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/rules.css">
     <link rel="stylesheet" href="../CSS/footer.css">
+    <style>
+        body {
+            color: white;
+            /* Set text color to white */
+        }
+
+        .rule-item {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #222;
+            /* optional darker background */
+        }
+
+        h4 {
+            font-size: larger
+        }
+
+        h5 {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
     <div id="nav-placeholder"></div>
 
     <main>
         <div class="rules-header">
-            <h1>RDL Rules and Courtesies</h1>
+            <h1>RDL Rules</h1>
             <p class="rules-tagline">Questions? Contact me at code6dof@gmail.com</p>
         </div>
-        
+
         <div class="rules-container">
             <div class="rules-nav">
-                <div class="rules-nav-item active" data-target="general">Courtesies</div>
+                <div class="rules-nav-item active" data-target="general">General</div>
                 <div class="rules-nav-item" data-target="solo">Solos</div>
                 <div class="rules-nav-item" data-target="duos">Duos</div>
                 <div class="rules-nav-item" data-target="ctf">CTF</div>
             </div>
-            
+
             <div class="rules-sections">
                 <!-- General section -->
                 <div id="general" class="rules-section active">
-                    <div class="accordion">
-                        <!-- Registration -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">1</span>
-                                <h3>Registration</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Player Requirements: Players must be logged in with home map pre-selected before starting a match. Aliases are discouraged, and only permissible if opponent has been successfully notified. Players must choose three home maps. Maps should follow the Home Level Framework. Pilots must use the most up-to-date Redux build. Any experiment builds are prohibited.</p>
-                            </div>
+                    <!-- Replace your existing accordion items with a simple structure like this -->
+                    <div class="rule-item">
+                        <h4>Registration</h4>
+                        <div>
+                            <h5>Player Requirements</h5>
+                            <ul>
+                                <li>Before joining, all Pilots must provide a valid email address. The RDL will verify
+                                    its authenticity as part of the registration process</li>
+                                <p>
+
+                                    <li>Pilots must not use aliases. We would like pilots to go by their common pilot.
+                                        For example, b2af should not register as b2.
+                                        Maintain a consistent name throughout the Descent community.</li>
+                                <p>
+                                    <li>Country: Setting your home country is recommended but optional. The RDL would
+                                        like for you to set your country so others can prepare for a high-ping match.
+                                    </li>
+                                <p <li>Players must register with three home maps that follow the home level framework.
+                                    </li>
+                            </ul>
+
+                            <h5>Home Level Frame Work</h5>
+                            <ul>
+                                <li> Homes should be used as a last-ditch measure for pilots to play. Ideally, you
+                                    should
+                                    agree on maps rather than rely on one single level. Map diversity is encouraged on
+                                    the
+                                    RDL.</li>
+                                </p>
+                                <li>Home maps that do not follow this standard will be rejected.
+
+                            </ul>
+                            The Home Level Framework standard is as follows:</li>
+                            <ol>
+                                <li>Primary weapons should be equal in number.</li>
+                                <li>Weapons should not focus on subtype matches (e.g., disorientation, single-use
+                                    weapons, rat, Gauss and Mercs, etc.).</li>
+                                <li>Map sizes should be reasonably sized for 1v1 play.</li>
+                                <li>Maps that encourage “missile boating” are prohibited. (e.g., levels that start
+                                    players with maxed-out missiles and include large caches of additional
+                                    missiles).</li>
+                                <li>Home Maps should be stock (e.g., no MCAPs or Xs).</li>
+                            </ol>
+
+
+
+                            <h5>Version Requirements</h5>
+                            <ul>
+                                <li>For Descent/Descent II, players must use only the game files provided by Steam,
+                                    GOG, or the US CD versions of the game, and the most recent DXX-Redux build (<a
+                                        href="https://dxx-redux.com/" target="_blank">Click here</a>), currently
+                                    v1.1.</li>
+                                <p></p>
+                                <li>For Descent 3, players must use the Piccu Engine along with game files provided
+                                    by Steam, GOG, or the CD versions of the game. The current Piccu Engine is
+                                    v1.2.2 and can be found <a href="https://github.com/InsanityBringer/PiccuEngine"
+                                        target="_blank">here</a>.</li>
+                                <p></p>
+                                <li>Any D1/D2/D3 experimental builds are prohibited in RDL ladder matches.</li>
+                            </ul>
                         </div>
-                        
-                        <!-- Scoring and Rankings -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">2</span>
-                                <h3>Scoring and Rankings</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Scoring System: To prove your skill, players compete for the position on the ladder and not ELO; however, your ELO will determine your skill level. The skill levels are Bronze, Silver, Gold, and Emerald. The ladder placement and skill level are your main driving force.</p>
-                            </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>RDL Rankings</h4>
+                        <div>
+                            <ul>
+                                <li>Ranking System: The RDL uses a ladder system to rank players. Players are ranked
+                                    based on their Elo rating, which is calculated based on match performance.</li>
+                                <p></p>
+                                <li>Scoring System: To prove your skill, players compete for ladder positions. However,
+                                    ELO determines your skill level. Skill levels are Bronze, Silver, Gold, and
+                                    Emerald.</li>
+                            </ul>
+
+                            <h5>The Ladder System</h5>
+                            <p>The ranges are as follows:</p>
+                            <ol>
+                                <li>1400–1600: Bronze</li>
+                                <li>1600–1800: Silver</li>
+                                <li>1800–2000: Gold</li>
+                                <li>2000+: Emerald</li>
+                            </ol>
+
+                            <ul>
+                                <li>Players gain or lose Elo based on match performance and are placed according to
+                                    their
+                                    latest ELO value. ELO is not determined by K/D ratio, but by wins against opponents
+                                    (upsets grant bigger gains). The ladder resets with all pilots at 0 matches each
+                                    season.
+                                    However, ELO does not reset.
+                                </li>
+                                <p></p>
+                            </ul>
+
+
                         </div>
-                        
-                        <!-- Additional rule items follow the same structure -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">3</span>
-                                <h3>Timeouts</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>A player can call a timeout at anytime. Once the timeout is done. The pilot that called timeout must type "Ready" in the message box. The other pilot must acknowledge the "Ready" with a "Go". On the message "Go", the match will resume. Extended times are accepted as long as both players agree on the duration of the time limit. The player must justify the extended timeout. If justification is not heard the match will forfeit. Extended time outs are 10 minutes or longer.</p>
-                            </div>
+                    </div>
+
+                    <!-- Additional rule items follow the same structure -->
+                    <div class="rule-item">
+                        <h4>Timeouts</h4>
+                        <div>
+                            <ul>
+                                <li>A player can call a timeout at any time. Pilots must evade any in-air projectiles
+                                    before stopping. Players must not pick up any objects during a timeout.</li>
+                                <p></p>
+                                <li>Once the timeout is done, the pilot who called timeout must type "Ready" in the
+                                    message box. The other pilot must acknowledge by typing "Go." On the message "Go,"
+                                    the match resumes.</li>
+                                <P></P>
+                                <li>Extended timeouts are allowed if both players agree. The pilot must justify the
+                                    extended timeout. If justification is not heard or agreed upon, the match is
+                                    forfeited.</li>
+                            </ul>
                         </div>
-                        
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">4</span>
-                                <h3>Participation</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Pilots must play a minimum of three matches per month to remain eligible to play. This requirement ensures active engagement and contributes to the competitive spirit of the league.</p>
-                            </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Participation</h4>
+                        <div>
+                            <ui>
+                                <li>Pilots must play a minimum of two match per month to remain eligible to play. </li>
+                                <p></p>
+
+                                <li>Pilots that exceed this duration will lose placement on the ladder, will lose 50 ELO
+                                    and will be placed in active status. </li>
+                                <p></p>
+                            </ui>
                         </div>
-                        
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">5</span>
-                                <h3>Respect</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>This should go without saying, but we've seen how an unhinged disagreement can lead to a community split. RDL supports the users right to have opinions, and we encourage you to voice them, but please, refrain from speaking FOR the RDL, and more importantly, if it pertains to accusational, or otherwise unnecessarily cruel language, do not chat publically and make YOUR problem everyones elses. The RDL does and will exercise the right to supervise accusations and public commentary accordingly.</p>
-                                <list>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Respect and Sportsmanship</h4>
+
+
+
+                        <div>
+                            <ul>
+                                <li>The RDL encourages a spirit of open, fair, respectful, and good-faith competition
+                                    among players. RDL admins have first, last, and final say on disciplinary action, up
+                                    to and including permanent removal from the ladder.</li>
+                                <p>
+                                    <li>General conduct, including in the Discord, and on the ladder:<p></p>
+                                        <ul>
+                                            <li>Do not use slurs or derogatory language about any group or pilot,
+                                                anywhere,
+                                                at any time.</li>
+                                            <p>
+                                                <li>Do not impersonate other players or RDL admins.</li>
+                                            <p>
+                                                <li>Do not share others’ private information without their consent.</li>
+                                            <p></p>
+                                            <li>Do not engage in targeted harassment or bullying.</li>
+                                            <p></p>
+                                            <li>Aliasing – the practice of flying under other in-game pilot names or
+                                                profiles – is permitted, with three guidelines and two rules:<p></p>
+                                                <ul>
+                                                    <li>Names should typically be recognizable as your ladder profile
+                                                        name
+                                                        or a name you commonly use.</li>
+                                                    <p></p>
+                                                    <li>If you plan to alias during a match, disclose it when setting up
+                                                        the
+                                                        match.</li>
+                                                    <p></p>
+                                                    <li>Aliases shall never be commonly used names by other pilots or
+                                                        their
+                                                        ladder profiles.</li>
+                                                    <p></p>
+                                                    <li>Aliases should only be used in games; pilots should only
+                                                        maintain
+                                                        one RDL profile.</li>
+                                                    <p></p>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>Communication and trash talk are allowed. However, no pilot is obligated to chat
+                                        during a match, and any requests for minimal communication (besides timeouts)
+                                        must
+                                        be respected.</li>
+                                <p></p>
+                                <li>Demos, observers, and streaming:
                                     <ul>
-                                        <li>Do not overuse slurs or derogatory language in match comments</li>
-                                        <li>Do not impersonate other players or admins.</li>
-                                        <li>Do not maliciously or otherwise use an alias with the intent to deceive</li>
-                                        <li>Do not share others personal information without consent.</li>
-                                        <li>Do not engage in harassment or bullying.</li>
-                                        <li>DO NOT seriously accuse someone of cheating without consulting league Admins, or Moderators. Innocent until proven guilty, your word only goes so far.</li>
-                                        <li>Do not falsely report a match outside of a genuine mistake, this constitutes for an immediate time-ban</li>                                       
+                                        <li>In Descent/Descent II, leaving observer slots open and recording demos is
+                                            strongly encouraged, but not required, especially if all pilots agree
+                                            beforehand.</li>
+                                        <p></p>
+                                        <li>Streaming is encouraged but not required. You may stream your own POV, but
+                                            not your opponent’s.</li>
+                                        <p></p>
                                     </ul>
+                                </li>
+                                <li>All players must adhere to the league's Respect and Sportsmanship rule. Failure to
+                                    do so will result in a reduction in rank, skill level, time ban, or general ban.
+                                </li>
+                                <p></p>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Cheating</h4>
+                        <div>
+                            <ul>
+                                <li>Players should never, under any circumstances, use cheats, hacks, asset
+                                    replacements, or similar software/techniques to gain an edge during a match.</li>
+                                <p></p>
+                                <li>Do not accuse someone of cheating publicly without consulting League Admins. If you
+                                    suspect cheating, report evidence. RDL
+                                    staff will make a determination and take appropriate action.</li>
+                                <p></p>
+                                <li>Cheating constitutes:
+                                    <ul>
+                                        <li>Using Hog edits</li>
+                                        <li>Playing with non-default Descent physics (e.g., making plasma bounce off
+                                            walls, or increasing ship velocity)</li>
+                                        <li>Using graphical enhancements such as OpenGL ReShade for unfair advantages
+                                        </li>
+                                        <li>Using network tools like VPNs, proxies, or VLANs to maliciously hinder an
+                                            opponent’s connection</li>
+                                        <li>Using Cheat Engine or other hex editors to alter game physics (beyond simple
+                                            color changes)</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="rule-item">
+                        <h4>Home Levels GamePlay</h4>
+                        <div>
+
+                            <div>
+                                <ul>
+                                    <li>If pilots cannot agree on a level to play,
+                                        they should refer to the Home Level Framework to resolve the conflict. Pilots
+                                        will play a series of two or more matches, each from the pilot’s homes. The
+                                        first pilot will choose one of the opponent’s home levels. After the match, the
+                                        other pilot will choose from the first pilot’s home levels.</li>
+                                    <p></p>
+                                    <li>If both pilots agree to use home
+                                        levels to play, they must not deny any matches despite the opponent’s home level
+                                        choice.</li>
+                                    <p></p>
+                                    <li>Home levels will reset every season and will be unavailable
+                                        until the season after next. </li>
+                                    <p></p>
+                                    <li>Home levels must follow the home level
+                                        framework. See Rule 1.</li>
                                 </ul>
                             </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <div class="rule-item">
+                        <h4>Challenges</h4>
+                        <div>
+                            <ul>
+
+                                <li>Comming soon</li>
+
+
+
+                            </ul>
+
                         </div>
 
                     </div>
                 </div>
-                
-                <!-- Solo section - with moved rules from general -->
-                <div id="solo" class="rules-section">
-                    <div class="accordion">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">1</span>
-                                <h3>Winning</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>To win a game, you must end the game by two kills, as in, 21 to 19 for instance. If you leave rage quit a match, you LOSE. Recording games will be reccomended in the instance, with review of the situation by an admin, an automatic win could be awarded. Additionally, the latest version of Redux must be played. Experimental builds are prohibited.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Matches -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">2</span>
-                                <h3>Matches</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Matches are to 20 and won by 2. Rage quitting is counted as an automatic loss. If a player gets disconnected, report the technical problem in Discord. The loser of the match will report, and the winner will accept. Matches must be reported directly after each game. Players can play any map if they agree on said map. Players must agree on game settings, otherwise, default game settings are mandatory.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Gameplay Rules -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">3</span>
-                                <h3>Gameplay Rules</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Code of Conduct: All players must adhere to the league's code of conduct. Failure to do so will result in a reduction in rank, time ban, or general ban. Disputes: Any disputes during a match must be reported immediately to an admin. The default game settings are used in case players cannot agree on the game settings</p>
-                                
-                                <button class="settings-toggle">View Game Settings</button>
-                                
-                                <div class="settings-panel">
-                                    <a href="../Files/rdltemplate.ngs" class="download-template" download>
-                                        <img src="../images/download.png" alt="Download">
-                                        <span>Download Game Template</span>
-                                    </a>
-                                    
-                                    <div class="settings-grid">
-                                        <div class="setting-item">Do NOT set "Open Game"</div>
-                                        <div class="setting-item">Maximum Observers at least 4</div>
-                                        <div class="setting-item">Broadcast Delay 15 Seconds OFF</div>
-                                        <div class="setting-item">Minimal Observer Info OFF</div>
-                                        <div class="setting-item">Difficulty MAX (Insane)</div>
-                                        <div class="setting-item">Reactor life 50 MINUTES</div>
-                                        <div class="setting-item">Max time 0 MINUTES</div>
-                                        <div class="setting-item">Kill goal 0 KILLS</div>
-                                        <div class="setting-item">Extra primaries NONE for 2 players, 2x for 3-4 players, 3x for 5-6 players, 4x for 7 players</div>
-                                        <div class="setting-item">Extra secondaries NONE</div>
-                                        <div class="setting-item">Cap secondaries UNCAPPED</div>
-                                        <div class="setting-item">Low vulcan ammo OFF</div>
-                                        <div class="setting-item">Set objects allowed ALL CHECKED EXCEPT CLOAKING & INVULNERABILITY</div>
-                                        <div class="setting-item">Spawn style 2 second INVULN</div>
-                                        <div class="setting-item">Vulcan ammo style ORIGINAL (DEPLETING)</div>
-                                        <div class="setting-item">All players blue ON for 2 players, OFF for 3-7 players</div>
-                                        <div class="setting-item">Allow colored dynamic lighting OFF</div>
-                                        <div class="setting-item">Allow players to choose their colors ON</div>
-                                        <div class="setting-item">Packets per second 40 for 2 players, 30 for 3 or higher</div>
-                                        <div class="setting-item">Track this game ON</div>
-                                        <div class="setting-item">Retro protocol ON</div>
-                                        <div class="setting-item">Show all players on automap OFF</div>
-                                        <div class="setting-item">Bright player ships ON</div>
-                                        <div class="setting-item">Show enemy names on HUD OFF</div>
-                                        <div class="setting-item">Homing update rate 25</div>
-                                        <div class="setting-item">DXX-Retro homing speed OFF</div>
-                                        <div class="setting-item">Allow custom models and textures ON or OFF (Both players must agree)</div>
-                                        <div class="setting-item">Reduced flash ON or OFF (Both players must agree)</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">4</span>
-                                <h3>Map Angling</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>With heavy consideration of previous attempts to determine the "core maps" that should be played when maps cannot be agreed on, the RDL is committed to finding a way to ensure players can always play a fair match, but also prohibit players from reliably choosing maps they know they will excell in. Map core will consist of a variety of maps, and will be conditioned to exclude overtly-repetitve map-types regardless of statistical domination. More on "Map Core" after beta release.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Level Disagreement -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">5</span>
-                                <h3>Level Disagreement</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>Players must agree on a level before proceeding. If players cannot agree on a level, players will choose from each pilot's home at least once. Players may opt to play a third if they choose.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Challenging -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">6</span>
-                                <h3>Challenging - POST BETA</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>You can issue one challenge per pilot per week. Players cannot camp on ladder spots. Pilots can challenge any pilot to take his spot. When you challenge someone, each pilot must play at least one of each opponent's homes. Players must accept a challenge within a two-week period or risk a reduction in ladder placement. Only the top three ranked players can challenge each other. You can only issue a challenge once a week per pilot. Top 30 percent of pilots are only allowed to issue challenges to one another. The Challenged person can reject the challenge but will be moved to the bottom of the ladder.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Rematches -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">7</span>
-                                <h3>Rematches</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>A rematch occurs when pilot wants a redo after a recently completed match. Both players must agree to the terms of the rematch. Both pilots must agree to the rematch otherwise the rematch will not be played. Players can call a rematch anytime they choose. Both players must agree on the terms of the rematch.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- MOVED: Homes -->
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <span class="rule-number">8</span>
-                                <h3>Homes</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>You can choose any map you wish if it follows the Home Level Framework. Homes are used to prevent the DCL core map mechanic, prevent map anglers, and allow those that disagree on maps play a game. Maps should follow this standard. Home maps that do not follow this standard will be rejected. Homes should be used as a last-ditch measure for pilots to play. Ideally pilots should agree on maps and not angle on one level. Map diversity is encouraged on the RDL. Do keep in mind, these restrictions are reserved for when you and your opponent want to play a match, but cannot decide on what map to play.</p>
-                                <div class="home-framework">
-                                    <h4>Home Level Framework:</h4>
-                                    <ol>
-                                        <li>Primary weapons should be equal number.</li>
-                                        <li>Weapons should not focus on subtype matches i.e. (disorientation, single use weapons, rat, blind)</li>
-                                        <li>Map sizes should be reasonably sized for 1v1 play. (Essentially we mean just maps as small as Gasp, or Hay Day) </li>
-                                        <li>Maps that missile boat is prohibited. (this rule exits to prevent adding missiles as opposed to multiplying them in the settings. Basically any missile count higher than 6 is generally a missile boating match)</li>
-                                        <li>Home Maps should be stock i.e. (No MCAPs, or Xs).</li>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="rules-image">
-                        <img src="../images/1v1.png" alt="Solo Play">
+            </div>
+
+            <!-- Solo section - MOVE THIS OUTSIDE -->
+            <div id="solo" class="rules-section">
+                <div class="rule-item">
+                    <h4>Hosting</h4>
+                    <div>
+                        <ul>
+                            <li><strong>Descent/Descent II:</strong>
+                                <p></p>
+                                <ul>
+                                    <li>Altered settings, such as missile caps, duplicated
+                                        primaries, ship
+                                        colors other than blue, reduced flash, or altered graphics,
+                                        must be
+                                        agreed to by both pilots before hosting the match.</li>
+                                    <p></p>
+                                    <li>If players do not agree on altered settings, but still wish
+                                        to play,
+                                        they should use the defaults.</li>
+                                    <p></p>
+                                </ul>
+                            </li>
+                            <li><strong>Descent 3:</strong>
+                                <p></p>
+                                <ul>
+                                    <li>Players should find any means to determine the best
+                                        connection type for
+                                        competitive play, whether that is P2P or the server tracker.
+                                    </li>
+                                    <p></p>
+                                    <li>If by P2P: players win by 2, enable rotational velocity.
+                                    </li>
+                                    <p></p>
+                                    <li>If by Server: players first to 20 wins, settings set by
+                                        server host.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                
-                <!-- Duos section -->
-                <div id="duos" class="rules-section">
-                    <div class="accordion">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h3>Duo Match'S - COMING SOON POST BETA</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>2v2 matches follow a different structure:</p>
-                                <ul>
-                 
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="rules-image">
-                        <img src="../images/duo.png" alt="Duos Rules">
+
+                <div class="rule-item">
+                    <h4>Conduct</h4>
+                    <div>
+                        <ul>
+                            <li>Refer to 'Respect and Sportsmanship' under 'General' rules.</li>
+                        </ul>
                     </div>
                 </div>
-                
-                <!-- CTF section -->
-                <div id="ctf" class="rules-section">
-                    <div class="accordion">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <h3>Capture The Flag - COMING SOON POST BETA</h3>
-                                <span class="accordion-icon">+</span>
-                            </div>
-                            <div class="accordion-content">
-                                <p>CTF matches have unique requirements</p>
-                                <ul>
-                                </ul>
-                            </div>
-                        </div>
+
+                <div class="rule-item">
+                    <h4>Restarting from Disconnect/Timeout</h4>
+                    <div>
+                        <ul>
+                            <li>Should players lose connection during a match they wish to finish,
+                                or players
+                                want to restart a match in progress that had to be paused for an
+                                extended length
+                                of time, both players should agree to the starting score (or refer
+                                to the
+                                tracker entry of the first portion of the map), and rehost with
+                                identical
+                                settings.</li>
+                            <p></p>
+                            <li>If players do not want to finish the disconnected/timed out match,
+                                do not report
+                                the partial match to the ladder – consider it as having not
+                                happened.</li>
+                        </ul>
                     </div>
-                    
-                    <div class="rules-image">
-                        <img src="../images/ladderbackdrop.png" alt="CTF Rules">
+                </div>
+
+                <div class="rule-item">
+                    <h4>Winning and Losing</h4>
+                    <div>
+                        <ul>
+                            <li>The first player to reach 20 points, by a margin of 2 points, wins
+                                the match.
+                                All projectiles in the vicinity must be dodged before victory is
+                                declared.</li>
+                            <p></p>
+                            <li>If a player reaches 20 points and their opponent has 19, the game
+                                goes to
+                                overtime and play continues until one player attains a winning
+                                margin of two
+                                points over the other.</li>
+                            <p></p>
+                            <li>If a player is unresponsive after a lengthy timeout, they forfeit
+                                the match.
+                            </li>
+                            <li>If a player intentionally quits the game (i.e. 'ragequits'), the
+                                other player
+                                wins the match. For reporting purposes, set their score to 20 except
+                                if a
+                                ragequit happens in overtime, in which case set the winning player's
+                                score to
+                                whatever it would take to win.</li>
+                            <p></p>
+                            <li>Repeated ragequits should be reported to RDL staff.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Level Selection</h4>
+                    <div>
+                        <ul>
+                            <li>Players must agree on a level before hosting a match.</li>
+                            <p></p>
+                            <li>If players cannot agree, but both still wish to play, they shall
+                                choose and play
+                                one level from each pilot's home set.</li>
+                            <p></p>
+                            <li>Players should offer, consider, and negotiate levels in good faith,
+                                with no
+                                assumption or implication of a rematch or game series unless agreed
+                                to as part
+                                of the level selection process.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Home Levels</h4>
+                    <div>
+                        <p>For Solos, players must have set 3 home maps according to the following
+                            framework:
+                        </p>
+                        <ul>
+                            <li>Primary weapon count should be an even number for each present on
+                                the map.</li>
+                            <p></p>
+                            <li>Weapons should not focus on 'subgames', including but not limited
+                                to:
+                                disorientation (e.g. Tetrafusion), single weapons (e.g. ugh or IS),
+                                ratting
+                                (e.g. Fusion Rat's Paradise), blind
+                                <ul>
+                                    <li>Blind matches: Both players should have played the map
+                                        before starting a
+                                        RDL match.</li>
+                                    <li>Maps that allow/encourage 'missile boating' – a count higher
+                                        than 6 –
+                                        should not be played. (This figure is not inclusive of
+                                        concussion
+                                        missiles or proximity mine packs.)</li>
+                                </ul>
+                            </li>
+                            <li>Map sizes should be reasonably sized for 1v1 play, though this is up
+                                to players'
+                                discretion.</li>
+                            <p></p>
+                            <li>Maps should feature stock weapons (e.g. no match rules as part of a
+                                home level,
+                                like adding mcap2, and no levels explicitly designed to multiply
+                                weapons from a
+                                prior version).</li>
+                            <p></p>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Rematches</h4>
+                    <div>
+                        <ul>
+                            <li>Players may request, but are never required to accept, a rematch.
+                                Players must
+                                negotiate and agree to the game settings for the rematch, including
+                                map choice.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Challenges (Coming Soon)</h4>
+                    <div>
+                        <ul>
+                            <li>Challenges are incentives that spur gameplay on the RDL. Pilots may
+                                issue one
+                                formal challenge once per week, with the prize of taking the others'
+                                ladder
+                                placement.</li>
+                            <p></p>
+                            <li>Challenges are a two-match series, with players selecting from each
+                                other's home
+                                levels.</li>
+                            <p></p>
+                            <li>Challenge winners are determined by the higher of the summed scores
+                                from each
+                                match.</li>
+                            <p></p>
+                            <li>In the case of a tie, the lower-ranked player is considered the
+                                winner.</li>
+                            <li>Ignoring a challenge for two weeks or rejecting it outright will be
+                                considered a
+                                20-0 forfeiture.
+                                <ul>
+                                    <li>If the player issuing the challenge is of a lower rank and
+                                        the one being
+                                        challenged forfeits, the players will switch places on the
+                                        ladder.</li>
+                                    <p></p>
+                                    <li>If the player issuing the challenge is of a higher rank and
+                                        the one
+                                        being challenged forfeits, the lower-ranked player will not
+                                        be able to
+                                        ascend higher than the player issuing the challenge for two
+                                        weeks.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Default Game Settings</h4>
+                    <div>
+                        <ul>
+                            <li>The default game settings are used in case players cannot agree on
+                                the game
+                                settings.</li>
+                            <p></p>
+                            <li>Any disputes during a match must be fixed immediately or reported to
+                                an admin.
+                            </li>
+                            <p></p>
+                        </ul>
+
+                        <h5>Default Game Settings:</h5>
+                        <div class="settings-grid">
+                            <div class="setting-item">Do NOT set "Open Game"</div>
+                            <div class="setting-item">Maximum Observers at least 4</div>
+                            <div class="setting-item">Broadcast Delay 15 Seconds OFF</div>
+                            <div class="setting-item">Minimal Observer Info OFF</div>
+                            <div class="setting-item">Difficulty MAX (Insane)</div>
+                            <div class="setting-item">Reactor life 50 MINUTES</div>
+                            <div class="setting-item">Max time 0 MINUTES</div>
+                            <div class="setting-item">Kill goal 0 KILLS</div>
+                            <div class="setting-item">Extra primaries NONE for 2 players, 2x for 3-4
+                                players, 3x
+                                for 5-6 players, 4x for 7 players</div>
+                            <div class="setting-item">Extra secondaries NONE</div>
+                            <div class="setting-item">Cap secondaries UNCAPPED</div>
+                            <div class="setting-item">Low vulcan ammo OFF</div>
+                            <div class="setting-item">Set objects allowed ALL CHECKED EXCEPT
+                                CLOAKING &
+                                INVULNERABILITY</div>
+                            <div class="setting-item">Spawn style 0 second INVULN</div>
+                            <div class="setting-item">Vulcan ammo style ORIGINAL (DEPLETING)</div>
+                            <div class="setting-item">All players blue ON for 2 players, OFF for 3-7
+                                players
+                            </div>
+                            <div class="setting-item">Allow colored dynamic lighting OFF</div>
+                            <div class="setting-item">Allow players to choose their colors ON</div>
+                            <div class="setting-item">Packets per second 40 for 2 players, 30 for 3
+                                or higher
+                            </div>
+                            <div class="setting-item">Track this game ON</div>
+                            <div class="setting-item">Retro protocol ON</div>
+                            <div class="setting-item">Show all players on automap OFF</div>
+                            <div class="setting-item">Bright player ships ON</div>
+                            <div class="setting-item">Show enemy names on HUD OFF</div>
+                            <div class="setting-item">Homing update rate 25</div>
+                            <div class="setting-item">DXX-Retro homing speed OFF</div>
+                            <div class="setting-item">Allow custom models and textures ON or OFF
+                                (Both players
+                                must agree)</div>
+                            <div class="setting-item">Reduced flash ON or OFF (Both players must
+                                agree)</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Duos section - MOVE THIS OUTSIDE AND FIX CLASS NAME -->
+            <div id="duos" class="rules-section">
+                <!-- Changed from rules-sections to rules-section -->
+                <div class="rule-item">
+                    <h4>Duo Matches - COMING SOON POST BETA</h4>
+                    <div>
+                        <p>2v2 matches will follow a different structure:</p>
+                        <ul>
+                            <!-- Future duo rules go here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTF section - MOVE THIS OUTSIDE -->
+            <div id="ctf" class="rules-section">
+                <div class="rule-item">
+                    <h4>Capture The Flag - COMING SOON POST BETA</h4>
+                    <div>
+                        <p>CTF matches have unique requirements:</p>
+                        <ul>
+                            <!-- Future CTF rules go here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </main>
 
     <!-- Add this Terms of Service section between main and footer -->
     <div class="tos-container">
         <button class="tos-button" id="showTos">RDL Terms of Service</button>
-        
+
         <div class="tos-modal" id="tosModal">
             <div class="tos-content">
                 <span class="close-tos">&times;</span>
@@ -315,7 +655,8 @@
                     <ol>
                         <li>All match results submitted become the property of RDL.</li>
                         <li>You agree to follow all rules and guidelines described in the RDL Rules.</li>
-                        <li>Administrators reserve the right to modify rankings or remove players who violate rules.</li>
+                        <li>Administrators reserve the right to modify rankings or remove players who violate rules.
+                        </li>
                         <li>You are responsible for maintaining the security of your account.</li>
                     </ol>
                     <p>Last updated: April 18, 2025</p>
@@ -331,148 +672,46 @@
     <div id="footer-placeholder"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load nav and footer (keep this part)
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load navigation and footer
             Promise.all([
                 fetch('../HTML/nav.html').then(response => response.text()),
                 fetch('../HTML/footer.html').then(response => response.text())
             ]).then(([navData, footerData]) => {
                 document.getElementById('nav-placeholder').innerHTML = navData;
                 document.getElementById('footer-placeholder').innerHTML = footerData;
-            });
+            }).catch(error => console.error('Error loading nav/footer:', error));
 
-            // Tab switching (keep this part)
+            // Tab switching for General/Solo/Duos/CTF buttons
             document.querySelectorAll('.rules-nav-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    document.querySelectorAll('.rules-nav-item').forEach(tab => tab.classList.remove('active'));
+                item.addEventListener('click', function () {
+                    // Remove active class from all nav items
+                    document.querySelectorAll('.rules-nav-item').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+
+                    // Add active class to clicked item
                     this.classList.add('active');
-                    
+
+                    // Get the target section
                     const target = this.getAttribute('data-target');
-                    document.querySelectorAll('.rules-section').forEach(section => section.classList.remove('active'));
+
+                    // Hide all sections
+                    document.querySelectorAll('.rules-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+
+                    // Show target section
                     document.getElementById(target).classList.add('active');
                 });
             });
-            
-            // SIMPLIFIED ACCORDION - Replace your current accordion code with this
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', function() {
-                    const item = this.parentElement;
-                    const content = item.querySelector('.accordion-content');
-                    const icon = this.querySelector('.accordion-icon');
-                    
-                    // Toggle open class without animations first
-                    const isOpen = item.classList.contains('open');
-                    
-                    // Close all other items first
-                    document.querySelectorAll('.accordion-item.open').forEach(openItem => {
-                        if (openItem !== item) {
-                            openItem.classList.remove('open');
-                            openItem.querySelector('.accordion-icon').textContent = '+';
-                        }
-                    });
-                    
-                    // Then toggle this item
-                    if (isOpen) {
-                        item.classList.remove('open');
-                        icon.textContent = '+';
-                    } else {
-                        item.classList.add('open');
-                        icon.textContent = '−';
-                    }
-                });
-            });
-
-            // Auto-open first accordion item in each section, but don't animate
-            document.querySelectorAll('.rules-section').forEach(section => {
-                const firstItem = section.querySelector('.accordion-item');
-                if (firstItem) {
-                    firstItem.classList.add('open');
-                    const icon = firstItem.querySelector('.accordion-icon');
-                    if (icon) icon.textContent = '−';
-                }
-            });
-
-            // Simple settings panel toggle
-            document.querySelectorAll('.settings-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    this.classList.toggle('active');
-                    const panel = this.nextElementSibling;
-                    
-                    if (this.classList.contains('active')) {
-                        panel.style.display = 'block';
-                        setTimeout(() => {
-                            panel.style.opacity = '1';
-                        }, 10);
-                    } else {
-                        panel.style.opacity = '0';
-                        setTimeout(() => {
-                            panel.style.display = 'none';
-                        }, 300);
-                    }
-                });
-            });
-
-            // Terms of Service functionality
-            const tosButton = document.getElementById('showTos');
-            const tosModal = document.getElementById('tosModal');
-            const closeTos = document.querySelector('.close-tos');
-            const agreeTos = document.getElementById('agreeTos');
-            const declineTos = document.getElementById('closeTos');
-
-            // Open TOS modal
-            tosButton.addEventListener('click', function() {
-                tosModal.style.display = 'block';
-                setTimeout(() => {
-                    tosModal.style.opacity = '1';
-                }, 10);
-            });
-
-            // Close on X button
-            closeTos.addEventListener('click', function() {
-                tosModal.style.opacity = '0';
-                setTimeout(() => {
-                    tosModal.style.display = 'none';
-                }, 300);
-            });
-
-            // Close on agree
-            agreeTos.addEventListener('click', function() {
-                // Save agreement to localStorage
-                localStorage.setItem('rdl_tos_agreed', 'true');
-                localStorage.setItem('rdl_tos_date', new Date().toISOString());
-                
-                tosModal.style.opacity = '0';
-                setTimeout(() => {
-                    tosModal.style.display = 'none';
-                    // Optional: Show confirmation message
-                    alert('Thank you for accepting the Terms of Service!');
-                }, 300);
-            });
-
-            // Close on decline
-            declineTos.addEventListener('click', function() {
-                tosModal.style.opacity = '0';
-                setTimeout(() => {
-                    tosModal.style.display = 'none';
-                }, 300);
-            });
-
-            // Close on clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === tosModal) {
-                    tosModal.style.opacity = '0';
-                    setTimeout(() => {
-                        tosModal.style.display = 'none';
-                    }, 300);
-                }
-            });
         });
     </script>
-    
+
     <!-- Firebase scripts -->
     <script type="module" src="../JS/firebase-config.js"></script>
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
 </body>
+
 </html>
