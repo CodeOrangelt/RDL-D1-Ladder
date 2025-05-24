@@ -142,8 +142,8 @@ async function getUserTabPermissions(userEmail) {
         // Define role-based permissions
         // Make sure all role names are lowercase for consistency
         const rolePermissions = {
-            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches'],
-            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches'],
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
             'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights']
         };
@@ -314,9 +314,12 @@ async function initializeAdminDashboard() {
             setupManageMatchesSection();
         }
 
-        // Set up data load buttons with permissions
+        if (allowedTabs.includes('manage-points')) {
+            setupManagePointsSection();
+        }
+
         setupDataLoadButtons(allowedTabs);
-        
+
     } catch (error) {
         console.error("Error initializing admin dashboard:", error);
     }
@@ -556,6 +559,17 @@ function setupDataLoadButtons(allowedTabs = []) {
                             this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
                         }, 3000);
                     });
+            });
+        }
+    }
+
+    
+    // Points management load button
+    if (allowedTabs.includes('manage-points')) {
+        const loadPointsBtn = document.getElementById('load-points-data');
+        if (loadPointsBtn) {
+            loadPointsBtn.addEventListener('click', function() {
+                loadPointsData();
             });
         }
     }
@@ -4839,5 +4853,865 @@ async function saveHighlightChanges() {
     } catch (error) {
         console.error('Error saving highlight:', error);
         showNotification(`Error saving highlight: ${error.message}`, 'error');
+    }
+}
+
+//points section 
+
+// Load points data (overview and history)
+async function loadPointsData() {
+    console.log('Loading points data...');
+    try {
+        await Promise.all([
+            loadPointsOverview(),
+            loadPointsHistory()
+        ]);
+        showNotification('Points data loaded successfully', 'success');
+    } catch (error) {
+        console.error('Error loading points data:', error);
+        showNotification('Failed to load points data: ' + error.message, 'error');
+    }
+}
+
+// Render points overview table
+function renderPointsOverview(users) {
+    const tableBody = document.getElementById('points-overview-table-body');
+    if (!tableBody) return;
+    
+    if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        const displayName = user.displayName || user.username || 'Unknown User';
+        const email = user.email || 'No email';
+        const points = user.points || 0;
+        const lastModified = user.lastPointsModified ? 
+            new Date(user.lastPointsModified.seconds * 1000).toLocaleDateString() : 'Never';
+        
+        row.innerHTML = `
+            <td>
+                <div class="user-info">
+                    <i class="fas fa-user user-icon"></i>
+                    <span class="user-name">${displayName}</span>
+                </div>
+            </td>
+            <td>${email}</td>
+            <td>
+                <span class="points-badge ${points > 1000 ? 'high-points' : points > 500 ? 'medium-points' : 'low-points'}">
+                    <i class="fas fa-coins"></i> ${points.toLocaleString()}
+                </span>
+            </td>
+            <td>${lastModified}</td>
+            <td class="actions">
+                <button class="quick-edit-btn" data-user-id="${user.id}" title="Quick Edit Points">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="view-history-btn" data-user-id="${user.id}" title="View Points History">
+                    <i class="fas fa-history"></i>
+                </button>
+            </td>
+        `;
+        
+        // Add the row to the table body - THIS WAS MISSING!
+        tableBody.appendChild(row);
+    });
+    
+    // Add event listeners to action buttons AFTER all rows are added
+    setupPointsActionButtons();
+}
+
+
+// Setup action buttons for points overview - FIXED VERSION
+function setupPointsActionButtons() {
+    console.log('Setting up points action buttons...');
+    
+    // Quick edit buttons
+    const quickEditButtons = document.querySelectorAll('.quick-edit-btn');
+    console.log(`Found ${quickEditButtons.length} quick edit buttons`);
+    
+    quickEditButtons.forEach(button => {
+        // Remove any existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // View history buttons
+    const viewHistoryButtons = document.querySelectorAll('.view-history-btn');
+    console.log(`Found ${viewHistoryButtons.length} view history buttons`);
+    
+    viewHistoryButtons.forEach(button => {
+        // Remove any existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // Add fresh event listeners to the new buttons
+    document.querySelectorAll('.quick-edit-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const userId = this.dataset.userId;
+            console.log('Quick edit clicked for user:', userId);
+            
+            if (!userId) {
+                console.error('No user ID found on button');
+                return;
+            }
+            
+            // Add visual feedback
+            this.style.opacity = '0.6';
+            setTimeout(() => { this.style.opacity = '1'; }, 200);
+            
+            openQuickEditModal(userId);
+        });
+    });
+    
+    document.querySelectorAll('.view-history-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const userId = this.dataset.userId;
+            console.log('View history clicked for user:', userId);
+            
+            if (!userId) {
+                console.error('No user ID found on button');
+                return;
+            }
+            
+            // Add visual feedback
+            this.style.opacity = '0.6';
+            setTimeout(() => { this.style.opacity = '1'; }, 200);
+            
+            loadUserPointsHistory(userId);
+        });
+    });
+    
+    console.log('Points action buttons setup complete');
+}
+
+// Make sure the quick edit modal elements exist and work
+async function openQuickEditModal(userId) {
+    console.log('Opening quick edit modal for user ID:', userId);
+    
+    const modal = document.getElementById('quick-edit-points-modal');
+    if (!modal) {
+        console.error('Quick edit modal not found! Make sure the HTML element exists.');
+        showNotification('Quick edit modal not found in the page', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        showNotification('Loading user data...', 'info');
+        
+        // Get user data
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            showNotification('User not found', 'error');
+            return;
+        }
+        
+        const userData = userDoc.data();
+        console.log('User data loaded:', userData);
+        
+        // Check if form elements exist
+        const userIdField = document.getElementById('quick-edit-user-id');
+        const displayNameField = document.getElementById('quick-edit-display-name');
+        const emailField = document.getElementById('quick-edit-email');
+        const currentPointsField = document.getElementById('quick-edit-current-points');
+        const form = document.getElementById('quick-edit-points-form');
+        
+        if (!userIdField || !displayNameField || !emailField || !currentPointsField || !form) {
+            console.error('Quick edit form elements missing from HTML');
+            showNotification('Quick edit form is incomplete. Check the HTML structure.', 'error');
+            return;
+        }
+        
+        // Populate modal with user info
+        userIdField.value = userId;
+        displayNameField.textContent = userData.displayName || userData.username || 'Unknown User';
+        emailField.textContent = userData.email || 'No email';
+        currentPointsField.textContent = (userData.points || 0).toLocaleString();
+        
+        // Reset form
+        form.reset();
+        
+        // Set default action to add
+        const addRadio = document.getElementById('quick-add');
+        if (addRadio) {
+            addRadio.checked = true;
+        }
+        
+        // Show modal
+        modal.classList.add('active');
+        console.log('Modal opened successfully');
+        
+        // Focus on points amount input
+        const amountInput = document.getElementById('quick-points-amount');
+        if (amountInput) {
+            setTimeout(() => amountInput.focus(), 100);
+        }
+        
+    } catch (error) {
+        console.error('Error opening quick edit modal:', error);
+        showNotification('Failed to load user data: ' + error.message, 'error');
+    }
+}
+
+// Close quick edit modal
+function closeQuickEditModal() {
+    const modal = document.getElementById('quick-edit-points-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Update the handleQuickEditPoints function to add more debugging
+async function handleQuickEditPoints(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('quick-edit-user-id').value;
+    const action = document.querySelector('input[name="quick-action"]:checked').value;
+    const amount = parseInt(document.getElementById('quick-points-amount').value);
+    const reason = document.getElementById('quick-points-reason').value.trim();
+    
+    console.log('Processing points edit:', { userId, action, amount, reason });
+    
+    if (!userId || !amount || amount < 0) {
+        showNotification('Please enter valid data', 'error');
+        return;
+    }
+    
+    try {
+        await modifyUserPoints(userId, action, amount, reason);
+        closeQuickEditModal();
+        loadPointsOverview(); // Refresh the table
+        showNotification('Points updated successfully', 'success');
+        console.log('Points updated successfully for user:', userId);
+    } catch (error) {
+        console.error('Error updating points:', error);
+        showNotification('Failed to update points: ' + error.message, 'error');
+    }
+}
+
+// Search users for points management
+async function searchUsersForPoints() {
+    const searchTerm = document.getElementById('points-user-search').value.trim().toLowerCase();
+    const resultsContainer = document.getElementById('user-search-results');
+    
+    if (!searchTerm || searchTerm.length < 2) {
+        resultsContainer.innerHTML = '';
+        return;
+    }
+    
+    resultsContainer.innerHTML = '<div class="loading">Searching...</div>';
+    
+    try {
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        const matchingUsers = [];
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const displayName = (userData.displayName || userData.username || '').toLowerCase();
+            const email = (userData.email || '').toLowerCase();
+            
+            if (displayName.includes(searchTerm) || email.includes(searchTerm)) {
+                matchingUsers.push({
+                    id: doc.id,
+                    ...userData
+                });
+            }
+        });
+        
+        if (matchingUsers.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results">No users found</div>';
+            return;
+        }
+        
+        // Render search results
+        resultsContainer.innerHTML = '';
+        matchingUsers.forEach(user => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'search-result-item';
+            resultItem.innerHTML = `
+                <div class="user-info">
+                    <strong>${user.displayName || user.username || 'Unknown'}</strong>
+                    <div class="user-email">${user.email || 'No email'}</div>
+                    <div class="user-points">${(user.points || 0).toLocaleString()} points</div>
+                </div>
+            `;
+            
+            resultItem.addEventListener('click', () => selectUserForPoints(user));
+            resultsContainer.appendChild(resultItem);
+        });
+        
+    } catch (error) {
+        console.error('Error searching users:', error);
+        resultsContainer.innerHTML = '<div class="error">Error searching users</div>';
+    }
+}
+
+// Select user for points management
+function selectUserForPoints(user) {
+    // Update selected user info
+    document.getElementById('selected-user-name').textContent = user.displayName || user.username || 'Unknown User';
+    document.getElementById('selected-user-points').textContent = (user.points || 0).toLocaleString();
+    document.getElementById('selected-user-id').value = user.id;
+    
+    // Show user info and management forms
+    document.getElementById('selected-user-info').style.display = 'block';
+    document.getElementById('points-management-forms').style.display = 'block';
+    
+    // Clear search results
+    document.getElementById('user-search-results').innerHTML = '';
+    document.getElementById('points-user-search').value = '';
+}
+
+// Handle modify points form submission
+async function handleModifyPoints(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selected-user-id').value;
+    const action = document.getElementById('points-action').value;
+    const amount = parseInt(document.getElementById('points-amount').value);
+    const reason = document.getElementById('points-reason').value.trim();
+    
+    if (!userId || !amount || amount < 0) {
+        showNotification('Please select a user and enter a valid amount', 'error');
+        return;
+    }
+    
+    try {
+        await modifyUserPoints(userId, action, amount, reason);
+        
+        // Reset form
+        document.getElementById('modify-points-form').reset();
+        
+        // Refresh user info
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            document.getElementById('selected-user-points').textContent = (userData.points || 0).toLocaleString();
+        }
+        
+        showNotification('Points modified successfully', 'success');
+        loadPointsHistory(); // Refresh history
+        
+    } catch (error) {
+        console.error('Error modifying points:', error);
+        showNotification('Failed to modify points: ' + error.message, 'error');
+    }
+}
+
+// Modify user points (common function)
+
+// Load points history
+async function loadPointsHistory() {
+    const tableBody = document.getElementById('points-history-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading history...</td></tr>';
+    
+    try {
+        const historyRef = collection(db, 'pointsHistory');
+        const q = query(historyRef, orderBy('timestamp', 'desc'), limit(50));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No history found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            
+            const date = data.timestamp ? 
+                new Date(data.timestamp.seconds * 1000).toLocaleString() : 'Unknown';
+            
+            let actionText = '';
+            switch (data.action) {
+                case 'add':
+                    actionText = `Added ${data.amount} points`;
+                    break;
+                case 'subtract':
+                    actionText = `Subtracted ${data.amount} points`;
+                    break;
+                case 'set':
+                    actionText = `Set to ${data.amount} points`;
+                    break;
+                default:
+                    actionText = `${data.action} ${data.amount} points`;
+            }
+            
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${data.displayName || 'Unknown User'}</td>
+                <td>${actionText}</td>
+                <td>
+                    <span class="points-change ${data.action}">
+                        ${data.previousPoints || 0} → ${data.newPoints || 0}
+                    </span>
+                </td>
+                <td>${data.reason || 'No reason provided'}</td>
+                <td>${data.adminEmail || 'Unknown Admin'}</td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('Error loading points history:', error);
+        tableBody.innerHTML = '<tr><td colspan="6" class="error-state">Error loading history: ' + error.message + '</td></tr>';
+    }
+}
+
+// Filter points overview
+function filterPointsOverview() {
+    const searchTerm = document.getElementById('points-overview-search').value.toLowerCase();
+    
+    if (!window.allUsersPoints) return;
+    
+    const filteredUsers = window.allUsersPoints.filter(user => {
+        const displayName = (user.displayName || user.username || '').toLowerCase();
+        const email = (user.email || '').toLowerCase();
+        return displayName.includes(searchTerm) || email.includes(searchTerm);
+    });
+    
+    renderPointsOverview(filteredUsers);
+}
+
+// Sort points overview
+function sortPointsOverview() {
+    const sortOrder = document.getElementById('points-sort-order').value;
+    
+    if (!window.allUsersPoints) return;
+    
+    const sortedUsers = [...window.allUsersPoints];
+    
+    switch (sortOrder) {
+        case 'points-desc':
+            sortedUsers.sort((a, b) => (b.points || 0) - (a.points || 0));
+            break;
+        case 'points-asc':
+            sortedUsers.sort((a, b) => (a.points || 0) - (b.points || 0));
+            break;
+        case 'name-asc':
+            sortedUsers.sort((a, b) => {
+                const nameA = (a.displayName || a.username || '').toLowerCase();
+                const nameB = (b.displayName || b.username || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            break;
+        case 'name-desc':
+            sortedUsers.sort((a, b) => {
+                const nameA = (a.displayName || a.username || '').toLowerCase();
+                const nameB = (b.displayName || b.username || '').toLowerCase();
+                return nameB.localeCompare(nameA);
+            });
+            break;
+    }
+    
+    renderPointsOverview(sortedUsers);
+}
+
+// Handle award item form submission
+async function handleAwardItem(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selected-user-id').value;
+    const itemId = document.getElementById('store-item-select').value;
+    const reason = document.getElementById('award-reason').value.trim();
+    
+    if (!userId || !itemId) {
+        showNotification('Please select a user and store item', 'error');
+        return;
+    }
+    
+    try {
+        // This would integrate with your store system
+        // For now, just show a success message
+        showNotification('Store item awarded successfully', 'success');
+        
+        // Reset form
+        document.getElementById('award-item-form').reset();
+        
+    } catch (error) {
+        console.error('Error awarding item:', error);
+        showNotification('Failed to award item: ' + error.message, 'error');
+    }
+}
+
+// Load user points history (for specific user)
+async function loadUserPointsHistory(userId) {
+    try {
+        const historyRef = collection(db, 'pointsHistory');
+        const q = query(historyRef, where('userId', '==', userId), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        console.log(`Found ${querySnapshot.size} history entries for user ${userId}`);
+        
+        // You could show this in a modal or separate section
+        showNotification(`User has ${querySnapshot.size} points history entries`, 'info');
+        
+    } catch (error) {
+        console.error('Error loading user points history:', error);
+        showNotification('Failed to load user history', 'error');
+    }
+}
+
+async function initializeUserPointsField() {
+    try {
+        console.log('Starting points field initialization for all users...');
+        
+        // Get all users from userProfiles collection
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        if (querySnapshot.empty) {
+            console.log('No users found in userProfiles collection');
+            return;
+        }
+        
+        let updatedCount = 0;
+        let alreadyHadPoints = 0;
+        const batch = writeBatch(db);
+        let batchCount = 0;
+        
+        console.log(`Found ${querySnapshot.size} users to check...`);
+        
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            
+            // Only update if the user doesn't already have a points field
+            if (userData.points === undefined || userData.points === null) {
+                batch.update(doc.ref, {
+                    points: 0,
+                    pointsInitializedAt: serverTimestamp()
+                });
+                updatedCount++;
+                batchCount++;
+                
+                console.log(`Queued ${userData.displayName || userData.username || userData.email || 'Unknown'} for points initialization`);
+            } else {
+                alreadyHadPoints++;
+                console.log(`${userData.displayName || userData.username || userData.email || 'Unknown'} already has points: ${userData.points}`);
+            }
+            
+            // Firestore batch limit is 500 operations
+            if (batchCount >= 500) {
+                console.warn('Batch limit reached - you may need to run this function multiple times for large datasets');
+            }
+        });
+        
+        if (updatedCount > 0) {
+            console.log(`Committing batch update for ${updatedCount} users...`);
+            await batch.commit();
+            console.log(`✅ Successfully initialized points field for ${updatedCount} users`);
+        } else {
+            console.log('No users needed points field initialization');
+        }
+        
+        // Log summary
+        console.log(`Migration Summary:
+        - Total users checked: ${querySnapshot.size}
+        - Users updated with points: ${updatedCount}
+        - Users who already had points: ${alreadyHadPoints}`);
+        
+        showNotification(`Points field initialized for ${updatedCount} users. ${alreadyHadPoints} users already had points.`, 'success');
+        
+        // Refresh the points overview if it's currently loaded
+        if (window.allUsersPoints) {
+            loadPointsOverview();
+        }
+        
+        return {
+            totalUsers: querySnapshot.size,
+            usersUpdated: updatedCount,
+            usersAlreadyHadPoints: alreadyHadPoints
+        };
+        
+    } catch (error) {
+        console.error('Error initializing points field:', error);
+        showNotification(`Error initializing points: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
+// Add this function to create a manual migration button (optional)
+function addPointsMigrationButton() {
+    // Only add this button for admins
+    const pointsSection = document.getElementById('manage-points');
+    if (!pointsSection) return;
+    
+    // Check if button already exists
+    if (document.getElementById('migrate-points-btn')) return;
+    
+    // Create migration button
+    const migrationContainer = document.createElement('div');
+    migrationContainer.className = 'migration-section';
+    migrationContainer.style.marginBottom = '20px';
+    migrationContainer.style.padding = '15px';
+    migrationContainer.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+    migrationContainer.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+    migrationContainer.style.borderRadius = '5px';
+    
+    migrationContainer.innerHTML = `
+        <h4><i class="fas fa-database"></i> Database Migration</h4>
+        <p>Initialize the points field for all users who don't have it yet. This is safe to run multiple times.</p>
+        <button id="migrate-points-btn" class="btn btn-warning">
+            <i class="fas fa-magic"></i> Initialize Points Field for All Users
+        </button>
+    `;
+    
+    // Insert at the top of the points section
+    const sectionHeader = pointsSection.querySelector('.section-header');
+    if (sectionHeader) {
+        sectionHeader.insertAdjacentElement('afterend', migrationContainer);
+    }
+    
+    // Add event listener
+    document.getElementById('migrate-points-btn').addEventListener('click', async function() {
+        if (confirm('This will add a points field (set to 0) for all users who don\'t have one yet. Continue?')) {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
+            
+            try {
+                await initializeUserPointsField();
+                this.innerHTML = '<i class="fas fa-check"></i> Completed';
+                this.style.backgroundColor = '#28a745';
+                
+                // Hide the migration section after successful completion
+                setTimeout(() => {
+                    migrationContainer.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error - Try Again';
+                this.disabled = false;
+            }
+        }
+    });
+}
+
+// Also make sure the setupManagePointsSection properly sets up the modal form
+function setupManagePointsSection() {
+    console.log('Setting up Manage Points section');
+    
+    // Add migration button for initializing points field
+    addPointsMigrationButton();
+    
+    // User search functionality
+    const userSearchInput = document.getElementById('points-user-search');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('input', debounce(searchUsersForPoints, 300));
+    }
+    
+    // Modify points form
+    const modifyPointsForm = document.getElementById('modify-points-form');
+    if (modifyPointsForm) {
+        modifyPointsForm.addEventListener('submit', handleModifyPoints);
+    }
+    
+    // Award item form
+    const awardItemForm = document.getElementById('award-item-form');
+    if (awardItemForm) {
+        awardItemForm.addEventListener('submit', handleAwardItem);
+    }
+    
+    // Points overview controls
+    const pointsOverviewSearch = document.getElementById('points-overview-search');
+    if (pointsOverviewSearch) {
+        pointsOverviewSearch.addEventListener('input', debounce(filterPointsOverview, 300));
+    }
+    
+    const pointsSortOrder = document.getElementById('points-sort-order');
+    if (pointsSortOrder) {
+        pointsSortOrder.addEventListener('change', sortPointsOverview);
+    }
+    
+    const refreshPointsBtn = document.getElementById('refresh-points-overview');
+    if (refreshPointsBtn) {
+        refreshPointsBtn.addEventListener('click', loadPointsOverview);
+    }
+    
+    // Quick edit modal events - MAKE SURE THESE WORK
+    const quickEditModal = document.getElementById('quick-edit-points-modal');
+    if (quickEditModal) {
+        console.log('Quick edit modal found, setting up events...');
+        
+        // Close button
+        const closeBtn = quickEditModal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                console.log('Modal close button clicked');
+                closeQuickEditModal();
+            });
+        } else {
+            console.warn('Close button not found in quick edit modal');
+        }
+        
+        // Cancel button
+        const cancelBtn = document.getElementById('cancel-quick-edit');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                console.log('Modal cancel button clicked');
+                closeQuickEditModal();
+            });
+        } else {
+            console.warn('Cancel button not found');
+        }
+        
+        // Form submission
+        const quickEditForm = document.getElementById('quick-edit-points-form');
+        if (quickEditForm) {
+            quickEditForm.addEventListener('submit', function(e) {
+                console.log('Quick edit form submitted');
+                handleQuickEditPoints(e);
+            });
+        } else {
+            console.error('Quick edit form not found!');
+        }
+        
+        // Modal background click to close
+        quickEditModal.addEventListener('click', function(e) {
+            if (e.target === quickEditModal) {
+                console.log('Modal background clicked');
+                closeQuickEditModal();
+            }
+        });
+        
+    } else {
+        console.error('Quick edit modal not found in DOM!');
+    }
+    
+    console.log('Manage Points section initialized');
+}
+
+// Update the modifyUserPoints function to ensure user has points field
+async function modifyUserPoints(userId, action, amount, reason = '') {
+    const userRef = doc(db, 'userProfiles', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+        throw new Error('User not found');
+    }
+    
+    const userData = userDoc.data();
+    
+    // Initialize points to 0 if it doesn't exist
+    const currentPoints = userData.points !== undefined ? userData.points : 0;
+    
+    // If user didn't have points field, initialize it first
+    if (userData.points === undefined) {
+        console.log(`Initializing points field for user ${userData.displayName || userData.email || 'Unknown'}`);
+        await updateDoc(userRef, {
+            points: 0,
+            pointsInitializedAt: serverTimestamp()
+        });
+    }
+    
+    let newPoints = currentPoints;
+    
+    switch (action) {
+        case 'add':
+            newPoints = currentPoints + amount;
+            break;
+        case 'subtract':
+            newPoints = Math.max(0, currentPoints - amount);
+            break;
+        case 'set':
+            newPoints = amount;
+            break;
+        default:
+            throw new Error('Invalid action');
+    }
+    
+    // Update user points
+    await updateDoc(userRef, {
+        points: newPoints,
+        lastPointsModified: serverTimestamp()
+    });
+    
+    // Log the points change
+    await addDoc(collection(db, 'pointsHistory'), {
+        userId: userId,
+        userEmail: userData.email || 'unknown',
+        displayName: userData.displayName || userData.username || 'Unknown User',
+        action: action,
+        amount: amount,
+        previousPoints: currentPoints,
+        newPoints: newPoints,
+        reason: reason,
+        adminEmail: auth.currentUser.email,
+        timestamp: serverTimestamp()
+    });
+}
+
+// Also update loadPointsOverview to handle users without points field gracefully
+async function loadPointsOverview() {
+    const tableBody = document.getElementById('points-overview-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading user points...</td></tr>';
+    
+    try {
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+            return;
+        }
+        
+        const users = [];
+        let usersWithoutPoints = 0;
+        
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const points = userData.points !== undefined ? userData.points : 0;
+            
+            // Count users without points field for info
+            if (userData.points === undefined) {
+                usersWithoutPoints++;
+            }
+            
+            users.push({
+                id: doc.id,
+                ...userData,
+                points: points
+            });
+        });
+        
+        // Show info if some users don't have points field
+        if (usersWithoutPoints > 0) {
+            console.log(`Found ${usersWithoutPoints} users without points field - they will display as 0 points`);
+            showNotification(`${usersWithoutPoints} users don't have points field yet. Use the migration button to initialize.`, 'info');
+        }
+        
+        // Sort users by points (highest first) by default
+        users.sort((a, b) => (b.points || 0) - (a.points || 0));
+        
+        // Store for filtering/sorting
+        window.allUsersPoints = users;
+        
+        renderPointsOverview(users);
+        
+    } catch (error) {
+        console.error('Error loading points overview:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading users: ' + error.message + '</td></tr>';
     }
 }

@@ -358,6 +358,10 @@ service cloud.firestore {
     match /notifiedMatches/{matchId} {
       allow read, write: if true; // Consider restricting write access
     }
+    
+        match /notifiedMatchesD2/{matchId} {
+      allow read, write: if true; // Consider restricting write access
+    }
 
     match /RejectedD1/{matchId} {
       allow read: if request.auth != null;
@@ -432,14 +436,178 @@ service cloud.firestore {
       allow read: if true; // Anyone can read highlights
       allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
     }
-
-    match /articles/{document=**} {
-      allow write: if request.auth != null && 
-        (get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'admin' ||
-        get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'owner' ||
-        get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'creative lead');
+    
+    
+        match /articles/{document=**} {
+        allow read: if true; // Anyone can read highlights
+        allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
     }
+    
+    match /aggregatedMembers/{userId} {
+      allow read: if true; // Public read access for member display
+      allow write: if request.auth != null && isAdmin(); // Only admins can write
+    }    
+
+    match /storeItems/{itemId} {
+      // Anyone can read store items
+      allow read: if true;
+
+      // Only admins can modify store items
+      allow create, update, delete: if request.auth != null && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.isAdmin == true)
+      );
+    }
+    
+        // Add these rules within the match /databases/{database}/documents block
+
+    // Points History Collection
+    match /pointsHistory/{historyId} {
+      // Only admins and owners can read points history
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
       
+      // Only admins and owners can create points history entries
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'previousPoints', 'newPoints', 'action', 
+        'amount', 'timestamp'
+      ]);
+      
+      // Prevent updates and deletes to maintain audit trail
+      allow update, delete: if false;
+    }
+
+    // Item Award History Collection
+    match /itemAwardHistory/{awardId} {
+      // Only admins and owners can read award history
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+      
+      // Only admins and owners can create award history entries
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
+      ]);
+      
+      // Prevent updates and deletes to maintain audit trail
+      allow update, delete: if false;
+    }
+
+    // Store Items Collection (for the admin to manage store items)
+    match /storeItems/{itemId} {
+      // Anyone can read store items
+      allow read: if true;
+      
+      // Only admins and owners can modify store items
+      allow create, update, delete: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+    }
+
+    // Update User Profiles to allow inventory management
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to update their own profile OR admins to update any profile
+      allow update: if request.auth != null && (
+        request.auth.uid == userId || 
+        canManageArticles(request.auth.uid) ||
+        // Allow admins to update points and inventory
+        (
+          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['points', 'inventory', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
+        )
+      );
+      
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    // Points History Collection
+    match /pointsHistory/{historyId} {
+      // Only admins and owners can read points history
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+      
+      // Only admins and owners can create points history entries
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'previousPoints', 'newPoints', 'action', 
+        'amount', 'timestamp'
+      ]);
+      
+      // Prevent updates and deletes to maintain audit trail
+      allow update, delete: if false;
+    }
+
+    // Item Award History Collection
+    match /itemAwardHistory/{awardId} {
+      // Only admins and owners can read award history
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+      
+      // Only admins and owners can create award history entries
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
+      ]);
+      
+      // Prevent updates and deletes to maintain audit trail
+      allow update, delete: if false;
+    }
+
+    // Store Items Collection (for the admin to manage store items)
+    match /storeItems/{itemId} {
+      // Anyone can read store items
+      allow read: if true;
+      
+      // Only admins and owners can modify store items
+      allow create, update, delete: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+    }
+
+    // Update User Profiles to allow inventory management
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to update their own profile OR admins to update any profile
+      allow update: if request.auth != null && (
+        request.auth.uid == userId || 
+        canManageArticles(request.auth.uid) ||
+        // Allow admins to update points and inventory
+        (
+          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['points', 'inventory', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
+        )
+      );
+      
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+    
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore
 // NO CHARACTERS OR BRACES BELOW THIS LINE
