@@ -80,10 +80,15 @@
                     <span>Manage Matches</span>
                 </button>
 
-                <li class="nav-item" data-section="manage-highlights">
+                <button class="nav-item" data-section="manage-highlights">
                     <i class="fas fa-star"></i>
                     <span>Manage Highlights</span>
-                </li>
+                </button>
+
+                <button class="nav-item" data-section="manage-points">
+                    <i class="fas fa-coins"></i>
+                    <span>Manage Points</span>
+                </button>
             </nav>
             
             <div class="sidebar-footer">
@@ -1092,6 +1097,224 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Manage Points Section -->
+            <section id="manage-points" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Manage User Points & Store Items</h1>
+                    <button id="load-points-data" class="load-data-btn">
+                        <i class="fas fa-sync-alt"></i> Load Points Data
+                    </button>
+                </div>
+                
+                <!-- User Search Section -->
+                <div class="points-user-search-container">
+                    <h3>Search Users</h3>
+                    <div class="search-box">
+                        <input type="text" id="points-user-search" placeholder="Search by email or display name...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="user-search-results" class="user-search-results">
+                        <!-- Search results will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Selected User Info -->
+                <div id="selected-user-info" class="selected-user-info" style="display: none;">
+                    <h3>Selected User</h3>
+                    <div class="user-info-card">
+                        <div class="user-details">
+                            <strong id="selected-user-name">No user selected</strong>
+                            <div class="points-display">
+                                <span id="selected-user-points">0</span> Points
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Points Management Forms -->
+                <div id="points-management-forms" style="display: none;">
+                    <input type="hidden" id="selected-user-id">
+                    
+                    <!-- Modify Points Section -->
+                    <div class="management-section">
+                        <h3><i class="fas fa-coins"></i> Modify Points</h3>
+                        <form id="modify-points-form" class="admin-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Action:</label>
+                                    <select id="points-action" required>
+                                        <option value="add">Add Points</option>
+                                        <option value="subtract">Subtract Points</option>
+                                        <option value="set">Set Points</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount:</label>
+                                    <input type="number" id="points-amount" min="0" max="999999" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Reason (Optional):</label>
+                                <input type="text" id="points-reason" placeholder="Enter reason for points modification...">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Apply Changes
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Award Store Items Section -->
+                    <div class="management-section">
+                        <h3><i class="fas fa-gift"></i> Award Store Items</h3>
+                        <form id="award-item-form" class="admin-form">
+                            <div class="form-group">
+                                <label>Store Item:</label>
+                                <select id="store-item-select" required>
+                                    <option value="">Select an item...</option>
+                                    <option value="vip-role">VIP Discord Role (500 pts)</option>
+                                    <option value="background-pack">Background Pack (750 pts)</option>
+                                    <option value="glow-effects">Glow Effects (300 pts)</option>
+                                    <option value="veteran-title">Veteran Player (100 pts)</option>
+                                    <option value="hot-streak">Hot Streak (250 pts)</option>
+                                    <option value="destroyer">Destroyer (350 pts)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Award Reason:</label>
+                                <input type="text" id="award-reason" placeholder="Reason for awarding this item...">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-gift"></i> Award Item
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Points History Table -->
+                <div class="table-section">
+                    <h3>Recent Points History</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                    <th>Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="points-history-table-body">
+                                <tr>
+                                    <td colspan="6" class="empty-state">No history data available</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- User Points Overview Table -->
+                <div class="table-section">
+                    <div class="section-header">
+                        <h3>All User Points</h3>
+                        <div class="points-overview-controls">
+                            <input type="text" id="points-overview-search" placeholder="Search users..." class="search-input">
+                            <select id="points-sort-order" class="sort-select">
+                                <option value="points-desc">Highest Points First</option>
+                                <option value="points-asc">Lowest Points First</option>
+                                <option value="name-asc">Name A-Z</option>
+                                <option value="name-desc">Name Z-A</option>
+                            </select>
+                            <button id="refresh-points-overview" class="btn btn-secondary">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Current Points</th>
+                                    <th>Last Modified</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="points-overview-table-body">
+                                <tr>
+                                    <td colspan="5" class="empty-state">Click "Load Points Data" to view all users</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Edit Points Modal -->
+            <div id="quick-edit-points-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="quick-edit-user-title">Edit User Points</h3>
+                        <button class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="quick-edit-user-id">
+                        
+                        <div class="user-info-display">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-details">
+                                <h4 id="quick-edit-display-name">User Name</h4>
+                                <p id="quick-edit-email">user@example.com</p>
+                                <p class="current-points">Current Points: <span id="quick-edit-current-points">0</span></p>
+                            </div>
+                        </div>
+                        
+                        <form id="quick-edit-points-form" class="quick-edit-form">
+                            <div class="form-group">
+                                <label>Action:</label>
+                                <div class="radio-group">
+                                    <input type="radio" id="quick-add" name="quick-action" value="add" checked>
+                                    <label for="quick-add">Add Points</label>
+                                    
+                                    <input type="radio" id="quick-subtract" name="quick-action" value="subtract">
+                                    <label for="quick-subtract">Subtract Points</label>
+                                    
+                                    <input type="radio" id="quick-set" name="quick-action" value="set">
+                                    <label for="quick-set">Set Points</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quick-points-amount">Amount:</label>
+                                <input type="number" id="quick-points-amount" min="0" max="999999" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quick-points-reason">Reason (Optional):</label>
+                                <input type="text" id="quick-points-reason" placeholder="Enter reason for points modification...">
+                            </div>
+                            
+                            <div class="modal-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" id="cancel-quick-edit" class="btn btn-secondary">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script type="module" src="./JS/adminbackend.js"></script> 

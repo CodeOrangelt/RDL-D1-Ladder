@@ -57,6 +57,7 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
                 <div class="nav-dropdown-content">
                     <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
                     <a href="members.html">Members</a>
+                    <a href="./redeem.html"><i class="fas fa-gift"></i> Redeem</a>
                     <a href="#" id="logout-link">Sign Out</a>
                 </div>
             </div>
