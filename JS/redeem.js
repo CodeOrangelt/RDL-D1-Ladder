@@ -162,7 +162,7 @@ function updateItemAsOwned(item, button, itemTitle) {
         item.appendChild(ownedBadge);
     }
     
-    // Check if feature is currently enabled
+    // Check active state in both localStorage and purchased items
     const isEnabled = enabledFeatures[itemTitle] || false;
     
     // Update button to toggle functionality
@@ -181,6 +181,9 @@ function updateItemAsOwned(item, button, itemTitle) {
         e.preventDefault();
         toggleFeature(itemTitle, button, item);
     };
+    
+    // Add status indicator
+    updateFeatureStatusIndicator(item, itemTitle, isEnabled);
 }
 
 // Toggle feature on/off
@@ -196,10 +199,31 @@ async function toggleFeature(itemTitle, button, item) {
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
     
     try {
-        // Simulate toggle delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Update Firestore for profile display
+        const user = auth.currentUser;
+        if (user) {
+            const userRef = doc(db, "userProfiles", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const purchasedItems = userData.purchasedItems || {};
+                
+                // Update the active state for this item
+                if (purchasedItems[itemTitle]) {
+                    purchasedItems[itemTitle].active = newState;
+                    
+                    // Update Firestore with the new active state
+                    await updateDoc(userRef, {
+                        purchasedItems: purchasedItems
+                    });
+                    
+                    console.log(`✅ Updated ${itemTitle} active state in Firestore: ${newState}`);
+                }
+            }
+        }
         
-        // Update feature state
+        // Update local storage
         enabledFeatures[itemTitle] = newState;
         localStorage.setItem('enabledFeatures', JSON.stringify(enabledFeatures));
         
@@ -233,7 +257,6 @@ async function toggleFeature(itemTitle, button, item) {
         showTempMessage(`❌ Failed to toggle ${itemTitle}`, 'error');
     }
 }
-
 // Update visual indicator for feature status
 function updateFeatureStatusIndicator(item, itemTitle, isEnabled) {
     // Remove existing status indicator
@@ -621,9 +644,26 @@ async function handlePurchase(itemTitle, itemPrice, button) {
         
         // Deduct points from user account
         const newPoints = currentPoints - priceAmount;
-        await updateDoc(userRef, { points: newPoints });
         
-        // Add to user inventory
+        // Get existing purchased items or create empty object
+        const existingData = userDoc.data();
+        const purchasedItems = existingData.purchasedItems || {};
+        
+        // Add item to purchased items with timestamp and state
+        purchasedItems[itemTitle] = {
+            purchasedAt: new Date(),
+            price: priceAmount,
+            owned: true,
+            active: true
+        };
+        
+        // Update user profile with points and purchased items
+        await updateDoc(userRef, { 
+            points: newPoints,
+            purchasedItems: purchasedItems
+        });
+        
+        // Also update localStorage for client-side tracking
         userInventory[itemTitle] = {
             purchaseDate: new Date().toISOString(),
             price: itemPrice
@@ -638,7 +678,7 @@ async function handlePurchase(itemTitle, itemPrice, button) {
         applyFeatureEffect(itemTitle);
         
         // Show success message
-        showTempMessage(`✅ Successfully purchased ${itemTitle}!`, 'success');
+        showTempMessage(`✅ Successfully purchased ${itemTitle}! It will appear on your profile.`, 'success');
         
         // Update the item UI
         const storeItem = button.closest('.store-item');
