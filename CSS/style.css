@@ -854,13 +854,6 @@ tr:nth-child(even) {
   box-shadow: 0 0 15px rgba(128, 128, 128, 0.3);
 }
 
-/* Rank text colors */
-[data-rank="Gold"] .rank-text { color: var(--gold-color); }
-[data-rank="Silver"] .rank-text { color: var(--silver-color); }
-[data-rank="Bronze"] .rank-text { color: var(--bronze-color); }
-[data-rank="Emerald"] .rank-text { color: var(--emerald-color); }
-[data-rank="Unranked"] .rank-text { color: var(--unranked-color); }
-
 /* Modal for personal rank changes */
 .rank-change-modal {
   position: fixed;
@@ -1257,6 +1250,42 @@ tr:nth-child(even) {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
     100% { opacity: 1; }
+}
+
+/* Game Banner Styles - Fixed animation and bigger text */
+.game-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(90deg, #881e8e, #a82ea8, #881e8e);
+    color: white;
+    padding: 12px 0;
+    z-index: 1000;
+    font-weight: bold;
+    font-size: 18px; /* Made bigger */
+    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.5);
+    display: none;
+    overflow: hidden;
+}
+
+.game-banner-content {
+    white-space: nowrap;
+    animation: scroll-left 5s linear infinite;
+}
+
+.game-banner-text {
+    display: inline-block;
+    padding-left: 100%;
+}
+
+@keyframes slide-across {
+    0% {
+        transform: translateX(100vw);
+    }
+    100% {
+        transform: translateX(-100vw);
+    }
 }
 
 /* Player username link styles - remove default link appearance while preserving ELO colors */

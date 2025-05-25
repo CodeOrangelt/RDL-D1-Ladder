@@ -315,53 +315,49 @@ export class RetroTrackerMonitor {
     // Add new method to update banner
     updateBanner() {
         const banner = document.querySelector('.game-banner');
-        const bannerContent = document.querySelector('.game-banner-content');
         const bannerText = document.querySelector('.game-banner-text');
         
-        if (!banner || !bannerContent || !bannerText) return;
+        if (!banner || !bannerText) return;
 
+        // Hide banner if no games
         if (this.activeGames.size === 0) {
             banner.style.display = 'none';
             return;
         }
 
+        // Show banner and start cycling through games
         banner.style.display = 'block';
         
-        // Get all active games
         const games = Array.from(this.activeGames.values());
-        let currentIndex = 0;
+        let currentGameIndex = 0;
 
-        // Clear any existing intervals
-        if (this.bannerInterval) {
-            clearInterval(this.bannerInterval);
+        // Clear any existing game rotation interval
+        if (this.gameRotationInterval) {
+            clearInterval(this.gameRotationInterval);
         }
 
-        const updateGameText = () => {
-            // Reset animation
-            bannerContent.style.animation = 'none';
-            bannerContent.offsetHeight; // Trigger reflow
-            
-            // Update text
-            this.updateBannerText(bannerText, games[currentIndex]);
-            
-            // Restart animation
-            bannerContent.style.animation = 'scroll-left 15s linear';
-            
-            // Update index for next time
-            currentIndex = (currentIndex + 1) % games.length;
+        // Function to update the banner text
+        const updateBannerText = () => {
+            const game = games[currentGameIndex];
+            if (game) {
+                const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
+                const playerCount = game.players?.length || 0;
+                const text = `LIVE GAME: (${game.gameVersion}) - ${game.gameName} - ${gameType} - Map: ${game.map}`;
+                
+                bannerText.textContent = text;
+                
+                // Move to next game
+                currentGameIndex = (currentGameIndex + 1) % games.length;
+            }
         };
 
-        updateGameText();
+        // Set initial text
+        updateBannerText();
 
+        // If multiple games, rotate every 10 seconds
         if (games.length > 1) {
-            this.bannerInterval = setInterval(updateGameText, 16000);
+            this.gameRotationInterval = setInterval(updateBannerText, 10000);
         }
-    }
-
-    updateBannerText(element, game) {
-        if (!game) return;
-        const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
-        element.textContent = `LIVE-GAME: ${game.gameName} (${game.gameVersion}) - ${gameType} - Map: ${game.map}`;
     }
 }
 
