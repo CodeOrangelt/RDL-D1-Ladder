@@ -1,24 +1,17 @@
 import { db } from './firebase-config.js';
 import { collection, query, where, onSnapshot, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-// Debugging: Check if Firestore is initialized
-console.log('Firestore initialization check:', !!db);
-
 // Get reference to readyPlayers collection
 const readyPlayersRef = collection(db, 'readyPlayers');
-console.log('Ready players collection reference created');
 
 // Create query for active players
 const activePlayersQuery = query(readyPlayersRef, where('isReady', '==', true));
-console.log('Active players query created');
 
 // Function to update queue display
 function updateQueueDisplay(players) {
-    console.log('Received players data:', players);
     const queueContainer = document.getElementById('queue-container');
     
     if (!queueContainer) {
-        console.error('Queue container not found!');
         return;
     }
 
@@ -76,18 +69,41 @@ async function checkQueueTimeout(player) {
     const minutesInQueue = Math.floor((now - queueTime) / 60000);
     
     if (minutesInQueue >= 30) {
-        console.log(`Player ${player.username} has been in queue for ${minutesInQueue} minutes. Removing from queue.`);
         try {
             const playerRef = doc(db, 'readyPlayers', player.id);
             await updateDoc(playerRef, {
                 isReady: false
             });
-            console.log(`Successfully removed ${player.username} from queue`);
         } catch (error) {
             console.error('Error removing player from queue:', error);
         }
     }
 }
+
+// Set up real-time listener
+const unsubscribe = onSnapshot(readyPlayersRef, 
+    (snapshot) => {
+        const activePlayers = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            if (data.isReady === true) {
+                const player = {
+                    id: doc.id,
+                    username: data.username,
+                    lastUpdated: data.lastUpdated || new Date()
+                };
+                activePlayers.push(player);
+                checkQueueTimeout(player); // Check timeout for each active player
+            }
+        });
+
+        updateQueueDisplay(activePlayers);
+    },
+    (error) => {
+        console.error('Error in queue listener:', error);
+    }
+);
 
 // Cleanup listener on page unload
 window.addEventListener('unload', () => {
