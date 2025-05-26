@@ -1294,6 +1294,8 @@ tr:nth-child(even) {
     15%, 85% { opacity: 1; }
 }
 
+/*removed the scrooll animation */
+
 
 /* Player username link styles - remove default link appearance while preserving ELO colors */
 .player-username-link {
