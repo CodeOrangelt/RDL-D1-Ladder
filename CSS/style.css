@@ -1252,7 +1252,7 @@ tr:nth-child(even) {
     100% { opacity: 1; }
 }
 
-/* Game Banner Styles - Fixed animation and bigger text */
+/* Game Banner Styles - Centered with fade effect */
 .game-banner {
     position: fixed;
     bottom: 0;
@@ -1263,29 +1263,40 @@ tr:nth-child(even) {
     padding: 12px 0;
     z-index: 1000;
     font-weight: bold;
-    font-size: 18px; /* Made bigger */
+    font-size: 18px;
     box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.5);
     display: none;
     overflow: hidden;
+    text-align: center;
 }
 
 .game-banner-content {
     white-space: nowrap;
-    animation: scroll-left 5s linear infinite;
+    animation: fade-in-out 7s ease-in-out infinite;
+    display: block !important; /* Force block display */
+    width: 100%;
+    margin: 0 auto;
+    transform: none !important; /* Prevent any transform */
+    position: static !important; /* Keep in normal flow */
 }
 
 .game-banner-text {
     display: inline-block;
-    padding-left: 100%;
+    padding: 0;
+    position: static !important; /* Prevent positioning issues */
+    transform: none !important; /* Prevent any transforms */
+    animation: none !important; /* Prevent any other animations */
 }
 
+/* Optimized fade in-out animation */
+@keyframes fade-in-out {
+    0%, 100% { opacity: 0; }
+    15%, 85% { opacity: 1; }
+}
+
+/* Remove any sliding animation that might be defined elsewhere */
 @keyframes slide-across {
-    0% {
-        transform: translateX(100vw);
-    }
-    100% {
-        transform: translateX(-100vw);
-    }
+    0%, 100% { transform: none; }
 }
 
 /* Player username link styles - remove default link appearance while preserving ELO colors */
