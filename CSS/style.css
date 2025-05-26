@@ -1294,10 +1294,8 @@ tr:nth-child(even) {
     15%, 85% { opacity: 1; }
 }
 
-/* Remove any sliding animation that might be defined elsewhere */
-@keyframes slide-across {
-    0%, 100% { transform: none; }
-}
+/*removed the scrooll animation */
+
 
 /* Player username link styles - remove default link appearance while preserving ELO colors */
 .player-username-link {
