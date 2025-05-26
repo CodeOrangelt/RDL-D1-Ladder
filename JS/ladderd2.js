@@ -151,7 +151,7 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
     try {
         // Get all players
         const playersRef = collection(db, 'playersD2');
-        const querySnapshot = await firebaseIdle.getDocuments(playersRef);
+        const querySnapshot = await getDocs(playersRef);
         const players = [];
         
         querySnapshot.forEach((doc) => {
@@ -178,42 +178,39 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             for (const player of players) {
                 if (player.position >= loser.position && player.position < winner.position && player.username !== winnerUsername) {
                     // Move everyone down one position
-                    await firebaseIdle.updateDocument(doc(db, 'playersD2', player.id), {
+                    await updateDoc(doc(db, 'playersD2', player.id), {
                         position: player.position + 1
                     });
                 }
             }
 
             // Update winner's position
-            await firebaseIdle.updateDocument(doc(db, 'playersD2', winner.id), {
+            await updateDoc(doc(db, 'playersD2', winner.id), {
                 position: winnerNewPosition
             });
 
-            // Handle #1 position streak tracking
+            // Handle #1 position streak tracking (same as D1)
             if (winnerNewPosition === 1) {
-                // Check if this is the first time reaching #1
                 const winnerDoc = doc(db, 'playersD2', winner.id);
                 const winnerData = await getDoc(winnerDoc);
                 
                 if (!winnerData.data().firstPlaceDate) {
-                    // Use firebaseIdle wrapper like in the rest of your code
-                    await firebaseIdle.updateDocument(winnerDoc, {
+                    await updateDoc(winnerDoc, {
                         firstPlaceDate: Timestamp.now()
                     });
                 }
             }
+            
             // If the previous #1 player is displaced
             if (loser.position === 1) {
                 const loserDoc = doc(db, 'playersD2', loser.id);
-                await firebaseIdle.updateDocument(loserDoc, {
+                await updateDoc(loserDoc, {
                     firstPlaceDate: null // Reset their streak
                 });
             }
             
             // Invalidate cache to ensure fresh data is loaded
             playerCacheD2.timestamp = 0;
-        } else {
-            // If winner is already above loser or equal, maintain positions
         }
     } catch (error) {
         console.error("Error updating D2 player positions:", error);
@@ -227,6 +224,15 @@ function calculateStreakDays(startDate) {
     const now = new Date();
     const diffTime = Math.abs(now - start);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Update the D2 ladder structure to match D1
+function getPlayerRankNameD2(elo) {
+    if (elo >= 2100) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
 }
 
 // Optimized displayLadder with batch processing
@@ -246,22 +252,23 @@ async function updateLadderDisplayD2(ladderData) {
     // Pre-fetch all match statistics in a single batch operation
     const matchStatsBatch = await fetchBatchMatchStatsD2(usernames);
     
-    // Update the table header with new columns - add ELO column
+    // Update the table header to match D1
     const thead = document.querySelector('#ladder-d2 thead tr');
-    thead.innerHTML = `
-        <th>Rank</th>
-        <th>Username</th>
-        <th>ELO</th>
-        <th>Matches</th>
-        <th>Wins</th>
-        <th>Losses</th>
-        <th>K/D</th>
-        <th>Win Rate</th>
-    `;
+    if (thead) {
+        thead.innerHTML = `
+            <th>Rank</th>
+            <th>Username</th>
+            <th>ELO</th>
+            <th>Matches</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>K/D</th>
+            <th>Win Rate</th>
+        `;
+    }
     
     // Create all rows at once for better performance
     const rowsHtml = ladderData.map(player => {
-        // Get pre-fetched stats from our batch operation
         const stats = matchStatsBatch.get(player.username) || {
             totalMatches: 0, wins: 0, losses: 0, 
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
@@ -270,18 +277,12 @@ async function updateLadderDisplayD2(ladderData) {
         return createPlayerRowD2(player, stats);
     }).join('');
     
-    // Append all rows at once (much faster than individual DOM operations)
+    // Append all rows at once
     tbody.innerHTML = rowsHtml;
     
-    // Get all ELO changes and update indicators
+    // Get all ELO changes and update indicators (same pattern as D1)
     getPlayersLastEloChangesD2(usernames)
         .then(changes => {
-            console.log('D2: Got changes map with', changes.size, 'entries:', 
-                Array.from(changes.entries())
-                    .filter(([_, change]) => change !== 0)
-                    .map(([name, change]) => `${name}: ${change}`)
-            );
-            
             // Create a mapping of username to row for quick updates
             const rowMap = new Map();
             tbody.querySelectorAll('tr').forEach((row, index) => {
@@ -295,40 +296,21 @@ async function updateLadderDisplayD2(ladderData) {
                 if (row && change !== 0) {
                     const eloCell = row.querySelector('td:nth-child(3)');
                     if (eloCell) {
-                        // Convert eloCell to use flexbox for alignment
-                        eloCell.style.display = 'flex';
-                        eloCell.style.alignItems = 'center';
-                        
-                        // Create a wrapper for the ELO value to maintain alignment
-                        const eloValue = document.createElement('span');
-                        eloValue.textContent = eloCell.textContent;
-                        eloValue.style.flexGrow = '1';
-                        
-                        // Clear the cell and add the value back
-                        eloCell.textContent = '';
-                        eloCell.appendChild(eloValue);
-                        
                         // Format the change value with + or - sign
                         const formattedChange = change > 0 ? `+${change}` : `${change}`;
                         
-                        // Add numeric indicator with the actual value
-                        const indicator = document.createElement('span');
-                        indicator.className = 'trend-indicator';
-                        indicator.textContent = formattedChange;
-                        
-                        // Style based on positive/negative change
-                        indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-                        indicator.style.position = 'absolute';
-                        indicator.style.right = '5px';
-                        indicator.style.top = '50%';
-                        indicator.style.transform = 'translateY(-50%)';
-                        indicator.style.fontWeight = 'bold';
-                        indicator.style.fontSize = '0.7em';
-                        
-                        // Make the cell a positioned container
-                        eloCell.style.position = 'relative';
-                        
-                        eloCell.appendChild(indicator);
+                        // Find the indicator element that's already in the DOM
+                        const indicator = eloCell.querySelector('.trend-indicator');
+                        if (indicator) {
+                            // Update the existing indicator (same as D1)
+                            indicator.textContent = formattedChange;
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.85em';
+                            indicator.style.display = 'inline';
+                            indicator.style.visibility = 'visible';
+                            indicator.style.opacity = '1';
+                        }
                     }
                 }
             });
@@ -336,87 +318,13 @@ async function updateLadderDisplayD2(ladderData) {
         .catch(error => console.error('Error updating D2 ELO trend indicators:', error));
 }
 
-// Helper function to fetch all match stats at once for D2
-async function fetchBatchMatchStatsD2(usernames) {
-    const matchStats = new Map();
-    
-    try {
-        // Create two queries and execute them in parallel
-        const approvedMatchesRef = collection(db, 'approvedMatchesD2');
-        
-        // Process in smaller batches to avoid overloading Firebase
-        const BATCH_SIZE = 10;
-        
-        for (let i = 0; i < usernames.length; i += BATCH_SIZE) {
-            const batchUsernames = usernames.slice(i, i + BATCH_SIZE);
-            
-            // Use Promise.all for parallel execution of multiple queries
-            const matchPromises = batchUsernames.map(username => {
-                return Promise.all([
-                    firebaseIdle.getDocuments(query(approvedMatchesRef, 
-                        where('winnerUsername', '==', username),
-                        limit(100))), // Limit for optimization
-                    firebaseIdle.getDocuments(query(approvedMatchesRef, 
-                        where('loserUsername', '==', username),
-                        limit(100)))
-                ]);
-            });
-            
-            const results = await Promise.all(matchPromises);
-            
-            // Process results efficiently
-            results.forEach((userMatches, index) => {
-                const username = batchUsernames[index];
-                const [winnerMatches, loserMatches] = userMatches;
-                
-                // Calculate stats
-                let wins = winnerMatches.size;
-                let losses = loserMatches.size;
-                let totalKills = 0;
-                let totalDeaths = 0;
-                
-                // Process winner matches
-                winnerMatches.forEach(doc => {
-                    const match = doc.data();
-                    totalKills += parseInt(match.winnerScore) || 0;
-                    totalDeaths += parseInt(match.loserScore) || 0;
-                });
-                
-                // Process loser matches
-                loserMatches.forEach(doc => {
-                    const match = doc.data();
-                    totalKills += parseInt(match.loserScore) || 0;
-                    totalDeaths += parseInt(match.winnerScore) || 0;
-                });
-                
-                // Calculate derived stats
-                const totalMatches = wins + losses;
-                const kda = totalDeaths > 0 ? 
-                    (totalKills / totalDeaths).toFixed(2) : totalKills.toString();
-                const winRate = totalMatches > 0 ? 
-                    ((wins / totalMatches) * 100).toFixed(1) : "0.0";
-                    
-                // Store stats
-                matchStats.set(username, {
-                    wins, losses, totalKills, totalDeaths,
-                    totalMatches, kda, winRate
-                });
-            });
-        }
-    } catch (error) {
-        console.error("Error batch fetching D2 match stats:", error);
-    }
-    
-    return matchStats;
-}
-
 // Modify the createPlayerRowD2 function - fix link styling and ensure ELO color stays
 
 function createPlayerRowD2(player, stats) {
-    // Set ELO-based colors
     const elo = parseFloat(player.elo) || 0;
-    let usernameColor = 'gray';  // default color
     
+    // Set ELO-based colors (same as D1)
+    let usernameColor = 'gray';
     if (elo >= 2100) {
         usernameColor = '#50C878';  // Emerald Green
     } else if (elo >= 1800) {
@@ -427,32 +335,50 @@ function createPlayerRowD2(player, stats) {
         usernameColor = '#CD7F32';  // Bronze
     }
 
+    // Create streak HTML if player is #1 (same as D1)
+    let streakHtml = '';
+    if (player.position === 1 && player.firstPlaceDate) {
+        const streakDays = calculateStreakDays(player.firstPlaceDate);
+        if (streakDays > 0) {
+            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
+        }
+    }
+    
+    // Create flag HTML if player has country (same as D1)
+    let flagHtml = '';
+    if (player.country) {
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle;"
+                        onerror="this.style.display='none'">`;
+    }
+
     return `
-        <tr>
-            <td>${player.position}</td>
-            <td style="position: relative;">
+    <tr>
+        <td>${player.position}</td>
+        <td style="position: relative;">
+            <div style="display: flex; align-items: center; position: relative;">
+                ${streakHtml}
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
-                   style="color:${usernameColor}; text-decoration:none">
+                   style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
-                ${player.country ? 
-                  `<img src="../images/flags/${player.country.toLowerCase()}.png" 
-                       alt="${player.country}" class="player-flag" 
-                       style="margin-left: 5px; vertical-align: middle;" 
-                       onerror="this.style.display='none'">` : ''}
-                ${player.position === 1 && player.firstPlaceDate ? 
-                  `<span style="font-size:0.9em; color:#FF4500; margin-left:-117px">
-                     ${calculateStreakDays(player.firstPlaceDate)}d
-                   </span>` : ''}
-            </td>
-            <td style="color:${usernameColor};">${elo}</td>
-            <td>${stats.totalMatches}</td>
-            <td>${stats.wins}</td>
-            <td>${stats.losses}</td>
-            <td>${stats.kda}</td>
-            <td>${stats.winRate}%</td>
-        </tr>
-    `;
+                ${flagHtml}
+            </div>
+        </td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
+        <td>${stats.totalMatches}</td>
+        <td>${stats.wins}</td>
+        <td>${stats.losses}</td>
+        <td>${stats.kda}</td>
+        <td>${stats.winRate}%</td>
+    </tr>`;
 }
 
 // Function for D2 ELO change tracking - KEEP THIS AS IS
@@ -570,6 +496,72 @@ async function getPlayersLastEloChangesD2(usernames) {
     }
     
     return changes;
+}
+
+// Helper function to fetch all D2 match stats at once - much more efficient
+async function fetchBatchMatchStatsD2(usernames) {
+    const matchStats = new Map();
+    
+    try {
+        // Initialize stats for all players
+        usernames.forEach(username => {
+            matchStats.set(username, {
+                totalMatches: 0,
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                kda: 0,
+                winRate: 0
+            });
+        });
+        
+        // Get all matches in one query instead of per-player
+        const approvedMatchesRef = collection(db, 'approvedMatchesD2');
+        const allMatches = await getDocs(approvedMatchesRef);
+        
+        // Process all matches in a single pass
+        allMatches.forEach(doc => {
+            const match = doc.data();
+            const winnerUsername = match.winnerUsername;
+            const loserUsername = match.loserUsername;
+            
+            if (usernames.includes(winnerUsername)) {
+                const stats = matchStats.get(winnerUsername);
+                stats.wins++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.winnerScore) || 0;
+                stats.totalDeaths += parseInt(match.loserScore) || 0;
+            }
+            
+            if (usernames.includes(loserUsername)) {
+                const stats = matchStats.get(loserUsername);
+                stats.losses++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.loserScore) || 0;
+                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+            }
+        });
+        
+        // Calculate derived stats
+        usernames.forEach(username => {
+            const stats = matchStats.get(username);
+            
+            // Calculate KDA ratio
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+            
+            // Calculate win rate
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+        });
+        
+    } catch (error) {
+        console.error("Error fetching batch D2 match stats:", error);
+    }
+    
+    return matchStats;
 }
 
 // Simplified function for raw ladder feed with improved efficiency
