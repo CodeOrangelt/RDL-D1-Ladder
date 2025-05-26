@@ -1272,20 +1272,21 @@ tr:nth-child(even) {
 
 .game-banner-content {
     white-space: nowrap;
-    animation: fade-in-out 7s ease-in-out infinite;
-    display: block !important; /* Force block display */
+    animation: fade-in-out 7s ease-in-out infinite !important; /* Force override */
+    display: block !important;
     width: 100%;
     margin: 0 auto;
-    transform: none !important; /* Prevent any transform */
-    position: static !important; /* Keep in normal flow */
+    transform: none !important;
+    position: static !important;
+    animation-name: fade-in-out !important; /* Explicitly override animation name */
 }
 
 .game-banner-text {
     display: inline-block;
     padding: 0;
-    position: static !important; /* Prevent positioning issues */
-    transform: none !important; /* Prevent any transforms */
-    animation: none !important; /* Prevent any other animations */
+    position: static !important;
+    transform: none !important;
+    animation: none !important;
 }
 
 /* Optimized fade in-out animation */
@@ -1293,9 +1294,6 @@ tr:nth-child(even) {
     0%, 100% { opacity: 0; }
     15%, 85% { opacity: 1; }
 }
-
-/*removed the scrooll animation */
-
 
 /* Player username link styles - remove default link appearance while preserving ELO colors */
 .player-username-link {
