@@ -70,7 +70,7 @@ function getEloColor(elo) {
   const e = Number(elo);
   if (e >= 2000) return "#50C878";      // Emerald
   else if (e >= 1800) return "#FFD700"; // Gold
-  else if (e >= 1600) return "#C0C0C0"; // Silver
+  else if (e >= 1600) return "#b9f1fc"; // Silver
   else if (e >= 1400) return "#CD7F32"; // Bronze
   else return "#808080";              // Unranked/Default
 }

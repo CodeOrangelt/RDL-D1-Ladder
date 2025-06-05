@@ -222,7 +222,7 @@
 }
 
 .elo-silver {
-    color: #C0C0C0; /* Silver */
+    color: #b9f1fc; /* Changed from #C0C0C0 */
 }
 
 .elo-gold {
@@ -437,7 +437,7 @@
 }
 
 .next-rank .elo-silver {
-    color: #C0C0C0;
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .next-rank .elo-gold {
@@ -530,7 +530,7 @@
 }
 
 .elo-silver .stat-label {
-    color: #C0C0C0; /* Silver */
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .elo-gold .stat-label {
@@ -598,7 +598,7 @@
 }
 
 .next-rank .elo-silver {
-    color: #C0C0C0;
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .next-rank .elo-gold {
@@ -667,7 +667,7 @@
 }
 
 .elo-silver .view-text {
-    color: #C0C0C0; /* Silver */
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .elo-gold .view-text {
@@ -1068,7 +1068,7 @@
 }
 
 .elo-progress-info.elo-silver {
-    color: #C0C0C0; /* Silver */
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .elo-progress-info.elo-gold {
@@ -1124,7 +1124,7 @@
 }
 
 #next-rank-col .elo-silver {
-    color: #C0C0C0; /* Silver */
+    color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 #next-rank-col .elo-gold {
