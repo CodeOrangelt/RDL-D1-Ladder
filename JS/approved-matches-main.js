@@ -418,6 +418,10 @@ async function renderMatchCards(docsData) {
         const wrapper = cardClone.querySelector('.match-display-wrapper');
         const card = cardClone.querySelector('.match-card');
 
+        // Add winner rank border class to the card
+        const winnerRankClass = getEloRankClass(match.winnerOldElo);
+        card.classList.add(`winner-${winnerRankClass}`);
+
         // Populate match card as before
         card.querySelector('.match-map').textContent = match.mapPlayed || 'Unknown Map';
         card.querySelector('.match-date').textContent = formatDate(match.approvedAt || match.createdAt);
@@ -1192,6 +1196,16 @@ async function submitCommentOrDemo(event) {
             submitButton.textContent = "Submit";
         }
     }
+}
+
+// Add this helper function to get rank class from ELO
+function getEloRankClass(elo) {
+    const e = Number(elo);
+    if (e >= 2000) return "emerald";
+    else if (e >= 1800) return "gold";
+    else if (e >= 1600) return "silver";
+    else if (e >= 1400) return "bronze";
+    else return "unranked";
 }
 
 function showPreviewCommentPopup(comment, player, color) {
