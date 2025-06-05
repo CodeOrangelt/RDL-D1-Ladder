@@ -419,12 +419,13 @@ function updateRecordDisplay(playerStats) {
     let mostMatches = { username: 'N/A', value: 0, elo: 0 };
     let bestDiff = { username: 'N/A', value: -Infinity, elo: 0 };
     let mostLosses = { username: 'N/A', value: 0, elo: 0 };
-    let leastSuicides = { username: 'N/A', value: Infinity, elo: 0 };
+    let leastSuicidesData = null;
+    let bestSuicideRate = Infinity;
     let mostKills = { username: 'N/A', value: 0, elo: 0 };
     let bestElo = { username: 'N/A', value: 0, elo: 0 };
 
     for (const [username, stats] of playerStats) {
-        const elo = stats.eloRating || 0; // Use 0 if ELO is missing for tier calculation
+        const elo = stats.eloRating || 0;
 
         // Most Wins
         if (stats.wins > mostWins.value) mostWins = { username, value: stats.wins, elo };
@@ -438,25 +439,49 @@ function updateRecordDisplay(playerStats) {
         if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.scoreDifferential > bestDiff.value) bestDiff = { username, value: stats.scoreDifferential, elo };
         // Most Losses
         if (stats.losses > mostLosses.value) mostLosses = { username, value: stats.losses, elo };
-        // Least Suicides (with min matches, non-negative)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.totalSuicides >= 0 && stats.totalSuicides < leastSuicides.value) leastSuicides = { username, value: stats.totalSuicides, elo };
+        
+        // Least Suicides as percentage (with min matches)
+        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.totalSuicides >= 0) {
+            const suicideRate = (stats.totalSuicides / stats.totalMatches) * 100;
+            if (suicideRate < bestSuicideRate) {
+                bestSuicideRate = suicideRate;
+                leastSuicidesData = {
+                    username: username,
+                    suicideRate: suicideRate,
+                    totalSuicides: stats.totalSuicides,
+                    totalMatches: stats.totalMatches,
+                    elo: elo
+                };
+            }
+        }
+        
         // Most Kills
         if (stats.totalKills > mostKills.value) mostKills = { username, value: stats.totalKills, elo };
         // Best ELO
-        if (stats.eloRating > bestElo.value) bestElo = { username, value: Math.round(stats.eloRating), elo }; // Use rounded ELO for display value
+        if (stats.eloRating > bestElo.value) bestElo = { username, value: Math.round(stats.eloRating), elo };
     }
-
-    // Handle case where no player met criteria (value remains Infinity)
-    if (leastSuicides.value === Infinity) leastSuicides = { username: 'N/A', value: 0, elo: 0 };
 
     // Update DOM
     updateRecordCard('most-wins', mostWins);
     updateRecordCard('best-winrate', bestWinRate, '%');
     updateRecordCard('best-kd', bestKD);
     updateRecordCard('most-matches', mostMatches);
-    updateRecordCard('best-differential', bestDiff, '', true); // Format sign
+    updateRecordCard('best-differential', bestDiff, '', true);
     updateRecordCard('most-losses', mostLosses);
-    updateRecordCard('least-suicides', leastSuicides);
+    
+    // Handle least suicides with custom formatting
+    const leastSuicidesEl = document.getElementById('least-suicides');
+    if (leastSuicidesData && leastSuicidesEl) {
+        const tier = getPlayerTier(leastSuicidesData.elo);
+        leastSuicidesEl.innerHTML = `
+            <span class="player-name ${tier}-rank">${leastSuicidesData.username}</span>
+            <span class="record-stat">(${leastSuicidesData.suicideRate.toFixed(2)}%)</span>
+            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
+        `;
+    } else if (leastSuicidesEl) {
+        leastSuicidesEl.textContent = 'No data available';
+    }
+    
     updateRecordCard('most-kills', mostKills); 
     updateRecordCard('best-elo', bestElo);
 
@@ -997,3 +1022,53 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMapStats();
     setupGameModeToggle();
 });
+
+function calculatePlayerRecords(matches, players) {
+    // ... existing code ...
+
+    // Calculate least suicides as percentage
+    let leastSuicidesData = null;
+    let bestSuicideRate = Infinity;
+
+    players.forEach(player => {
+        const playerMatches = matches.filter(match => 
+            match.winnerUsername === player.username || match.loserUsername === player.username
+        );
+        
+        if (playerMatches.length < 5) return; // Minimum matches requirement
+        
+        const totalSuicides = playerMatches.reduce((sum, match) => {
+            if (match.winnerUsername === player.username) {
+                return sum + (match.winnerSuicides || 0);
+            } else {
+                return sum + (match.loserSuicides || 0);
+            }
+        }, 0);
+        
+        const suicideRate = (totalSuicides / playerMatches.length) * 100;
+        
+        if (suicideRate < bestSuicideRate) {
+            bestSuicideRate = suicideRate;
+            leastSuicidesData = {
+                player: player.username,
+                suicideRate: suicideRate,
+                totalSuicides: totalSuicides,
+                totalMatches: playerMatches.length
+            };
+        }
+    });
+
+    // Update the DOM element
+    const leastSuicidesEl = document.getElementById('least-suicides');
+    if (leastSuicidesData) {
+        leastSuicidesEl.innerHTML = `
+            <div class="player-name">${leastSuicidesData.player}</div>
+            <div class="record-stat">${leastSuicidesData.suicideRate.toFixed(2)}%</div>
+            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
+        `;
+    } else {
+        leastSuicidesEl.textContent = 'No data available';
+    }
+
+    // ... rest of existing code ...
+}
