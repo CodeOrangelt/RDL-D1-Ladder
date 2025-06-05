@@ -172,7 +172,6 @@ body {
 }
 
 .player {
-    flex: 1;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -206,6 +205,45 @@ body {
     line-height: 1;
 }
 
+/* Update the player score container to use horizontal layout */
+.player-score-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between score and suicides */
+}
+
+/* Style the suicide text */
+.player-suicides {
+    font-size: 0.8em;
+    color: #999;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* For winner, put suicides to the right of score */
+.player.winner .player-score-container {
+    flex-direction: row; /* Score first, then suicides */
+}
+
+/* For loser, put suicides to the left of score */
+.player.loser .player-score-container {
+    flex-direction: row-reverse; /* Suicides first, then score */
+}
+
+.player-score-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3spx;
+}
+
+.player-suicides {
+    font-size: 0.7em;
+    color: #999;
+    font-style: italic;
+    white-space: nowrap;
+}
+
 .vs-separator {
     color: #999;
     font-weight: 600;
@@ -235,7 +273,7 @@ body {
     max-width: 45%;
     font-style: italic;
     color: #bbb;
-    font-size: 0.85em;
+    font-size: 1.4em;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;

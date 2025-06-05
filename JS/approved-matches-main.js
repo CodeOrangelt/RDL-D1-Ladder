@@ -426,11 +426,21 @@ async function renderMatchCards(docsData) {
         winnerNameEl.textContent = match.winnerUsername || 'Unknown';
         winnerNameEl.style.color = getEloColor(match.winnerOldElo);
         card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
+        
+        // Add winner suicides
+        const winnerSuicidesEl = card.querySelector('.player.winner .player-suicides');
+        const winnerSuicides = match.winnerSuicides || 0;
+        winnerSuicidesEl.textContent = `S: ${winnerSuicides}`;
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.textContent = match.loserUsername || 'Unknown';
         loserNameEl.style.color = getEloColor(match.loserOldElo);
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
+        
+        // Add loser suicides
+        const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
+        const loserSuicides = match.loserSuicides || 0;
+        loserSuicidesEl.textContent = `S: ${loserSuicides}`;
 
         // Player comments handling remains the same
         const winnerCommentEl = card.querySelector('.comment.winner-comment');
