@@ -442,6 +442,24 @@ async function renderMatchCards(docsData) {
         const loserSuicides = match.loserSuicides || 0;
         loserSuicidesEl.textContent = `S: ${loserSuicides}`;
 
+        // Add subgame type display
+        const subgameEl = card.querySelector('.match-subgame');
+        if (subgameEl) {
+            if (match.subgameType && match.subgameType.trim() !== '') {
+                subgameEl.textContent = match.subgameType;
+                subgameEl.style.display = 'block';
+                // Add the CSS class for color coding
+                const subgameClass = getSubgameClass(match.subgameType);
+                if (subgameClass) {
+                    subgameEl.classList.add(subgameClass);
+                }
+            } else {
+                subgameEl.textContent = 'Standard Match';
+                subgameEl.style.display = 'block';
+                subgameEl.style.opacity = '0.6'; // Make it more subtle for standard matches
+            }
+        }
+
         // Player comments handling remains the same
         const winnerCommentEl = card.querySelector('.comment.winner-comment');
         const loserCommentEl = card.querySelector('.comment.loser-comment');
@@ -636,6 +654,21 @@ async function renderMatchCards(docsData) {
 
         container.appendChild(cardClone);
     });
+}
+
+function getSubgameClass(subgameType) {
+    const subgameClassMap = {
+        'Fusion Match': 'fusion-match',
+        '≥6 missiles': 'missiles-6plus',
+        'Weapon Imbalance': 'weapon-imbalance',
+        'Blind Match': 'blind-match',
+        'Rematch': 'rematch',
+        'Disorientation': 'disorientation',
+        'Ratting': 'ratting',
+        'Altered Powerups': 'altered-powerups'
+    };
+    
+    return subgameClassMap[subgameType] || '';
 }
 
 /**

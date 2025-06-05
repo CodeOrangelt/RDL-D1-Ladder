@@ -332,6 +332,9 @@ async function submitReport(elements) {
         // Get current user's document
         const loserDoc = await getDoc(doc(db, playersCollection, userUid));
         if (!loserDoc.exists()) throw new Error("Your player profile not found");
+
+        // Get subgame type element
+        const subgameTypeElement = document.getElementById('subgame-type');
         
         // Get winner username from select element
         const winnerUsername = elements.winnerUsername.value;
@@ -356,6 +359,7 @@ async function submitReport(elements) {
             loserSuicides: elements.suicides.value, // renamed field
             mapPlayed: elements.mapPlayed.value,
             loserComment: elements.loserComment.value,
+            subgameType: subgameTypeElement ? subgameTypeElement.value : "",            
             gameMode: currentGameMode,
             approved: false,
             createdAt: serverTimestamp(),
@@ -543,6 +547,7 @@ function autoFillReportForm(reportData) {
                 document.getElementById('lightbox-suicides').textContent = reportData.loserSuicides || "0";
                 document.getElementById('lightbox-map').textContent = reportData.mapPlayed || "Not specified";
                 document.getElementById('lightbox-comment').textContent = reportData.loserComment || "No comment";
+                document.getElementById('lightbox-subgame').textContent = reportData.subgameType || "Standard Match";
                 
                 // Set and disable the winner score input field
                 const winnerScoreInput = document.getElementById('winner-score');
@@ -1152,6 +1157,12 @@ export function editReport(match) {
             }
         });
     }
+
+    const subgameType = document.getElementById('subgame-type');
+    if (subgameType && match.subgameType) {
+        subgameType.value = match.subgameType;
+    }
+    
     
     // Store the match ID in a data attribute for use when submitting
     reportForm.setAttribute('data-edit-id', match.id);
@@ -1220,6 +1231,7 @@ export function showMatchLightbox(match) {
     document.getElementById('lightbox-suicides').textContent = match.loserSuicides || '0';
     document.getElementById('lightbox-map').textContent = match.mapPlayed || 'Unknown';
     document.getElementById('lightbox-comment').textContent = match.loserComment || 'No comment';
+    document.getElementById('lightbox-subgame').textContent = match.subgameType || "Standard Match";
     
     // Make lightbox visible
     lightbox.classList.add('show');
@@ -1338,6 +1350,7 @@ export function initOutstandingMatches() {
                             loserSuicides: Number(suicides),
                             mapPlayed: mapPlayed,
                             loserComment: loserComment,
+                            subgameType: document.getElementById('subgame-type').value,
                             updatedAt: new Date()
                         });
                         
