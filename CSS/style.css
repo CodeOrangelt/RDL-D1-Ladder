@@ -223,8 +223,8 @@ tr:nth-child(even) {
 :root {
     --gold-color: #FFD700;
     --gold-bg: rgba(255, 215, 0, 0.15);
-    --silver-color: #C0C0C0;
-    --silver-bg: rgba(192, 192, 192, 0.15);
+    --silver-color: #b9f1fc; /* Changed from #C0C0C0 to light-cyan */
+    --silver-bg: rgba(0, 255, 255, 0.15);
     --bronze-color: #CD7F32;
     --bronze-bg: rgba(205, 127, 50, 0.15);
     --emerald-color: #50C878;
@@ -1323,7 +1323,7 @@ tr:nth-child(even) {
 }
 
 .elo-silver {
-    color: #C0C0C0 !important;
+    color: #b9f1fc !important; /* Changed from #C0C0C0 */
     font-weight: 500;
 }
 

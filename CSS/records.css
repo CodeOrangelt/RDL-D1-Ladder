@@ -315,8 +315,8 @@ main {
 }
 
 .silver-rank {
-    color: #E0E0E0 !important; /* Brighter silver */
-    text-shadow: 0 0 10px rgba(224, 224, 224, 0.7);
+    color: #b9f1fc !important; /* Changed from #E0E0E0 to light-cyan */
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
     font-weight: bold;
 }
 
@@ -426,7 +426,7 @@ main {
 }
 
 .tier.silver {
-    border-color: #C0C0C0;
+    border-color: #00FFFF; /* Changed from #C0C0C0 */
 }
 
 .tier.bronze {

@@ -131,7 +131,9 @@ body {
 /* Dynamic winner rank border class - keep square */
 .match-card.winner-emerald { border-color: #50C878; }
 .match-card.winner-gold { border-color: #FFD700; }
-.match-card.winner-silver { border-color: #C0C0C0; }
+.match-card.winner-silver { 
+    border-color: #b9f1fc; /* Changed from #C0C0C0 */
+}
 .match-card.winner-bronze { border-color: #CD7F32; }
 .match-card.winner-unranked { border-color: #80808000; }
 

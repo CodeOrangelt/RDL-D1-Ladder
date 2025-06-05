@@ -338,7 +338,7 @@ function createPlayerRow(player, stats) {
     } else if (elo >= 1800) {
         usernameColor = '#FFD700'; // Gold
     } else if (elo >= 1600) {
-        usernameColor = '#C0C0C0'; // Silver
+        usernameColor = '#b9f1fc'; // Silver
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32'; // Bronze
     }
@@ -843,7 +843,7 @@ async function findBestOpponent(currentLadder = 'd1') {
             } else if (opponentElo >= 1800) {
                 usernameColor = '#FFD700'; // Gold
             } else if (opponentElo >= 1600) {
-                usernameColor = '#C0C0C0'; // Silver
+                usernameColor = '#b9f1fc'; // Silver
             } else if (opponentElo >= 1400) {
                 usernameColor = '#CD7F32'; // Bronze
             }
