@@ -747,3 +747,11 @@ main {
         grid-template-columns: 1fr;
     }
 }
+
+.record-detail {
+    font-size: 0.75em;
+    color: #aaa;
+    text-align: center;
+    margin-top: 4px;
+    line-height: 1.2;
+}
