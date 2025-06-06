@@ -24,10 +24,15 @@ const previewState = {
   isLoading: false,
   // Filter State
   filterUsername: '',
-  // filterStartDate: null, // Add later if needed
-  // filterEndDate: null, // Add later if needed
-  // Cache object (simple in-memory for now, could use sessionStorage)
-  // cache: {}, // Let's use sessionStorage directly
+  // Enhanced filters
+  enhancedFilters: {
+    pilots: '',
+    levels: '',
+    subgames: [],
+  },
+  // Jump navigation
+  totalPages: 1,
+  hasReachedEnd: false
 };
 
 // --- Cache Helper Functions ---
@@ -174,6 +179,113 @@ function applyClientFilters(docsData) {
         const loser = (matchData.loserUsername || '').toLowerCase();
         return winner.includes(searchTerm) || loser.includes(searchTerm);
     });
+}
+
+// Add enhanced filter functions after the existing applyClientFilters function
+function applyEnhancedClientFilters(docsData) {
+    if (!hasEnhancedFilters()) {
+        return docsData;
+    }
+    
+    return docsData.filter(matchData => {
+        // Pilots filter
+        if (previewState.enhancedFilters.pilots) {
+            const pilotsSearch = previewState.enhancedFilters.pilots.toLowerCase();
+            const winner = (matchData.winnerUsername || '').toLowerCase();
+            const loser = (matchData.loserUsername || '').toLowerCase();
+            if (!winner.includes(pilotsSearch) && !loser.includes(pilotsSearch)) {
+                return false;
+            }
+        }
+        
+        // Levels filter
+        if (previewState.enhancedFilters.levels) {
+            const levelsSearch = previewState.enhancedFilters.levels.toLowerCase();
+            const mapPlayed = (matchData.mapPlayed || '').toLowerCase();
+            if (!mapPlayed.includes(levelsSearch)) {
+                return false;
+            }
+        }
+        
+        // Subgames filter
+        if (previewState.enhancedFilters.subgames.length > 0) {
+            const matchSubgame = matchData.subgameType || 'Standard Match';
+            if (!previewState.enhancedFilters.subgames.includes(matchSubgame)) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
+function hasEnhancedFilters() {
+    return previewState.enhancedFilters.pilots || 
+           previewState.enhancedFilters.levels || 
+           previewState.enhancedFilters.subgames.length > 0;
+}
+
+function clearEnhancedFilters() {
+    previewState.enhancedFilters = {
+        pilots: '',
+        levels: '',
+        subgames: []
+    };
+    
+    // Clear UI
+    document.getElementById('filter-pilots').value = '';
+    document.getElementById('filter-levels').value = '';
+    const subgamesSelect = document.getElementById('filter-subgames');
+    for (let option of subgamesSelect.options) {
+        option.selected = false;
+    }
+}
+
+// Jump navigation functions
+function jumpToPage(direction) {
+    const jumpInput = document.getElementById('jump-to-page');
+    const currentPage = previewState.currentPage;
+    let targetPage = currentPage;
+    
+    switch (direction) {
+        case 'start':
+            targetPage = 1;
+            break;
+        case 'end':
+            // For end, we'll need to implement end detection
+            targetPage = Math.max(currentPage + 10, previewState.totalPages || currentPage + 10);
+            break;
+        case '+1':
+            targetPage = currentPage + 1;
+            break;
+        case '+5':
+            targetPage = currentPage + 5;
+            break;
+        case '+10':
+            targetPage = currentPage + 10;
+            break;
+        case '-1':
+            targetPage = Math.max(1, currentPage - 1);
+            break;
+        case '-5':
+            targetPage = Math.max(1, currentPage - 5);
+            break;
+        case '-10':
+            targetPage = Math.max(1, currentPage - 10);
+            break;
+        case 'input':
+            const inputValue = parseInt(jumpInput.value);
+            if (inputValue && inputValue > 0) {
+                targetPage = inputValue;
+                jumpInput.value = '';
+            }
+            break;
+    }
+    
+    if (targetPage !== currentPage && targetPage > 0) {
+        previewState.currentPage = targetPage;
+        loadRecentMatchesPreview('jump');
+    }
 }
 
 export async function loadRecentMatchesPreview(direction = 'current') {
@@ -376,8 +488,7 @@ export async function loadRecentMatchesPreview(direction = 'current') {
     }
 }
 
-// Update renderMatchCards function to handle the new structure
-
+// Update the renderMatchCards function to use enhanced filters
 async function renderMatchCards(docsData) {
     const container = document.getElementById('recent-matches-preview');
     const template = document.getElementById('match-card-template');
@@ -390,30 +501,39 @@ async function renderMatchCards(docsData) {
 
     if (!docsData || docsData.length === 0) {
         if (!container.querySelector('.matches-loading[style*="color: red"]')) {
-             container.innerHTML = `<div class="matches-loading">No recent matches found${previewState.filterUsername ? ' matching filters' : ''}.</div>`;
+            const filterMessage = hasEnhancedFilters() ? ' matching filters' : 
+                                  previewState.filterUsername ? ' matching filters' : '';
+            container.innerHTML = `<div class="matches-loading">No recent matches found${filterMessage}.</div>`;
         }
         return;
     }
 
+    // Apply enhanced filters
+    const filteredData = applyEnhancedClientFilters(docsData);
+    
+    if (filteredData.length === 0) {
+        container.innerHTML = `<div class="matches-loading">No matches found matching current filters.</div>`;
+        return;
+    }
+
     // Fetch comments for all matches in one go with better error handling
-    const allCommentsPromises = docsData.map(match => getAllCommentsForMatch(match.id));
+    const allCommentsPromises = filteredData.map(match => getAllCommentsForMatch(match.id));
     let allCommentsResults = [];
 
     try {
         allCommentsResults = await Promise.all(allCommentsPromises);
     } catch (error) {
         console.error("Error fetching comments batch:", error);
-        // Initialize with empty arrays so the UI can continue
-        allCommentsResults = docsData.map(() => []);
+        allCommentsResults = filteredData.map(() => []);
     }
 
     // Create a map of matchId -> comments array
     const commentsMap = {};
     allCommentsResults.forEach((comments, index) => {
-        commentsMap[docsData[index].id] = comments || [];
+        commentsMap[filteredData[index].id] = comments || [];
     });
 
-    docsData.forEach(match => {
+    filteredData.forEach(match => {
         const cardClone = template.content.cloneNode(true);
         const wrapper = cardClone.querySelector('.match-display-wrapper');
         const card = cardClone.querySelector('.match-card');
@@ -669,7 +789,7 @@ function getSubgameClass(subgameType) {
         'Rematch': 'rematch',
         'Disorientation': 'disorientation',
         'Ratting': 'ratting',
-        'Altered Powerups': 'altered-powerups'
+        'Altered Powerups': 'altered-power-ups'
     };
     
     return subgameClassMap[subgameType] || '';
@@ -1263,12 +1383,10 @@ export function setupPreviewEventListeners() {
     const d1Button = document.getElementById('preview-d1-button');
     const d2Button = document.getElementById('preview-d2-button');
     const d3Button = document.getElementById('preview-d3-button');
-    const filterSection = document.getElementById('filterSection');
-    const applyFilterBtn = document.getElementById('applyFilterBtn');
-    const clearFilterBtn = document.getElementById('clearFilterBtn');
-    const filterUsernameInput = document.getElementById('filterUsername');
-
-    if (!prevButton || !nextButton || !d1Button || !d2Button || !d3Button || !filterSection || !applyFilterBtn || !clearFilterBtn || !filterUsernameInput) {
+    const filterToggleBtn = document.getElementById('filter-toggle-button');
+    const enhancedFilterSection = document.getElementById('enhanced-filter-section');
+    
+    if (!prevButton || !nextButton || !d1Button || !d2Button || !d3Button || !filterToggleBtn || !enhancedFilterSection) {
         console.warn("Preview UI or Filter elements not found, cannot attach listeners.");
         return;
     }
@@ -1302,17 +1420,61 @@ export function setupPreviewEventListeners() {
         }
     });
 
-    applyFilterBtn.addEventListener('click', () => {
-        previewState.filterUsername = filterUsernameInput.value.trim();
-        loadRecentMatchesPreview('current');
-    });
+    // Enhanced filter toggle
+    if (filterToggleBtn && enhancedFilterSection) {
+        filterToggleBtn.addEventListener('click', () => {
+            const isVisible = enhancedFilterSection.style.display !== 'none';
+            enhancedFilterSection.style.display = isVisible ? 'none' : 'block';
+            filterToggleBtn.classList.toggle('active', !isVisible);
+        });
+    }
 
-    clearFilterBtn.addEventListener('click', () => {
-        filterUsernameInput.value = '';
-        previewState.filterUsername = '';
-        loadRecentMatchesPreview('current');
-    });
+    // Enhanced filter actions
+    const applyEnhancedBtn = document.getElementById('apply-enhanced-filters');
+    const clearEnhancedBtn = document.getElementById('clear-enhanced-filters');
+    
+    if (applyEnhancedBtn) {
+        applyEnhancedBtn.addEventListener('click', () => {
+            // Get filter values
+            previewState.enhancedFilters.pilots = document.getElementById('filter-pilots').value.trim();
+            previewState.enhancedFilters.levels = document.getElementById('filter-levels').value.trim();
+            
+            // Get selected subgames
+            const subgamesSelect = document.getElementById('filter-subgames');
+            previewState.enhancedFilters.subgames = Array.from(subgamesSelect.selectedOptions)
+                .map(option => option.value)
+                .filter(value => value !== '');
+            
+            // Apply filters and reload
+            loadRecentMatchesPreview('current');
+        });
+    }
+    
+    if (clearEnhancedBtn) {
+        clearEnhancedBtn.addEventListener('click', () => {
+            clearEnhancedFilters();
+            loadRecentMatchesPreview('current');
+        });
+    }
 
+    // Jump navigation
+    document.querySelectorAll('.jump-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const jumpType = btn.dataset.jump;
+            jumpToPage(jumpType);
+        });
+    });
+    
+    const jumpInput = document.getElementById('jump-to-page');
+    if (jumpInput) {
+        jumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                jumpToPage('input');
+            }
+        });
+    }
+
+    // Existing comment popup listeners...
     const closeBtn = document.getElementById('closeCommentPopupPreview');
     const overlay = document.getElementById('commentOverlayPreview');
     if (closeBtn) closeBtn.addEventListener('click', closePreviewCommentPopup);
