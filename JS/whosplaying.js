@@ -11,6 +11,9 @@ export class RetroTrackerMonitor {
         this.activeGames = new Map();
         this.updateInterval = 300000; // 30 seconds
         this.isMainPage = window.location.pathname.endsWith('/whosplaying.html');
+        this.fetchAttempts = 0; // Add fetch attempt counter
+        this.maxFetchAttempts = 3; // Maximum number of fetch attempts
+        this.fetchingDisabled = false; // Flag to disable fetching after max attempts
     }
 
     async initialize() {
@@ -57,7 +60,24 @@ export class RetroTrackerMonitor {
 
     // Optimize game data extraction
     async fetchGameData() {
+        // Check if fetching is disabled due to max attempts reached
+        if (this.fetchingDisabled) {
+            console.log('Fetching disabled after max attempts reached');
+            return null;
+        }
+
+        // Check if we've reached max attempts
+        if (this.fetchAttempts >= this.maxFetchAttempts) {
+            console.log(`Maximum fetch attempts (${this.maxFetchAttempts}) reached. Disabling further attempts.`);
+            this.fetchingDisabled = true;
+            this.displayError('Unable to fetch game data after multiple attempts.');
+            return null;
+        }
+
         try {
+            this.fetchAttempts++; // Increment attempt counter
+            console.log(`Fetch attempt ${this.fetchAttempts}/${this.maxFetchAttempts}`);
+
             const proxyUrl = 'https://api.allorigins.win/get?url=';
             const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
             
@@ -71,6 +91,9 @@ export class RetroTrackerMonitor {
                 throw new Error('No games found');
             }
 
+            // Reset attempts on successful fetch
+            this.fetchAttempts = 0;
+
             const games = Array.from(gamesList)
                 .map(game => {
                     const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
@@ -81,6 +104,7 @@ export class RetroTrackerMonitor {
 
                     return {
                         gameVersion: this.getVersionInfo(detailsTable),
+                        host: game.querySelector('td')?.textContent?.trim() || 'Unknown',
                         gameName: this.findDetailText(detailsTable, 'Game Name:'),
                         map: this.findDetailText(detailsTable, 'Mission:'),
                         players: this.findPlayers(detailsTable),
@@ -96,8 +120,13 @@ export class RetroTrackerMonitor {
 
             return this.processGameData(games);
         } catch (error) {
-            console.error('Error fetching game data:', error);
-            this.displayError('Unable to fetch game data.');
+            console.error(`Error fetching game data (attempt ${this.fetchAttempts}/${this.maxFetchAttempts}):`, error);
+            
+            // Only show error message after all attempts are exhausted
+            if (this.fetchAttempts >= this.maxFetchAttempts) {
+                this.fetchingDisabled = true;
+                this.displayError('Unable to fetch game data after multiple attempts.');
+            }
             return null;
         }
     }
@@ -296,8 +325,15 @@ export class RetroTrackerMonitor {
     }
 
     startMonitoring() {
-        setInterval(() => this.fetchGameData(), this.updateInterval);
-        this.fetchGameData(); // Initial fetch
+        // Only start monitoring if fetching is not disabled
+        if (!this.fetchingDisabled) {
+            setInterval(() => {
+                if (!this.fetchingDisabled) {
+                    this.fetchGameData();
+                }
+            }, this.updateInterval);
+            this.fetchGameData(); // Initial fetch
+        }
     }
 
     // Add error display method
