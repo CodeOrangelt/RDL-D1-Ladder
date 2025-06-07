@@ -372,9 +372,15 @@
             <section id="manage-matches" class="admin-section" style="display: none;">
                 <div class="section-header">
                     <h1>Manage Matches</h1>
-                    <button id="load-matches-data" class="load-data-btn">
-                        <i class="fas fa-sync-alt"></i> Load Matches
-                    </button>
+                    <div class="header-actions">
+                        <button id="load-matches-data" class="load-data-btn">
+                            <i class="fas fa-sync-alt"></i> Load Matches
+                        </button>
+                        <!-- Move the create test match button here -->
+                        <button id="create-test-match-btn" class="btn btn-primary" style="display: none;">
+                            <i class="fas fa-plus"></i> Create Test Match
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Filter controls -->
@@ -1313,6 +1319,118 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+
+            <!-- Create Test Match Button (Initially hidden) -->
+            <button id="create-test-match-btn" class="btn btn-primary" style="display: none;">
+                <i class="fas fa-plus"></i> Create Test Match
+            </button>
+
+            <!-- Create Test Match Modal -->
+            <div id="create-test-match-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="create-test-match-title">Create Test Match</h2>
+                        <button class="close-btn">&times;</button>
+                    </div>
+                    
+                    <form id="create-test-match-form" class="modal-form">
+                        <!-- Ladder Selection -->
+                        <div class="form-group">
+                            <label>Select Ladder:</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="test-match-ladder" value="D1" checked>
+                                    <span>D1 Ladder</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="test-match-ladder" value="D2">
+                                    <span>D2 Ladder</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="test-match-ladder" value="D3">
+                                    <span>D3 Ladder</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Match Date -->
+                        <div class="form-group">
+                            <label for="test-match-date">Match Date*</label>
+                            <input type="date" id="test-match-date" required>
+                        </div>
+                        
+                        <!-- Map -->
+                        <div class="form-group">
+                            <label for="test-match-map">Map Played*</label>
+                            <input type="text" id="test-match-map" placeholder="e.g., Minerva, Nysa, Asylum" required>
+                        </div>
+                        
+                        <!-- Winner Section -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-trophy"></i> Winner</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="test-match-winner-username">Username*</label>
+                                    <input type="text" id="test-match-winner-username" placeholder="Winner username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="test-match-winner-score">Score*</label>
+                                    <input type="number" id="test-match-winner-score" min="0" value="20" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="test-match-winner-suicides">Suicides</label>
+                                    <input type="number" id="test-match-winner-suicides" min="0" value="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-match-winner-comment">Comment</label>
+                                <textarea id="test-match-winner-comment" placeholder="Optional comment from winner" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-match-winner-demo">Demo Link</label>
+                                <input type="url" id="test-match-winner-demo" placeholder="https://example.com/demo.zip">
+                            </div>
+                        </div>
+                        
+                        <!-- Loser Section -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-times-circle"></i> Loser</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="test-match-loser-username">Username*</label>
+                                    <input type="text" id="test-match-loser-username" placeholder="Loser username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="test-match-loser-score">Score*</label>
+                                    <input type="number" id="test-match-loser-score" min="0" value="15" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="test-match-loser-suicides">Suicides</label>
+                                    <input type="number" id="test-match-loser-suicides" min="0" value="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-match-loser-comment">Comment</label>
+                                <textarea id="test-match-loser-comment" placeholder="Optional comment from loser" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-match-loser-demo">Demo Link</label>
+                                <input type="url" id="test-match-loser-demo" placeholder="https://example.com/demo.zip">
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Test Match
+                            </button>
+                            <button type="button" id="cancel-create-test-match-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
