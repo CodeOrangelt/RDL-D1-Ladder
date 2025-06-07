@@ -1030,108 +1030,96 @@ async displayMatchHistory(username, matches) {
             return 'elo-unranked';
         };
         
-        // Build match history HTML with ELO changes
+        // PAGINATION: Split matches into recent (10) and older
+        const recentMatches = matches.slice(0, 10);
+        const olderMatches = matches.slice(10);
+        const totalMatches = matches.length;
+        
+        // Build match history HTML with pagination
         matchHistoryContainer.innerHTML = `
             <h2>Match History</h2>
-            <table class="match-history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Winner</th>
-                        <th>Loser</th>
-                        <th>Score</th>
-                        <th>Map</th>
-                        <th>ELO Change</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${matches.length === 0 ? 
-                        '<tr><td colspan="6">No matches found</td></tr>' :
-                        matches.map(match => {
-                            const date = match.createdAt ? 
-                                new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
-                                'N/A';
-                            const isWinner = match.winnerUsername === username;
-                            const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
-                            const loserEloClass = getEloClass(playerElos[match.loserUsername]);
-                            
-                            // Get ELO change data for this match
-                            const eloData = eloHistoryMap.get(match.id);
-                            let eloChangeDisplay = 'N/A';
-                            
-                            if (eloData && eloData.previousElo !== undefined && eloData.newElo !== undefined) {
-                                const change = eloData.change;
-                                const changeClass = change > 0 ? 'elo-change-positive' : 
-                                                  change < 0 ? 'elo-change-negative' : 'elo-change-neutral';
-                                const changeSign = change > 0 ? '+' : '';
-                                eloChangeDisplay = `
-                                    <span class="${changeClass}" title="Matched via: ${eloData.source}">
-                                        ${eloData.previousElo} → ${eloData.newElo} (${changeSign}${change})
-                                    </span>
-                                `;
-                            } else {
-                                // FALLBACK 6: Estimate ELO change based on typical patterns
-                                const isWin = match.winnerUsername === username;
-                                const currentElo = playerElos[username] || 1500;
-                                const opponentName = isWin ? match.loserUsername : match.winnerUsername;
-                                const opponentElo = playerElos[opponentName] || 1500;
-                                
-                                // Simple ELO estimation (K-factor of 32)
-                                const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
-                                const actualScore = isWin ? 1 : 0;
-                                const estimatedChange = Math.round(32 * (actualScore - expectedScore));
-                                
-                                if (Math.abs(estimatedChange) > 0) {
-                                    const changeClass = estimatedChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
-                                    const changeSign = estimatedChange > 0 ? '+' : '';
-                                    eloChangeDisplay = `
-                                        <span class="${changeClass} estimated-change" title="Estimated change">
-                                            ~${changeSign}${estimatedChange} (est.)
-                                        </span>
-                                    `;
-                                } else {
-                                    // Final fallback - show win/loss indicator
-                                    const resultClass = isWin ? 'elo-change-positive' : 'elo-change-negative';
-                                    const resultText = isWin ? 'WIN' : 'LOSS';
-                                    eloChangeDisplay = `
-                                        <span class="${resultClass}">
-                                            ${resultText}
-                                        </span>
-                                    `;
-                                }
-                            }
-                            
-                            return `
-                                <tr class="${isWinner ? 'match-won' : 'match-lost'}">
-                                    <td>${date}</td>
-                                    <td>
-                                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                                           class="player-link ${winnerEloClass}">
-                                            ${match.winnerUsername}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                                           class="player-link ${loserEloClass}">
-                                            ${match.loserUsername}
-                                        </a>
-                                    </td>
-                                    <td>${match.winnerScore} - ${match.loserScore}</td>
-                                    <td>${match.mapPlayed || 'N/A'}</td>
-                                    <td>${eloChangeDisplay}</td>
-                                </tr>
-                            `;
-                        }).join('')
-                    }
-                </tbody>
-            </table>
+            ${totalMatches === 0 ? 
+                '<p class="no-matches">No matches found</p>' : 
+                `
+                <div class="match-history-stats">
+                    <p>Showing ${Math.min(10, totalMatches)} of ${totalMatches} matches</p>
+                </div>
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Winner</th>
+                            <th>Loser</th>
+                            <th>Score</th>
+                            <th>Map</th>
+                            <th>ELO Change</th>
+                        </tr>
+                    </thead>
+                    <tbody class="recent-matches">
+                        ${this.renderMatchRows(recentMatches, username, playerElos, eloHistoryMap, getEloClass)}
+                    </tbody>
+                    ${olderMatches.length > 0 ? `
+                    <tbody class="older-matches" style="display: none;">
+                        ${this.renderMatchRows(olderMatches, username, playerElos, eloHistoryMap, getEloClass)}
+                    </tbody>
+                    ` : ''}
+                </table>
+                ${olderMatches.length > 0 ? `
+                <div class="match-history-pagination">
+                    <button class="show-more-matches-btn" onclick="this.style.display='none'; document.querySelector('.older-matches').style.display='table-row-group'; document.querySelector('.show-less-matches-btn').style.display='inline-block';">
+                        Show More Matches (${olderMatches.length})
+                    </button>
+                    <button class="show-less-matches-btn" style="display: none;" onclick="this.style.display='none'; document.querySelector('.older-matches').style.display='none'; document.querySelector('.show-more-matches-btn').style.display='inline-block';">
+                        Show Less
+                    </button>
+                </div>
+                ` : ''}
+                `
+            }
         `;
         
-        // Add CSS for ELO change styling if not already present
-        if (!document.getElementById('elo-change-styles')) {
+        // Add CSS for pagination styling if not already present
+        if (!document.getElementById('match-history-pagination-styles')) {
             const styleEl = document.createElement('style');
-            styleEl.id = 'elo-change-styles';
+            styleEl.id = 'match-history-pagination-styles';
             styleEl.textContent = `
+                .match-history-stats {
+                    margin-bottom: 1rem;
+                    color: #aaa;
+                    font-size: 0.9rem;
+                }
+                
+                .match-history-pagination {
+                    text-align: center;
+                    margin-top: 1rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid #333;
+                }
+                
+                .show-more-matches-btn, .show-less-matches-btn {
+                    background: #333;
+                    border: 1px solid #555;
+                    color: white;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+                
+                .show-more-matches-btn:hover, .show-less-matches-btn:hover {
+                    background: #444;
+                    border-color: #666;
+                    transform: translateY(-1px);
+                }
+                
+                .no-matches {
+                    text-align: center;
+                    color: #666;
+                    font-style: italic;
+                    padding: 2rem;
+                }
+                
                 .elo-change-positive {
                     color: #4CAF50;
                     font-weight: bold;
@@ -1159,6 +1147,84 @@ async displayMatchHistory(username, matches) {
         console.error('Error displaying match history:', error);
         this.showErrorInContainer('match-history', 'Failed to load match history');
     }
+}
+
+renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
+    return matches.map(match => {
+        const date = match.createdAt ? 
+            new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
+            'N/A';
+        const isWinner = match.winnerUsername === username;
+        const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
+        const loserEloClass = getEloClass(playerElos[match.loserUsername]);
+        
+        // Get ELO change data for this match
+        const eloData = eloHistoryMap.get(match.id);
+        let eloChangeDisplay = 'N/A';
+        
+        if (eloData && eloData.previousElo !== undefined && eloData.newElo !== undefined) {
+            const change = eloData.change;
+            const changeClass = change > 0 ? 'elo-change-positive' : 
+                              change < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+            const changeSign = change > 0 ? '+' : '';
+            eloChangeDisplay = `
+                <span class="${changeClass}" title="Matched via: ${eloData.source}">
+                    ${eloData.previousElo} → ${eloData.newElo} (${changeSign}${change})
+                </span>
+            `;
+        } else {
+            // FALLBACK 6: Estimate ELO change based on typical patterns
+            const isWin = match.winnerUsername === username;
+            const currentElo = playerElos[username] || 1500;
+            const opponentName = isWin ? match.loserUsername : match.winnerUsername;
+            const opponentElo = playerElos[opponentName] || 1500;
+            
+            // Simple ELO estimation (K-factor of 32)
+            const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
+            const actualScore = isWin ? 1 : 0;
+            const estimatedChange = Math.round(32 * (actualScore - expectedScore));
+            
+            if (Math.abs(estimatedChange) > 0) {
+                const changeClass = estimatedChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
+                const changeSign = estimatedChange > 0 ? '+' : '';
+                eloChangeDisplay = `
+                    <span class="${changeClass} estimated-change" title="Estimated change">
+                        ~${changeSign}${estimatedChange} (est.)
+                    </span>
+                `;
+            } else {
+                // Final fallback - show win/loss indicator
+                const resultClass = isWin ? 'elo-change-positive' : 'elo-change-negative';
+                const resultText = isWin ? 'WIN' : 'LOSS';
+                eloChangeDisplay = `
+                    <span class="${resultClass}">
+                        ${resultText}
+                    </span>
+                `;
+            }
+        }
+        
+        return `
+            <tr class="${isWinner ? 'match-won' : 'match-lost'}">
+                <td>${date}</td>
+                <td>
+                    <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
+                       class="player-link ${winnerEloClass}">
+                        ${match.winnerUsername}
+                    </a>
+                </td>
+                <td>
+                    <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
+                       class="player-link ${loserEloClass}">
+                        ${match.loserUsername}
+                    </a>
+                </td>
+                <td>${match.winnerScore} - ${match.loserScore}</td>
+                <td>${match.mapPlayed || 'N/A'}</td>
+                <td>${eloChangeDisplay}</td>
+            </tr>
+        `;
+    }).join('');
 }
     
     async displayMatchStats(username, matches) {
