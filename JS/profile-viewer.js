@@ -37,13 +37,19 @@ function getContrastColor(hexColor) {
 class ProfileViewer {
     constructor() {
         this.currentProfileData = null;
-        this.currentLadder = 'D1'; // Default to D1
+        this.currentLadder = 'D1';
         this.eloHistoryPagination = { 
             d1: { page: 1, lastVisible: null, firstVisible: null }, 
             d2: { page: 1, lastVisible: null, firstVisible: null },
             d3: { page: 1, lastVisible: null, firstVisible: null }
         };
         this.PAGE_SIZE = 10;
+        
+        // Add caching for ELO history and username resolution
+        this.eloHistoryCache = new Map();
+        this.usernameCache = new Map();
+        this.playerEloCache = new Map();
+        
         this.init();
     }
     
@@ -198,7 +204,7 @@ class ProfileViewer {
             await this.loadPlayerData(username);
             
             // Initialize containers in the correct order - Move elo-history before player-matchups
-            this.createContainers(['rank-history', 'match-stats', 'elo-history', 'player-matchups', 'match-history']);
+            this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
             
             // Get matches - do this once so we don't repeat the same query
             const matches = await this.getPlayerMatches(username);
@@ -208,7 +214,6 @@ class ProfileViewer {
                 this.displayTrophyCase(username),
                 this.displayPromotionHistory(username),
                 this.displayMatchStats(username, matches),
-                this.displayEloHistory(username), // Moved up in the visual order
                 this.displayPlayerMatchups(username, matches),
                 this.displayMatchHistory(username, matches)
             ]);
@@ -792,118 +797,357 @@ displayProfile(data) {
         }
     }
     
+    // Optimized getPlayerEloData with better caching
     async getPlayerEloData(username) {
-        // Update cache key to include ladder
-        const cacheKey = `${username}_${this.currentLadder}`;
+        // Use ladder-specific cache key
+        const cacheKey = `${username}_${this.currentLadder}_elo`;
         
-        if (playerDataCache.has(cacheKey)) {
-            return playerDataCache.get(cacheKey).eloRating || 0;
+        if (this.playerEloCache.has(cacheKey)) {
+            return this.playerEloCache.get(cacheKey);
         }
         
         try {
-            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 
+                                    (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
             const playersRef = collection(db, playersCollection);
-            const q = query(playersRef, where('username', '==', username));
+            const q = query(playersRef, where('username', '==', username), limit(1)); // Add limit for efficiency
             const querySnapshot = await getDocs(q);
             const playerData = querySnapshot.docs[0]?.data() || {};
-            return playerData.eloRating || 0;
+            const eloRating = playerData.eloRating || 0;
+            
+            // Cache the result with TTL
+            this.playerEloCache.set(cacheKey, eloRating);
+            
+            return eloRating;
         } catch (error) {
             console.error(`Error fetching ELO for ${username}:`, error);
             return 0;
         }
     }
     
-    async displayMatchHistory(username, matches) {
-        try {
-            const matchHistoryContainer = containerReferences['match-history'];
-            if (!matchHistoryContainer) return;
-            
-            // Check for non-participant
-            if (this.currentProfileData?.isNonParticipant) {
-                matchHistoryContainer.innerHTML = `
-                    <h2>Match History</h2>
-                    <div class="non-participant-notice">
-                        <p>This player is not participating in the ladder.</p>
-                        <p>No match history is available.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Get all player ELOs at once to avoid multiple queries
-            const uniquePlayers = new Set();
-            matches.forEach(match => {
-                uniquePlayers.add(match.winnerUsername);
-                uniquePlayers.add(match.loserUsername);
-            });
-            
-            const playerElos = {};
-            await Promise.all([...uniquePlayers].map(async (player) => {
-                playerElos[player] = await this.getPlayerEloData(player);
-            }));
-            
-            // Helper function
-            const getEloClass = (elo) => {
-                if (elo >= 2000) return 'elo-emerald';
-                if (elo >= 1800) return 'elo-gold';
-                if (elo >= 1600) return 'elo-silver';
-                if (elo >= 1400) return 'elo-bronze';
-                return 'elo-unranked';
-            };
-            
-            // Build match history HTML
+async displayMatchHistory(username, matches) {
+    try {
+        const matchHistoryContainer = containerReferences['match-history'];
+        if (!matchHistoryContainer) return;
+        
+        // Check for non-participant
+        if (this.currentProfileData?.isNonParticipant) {
             matchHistoryContainer.innerHTML = `
                 <h2>Match History</h2>
-                <table class="match-history-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Winner</th>
-                            <th>Loser</th>
-                            <th>Score</th>
-                            <th>Map</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${matches.length === 0 ? 
-                            '<tr><td colspan="5">No matches found</td></tr>' :
-                            matches.map(match => {
-                                const date = match.createdAt ? 
-                                    new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
-                                    'N/A';
-                                const isWinner = match.winnerUsername === username;
-                                const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
-                                const loserEloClass = getEloClass(playerElos[match.loserUsername]);
-                                
-                                return `
-                                    <tr class="${isWinner ? 'match-won' : 'match-lost'}">
-                                        <td>${date}</td>
-                                        <td>
-                                            <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                                               class="player-link ${winnerEloClass}">
-                                                ${match.winnerUsername}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                                               class="player-link ${loserEloClass}">
-                                                ${match.loserUsername}
-                                            </a>
-                                        </td>
-                                        <td>${match.winnerScore} - ${match.loserScore}</td>
-                                        <td>${match.mapPlayed || 'N/A'}</td>
-                                    </tr>
-                                `;
-                            }).join('')
-                        }
-                    </tbody>
-                </table>
+                <div class="non-participant-notice">
+                    <p>This player is not participating in the ladder.</p>
+                    <p>No match history is available.</p>
+                </div>
             `;
-        } catch (error) {
-            console.error('Error displaying match history:', error);
-            this.showErrorInContainer('match-history', 'Failed to load match history');
+            return;
         }
+        
+        // Get all player ELOs at once to avoid multiple queries
+        const uniquePlayers = new Set();
+        matches.forEach(match => {
+            uniquePlayers.add(match.winnerUsername);
+            uniquePlayers.add(match.loserUsername);
+        });
+        
+        const playerElos = {};
+        await Promise.all([...uniquePlayers].map(async (player) => {
+            playerElos[player] = await this.getPlayerEloData(player);
+        }));
+        
+        // Get ELO history for this player - use the SAME logic as the working ELO history
+        const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
+                                   (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
+        
+        const eloHistoryRef = collection(db, eloHistoryCollection);
+        
+        // Use the same search logic as the working ELO history container
+        const playerId = this.currentProfileData?.userId;
+        const searchTerms = [username];
+        
+        if (playerId) {
+            searchTerms.push(playerId);
+        }
+        
+        let eloHistoryMap = new Map();
+        try {
+            // Get ALL ELO history records for this player to match with games
+            const eloHistoryQuery = query(
+                eloHistoryRef,
+                where('player', 'in', searchTerms),
+                orderBy('timestamp', 'desc'),
+                limit(200) // Increased limit to get more records for better matching
+            );
+            
+            const eloHistorySnapshot = await getDocs(eloHistoryQuery);
+            
+            // Create a map of match IDs to ELO changes AND also by timestamp proximity
+            const eloRecords = [];
+            eloHistorySnapshot.forEach(doc => {
+                const data = doc.data();
+                eloRecords.push({
+                    ...data,
+                    timestamp: data.timestamp ? data.timestamp.seconds : 0,
+                    docId: doc.id
+                });
+                
+                // FALLBACK 1: If there's a matchId, add it to the map
+                if (data.matchId) {
+                    eloHistoryMap.set(data.matchId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        source: 'matchId'
+                    });
+                }
+                
+                // FALLBACK 2: Also try to match by various match ID formats
+                if (data.gameId) {
+                    eloHistoryMap.set(data.gameId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        source: 'gameId'
+                    });
+                }
+            });
+            
+            // FALLBACK 3: Match by timestamp proximity (within 10 minutes)
+            matches.forEach(match => {
+                if (!eloHistoryMap.has(match.id) && match.createdAt) {
+                    const matchTimestamp = match.createdAt.seconds;
+                    
+                    // Find ELO record within 10 minutes of match time (increased from 5)
+                    const closeRecord = eloRecords.find(record => 
+                        Math.abs(record.timestamp - matchTimestamp) < 600 // 10 minutes
+                    );
+                    
+                    if (closeRecord) {
+                        eloHistoryMap.set(match.id, {
+                            previousElo: closeRecord.previousElo,
+                            newElo: closeRecord.newElo,
+                            change: closeRecord.change || (closeRecord.newElo - closeRecord.previousElo),
+                            source: 'timestamp'
+                        });
+                    }
+                }
+            });
+            
+            // FALLBACK 4: Sequential matching - match matches to ELO records in chronological order
+            const unmatchedMatches = matches.filter(match => !eloHistoryMap.has(match.id));
+            const unmatchedRecords = eloRecords.filter(record => 
+                !Array.from(eloHistoryMap.values()).some(mapped => 
+                    mapped.previousElo === record.previousElo && 
+                    mapped.newElo === record.newElo &&
+                    Math.abs(mapped.timestamp - record.timestamp) < 60
+                )
+            ).sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
+            
+            // Try to match unmatched items by order and proximity
+            unmatchedMatches.forEach((match, index) => {
+                if (index < unmatchedRecords.length && !eloHistoryMap.has(match.id)) {
+                    const record = unmatchedRecords[index];
+                    if (match.createdAt && record.timestamp) {
+                        const timeDiff = Math.abs(match.createdAt.seconds - record.timestamp);
+                        // If within 30 minutes, consider it a match
+                        if (timeDiff < 1800) {
+                            eloHistoryMap.set(match.id, {
+                                previousElo: record.previousElo,
+                                newElo: record.newElo,
+                                change: record.change || (record.newElo - record.previousElo),
+                                source: 'sequential'
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // FALLBACK 5: Score-based matching for remaining unmatched items
+            const stillUnmatched = matches.filter(match => !eloHistoryMap.has(match.id));
+            const stillUnmatchedRecords = eloRecords.filter(record => 
+                !Array.from(eloHistoryMap.values()).some(mapped => 
+                    mapped.previousElo === record.previousElo && 
+                    mapped.newElo === record.newElo
+                )
+            );
+            
+            stillUnmatched.forEach(match => {
+                if (eloHistoryMap.has(match.id)) return;
+                
+                const isWin = match.winnerUsername === username;
+                const expectedChange = isWin ? 'positive' : 'negative';
+                
+                // Find ELO record that matches the expected outcome
+                const matchingRecord = stillUnmatchedRecords.find(record => {
+                    const actualChange = record.newElo - record.previousElo;
+                    const matchesExpectation = (expectedChange === 'positive' && actualChange > 0) || 
+                                             (expectedChange === 'negative' && actualChange < 0);
+                    
+                    // Also check if timestamp is reasonably close (within 24 hours)
+                    const timeDiff = match.createdAt ? 
+                        Math.abs(match.createdAt.seconds - record.timestamp) : Infinity;
+                    
+                    return matchesExpectation && timeDiff < 86400; // 24 hours
+                });
+                
+                if (matchingRecord) {
+                    eloHistoryMap.set(match.id, {
+                        previousElo: matchingRecord.previousElo,
+                        newElo: matchingRecord.newElo,
+                        change: matchingRecord.change || (matchingRecord.newElo - matchingRecord.previousElo),
+                        source: 'outcome'
+                    });
+                    
+                    // Remove from unmatchedRecords to avoid duplicate matching
+                    const recordIndex = stillUnmatchedRecords.indexOf(matchingRecord);
+                    if (recordIndex > -1) {
+                        stillUnmatchedRecords.splice(recordIndex, 1);
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.warn('Could not load ELO history for match details:', error);
+        }
+        
+        // Helper function
+        const getEloClass = (elo) => {
+            if (elo >= 2000) return 'elo-emerald';
+            if (elo >= 1800) return 'elo-gold';
+            if (elo >= 1600) return 'elo-silver';
+            if (elo >= 1400) return 'elo-bronze';
+            return 'elo-unranked';
+        };
+        
+        // Build match history HTML with ELO changes
+        matchHistoryContainer.innerHTML = `
+            <h2>Match History</h2>
+            <table class="match-history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Winner</th>
+                        <th>Loser</th>
+                        <th>Score</th>
+                        <th>Map</th>
+                        <th>ELO Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${matches.length === 0 ? 
+                        '<tr><td colspan="6">No matches found</td></tr>' :
+                        matches.map(match => {
+                            const date = match.createdAt ? 
+                                new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
+                                'N/A';
+                            const isWinner = match.winnerUsername === username;
+                            const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
+                            const loserEloClass = getEloClass(playerElos[match.loserUsername]);
+                            
+                            // Get ELO change data for this match
+                            const eloData = eloHistoryMap.get(match.id);
+                            let eloChangeDisplay = 'N/A';
+                            
+                            if (eloData && eloData.previousElo !== undefined && eloData.newElo !== undefined) {
+                                const change = eloData.change;
+                                const changeClass = change > 0 ? 'elo-change-positive' : 
+                                                  change < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+                                const changeSign = change > 0 ? '+' : '';
+                                eloChangeDisplay = `
+                                    <span class="${changeClass}" title="Matched via: ${eloData.source}">
+                                        ${eloData.previousElo} → ${eloData.newElo} (${changeSign}${change})
+                                    </span>
+                                `;
+                            } else {
+                                // FALLBACK 6: Estimate ELO change based on typical patterns
+                                const isWin = match.winnerUsername === username;
+                                const currentElo = playerElos[username] || 1500;
+                                const opponentName = isWin ? match.loserUsername : match.winnerUsername;
+                                const opponentElo = playerElos[opponentName] || 1500;
+                                
+                                // Simple ELO estimation (K-factor of 32)
+                                const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
+                                const actualScore = isWin ? 1 : 0;
+                                const estimatedChange = Math.round(32 * (actualScore - expectedScore));
+                                
+                                if (Math.abs(estimatedChange) > 0) {
+                                    const changeClass = estimatedChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
+                                    const changeSign = estimatedChange > 0 ? '+' : '';
+                                    eloChangeDisplay = `
+                                        <span class="${changeClass} estimated-change" title="Estimated change">
+                                            ~${changeSign}${estimatedChange} (est.)
+                                        </span>
+                                    `;
+                                } else {
+                                    // Final fallback - show win/loss indicator
+                                    const resultClass = isWin ? 'elo-change-positive' : 'elo-change-negative';
+                                    const resultText = isWin ? 'WIN' : 'LOSS';
+                                    eloChangeDisplay = `
+                                        <span class="${resultClass}">
+                                            ${resultText}
+                                        </span>
+                                    `;
+                                }
+                            }
+                            
+                            return `
+                                <tr class="${isWinner ? 'match-won' : 'match-lost'}">
+                                    <td>${date}</td>
+                                    <td>
+                                        <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
+                                           class="player-link ${winnerEloClass}">
+                                            ${match.winnerUsername}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
+                                           class="player-link ${loserEloClass}">
+                                            ${match.loserUsername}
+                                        </a>
+                                    </td>
+                                    <td>${match.winnerScore} - ${match.loserScore}</td>
+                                    <td>${match.mapPlayed || 'N/A'}</td>
+                                    <td>${eloChangeDisplay}</td>
+                                </tr>
+                            `;
+                        }).join('')
+                    }
+                </tbody>
+            </table>
+        `;
+        
+        // Add CSS for ELO change styling if not already present
+        if (!document.getElementById('elo-change-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'elo-change-styles';
+            styleEl.textContent = `
+                .elo-change-positive {
+                    color: #4CAF50;
+                    font-weight: bold;
+                }
+                .elo-change-negative {
+                    color: #F44336;
+                    font-weight: bold;
+                }
+                .elo-change-neutral {
+                    color: #888;
+                }
+                .estimated-change {
+                    opacity: 0.8;
+                    font-style: italic;
+                }
+                .match-history-table th:last-child,
+                .match-history-table td:last-child {
+                    text-align: center;
+                    min-width: 120px;
+                }
+            `;
+            document.head.appendChild(styleEl);
+        }
+    } catch (error) {
+        console.error('Error displaying match history:', error);
+        this.showErrorInContainer('match-history', 'Failed to load match history');
     }
+}
     
     async displayMatchStats(username, matches) {
         try {
@@ -1543,9 +1787,6 @@ displayProfile(data) {
                 'motto-edit': this.currentProfileData.motto || '',
                 'favorite-map-edit': this.currentProfileData.favoriteMap || '',
                 'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
-                'favorite-subgame-edit': this.currentProfileData.favoriteSubgame || '',
-                'timezone-edit': this.currentProfileData.timezone || '',
-                'division-edit': this.currentProfileData.division || '',
                 'home-level-1': this.currentProfileData.homeLevel1 || '',
                 'home-level-2': this.currentProfileData.homeLevel2 || '',
                 'home-level-3': this.currentProfileData.homeLevel3 || '',
@@ -1599,7 +1840,6 @@ async handleSubmit(event) {
             motto,
             favoriteMap,
             favoriteWeapon,
-            favoriteSubgame: document.getElementById('favorite-subgame-edit').value.trim(),
             homeLevel1,
             homeLevel2,
             homeLevel3,
@@ -1876,312 +2116,6 @@ setupEditProfile() {
             }
         }
     }
-
-    // Update the displayEloHistory method to display the 5 most recent entries from eloHistory collections
-async displayEloHistory(username) {
-    try {
-        // Get the container reference
-        const eloHistoryContainer = containerReferences['elo-history'];
-        if (!eloHistoryContainer) return;
-        
-        // Get season information
-        const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
-        const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
-        
-        // Check for non-participant
-        if (this.currentProfileData?.isNonParticipant) {
-            eloHistoryContainer.innerHTML = `
-                <div class="season-label">S${currentSeason}</div>
-                <h2>ELO History</h2>
-                <div class="non-participant-notice">
-                    <p>This player is not participating in the ladder.</p>
-                    <p>No ELO history is available.</p>
-                </div>
-            `;
-            return;
-        }
-        
-        // Create initial structure with a more compact layout
-        eloHistoryContainer.innerHTML = `
-            <div class="season-label">S${currentSeason}</div>
-            <h2>ELO History</h2>
-            <div class="elo-history-content">
-                <div class="elo-history-table-container">
-                    <table class="elo-history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Change</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Type</th>
-                            </tr>
-                        </thead>
-                        <tbody id="elo-history-table-body">
-                            <tr><td colspan="5" class="loading-cell">Loading ELO history...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-        
-        // Initial load of ELO history
-        await this.loadEloHistory(username);
-        
-    } catch (error) {
-        console.error('Error setting up ELO history:', error);
-        this.showErrorInContainer('elo-history', 'Failed to load ELO history');
-    }
-}
-
-// Update loadEloHistory to use a single query per ladder (updated)
-async loadEloHistory(username) {
-    const tableBody = document.getElementById('elo-history-table-body');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading ELO history...</td></tr>';
-    
-    try {
-        // First get the player ID from the current profile data
-        const playerId = this.currentProfileData?.userId;
-        
-        if (!playerId) {
-            console.log(`No player ID found for ${username}, using username directly`);
-        }
-                
-        // Collection name based on ladder
-        const eloHistoryCollection = 
-            this.currentLadder === 'D1' ? 'eloHistory' : 
-            this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
-        
-        const eloHistoryRef = collection(db, eloHistoryCollection);
-        
-        // Use a single composite query with OR condition (in operator)
-        let querySnapshot;
-        
-        // Build search terms array with all possible identifier fields
-        const searchTerms = [username]; // Always include username
-        
-        if (playerId) {
-            searchTerms.push(playerId); // Include user ID if available
-        }
-        
-        // Make a single query using 'in' operator on the 'player' field
-        // This field is the most commonly used identifier across your database
-        querySnapshot = await getDocs(query(
-            eloHistoryRef,
-            where('player', 'in', searchTerms),
-            orderBy('timestamp', 'desc'),
-            limit(30) // Limit to reasonable number to avoid excessive reads
-        ));
-                
-        // If no results from the main query, we don't need to query again
-        if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No ELO history found</td></tr>';
-            return;
-        }
-        
-        // Process the results - all docs from the query
-        const allRecords = querySnapshot.docs.map(doc => doc.data());
-        
-        // Log types of entries found
-        const typeCounts = {};
-        allRecords.forEach(record => {
-            const type = record.type || 'unknown';
-            typeCounts[type] = (typeCounts[type] || 0) + 1;
-        });        
-        // Split into initial (5 most recent) and additional entries (older ones)
-        const initialEntries = allRecords.slice(0, 5);
-        const additionalEntries = allRecords.slice(5);
-        const hasMoreEntries = additionalEntries.length > 0;
-                
-        // Create cache for username lookups to avoid repeated queries
-        const usernameCache = new Map();
-        
-        // Function to resolve usernames from IDs
-        const resolveUsername = async (userId) => {
-            if (typeof userId !== 'string' || !userId || userId.length < 2) {
-                return 'Unknown';
-            }
-            
-            if (usernameCache.has(userId)) {
-                return usernameCache.get(userId);
-            }
-            
-            try {
-                // Use a direct query to users collection for efficiency
-                const userDoc = await getDoc(doc(db, 'users', userId));
-                if (userDoc.exists()) {
-                    const username = userDoc.data().username || userDoc.data().displayName;
-                    if (username) {
-                        usernameCache.set(userId, username);
-                        return username;
-                    }
-                }
-                
-                // If not in users, check players collection
-                const playerDoc = await getDoc(doc(db, this.currentLadder === 'D1' ? 'players' : 
-                    (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3'), userId));
-                    
-                if (playerDoc.exists()) {
-                    const username = playerDoc.data().username;
-                    if (username) {
-                        usernameCache.set(userId, username);
-                        return username;
-                    }
-                }
-                
-                // If we can't resolve it, just return the ID
-                return userId;
-            } catch (error) {
-                console.warn(`Error resolving username for ${userId}:`, error);
-                return userId;
-            }
-        };
-        
-        // Helper function to format history type
-        const formatHistoryType = (type) => {
-            if (!type) return 'Match';
-            
-            // Format the type for display
-            switch (type.toLowerCase()) {
-                case 'match':
-                case 'match_win':
-                case 'match_loss':
-                case 'match_result': return 'Match';
-                case 'admin_modification': return 'Admin';
-                case 'initial_placement': return 'Initial';
-                case 'promotion': return 'Promotion';
-                case 'demotion': return 'Demotion';
-                default: return type.charAt(0).toUpperCase() + type.slice(1);
-            }
-        };
-        
-        // Process initial entries (5 most recent)
-        const initialRowsHTML = await Promise.all(initialEntries.map(async (record) => {
-            // Format timestamp - more compact date format
-            const timestamp = record.timestamp ? 
-                new Date(record.timestamp.seconds * 1000).toLocaleDateString(undefined, {
-                    month: 'short', 
-                    day: 'numeric'
-                }) : 'N/A';
-            
-            // Calculate ELO change and style it
-            const eloChange = record.newElo - record.previousElo;
-            const changeClass = eloChange > 0 ? 'elo-change-positive' : 
-                              eloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
-            const changeDisplay = eloChange > 0 ? `+${eloChange}` : eloChange.toString();
-            
-            // Format type and get opponent
-            const typeDisplay = formatHistoryType(record.type);
-            let opponentDisplay = '';
-            
-            // Check both opponentId and opponent fields for backwards compatibility
-            const opponentId = record.opponentId || record.opponent;
-            
-            if (opponentId) {
-                const opponentName = await resolveUsername(opponentId);
-                if (opponentName) {
-                    opponentDisplay = ` vs. ${opponentName}`;
-                }
-            }
-            
-            return `
-                <tr>
-                    <td>${timestamp}</td>
-                    <td class="${changeClass}">${changeDisplay}</td>
-                    <td>${record.previousElo}</td>
-                    <td>${record.newElo}</td>
-                    <td><span class="elo-event event-${record.type || 'match'}">${typeDisplay}${opponentDisplay}</span></td>
-                </tr>
-            `;
-        }));
-        
-        // Add initial entries and "Show More" button if needed
-        tableBody.innerHTML = initialRowsHTML.join('');
-        
-        // Add Show More button if there are additional entries
-        if (hasMoreEntries) {
-            const showMoreRow = document.createElement('tr');
-            showMoreRow.id = 'show-more-elo-row';
-            showMoreRow.className = 'show-more-row';
-            showMoreRow.innerHTML = `
-                <td colspan="5" class="show-more-cell">
-                    <button id="show-more-elo-btn" class="show-more-btn">
-                        Show More (${additionalEntries.length})
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(showMoreRow);
-            
-            // Add click handler for "Show More" button
-            const showMoreBtn = document.getElementById('show-more-elo-btn');
-            if (showMoreBtn) {
-                showMoreBtn.addEventListener('click', async () => {
-                    showMoreBtn.textContent = 'Loading...';
-                    showMoreBtn.disabled = true;
-                    
-                    try {
-                        // Process and render additional entries
-                        const additionalRowsHTML = await Promise.all(additionalEntries.map(async (record) => {
-                            const timestamp = record.timestamp ? 
-                                new Date(record.timestamp.seconds * 1000).toLocaleDateString(undefined, {
-                                    month: 'short', 
-                                    day: 'numeric'
-                                }) : 'N/A';
-                            
-                            const eloChange = record.newElo - record.previousElo;
-                            const changeClass = eloChange > 0 ? 'elo-change-positive' : 
-                                              eloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
-                            const changeDisplay = eloChange > 0 ? `+${eloChange}` : eloChange.toString();
-                            
-                            const typeDisplay = formatHistoryType(record.type);
-                            let opponentDisplay = '';
-                            
-                            const opponentId = record.opponentId || record.opponent;
-                            
-                            if (opponentId) {
-                                const opponentName = await resolveUsername(opponentId);
-                                if (opponentName) {
-                                    opponentDisplay = ` vs. ${opponentName}`;
-                                }
-                            }
-                            
-                            return `
-                                <tr>
-                                    <td>${timestamp}</td>
-                                    <td class="${changeClass}">${changeDisplay}</td>
-                                    <td>${record.previousElo}</td>
-                                    <td>${record.newElo}</td>
-                                    <td><span class="elo-event event-${record.type || 'match'}">${typeDisplay}${opponentDisplay}</span></td>
-                                </tr>
-                            `;
-                        }));
-                        
-                        // Replace "Show More" row with additional entries
-                        showMoreRow.remove();
-                        tableBody.insertAdjacentHTML('beforeend', additionalRowsHTML.join(''));
-                    } catch (error) {
-                        console.error('Error loading additional entries:', error);
-                        showMoreBtn.textContent = `Show More (${additionalEntries.length})`;
-                        showMoreBtn.disabled = false;
-                    }
-                });
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error loading ELO history:', error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="error-state">
-                    Error loading ELO history: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-
 }
 
 // Also update the preview function
