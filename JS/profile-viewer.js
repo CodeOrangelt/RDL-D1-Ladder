@@ -710,6 +710,7 @@ displayProfile(data) {
         'motto-view': data.motto || 'No motto set',
         'favorite-map-view': data.favoriteMap || 'Not set',
         'favorite-weapon-view': data.favoriteWeapon || 'Not set',
+        'favorite-subgame-view': data.favoriteSubgame || 'Not set', 
         'timezone-view': data.timezone || 'Not set',
         'division-view': data.division || 'Not set',
         'home-levels-view': homeLevelsDisplay,
@@ -1787,6 +1788,7 @@ async displayMatchHistory(username, matches) {
                 'motto-edit': this.currentProfileData.motto || '',
                 'favorite-map-edit': this.currentProfileData.favoriteMap || '',
                 'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
+                'favorite-subgame-edit': this.currentProfileData.favoriteSubgame || '',
                 'home-level-1': this.currentProfileData.homeLevel1 || '',
                 'home-level-2': this.currentProfileData.homeLevel2 || '',
                 'home-level-3': this.currentProfileData.homeLevel3 || '',
@@ -1825,6 +1827,7 @@ async handleSubmit(event) {
         const motto = document.getElementById('motto-edit').value.trim();
         const favoriteMap = document.getElementById('favorite-map-edit').value.trim();
         const favoriteWeapon = document.getElementById('favorite-weapon-edit').value.trim();
+        const favoriteSubgame = document.getElementById('favorite-subgame-edit').value.trim(); 
         const homeLevel1 = document.getElementById('home-level-1').value.trim();
         const homeLevel2 = document.getElementById('home-level-2').value.trim();
         const homeLevel3 = document.getElementById('home-level-3').value.trim();
@@ -1840,6 +1843,7 @@ async handleSubmit(event) {
             motto,
             favoriteMap,
             favoriteWeapon,
+            favoriteSubgame,
             homeLevel1,
             homeLevel2,
             homeLevel3,

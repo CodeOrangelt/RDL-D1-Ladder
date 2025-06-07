@@ -789,7 +789,8 @@ function getSubgameClass(subgameType) {
         'Rematch': 'rematch',
         'Disorientation': 'disorientation',
         'Ratting': 'ratting',
-        'Altered Powerups': 'altered-power-ups'
+        'Altered Powerups': 'altered-power-ups',
+        'Mega Match': 'mega-match' 
     };
     
     return subgameClassMap[subgameType] || '';
