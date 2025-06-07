@@ -537,7 +537,7 @@ function setupDataLoadButtons(allowedTabs = []) {
         }
     }
 
-        // Matches load button
+     // Matches load button and create test match button
     if (allowedTabs.includes('manage-matches')) {
         const loadMatchesBtn = document.getElementById('load-matches-data');
         if (loadMatchesBtn) {
@@ -561,6 +561,10 @@ function setupDataLoadButtons(allowedTabs = []) {
                     });
             });
         }
+        
+        // IMPORTANT: Set up the create test match button here too
+        setupCreateTestMatchButton();
+        setupCreateTestMatchModal();
     }
 
     
@@ -4168,6 +4172,82 @@ async function confirmDeleteHighlight(highlightId) {
     }
 }
 
+function setupCreateTestMatchModal() {
+    console.log('Setting up create test match modal events');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    const form = document.getElementById('create-test-match-form');
+    
+    if (!modal) {
+        console.error('Create test match modal not found in DOM');
+        return;
+    }
+    
+    if (!form) {
+        console.error('Create test match form not found in DOM');
+        return;
+    }
+    
+    // Remove any existing event listeners by cloning elements
+    const newModal = modal.cloneNode(true);
+    modal.parentNode.replaceChild(newModal, modal);
+    
+    const newForm = newModal.querySelector('#create-test-match-form');
+    
+    // Modal background click to close
+    newModal.addEventListener('click', function(e) {
+        if (e.target === newModal) {
+            console.log('Modal background clicked');
+            closeCreateTestMatchModal();
+        }
+    });
+    
+    // Close button
+    const closeBtn = newModal.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Modal close button clicked');
+            closeCreateTestMatchModal();
+        });
+    }
+    
+    // Cancel button
+    const cancelBtn = newModal.querySelector('#cancel-create-test-match-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Modal cancel button clicked');
+            closeCreateTestMatchModal();
+        });
+    }
+    
+    // Form submission
+    if (newForm) {
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Create test match form submitted');
+            createTestMatch();
+        });
+        
+        // Also handle button click directly if form submit doesn't work
+        const submitBtn = newForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Submit button clicked directly');
+                createTestMatch();
+            });
+        }
+    }
+    
+    console.log('Create test match modal setup complete');
+}
+
 function setupManageHighlightsSection() {
     console.log('Setting up Manage Highlights section');
     
@@ -4218,24 +4298,38 @@ function setupManageHighlightsSection() {
     console.log('Manage Highlights section initialized');
 }
 
-// Setup Manage Matches section
 function setupManageMatchesSection() {
     console.log('Setting up Manage Matches section');
     
     // Pagination buttons
-    document.getElementById('matches-prev-page').addEventListener('click', () => {
-        const ladderPrefix = currentLadder.toLowerCase();
-        loadMatchesData(matchesPagination[ladderPrefix].page - 1);
-    });
+    const prevBtn = document.getElementById('matches-prev-page');
+    const nextBtn = document.getElementById('matches-next-page');
     
-    document.getElementById('matches-next-page').addEventListener('click', () => {
-        const ladderPrefix = currentLadder.toLowerCase();
-        loadMatchesData(matchesPagination[ladderPrefix].page + 1);
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const ladderPrefix = currentLadder.toLowerCase();
+            loadMatchesData(matchesPagination[ladderPrefix].page - 1);
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const ladderPrefix = currentLadder.toLowerCase();
+            loadMatchesData(matchesPagination[ladderPrefix].page + 1);
+        });
+    }
     
     // Filter buttons
-    document.getElementById('apply-matches-filters').addEventListener('click', applyMatchesFilters);
-    document.getElementById('reset-matches-filters').addEventListener('click', resetMatchesFilters);
+    const applyFiltersBtn = document.getElementById('apply-matches-filters');
+    const resetFiltersBtn = document.getElementById('reset-matches-filters');
+    
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', applyMatchesFilters);
+    }
+    
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetMatchesFilters);
+    }
     
     // Search functionality
     const matchesSearch = document.getElementById('matches-search');
@@ -4243,55 +4337,206 @@ function setupManageMatchesSection() {
         matchesSearch.addEventListener('input', debounce(filterMatchesTable, 300));
     }
     
-    // Edit match modal events
-    const editMatchModal = document.getElementById('edit-match-modal');
-    const editMatchForm = document.getElementById('edit-match-form');
+    // FIXED: Create test match button setup
+    setupCreateTestMatchButton();
     
-    if (editMatchModal) {
-        // Close modal when clicking outside or on close button
-        editMatchModal.addEventListener('click', (e) => {
-            if (e.target === editMatchModal) {
-                closeEditMatchModal();
-            }
-        });
-        
-        const closeBtn = editMatchModal.querySelector('.close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeEditMatchModal);
-        }
-    }
-    
-    if (editMatchForm) {
-        // Handle form submission
-        editMatchForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await saveEditedMatch();
-        });
-        
-        // Cancel button
-        document.getElementById('cancel-edit-match-btn').addEventListener('click', closeEditMatchModal);
-    }
-    
-    // Delete confirmation modal events
-    const deleteMatchModal = document.getElementById('delete-match-confirm-modal');
-    
-    if (deleteMatchModal) {
-        // Close modal when clicking outside
-        deleteMatchModal.addEventListener('click', (e) => {
-            if (e.target === deleteMatchModal) {
-                closeDeleteMatchModal();
-            }
-        });
-        
-        // Cancel deletion
-        document.getElementById('cancel-delete-match-btn').addEventListener('click', closeDeleteMatchModal);
-        
-        // Confirm deletion
-        document.getElementById('confirm-delete-match-btn').addEventListener('click', confirmDeleteMatch);
-    }
+    // FIXED: Set up modal event handlers
+    setupCreateTestMatchModal();
     
     console.log('Manage Matches section initialized');
 }
+
+
+// Open create test match modal
+function openCreateTestMatchModal() {
+    console.log('Opening create test match modal');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    const form = document.getElementById('create-test-match-form');
+    
+    if (!modal) {
+        console.error('Create test match modal not found');
+        showNotification('Create test match modal not found', 'error');
+        return;
+    }
+    
+    if (!form) {
+        console.error('Create test match form not found');
+        showNotification('Create test match form not found', 'error');
+        return;
+    }
+    
+    // Reset form
+    form.reset();
+    
+    // Set default ladder to current ladder
+    const ladderRadios = document.querySelectorAll('input[name="test-match-ladder"]');
+    let radioFound = false;
+    
+    ladderRadios.forEach(radio => {
+        console.log('Found radio with value:', radio.value);
+        if (radio.value === currentLadder) {
+            radio.checked = true;
+            radioFound = true;
+            console.log('Set default ladder to:', currentLadder);
+        }
+    });
+    
+    if (!radioFound) {
+        console.warn('No radio button found for current ladder:', currentLadder);
+        // Default to D1 if no match found
+        const defaultRadio = document.querySelector('input[name="test-match-ladder"][value="D1"]');
+        if (defaultRadio) {
+            defaultRadio.checked = true;
+            console.log('Defaulted to D1 ladder');
+        }
+    }
+    
+    // Set default date to today
+    const dateInput = document.getElementById('test-match-date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+    
+    // Show modal with proper display and visibility
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active');
+    
+    console.log('Modal should now be visible');
+    
+    // Focus on first input
+    const firstInput = document.getElementById('test-match-winner-username');
+    if (firstInput) {
+        setTimeout(() => {
+            firstInput.focus();
+        }, 100);
+    }
+}
+
+function closeCreateTestMatchModal() {
+    console.log('Closing create test match modal');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    if (!modal) {
+        console.error('Modal not found when trying to close');
+        return;
+    }
+    
+    // Remove active class and hide modal
+    modal.classList.remove('active');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    
+    // Use CSS transition, then hide completely
+    setTimeout(() => {
+        if (!modal.classList.contains('active')) {
+            modal.style.display = 'none';
+        }
+    }, 300);
+    
+    console.log('Modal closed');
+}
+
+// Create test match
+async function createTestMatch() {
+    console.log('Creating test match without player validation...');
+    
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in', 'error');
+            return;
+        }
+        
+        const selectedLadder = 'D1'; // Default for testing
+        const matchesCollection = 'approvedMatches';
+        
+        const matchData = {
+            winnerUsername: 'TestWinner',
+            winnerScore: 20,
+            winnerSuicides: 0,
+            winnerComment: 'Test match',
+            winnerDemoLink: null,
+            loserUsername: 'TestLoser',
+            loserScore: 15,
+            loserSuicides: 0,
+            loserComment: 'Test match',
+            loserDemoLink: null,
+            mapPlayed: 'TestMap',
+            approvedAt: Timestamp.fromDate(new Date()),
+            approvedBy: user.email,
+            createdAt: serverTimestamp(),
+            createdBy: user.email,
+            isTestMatch: true,
+            ladder: selectedLadder,
+            testMatchCreatedAt: serverTimestamp(),
+            testMatchNote: `Simple test match created by admin ${user.email}`
+        };
+        
+        console.log('Adding simple test match...');
+        await addDoc(collection(db, matchesCollection), matchData);
+        
+        showNotification('Simple test match created successfully', 'success');
+        closeCreateTestMatchModal();
+        
+    } catch (error) {
+        console.error('Error creating simple test match:', error);
+        showNotification(`Failed to create simple test match: ${error.message}`, 'error');
+    }
+}
+
+// Add this to your browser console to test Firebase connection
+window.testFirebaseConnection = async function() {
+    try {
+        console.log('Testing Firebase connection...');
+        console.log('Auth:', auth);
+        console.log('DB:', db);
+        console.log('Current user:', auth.currentUser);
+        
+        // Try a simple query
+        const testRef = collection(db, 'players');
+        console.log('Collection reference created:', testRef);
+        
+        const testQuery = query(testRef, where('username', '==', 'nonexistent'));
+        console.log('Query created:', testQuery);
+        
+        const snapshot = await getDocs(testQuery);
+        console.log('Query executed. Empty:', snapshot.empty);
+        console.log('Firebase connection test successful!');
+        
+    } catch (error) {
+        console.error('Firebase connection test failed:', error);
+    }
+};
+
+function setupCreateTestMatchButton() {
+    const createTestMatchBtn = document.getElementById('create-test-match-btn');
+    if (!createTestMatchBtn) {
+        console.error('Create test match button not found in DOM');
+        return;
+    }
+    
+    console.log('Setting up create test match button');
+    
+    // Remove any existing event listeners by cloning the element
+    const newBtn = createTestMatchBtn.cloneNode(true);
+    createTestMatchBtn.parentNode.replaceChild(newBtn, createTestMatchBtn);
+    
+    // Add fresh event listener
+    newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Create test match button clicked');
+        openCreateTestMatchModal();
+    });
+    
+    console.log('Create test match button setup complete');
+}
+
+
 
 // Load matches data with pagination
 async function loadMatchesData(page = 1) {
@@ -4366,11 +4611,13 @@ async function loadMatchesData(page = 1) {
         }
         
         // Enable/disable pagination buttons
-        document.getElementById('matches-prev-page').disabled = pagination.page <= 1;
-        document.getElementById('matches-next-page').disabled = !hasNextPage;
+        const prevBtn = document.getElementById('matches-prev-page');
+        const nextBtn = document.getElementById('matches-next-page');
+        const pageIndicator = document.getElementById('matches-page-indicator');
         
-        // Update page indicator
-        document.getElementById('matches-page-indicator').textContent = `Page ${pagination.page}`;
+        if (prevBtn) prevBtn.disabled = pagination.page <= 1;
+        if (nextBtn) nextBtn.disabled = !hasNextPage;
+        if (pageIndicator) pageIndicator.textContent = `Page ${pagination.page}`;
         
         if (querySnapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found</td></tr>';
@@ -4387,21 +4634,25 @@ async function loadMatchesData(page = 1) {
             const dateStr = match.approvedAt ? 
                 new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
             
+            // IMPORTANT: Set data attributes for the action buttons
             row.setAttribute('data-id', doc.id);
             row.setAttribute('data-ladder', currentLadder);
             
+            // Add a class to identify match rows
+            row.classList.add('match-row');
+            
             row.innerHTML = `
                 <td>${dateStr}</td>
-                <td>${match.winnerUsername || 'Unknown'}</td>
-                <td>${match.loserUsername || 'Unknown'}</td>
-                <td>${match.winnerScore || 0} - ${match.loserScore || 0}</td>
-                <td>${match.mapPlayed || 'N/A'}</td>
-                <td>${currentLadder}</td>
+                <td class="winner-cell">${match.winnerUsername || 'Unknown'}</td>
+                <td class="loser-cell">${match.loserUsername || 'Unknown'}</td>
+                <td class="score-cell">${match.winnerScore || 0} - ${match.loserScore || 0}</td>
+                <td class="map-cell">${match.mapPlayed || 'N/A'}</td>
+                <td class="ladder-cell">${currentLadder}</td>
                 <td class="actions">
-                    <button class="edit-match-btn" data-id="${doc.id}" title="Edit Match">
+                    <button class="edit-match-btn btn-small" data-id="${doc.id}" title="Edit Match">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
-                    <button class="delete-match-btn" data-id="${doc.id}" title="Delete Match">
+                    <button class="delete-match-btn btn-small btn-danger" data-id="${doc.id}" title="Delete Match">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
@@ -4410,13 +4661,15 @@ async function loadMatchesData(page = 1) {
             tableBody.appendChild(row);
         });
         
-        // Add event listeners to action buttons
+        // IMPORTANT: Set up action buttons AFTER adding all rows
         setupMatchesActionButtons();
         
         // Apply search filter if there's a term
         if (filters.searchTerm) {
             filterMatchesTable();
         }
+        
+        console.log(`Loaded ${querySnapshot.size} matches for ${currentLadder} ladder, page ${pagination.page}`);
         
     } catch (error) {
         console.error('Error loading matches:', error);
@@ -4430,27 +4683,78 @@ async function loadMatchesData(page = 1) {
     }
 }
 
+async function deleteMatch(matchId, ladder) {
+    try {
+        console.log(`Deleting match ${matchId} from ${ladder} ladder`);
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to delete matches', 'error');
+            return;
+        }
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        console.log(`Using collection: ${matchesCollection}`);
+        
+        // Show loading notification
+        showNotification('Deleting match...', 'info');
+        
+        // Delete the match
+        await deleteDoc(doc(db, matchesCollection, matchId));
+        
+        console.log('Match deleted successfully');
+        showNotification('Match deleted successfully', 'success');
+        
+        // Reload matches table
+        const ladderPrefix = ladder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page);
+        
+    } catch (error) {
+        console.error('Error deleting match:', error);
+        showNotification(`Failed to delete match: ${error.message}`, 'error');
+    }
+}
+
 // Setup action buttons for matches table
 function setupMatchesActionButtons() {
+    console.log('Setting up matches action buttons...');
+    
     // Edit buttons
     document.querySelectorAll('.edit-match-btn').forEach(button => {
         button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const matchId = e.currentTarget.dataset.id;
             const row = e.currentTarget.closest('tr');
             const ladder = row.dataset.ladder;
+            console.log('Edit match clicked:', matchId, ladder);
             openEditMatchModal(matchId, ladder);
         });
     });
     
-    // Delete buttons
+    // Delete buttons - FIXED
     document.querySelectorAll('.delete-match-btn').forEach(button => {
         button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const matchId = e.currentTarget.dataset.id;
             const row = e.currentTarget.closest('tr');
-            const ladder = row.dataset.ladder;
-            openDeleteMatchModal(matchId, ladder);
+            const ladder = row.dataset.ladder || currentLadder; // Fallback to currentLadder
+            console.log('Delete match clicked:', matchId, ladder);
+            
+            // For now, use a simple confirm dialog instead of modal
+            if (confirm('Are you sure you want to delete this match? This action cannot be undone.')) {
+                deleteMatch(matchId, ladder);
+            }
         });
     });
+    
+    console.log('Matches action buttons setup complete');
 }
 
 // Filter matches table based on search term
