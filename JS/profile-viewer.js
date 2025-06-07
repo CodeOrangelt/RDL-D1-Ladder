@@ -144,39 +144,42 @@ class ProfileViewer {
     }
     
     async switchLadder(ladder) {
-        // If it's already the current ladder, do nothing
-        if (this.currentLadder === ladder) return;
+    // If it's already the current ladder, do nothing
+    if (this.currentLadder === ladder) return;
+    
+    // Set the new ladder
+    this.currentLadder = ladder;
+    
+    // Update active classes on ladder buttons
+    document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
         
-        // Set the new ladder
-        this.currentLadder = ladder;
-        
-        // Update active classes on ladder buttons
-        document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
-            if (btn.dataset.ladder === ladder) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-        
-        // Clear existing stats - important to prevent duplication
-        document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
-        
-        // Show loading state
-        this.showLoadingState();
-        
-        // Get the current username from the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const username = urlParams.get('username');
-        
-        if (username) {
-            // Load the user's profile for the selected ladder
-            await this.loadPlayerData(username);
-        } else {
-            // If no username provided, show an error
-            this.showErrorState('No username provided');
+        // Check button ID to determine which ladder it represents
+        if ((btn.id === 'profile-d1-toggle' && ladder === 'D1') ||
+            (btn.id === 'profile-d2-toggle' && ladder === 'D2') ||
+            (btn.id === 'profile-d3-toggle' && ladder === 'D3')) {
+            btn.classList.add('active');
         }
+    });
+    
+    // Clear existing stats - important to prevent duplication
+    document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
+    
+    // Get the current username from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    
+    if (username) {
+        // Clear the cache for this username to force fresh data
+        const cacheKey = `${username}_${ladder}`;
+        playerDataCache.delete(cacheKey);
+        
+        // Load the user's profile for the selected ladder - use loadProfile, not loadPlayerData
+        await this.loadProfile(username);
+    } else {
+        this.showError('No username provided');
     }
+}
     
     async loadProfile(username) {
         try {
@@ -702,7 +705,6 @@ displayProfile(data) {
         'motto-view': data.motto || 'No motto set',
         'favorite-map-view': data.favoriteMap || 'Not set',
         'favorite-weapon-view': data.favoriteWeapon || 'Not set',
-        'favorite-subgame-view': data.favoriteSubgame || 'Not set',
         'timezone-view': data.timezone || 'Not set',
         'division-view': data.division || 'Not set',
         'home-levels-view': homeLevelsDisplay,
