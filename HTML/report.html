@@ -107,6 +107,27 @@
             
             <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
             
+            <!-- Pending Invitations Section -->
+            <div id="pending-invitations-section" style="display: none;">
+                <div class="pending-invitations-banner">
+                    <div class="banner-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="banner-content">
+                        <h3>You have pending game invitations!</h3>
+                        <p id="invitation-count-text">Check your inbox to see invitations from other players.</p>
+                        <div class="banner-actions">
+                            <button id="view-invitations-btn" class="btn btn-primary">
+                                <i class="fas fa-inbox"></i> View Invitations
+                            </button>
+                            <button id="dismiss-invitations-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Report Form -->
             <form id="report-form" class="form" style="display: none;">
                 <div class="form-group">

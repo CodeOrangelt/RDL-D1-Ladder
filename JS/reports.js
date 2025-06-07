@@ -100,158 +100,6 @@ function setupAuthStateListener(elements) {
     });
 }
 
-async function handleUserSignedIn(user, elements) {
-    if (!elements) {
-        console.error('Elements object is null or undefined');
-        return;
-    }
-    
-    // Set email first before any other operations
-    currentUserEmail = user.email || null;
-    const userUid = user.uid;
-
-    try {
-        // Check if user is a non-participant by UID
-        const nonParticipantRef = doc(db, 'nonParticipants', userUid);
-        try {
-            const nonParticipantDoc = await getDoc(nonParticipantRef);
-            
-            console.log("Non-participant check:", {
-                exists: nonParticipantDoc.exists(),
-                data: nonParticipantDoc.exists() ? nonParticipantDoc.data() : null
-            });
-            
-            // Only consider as non-participant if document exists AND has the isNonParticipant flag set
-            if (nonParticipantDoc.exists() && nonParticipantDoc.data().isNonParticipant === true) {
-                // If user is a non-participant, show warning and hide form
-                if (elements.authWarning) {
-                    elements.authWarning.style.display = 'block';
-                    elements.authWarning.textContent = 'Non-participants cannot report games.';
-                }
-                
-                if (elements.reportForm) {
-                    elements.reportForm.style.display = 'none';
-                }
-                return; // Exit early
-            }
-        } catch (error) {
-            console.warn('Error checking non-participant status:', error);
-            // Continue execution - don't block on this error
-        }
-        
-        // Check if user exists in any of the player collections
-        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersCTF'];
-        let userFound = false;
-        let username = '';
-        
-        for (const collectionName of collections) {
-            try {
-                const playerRef = doc(db, collectionName, userUid);
-                const playerDoc = await getDoc(playerRef);
-                
-                if (playerDoc.exists()) {
-                    userFound = true;
-                    username = playerDoc.data().username;
-                    console.log(`User found in collection ${collectionName} with username: ${username}`);
-                    
-                    // If user is found in D1 or D2 collection, set that as the current mode
-                    if (collectionName === 'players' && currentGameMode !== 'D1') {
-                        // User exists in D1 collection but current mode is not D1
-                        currentGameMode = 'D1';
-                        const d1Button = document.getElementById('d1-mode');
-                        const d2Button = document.getElementById('d2-mode');
-                        const d3Button = document.getElementById('d3-mode');
-                        d1Button.classList.add('active');
-                        d2Button.classList.remove('active');
-                        d3Button.classList.remove('active');
-                    } else if (collectionName === 'playersD2' && currentGameMode !== 'D2') {
-                        // User exists in D2 collection but current mode is not D2
-                        currentGameMode = 'D2';
-                        const d1Button = document.getElementById('d1-mode');
-                        const d2Button = document.getElementById('d2-mode');
-                        const d3Button = document.getElementById('d3-mode');
-                        d2Button.classList.add('active');
-                        d1Button.classList.remove('active');
-                        d3Button.classList.remove('active');
-                    }
-                    break;
-                }
-            } catch (error) {
-                console.warn(`Error checking ${collectionName} collection:`, error);
-                // Continue to next collection
-            }
-        }
-        
-        if (!userFound) {
-            // If user is not in any player collection, show warning and hide form
-            if (elements.authWarning) {
-                elements.authWarning.style.display = 'block';
-                elements.authWarning.textContent = 'You are not registered in any ladder.';
-            }
-            
-            if (elements.reportForm) {
-                elements.reportForm.style.display = 'none';
-            }
-            return; // Exit early
-        }
-        
-        // Check if user is in the current ladder and load opponents
-        const isInCurrentLadder = await checkUserInLadderAndLoadOpponents(userUid);
-        
-        if (!isInCurrentLadder) {
-            console.warn(`User is not in the ${currentGameMode} ladder. Checking other ladders.`);
-            
-            // Try to find a ladder where the user exists
-            for (const collection of ['players', 'playersD2', 'playersD3']) {
-                if (collection === (
-                    currentGameMode === 'D1' ? 'players' : 
-                    currentGameMode === 'D2' ? 'playersD2' : 'playersD3'
-                )) {
-                    continue; // Skip the current mode's collection as we already checked
-                }
-                
-                const playerRef = doc(db, collection, userUid);
-                try {
-                    const playerDoc = await getDoc(playerRef);
-                    if (playerDoc.exists()) {
-                        // Update game mode to the one where user exists
-                        const newMode = collection === 'players' ? 'D1' : collection === 'playersD2' ? 'D2' : 'D3';
-                        console.log(`User found in ${collection}, switching to ${newMode} mode`);
-                        
-                        // Update UI to reflect the new mode
-                        const d1Button = document.getElementById('d1-mode');
-                        const d2Button = document.getElementById('d2-mode');
-                        const d3Button = document.getElementById('d3-mode');
-                        
-                        if (newMode === 'D1') {
-                            d1Button.classList.add('active');
-                            d2Button.classList.remove('active');
-                            d3Button.classList.remove('active');
-                        } else if (newMode === 'D2') {
-                            d2Button.classList.add('active');
-                            d1Button.classList.remove('active');
-                            d3Button.classList.remove('active');
-                        } else {
-                            d3Button.classList.add('active');
-                            d1Button.classList.remove('active');
-                            d2Button.classList.remove('active');
-                        }
-                        
-                        // Set the mode and check again
-                        currentGameMode = newMode;
-                        await checkUserInLadderAndLoadOpponents(userUid);
-                        break;
-                    }
-                } catch (error) {
-                    console.warn(`Error checking ${collection}:`, error);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error during sign-in handling:', error);
-    }
-}
-
 function handleUserSignedOut(elements) {
     elements.authWarning.style.display = 'block';
     elements.reportForm.style.display = 'none';
@@ -1396,5 +1244,343 @@ if (typeof window !== 'undefined') {
     window.renderOutstandingMatches = renderOutstandingMatches;
 }
 
-// Call the initialization function
-initOutstandingMatches();
+// Add this new function to check for pending invitations
+async function checkPendingInvitations(userId) {
+    try {
+        if (!userId) return;
+        
+        const invitationsRef = collection(db, 'gameInvitations');
+        const q = query(
+            invitationsRef,
+            where('toUserId', '==', userId),
+            where('status', '==', 'pending'),
+            orderBy('createdAt', 'desc')
+        );
+        
+        const snapshot = await getDocs(q);
+        const pendingInvitations = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        if (pendingInvitations.length > 0) {
+            showInvitationBanner(pendingInvitations);
+        } else {
+            hideInvitationBanner();
+        }
+        
+        return pendingInvitations;
+    } catch (error) {
+        console.error('Error checking pending invitations:', error);
+        hideInvitationBanner();
+        return [];
+    }
+}
+
+// Add this function to show the invitation banner
+function showInvitationBanner(invitations) {
+    const banner = document.getElementById('pending-invitations-section');
+    const countText = document.getElementById('invitation-count-text');
+    
+    if (!banner || !countText) return;
+    
+    const count = invitations.length;
+    const inviterNames = [...new Set(invitations.map(inv => inv.fromUsername))];
+    
+    if (count === 1) {
+        countText.textContent = `${inviterNames[0]} has invited you to play!`;
+    } else if (inviterNames.length === 1) {
+        countText.textContent = `${inviterNames[0]} has sent you ${count} game invitations!`;
+    } else {
+        const displayNames = inviterNames.slice(0, 2).join(', ');
+        const remaining = inviterNames.length - 2;
+        if (remaining > 0) {
+            countText.textContent = `${displayNames} and ${remaining} other${remaining > 1 ? 's' : ''} have invited you to play!`;
+        } else {
+            countText.textContent = `${displayNames} have invited you to play!`;
+        }
+    }
+    
+    banner.style.display = 'block';
+    
+    // Update notification count in nav if available
+    const navNotification = document.getElementById('inbox-notification');
+    if (navNotification) {
+        navNotification.style.display = 'inline-block';
+        navNotification.textContent = count > 9 ? '9+' : count;
+    }
+}
+
+// Add this function to hide the invitation banner
+function hideInvitationBanner() {
+    const banner = document.getElementById('pending-invitations-section');
+    if (banner) {
+        banner.style.display = 'none';
+    }
+}
+
+// Add this function to setup invitation banner event listeners
+function setupInvitationBanner() {
+    const viewBtn = document.getElementById('view-invitations-btn');
+    const dismissBtn = document.getElementById('dismiss-invitations-btn');
+    
+    if (viewBtn) {
+        viewBtn.addEventListener('click', () => {
+            window.location.href = './inbox.html';
+        });
+    }
+    
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            hideInvitationBanner();
+        });
+    }
+}
+
+// Update the handleUserSignedIn function
+async function handleUserSignedIn(user, elements) {
+    try {
+        const userUid = user.uid;
+        
+        // Set email first before any other operations
+        currentUserEmail = user.email || null;
+        
+        // Check if user is a non-participant by UID
+        const nonParticipantRef = doc(db, 'nonParticipants', userUid);
+        try {
+            const nonParticipantDoc = await getDoc(nonParticipantRef);
+            
+            console.log("Non-participant check:", {
+                exists: nonParticipantDoc.exists(),
+                data: nonParticipantDoc.exists() ? nonParticipantDoc.data() : null
+            });
+            
+            // Only consider as non-participant if document exists AND has the isNonParticipant flag set
+            if (nonParticipantDoc.exists() && nonParticipantDoc.data().isNonParticipant === true) {
+                // If user is a non-participant, show warning and hide form
+                if (elements.authWarning) {
+                    elements.authWarning.style.display = 'block';
+                    elements.authWarning.textContent = 'Non-participants cannot report games.';
+                }
+                
+                if (elements.reportForm) {
+                    elements.reportForm.style.display = 'none';
+                }
+                return; // Exit early
+            }
+        } catch (error) {
+            console.warn('Error checking non-participant status:', error);
+            // Continue execution - don't block on this error
+        }
+        
+        // Check if user exists in any of the player collections
+        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersCTF'];
+        let userFound = false;
+        let username = '';
+        
+        for (const collectionName of collections) {
+            try {
+                const playerRef = doc(db, collectionName, userUid);
+                const playerDoc = await getDoc(playerRef);
+                
+                if (playerDoc.exists()) {
+                    userFound = true;
+                    username = playerDoc.data().username;
+                    console.log(`User found in collection ${collectionName} with username: ${username}`);
+                    
+                    // If user is found in D1 or D2 collection, set that as the current mode
+                    if (collectionName === 'players' && currentGameMode !== 'D1') {
+                        // User exists in D1 collection but current mode is not D1
+                        currentGameMode = 'D1';
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
+                        d1Button.classList.add('active');
+                        d2Button.classList.remove('active');
+                        d3Button.classList.remove('active');
+                    } else if (collectionName === 'playersD2' && currentGameMode !== 'D2') {
+                        // User exists in D2 collection but current mode is not D2
+                        currentGameMode = 'D2';
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
+                        d2Button.classList.add('active');
+                        d1Button.classList.remove('active');
+                        d3Button.classList.remove('active');
+                    }
+                    break;
+                }
+            } catch (error) {
+                console.warn(`Error checking ${collectionName} collection:`, error);
+                // Continue to next collection
+            }
+        }
+        
+        if (!userFound) {
+            // If user is not in any player collection, show warning and hide form
+            if (elements.authWarning) {
+                elements.authWarning.style.display = 'block';
+                elements.authWarning.textContent = 'You are not registered in any ladder.';
+            }
+            
+            if (elements.reportForm) {
+                elements.reportForm.style.display = 'none';
+            }
+            return; // Exit early
+        }
+        
+        // Check if user is in the current ladder and load opponents
+        const isInCurrentLadder = await checkUserInLadderAndLoadOpponents(userUid);
+        
+        if (!isInCurrentLadder) {
+            console.warn(`User is not in the ${currentGameMode} ladder. Checking other ladders.`);
+            
+            // Try to find a ladder where the user exists
+            for (const collection of ['players', 'playersD2', 'playersD3']) {
+                if (collection === (
+                    currentGameMode === 'D1' ? 'players' : 
+                    currentGameMode === 'D2' ? 'playersD2' : 'playersD3'
+                )) {
+                    continue; // Skip the current mode's collection as we already checked
+                }
+                
+                const playerRef = doc(db, collection, userUid);
+                try {
+                    const playerDoc = await getDoc(playerRef);
+                    if (playerDoc.exists()) {
+                        // Update game mode to the one where user exists
+                        const newMode = collection === 'players' ? 'D1' : collection === 'playersD2' ? 'D2' : 'D3';
+                        console.log(`User found in ${collection}, switching to ${newMode} mode`);
+                        
+                        // Update UI to reflect the new mode
+                        const d1Button = document.getElementById('d1-mode');
+                        const d2Button = document.getElementById('d2-mode');
+                        const d3Button = document.getElementById('d3-mode');
+                        
+                        if (newMode === 'D1') {
+                            d1Button.classList.add('active');
+                            d2Button.classList.remove('active');
+                            d3Button.classList.remove('active');
+                        } else if (newMode === 'D2') {
+                            d2Button.classList.add('active');
+                            d1Button.classList.remove('active');
+                            d3Button.classList.remove('active');
+                        } else {
+                            d3Button.classList.add('active');
+                            d1Button.classList.remove('active');
+                            d2Button.classList.remove('active');
+                        }
+                        
+                        // Set the mode and check again
+                        currentGameMode = newMode;
+                        await checkUserInLadderAndLoadOpponents(userUid);
+                        break;
+                    }
+                } catch (error) {
+                    console.warn(`Error checking ${collection}:`, error);
+                }
+            }
+        }
+        
+        // After all the existing checks, check for pending invitations
+        if (userFound) {
+            await checkPendingInvitations(userUid);
+        }
+    } catch (error) {
+        console.error('Error during sign-in handling:', error);
+    }
+}
+
+// Update the DOMContentLoaded event listener to include invitation banner setup
+document.addEventListener('DOMContentLoaded', async () => {
+    const elements = {
+        authWarning: document.getElementById('auth-warning'),
+        reportForm: document.getElementById('report-form'),
+        winnerUsername: document.getElementById('winner-username'),
+        loserUsername: document.getElementById('loser-username'),
+        loserScore: document.getElementById('loser-score'),
+        suicides: document.getElementById('suicides'),
+        mapPlayed: document.getElementById('map-played'),
+        loserComment: document.getElementById('loser-comment'),
+        reportError: document.getElementById('report-error'),
+        reportLightbox: document.getElementById('report-lightbox')
+    };
+
+    // Log which elements were not found
+    Object.entries(elements).forEach(([key, value]) => {
+        if (!value) {
+            console.warn(`Element '${key}' not found in the DOM`);
+        }
+    });
+
+    // Game mode toggle buttons
+    const d1Button = document.getElementById('d1-mode');
+    const d2Button = document.getElementById('d2-mode');
+    const d3Button = document.getElementById('d3-mode');
+
+    // Setup toggle button event listeners
+    d1Button.addEventListener('click', () => {
+        setGameMode('D1');
+        d1Button.classList.add('active');
+        d2Button.classList.remove('active');
+        d3Button.classList.remove('active');
+    });
+
+    d2Button.addEventListener('click', () => {
+        setGameMode('D2');
+        d2Button.classList.add('active');
+        d1Button.classList.remove('active');
+        d3Button.classList.remove('active');
+    });
+
+    d3Button.addEventListener('click', () => {
+        setGameMode('D3');
+        d3Button.classList.add('active');
+        d1Button.classList.remove('active');
+        d2Button.classList.remove('active');
+    });
+
+    // Function to change the game mode and reload opponents
+    function setGameMode(mode) {
+        currentGameMode = mode;
+        console.log(`Game mode set to: ${currentGameMode}`);
+        
+        // If user is logged in, check if they belong in this ladder and reload opponents
+        if (auth.currentUser) {
+            checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
+        }
+    }
+
+    setupAuthStateListener(elements);
+    setupReportForm(elements);
+    
+    // ADD THIS CODE: Immediately check ladder status if user is already logged in
+    if (auth.currentUser) {
+        console.log("User already logged in, checking D1 ladder status");
+        // D1 is the default mode, so just check that ladder
+        checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
+    } else {
+        console.log("No user logged in yet, waiting for auth state change");
+    }
+    
+    // Setup invitation banner
+    setupInvitationBanner();
+});
+
+// Add periodic check for invitations (optional)
+function startInvitationPolling(userId) {
+    // Check for new invitations every 30 seconds
+    setInterval(() => {
+        if (auth.currentUser && auth.currentUser.uid === userId) {
+            checkPendingInvitations(userId);
+        }
+    }, 30000);
+}
+
+// Update auth state listener to include invitation polling
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Start polling for invitations
+        startInvitationPolling(user.uid);
+    }
+});

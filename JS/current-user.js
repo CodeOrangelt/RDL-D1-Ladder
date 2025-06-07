@@ -8,7 +8,8 @@ import {
     collection, 
     query, 
     where, 
-    getDocs 
+    getDocs,
+    limit  // Add this missing import
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 import { isAdmin } from './admin-check.js';
@@ -25,6 +26,64 @@ const userCache = {
     lastChecked: 0,
     role: null // Add this line to store the user's role
 };
+
+// Remove the setInterval completely and replace with event-driven checks
+
+// Add caching for invitation checks
+const invitationCache = {
+    lastCheck: 0,
+    pendingCount: 0,
+    checkInterval: 300000 // 5 minutes cache
+};
+
+// Add this missing function
+function updateInboxNotification(pendingCount) {
+    const inboxNotification = document.getElementById('inbox-notification');
+    if (inboxNotification) {
+        if (pendingCount > 0) {
+            inboxNotification.style.display = 'inline-block';
+            inboxNotification.textContent = pendingCount > 9 ? '9+' : pendingCount;
+        } else {
+            inboxNotification.style.display = 'none';
+        }
+    }
+}
+
+// Update the invitation checking function with caching
+async function checkPendingInvitationsForCurrentUser(userId) {
+    try {
+        const now = Date.now();
+        
+        // Use cache if recent
+        if (now - invitationCache.lastCheck < invitationCache.checkInterval) {
+            updateInboxNotification(invitationCache.pendingCount);
+            return invitationCache.pendingCount;
+        }
+        
+        invitationCache.lastCheck = now;
+        
+        const invitationsRef = collection(db, 'gameInvitations');
+        const q = query(
+            invitationsRef,
+            where('toUserId', '==', userId),
+            where('status', '==', 'pending'),
+            limit(5) // Only need count
+        );
+        
+        const snapshot = await getDocs(q);
+        const pendingCount = snapshot.size;
+        
+        // Update cache
+        invitationCache.pendingCount = pendingCount;
+        
+        updateInboxNotification(pendingCount);
+        return pendingCount;
+        
+    } catch (error) {
+        console.warn('Could not check pending invitations for current user:', error);
+        return 0;
+    }
+}
 
 // Modify updateAuthSectionImmediate to display the role instead of just "(Admin)"
 function updateAuthSectionImmediate(user, isAdmin = false) {
@@ -56,6 +115,10 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
                 <a href="#" class="nav-username">${displayName}${roleDisplay}</a>
                 <div class="nav-dropdown-content">
                     <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
+                    <a href="./inbox.html" class="nav-notification">
+                        Inbox 
+                        <span id="inbox-notification" class="notification-dot"></span>
+                    </a>
                     <a href="members.html">Members</a>
                     <a href="./redeem.html"><i class="fas fa-gift"></i> Redeem</a>
                     <a href="#" id="logout-link">Sign Out</a>
@@ -79,6 +142,14 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
                 });
             });
         }
+        
+        // Check for pending invitations after creating the UI
+        if (user.uid) {
+            setTimeout(() => {
+                checkPendingInvitationsForCurrentUser(user.uid);
+            }, 1000);
+        }
+        
     } else {
         // No user - always show login
         authSection.innerHTML = `<a href="login.html" class="login-link">Login</a>`;
@@ -254,6 +325,11 @@ async function updateAuthSection(user) {
         // Final UI update with complete info
         updateAuthSectionImmediate(user, userCache.isAdmin);
         
+        // Check for pending invitations with the updated UI
+        setTimeout(() => {
+            checkPendingInvitationsForCurrentUser(user.uid);
+        }, 500);
+        
     } catch (error) {
         console.error('Error in full auth update:', error);
     }
@@ -266,6 +342,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
         await updateAuthSection(user);
+        
+        // Only check invitations once on auth state change
+        if (user) {
+            checkPendingInvitationsForCurrentUser(user.uid);
+        }
+    });
+    
+    // Check invitations when page becomes visible (user returns to tab)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && auth.currentUser) {
+            checkPendingInvitationsForCurrentUser(auth.currentUser.uid);
+        }
+    });
+    
+    // Check invitations when user clicks on navigation (page navigation)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('a[href]') && auth.currentUser) {
+            checkPendingInvitationsForCurrentUser(auth.currentUser.uid);
+        }
     });
 });
 
