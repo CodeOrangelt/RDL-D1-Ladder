@@ -607,6 +607,44 @@ service cloud.firestore {
       
       allow delete: if request.auth != null && isAdminEmail();
     }
+
+        // Game Invitations Collection (for the inbox system)
+    match /gameInvitations/{invitationId} {
+      // Users can read invitations sent to them or sent by them
+      allow read: if request.auth != null && (
+        resource.data.toUserId == request.auth.uid ||
+        resource.data.fromUserId == request.auth.uid ||
+        isAdminEmail()
+      );
+      
+      // Users can create invitations (sender must match auth user)
+      allow create: if request.auth != null && 
+        request.resource.data.fromUserId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'fromUserId', 'fromUsername', 'toUserId', 'toUsername', 
+          'type', 'value', 'status', 'createdAt', 'message'
+        ]) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.type in ['home', 'subgame'];
+      
+      // Users can update invitations sent to them (to change status) or sent by them
+      allow update: if request.auth != null && (
+        (resource.data.toUserId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'respondedAt']) &&
+        request.resource.data.status in ['accepted', 'declined']) ||
+        (resource.data.fromUserId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status'])) ||
+        isAdminEmail()
+      );
+      
+      // Users can delete invitations they sent, recipients can't delete
+      allow delete: if request.auth != null && (
+        resource.data.fromUserId == request.auth.uid ||
+        isAdminEmail()
+      );
+    }
     
   } // Closing brace for match /databases/{database}/documents
 } // Closing brace for service cloud.firestore

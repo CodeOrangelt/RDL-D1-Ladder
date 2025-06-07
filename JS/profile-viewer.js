@@ -758,6 +758,17 @@ displayProfile(data) {
             `;
         }
     }
+
+    
+    
+    // Check if this is another user's profile (not the current user's)
+    const currentUser = auth.currentUser;
+    const isOtherUser = currentUser && this.currentProfileData && 
+                       currentUser.uid !== this.currentProfileData.userId;
+    
+    if (isOtherUser && (data.homeLevel1 || data.homeLevel2 || data.homeLevel3 || data.favoriteSubgame)) {
+        this.addInvitationSection(data);
+    }
 }
 
     async getPlayerMatches(username) {
@@ -2119,6 +2130,422 @@ setupEditProfile() {
                 `;
             }
         }
+    }
+
+    // Add this method to the ProfileViewer class
+
+addInvitationSection(profileData) {
+    // Remove existing invitation section if it exists
+    const existingSection = document.querySelector('.invitation-section');
+    if (existingSection) {
+        existingSection.remove();
+    }
+    
+    const container = document.querySelector('.profile-container');
+    if (!container) return;
+    
+    // Get available home levels and subgame
+    const homeLevels = [profileData.homeLevel1, profileData.homeLevel2, profileData.homeLevel3]
+        .filter(level => level && level.trim() !== '');
+    const favoriteSubgame = profileData.favoriteSubgame;
+    
+    if (homeLevels.length === 0 && !favoriteSubgame) {
+        return; // No homes or subgame to invite to
+    }
+    
+    // Get user's rank for styling
+    const eloRating = parseInt(profileData.eloRating) || 0;
+    let rankClass = '';
+    let rankName = '';
+    
+    if (eloRating >= 2000) {
+        rankClass = 'elo-emerald';
+        rankName = 'Emerald';
+    } else if (eloRating >= 1800) {
+        rankClass = 'elo-gold';
+        rankName = 'Gold';
+    } else if (eloRating >= 1600) {
+        rankClass = 'elo-silver';
+        rankName = 'Silver';
+    } else if (eloRating >= 1400) {
+        rankClass = 'elo-bronze';
+        rankName = 'Bronze';
+    } else {
+        rankClass = 'elo-unranked';
+        rankName = 'Unranked';
+    }
+    
+    const invitationSection = document.createElement('div');
+    invitationSection.className = `invitation-section ${rankClass}`;
+    
+    // Create consolidated button content
+    const allInvites = [
+        ...homeLevels.map(level => ({ type: 'home', value: level, icon: 'map', label: level })),
+        ...(favoriteSubgame ? [{ type: 'subgame', value: favoriteSubgame, icon: 'gamepad', label: favoriteSubgame }] : [])
+    ];
+    
+    invitationSection.innerHTML = `
+        <div class="invitation-header">
+            <div class="invitation-title">
+                <i class="fas fa-paper-plane"></i>
+                <span>Invite ${profileData.username}</span>
+            </div>
+            <p>Send an invitation for their preferred game settings</p>
+        </div>
+        <div class="invitation-grid">
+            ${allInvites.map(invite => `
+                <button class="invite-btn ${rankClass}" data-type="${invite.type}" data-value="${invite.value}">
+                    <i class="fas fa-${invite.icon}"></i>
+                    <span>${invite.label}</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+    
+    // Add CSS if not already present
+    if (!document.getElementById('invitation-styles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'invitation-styles';
+        styleEl.textContent = `
+            .invitation-section {
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-top: 1.5rem;
+                position: relative;
+                overflow: hidden;
+                background: #1a1a1a;
+                border: 2px solid #333;
+                transition: all 0.3s ease;
+            }
+            
+            /* Rank-based styling */
+            .invitation-section.elo-emerald {
+                border-color: #50C878;
+                box-shadow: 0 0 20px rgba(80, 200, 120, 0.1);
+            }
+            
+            .invitation-section.elo-gold {
+                border-color: #FFD700;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            }
+            
+            .invitation-section.elo-silver {
+                border-color: #C0C0C0;
+                box-shadow: 0 0 20px rgba(192, 192, 192, 0.1);
+            }
+            
+            .invitation-section.elo-bronze {
+                border-color: #CD7F32;
+                box-shadow: 0 0 20px rgba(205, 127, 50, 0.1);
+            }
+            
+            .invitation-section.elo-unranked {
+                border-color: #666;
+                box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+            }
+            
+            .invitation-header {
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .invitation-title {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                margin-bottom: 0.5rem;
+                font-size: 1.1rem;
+                font-weight: bold;
+                color: white;
+            }
+            
+            .invitation-title i {
+                font-size: 1.2rem;
+            }
+            
+            .rank-indicator {
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .rank-indicator.elo-emerald {
+                background: rgba(80, 200, 120, 0.2);
+                color: #50C878;
+                border: 1px solid #50C878;
+            }
+            
+            .rank-indicator.elo-gold {
+                background: rgba(255, 215, 0, 0.2);
+                color: #FFD700;
+                border: 1px solid #FFD700;
+            }
+            
+            .rank-indicator.elo-silver {
+                background: rgba(192, 192, 192, 0.2);
+                color: #C0C0C0;
+                border: 1px solid #C0C0C0;
+            }
+            
+            .rank-indicator.elo-bronze {
+                background: rgba(205, 127, 50, 0.2);
+                color: #CD7F32;
+                border: 1px solid #CD7F32;
+            }
+            
+            .rank-indicator.elo-unranked {
+                background: rgba(102, 102, 102, 0.2);
+                color: #666;
+                border: 1px solid #666;
+            }
+            
+            .invitation-header p {
+                margin: 0;
+                color: #aaa;
+                font-size: 0.9rem;
+            }
+            
+            .invitation-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 0.75rem;
+            }
+            
+            .invite-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 1rem;
+                background: #2a2a2a;
+                color: white;
+                border: 2px solid #444;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .invite-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            
+            .invite-btn i {
+                font-size: 1.5rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .invite-btn span {
+                font-weight: 500;
+                text-align: center;
+                line-height: 1.2;
+            }
+            
+            /* Rank-based button styling */
+            .invite-btn.elo-emerald {
+                border-color: #50C878;
+            }
+            
+            .invite-btn.elo-emerald:hover {
+                background: rgba(80, 200, 120, 0.1);
+                border-color: #50C878;
+                color: #50C878;
+            }
+            
+            .invite-btn.elo-gold {
+                border-color: #FFD700;
+            }
+            
+            .invite-btn.elo-gold:hover {
+                background: rgba(255, 215, 0, 0.1);
+                border-color: #FFD700;
+                color: #FFD700;
+            }
+            
+            .invite-btn.elo-silver {
+                border-color: #C0C0C0;
+            }
+            
+            .invite-btn.elo-silver:hover {
+                background: rgba(192, 192, 192, 0.1);
+                border-color: #C0C0C0;
+                color: #C0C0C0;
+            }
+            
+            .invite-btn.elo-bronze {
+                border-color: #CD7F32;
+            }
+            
+            .invite-btn.elo-bronze:hover {
+                background: rgba(205, 127, 50, 0.1);
+                border-color: #CD7F32;
+                color: #CD7F32;
+            }
+            
+            .invite-btn.elo-unranked {
+                border-color: #666;
+            }
+            
+            .invite-btn.elo-unranked:hover {
+                background: rgba(102, 102, 102, 0.1);
+                border-color: #888;
+                color: #888;
+            }
+            
+            .invite-btn:disabled {
+                background: #1a1a1a !important;
+                border-color: #333 !important;
+                color: #666 !important;
+                cursor: not-allowed !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Loading and success states */
+            .invite-btn.loading {
+                pointer-events: none;
+            }
+            
+            .invite-btn.success {
+                background: rgba(76, 175, 80, 0.2) !important;
+                border-color: #4CAF50 !important;
+                color: #4CAF50 !important;
+            }
+            
+            .invite-btn.error {
+                background: rgba(244, 67, 54, 0.2) !important;
+                border-color: #F44336 !important;
+                color: #F44336 !important;
+            }
+            
+            @media (max-width: 768px) {
+                .invitation-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .invitation-title {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                
+                .invite-btn {
+                    flex-direction: row;
+                    justify-content: center;
+                    gap: 0.75rem;
+                }
+                
+                .invite-btn i {
+                    font-size: 1.2rem;
+                    margin-bottom: 0;
+                }
+            }
+        `;
+        document.head.appendChild(styleEl);
+    }
+    
+    // Add event listeners for invitation buttons with enhanced feedback
+    invitationSection.querySelectorAll('.invite-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const type = btn.dataset.type;
+            const value = btn.dataset.value;
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>';
+            
+            try {
+                await this.sendInvitation(profileData.username, profileData.userId, type, value);
+                
+                btn.classList.remove('loading');
+                btn.classList.add('success');
+                btn.innerHTML = '<i class="fas fa-check"></i><span>Sent!</span>';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('success');
+                    btn.innerHTML = originalContent;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                
+                btn.classList.remove('loading');
+                btn.classList.add('error');
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Error</span>';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('error');
+                    btn.innerHTML = originalContent;
+                }, 3000);
+            }
+        });
+    });
+    
+    // Insert after the profile content
+    container.appendChild(invitationSection);
+}
+    async sendInvitation(toUsername, toUserId, type, value) {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('You must be logged in to send invitations');
+        }
+        
+        // Check if invitation already exists to prevent duplicates
+        const existingInviteQuery = query(
+            collection(db, 'gameInvitations'),
+            where('fromUserId', '==', currentUser.uid),
+            where('toUserId', '==', toUserId),
+            where('type', '==', type),
+            where('value', '==', value),
+            where('status', '==', 'pending'),
+            limit(1)
+        );
+        
+        const existingSnapshot = await getDocs(existingInviteQuery);
+        if (!existingSnapshot.empty) {
+            throw new Error('You already have a pending invitation for this setting');
+        }
+        
+        // Get current user's profile data efficiently
+        let fromUsername = currentUser.displayName || currentUser.email.split('@')[0];
+        
+        // Try to get username from cache first
+        if (this.currentProfileData && this.currentProfileData.userId === currentUser.uid) {
+            fromUsername = this.currentProfileData.username || fromUsername;
+        } else {
+            // Only fetch if not cached
+            const userProfileDoc = await getDoc(doc(db, 'userProfiles', currentUser.uid));
+            if (userProfileDoc.exists()) {
+                fromUsername = userProfileDoc.data().username || fromUsername;
+            }
+        }
+        
+        // Create invitation document with minimal data
+        const invitationData = {
+            fromUserId: currentUser.uid,
+            fromUsername: fromUsername,
+            toUserId: toUserId,
+            toUsername: toUsername,
+            type: type,
+            value: value,
+            status: 'pending',
+            createdAt: new Date(),
+            message: type === 'home' ? 
+                `${fromUsername} invites you to play on ${value}` :
+                `${fromUsername} invites you to play ${value}`
+        };
+        
+        // Add to gameInvitations collection
+        await addDoc(collection(db, 'gameInvitations'), invitationData);
     }
 }
 
