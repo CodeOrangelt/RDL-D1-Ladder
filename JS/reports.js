@@ -145,18 +145,6 @@ async function populateWinnerDropdown(winnerSelect) {
 
 function setupReportForm(elements) {
     if (!elements.reportForm) return;
-
-    elements.reportForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        try {
-            await submitReport(elements);
-            elements.reportForm.reset();
-            alert('Game reported successfully.');
-        } catch (error) {
-            console.error('Error submitting report:', error);
-            elements.reportError.textContent = 'Error reporting game. Please try again.';
-        }
-    });
 }
 
 // --- Inside your submitReport function ---
