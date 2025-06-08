@@ -2021,7 +2021,7 @@ formatAllHomesDisplay(data) {
         }
     }
     
-    // Build display
+    // Build display with consistent structure
     let displayParts = [];
     
     // Add standard homes
