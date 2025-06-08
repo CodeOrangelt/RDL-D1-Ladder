@@ -2553,3 +2553,35 @@ body {
 #manage-matches #create-test-match-btn {
     display: inline-flex !important;
 }
+
+.ribbon-form-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.current-ribbons-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.ribbon-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ribbon-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ladder-badge.d1 { background: #d32f2f; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
+.ladder-badge.d2 { background: #1976d2; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
+.ladder-badge.d3 { background: #4caf50; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; }

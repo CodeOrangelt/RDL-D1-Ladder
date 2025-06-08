@@ -89,6 +89,11 @@
                     <i class="fas fa-coins"></i>
                     <span>Manage Points</span>
                 </button>
+
+                <button class="nav-item" data-section="manage-ribbons">
+                    <i class="fas fa-medal"></i>
+                    <span>Manage Ribbons</span>
+                </button>
             </nav>
             
             <div class="sidebar-footer">
@@ -862,6 +867,93 @@
     </div>
 </div>
 
+<!-- Add this section to your admin.html after the manage-points section -->
+<section id="manage-ribbons" class="admin-section" style="display: none;">
+    <div class="section-header">
+        <h1>Manage Player Ribbons</h1>
+        <button id="load-ribbons-data" class="load-data-btn">
+            <i class="fas fa-sync-alt"></i> Load Ribbons Data
+        </button>
+    </div>
+    
+    <!-- User Search -->
+    <div class="search-container">
+        <input type="text" id="ribbon-user-search" placeholder="Search by username...">
+        <button id="search-ribbon-user-btn" class="btn btn-primary">Search</button>
+    </div>
+    
+    <!-- Selected User Ribbons -->
+    <div id="user-ribbon-management" style="display: none;">
+        <h3>Managing Ribbons for: <span id="current-ribbon-user"></span></h3>
+        
+        <!-- Add Ribbon Form -->
+        <div class="ribbon-form-section">
+            <h4>Add/Modify Ribbon</h4>
+            <form id="add-ribbon-form">
+                <input type="hidden" id="ribbon-target-user">
+                <input type="hidden" id="ribbon-target-ladder">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ribbon Type:</label>
+                        <select id="ribbon-type-select" required>
+                            <option value="">Select Ribbon</option>
+                            <option value="Overachiever Ribbon">Overachiever Ribbon</option>
+                            <option value="Rematch Ribbon">Rematch Ribbon</option>
+                            <option value="Sub-Gamer Ribbon">Sub-Gamer Ribbon</option>
+                            <option value="Explorer Ribbon">Explorer Ribbon</option>
+                            <option value="Socialite Ribbon">Socialite Ribbon</option>
+                            <option value="Brick Wall">Brick Wall</option>
+                            <option value="Collector Ribbon">Collector Ribbon</option>
+                            <option value="Underdog Ribbon">Underdog Ribbon</option>
+                            <option value="Domination Ribbon">Domination Ribbon</option>
+                            <option value="Top Bronze Pilot">Top Bronze Pilot</option>
+                            <option value="Top Silver Pilot">Top Silver Pilot</option>
+                            <option value="Top Gold Pilot">Top Gold Pilot</option>
+                            <option value="Top Emerald Pilot">Top Emerald Pilot</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Level:</label>
+                        <input type="number" id="ribbon-level" min="1" max="10" value="1">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Add/Update Ribbon</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Current Ribbons Display -->
+        <div class="current-ribbons-section">
+            <h4>Current Ribbons</h4>
+            <div id="current-ribbons-list" class="ribbons-list">
+                <!-- Ribbons will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- All Users Ribbons Overview -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Ladder</th>
+                    <th>Total Ribbons</th>
+                    <th>Last Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ribbons-overview-table-body">
+                <tr><td colspan="5" class="loading-cell">Click Load Ribbons Data to view</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
             <!-- Edit Player Modal -->
             <div id="edit-player-modal" class="modal">
                 <div class="modal-content">
@@ -1432,6 +1524,7 @@
                         </div>
                     </form>
                 </div>
+                
             </div>
         </div>
     </div>

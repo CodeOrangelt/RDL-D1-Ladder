@@ -567,11 +567,5 @@ async function getPlayersLastEloChangesD3(usernames) {
     return changes;
 }
 
-// Set up on document load
-document.addEventListener('DOMContentLoaded', () => {
-    // Setup raw ladder feed for D3
-    setupRawLadderFeedD3();
-});
-
 // Export the D3 ladder functions
 export { displayLadderD3, updatePlayerPositions };
