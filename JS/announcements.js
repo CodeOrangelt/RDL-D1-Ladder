@@ -2,20 +2,21 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.3.3", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.3.3",
+    id: "beta-release 1.4", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.4",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
-            <li>Elo Tracking/Recomendations </li>
-            <li>ELO Goals now on profiles</li>
-            <li>View, edit, and rescind outstanding/waiting reports</li>
-            <li>Elo history and type of elo entry on profiles (across all ladders)</li>
-            <li>Observers, and commentors alike can now attatch demos to match comments</li>
-            <li>Under the Account dropdown, you can now view all members consolidated (even non participants!)</li>
-            <br>
+            <li>Ribbons now on profiles</li>
+            <li>Consolidated ELO into Match history on profiles</li>
+            <li>Redesigned Approved Matches, also w/Filters.</li>
+            <li>Inbox for accounts - Invite others for homes/Subgames</li>
+            <li>Silver now has a new color (didn't like the last one.)</li>
+            <li>Decide your Subgames types along side it's preferred homes.</li>
 
+            <br>
+\
         <p1 style="color:#ffffff; font-weight: bold;">UPCOMING EVENT:</p1><br></br>
-             <li> Our Creative Lead Blarget has announced the first RDL Mapping Community Event! Stay tuned for more details!</li>
+             <li> RDL Mapping Event scheduled to be over Jan 15th! make sure to make your maps and submit them in #new-maps on the RDL Discord!</li>
 
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
