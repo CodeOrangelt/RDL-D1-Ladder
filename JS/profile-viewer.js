@@ -2,9 +2,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, doc, getDoc, setDoc, collection, 
-    query, where, getDocs, orderBy, limit, startAfter 
+    query, where, getDocs, orderBy, limit, startAfter, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
+import { evaluatePlayerRibbons, getRibbonHTML, RIBBON_CSS } from './ribbons.js';
 
 // Initialize Firebase once
 const app = initializeApp(firebaseConfig);
@@ -112,6 +113,114 @@ class ProfileViewer {
         }
     }
 }
+
+async displayRibbons(username) {
+    try {
+        // Check for non-participant
+        if (this.currentProfileData?.isNonParticipant) {
+            return; // Skip ribbons for non-participants
+        }
+
+        // Add ribbon CSS if not already present
+        if (!document.getElementById('ribbon-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'ribbon-styles';
+            styleEl.textContent = RIBBON_CSS;
+            document.head.appendChild(styleEl);
+        }
+
+        // Evaluate player ribbons with timeout
+        let playerRibbons;
+        try {
+            playerRibbons = await Promise.race([
+                evaluatePlayerRibbons(username, this.currentLadder),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Ribbon evaluation timeout')), 15000)
+                )
+            ]);
+        } catch (timeoutError) {
+            console.error('Ribbon evaluation timed out:', timeoutError);
+            return; // Skip ribbons on timeout
+        }
+
+        // Find or create the stats grid to add ribbons to
+        let statsGrid = document.querySelector('.stats-grid');
+        if (!statsGrid) {
+            // If no stats grid exists, create one
+            const profileContent = document.querySelector('.profile-content');
+            if (profileContent) {
+                statsGrid = document.createElement('div');
+                statsGrid.className = 'stats-grid';
+                profileContent.appendChild(statsGrid);
+            } else {
+                return; // Can't find where to put ribbons
+            }
+        }
+
+        // Remove any existing ribbon section from stats grid
+        const existingRibbonSection = statsGrid.querySelector('.ribbon-section');
+        if (existingRibbonSection) {
+            existingRibbonSection.remove();
+        }
+
+        const ribbonCount = Object.keys(playerRibbons).length;
+
+        // Create ribbon section within the stats grid
+        const ribbonSection = document.createElement('div');
+        ribbonSection.className = 'ribbon-section';
+
+        // Update the ribbon section creation in displayRibbons method
+        if (ribbonCount === 0) {
+            ribbonSection.innerHTML = `
+                <div class="stat-item ribbon-stat-item full-width">
+                    <div class="stat-label">RIBBONS</div>
+                    <div class="ribbon-rack-empty-inline">
+                        <div class="empty-rack-text">No ribbons earned yet</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Sort ribbons by award date (newest first)
+            const sortedRibbons = Object.entries(playerRibbons).sort((a, b) => {
+                const dateA = a[1].awardedAt ? (a[1].awardedAt.seconds || new Date(a[1].awardedAt).getTime() / 1000) : 0;
+                const dateB = b[1].awardedAt ? (b[1].awardedAt.seconds || new Date(b[1].awardedAt).getTime() / 1000) : 0;
+                return dateB - dateA;
+            });
+
+            // Organize ribbons into rows (3 ribbons per row for military appearance)
+            const ribbonsPerRow = 3;
+            const ribbonRows = [];
+            
+            for (let i = 0; i < sortedRibbons.length; i += ribbonsPerRow) {
+                const rowRibbons = sortedRibbons.slice(i, i + ribbonsPerRow);
+                const rowHTML = rowRibbons
+                    .map(([name, data]) => {
+                        return getRibbonHTML(name, data);
+                    })
+                    .join('');
+                
+                ribbonRows.push(`<div class="ribbon-row">${rowHTML}</div>`);
+            }
+
+            // Create the ribbon section as part of stats
+            ribbonSection.innerHTML = `
+                <div class="stat-item ribbon-stat-item full-width">
+                    <div class="stat-label">RIBBONS (${ribbonCount})</div>
+                    <div class="ribbon-rack-inline">
+                        ${ribbonRows.join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add the ribbon section to the stats grid
+        statsGrid.appendChild(ribbonSection);
+        
+    } catch (error) {
+        console.error('Error displaying ribbons:', error);
+        // Don't show error, just skip ribbons
+    }
+}
     
     setupToggleButtons() {
         const d1Button = document.getElementById('profile-d1-toggle');
@@ -187,45 +296,44 @@ class ProfileViewer {
     }
 }
     
-    async loadProfile(username) {
-        try {
-            // Check which ladders the player is registered in
-            const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
-            
-            // If not found in current ladder but found in other, switch ladders
-            if ((this.currentLadder === 'D1' && !inD1 && (inD2 || inD3)) || 
-                (this.currentLadder === 'D2' && !inD2 && (inD1 || inD3)) ||
-                (this.currentLadder === 'D3' && !inD3 && (inD1 || inD2))) {
-                this.currentLadder = inD1 ? 'D1' : (inD2 ? 'D2' : 'D3');
-                this.setupToggleButtons(); // Update active button
-            }
-            
-            // Load player data
-            await this.loadPlayerData(username);
-            
-            // Initialize containers in the correct order - Move elo-history before player-matchups
-            this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
-            
-            // Get matches - do this once so we don't repeat the same query
-            const matches = await this.getPlayerMatches(username);
-            
-            // Display sections in parallel for better performance
-            await Promise.all([
-                this.displayTrophyCase(username),
-                this.displayPromotionHistory(username),
-                this.displayMatchStats(username, matches),
-                this.displayPlayerMatchups(username, matches),
-                this.displayMatchHistory(username, matches)
-            ]);
-            
-            // Set up edit functionality
-            this.setupEditProfile();
-        } catch (error) {
-            console.error('Error loading profile:', error);
-            this.showError(`Failed to load profile: ${error.message}`);
+async loadProfile(username) {
+    try {
+        // Check which ladders the player is registered in
+        const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
+        
+        // If not found in current ladder but found in other, switch ladders
+        if ((this.currentLadder === 'D1' && !inD1 && (inD2 || inD3)) || 
+            (this.currentLadder === 'D2' && !inD2 && (inD1 || inD3)) ||
+            (this.currentLadder === 'D3' && !inD3 && (inD1 || inD2))) {
+            this.currentLadder = inD1 ? 'D1' : (inD2 ? 'D2' : 'D3');
+            this.setupToggleButtons(); // Update active button
         }
+        
+        // Load player data
+        await this.loadPlayerData(username);
+        
+        // Create containers WITHOUT ribbons (ribbons will be part of stats)
+        this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
+        
+        // Get matches - do this once so we don't repeat the same query
+        const matches = await this.getPlayerMatches(username);
+        
+        // Display sections in parallel for better performance
+        await Promise.all([
+            this.displayPromotionHistory(username),
+            this.displayMatchStats(username, matches),
+            this.displayPlayerMatchups(username, matches),
+            this.displayMatchHistory(username, matches),
+            this.displayRibbons(username) // Add ribbons to stats after stats are loaded
+        ]);
+        
+        // Set up edit functionality
+        this.setupEditProfile();
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        this.showError(`Failed to load profile: ${error.message}`);
     }
-    
+}
     createContainers(sections) {
         const contentContainer = document.querySelector('.content');
         if (!contentContainer) return;
@@ -1063,6 +1171,7 @@ async displayMatchHistory(username, matches) {
                         ${this.renderMatchRows(olderMatches, username, playerElos, eloHistoryMap, getEloClass)}
                     </tbody>
                     ` : ''}
+
                 </table>
                 ${olderMatches.length > 0 ? `
                 <div class="match-history-pagination">
@@ -1074,6 +1183,10 @@ async displayMatchHistory(username, matches) {
                     </button>
                 </div>
                 ` : ''}
+
+                <div class="match-history-footer">
+                    <p class="footer-note">Match data is updated regularly. ELO changes may take time to reflect.</p>
+                </div>
                 `
             }
         `;
@@ -1808,12 +1921,10 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             `;
         }
         
-        statsGrid.appendChild(nextRankItem);
-        
-        // Find where to insert the stats grid - at the end of the profile content
-        const content = document.querySelector('.profile-content');
-        if (content) {
-            content.appendChild(statsGrid);
+        // Append the new stats grid to the profile content
+        const contentContainer = document.querySelector('.profile-content');
+        if (contentContainer) {
+            contentContainer.appendChild(statsGrid);
         }
     }
     
@@ -2115,90 +2226,6 @@ setupEditProfile() {
         }
     }
 
-    async displayTrophyCase(username) {
-        try {
-            const trophyContainer = document.getElementById('trophy-container');
-            if (!trophyContainer) return;
-
-            // Check if user is non-participant
-            if (this.currentProfileData?.isNonParticipant) {
-                trophyContainer.innerHTML = `
-                    <p class="empty-trophy-case">No trophies awarded yet</p>
-                `;
-                return;
-            }
-
-            // Get user ID
-            const userId = this.currentProfileData?.userId;
-            if (!userId) {
-                console.error("No user ID found for trophy display");
-                trophyContainer.innerHTML = `<p class="empty-trophy-case">Unable to load trophies</p>`;
-                return;
-            }
-
-            // Query for user trophies
-            const trophiesRef = collection(db, "userTrophies");
-            const q = query(trophiesRef, where("userId", "==", userId), orderBy("awardedAt", "desc"));
-            const trophiesSnapshot = await getDocs(q);
-
-            if (trophiesSnapshot.empty) {
-                trophyContainer.innerHTML = `
-                    <p class="empty-trophy-case">No trophies awarded yet</p>
-                `;
-                return;
-            }
-
-            // Get all trophy definitions to have their details
-            const trophyDefsRef = collection(db, "trophyDefinitions");
-            const trophyDefsSnapshot = await getDocs(trophyDefsRef);
-            
-            // Create a map of trophy definitions for easy lookup
-            const trophyDefs = {};
-            trophyDefsSnapshot.forEach(doc => {
-                trophyDefs[doc.id] = { id: doc.id, ...doc.data() };
-            });
-
-            // Render trophies
-            let trophiesHTML = '';
-            
-            trophiesSnapshot.forEach(doc => {
-                const trophyData = doc.data();
-                const trophyId = trophyData.trophyId;
-                const trophyDef = trophyDefs[trophyId] || {
-                    name: "Unknown Trophy",
-                    image: "../images/default-trophy.png",
-                    description: "Trophy details not found",
-                    rarity: "common"
-                };
-                
-                const awardDate = trophyData.awardedAt ? 
-                    new Date(trophyData.awardedAt.seconds * 1000).toLocaleDateString() : 
-                    'Unknown Date';
-                
-                trophiesHTML += `
-                    <div class="trophy ${trophyDef.rarity || 'common'}">
-                        <div class="trophy-tooltip">${trophyDef.description || "No description available"}</div>
-                        <img src="${trophyDef.image}" alt="${trophyDef.name}" class="trophy-image">
-                        <p class="trophy-name">${trophyDef.name}</p>
-                        <p class="trophy-date">Awarded: ${awardDate}</p>
-                    </div>
-                `;
-            });
-
-            trophyContainer.innerHTML = trophiesHTML;
-
-        } catch (error) {
-            console.error('Error displaying trophy case:', error);
-            const trophyContainer = document.getElementById('trophy-container');
-            if (trophyContainer) {
-                trophyContainer.innerHTML = `
-                    <p class="empty-trophy-case">Error loading trophies</p>
-                `;
-            }
-        }
-    }
-
-    // Add this method to the ProfileViewer class
 
 addInvitationSection(profileData) {
     // Remove existing invitation section if it exists
