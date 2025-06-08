@@ -567,45 +567,6 @@ async function getPlayersLastEloChangesD3(usernames) {
     return changes;
 }
 
-// Simplified function for raw ladder feed with improved efficiency
-function setupRawLadderFeedD3() {
-    const playersRef = collection(db, 'playersD3');
-    
-    // Set up real-time listener for player changes
-    onSnapshot(playersRef, (snapshot) => {
-        try {
-            if (window.location.pathname.includes('rawleaderboardD3.html')) {                
-                // Extract player data
-                const players = [];
-                snapshot.forEach((doc) => {
-                    const playerData = doc.data();
-                    players.push({
-                        username: playerData.username,
-                        elo: parseInt(playerData.eloRating) || 0,
-                        position: playerData.position || Number.MAX_SAFE_INTEGER
-                    });
-                });
-                
-                // Sort players by ELO rating (highest to lowest)
-                players.sort((a, b) => b.elo - a.elo);
-                
-                // Create raw text representation
-                let rawText = 'NGS D3 LADDER - RAW DATA\n\n';
-                players.forEach((player, index) => {
-                    rawText += `${index + 1}. ${player.username} (${player.elo})\n`;
-                });
-                
-                document.body.innerText = rawText;
-            }
-        } catch (error) {
-            console.error("Error updating raw D3 ladder feed:", error);
-            if (window.location.pathname.includes('rawleaderboardD3.html')) {
-                document.body.innerText = `Error loading D3 ladder data: ${error.message}`;
-            }
-        }
-    });
-}
-
 // Set up on document load
 document.addEventListener('DOMContentLoaded', () => {
     // Setup raw ladder feed for D3
