@@ -296,7 +296,12 @@ async displayRibbons(username) {
     }
 }
     
-async loadProfile(username) {
+async loadProfile(username, ladder) {
+    // Stop watching previous player
+    if (this.currentWatchedPlayer) {
+        ribbonSystem.stopWatchingPlayer(this.currentWatchedPlayer.username, this.currentWatchedPlayer.ladder);
+    }
+    
     try {
         // Check which ladders the player is registered in
         const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
@@ -2672,4 +2677,9 @@ document.addEventListener('DOMContentLoaded', () => {
              // Or rely on page refresh. For now, just log.
         }
     });
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+    ribbonSystem.stopAllWatching();
 });
