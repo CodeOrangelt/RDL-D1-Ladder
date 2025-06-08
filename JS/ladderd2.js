@@ -564,59 +564,5 @@ async function fetchBatchMatchStatsD2(usernames) {
     return matchStats;
 }
 
-// Simplified function for raw ladder feed with improved efficiency
-function setupRawLadderFeed() {
-    const playersRef = collection(db, 'playersD2');
-    
-    // Set up real-time listener for player changes using the correct method
-    const unsubscribe = firebaseIdle.createListener(
-        playersRef,
-        (snapshot) => {
-            try {
-                if (window.location.pathname.includes('rawleaderboardD2.html')) {
-                    
-                    // Extract player data
-                    const players = [];
-                    snapshot.forEach((doc) => {
-                        const playerData = doc.data();
-                        players.push({
-                            username: playerData.username,
-                            elo: parseInt(playerData.eloRating) || 0,
-                            position: playerData.position || Number.MAX_SAFE_INTEGER
-                        });
-                    });
-                    
-                    // Sort players by ELO rating (highest to lowest)
-                    players.sort((a, b) => b.elo - a.elo);
-                    
-                    // Create raw text representation
-                    let rawText = 'NGS D2 LADDER - RAW DATA\n\n';
-                    players.forEach((player, index) => {
-                        rawText += `${index + 1}. ${player.username} (${player.elo})\n`;
-                    });
-                    
-                    document.body.innerText = rawText;
-                }
-            } catch (error) {
-                console.error("Error updating raw D2 ladder feed:", error);
-                if (window.location.pathname.includes('rawleaderboardD2.html')) {
-                    document.body.innerText = `Error loading ladder data: ${error.message}`;
-                }
-            }
-        },
-        { includeMetadataChanges: false }, // Options
-        'D2_raw_ladder_feed' // Name for this listener
-    );
-    
-    // Store unsubscribe function for cleanup if needed
-    return unsubscribe;
-}
-
-// Set up on document load
-document.addEventListener('DOMContentLoaded', () => {
-    // Setup raw ladder feed for D2
-    setupRawLadderFeed();
-});
-
 // Export the D2 ladder functions
 export { displayLadderD2, updatePlayerPositions };
