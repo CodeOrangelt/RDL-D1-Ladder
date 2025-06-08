@@ -653,8 +653,6 @@ async getProfileData(userId) {
         }
     }
 
-// Update the displayProfile method to include the next rank info directly in the main stats bar
-
 displayProfile(data) {
     this.currentProfileData = data;
     
@@ -808,14 +806,8 @@ displayProfile(data) {
         container.classList.add(eloClass);
     }
     
-    // Format home levels for display
-    let homeLevelsDisplay = 'Not set';
-    const homeLevels = [data.homeLevel1, data.homeLevel2, data.homeLevel3]
-        .filter(level => level && level.trim() !== '');
-    
-    if (homeLevels.length > 0) {
-        homeLevelsDisplay = `Homes: ${homeLevels.join(', ')}`;
-    }
+    // Format home levels for display using the new method
+    let homeLevelsDisplay = this.formatAllHomesDisplay(data);
     
     // Update profile elements
     const elements = {
@@ -826,13 +818,21 @@ displayProfile(data) {
         'favorite-subgame-view': data.favoriteSubgame || 'Not set', 
         'timezone-view': data.timezone || 'Not set',
         'division-view': data.division || 'Not set',
-        'home-levels-view': homeLevelsDisplay,
+        'home-levels-view': homeLevelsDisplay, // Now includes subgame homes
         'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
     };
-    
+
     for (const [id, value] of Object.entries(elements)) {
         const element = document.getElementById(id);
-        if (element) element.textContent = value;
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+        // IMPORTANT: Update home levels with HTML content (separate from text elements)
+    const homeLevelsElement = document.getElementById('home-levels-view');
+    if (homeLevelsElement) {
+        homeLevelsElement.innerHTML = homeLevelsDisplay; // Use innerHTML, not textContent
     }
 
     // Create or update the Next Rank element directly in the main stats row
@@ -871,8 +871,6 @@ displayProfile(data) {
             `;
         }
     }
-
-    
     
     // Check if this is another user's profile (not the current user's)
     const currentUser = auth.currentUser;
@@ -1882,6 +1880,214 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
         }
     }
 
+    // Add these methods to your ProfileViewer class (around line 1900)
+
+setupDynamicSubgameHomes() {
+    const favoriteSubgameSelect = document.getElementById('favorite-subgame-edit');
+    const subgameHomesContainer = document.getElementById('favorite-subgame-homes');
+    const subgameHomesLabel = document.getElementById('favorite-subgame-homes-label');
+    
+    if (!favoriteSubgameSelect || !subgameHomesContainer) return;
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    favoriteSubgameSelect.addEventListener('change', (e) => {
+        const selectedSubgame = e.target.value;
+        
+        if (selectedSubgame && selectedSubgame !== '' && !noHomeSubgames.includes(selectedSubgame)) {
+            // Show the subgame homes section for subgames that support custom homes
+            subgameHomesContainer.style.display = 'block';
+            if (subgameHomesLabel) {
+                subgameHomesLabel.textContent = `${selectedSubgame} Homes:`;
+            }
+            
+            // Update placeholders
+            const home1 = document.getElementById('favorite-subgame-home-1');
+            const home2 = document.getElementById('favorite-subgame-home-2');
+            const home3 = document.getElementById('favorite-subgame-home-3');
+            
+            if (home1) home1.placeholder = `Primary ${selectedSubgame} home`;
+            if (home2) home2.placeholder = `Secondary ${selectedSubgame} home`;
+            if (home3) home3.placeholder = `Tertiary ${selectedSubgame} home`;
+        } else {
+            // Hide the subgame homes section for subgames that don't support homes
+            subgameHomesContainer.style.display = 'none';
+            
+            // Clear the values
+            const home1 = document.getElementById('favorite-subgame-home-1');
+            const home2 = document.getElementById('favorite-subgame-home-2');
+            const home3 = document.getElementById('favorite-subgame-home-3');
+            
+            if (home1) home1.value = '';
+            if (home2) home2.value = '';
+            if (home3) home3.value = '';
+        }
+    });
+}
+
+getFavoriteSubgameHome(homeNumber) {
+    if (!this.currentProfileData || !this.currentProfileData.favoriteSubgame) {
+        return '';
+    }
+    
+    const subgame = this.currentProfileData.favoriteSubgame;
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (noHomeSubgames.includes(subgame)) {
+        return ''; // No custom homes for these subgames
+    }
+    
+    const fieldMap = {
+        'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+        '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+        'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+        'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+        'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+        'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+        'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+    };
+    
+    const fields = fieldMap[subgame];
+    if (fields && fields[homeNumber - 1]) {
+        return this.currentProfileData[fields[homeNumber - 1]] || '';
+    }
+    
+    return '';
+}
+
+getDynamicSubgameHomes() {
+    const favoriteSubgame = document.getElementById('favorite-subgame-edit')?.value.trim();
+    const homes = {};
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && favoriteSubgame !== '' && !noHomeSubgames.includes(favoriteSubgame)) {
+        const home1 = document.getElementById('favorite-subgame-home-1')?.value.trim() || '';
+        const home2 = document.getElementById('favorite-subgame-home-2')?.value.trim() || '';
+        const home3 = document.getElementById('favorite-subgame-home-3')?.value.trim() || '';
+        
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            homes[fields[0]] = home1;
+            homes[fields[1]] = home2;
+            homes[fields[2]] = home3;
+        }
+    }
+    
+    return homes;
+}
+
+formatAllHomesDisplay(data) {
+    // Get standard homes
+    const standardHomes = [data.homeLevel1, data.homeLevel2, data.homeLevel3]
+        .filter(level => level && level.trim() !== '');
+    
+    // Get favorite subgame and its homes
+    const favoriteSubgame = data.favoriteSubgame;
+    let subgameHomes = [];
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame)) {
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            subgameHomes = fields.map(field => data[field])
+                .filter(home => home && home.trim() !== '');
+        }
+    }
+    
+    // Build display
+    let displayParts = [];
+    
+    // Add standard homes
+    if (standardHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>Standard:</strong> ${standardHomes.join(', ')}
+        </div>`);
+    }
+    
+    // Add subgame homes if they exist (only for subgames that support homes)
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame) && subgameHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>${favoriteSubgame}:</strong> ${subgameHomes.join(', ')}
+        </div>`);
+    }
+    
+    // Show favorite subgame even if it doesn't have custom homes
+    if (favoriteSubgame && noHomeSubgames.includes(favoriteSubgame) && standardHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>${favoriteSubgame}:</strong> Uses random/preset maps
+        </div>`);
+    }
+    
+    // Return combined display or fallback
+    if (displayParts.length > 0) {
+        return `<div class="all-homes-display">${displayParts.join('')}</div>`;
+    } else {
+        return 'No home levels set';
+    }
+}
+
+// Enhanced success message display
+showSuccessMessage(message) {
+    // Remove any existing messages
+    const existingMessage = document.querySelector('.success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create success message
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 1rem;
+        border-radius: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(successDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.remove();
+        }
+    }, 3000);
+}
+
     // New helper method to create stats grid
     createStatsGrid(stats, eloRating, nextRank, eloNeeded, eloClass) {
         // Create the stats grid
@@ -1968,43 +2174,61 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
         }
     }
     
-    toggleEditMode(isEditing) {
-        const viewMode = document.querySelector('.view-mode');
-        const editMode = document.querySelector('.edit-mode');
-        
-        if (!viewMode || !editMode) return;
-        
-        if (isEditing && this.currentProfileData) {
-            // Update form fields
-            const editFields = {
-                'profile-image-url': this.currentProfileData.profileImageUrl || '',
-                'motto-edit': this.currentProfileData.motto || '',
-                'favorite-map-edit': this.currentProfileData.favoriteMap || '',
-                'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
-                'favorite-subgame-edit': this.currentProfileData.favoriteSubgame || '',
-                'home-level-1': this.currentProfileData.homeLevel1 || '',
-                'home-level-2': this.currentProfileData.homeLevel2 || '',
-                'home-level-3': this.currentProfileData.homeLevel3 || '',
-                'country-selector': this.currentProfileData.country || ''
-            };
+toggleEditMode(isEditing) {
+    const viewMode = document.querySelector('.view-mode');
+    const editMode = document.querySelector('.edit-mode');
+    
+    if (!viewMode || !editMode) return;
+    
+    if (isEditing && this.currentProfileData) {
+        // Update form fields including ALL profile data and dynamic subgame homes
+        const editFields = {
+            'profile-image-url': this.currentProfileData.profileImageUrl || '',
+            'motto-edit': this.currentProfileData.motto || '',
+            'favorite-map-edit': this.currentProfileData.favoriteMap || '',
+            'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
+            'favorite-subgame-edit': this.currentProfileData.favoriteSubgame || '',
+            'timezone-edit': this.currentProfileData.timezone || '',
+            'division-edit': this.currentProfileData.division || '',
+            'country-selector': this.currentProfileData.country || '',
             
-            // Fill form fields
-            for (const [id, value] of Object.entries(editFields)) {
-                const element = document.getElementById(id);
-                if (element) element.value = value;
-            }
+            // Standard homes
+            'home-level-1': this.currentProfileData.homeLevel1 || '',
+            'home-level-2': this.currentProfileData.homeLevel2 || '',
+            'home-level-3': this.currentProfileData.homeLevel3 || '',
             
-            // Show edit mode
-            viewMode.style.display = 'none';
-            editMode.style.display = 'block';
-        } else {
-            // Show view mode
-            viewMode.style.display = 'block';
-            editMode.style.display = 'none';
+            // Dynamic favorite subgame homes
+            'favorite-subgame-home-1': this.getFavoriteSubgameHome(1),
+            'favorite-subgame-home-2': this.getFavoriteSubgameHome(2),
+            'favorite-subgame-home-3': this.getFavoriteSubgameHome(3)
+        };
+        
+        // Fill form fields
+        for (const [id, value] of Object.entries(editFields)) {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
         }
+        
+        // Setup dynamic subgame homes
+        this.setupDynamicSubgameHomes();
+        
+        // Trigger the subgame change to show/hide homes
+        const favoriteSubgameSelect = document.getElementById('favorite-subgame-edit');
+        if (favoriteSubgameSelect) {
+            favoriteSubgameSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Show edit mode
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    } else {
+        // Show view mode
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
     }
+}
 
-    // When SAVING profiles - preserves all existing data in userProfiles
+
 async handleSubmit(event) {
     event.preventDefault();
     const user = auth.currentUser;
@@ -2015,20 +2239,21 @@ async handleSubmit(event) {
     }
 
     try {
-        // Get form values
-        const profileImageUrl = document.getElementById('profile-image-url').value.trim();
-        const motto = document.getElementById('motto-edit').value.trim();
-        const favoriteMap = document.getElementById('favorite-map-edit').value.trim();
-        const favoriteWeapon = document.getElementById('favorite-weapon-edit').value.trim();
-        const favoriteSubgame = document.getElementById('favorite-subgame-edit').value.trim(); 
-        const homeLevel1 = document.getElementById('home-level-1').value.trim();
-        const homeLevel2 = document.getElementById('home-level-2').value.trim();
-        const homeLevel3 = document.getElementById('home-level-3').value.trim();
-        // Get country selection
-        const country = document.getElementById('country-selector').value.trim();
-        // Add these missing fields
-        const division = document.getElementById('division-edit').value.trim();
-        const timezone = document.getElementById('timezone-edit').value.trim();
+        // Get all form values
+        const profileImageUrl = document.getElementById('profile-image-url')?.value.trim() || '';
+        const motto = document.getElementById('motto-edit')?.value.trim() || '';
+        const favoriteMap = document.getElementById('favorite-map-edit')?.value.trim() || '';
+        const favoriteWeapon = document.getElementById('favorite-weapon-edit')?.value.trim() || '';
+        const favoriteSubgame = document.getElementById('favorite-subgame-edit')?.value.trim() || '';
+        const homeLevel1 = document.getElementById('home-level-1')?.value.trim() || '';
+        const homeLevel2 = document.getElementById('home-level-2')?.value.trim() || '';
+        const homeLevel3 = document.getElementById('home-level-3')?.value.trim() || '';
+        const country = document.getElementById('country-selector')?.value.trim() || '';
+        const division = document.getElementById('division-edit')?.value.trim() || '';
+        const timezone = document.getElementById('timezone-edit')?.value.trim() || '';
+
+        // Get dynamic subgame homes and merge with profile data
+        const dynamicSubgameHomes = this.getDynamicSubgameHomes();
 
         // Update profile data
         const profileData = {
@@ -2041,8 +2266,9 @@ async handleSubmit(event) {
             homeLevel2,
             homeLevel3,
             country,
-            division,  // Add division (Favorite Descent)
-            timezone,  // Add timezone
+            division,
+            timezone,
+            ...dynamicSubgameHomes, // Spread the dynamic subgame homes
             updatedAt: new Date()
         };
 
@@ -2067,9 +2293,10 @@ async handleSubmit(event) {
         await setDoc(doc(db, 'userProfiles', user.uid), updatedProfileData);
         
         // Update cache
-        if (username && playerDataCache.has(username)) {
-            const cachedData = playerDataCache.get(username);
-            playerDataCache.set(username, { ...cachedData, ...updatedProfileData });
+        const cacheKey = `${username}_${this.currentLadder}`;
+        if (username && playerDataCache.has(cacheKey)) {
+            const cachedData = playerDataCache.get(cacheKey);
+            playerDataCache.set(cacheKey, { ...cachedData, ...updatedProfileData });
         }
         
         // Update display
@@ -2242,46 +2469,71 @@ addInvitationSection(profileData) {
     const container = document.querySelector('.profile-container');
     if (!container) return;
     
-    // Get available home levels and subgame
+    // Get available home levels
     const homeLevels = [profileData.homeLevel1, profileData.homeLevel2, profileData.homeLevel3]
         .filter(level => level && level.trim() !== '');
+    
+    // Get favorite subgame and its homes
     const favoriteSubgame = profileData.favoriteSubgame;
+    let subgameHomes = [];
     
-    if (homeLevels.length === 0 && !favoriteSubgame) {
-        return; // No homes or subgame to invite to
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame)) {
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            subgameHomes = fields.map(field => profileData[field])
+                .filter(home => home && home.trim() !== '');
+        }
     }
     
-    // Get user's rank for styling
-    const eloRating = parseInt(profileData.eloRating) || 0;
-    let rankClass = '';
-    let rankName = '';
-    
-    if (eloRating >= 2000) {
-        rankClass = 'elo-emerald';
-        rankName = 'Emerald';
-    } else if (eloRating >= 1800) {
-        rankClass = 'elo-gold';
-        rankName = 'Gold';
-    } else if (eloRating >= 1600) {
-        rankClass = 'elo-silver';
-        rankName = 'Silver';
-    } else if (eloRating >= 1400) {
-        rankClass = 'elo-bronze';
-        rankName = 'Bronze';
-    } else {
-        rankClass = 'elo-unranked';
-        rankName = 'Unranked';
-    }
-    
-    const invitationSection = document.createElement('div');
-    invitationSection.className = `invitation-section ${rankClass}`;
-    
-    // Create consolidated button content
+    // Combine all available invites
     const allInvites = [
-        ...homeLevels.map(level => ({ type: 'home', value: level, icon: 'map', label: level })),
-        ...(favoriteSubgame ? [{ type: 'subgame', value: favoriteSubgame, icon: 'gamepad', label: favoriteSubgame }] : [])
+        // Standard homes
+        ...homeLevels.map(level => ({ 
+            type: 'home', 
+            value: level, 
+            icon: 'map', 
+            label: level,
+            category: 'Standard' 
+        })),
+        
+        // Subgame homes (only for subgames that support custom homes)
+        ...subgameHomes.map(home => ({ 
+            type: 'subgame-home', 
+            value: home, 
+            icon: 'gamepad', 
+            label: `${home}`,
+            category: favoriteSubgame,
+            subgameType: favoriteSubgame
+        })),
+        
+        // General subgame invite (for all favorite subgames, including those without custom homes)
+        ...(favoriteSubgame ? [{ 
+            type: 'subgame', 
+            value: favoriteSubgame, 
+            icon: 'gamepad', 
+            label: favoriteSubgame,
+            category: 'Subgame'
+        }] : [])
     ];
     
+    if (allInvites.length === 0) return;
+    
+    const invitationSection = document.createElement('div');
+    invitationSection.className = `invitation-section`;
+        
     invitationSection.innerHTML = `
         <div class="invitation-header">
             <div class="invitation-title">
@@ -2292,9 +2544,14 @@ addInvitationSection(profileData) {
         </div>
         <div class="invitation-grid">
             ${allInvites.map(invite => `
-                <button class="invite-btn ${rankClass}" data-type="${invite.type}" data-value="${invite.value}">
+                <button class="invite-btn" 
+                        data-type="${invite.type}" 
+                        data-value="${invite.value}"
+                        ${invite.subgameType ? `data-subgame-type="${invite.subgameType}"` : ''}
+                        title="${invite.category}: ${invite.label}">
                     <i class="fas fa-${invite.icon}"></i>
                     <span>${invite.label}</span>
+                    <small>${invite.category}</small>
                 </button>
             `).join('')}
         </div>
@@ -2591,43 +2848,31 @@ addInvitationSection(profileData) {
     // Insert after the profile content
     container.appendChild(invitationSection);
 }
-    async sendInvitation(toUsername, toUserId, type, value) {
+    // Update the sendInvitation method around line 2400
+
+    async sendInvitation(toUsername, toUserId, type, value, subgameType = null) {
         const currentUser = auth.currentUser;
         if (!currentUser) {
             throw new Error('You must be logged in to send invitations');
         }
         
-        // Check if invitation already exists to prevent duplicates
-        const existingInviteQuery = query(
-            collection(db, 'gameInvitations'),
-            where('fromUserId', '==', currentUser.uid),
-            where('toUserId', '==', toUserId),
-            where('type', '==', type),
-            where('value', '==', value),
-            where('status', '==', 'pending'),
-            limit(1)
-        );
+        // Get current user's profile for username
+        const userProfileRef = doc(db, 'userProfiles', currentUser.uid);
+        const userProfileSnap = await getDoc(userProfileRef);
+        const fromUsername = userProfileSnap.exists() ? 
+            userProfileSnap.data().username : 'Anonymous';
         
-        const existingSnapshot = await getDocs(existingInviteQuery);
-        if (!existingSnapshot.empty) {
-            throw new Error('You already have a pending invitation for this setting');
+        // Create invitation message based on type
+        let message = '';
+        if (type === 'home') {
+            message = `${fromUsername} wants to play on your home level: ${value}`;
+        } else if (type === 'subgame-home') {
+            message = `${fromUsername} wants to play ${subgameType} on your home: ${value}`;
+        } else if (type === 'subgame') {
+            message = `${fromUsername} wants to play your favorite subgame: ${value}`;
         }
         
-        // Get current user's profile data efficiently
-        let fromUsername = currentUser.displayName || currentUser.email.split('@')[0];
-        
-        // Try to get username from cache first
-        if (this.currentProfileData && this.currentProfileData.userId === currentUser.uid) {
-            fromUsername = this.currentProfileData.username || fromUsername;
-        } else {
-            // Only fetch if not cached
-            const userProfileDoc = await getDoc(doc(db, 'userProfiles', currentUser.uid));
-            if (userProfileDoc.exists()) {
-                fromUsername = userProfileDoc.data().username || fromUsername;
-            }
-        }
-        
-        // Create invitation document with minimal data
+        // Base invitation data
         const invitationData = {
             fromUserId: currentUser.uid,
             fromUsername: fromUsername,
@@ -2635,15 +2880,28 @@ addInvitationSection(profileData) {
             toUsername: toUsername,
             type: type,
             value: value,
+            message: message,
             status: 'pending',
-            createdAt: new Date(),
-            message: type === 'home' ? 
-                `${fromUsername} invites you to play on ${value}` :
-                `${fromUsername} invites you to play ${value}`
+            createdAt: new Date()
         };
         
+        // Add subgameType field if it's a subgame-home invitation
+        if (type === 'subgame-home' && subgameType) {
+            invitationData.subgameType = subgameType;
+        }
+        
+        // DEBUG: Log the data being sent
+        console.log('Sending invitation data:', invitationData);
+        console.log('Invitation data keys:', Object.keys(invitationData));
+        
         // Add to gameInvitations collection
-        await addDoc(collection(db, 'gameInvitations'), invitationData);
+        try {
+            await addDoc(collection(db, 'gameInvitations'), invitationData);
+            console.log('Invitation sent successfully');
+        } catch (error) {
+            console.error('Failed to send invitation:', error);
+            throw error;
+        }
     }
 }
 
