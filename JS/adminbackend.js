@@ -142,8 +142,8 @@ async function getUserTabPermissions(userEmail) {
         // Define role-based permissions
         // Make sure all role names are lowercase for consistency
         const rolePermissions = {
-            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points'],
-            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points'],
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
             'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights']
         };
@@ -316,6 +316,11 @@ async function initializeAdminDashboard() {
 
         if (allowedTabs.includes('manage-points')) {
             setupManagePointsSection();
+        }
+
+        // Add ribbon management section initialization
+        if (allowedTabs.includes('manage-ribbons')) {
+            setupManageRibbonsSection();
         }
 
         setupDataLoadButtons(allowedTabs);
@@ -567,16 +572,32 @@ function setupDataLoadButtons(allowedTabs = []) {
         setupCreateTestMatchModal();
     }
 
-    
-    // Points management load button
-    if (allowedTabs.includes('manage-points')) {
-        const loadPointsBtn = document.getElementById('load-points-data');
-        if (loadPointsBtn) {
-            loadPointsBtn.addEventListener('click', function() {
-                loadPointsData();
+    // Ribbons management load button
+    if (allowedTabs.includes('manage-ribbons')) {
+        const loadRibbonsBtn = document.getElementById('load-ribbons-data');
+        if (loadRibbonsBtn) {
+            loadRibbonsBtn.addEventListener('click', function() {
+                console.log('Load ribbons data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadRibbonsData()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading ribbons:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
+                        }, 3000);
+                    });
             });
         }
     }
+
     
     console.log('Data load buttons initialized based on permissions');
 }
@@ -5905,6 +5926,41 @@ function setupManagePointsSection() {
     console.log('Manage Points section initialized');
 }
 
+// Setup manage ribbons section
+function setupManageRibbonsSection() {
+    console.log('Setting up Manage Ribbons section');
+    
+    // User search functionality
+    const userSearchInput = document.getElementById('ribbon-user-search');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('input', debounce(searchRibbonUser, 300));
+    }
+    
+    // Search button
+    const searchBtn = document.getElementById('search-ribbon-user-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchRibbonUser);
+    }
+    
+    // Add ribbon form
+    const addRibbonForm = document.getElementById('add-ribbon-form');
+    if (addRibbonForm) {
+        addRibbonForm.addEventListener('submit', addRibbon);
+    }
+    
+    // Search input enter key
+    if (userSearchInput) {
+        userSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchRibbonUser();
+            }
+        });
+    }
+    
+    console.log('Manage Ribbons section initialized');
+}
+
 // Update the modifyUserPoints function to ensure user has points field
 async function modifyUserPoints(userId, action, amount, reason = '') {
     const userRef = doc(db, 'userProfiles', userId);
@@ -6018,4 +6074,241 @@ async function loadPointsOverview() {
         console.error('Error loading points overview:', error);
         tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading users: ' + error.message + '</td></tr>';
     }
+}
+
+// Add these functions to your JS/adminbackend.js
+
+// Load all ribbon data
+async function loadRibbonsData() {
+    const tableBody = document.getElementById('ribbons-overview-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading ribbons data...</td></tr>';
+    
+    try {
+        // Load from all ribbon collections
+        const [d1Ribbons, d2Ribbons, d3Ribbons] = await Promise.all([
+            getDocs(collection(db, 'playerRibbons')),
+            getDocs(collection(db, 'playerRibbonsD2')),  
+            getDocs(collection(db, 'playerRibbonsD3'))
+        ]);
+        
+        tableBody.innerHTML = '';
+        
+        const addRibbonRows = (snapshot, ladder) => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const ribbons = data.ribbons || {};
+                const ribbonCount = Object.keys(ribbons).length;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.username || 'Unknown'}</td>
+                    <td><span class="ladder-badge ${ladder.toLowerCase()}">${ladder}</span></td>
+                    <td>${ribbonCount}</td>
+                    <td>${data.lastUpdated ? new Date(data.lastUpdated.seconds * 1000).toLocaleDateString() : 'Unknown'}</td>
+                    <td>
+                        <button class="btn btn-sm edit-ribbons-btn" data-username="${data.username}" data-ladder="${ladder}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        };
+        
+        addRibbonRows(d1Ribbons, 'D1');
+        addRibbonRows(d2Ribbons, 'D2'); 
+        addRibbonRows(d3Ribbons, 'D3');
+        
+        // Setup edit buttons
+        document.querySelectorAll('.edit-ribbons-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const username = this.dataset.username;
+                const ladder = this.dataset.ladder;
+                editUserRibbons(username, ladder);
+            });
+        });
+        
+        showNotification('Ribbons data loaded successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error loading ribbons:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading ribbons</td></tr>';
+        showNotification('Error loading ribbons data', 'error');
+    }
+}
+// Search for user ribbons
+async function searchRibbonUser() {
+    const username = document.getElementById('ribbon-user-search').value.trim();
+    if (!username) {
+        showNotification('Please enter a username', 'error');
+        return;
+    }
+    
+    try {
+        // Search in all ladders
+        const [d1Doc, d2Doc, d3Doc] = await Promise.all([
+            getDoc(doc(db, 'playerRibbons', username)),
+            getDoc(doc(db, 'playerRibbonsD2', username)),
+            getDoc(doc(db, 'playerRibbonsD3', username))
+        ]);
+        
+        let foundLadder = null;
+        let userData = null;
+        
+        if (d1Doc.exists()) {
+            foundLadder = 'D1';
+            userData = d1Doc.data();
+        } else if (d2Doc.exists()) {
+            foundLadder = 'D2'; 
+            userData = d2Doc.data();
+        } else if (d3Doc.exists()) {
+            foundLadder = 'D3';
+            userData = d3Doc.data();
+        }
+        
+        if (foundLadder) {
+            document.getElementById('current-ribbon-user').textContent = username;
+            document.getElementById('ribbon-target-user').value = username;
+            document.getElementById('ribbon-target-ladder').value = foundLadder;
+            document.getElementById('user-ribbon-management').style.display = 'block';
+            
+            displayCurrentRibbons(userData.ribbons || {});
+            showNotification(`Found ${username} in ${foundLadder} ladder`, 'success');
+        } else {
+            showNotification(`User ${username} not found in any ladder`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error searching user:', error);
+        showNotification('Error searching for user', 'error');
+    }
+}
+// Display current ribbons
+// Display current ribbons
+function displayCurrentRibbons(ribbons) {
+    const container = document.getElementById('current-ribbons-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (Object.keys(ribbons).length === 0) {
+        container.innerHTML = '<p class="no-ribbons">No ribbons found</p>';
+        return;
+    }
+    
+    Object.entries(ribbons).forEach(([ribbonName, ribbonData]) => {
+        const ribbonDiv = document.createElement('div');
+        ribbonDiv.className = 'ribbon-item';
+        ribbonDiv.innerHTML = `
+            <div class="ribbon-info">
+                <strong>${ribbonName}</strong>
+                <span>Level: ${ribbonData.level || 1}</span>
+                <small>Awarded: ${ribbonData.awardedAt ? new Date(ribbonData.awardedAt.seconds * 1000).toLocaleDateString() : 'Unknown'}</small>
+            </div>
+            <button class="btn btn-danger btn-sm remove-ribbon-btn" data-ribbon="${ribbonName}">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        `;
+        container.appendChild(ribbonDiv);
+    });
+    
+    // Setup remove buttons
+    document.querySelectorAll('.remove-ribbon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ribbonName = this.dataset.ribbon;
+            removeRibbon(ribbonName);
+        });
+    });
+}
+
+// Add or update ribbon
+async function addRibbon(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('ribbon-target-user').value;
+    const ladder = document.getElementById('ribbon-target-ladder').value;
+    const ribbonType = document.getElementById('ribbon-type-select').value;
+    const level = parseInt(document.getElementById('ribbon-level').value);
+    
+    if (!username || !ladder || !ribbonType || !level) {
+        showNotification('Please fill all fields', 'error');
+        return;
+    }
+    
+    try {
+        const collectionName = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+        const ribbonRef = doc(db, collectionName, username);
+        
+        // Get current ribbons
+        const ribbonDoc = await getDoc(ribbonRef);
+        const currentRibbons = ribbonDoc.exists() ? ribbonDoc.data().ribbons || {} : {};
+        
+        // Add/update ribbon
+        currentRibbons[ribbonType] = {
+            level: level,
+            awardedAt: serverTimestamp()
+        };
+        
+        // Save updated ribbons
+        await setDoc(ribbonRef, {
+            username: username,
+            ladder: ladder,
+            ribbons: currentRibbons,
+            lastUpdated: serverTimestamp()
+        }, { merge: true });
+        
+        showNotification(`Added ${ribbonType} Level ${level} to ${username}`, 'success');
+        displayCurrentRibbons(currentRibbons);
+        
+        // Clear form
+        document.getElementById('ribbon-type-select').value = '';
+        document.getElementById('ribbon-level').value = '1';
+        
+    } catch (error) {
+        console.error('Error adding ribbon:', error);
+        showNotification('Error adding ribbon', 'error');
+    }
+}
+
+// Remove ribbon
+async function removeRibbon(ribbonName) {
+    const username = document.getElementById('ribbon-target-user').value;
+    const ladder = document.getElementById('ribbon-target-ladder').value;
+    
+    if (!confirm(`Remove ${ribbonName} from ${username}?`)) return;
+    
+    try {
+        const collectionName = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+        const ribbonRef = doc(db, collectionName, username);
+        
+        // Get current ribbons
+        const ribbonDoc = await getDoc(ribbonRef);
+        const currentRibbons = ribbonDoc.exists() ? ribbonDoc.data().ribbons || {} : {};
+        
+        // Remove ribbon
+        delete currentRibbons[ribbonName];
+        
+        // Save updated ribbons
+        await setDoc(ribbonRef, {
+            username: username,
+            ladder: ladder,
+            ribbons: currentRibbons,
+            lastUpdated: serverTimestamp()
+        }, { merge: true });
+        
+        showNotification(`Removed ${ribbonName} from ${username}`, 'success');
+        displayCurrentRibbons(currentRibbons);
+        
+    } catch (error) {
+        console.error('Error removing ribbon:', error);
+        showNotification('Error removing ribbon', 'error');
+    }
+}
+
+// Edit user ribbons (called from table)
+function editUserRibbons(username, ladder) {
+    document.getElementById('ribbon-user-search').value = username;
+    searchRibbonUser();
 }
