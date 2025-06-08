@@ -1565,6 +1565,57 @@ function startInvitationPolling(userId) {
     }, 30000);
 }
 
+// In your reports.js or wherever match submission happens
+import { evaluateRibbonsAfterMatch } from './ribbons.js';
+
+// In your submitReport function or similar match submission function
+async function submitReport(elements) {
+    try {
+        // ... existing match submission logic ...
+        
+        // After successfully submitting the match, evaluate ribbons
+        const matchData = {
+            winnerUsername: winnerUsername,
+            loserUsername: loserUsername,
+            winnerScore: parseInt(elements.winnerScore.value),
+            loserScore: parseInt(elements.loserScore.value),
+            mapPlayed: elements.mapPlayed.value,
+            subgameType: elements.subgameType?.value || 'Standard',
+            winnerELO: winnerELO, // You'll need to get this
+            loserELO: loserELO,   // You'll need to get this
+            eloChange: eloChange, // You'll need to calculate this
+            newELO: newELO,       // Winner's new ELO
+            createdAt: new Date(),
+            ladder: currentGameMode
+        };
+        
+        // Evaluate ribbons for the winner
+        const winnerRibbons = await evaluateRibbonsAfterMatch(matchData, winnerUsername, currentGameMode);
+        
+        // Evaluate ribbons for the loser (some ribbons can be earned by losing)
+        const loserRibbons = await evaluateRibbonsAfterMatch(
+            { ...matchData, winnerUsername: loserUsername, loserUsername: winnerUsername }, 
+            loserUsername, 
+            currentGameMode
+        );
+        
+        // Show notification if ribbons were earned
+        if (Object.keys(winnerRibbons).length > 0) {
+            console.log(`🎖️ ${winnerUsername} earned ribbons:`, winnerRibbons);
+            // You could show a notification here
+        }
+        
+        if (Object.keys(loserRibbons).length > 0) {
+            console.log(`🎖️ ${loserUsername} earned ribbons:`, loserRibbons);
+        }
+        
+        // ... rest of existing submission logic ...
+        
+    } catch (error) {
+        console.error('Error in match submission:', error);
+    }
+}
+
 // Update auth state listener to include invitation polling
 auth.onAuthStateChanged((user) => {
     if (user) {
