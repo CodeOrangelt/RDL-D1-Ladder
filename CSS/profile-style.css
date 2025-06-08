@@ -1154,3 +1154,226 @@
     background-color: rgba(0, 0, 0, 0.4);
     padding: 8px 12px;
 }
+
+/* Dynamic subgame homes styling */
+#favorite-subgame-homes {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+}
+
+#favorite-subgame-homes label {
+    color: #4CAF50;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.home-inputs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.home-inputs-row input {
+    padding: 0.6rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.home-inputs-row input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.home-inputs-row input::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+/* All homes display styling */
+.all-homes-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.homes-section {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.homes-section strong {
+    color: #4CAF50;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+/* Invitation button small category text */
+.invite-btn small {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+    font-weight: normal;
+}
+
+/* Animation for success message */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Add this to your CSS/profile-style.css file */
+
+/* Form section styling */
+.form-section {
+    margin: 1.5rem 0;
+    padding: 0;
+}
+
+.form-section h4 {
+    color: #4CAF50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 0.5rem;
+}
+
+/* Subgame homes group styling */
+.subgame-homes-group {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+}
+
+.subgame-homes-group:last-child {
+    margin-bottom: 0;
+}
+
+.subgame-homes-group label {
+    color: #4CAF50;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-size: 0.95rem;
+}
+
+/* Home inputs row styling */
+.home-inputs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.home-inputs-row input {
+    padding: 0.6rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-inputs-row input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.home-inputs-row input::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+/* Dynamic subgame homes specific styling */
+#favorite-subgame-homes {
+    border-left-color: #FF9800; /* Different color for subgame homes */
+}
+
+#favorite-subgame-homes label {
+    color: #FF9800; /* Orange color for subgame homes label */
+}
+
+#favorite-subgame-homes input:focus {
+    border-color: #FF9800;
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .home-inputs-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .subgame-homes-group {
+        padding: 0.75rem;
+    }
+    
+    .form-section h4 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subgame-homes-group {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .home-inputs-row input {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Legacy form-group compatibility - remove conflicting styles */
+.form-group {
+    margin-bottom: 0; /* Remove default margin for home level form groups */
+}
+
+.form-group label {
+    display: none; /* Hide old labels since we're using the new structure */
+}
+
+/* Hide the old <br> tags that were used for spacing */
+.form-section + br,
+.subgame-homes-group + br {
+    display: none;
+}
+
+.no-homes-message {
+    padding: 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+    color: #FFC107;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.no-homes-message i {
+    margin-right: 0.5rem;
+}
+
+.no-homes-message p {
+    margin: 0;
+    font-style: italic;
+}
