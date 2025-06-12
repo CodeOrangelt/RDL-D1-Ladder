@@ -947,7 +947,7 @@ displayProfile(data) {
             return 0;
         }
     }
-    
+
 async displayMatchHistory(username, matches) {
     try {
         const matchHistoryContainer = containerReferences['match-history'];
@@ -977,13 +977,12 @@ async displayMatchHistory(username, matches) {
             playerElos[player] = await this.getPlayerEloData(player);
         }));
         
-        // Get ELO history for this player - use the SAME logic as the working ELO history
+        // Get ELO history for this player
         const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
                                    (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
         
         const eloHistoryRef = collection(db, eloHistoryCollection);
         
-        // Use the same search logic as the working ELO history container
         const playerId = this.currentProfileData?.userId;
         const searchTerms = [username];
         
@@ -993,17 +992,15 @@ async displayMatchHistory(username, matches) {
         
         let eloHistoryMap = new Map();
         try {
-            // Get ALL ELO history records for this player to match with games
             const eloHistoryQuery = query(
                 eloHistoryRef,
                 where('player', 'in', searchTerms),
                 orderBy('timestamp', 'desc'),
-                limit(200) // Increased limit to get more records for better matching
+                limit(200)
             );
             
             const eloHistorySnapshot = await getDocs(eloHistoryQuery);
             
-            // Create a map of match IDs to ELO changes AND also by timestamp proximity
             const eloRecords = [];
             eloHistorySnapshot.forEach(doc => {
                 const data = doc.data();
@@ -1013,7 +1010,6 @@ async displayMatchHistory(username, matches) {
                     docId: doc.id
                 });
                 
-                // FALLBACK 1: If there's a matchId, add it to the map
                 if (data.matchId) {
                     eloHistoryMap.set(data.matchId, {
                         previousElo: data.previousElo,
@@ -1023,7 +1019,6 @@ async displayMatchHistory(username, matches) {
                     });
                 }
                 
-                // FALLBACK 2: Also try to match by various match ID formats
                 if (data.gameId) {
                     eloHistoryMap.set(data.gameId, {
                         previousElo: data.previousElo,
@@ -1034,14 +1029,12 @@ async displayMatchHistory(username, matches) {
                 }
             });
             
-            // FALLBACK 3: Match by timestamp proximity (within 10 minutes)
+            // Match by timestamp proximity
             matches.forEach(match => {
                 if (!eloHistoryMap.has(match.id) && match.createdAt) {
                     const matchTimestamp = match.createdAt.seconds;
-                    
-                    // Find ELO record within 10 minutes of match time (increased from 5)
                     const closeRecord = eloRecords.find(record => 
-                        Math.abs(record.timestamp - matchTimestamp) < 600 // 10 minutes
+                        Math.abs(record.timestamp - matchTimestamp) < 600
                     );
                     
                     if (closeRecord) {
@@ -1051,79 +1044,6 @@ async displayMatchHistory(username, matches) {
                             change: closeRecord.change || (closeRecord.newElo - closeRecord.previousElo),
                             source: 'timestamp'
                         });
-                    }
-                }
-            });
-            
-            // FALLBACK 4: Sequential matching - match matches to ELO records in chronological order
-            const unmatchedMatches = matches.filter(match => !eloHistoryMap.has(match.id));
-            const unmatchedRecords = eloRecords.filter(record => 
-                !Array.from(eloHistoryMap.values()).some(mapped => 
-                    mapped.previousElo === record.previousElo && 
-                    mapped.newElo === record.newElo &&
-                    Math.abs(mapped.timestamp - record.timestamp) < 60
-                )
-            ).sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
-            
-            // Try to match unmatched items by order and proximity
-            unmatchedMatches.forEach((match, index) => {
-                if (index < unmatchedRecords.length && !eloHistoryMap.has(match.id)) {
-                    const record = unmatchedRecords[index];
-                    if (match.createdAt && record.timestamp) {
-                        const timeDiff = Math.abs(match.createdAt.seconds - record.timestamp);
-                        // If within 30 minutes, consider it a match
-                        if (timeDiff < 1800) {
-                            eloHistoryMap.set(match.id, {
-                                previousElo: record.previousElo,
-                                newElo: record.newElo,
-                                change: record.change || (record.newElo - record.previousElo),
-                                source: 'sequential'
-                            });
-                        }
-                    }
-                }
-            });
-            
-            // FALLBACK 5: Score-based matching for remaining unmatched items
-            const stillUnmatched = matches.filter(match => !eloHistoryMap.has(match.id));
-            const stillUnmatchedRecords = eloRecords.filter(record => 
-                !Array.from(eloHistoryMap.values()).some(mapped => 
-                    mapped.previousElo === record.previousElo && 
-                    mapped.newElo === record.newElo
-                )
-            );
-            
-            stillUnmatched.forEach(match => {
-                if (eloHistoryMap.has(match.id)) return;
-                
-                const isWin = match.winnerUsername === username;
-                const expectedChange = isWin ? 'positive' : 'negative';
-                
-                // Find ELO record that matches the expected outcome
-                const matchingRecord = stillUnmatchedRecords.find(record => {
-                    const actualChange = record.newElo - record.previousElo;
-                    const matchesExpectation = (expectedChange === 'positive' && actualChange > 0) || 
-                                             (expectedChange === 'negative' && actualChange < 0);
-                    
-                    // Also check if timestamp is reasonably close (within 24 hours)
-                    const timeDiff = match.createdAt ? 
-                        Math.abs(match.createdAt.seconds - record.timestamp) : Infinity;
-                    
-                    return matchesExpectation && timeDiff < 86400; // 24 hours
-                });
-                
-                if (matchingRecord) {
-                    eloHistoryMap.set(match.id, {
-                        previousElo: matchingRecord.previousElo,
-                        newElo: matchingRecord.newElo,
-                        change: matchingRecord.change || (matchingRecord.newElo - matchingRecord.previousElo),
-                        source: 'outcome'
-                    });
-                    
-                    // Remove from unmatchedRecords to avoid duplicate matching
-                    const recordIndex = stillUnmatchedRecords.indexOf(matchingRecord);
-                    if (recordIndex > -1) {
-                        stillUnmatchedRecords.splice(recordIndex, 1);
                     }
                 }
             });
@@ -1141,19 +1061,40 @@ async displayMatchHistory(username, matches) {
             return 'elo-unranked';
         };
         
-        // PAGINATION: Split matches into recent (10) and older
-        const recentMatches = matches.slice(0, 10);
-        const olderMatches = matches.slice(10);
+        // IMPORTANT: Only show 10 matches initially
+        const initialMatches = matches.slice(0, 10);
+        const remainingMatches = matches.slice(10);
         const totalMatches = matches.length;
         
-        // Build match history HTML with pagination
+        // Build match history HTML with enhanced filtering including username filter
         matchHistoryContainer.innerHTML = `
             <h2>Match History</h2>
             ${totalMatches === 0 ? 
                 '<p class="no-matches">No matches found</p>' : 
                 `
-                <div class="match-history-stats">
-                    <p>Showing ${Math.min(10, totalMatches)} of ${totalMatches} matches</p>
+                <div class="match-history-controls">
+                    <div class="match-history-stats">
+                        <p id="match-stats-display-${this.currentLadder}">Showing ${Math.min(10, totalMatches)} of ${totalMatches} matches</p>
+                    </div>
+                    <div class="match-history-filters">
+                        <select id="match-filter-result-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Matches</option>
+                            <option value="wins">Wins Only</option>
+                            <option value="losses">Losses Only</option>
+                        </select>
+                        <select id="match-filter-map-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Maps</option>
+                            ${this.getUniqueMapOptions(matches)}
+                        </select>
+                        <input type="text" id="match-filter-username-${this.currentLadder}" class="match-filter-input" placeholder="Filter by opponent...">
+                        <select id="match-filter-timeframe-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Time</option>
+                            <option value="last7">Last 7 Days</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="last90">Last 90 Days</option>
+                        </select>
+                        <button id="clear-filters-${this.currentLadder}" class="clear-filters-btn">Clear Filters</button>
+                    </div>
                 </div>
                 <table class="match-history-table">
                     <thead>
@@ -1166,27 +1107,20 @@ async displayMatchHistory(username, matches) {
                             <th>ELO Change</th>
                         </tr>
                     </thead>
-                    <tbody class="recent-matches">
-                        ${this.renderMatchRows(recentMatches, username, playerElos, eloHistoryMap, getEloClass)}
+                    <tbody id="match-history-tbody-${this.currentLadder}">
+                        ${this.renderMatchRows(initialMatches, username, playerElos, eloHistoryMap, getEloClass)}
                     </tbody>
-                    ${olderMatches.length > 0 ? `
-                    <tbody class="older-matches" style="display: none;">
-                        ${this.renderMatchRows(olderMatches, username, playerElos, eloHistoryMap, getEloClass)}
-                    </tbody>
-                    ` : ''}
-
                 </table>
-                ${olderMatches.length > 0 ? `
+                ${remainingMatches.length > 0 ? `
                 <div class="match-history-pagination">
-                    <button class="show-more-matches-btn" onclick="this.style.display='none'; document.querySelector('.older-matches').style.display='table-row-group'; document.querySelector('.show-less-matches-btn').style.display='inline-block';">
-                        Show More Matches (${olderMatches.length})
+                    <button class="load-more-matches-btn" id="load-more-${this.currentLadder}" data-loaded="10">
+                        Load More Matches (${remainingMatches.length} remaining)
                     </button>
-                    <button class="show-less-matches-btn" style="display: none;" onclick="this.style.display='none'; document.querySelector('.older-matches').style.display='none'; document.querySelector('.show-more-matches-btn').style.display='inline-block';">
-                        Show Less
-                    </button>
+                    <div class="pagination-info">
+                        <span id="pagination-info-${this.currentLadder}">Loaded: 10 of ${totalMatches}</span>
+                    </div>
                 </div>
                 ` : ''}
-
                 <div class="match-history-footer">
                     <p class="footer-note">Match data is updated regularly. ELO changes may take time to reflect.</p>
                 </div>
@@ -1194,75 +1128,336 @@ async displayMatchHistory(username, matches) {
             }
         `;
         
-        // Add CSS for pagination styling if not already present
-        if (!document.getElementById('match-history-pagination-styles')) {
-            const styleEl = document.createElement('style');
-            styleEl.id = 'match-history-pagination-styles';
-            styleEl.textContent = `
-                .match-history-stats {
-                    margin-bottom: 1rem;
-                    color: #aaa;
-                    font-size: 0.9rem;
-                }
-                
-                .match-history-pagination {
-                    text-align: center;
-                    margin-top: 1rem;
-                    padding-top: 1rem;
-                    border-top: 1px solid #333;
-                }
-                
-                .show-more-matches-btn, .show-less-matches-btn {
-                    background: #333;
-                    border: 1px solid #555;
-                    color: white;
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 0.9rem;
-                    transition: all 0.3s ease;
-                }
-                
-                .show-more-matches-btn:hover, .show-less-matches-btn:hover {
-                    background: #444;
-                    border-color: #666;
-                    transform: translateY(-1px);
-                }
-                
-                .no-matches {
-                    text-align: center;
-                    color: #666;
-                    font-style: italic;
-                    padding: 2rem;
-                }
-                
-                .elo-change-positive {
-                    color: #4CAF50;
-                    font-weight: bold;
-                }
-                .elo-change-negative {
-                    color: #F44336;
-                    font-weight: bold;
-                }
-                .elo-change-neutral {
-                    color: #888;
-                }
-                .estimated-change {
-                    opacity: 0.8;
-                    font-style: italic;
-                }
-                .match-history-table th:last-child,
-                .match-history-table td:last-child {
-                    text-align: center;
-                    min-width: 120px;
-                }
-            `;
-            document.head.appendChild(styleEl);
+        // Set up enhanced filtering with proper 10-match loading
+        if (totalMatches > 0) {
+            this.setupEnhancedMatchFilter(username, matches, playerElos, eloHistoryMap, getEloClass);
         }
+        
+// Add CSS for enhanced controls including username input
+if (!document.getElementById('match-history-enhanced-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'match-history-enhanced-styles';
+    styleEl.textContent = `
+        .match-history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border-radius: 6px;
+            border: 1px solid #444;
+            gap: 1rem;
+        }
+        
+        .match-history-stats {
+            margin: 0;
+            min-width: 150px;
+        }
+        
+        .match-history-stats p {
+            margin: 0;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .match-history-filters {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .match-filter-select, .match-filter-input {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .match-filter-select {
+            cursor: pointer;
+        }
+        
+        .match-filter-input {
+            min-width: 140px;
+        }
+        
+        .match-filter-input::placeholder {
+            color: #888;
+        }
+        
+        .match-filter-select:hover, .match-filter-input:hover {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .match-filter-select:focus, .match-filter-input:focus {
+            outline: none;
+            border-color: #888;
+            box-shadow: 0 0 0 2px rgba(136, 136, 136, 0.2);
+        }
+        
+        .clear-filters-btn {
+            background: #555;
+            border: 1px solid #666;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-filters-btn:hover {
+            background: #666;
+        }
+        
+        .match-history-pagination {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+        
+        .load-more-matches-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .load-more-matches-btn:hover {
+            background: #444;
+            transform: translateY(-1px);
+        }
+        
+        .load-more-matches-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .pagination-info {
+            margin-top: 0.5rem;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .match-history-controls {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .match-history-filters {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .match-filter-select, .match-filter-input {
+                min-width: 100px;
+                flex: 1;
+            }
+        }
+    `;
+    document.head.appendChild(styleEl);
+}
     } catch (error) {
         console.error('Error displaying match history:', error);
         this.showErrorInContainer('match-history', 'Failed to load match history');
     }
+}
+// Enhanced version with username filtering
+setupEnhancedMatchFilter(username, allMatches, playerElos, eloHistoryMap, getEloClass) {
+    const resultFilter = document.getElementById(`match-filter-result-${this.currentLadder}`);
+    const mapFilter = document.getElementById(`match-filter-map-${this.currentLadder}`);
+    const usernameFilter = document.getElementById(`match-filter-username-${this.currentLadder}`);
+    const timeFilter = document.getElementById(`match-filter-timeframe-${this.currentLadder}`);
+    const clearFiltersBtn = document.getElementById(`clear-filters-${this.currentLadder}`);
+    const loadMoreBtn = document.getElementById(`load-more-${this.currentLadder}`);
+    
+    if (!resultFilter || !mapFilter || !usernameFilter || !timeFilter) return;
+    
+    // Store current state
+    let currentlyLoaded = 10;
+    let filteredMatches = allMatches;
+    
+    // Apply all filters function
+    const applyFilters = () => {
+        const resultValue = resultFilter.value;
+        const mapValue = mapFilter.value;
+        const usernameValue = usernameFilter.value.trim().toLowerCase();
+        const timeValue = timeFilter.value;
+        
+        // Start with all matches
+        let filtered = [...allMatches];
+        
+        // Apply result filter
+        if (resultValue === 'wins') {
+            filtered = filtered.filter(match => match.winnerUsername === username);
+        } else if (resultValue === 'losses') {
+            filtered = filtered.filter(match => match.loserUsername === username);
+        }
+        
+        // Apply map filter
+        if (mapValue !== 'all') {
+            filtered = filtered.filter(match => match.mapPlayed === mapValue);
+        }
+        
+        // Apply username filter (search opponent names)
+        if (usernameValue !== '') {
+            filtered = filtered.filter(match => {
+                const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+                return opponent.toLowerCase().includes(usernameValue);
+            });
+        }
+        
+        // Apply time filter
+        if (timeValue !== 'all') {
+            const now = new Date();
+            const cutoffDate = new Date();
+            
+            switch (timeValue) {
+                case 'last7':
+                    cutoffDate.setDate(now.getDate() - 7);
+                    break;
+                case 'last30':
+                    cutoffDate.setDate(now.getDate() - 30);
+                    break;
+                case 'last90':
+                    cutoffDate.setDate(now.getDate() - 90);
+                    break;
+            }
+            
+            filtered = filtered.filter(match => {
+                if (!match.createdAt) return false;
+                const matchDate = new Date(match.createdAt.seconds * 1000);
+                return matchDate >= cutoffDate;
+            });
+        }
+        
+        filteredMatches = filtered;
+        currentlyLoaded = Math.min(10, filtered.length);
+        
+        // Update display
+        this.updateMatchDisplay(filteredMatches, currentlyLoaded, username, playerElos, eloHistoryMap, getEloClass);
+        
+        // Update stats
+        const statsDisplay = document.getElementById(`match-stats-display-${this.currentLadder}`);
+        if (statsDisplay) {
+            const hasActiveFilters = resultValue !== 'all' || mapValue !== 'all' || usernameValue !== '' || timeValue !== 'all';
+            if (hasActiveFilters) {
+                statsDisplay.textContent = `Showing ${currentlyLoaded} of ${filtered.length} filtered matches (${allMatches.length} total)`;
+            } else {
+                statsDisplay.textContent = `Showing ${currentlyLoaded} of ${allMatches.length} matches`;
+            }
+        }
+        
+        // Update load more button
+        if (loadMoreBtn) {
+            const remaining = filtered.length - currentlyLoaded;
+            if (remaining > 0) {
+                loadMoreBtn.textContent = `Load More Matches (${remaining} remaining)`;
+                loadMoreBtn.style.display = 'block';
+                loadMoreBtn.disabled = false;
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+        
+        // Update pagination info
+        const paginationInfo = document.getElementById(`pagination-info-${this.currentLadder}`);
+        if (paginationInfo) {
+            paginationInfo.textContent = `Loaded: ${currentlyLoaded} of ${filtered.length}`;
+        }
+    };
+    
+    // Add event listeners
+    resultFilter.addEventListener('change', applyFilters);
+    mapFilter.addEventListener('change', applyFilters);
+    timeFilter.addEventListener('change', applyFilters);
+    
+    // Add debounced input listener for username filter to avoid filtering on every keystroke
+    let usernameFilterTimeout;
+    usernameFilter.addEventListener('input', () => {
+        clearTimeout(usernameFilterTimeout);
+        usernameFilterTimeout = setTimeout(applyFilters, 300); // 300ms delay
+    });
+    
+    // Clear filters functionality
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            resultFilter.value = 'all';
+            mapFilter.value = 'all';
+            usernameFilter.value = '';
+            timeFilter.value = 'all';
+            applyFilters();
+        });
+    }
+    
+    // Load more functionality - ONLY loads 10 more at a time
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            const nextBatch = Math.min(10, filteredMatches.length - currentlyLoaded);
+            if (nextBatch > 0) {
+                currentlyLoaded += nextBatch;
+                this.updateMatchDisplay(filteredMatches, currentlyLoaded, username, playerElos, eloHistoryMap, getEloClass);
+                
+                // Update button and info
+                const remaining = filteredMatches.length - currentlyLoaded;
+                if (remaining > 0) {
+                    loadMoreBtn.textContent = `Load More Matches (${remaining} remaining)`;
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+                
+                const paginationInfo = document.getElementById(`pagination-info-${this.currentLadder}`);
+                if (paginationInfo) {
+                    paginationInfo.textContent = `Loaded: ${currentlyLoaded} of ${filteredMatches.length}`;
+                }
+                
+                const statsDisplay = document.getElementById(`match-stats-display-${this.currentLadder}`);
+                if (statsDisplay) {
+                    const hasActiveFilters = resultFilter.value !== 'all' || mapFilter.value !== 'all' || usernameFilter.value.trim() !== '' || timeFilter.value !== 'all';
+                    if (hasActiveFilters) {
+                        statsDisplay.textContent = `Showing ${currentlyLoaded} of ${filteredMatches.length} filtered matches (${allMatches.length} total)`;
+                    } else {
+                        statsDisplay.textContent = `Showing ${currentlyLoaded} of ${allMatches.length} matches`;
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Helper method to update match display
+updateMatchDisplay(matches, showCount, username, playerElos, eloHistoryMap, getEloClass) {
+    const tbody = document.getElementById(`match-history-tbody-${this.currentLadder}`);
+    if (!tbody) return;
+    
+    const matchesToShow = matches.slice(0, showCount);
+    tbody.innerHTML = this.renderMatchRows(matchesToShow, username, playerElos, eloHistoryMap, getEloClass);
+}
+
+// Helper method to get unique map options for filter
+getUniqueMapOptions(matches) {
+    const uniqueMaps = [...new Set(matches.map(match => match.mapPlayed).filter(map => map && map.trim() !== ''))]
+        .sort();
+    
+    return uniqueMaps.map(map => `<option value="${map}">${map}</option>`).join('');
 }
 
 renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
