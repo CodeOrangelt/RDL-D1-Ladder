@@ -1014,66 +1014,47 @@ body {
 
 /* Subgame type color coding */
 .match-subgame.fusion-match {
-    color: #fff;
-    background-color: rgba(138, 43, 226, 0.2);
-    border-color: rgba(138, 43, 226, 0.5);
+    background-color: #800080; /* Purple */
+    color: white;
 }
 
 .match-subgame.missiles-6plus {
-    color: #fff;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.3), rgba(30, 144, 255, 0.3));
-    border: 1px solid rgba(34, 139, 34, 0.6);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background-color: #279927; /* Light green */
+    color: rgb(255, 255, 255);
 }
 
 .match-subgame.weapon-imbalance {
-    color: #000;
-    background-color: rgba(255, 215, 0, 0.3);
-    border-color: rgba(255, 215, 0, 0.6);
+    background-color: #ADD8E6; /* Light blue */
+    color: black;
 }
 
 .match-subgame.blind-match {
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-color: rgba(255, 255, 255, 0.3);
+    background-color: #000000; /* Black */
+    color: white;
 }
 
 .match-subgame.rematch {
-    color: #fff;
-    background-color: rgba(30, 144, 255, 0.2);
-    border-color: rgba(30, 144, 255, 0.5);
+    /* Keep existing colors - no changes needed */
 }
 
 .match-subgame.disorientation {
-    color: #fff;
-    background: linear-gradient(135deg, 
-        rgba(34, 139, 34, 0.2) 0%, 
-        rgba(138, 43, 226, 0.2) 50%, 
-        rgba(255, 255, 0, 0.2) 100%);
-    border: 1px solid rgba(138, 43, 226, 0.5);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background-color: #ffe602; /* Crimson red */
+    color: rgb(0, 0, 0);
 }
 
 .match-subgame.ratting {
-    color: #fff;
-    background-color: rgba(220, 20, 60, 0.2);
-    border-color: rgba(220, 20, 60, 0.5);
+    background-color: #FFFF00; /* Bright yellow */
+    color: black;
 }
 
 .match-subgame.altered-powerups {
-    color: #000;
-    background-color: rgba(0, 255, 255, 0.2);
-    border-color: rgba(0, 255, 255, 0.5);
+    background-color: #808080; /* Grey */
+    color: white;
 }
 
 .match-subgame.mega-match {
-    color: #fff;
-    background: linear-gradient(135deg, 
-        rgba(255, 0, 255, 0.3) 0%, 
-        rgba(255, 215, 0, 0.3) 50%, 
-        rgba(255, 0, 0, 0.3) 100%);
-    border: 1px solid rgba(255, 0, 255, 0.6);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background-color: #FF0000; /* Bright red */
+    color: white;
 }
 
 /* Date - hugs right side */

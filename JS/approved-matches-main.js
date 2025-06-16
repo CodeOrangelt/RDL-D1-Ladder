@@ -783,13 +783,14 @@ async function renderMatchCards(docsData) {
 function getSubgameClass(subgameType) {
     const subgameClassMap = {
         'Fusion Match': 'fusion-match',
-        '≥6 missiles': 'missiles-6plus',
+        '≥6 Missiles': 'missiles-6plus',  // Fixed: capital M
+        '≥6 missiles': 'missiles-6plus',  // Support both variants
         'Weapon Imbalance': 'weapon-imbalance',
         'Blind Match': 'blind-match',
         'Rematch': 'rematch',
         'Disorientation': 'disorientation',
         'Ratting': 'ratting',
-        'Altered Powerups': 'altered-power-ups',
+        'Altered Powerups': 'altered-powerups',  // Fixed: no hyphen
         'Mega Match': 'mega-match' 
     };
     
