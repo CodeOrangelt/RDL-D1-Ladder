@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Compeittions - RDL</title>
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    
+    <!-- Core Styles - matching your other pages -->
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Main container matching your design pattern */
+        .maps-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: white;
+        }
+        
+        /* Page title matching your other pages */
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #f0f0f0;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Maps section using your section design pattern */
+        .maps-section {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Section title matching your store sections */
+        .section-title {
+            color: #f0f0f0;
+            font-size: 1.8rem;
+            margin-bottom: 1px;
+            text-align: center;
+        }
+        
+        /* Maps grid using your items grid pattern */
+        .maps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        /* Map item matching your store item design */
+        .map-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .map-item:hover {
+            transform: translateY(-5px);
+            border-color: #f0f0f0;
+            box-shadow: 0 8px 25px rgba(80, 200, 120, 0.2);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* Map image */
+        .map-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        /* Map info section */
+        .map-info {
+            padding: 20px;
+        }
+        
+        /* Map title matching your item titles */
+        .map-title {
+            color: #f0f0f0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+        
+        .map-item:hover .map-title {
+            color: #f0f0f0;
+        }
+        
+        /* Map author */
+        .map-author {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .map-author i {
+            color: #f0f0f0;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .maps-main {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .maps-section {
+                padding: 20px;
+            }
+            
+            .maps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .maps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+
+    <main class="maps-main">
+        <h1 class="page-title">
+            <i></i> Redux Descent League Mapping Competition June 2025 <p class="section-title"; style="font-size: small;">Theme: Standard Competitive </p>
+        </h1>
+
+        <div class="maps-section">
+            <p class="section-title"; style="text-align: center; color: goldenrod">
+                     Results will be announced on June 16th 2025. 
+            </p>
+            
+            <div class="maps-grid">
+                <a href="https://sectorgame.com/dxma/mission/?m=2225" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/92/2225/noether1_3.png" alt="Noether Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Noether</h3>
+                        <p class="map-author">
+                             by Daylily
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2236" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/16/2236/scrn0000.png" alt="Juniper Canopy Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Juniper Canopy</h3>
+                        <p class="map-author">
+                             by Seawrym
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2231" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/59/2231/2025-06-08.14-43-46.png" alt="Under Construction Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Under Construction</h3>
+                        <p class="map-author">
+                             by nightsurfer
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2235" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/7/2235/scrn0101.png" alt="Eccentric Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Eccentric</h3>
+                        <p class="map-author">
+                             by Belphegor Prime
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2228" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/44/2228/scrn0006.png" alt="Brittle Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Brittle</h3>
+                        <p class="map-author">
+                             by Code
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2233" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/93/2233/2025-06-13.14-20-59.png" alt="Mutually Assured Destruction Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Mutually Assured Destruction</h3>
+                        <p class="map-author">
+                            by worldoffood
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2230" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/files/img/12/2230/fumble.png" alt="Fumble Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Fumble</h3>
+                        <p class="map-author">
+                            by Lee
+                        </p>
+                    </div>
+                </a>
+
+                <a href="https://sectorgame.com/dxma/mission/?m=2237" target="_blank" class="map-item">
+                    <img src="https://sectorgame.com/dxma/dxma/noimg.png" alt="Paradise Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Paradise</h3>
+                        <p class="map-author">
+                             by B2af
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts matching your other pages -->
+    <script type="module" src="./JS/current-user.js"></script>
+    <script type="module" src="./JS/logout.js"></script>
+    
+    <script>
+        // Load nav and footer - matching your pattern
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>
