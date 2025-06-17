@@ -220,7 +220,7 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
     }
 }
 
-// Optimized displayLadder with batch processing
+// Fix the ELO trend indicator update to match D1/D2 pattern exactly
 async function updateLadderDisplayD3(ladderData) {
     // Sort by position before displaying
     ladderData.sort((a, b) => a.position - b.position);
@@ -264,15 +264,9 @@ async function updateLadderDisplayD3(ladderData) {
     // Append all rows at once (much faster than individual DOM operations)
     tbody.innerHTML = rowsHtml;
     
-    // Get all ELO changes and update indicators
+    // Get all ELO changes and update indicators - MATCH D1/D2 PATTERN EXACTLY
     getPlayersLastEloChangesD3(usernames)
         .then(changes => {
-            console.log('D3: Got changes map with', changes.size, 'entries:', 
-                Array.from(changes.entries())
-                    .filter(([_, change]) => change !== 0)
-                    .map(([name, change]) => `${name}: ${change}`)
-            );
-            
             // Create a mapping of username to row for quick updates
             const rowMap = new Map();
             tbody.querySelectorAll('tr').forEach((row, index) => {
@@ -289,44 +283,19 @@ async function updateLadderDisplayD3(ladderData) {
                         // Format the change value with + or - sign
                         const formattedChange = change > 0 ? `+${change}` : `${change}`;
                         
-                        // Clear any existing indicators
-                        const existingIndicator = eloCell.querySelector('.trend-indicator');
-                        if (existingIndicator) {
-                            existingIndicator.remove();
+                        // Find the indicator element that's already in the DOM
+                        const indicator = eloCell.querySelector('.trend-indicator');
+                        if (indicator) {
+                            // Update the existing indicator (EXACTLY like D1/D2)
+                            indicator.textContent = formattedChange;
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.85em';
+                            indicator.style.display = 'inline';
+                            indicator.style.visibility = 'visible';
+                            indicator.style.opacity = '1';
                         }
-                        
-                        // Convert eloCell to use flexbox for alignment - LIKE D1 LADDER
-                        eloCell.style.display = 'flex';
-                        eloCell.style.alignItems = 'center';
-                        
-                        // Create a wrapper for the ELO value to maintain alignment
-                        const eloValue = document.createElement('span');
-                        eloValue.textContent = eloCell.textContent;
-                        eloValue.style.flexGrow = '1';
-                        
-                        // Clear the cell and add the value back
-                        eloCell.textContent = '';
-                        eloCell.appendChild(eloValue);
-                        
-                        // Add numeric indicator with the actual value
-                        const indicator = document.createElement('span');
-                        indicator.className = 'trend-indicator';
-                        indicator.textContent = formattedChange;
-                        
-                        // Use absolute positioning EXACTLY like D1 ladder
-                        eloCell.style.position = 'relative'; // Make the cell a positioned container
-                        
-                        // Style based on positive/negative change
-                        indicator.style.color = change > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-                        indicator.style.position = 'absolute';
-                        indicator.style.right = '5px';
-                        indicator.style.top = '50%';
-                        indicator.style.transform = 'translateY(-50%)';
-                        indicator.style.fontWeight = 'bold';
-                        indicator.style.fontSize = '0.7em'; // Match D1's font size
-                        
-                        eloCell.appendChild(indicator);
-                                            }
+                    }
                 }
             });
         })
@@ -408,11 +377,11 @@ async function fetchBatchMatchStatsD3(usernames) {
     return matchStats;
 }
 
-// Create player row function for D3
+// Fix the createPlayerRowD3 function to match D1/D2 structure exactly
 function createPlayerRowD3(player, stats) {
     const elo = parseFloat(player.elo) || 0;
     
-    // Set ELO-based colors
+    // Set ELO-based colors (same as D1/D2)
     let usernameColor = 'gray'; // Default for unranked
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
@@ -424,17 +393,16 @@ function createPlayerRowD3(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
     
-    // Create streak HTML if player is #1 - UPDATED IMPLEMENTATION
+    // Create streak HTML if player is #1 (same as D1/D2)
     let streakHtml = '';
     if (player.position === 1 && player.firstPlaceDate) {
         const streakDays = calculateStreakDays(player.firstPlaceDate);
         if (streakDays > 0) {
-            // Change margin-left from 5px to -79px to match D1 ladder
             streakHtml = `<span style="font-size:0.9em; color:#FF4500; margin-left:-79px;">${streakDays}d</span>`;
         }
     }
     
-    // Create flag HTML if player has country
+    // Create flag HTML if player has country (same as D1/D2)
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
@@ -447,14 +415,21 @@ function createPlayerRowD3(player, stats) {
     <tr>
         <td>${player.position}</td>
         <td style="position: relative;">
-            <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d3" 
-               style="color: ${usernameColor}; text-decoration: none;">
-                ${player.username}
-            </a>
+            <div class="username-wrapper">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d3" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+            </div>
             ${streakHtml}
-            ${flagHtml}
         </td>
-        <td style="color: ${usernameColor}; position: relative;">${elo}</td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
         <td>${stats.totalMatches}</td>
         <td>${stats.wins}</td>
         <td>${stats.losses}</td>
@@ -463,29 +438,64 @@ function createPlayerRowD3(player, stats) {
     </tr>`;
 }
 
-// Function for D3 ELO change tracking
+// Replace the getPlayersLastEloChangesD3 function with this improved version:
+
 async function getPlayersLastEloChangesD3(usernames) {
-    // Initialize map with default values
     const changes = new Map();
     usernames.forEach(username => changes.set(username, 0));
     
     try {
+        console.log('D3: Looking for ELO changes for users:', usernames);
+        
+        // ADD MISSING PLAYER ID MAPPING (like D1 & D2)
+        const playerIdToUsername = new Map();
+        const playersQuery = await getDocs(collection(db, 'playersD3'));
+        playersQuery.forEach(doc => {
+            const data = doc.data();
+            if (data.username) {
+                playerIdToUsername.set(doc.id, data.username);
+            }
+        });
+        
+        console.log('D3: Player ID mappings:', Array.from(playerIdToUsername.entries()));
+        
         // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistoryD3');
         const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
         const eloSnapshot = await getDocs(eloQuery);
         
         if (eloSnapshot.empty) {
-            return changes;
+            console.log('D3: eloHistoryD3 is empty, trying fallback...');
+        } else {
+            console.log(`D3: Found ${eloSnapshot.size} entries in eloHistoryD3`);
         }
-                
+        
         // Process entries and find most recent change for each player
         const entriesByUsername = new Map();
         
         eloSnapshot.forEach(doc => {
             const entry = doc.data();
-            // Try multiple field names for username
-            const username = entry.player || entry.playerUsername || entry.username;
+            let username = null;
+            
+            // ENHANCED FIELD MATCHING (like D1 & D2)
+            // Try direct username fields first
+            if (entry.username) username = entry.username;
+            else if (entry.playerUsername) username = entry.playerUsername;
+            else if (entry.player && typeof entry.player === 'string') username = entry.player;
+            // Try player ID lookup (THIS WAS MISSING)
+            else if (entry.player && playerIdToUsername.has(entry.player)) {
+                username = playerIdToUsername.get(entry.player);
+            }
+            // Try other ID fields
+            else if (entry.playerId && playerIdToUsername.has(entry.playerId)) {
+                username = playerIdToUsername.get(entry.playerId);
+            }
+            
+            // Debug pilot specifically
+            if (entry.username === 'pilot' || entry.playerUsername === 'pilot' || 
+                (entry.player && playerIdToUsername.get(entry.player) === 'pilot')) {
+                console.log('D3: Found pilot entry:', entry);
+            }
             
             if (username && usernames.includes(username)) {
                 if (!entriesByUsername.has(username)) {
@@ -499,20 +509,19 @@ async function getPlayersLastEloChangesD3(usernames) {
             }
         });
         
-        // For each player, find and record their most recent ELO change
+        console.log(`D3: Found entries for ${entriesByUsername.size} players`);
+        
+        // Process each player's entries
         entriesByUsername.forEach((playerEntries, username) => {
             if (playerEntries.length > 0) {
-                // Sort entries by timestamp descending to ensure we get the most recent
                 playerEntries.sort((a, b) => b.timestamp - a.timestamp);
                 
-                // Use the first (most recent) entry that has valid change information
                 const recentEntry = playerEntries.find(entry => 
                     entry.change !== undefined || 
                     (entry.newElo !== undefined && entry.previousElo !== undefined)
                 );
                 
                 if (recentEntry) {
-                    // Calculate ELO change
                     let eloChange;
                     if (recentEntry.change !== undefined) {
                         eloChange = recentEntry.change;
@@ -521,15 +530,17 @@ async function getPlayersLastEloChangesD3(usernames) {
                     }
                     
                     if (eloChange !== undefined) {
-                        // Store the change
                         changes.set(username, eloChange);
+                        console.log(`D3: ${username} ELO change: ${eloChange}`);
                     }
                 }
             }
         });
         
-        // If no changes found in D3 history, check main history collection as fallback
-        if (entriesByUsername.size === 0) {            
+        // Enhanced fallback with better logging
+        if (entriesByUsername.size === 0) {
+            console.log('D3: No entries found in eloHistoryD3, trying fallback...');
+            
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
                 fallbackRef, 
@@ -540,10 +551,16 @@ async function getPlayersLastEloChangesD3(usernames) {
             
             try {
                 const fallbackSnapshot = await getDocs(fallbackQuery);
-                            
+                console.log(`D3: Found ${fallbackSnapshot.size} fallback entries`);
+                
                 fallbackSnapshot.forEach(doc => {
                     const entry = doc.data();
-                    const username = entry.player || entry.playerUsername || entry.username;
+                    let username = entry.username || entry.playerUsername;
+                    
+                    // Try player ID lookup in fallback too
+                    if (!username && entry.player && playerIdToUsername.has(entry.player)) {
+                        username = playerIdToUsername.get(entry.player);
+                    }
                     
                     if (username && usernames.includes(username)) {
                         const eloChange = entry.change || 
@@ -557,11 +574,16 @@ async function getPlayersLastEloChangesD3(usernames) {
                     }
                 });
             } catch (fallbackError) {
-                console.log('D3: Error checking fallback history:', fallbackError);
+                console.log('D3: Fallback query failed:', fallbackError);
             }
         }
+        
+        // Final summary
+        const nonZeroChanges = Array.from(changes.entries()).filter(([_, change]) => change !== 0);
+        console.log('D3: Final ELO changes:', nonZeroChanges);
+        
     } catch (error) {
-        console.error('Error fetching ELO history for D3:', error);
+        console.error('D3: Error fetching ELO history:', error);
     }
     
     return changes;

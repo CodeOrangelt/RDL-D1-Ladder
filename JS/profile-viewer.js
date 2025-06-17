@@ -222,48 +222,58 @@ async displayRibbons(username) {
     }
 }
     
-    setupToggleButtons() {
-        const d1Button = document.getElementById('profile-d1-toggle');
-        const d2Button = document.getElementById('profile-d2-toggle');
-        const d3Button = document.getElementById('profile-d3-toggle');
-        
-        if (d1Button && d2Button && d3Button) {
-            // Set initial active state
-            if (this.currentLadder === 'D1') {
-                d1Button.classList.add('active');
-                d2Button.classList.remove('active');
-                d3Button.classList.remove('active');
-            } else if (this.currentLadder === 'D2') {
-                d2Button.classList.add('active');
-                d1Button.classList.remove('active');
-                d3Button.classList.remove('active');
-            } else {
-                d3Button.classList.add('active');
-                d1Button.classList.remove('active');
-                d2Button.classList.remove('active');
-            }
-            
-            // Add click handlers
-            d1Button.addEventListener('click', () => {
-                this.switchLadder('D1');
-            });
-            
-            d2Button.addEventListener('click', () => {
-                this.switchLadder('D2');
-            });
-
-            d3Button.addEventListener('click', () => {
-                this.switchLadder('D3');
-            });
-        }
-    }
+    // Fix the profile toggle to properly handle D3 ladder parameters
+setupToggleButtons() {
+    const d1Button = document.getElementById('profile-d1-toggle');
+    const d2Button = document.getElementById('profile-d2-toggle');
+    const d3Button = document.getElementById('profile-d3-toggle');
     
-    async switchLadder(ladder) {
+    if (d1Button && d2Button && d3Button) {
+        // Set initial active state
+        if (this.currentLadder === 'D1') {
+            d1Button.classList.add('active');
+            d2Button.classList.remove('active');
+            d3Button.classList.remove('active');
+        } else if (this.currentLadder === 'D2') {
+            d2Button.classList.add('active');
+            d1Button.classList.remove('active');
+            d3Button.classList.remove('active');
+        } else if (this.currentLadder === 'D3') {
+            d3Button.classList.add('active');
+            d1Button.classList.remove('active');
+            d2Button.classList.remove('active');
+        }
+        
+        // Add click handlers
+        d1Button.addEventListener('click', () => {
+            this.switchLadder('D1');
+        });
+        
+        d2Button.addEventListener('click', () => {
+            this.switchLadder('D2');
+        });
+
+        d3Button.addEventListener('click', () => {
+            this.switchLadder('D3');
+        });
+    }
+}
+
+// Also update the switchLadder method to properly update URL with D3 parameter
+async switchLadder(ladder) {
     // If it's already the current ladder, do nothing
     if (this.currentLadder === ladder) return;
     
     // Set the new ladder
     this.currentLadder = ladder;
+    
+    // Update URL to include ladder parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    if (username) {
+        const newUrl = `${window.location.pathname}?username=${encodeURIComponent(username)}&ladder=${ladder.toLowerCase()}`;
+        window.history.replaceState({}, '', newUrl);
+    }
     
     // Update active classes on ladder buttons
     document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
@@ -280,16 +290,12 @@ async displayRibbons(username) {
     // Clear existing stats - important to prevent duplication
     document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
     
-    // Get the current username from the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('username');
-    
     if (username) {
         // Clear the cache for this username to force fresh data
         const cacheKey = `${username}_${ladder}`;
         playerDataCache.delete(cacheKey);
         
-        // Load the user's profile for the selected ladder - use loadProfile, not loadPlayerData
+        // Load the user's profile for the selected ladder
         await this.loadProfile(username);
     } else {
         this.showError('No username provided');
@@ -1484,34 +1490,65 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 </span>
             `;
         } else {
-            // FALLBACK 6: Estimate ELO change based on typical patterns
+            // FIXED: Calculate ELO change for the CORRECT player
             const isWin = match.winnerUsername === username;
-            const currentElo = playerElos[username] || 1500;
-            const opponentName = isWin ? match.loserUsername : match.winnerUsername;
-            const opponentElo = playerElos[opponentName] || 1500;
+            let playerEloChange = 0;
             
-            // Simple ELO estimation (K-factor of 32)
-            const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
-            const actualScore = isWin ? 1 : 0;
-            const estimatedChange = Math.round(32 * (actualScore - expectedScore));
+            // Try to get the correct player's ELO change from match data
+            if (isWin) {
+                // Player won - show their ELO gain
+                if (match.winnerEloChange !== undefined) {
+                    playerEloChange = match.winnerEloChange;
+                } else if (match.winnerNewElo !== undefined && match.winnerPreviousElo !== undefined) {
+                    playerEloChange = match.winnerNewElo - match.winnerPreviousElo;
+                }
+            } else {
+                // Player lost - show their ELO loss
+                if (match.loserEloChange !== undefined) {
+                    playerEloChange = match.loserEloChange;
+                } else if (match.loserNewElo !== undefined && match.loserPreviousElo !== undefined) {
+                    playerEloChange = match.loserNewElo - match.loserPreviousElo;
+                }
+            }
             
-            if (Math.abs(estimatedChange) > 0) {
-                const changeClass = estimatedChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
-                const changeSign = estimatedChange > 0 ? '+' : '';
+            // If we have a valid ELO change, display it
+            if (playerEloChange !== 0) {
+                const changeClass = playerEloChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
+                const changeSign = playerEloChange > 0 ? '+' : '';
                 eloChangeDisplay = `
-                    <span class="${changeClass} estimated-change" title="Estimated change">
-                        ~${changeSign}${estimatedChange} (est.)
+                    <span class="${changeClass}" title="From match data">
+                        ${changeSign}${playerEloChange}
                     </span>
                 `;
             } else {
-                // Final fallback - show win/loss indicator
-                const resultClass = isWin ? 'elo-change-positive' : 'elo-change-negative';
-                const resultText = isWin ? 'WIN' : 'LOSS';
-                eloChangeDisplay = `
-                    <span class="${resultClass}">
-                        ${resultText}
-                    </span>
-                `;
+                // FALLBACK: Estimate ELO change based on typical patterns
+                const currentElo = playerElos[username] || 1500;
+                const opponentName = isWin ? match.loserUsername : match.winnerUsername;
+                const opponentElo = playerElos[opponentName] || 1500;
+                
+                // Simple ELO estimation (K-factor of 32)
+                const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - currentElo) / 400));
+                const actualScore = isWin ? 1 : 0;
+                const estimatedChange = Math.round(32 * (actualScore - expectedScore));
+                
+                if (Math.abs(estimatedChange) > 0) {
+                    const changeClass = estimatedChange > 0 ? 'elo-change-positive' : 'elo-change-negative';
+                    const changeSign = estimatedChange > 0 ? '+' : '';
+                    eloChangeDisplay = `
+                        <span class="${changeClass} estimated-change" title="Estimated change">
+                            ~${changeSign}${estimatedChange} (est.)
+                        </span>
+                    `;
+                } else {
+                    // Final fallback - show win/loss indicator
+                    const resultClass = isWin ? 'elo-change-positive' : 'elo-change-negative';
+                    const resultText = isWin ? 'WIN' : 'LOSS';
+                    eloChangeDisplay = `
+                        <span class="${resultClass}">
+                            ${resultText}
+                        </span>
+                    `;
+                }
             }
         }
         
