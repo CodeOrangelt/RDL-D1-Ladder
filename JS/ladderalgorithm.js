@@ -111,6 +111,35 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             console.log('Winner already ranked higher - keeping positions');
         }
 
+        // Add this after the position update logic (around line 120)
+
+        // Handle #1 position streak tracking
+        if (newWinnerPosition === 1) {
+            // New champion - start their streak
+            batch.update(winnerRef, {
+                firstPlaceDate: serverTimestamp(),
+                streakDays: 1
+            });
+            
+            console.log(`${winnerData.username} is now #1 - starting streak tracking`);
+        } else {
+            // Winner didn't reach #1, clear any existing streak data
+            batch.update(winnerRef, {
+                firstPlaceDate: null,
+                streakDays: 0
+            });
+        }
+
+        // If loser was displaced from #1, reset their streak
+        if (loserPosition === 1 && newLoserPosition > 1) {
+            batch.update(loserRef, {
+                firstPlaceDate: null,
+                streakDays: 0
+            });
+            
+            console.log(`${loserData.username} lost #1 position - streak reset`);
+        }
+
         // Use ONLY the fields specifically allowed in the security rules
         const winnerUpdate = {
             eloRating: newWinnerRating,

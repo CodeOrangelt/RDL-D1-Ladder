@@ -318,29 +318,36 @@ async function updateLadderDisplayD2(ladderData) {
         .catch(error => console.error('Error updating D2 ELO trend indicators:', error));
 }
 
-// Modify the createPlayerRowD2 function - fix link styling and ensure ELO color stays
-
 function createPlayerRowD2(player, stats) {
     const elo = parseFloat(player.elo) || 0;
     
     // Set ELO-based colors (same as D1)
     let usernameColor = 'gray';
-    if (elo >= 2100) {
-        usernameColor = '#50C878';  // Emerald Green
+    if (elo >= 2000) {
+        usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
-        usernameColor = '#FFD700';  // Gold
+        usernameColor = '#FFD700'; // Gold
     } else if (elo >= 1600) {
-        usernameColor = '#C0C0C0';  // Silver
+        usernameColor = '#C0C0C0'; // Silver
     } else if (elo >= 1400) {
-        usernameColor = '#CD7F32';  // Bronze
+        usernameColor = '#CD7F32'; // Bronze
     }
 
-    // Create streak HTML if player is #1 (same as D1)
+    // IMPROVED: Create streak HTML if player is #1 AND has active streak
     let streakHtml = '';
-    if (player.position === 1 && player.firstPlaceDate) {
-        const streakDays = calculateStreakDays(player.firstPlaceDate);
+    if (player.position === 1) {
+        let streakDays = 0;
+        
+        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
+        if (player.streakDays && player.streakDays > 0) {
+            streakDays = player.streakDays;
+        } else if (player.firstPlaceDate) {
+            streakDays = calculateStreakDays(player.firstPlaceDate);
+        }
+        
         if (streakDays > 0) {
-            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
+            const pluralDays = streakDays === 1 ? 'day' : 'days';
+            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
         }
     }
     
@@ -359,12 +366,12 @@ function createPlayerRowD2(player, stats) {
         <td>${player.position}</td>
         <td style="position: relative;">
             <div style="display: flex; align-items: center; position: relative;">
-                ${streakHtml}
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
                 ${flagHtml}
+                ${streakHtml}
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
