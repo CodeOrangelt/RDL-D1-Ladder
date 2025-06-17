@@ -377,12 +377,11 @@ async function fetchBatchMatchStatsD3(usernames) {
     return matchStats;
 }
 
-// Fix the createPlayerRowD3 function to match D1/D2 structure exactly
 function createPlayerRowD3(player, stats) {
     const elo = parseFloat(player.elo) || 0;
     
     // Set ELO-based colors (same as D1/D2)
-    let usernameColor = 'gray'; // Default for unranked
+    let usernameColor = 'gray';
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
@@ -393,12 +392,21 @@ function createPlayerRowD3(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
     
-    // Create streak HTML if player is #1 (same as D1/D2)
+    // IMPROVED: Create streak HTML if player is #1 AND has active streak
     let streakHtml = '';
-    if (player.position === 1 && player.firstPlaceDate) {
-        const streakDays = calculateStreakDays(player.firstPlaceDate);
+    if (player.position === 1) {
+        let streakDays = 0;
+        
+        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
+        if (player.streakDays && player.streakDays > 0) {
+            streakDays = player.streakDays;
+        } else if (player.firstPlaceDate) {
+            streakDays = calculateStreakDays(player.firstPlaceDate);
+        }
+        
         if (streakDays > 0) {
-            streakHtml = `<span style="font-size:0.9em; color:#FF4500; margin-left:-79px;">${streakDays}d</span>`;
+            const pluralDays = streakDays === 1 ? 'day' : 'days';
+            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
         }
     }
     
@@ -415,14 +423,14 @@ function createPlayerRowD3(player, stats) {
     <tr>
         <td>${player.position}</td>
         <td style="position: relative;">
-            <div class="username-wrapper">
+            <div style="display: flex; align-items: center; position: relative;">
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d3" 
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
                 ${flagHtml}
+                ${streakHtml}
             </div>
-            ${streakHtml}
         </td>
         <td style="color: ${usernameColor}; position: relative;">
             <div class="elo-container" style="display: flex; align-items: center;">

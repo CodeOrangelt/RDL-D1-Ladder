@@ -327,12 +327,11 @@ function calculateStreakDays(firstPlaceDate) {
     return diffDays;
 }
 
-// Function to create HTML for a single player row
 function createPlayerRow(player, stats) {
     const elo = parseFloat(player.elo) || 0;
     
     // Set ELO-based colors
-    let usernameColor = 'gray'; // Default for unranked
+    let usernameColor = 'gray';
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
@@ -343,12 +342,21 @@ function createPlayerRow(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
     
-    // Create streak HTML if player is #1
+    // IMPROVED: Create streak HTML if player is #1 AND has active streak
     let streakHtml = '';
-    if (player.position === 1 && player.firstPlaceDate) {
-        const streakDays = calculateStreakDays(player.firstPlaceDate);
+    if (player.position === 1) {
+        let streakDays = 0;
+        
+        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
+        if (player.streakDays && player.streakDays > 0) {
+            streakDays = player.streakDays;
+        } else if (player.firstPlaceDate) {
+            streakDays = calculateStreakDays(player.firstPlaceDate);
+        }
+        
         if (streakDays > 0) {
-            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
+            const pluralDays = streakDays === 1 ? 'day' : 'days';
+            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
         }
     }
     
@@ -367,12 +375,12 @@ function createPlayerRow(player, stats) {
         <td>${player.position}</td>
         <td style="position: relative;">
             <div style="display: flex; align-items: center; position: relative;">
-                ${streakHtml}
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
                 ${flagHtml}
+                ${streakHtml}
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
@@ -389,7 +397,6 @@ function createPlayerRow(player, stats) {
     </tr>`;
 }
 
-// Add this function to determine the player's rank name by ELO
 function getPlayerRankName(elo) {
     if (elo >= 2000) return 'Emerald';
     if (elo >= 1800) return 'Gold';
@@ -397,8 +404,6 @@ function getPlayerRankName(elo) {
     if (elo >= 1400) return 'Bronze';
     return 'Unranked';
 }
-
-// Add this function right before updateLadderDisplay function (around line 280)
 
 // Function to get the last ELO change for each player
 async function getPlayersLastEloChanges(usernames) {
