@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map Compeittions - RDL</title>
+    <title>Map Competitions - RDL</title>
     <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
     
     <!-- Core Styles - matching your other pages -->
@@ -80,6 +80,60 @@
             color: inherit;
         }
         
+        /* Medal borders for winners */
+        .map-item.gold {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        
+        .map-item.gold:hover {
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+        }
+        
+        .map-item.silver {
+            border: 3px solid #C0C0C0;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
+        }
+        
+        .map-item.silver:hover {
+            box-shadow: 0 8px 25px rgba(192, 192, 192, 0.6);
+        }
+        
+        .map-item.bronze {
+            border: 3px solid #CD7F32;
+            box-shadow: 0 0 15px rgba(205, 127, 50, 0.5);
+        }
+        
+        .map-item.bronze:hover {
+            box-shadow: 0 8px 25px rgba(205, 127, 50, 0.6);
+        }
+        
+        /* Placement badge */
+        .placement-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10;
+        }
+        
+        .placement-badge.gold {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+        }
+        
+        .placement-badge.silver {
+            background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+        }
+        
+        .placement-badge.bronze {
+            background: linear-gradient(135deg, #CD7F32, #B8860B);
+        }
+        
         /* Map image */
         .map-image {
             width: 100%;
@@ -121,6 +175,45 @@
             color: #f0f0f0;
         }
         
+        /* Honorable mentions section */
+        .honorable-mentions {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .honorable-mentions h3 {
+            color: #f0f0f0;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .mentions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .mention-item {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .mention-category {
+            color: #50C878;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .mention-map {
+            color: #f0f0f0;
+        }
+        
         /* Responsive design */
         @media (max-width: 768px) {
             .maps-main {
@@ -157,41 +250,13 @@
 
         <div class="maps-section">
             <p class="section-title"; style="text-align: center; color: goldenrod">
-                     Results will be announced on June 16th 2025. 
+                Contest Results - June 16th 2025
             </p>
             
             <div class="maps-grid">
-                <a href="https://sectorgame.com/dxma/mission/?m=2225" target="_blank" class="map-item">
-                    <img src="https://sectorgame.com/dxma/files/img/92/2225/noether1_3.png" alt="Noether Map Preview" class="map-image">
-                    <div class="map-info">
-                        <h3 class="map-title">Noether</h3>
-                        <p class="map-author">
-                             by Daylily
-                        </p>
-                    </div>
-                </a>
-
-                <a href="https://sectorgame.com/dxma/mission/?m=2236" target="_blank" class="map-item">
-                    <img src="https://sectorgame.com/dxma/files/img/16/2236/scrn0000.png" alt="Juniper Canopy Map Preview" class="map-image">
-                    <div class="map-info">
-                        <h3 class="map-title">Juniper Canopy</h3>
-                        <p class="map-author">
-                             by Seawrym
-                        </p>
-                    </div>
-                </a>
-
-                <a href="https://sectorgame.com/dxma/mission/?m=2231" target="_blank" class="map-item">
-                    <img src="https://sectorgame.com/dxma/files/img/59/2231/2025-06-08.14-43-46.png" alt="Under Construction Map Preview" class="map-image">
-                    <div class="map-info">
-                        <h3 class="map-title">Under Construction</h3>
-                        <p class="map-author">
-                             by nightsurfer
-                        </p>
-                    </div>
-                </a>
-
-                <a href="https://sectorgame.com/dxma/mission/?m=2235" target="_blank" class="map-item">
+                <!-- 1st Place - Gold -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2235" target="_blank" class="map-item gold">
+                    <div class="placement-badge gold">1st</div>
                     <img src="https://sectorgame.com/dxma/files/img/7/2235/scrn0101.png" alt="Eccentric Map Preview" class="map-image">
                     <div class="map-info">
                         <h3 class="map-title">Eccentric</h3>
@@ -201,27 +266,21 @@
                     </div>
                 </a>
 
-                <a href="https://sectorgame.com/dxma/mission/?m=2228" target="_blank" class="map-item">
-                    <img src="https://sectorgame.com/dxma/files/img/44/2228/scrn0006.png" alt="Brittle Map Preview" class="map-image">
+                <!-- 2nd Place - Silver -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2231" target="_blank" class="map-item silver">
+                    <div class="placement-badge silver">2nd</div>
+                    <img src="https://sectorgame.com/dxma/files/img/59/2231/2025-06-08.14-43-46.png" alt="Under Construction Map Preview" class="map-image">
                     <div class="map-info">
-                        <h3 class="map-title">Brittle</h3>
+                        <h3 class="map-title">Under Construction</h3>
                         <p class="map-author">
-                             by Code
+                             by NightSurfer
                         </p>
                     </div>
                 </a>
 
-                <a href="https://sectorgame.com/dxma/mission/?m=2233" target="_blank" class="map-item">
-                    <img src="https://sectorgame.com/dxma/files/img/93/2233/2025-06-13.14-20-59.png" alt="Mutually Assured Destruction Map Preview" class="map-image">
-                    <div class="map-info">
-                        <h3 class="map-title">Mutually Assured Destruction</h3>
-                        <p class="map-author">
-                            by worldoffood
-                        </p>
-                    </div>
-                </a>
-
-                <a href="https://sectorgame.com/dxma/mission/?m=2230" target="_blank" class="map-item">
+                <!-- 3rd Place - Bronze -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2230" target="_blank" class="map-item bronze">
+                    <div class="placement-badge bronze">3rd</div>
                     <img src="https://sectorgame.com/dxma/files/img/12/2230/fumble.png" alt="Fumble Map Preview" class="map-image">
                     <div class="map-info">
                         <h3 class="map-title">Fumble</h3>
@@ -231,15 +290,84 @@
                     </div>
                 </a>
 
+                <!-- 4th Place -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2236" target="_blank" class="map-item">
+                    <div class="placement-badge">4th</div>
+                    <img src="https://sectorgame.com/dxma/files/img/16/2236/scrn0000.png" alt="Juniper Canopy Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Juniper Canopy</h3>
+                        <p class="map-author">
+                             by SeaWyrm
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 5th Place -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2225" target="_blank" class="map-item">
+                    <div class="placement-badge">5th</div>
+                    <img src="https://sectorgame.com/dxma/files/img/92/2225/noether1_3.png" alt="Noether Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Noether</h3>
+                        <p class="map-author">
+                             by Daylily
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 6th Place -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2228" target="_blank" class="map-item">
+                    <div class="placement-badge">6th</div>
+                    <img src="https://sectorgame.com/dxma/files/img/44/2228/scrn0006.png" alt="Brittle Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">Brittle</h3>
+                        <p class="map-author">
+                             by Code
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 7th Place -->
+                <a href="https://sectorgame.com/dxma/mission/?m=2233" target="_blank" class="map-item">
+                    <div class="placement-badge">7th</div>
+                    <img src="https://sectorgame.com/dxma/files/img/93/2233/2025-06-13.14-20-59.png" alt="MAD Map Preview" class="map-image">
+                    <div class="map-info">
+                        <h3 class="map-title">MAD</h3>
+                        <p class="map-author">
+                            by Worldoffood
+                        </p>
+                    </div>
+                </a>
+
+                <!-- 8th Place -->
                 <a href="https://sectorgame.com/dxma/mission/?m=2237" target="_blank" class="map-item">
+                    <div class="placement-badge">8th</div>
                     <img src="https://sectorgame.com/dxma/dxma/noimg.png" alt="Paradise Map Preview" class="map-image">
                     <div class="map-info">
                         <h3 class="map-title">Paradise</h3>
                         <p class="map-author">
-                             by B2af
+                             by b2af
                         </p>
                     </div>
                 </a>
+            </div>
+
+            <!-- Honorable Mentions -->
+            <div class="honorable-mentions">
+                <h3>Honorable Mentions</h3>
+                <div class="mentions-list">
+                    <div class="mention-item">
+                        <div class="mention-category">Best Dogfights</div>
+                        <div class="mention-map">Under Construction</div>
+                    </div>
+                    <div class="mention-item">
+                        <div class="mention-category">Best Concept</div>
+                        <div class="mention-map">Fumble</div>
+                    </div>
+                    <div class="mention-item">
+                        <div class="mention-category">Best Aesthetic</div>
+                        <div class="mention-map">Juniper Canopy</div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
