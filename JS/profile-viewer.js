@@ -114,92 +114,6 @@ class ProfileViewer {
     }
 }
 
-// Add this method to your ProfileViewer class in profile-viewer.js (around line 900)
-
-async displayTrophies(username, userId) {
-    const trophyContainer = document.getElementById('trophy-container');
-    if (!trophyContainer) return;
-
-    try {
-        // Show loading state
-        trophyContainer.innerHTML = '<p class="loading-trophies">Loading trophies...</p>';
-
-        // Get user's awarded trophies
-        const userTrophiesRef = collection(db, 'userTrophies');
-        const userTrophiesQuery = query(
-            userTrophiesRef, 
-            where('userId', '==', userId)
-        );
-        const userTrophiesSnapshot = await getDocs(userTrophiesQuery);
-
-        if (userTrophiesSnapshot.empty) {
-            trophyContainer.innerHTML = '<p class="empty-trophy-case">No trophies awarded yet</p>';
-            return;
-        }
-
-        // Get trophy definition IDs
-        const trophyIds = [];
-        const userTrophyData = new Map();
-        
-        userTrophiesSnapshot.forEach(doc => {
-            const data = doc.data();
-            trophyIds.push(data.trophyId);
-            userTrophyData.set(data.trophyId, data);
-        });
-
-        // Get trophy definitions
-        const trophyDefinitionsRef = collection(db, 'trophyDefinitions');
-        const trophyDefinitionsSnapshot = await getDocs(trophyDefinitionsRef);
-        
-        const trophyDefinitions = new Map();
-        trophyDefinitionsSnapshot.forEach(doc => {
-            trophyDefinitions.set(doc.id, doc.data());
-        });
-
-        // Create trophy HTML
-        let trophiesHtml = '';
-        
-        userTrophyData.forEach((awardData, trophyId) => {
-            const trophyDef = trophyDefinitions.get(trophyId);
-            
-            if (!trophyDef) {
-                console.warn(`Trophy definition not found for ID: ${trophyId}`);
-                return;
-            }
-
-            // Format awarded date
-            let awardedDate = 'Unknown date';
-            if (awardData.awardedAt) {
-                if (awardData.awardedAt.seconds) {
-                    awardedDate = new Date(awardData.awardedAt.seconds * 1000).toLocaleDateString();
-                } else if (awardData.awardedAt.toDate) {
-                    awardedDate = awardData.awardedAt.toDate().toLocaleDateString();
-                }
-            }
-
-            trophiesHtml += `
-                <div class="trophy ${trophyDef.rarity || 'common'}">
-                    <img src="${trophyDef.image || '../images/default-trophy.png'}" 
-                         alt="${trophyDef.name}" 
-                         onerror="this.src='../images/default-trophy.png'">
-                    <span class="trophy-name">${trophyDef.name}</span>
-                    <div class="trophy-tooltip">
-                        <strong>${trophyDef.name}</strong><br>
-                        ${trophyDef.description}<br>
-                        <small>Awarded: ${awardedDate}</small>
-                    </div>
-                </div>
-            `;
-        });
-
-        trophyContainer.innerHTML = trophiesHtml;
-
-    } catch (error) {
-        console.error('Error loading trophies:', error);
-        trophyContainer.innerHTML = '<p class="trophy-error">Failed to load trophies</p>';
-    }
-}
-
 async displayRibbons(username) {
     try {
         // Check for non-participant
@@ -477,10 +391,6 @@ async loadProfile(username, ladder) {
                 await this.loadPlayerStats(username);
                 return cachedData;
             }
-
-             // Load and display trophies - ADD THIS LINE
-            await this.displayTrophies(username, userId);
-
             
             // Get player details from the appropriate collection
             const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
