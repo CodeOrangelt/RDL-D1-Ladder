@@ -332,6 +332,7 @@ async loadProfile(username, ladder) {
         // Display sections in parallel for better performance
         await Promise.all([
             this.displayPromotionHistory(username),
+            this.displayTrophyCase(username),
             this.displayMatchStats(username, matches),
             this.displayPlayerMatchups(username, matches),
             this.displayMatchHistory(username, matches),
@@ -953,6 +954,82 @@ displayProfile(data) {
             return 0;
         }
     }
+    
+async displayTrophyCase(username) 
+{
+        try {
+            const trophyContainer = document.getElementById('trophy-container');
+            if (!trophyContainer) return;
+
+            // Get user ID
+            const userId = this.currentProfileData?.userId;
+            if (!userId) {
+                console.error("No user ID found for trophy display");
+                trophyContainer.innerHTML = `<p class="empty-trophy-case">Unable to load trophies</p>`;
+                return;
+            }
+
+            // Query for user trophies
+            const trophiesRef = collection(db, "userTrophies");
+            const q = query(trophiesRef, where("userId", "==", userId), orderBy("awardedAt", "desc"));
+            const trophiesSnapshot = await getDocs(q);
+
+            if (trophiesSnapshot.empty) {
+                trophyContainer.innerHTML = `
+                    <p class="empty-trophy-case">No trophies awarded yet</p>
+                `;
+                return;
+            }
+
+            // Get all trophy definitions to have their details
+            const trophyDefsRef = collection(db, "trophyDefinitions");
+            const trophyDefsSnapshot = await getDocs(trophyDefsRef);
+            
+            // Create a map of trophy definitions for easy lookup
+            const trophyDefs = {};
+            trophyDefsSnapshot.forEach(doc => {
+                trophyDefs[doc.id] = { id: doc.id, ...doc.data() };
+            });
+
+            // Render trophies
+            let trophiesHTML = '';
+            
+            trophiesSnapshot.forEach(doc => {
+                const trophyData = doc.data();
+                const trophyId = trophyData.trophyId;
+                const trophyDef = trophyDefs[trophyId] || {
+                    name: "Unknown Trophy",
+                    image: "../images/default-trophy.png",
+                    description: "Trophy details not found",
+                    rarity: "common"
+                };
+                
+                const awardDate = trophyData.awardedAt ? 
+                    new Date(trophyData.awardedAt.seconds * 1000).toLocaleDateString() : 
+                    'Unknown Date';
+                
+                trophiesHTML += `
+                    <div class="trophy ${trophyDef.rarity || 'common'}">
+                        <div class="trophy-tooltip">${trophyDef.description || "No description available"}</div>
+                        <img src="${trophyDef.image}" alt="${trophyDef.name}" class="trophy-image">
+                        <p class="trophy-name">${trophyDef.name}</p>
+                        <p class="trophy-date">Awarded: ${awardDate}</p>
+                    </div>
+                `;
+            });
+
+            trophyContainer.innerHTML = trophiesHTML;
+
+        } catch (error) {
+            console.error('Error displaying trophy case:', error);
+            const trophyContainer = document.getElementById('trophy-container');
+            if (trophyContainer) {
+                trophyContainer.innerHTML = `
+                    <p class="empty-trophy-case">Error loading trophies</p>
+                `;
+            }
+        }
+}
 
 async displayMatchHistory(username, matches) {
     try {

@@ -3404,6 +3404,7 @@ function closeAssignTrophyModal() {
 }
 
 // Assign trophy to player
+// Assign trophy to player
 async function assignTrophyToPlayer() {
     try {
         const trophyId = document.getElementById('assign-trophy-id').value;
@@ -3423,20 +3424,41 @@ async function assignTrophyToPlayer() {
             return;
         }
         
-        // Find the player
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const playersRef = collection(db, collectionName);
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
+        // Search for player across all collections
+        let playerDoc = null;
+        let userId = null;
+        let playerData = null;
         
-        if (querySnapshot.empty) {
-            showNotification(`Player "${username}" not found in ${ladder} ladder`, 'error');
-            return;
+        if (ladder === 'non-participant') {
+            // Search in non-participants collection
+            const nonParticipantsRef = collection(db, 'nonParticipants');
+            const q = query(nonParticipantsRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
+        } else {
+            // Search in ladder collections
+            const collectionName = ladder === 'D1' ? 'players' : 
+                                 ladder === 'D2' ? 'playersD2' : 'playersD3';
+            const playersRef = collection(db, collectionName);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
         }
         
-        const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const userId = playerDoc.id;
+        if (!playerDoc) {
+            showNotification(`Player "${username}" not found in ${ladder === 'non-participant' ? 'non-participants' : ladder + ' ladder'}`, 'error');
+            return;
+        }
         
         // Check if player already has this trophy
         const userTrophiesRef = collection(db, 'userTrophies');
