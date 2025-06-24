@@ -32,6 +32,141 @@
         h5 {
             text-decoration: underline;
         }
+
+        /* Sandbox specific styles */
+        .sandbox-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .ladder-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .ladder-btn {
+            padding: 8px 16px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .ladder-btn.active {
+            background-color: #303030;
+        }
+
+        .ladder-btn:hover {
+            background-color: #666;
+        }
+
+        .player-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .player-dropdown {
+            padding: 8px;
+            background-color: #444;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        .elo-calculator {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .match-simulation {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .player-card {
+            text-align: center;
+            padding: 15px;
+            background-color: #444;
+            border-radius: 8px;
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-elo {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .elo-change {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .elo-gain {
+            color: #4CAF50;
+        }
+
+        .elo-loss {
+            color: #F44336;
+        }
+
+        .vs-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .calculation-details {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover {
+            background-color: #218838;
+        }
+
+        .loading {
+            color: #ccc;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -50,6 +185,7 @@
                 <div class="rules-nav-item" data-target="solo">Solos</div>
                 <div class="rules-nav-item" data-target="duos">Duos</div>
                 <div class="rules-nav-item" data-target="ctf">CTF</div>
+                <div class="rules-nav-item" data-target="sandbox">ELO Calculator</div>
             </div>
 
             <div class="rules-sections">
@@ -93,7 +229,7 @@
                                 <li>Weapons should not focus on subtype matches (e.g., disorientation, single-use
                                     weapons, rat, Gauss and Mercs, etc.).</li>
                                 <li>Map sizes should be reasonably sized for 1v1 play.</li>
-                                <li>Maps that encourage “missile boating” are prohibited. (e.g., levels that start
+                                <li>Maps that encourage "missile boating" are prohibited. (e.g., levels that start
                                     players with maxed-out missiles and include large caches of additional
                                     missiles).</li>
                                 <li>Home Maps should be stock (e.g., no MCAPs or Xs).</li>
@@ -206,7 +342,7 @@
                                             <p>
                                                 <li>Do not impersonate other players or RDL admins.</li>
                                             <p>
-                                                <li>Do not share others’ private information without their consent.</li>
+                                                <li>Do not share others' private information without their consent.</li>
                                             <p></p>
                                             <li>Do not engage in targeted harassment or bullying.</li>
                                             <p></p>
@@ -245,7 +381,7 @@
                                             beforehand.</li>
                                         <p></p>
                                         <li>Streaming is encouraged but not required. You may stream your own POV, but
-                                            not your opponent’s.</li>
+                                            not your opponent's.</li>
                                         <p></p>
                                     </ul>
                                 </li>
@@ -276,7 +412,7 @@
                                         <li>Using graphical enhancements such as OpenGL ReShade for unfair advantages
                                         </li>
                                         <li>Using network tools like VPNs, proxies, or VLANs to maliciously hinder an
-                                            opponent’s connection</li>
+                                            opponent's connection</li>
                                         <li>Using Cheat Engine or other hex editors to alter game physics (beyond simple
                                             color changes)</li>
                                     </ul>
@@ -296,12 +432,12 @@
                                 <ul>
                                     <li>If pilots cannot agree on a level to play,
                                         they should refer to the Home Level Framework to resolve the conflict. Pilots
-                                        will play a series of two or more matches, each from the pilot’s homes. The
-                                        first pilot will choose one of the opponent’s home levels. After the match, the
-                                        other pilot will choose from the first pilot’s home levels.</li>
+                                        will play a series of two or more matches, each from the pilot's homes. The
+                                        first pilot will choose one of the opponent's home levels. After the match, the
+                                        other pilot will choose from the first pilot's home levels.</li>
                                     <p></p>
                                     <li>If both pilots agree to use home
-                                        levels to play, they must not deny any matches despite the opponent’s home level
+                                        levels to play, they must not deny any matches despite the opponent's home level
                                         choice.</li>
                                     <p></p>
                                     <li>Home levels will reset every season and will be unavailable
@@ -638,6 +774,81 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NEW SANDBOX SECTION -->
+            <div id="sandbox" class="rules-section">
+                <div class="rule-item">
+                    <h4>ELO Calculator Sandbox</h4>
+                    <div>
+                        <p>Use this tool to understand how ELO calculations work on the RDL.</p>
+                        
+                        <div class="sandbox-controls">
+                            <div class="ladder-selector">
+                                <label>Select Ladder:</label>
+                                <button class="ladder-btn active" data-ladder="D1">D1</button>
+                                <button class="ladder-btn" data-ladder="D2">D2</button>
+                                <button class="ladder-btn" data-ladder="D3">D3</button>
+                                <button class="refresh-btn" id="refresh-players">
+                                    <i class="fas fa-sync-alt"></i> Refresh Players
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="elo-calculator">
+                            <h5>Match Simulation</h5>
+                            <div class="player-selector">
+                                <div>
+                                    <label for="winner-select">Winner:</label>
+                                    <select id="winner-select" class="player-dropdown">
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="loser-select">Loser:</label>
+                                    <select id="loser-select" class="player-dropdown">
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="match-result" class="match-simulation" style="display: none;">
+                                <div class="player-card" id="winner-card">
+                                    <div class="player-name" id="winner-name">-</div>
+                                    <div class="player-elo" id="winner-current-elo">Current ELO: -</div>
+                                    <div class="elo-change elo-gain" id="winner-elo-change">+0</div>
+                                    <div class="player-elo" id="winner-new-elo">New ELO: -</div>
+                                </div>
+
+                                <div class="vs-indicator">VS</div>
+
+                                <div class="player-card" id="loser-card">
+                                    <div class="player-name" id="loser-name">-</div>
+                                    <div class="player-elo" id="loser-current-elo">Current ELO: -</div>
+                                    <div class="elo-change elo-loss" id="loser-elo-change">-0</div>
+                                    <div class="player-elo" id="loser-new-elo">New ELO: -</div>
+                                </div>
+                            </div>
+
+                            <div id="calculation-details" class="calculation-details" style="display: none;">
+                                <h5>Calculation</h5>
+                                <pre id="calculation-text"></pre>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" style="margin-top: 20px; background-color: #1a1a1a;">
+                            <h5>How ELO Works</h5>
+                            <p>The RDL uses the standard ELO rating system with a K-factor of 32:</p>
+                            <ul>
+                                <li><strong>Expected Score:</strong> Based on the ELO difference between players</li>
+                                <li><strong>Actual Score:</strong> 1 for win, 0 for loss</li>
+                                <li><strong>ELO Change:</strong> K-factor × (Actual Score - Expected Score)</li>
+                                <li><strong>Upsets:</strong> Lower-rated players gain more ELO when beating higher-rated opponents</li>
+                                <li><strong>Favored Wins:</strong> Higher-rated players gain less ELO when beating lower-rated opponents</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         </div>
     </main>
@@ -712,6 +923,7 @@
     <script type="module" src="./JS/firebase-config.js"></script>
     <script type="module" src="./JS/current-user.js"></script>
     <script type="module" src="./JS/logout.js"></script>
+    <script type="module" src="./JS/calculator.js"></script>
 </body>
 
 </html>
