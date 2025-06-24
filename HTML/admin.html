@@ -438,6 +438,19 @@
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
+
+                <!-- Add this new section for match actions -->
+                <div class="matches-actions" style="margin-bottom: 20px;">
+                    <!-- Your existing buttons -->
+                    <button id="create-test-match-btn" class="btn btn-primary">
+                        ➕ Create Test Match
+                    </button>
+                    
+                    <!-- ADD THIS NEW BUTTON -->
+                    <button id="resimulate-match-btn" class="btn btn-warning">
+                        🔄 Resimulate Match
+                    </button>
+                </div>
             </section>
 
             <!-- Manage Articles Section -->
@@ -630,6 +643,12 @@
                                     
                                     <input type="radio" id="assign-d2-ladder" name="assign-ladder" value="D2">
                                     <label for="assign-d2-ladder">D2 Ladder</label>
+                                    
+                                    <input type="radio" id="assign-d3-ladder" name="assign-ladder" value="D3">
+                                    <label for="assign-d3-ladder">D3 Ladder</label>
+                                    
+                                    <input type="radio" id="assign-non-participant" name="assign-ladder" value="non-participant">
+                                    <label for="assign-non-participant">Non-Participant</label>
                                 </div>
                             </div>
                             
@@ -1526,6 +1545,40 @@
                 </div>
                 
             </div>
+<div id="resimulate-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Resimulate Match</h2>
+            <span class="close" onclick="closeResimulateModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Use this tool to fix matches that have missing ELO history entries. This will create the missing ELO history records without duplicating existing data.</p>
+            
+            <div class="form-group">
+                <label for="resimulate-match-id">Match ID:</label>
+                <input type="text" id="resimulate-match-id" placeholder="Enter approved match document ID">
+                <small>Enter the document ID from the current ladder's approved matches collection</small>
+            </div>
+            
+            <button onclick="resimulateMatch()" class="btn btn-primary">
+                🔍 Find & Validate Match
+            </button>
+            
+            <div id="match-details-container" class="details-container" style="display: none;">
+                <!-- Match details will appear here -->
+            </div>
+            
+            <div id="validation-results-container" class="details-container" style="display: none;">
+                <!-- Validation results will appear here -->
+            </div>
+            
+            <button id="confirm-resimulate-btn" onclick="confirmResimulateMatch()" 
+                    class="btn btn-danger" style="display: none;">
+                ⚡ Confirm Resimulation
+            </button>
+        </div>
+    </div>
+</div>
         </div>
     </div>
     <script type="module" src="./JS/adminbackend.js"></script> 

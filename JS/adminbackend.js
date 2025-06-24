@@ -3404,6 +3404,7 @@ function closeAssignTrophyModal() {
 }
 
 // Assign trophy to player
+// Assign trophy to player
 async function assignTrophyToPlayer() {
     try {
         const trophyId = document.getElementById('assign-trophy-id').value;
@@ -3423,20 +3424,41 @@ async function assignTrophyToPlayer() {
             return;
         }
         
-        // Find the player
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const playersRef = collection(db, collectionName);
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
+        // Search for player across all collections
+        let playerDoc = null;
+        let userId = null;
+        let playerData = null;
         
-        if (querySnapshot.empty) {
-            showNotification(`Player "${username}" not found in ${ladder} ladder`, 'error');
-            return;
+        if (ladder === 'non-participant') {
+            // Search in non-participants collection
+            const nonParticipantsRef = collection(db, 'nonParticipants');
+            const q = query(nonParticipantsRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
+        } else {
+            // Search in ladder collections
+            const collectionName = ladder === 'D1' ? 'players' : 
+                                 ladder === 'D2' ? 'playersD2' : 'playersD3';
+            const playersRef = collection(db, collectionName);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
         }
         
-        const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const userId = playerDoc.id;
+        if (!playerDoc) {
+            showNotification(`Player "${username}" not found in ${ladder === 'non-participant' ? 'non-participants' : ladder + ' ladder'}`, 'error');
+            return;
+        }
         
         // Check if player already has this trophy
         const userTrophiesRef = collection(db, 'userTrophies');
@@ -4319,10 +4341,12 @@ function setupManageHighlightsSection() {
     console.log('Manage Highlights section initialized');
 }
 
+// Update setupManageMatchesSection to include resimulate functionality
+// Add this to your existing setupManageMatchesSection function:
 function setupManageMatchesSection() {
     console.log('Setting up Manage Matches section');
     
-    // Pagination buttons
+    // Existing pagination buttons
     const prevBtn = document.getElementById('matches-prev-page');
     const nextBtn = document.getElementById('matches-next-page');
     
@@ -4340,7 +4364,7 @@ function setupManageMatchesSection() {
         });
     }
     
-    // Filter buttons
+    // Existing filter buttons
     const applyFiltersBtn = document.getElementById('apply-matches-filters');
     const resetFiltersBtn = document.getElementById('reset-matches-filters');
     
@@ -4352,19 +4376,40 @@ function setupManageMatchesSection() {
         resetFiltersBtn.addEventListener('click', resetMatchesFilters);
     }
     
-    // Search functionality
+    // Existing search functionality
     const matchesSearch = document.getElementById('matches-search');
     if (matchesSearch) {
         matchesSearch.addEventListener('input', debounce(filterMatchesTable, 300));
     }
     
-    // FIXED: Create test match button setup
-    setupCreateTestMatchButton();
+    // ADD NEW: Resimulate match button
+    const resimulateBtn = document.getElementById('resimulate-match-btn');
+    if (resimulateBtn) {
+        resimulateBtn.addEventListener('click', openResimulateModal);
+    }
     
-    // FIXED: Set up modal event handlers
+    // ADD NEW: Resimulate modal event handlers
+    const resimulateModal = document.getElementById('resimulate-modal');
+    if (resimulateModal) {
+        // Close button
+        const closeBtn = resimulateModal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeResimulateModal);
+        }
+        
+        // Background click to close
+        resimulateModal.addEventListener('click', (e) => {
+            if (e.target === resimulateModal) {
+                closeResimulateModal();
+            }
+        });
+    }
+    
+    // Existing create test match setup
+    setupCreateTestMatchButton();
     setupCreateTestMatchModal();
     
-    console.log('Manage Matches section initialized');
+    console.log('Manage Matches section initialized with resimulate functionality');
 }
 
 
@@ -5180,6 +5225,428 @@ async function saveHighlightChanges() {
         showNotification(`Error saving highlight: ${error.message}`, 'error');
     }
 }
+
+// Add this after your existing match management functions
+
+async function resimulateMatch() {
+    try {
+        const matchId = document.getElementById('resimulate-match-id').value;
+        
+        if (!matchId) {
+            showNotification('Match ID is required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to resimulate matches', 'error');
+            return;
+        }
+        
+        // Determine collection based on current ladder
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Validate match exists in approved matches
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchDoc = await getDoc(matchRef);
+        
+        if (!matchDoc.exists()) {
+            showNotification('Match not found in approved matches', 'error');
+            return;
+        }
+        
+        const matchData = matchDoc.data();
+        
+        // Show match details for confirmation
+        const matchDate = matchData.approvedAt ? 
+            matchData.approvedAt.toDate().toLocaleString() : 
+            matchData.matchDate ? 
+                (matchData.matchDate.toDate ? matchData.matchDate.toDate().toLocaleString() : new Date(matchData.matchDate).toLocaleString()) : 
+                'Unknown';
+        
+        const confirmationDetails = `
+            <div class="match-details">
+                <h4>Match Details:</h4>
+                <p><strong>Winner:</strong> ${matchData.winnerUsername}</p>
+                <p><strong>Loser:</strong> ${matchData.loserUsername}</p>
+                <p><strong>Score:</strong> ${matchData.winnerScore}-${matchData.loserScore}</p>
+                <p><strong>Map:</strong> ${matchData.mapPlayed || matchData.mapName || 'Unknown'}</p>
+                <p><strong>Match Date:</strong> ${matchDate}</p>
+                <p><strong>Match ID:</strong> ${matchId}</p>
+                <p><strong>Ladder:</strong> ${currentLadder}</p>
+                <hr>
+                <p><em>This will create accurate ELO history entries based on the players' ELO ratings at the time this match was played.</em></p>
+            </div>
+        `;
+        
+        document.getElementById('match-details-container').innerHTML = confirmationDetails;
+        document.getElementById('match-details-container').style.display = 'block';
+        document.getElementById('confirm-resimulate-btn').style.display = 'block';
+        
+        // Store match data for confirmation
+        window.pendingResimulateData = { matchId, matchData, ladder: currentLadder };
+        
+        showNotification('Match found - please review details and confirm resimulation', 'info');
+        
+    } catch (error) {
+        console.error("Error finding match:", error);
+        showNotification(`Failed to find match: ${error.message}`, 'error');
+    }
+}
+
+
+// Replace the confirmResimulateMatch function with this accurate version:
+
+// Replace the confirmResimulateMatch function with this complete version:
+
+async function confirmResimulateMatch() {
+    try {
+        const { matchId, matchData, ladder } = window.pendingResimulateData;
+        
+        if (!matchId || !matchData) {
+            showNotification('No match data found for resimulation', 'error');
+            return;
+        }
+        
+        // Determine collections based on ladder
+        const playersCollection = 
+            ladder === 'D1' ? 'players' : 
+            ladder === 'D2' ? 'playersD2' : 'playersD3';
+            
+        const eloHistoryCollection = 
+            ladder === 'D1' ? 'eloHistory' : 
+            ladder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        
+        // Find player documents
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, playersCollection), where('username', '==', matchData.winnerUsername))),
+            getDocs(query(collection(db, playersCollection), where('username', '==', matchData.loserUsername)))
+        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            showNotification('Could not find player documents', 'error');
+            return;
+        }
+
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
+        const winnerData = winnerDocs.docs[0].data();
+        const loserData = loserDocs.docs[0].data();
+        
+        // Check if ELO history entries already exist
+        const [winnerHistoryQuery, loserHistoryQuery] = await Promise.all([
+            getDocs(query(
+                collection(db, eloHistoryCollection),
+                where('playerId', '==', winnerId),
+                where('matchId', '==', matchId)
+            )),
+            getDocs(query(
+                collection(db, eloHistoryCollection),
+                where('playerId', '==', loserId),
+                where('matchId', '==', matchId)
+            ))
+        ]);
+        
+        const winnerHasHistory = !winnerHistoryQuery.empty;
+        const loserHasHistory = !loserHistoryQuery.empty;
+        
+        // Show validation results
+        const validationResults = `
+            <div class="validation-results">
+                <h4>Validation Results:</h4>
+                <p><strong>Winner ELO History:</strong> ${winnerHasHistory ? '✅ Exists' : '❌ Missing'}</p>
+                <p><strong>Loser ELO History:</strong> ${loserHasHistory ? '✅ Exists' : '❌ Missing'}</p>
+                <p><strong>Current Winner ELO:</strong> ${winnerData.eloRating || 'Unknown'}</p>
+                <p><strong>Current Loser ELO:</strong> ${loserData.eloRating || 'Unknown'}</p>
+                <p><strong>Current Winner Position:</strong> ${winnerData.position || 'Unknown'}</p>
+                <p><strong>Current Loser Position:</strong> ${loserData.position || 'Unknown'}</p>
+                <hr>
+                <p><strong style="color: #ff9800;">⚠️ RESIMULATION WILL:</strong></p>
+                <ul>
+                    <li>Recalculate ELO ratings based on pre-match values</li>
+                    <li>Update current player ELO ratings</li>
+                    <li>Recalculate and update player positions</li>
+                    <li>Create missing ELO history entries</li>
+                    <li>Handle position swaps if winner was lower ranked</li>
+                </ul>
+            </div>
+        `;
+        
+        document.getElementById('validation-results-container').innerHTML = validationResults;
+        document.getElementById('validation-results-container').style.display = 'block';
+        
+        if (winnerHasHistory && loserHasHistory) {
+            showNotification('Both players already have ELO history for this match. No resimulation needed.', 'warning');
+            return;
+        }
+        
+        // Proceed with COMPLETE resimulation
+        showNotification('Starting complete match resimulation...', 'info');
+        
+        // Get the exact match timestamp from the approved match
+        const matchTimestamp = matchData.approvedAt || matchData.matchDate || serverTimestamp();
+        
+        // Find ELO ratings at the time of this match by looking at ELO history BEFORE this match
+        const [winnerPreMatchElo, loserPreMatchElo] = await Promise.all([
+            getPlayerEloAtTime(winnerId, matchTimestamp, eloHistoryCollection),
+            getPlayerEloAtTime(loserId, matchTimestamp, eloHistoryCollection)
+        ]);
+        
+        // Import the calculateElo function
+        const { calculateElo } = await import('./ladderalgorithm.js');
+        
+        // Calculate what the ELOs should be after this specific match
+        const { newWinnerRating, newLoserRating } = calculateElo(
+            winnerPreMatchElo, 
+            loserPreMatchElo
+        );
+        
+        // Get current positions for position swap logic
+        const currentWinnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
+        const currentLoserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
+        
+        // Calculate what positions should be after this match
+        let newWinnerPosition = currentWinnerPosition;
+        let newLoserPosition = currentLoserPosition;
+        
+        // If winner was lower ranked (higher position number), they should move up
+        if (currentWinnerPosition > currentLoserPosition) {
+            newWinnerPosition = currentLoserPosition;
+            newLoserPosition = currentLoserPosition + 1;
+        }
+        
+        // Start batch operations
+        const batch = writeBatch(db);
+        
+        // Update winner's ELO and position
+        const winnerRef = doc(db, playersCollection, winnerId);
+        batch.update(winnerRef, {
+            eloRating: newWinnerRating,
+            position: newWinnerPosition,
+            lastUpdated: serverTimestamp(),
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid
+        });
+        
+        // Update loser's ELO and position
+        const loserRef = doc(db, playersCollection, loserId);
+        batch.update(loserRef, {
+            eloRating: newLoserRating,
+            position: newLoserPosition,
+            lastUpdated: serverTimestamp(),
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid
+        });
+        
+        // If positions changed, update other players' positions
+        if (currentWinnerPosition > currentLoserPosition) {
+            // Get all players between the old positions and move them down
+            const playersToUpdate = await getDocs(query(
+                collection(db, playersCollection),
+                where('position', '>', currentLoserPosition),
+                where('position', '<', currentWinnerPosition)
+            ));
+            
+            playersToUpdate.forEach(playerDoc => {
+                const playerRef = doc(db, playersCollection, playerDoc.id);
+                const currentPos = playerDoc.data().position;
+                batch.update(playerRef, {
+                    position: currentPos + 1,
+                    lastUpdated: serverTimestamp(),
+                    positionAdjustedBy: 'resimulation',
+                    positionAdjustedAt: serverTimestamp()
+                });
+            });
+        }
+        
+        // Create missing ELO history entries
+        if (!winnerHasHistory) {
+            const winnerHistoryRef = doc(collection(db, eloHistoryCollection));
+            batch.set(winnerHistoryRef, {
+                playerId: winnerId,
+                player: matchData.winnerUsername,
+                previousElo: winnerPreMatchElo,
+                newElo: newWinnerRating,
+                eloChange: newWinnerRating - winnerPreMatchElo,
+                opponentId: loserId,
+                opponent: matchData.loserUsername,
+                matchResult: 'win',
+                previousPosition: currentWinnerPosition,
+                newPosition: newWinnerPosition,
+                positionChange: newWinnerPosition - currentWinnerPosition,
+                matchId: matchId,
+                timestamp: matchTimestamp,
+                resimulated: true,
+                resimulatedAt: serverTimestamp(),
+                resimulatedBy: auth.currentUser.uid,
+                gameMode: ladder,
+                matchScore: `${matchData.winnerScore}-${matchData.loserScore}`,
+                mapPlayed: matchData.mapPlayed || matchData.mapName || 'Unknown',
+                note: 'Resimulated entry - ELO and positions calculated from actual pre-match data'
+            });
+        }
+        
+        if (!loserHasHistory) {
+            const loserHistoryRef = doc(collection(db, eloHistoryCollection));
+            batch.set(loserHistoryRef, {
+                playerId: loserId,
+                player: matchData.loserUsername,
+                previousElo: loserPreMatchElo,
+                newElo: newLoserRating,
+                eloChange: newLoserRating - loserPreMatchElo,
+                opponentId: winnerId,
+                opponent: matchData.winnerUsername,
+                matchResult: 'loss',
+                previousPosition: currentLoserPosition,
+                newPosition: newLoserPosition,
+                positionChange: newLoserPosition - currentLoserPosition,
+                matchId: matchId,
+                timestamp: matchTimestamp,
+                resimulated: true,
+                resimulatedAt: serverTimestamp(),
+                resimulatedBy: auth.currentUser.uid,
+                gameMode: ladder,
+                matchScore: `${matchData.winnerScore}-${matchData.loserScore}`,
+                mapPlayed: matchData.mapPlayed || matchData.mapName || 'Unknown',
+                note: 'Resimulated entry - ELO and positions calculated from actual pre-match data'
+            });
+        }
+        
+        // Update match record to indicate resimulation
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+            
+        const matchRef = doc(db, matchesCollection, matchId);
+        batch.update(matchRef, {
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid,
+            resimulatedReason: 'Complete resimulation - ELO ratings and positions recalculated',
+            originalWinnerElo: winnerData.eloRating,
+            originalLoserElo: loserData.eloRating,
+            originalWinnerPosition: currentWinnerPosition,
+            originalLoserPosition: currentLoserPosition,
+            resimulatedWinnerElo: newWinnerRating,
+            resimulatedLoserElo: newLoserRating,
+            resimulatedWinnerPosition: newWinnerPosition,
+            resimulatedLoserPosition: newLoserPosition
+        });
+        
+        // Execute all batch operations
+        await batch.commit();
+        
+        const historyEntriesCreated = (!winnerHasHistory ? 1 : 0) + (!loserHasHistory ? 1 : 0);
+        const positionChanges = currentWinnerPosition !== newWinnerPosition || currentLoserPosition !== newLoserPosition;
+        
+        showNotification(
+            `Match resimulated successfully! ` +
+            `Created ${historyEntriesCreated} ELO history entries. ` +
+            `Updated ELO ratings: Winner ${winnerPreMatchElo}→${newWinnerRating} (+${newWinnerRating - winnerPreMatchElo}), ` +
+            `Loser ${loserPreMatchElo}→${newLoserRating} (${newLoserRating - loserPreMatchElo}). ` +
+            `${positionChanges ? `Positions updated: Winner ${currentWinnerPosition}→${newWinnerPosition}, Loser ${currentLoserPosition}→${newLoserPosition}` : 'No position changes needed.'}`,
+            'success'
+        );
+        
+        // Clear the form
+        closeResimulateModal();
+        
+        // Optionally refresh the current view if we're on the manage players page
+        if (document.querySelector('#players.content-section.active')) {
+            loadPlayersData();
+        }
+        
+    } catch (error) {
+        console.error("Error resimulating match:", error);
+        showNotification(`Failed to resimulate match: ${error.message}`, 'error');
+    }
+}
+
+// Add this new function to get a player's ELO at a specific point in time
+async function getPlayerEloAtTime(playerId, targetTimestamp, eloHistoryCollection) {
+    try {
+        // Convert timestamp to Date if needed
+        const targetDate = targetTimestamp.toDate ? targetTimestamp.toDate() : new Date(targetTimestamp);
+        
+        // Query for all ELO history entries for this player BEFORE the target time
+        const historyQuery = query(
+            collection(db, eloHistoryCollection),
+            where('playerId', '==', playerId),
+            where('timestamp', '<', targetTimestamp),
+            orderBy('timestamp', 'desc'),
+            limit(1)
+        );
+        
+        const historySnapshot = await getDocs(historyQuery);
+        
+        if (!historySnapshot.empty) {
+            // Found the most recent ELO entry before this match
+            const lastEntry = historySnapshot.docs[0].data();
+            console.log(`Found ELO history for player ${playerId} before match: ${lastEntry.newElo}`);
+            return lastEntry.newElo;
+        } else {
+            // No history found before this match - player was at starting ELO
+            console.log(`No ELO history found for player ${playerId} before match - using starting ELO 1200`);
+            return 1200; // Starting ELO
+        }
+        
+    } catch (error) {
+        console.error(`Error getting ELO at time for player ${playerId}:`, error);
+        // Fallback to starting ELO if there's an error
+        return 1200;
+    }
+}
+
+// Replace your openResimulateModal function with this debugging version:
+function openResimulateModal() {
+    console.log('openResimulateModal called!'); // Add this debug line
+    
+    const modal = document.getElementById('resimulate-modal');
+    console.log('Modal element found:', modal); // Debug line
+    
+    if (!modal) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    // Try multiple approaches to show the modal
+    modal.style.display = 'block';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active');
+    
+    console.log('Modal should now be visible'); // Debug line
+    console.log('Modal computed styles:', window.getComputedStyle(modal).display); // Debug line
+    
+    // Clear previous data
+    const matchDetailsContainer = document.getElementById('match-details-container');
+    const validationContainer = document.getElementById('validation-results-container');
+    const confirmBtn = document.getElementById('confirm-resimulate-btn');
+    const matchIdInput = document.getElementById('resimulate-match-id');
+    
+    if (matchDetailsContainer) matchDetailsContainer.innerHTML = '';
+    if (validationContainer) validationContainer.innerHTML = '';
+    if (confirmBtn) confirmBtn.style.display = 'none';
+    if (matchIdInput) matchIdInput.value = '';
+    
+    console.log('Modal setup complete');
+}
+
+function closeResimulateModal() {
+    document.getElementById('resimulate-modal').style.display = 'none';
+    window.pendingResimulateData = null;
+}
+
+// Make functions globally available
+window.resimulateMatch = resimulateMatch;
+window.confirmResimulateMatch = confirmResimulateMatch;
+window.openResimulateModal = openResimulateModal;
+window.closeResimulateModal = closeResimulateModal;
 
 //points section 
 
