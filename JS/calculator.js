@@ -189,8 +189,6 @@ class ELOCalculator {
 
     displayCalculationDetails(winner, loser, result) {
         const details = `
-ELO Calculation Details:
-=======================
 
 Initial Ratings:
   ${winner.username}: ${winner.elo}
