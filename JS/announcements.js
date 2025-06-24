@@ -2,22 +2,16 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.4", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.4",
+    id: "beta-release 1.5", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.5",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
-            <li>Ribbons now on profiles</li>
-            <li>Consolidated ELO into Match history on profiles</li>
-            <li>Redesigned Approved Matches, also w/Filters.</li>
-            <li>Inbox for accounts - Invite others for homes/Subgames</li>
-            <li>Silver now has a new color (didn't like the last one.)</li>
-            <li>Decide your Subgames types along side it's preferred homes.</li>
-
+            <li>Elo Sandbox - Rules tab</li>
+            <li>Ribbons Descriptions - Rules tab</li>
             <br>
 \
-        <p1 style="color:#ffffff; font-weight: bold;">UPCOMING EVENT:</p1><br></br>
-             <li> RDL Mapping Event scheduled to be over Jan 15th! make sure to make your maps and submit them in #new-maps on the RDL Discord!</li>
-
+        <p1 style="color:#ffffff; font-weight: bold;">RDL News!:</p1><br></br>
+             <li>the 1st RDL Mapping competition has concluded! congrats to Belphegor Prime for 1st place!</li>
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Let me in!"
