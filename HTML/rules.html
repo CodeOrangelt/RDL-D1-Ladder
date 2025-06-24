@@ -167,6 +167,272 @@
             color: #ccc;
             font-style: italic;
         }
+
+.ribbon-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.ribbon-card {
+    background: linear-gradient(145deg, #2a2a2a 0%, #1e1e1e 100%);
+    border: 2px solid #444;
+    border-radius: 15px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ribbon-card:hover {
+    border-color: #666;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.ribbon-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #444;
+}
+
+.ribbon-icon {
+    width: 90px;
+    height: 90px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+    border: 4px solid #555;
+    background-color: #1a1a1a;
+    padding: 10px;
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.ribbon-icon:hover {
+    border-color: #777;
+    background-color: #222;
+    transform: scale(1.05);
+}
+
+.ribbon-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    line-height: 1.2;
+}
+
+.ribbon-description {
+    color: #e0e0e0;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.ribbon-levels {
+    background: linear-gradient(135deg, #1a1a1a 0%, #1a1a1a 100%);
+    padding: 18px;
+    border-radius: 10px;
+    font-size: 1em;
+    border: 2px solid #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-levels strong {
+    color: #4CAF50;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Enhanced ribbon icon backgrounds with better contrast */
+.ribbon-icon.rematch { 
+    background-image: url('../images/ribbons/rematch.png');
+    border-color: #e91e63;
+    background-color: rgba(233, 30, 99, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(233, 30, 99, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.domination { 
+    background-image: url('../images/ribbons/domination.png');
+    border-color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 152, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.underdog { 
+    background-image: url('../images/ribbons/underdog.png');
+    border-color: #2196f3;
+    background-color: rgba(33, 150, 243, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(33, 150, 243, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.overachiever { 
+    background-image: url('../images/ribbons/overachiever.png');
+    border-color: #9c27b0;
+    background-color: rgba(156, 39, 176, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(156, 39, 176, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.legendary { 
+    background-image: url('../images/ribbons/legendary.png');
+    border-color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 215, 0, 0.3),
+        0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.ribbon-icon.elo-goblin { 
+    background-image: url('../images/ribbons/elogoblin.png');
+    border-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(76, 175, 80, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.brick-wall { 
+    background-image: url('../images/ribbons/brickwall.png');
+    border-color: #795548;
+    background-color: rgba(121, 85, 72, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(121, 85, 72, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.collector { 
+    background-image: url('../images/ribbons/collector.png');
+    border-color: #607d8b;
+    background-color: rgba(96, 125, 139, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(96, 125, 139, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.sub-gamer { 
+    background-image: url('../images/ribbons/subgamer.png');
+    border-color: #00bcd4;
+    background-color: rgba(0, 188, 212, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 188, 212, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.explorer { 
+    background-image: url('../images/ribbons/explorer.png');
+    border-color: #8bc34a;
+    background-color: rgba(139, 195, 74, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(139, 195, 74, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.socialite { 
+    background-image: url('../images/ribbons/socialite.png');
+    border-color: #ffeb3b;
+    background-color: rgba(255, 235, 59, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 235, 59, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.top-rank { 
+    background-image: url('../images/ribbons/toprank.png');
+    border-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(244, 67, 54, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-info-box {
+    background: linear-gradient(145deg, #1a1a1a 0%, #1a1a1a 100%);
+    border: 2px solid #444;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ribbon-info-box h5 {
+    color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.ribbon-info-box ul {
+    margin-bottom: 20px;
+}
+
+.ribbon-info-box li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+.ribbon-info-box p {
+    color: #e0e0e0;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ribbon-showcase {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .ribbon-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .ribbon-header {
+        gap: 15px;
+    }
+    
+    .ribbon-title {
+        font-size: 1.3em;
+    }
+}
+
+/* Special glow effects for legendary ribbons */
+.ribbon-icon.legendary:hover {
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 215, 0, 0.4),
+        0 4px 12px rgba(255, 215, 0, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.ribbon-icon.top-rank:hover {
+    box-shadow: 
+        inset 0 2px 8px rgba(244, 67, 54, 0.4),
+        0 4px 12px rgba(244, 67, 54, 0.4),
+        0 0 20px rgba(244, 67, 54, 0.3);
+}
     </style>
 </head>
 
@@ -185,6 +451,7 @@
                 <div class="rules-nav-item" data-target="solo">Solos</div>
                 <div class="rules-nav-item" data-target="duos">Duos</div>
                 <div class="rules-nav-item" data-target="ctf">CTF</div>
+                <div class="rules-nav-item" data-target="ribbons">Ribbons</div>
                 <div class="rules-nav-item" data-target="sandbox">ELO Calculator</div>
             </div>
 
@@ -771,6 +1038,179 @@
                         <ul>
                             <!-- Future CTF rules go here -->
                         </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="ribbons" class="rules-section">
+                <div class="rule-item">
+                        <div class="ribbon-info-box">
+                            <h5>RDL Ribbons</h5>
+                            <ul>
+                                <li><strong>Leveling:</strong> Most ribbons increase in level each time you earn them</li>
+                                <li><strong>Incremental:</strong> Some ribbons level up at specific increments (e.g., every 50 matches)</li>
+                                <li><strong>Unique:</strong> A few ribbons don't have levels and are one-time achievements</li>
+                                <li><strong>Seasonal:</strong> Some ribbons reset each season, others are permanent</li>
+                            </ul>
+                        </div>
+
+                        <div class="ribbon-showcase">
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon rematch"></div>
+                                    <h3 class="ribbon-title">Rematch Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat a pilot with the "Rematch" subgame selected in the report form.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon domination"></div>
+                                    <h3 class="ribbon-title">Domination Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat 5 unique pilots in a rank (including your own rank).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level increases for each rank you've "dominated".
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon underdog"></div>
+                                    <h3 class="ribbon-title">Underdog Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat a pilot with at least 300 ELO more than you.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> Each time you earn this ribbon it goes up 1 level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon overachiever"></div>
+                                    <h3 class="ribbon-title">Overachiever Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played over 100 matches.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level is at increments of 100 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon legendary"></div>
+                                    <h3 class="ribbon-title">Legendary Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Gain at least 300 ELO in one season. <em>(Work in Progress)</em>
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level can be continually earned with +100 ELO factored instead of default 300 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon elo-goblin"></div>
+                                    <h3 class="ribbon-title">ELO Goblin Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    In one match gain +32 ELO (the maximum possible ELO gain).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon brick-wall"></div>
+                                    <h3 class="ribbon-title">Brick Wall Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Amass at least 80% overall win rate percentage.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level gains a level every 5 percent until 100% where it is maxed. <em>(Minimum 50 matches required)</em>
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon collector"></div>
+                                    <h3 class="ribbon-title">Collector Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Hold more than 5 ribbons at a time.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 5 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon sub-gamer"></div>
+                                    <h3 class="ribbon-title">Sub-Gamer Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Play over 50 subgame matches in one season.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 50 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon explorer"></div>
+                                    <h3 class="ribbon-title">Explorer Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played at least 20 unique maps.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 20 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon socialite"></div>
+                                    <h3 class="ribbon-title">Socialite Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played at least 10 unique pilots.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 5 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon top-rank"></div>
+                                    <h3 class="ribbon-title">Top {Rank} Pilot Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    You have claimed the highest spot on the ladder for your rank class (Bronze, Silver, Gold, or Emerald).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon does not have levels - it's a unique achievement.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
