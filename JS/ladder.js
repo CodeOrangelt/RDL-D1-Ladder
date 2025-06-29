@@ -32,24 +32,24 @@ let activeListeners = [];
 export async function loadLadderData(division = 1) {
   try {
     document.getElementById('loading-indicator').style.display = 'block';
-    
+
     // Get ladder data with caching
     const players = await getLadderData(division);
-    
+
     // Sort by ELO descending
     players.sort((a, b) => b.elo - a.elo);
-    
+
     // Fetch ELO history in batch
     const playerIds = players.map(p => p.id);
     const eloHistoryData = await getEloHistoryBatch(playerIds, division);
-    
+
     // Process and display ladder
     const processedPlayers = players.map((player, index) => {
       const history = eloHistoryData[player.id] || [];
       const lastMatches = history
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 5);
-      
+
       return {
         ...player,
         rank: index + 1,
@@ -57,10 +57,10 @@ export async function loadLadderData(division = 1) {
         recentActivity: lastMatches.length > 0
       };
     });
-    
+
     renderLadder(processedPlayers);
     setupRealTimeUpdates(division);
-    
+
   } catch (error) {
     console.error("Error loading ladder data:", error);
     document.getElementById('error-message').innerText = "Failed to load ladder data. Please try again.";
@@ -74,15 +74,15 @@ function setupRealTimeUpdates(division = 1) {
   // Clear previous listeners
   activeListeners.forEach(unsubscribe => unsubscribe());
   activeListeners = [];
-  
+
   // Collection references
   const collectionName = division === 1 ? 'players' : `playersD${division}`;
   const matchesCollectionName = division === 1 ? 'matches' : `matchesD${division}`;
-  
+
   // Listen only for recent matches (last 24 hours)
   const oneDayAgo = new Date();
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-  
+
   // Set up efficient listeners with constraints
   const matchListener = setupEfficientListener(
     matchesCollectionName,
@@ -94,7 +94,7 @@ function setupRealTimeUpdates(division = 1) {
       }
     }
   );
-  
+
   activeListeners.push(matchListener);
 }
 
@@ -107,7 +107,7 @@ export function cleanupListeners() {
 function renderLadder(players) {
   const ladderContainer = document.getElementById('ladder-container');
   ladderContainer.innerHTML = '';
-  
+
   players.forEach(player => {
     const playerElement = document.createElement('div');
     playerElement.className = 'ladder-player';
@@ -136,10 +136,10 @@ async function displayLadder(forceRefresh = false) {
         console.error('Ladder table body not found');
         return;
     }
-    
+
     // Clear the table first to prevent duplicates
     tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading ladder data...</td></tr>';
-    
+
     try {
         // Use cache if available and not expired
         const now = Date.now();
@@ -148,12 +148,12 @@ async function displayLadder(forceRefresh = false) {
             updateLadderDisplay(playerCache.data);
             return;
         }
-        
+
         // First get all players
         const playersRef = collection(db, 'players');
         const querySnapshot = await getDocs(playersRef);
         const players = [];
-        
+
         querySnapshot.forEach((doc) => {
             const playerData = doc.data();
             players.push({
@@ -167,7 +167,7 @@ async function displayLadder(forceRefresh = false) {
         // Get all user profiles in one go
         const profilesRef = collection(db, 'userProfiles');
         const profilesSnapshot = await getDocs(profilesRef);
-        
+
         // Create a map of username -> profile data
         const profilesByUsername = new Map();
         profilesSnapshot.forEach((doc) => {
@@ -176,7 +176,7 @@ async function displayLadder(forceRefresh = false) {
                 profilesByUsername.set(profileData.username.toLowerCase(), profileData);
             }
         });
-        
+
         // Match profiles to players - assign country data
         players.forEach(player => {
             const username = player.username?.toLowerCase();
@@ -190,20 +190,20 @@ async function displayLadder(forceRefresh = false) {
 
         // Extract all usernames for batch operations
         const usernames = players.map(p => p.username);
-        
+
         // Get match stats for all players at once
         const matchStatsBatch = await fetchBatchMatchStats(usernames);
-        
+
         // Sort players with match info already available
         players.sort((a, b) => {
             const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
             const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
-            
+
             // First check: put players with no matches at the bottom
             if ((aMatches === 0) !== (bMatches === 0)) {
                 return aMatches === 0 ? 1 : -1;
             }
-            
+
             // Then sort by position for players in the same category
             return (a.position || 999) - (b.position || 999);
         });
@@ -212,11 +212,11 @@ async function displayLadder(forceRefresh = false) {
         players.forEach((player, index) => {
             player.position = index + 1;
         });
-        
+
         // Store in cache
         playerCache.data = players;
         playerCache.timestamp = now;
-        
+
         // Update the display with batch HTML creation
         updateLadderDisplay(players, matchStatsBatch);
 
@@ -235,7 +235,7 @@ async function displayLadder(forceRefresh = false) {
 // Helper function to fetch all match stats at once - much more efficient
 async function fetchBatchMatchStats(usernames) {
     const matchStats = new Map();
-    
+
     try {
         // Initialize stats for all players
         usernames.forEach(username => {
@@ -249,17 +249,17 @@ async function fetchBatchMatchStats(usernames) {
                 winRate: 0
             });
         });
-        
+
         // Get all matches in one query instead of per-player
         const approvedMatchesRef = collection(db, 'approvedMatches');
         const allMatches = await getDocs(approvedMatchesRef);
-        
+
         // Process all matches in a single pass
         allMatches.forEach(doc => {
             const match = doc.data();
             const winnerUsername = match.winnerUsername;
             const loserUsername = match.loserUsername;
-            
+
             if (usernames.includes(winnerUsername)) {
                 const stats = matchStats.get(winnerUsername);
                 stats.wins++;
@@ -267,7 +267,7 @@ async function fetchBatchMatchStats(usernames) {
                 stats.totalKills += parseInt(match.winnerScore) || 0;
                 stats.totalDeaths += parseInt(match.loserScore) || 0;
             }
-            
+
             if (usernames.includes(loserUsername)) {
                 const stats = matchStats.get(loserUsername);
                 stats.losses++;
@@ -276,32 +276,32 @@ async function fetchBatchMatchStats(usernames) {
                 stats.totalDeaths += parseInt(match.winnerScore) || 0;
             }
         });
-        
+
         // Calculate derived stats
         usernames.forEach(username => {
             const stats = matchStats.get(username);
-            
+
             // Calculate KDA ratio
             stats.kda = stats.totalDeaths > 0 ? 
                 (stats.totalKills / stats.totalDeaths).toFixed(2) : 
                 stats.totalKills.toFixed(2);
-            
+
             // Calculate win rate
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
         });
-        
+
     } catch (error) {
         console.error("Error fetching batch match stats:", error);
     }
-    
+
     return matchStats;
 }
 
 // Calculate how many days a player has been in first place
 function calculateStreakDays(firstPlaceDate) {
     if (!firstPlaceDate) return 0;
-    
+
     // Convert Firebase timestamp to JavaScript Date if needed
     let dateObj;
     if (firstPlaceDate.seconds) {
@@ -318,20 +318,21 @@ function calculateStreakDays(firstPlaceDate) {
         console.error('Unknown date format for firstPlaceDate:', firstPlaceDate);
         return 0;
     }
-    
+
     // Calculate difference in days
     const now = new Date();
     const diffTime = Math.abs(now - dateObj);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays;
 }
 
+// Function to create HTML for a single player row
 function createPlayerRow(player, stats) {
     const elo = parseFloat(player.elo) || 0;
-    
+
     // Set ELO-based colors
-    let usernameColor = 'gray';
+    let usernameColor = 'gray'; // Default for unranked
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
@@ -341,25 +342,25 @@ function createPlayerRow(player, stats) {
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32'; // Bronze
     }
-    
-    // IMPROVED: Create streak HTML if player is #1 AND has active streak
+
+    // Create streak HTML if player is #1
     let streakHtml = '';
-    if (player.position === 1) {
-        let streakDays = 0;
-        
-        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
-        if (player.streakDays && player.streakDays > 0) {
-            streakDays = player.streakDays;
-        } else if (player.firstPlaceDate) {
-            streakDays = calculateStreakDays(player.firstPlaceDate);
-        }
-        
+    if (player.position === 1 && player.firstPlaceDate) {
+        const streakDays = calculateStreakDays(player.firstPlaceDate);
+
+
+
+
+
+
+
+
         if (streakDays > 0) {
-            const pluralDays = streakDays === 1 ? 'day' : 'days';
-            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
+            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
+
         }
     }
-    
+
     // Create flag HTML if player has country
     let flagHtml = '';
     if (player.country) {
@@ -369,18 +370,19 @@ function createPlayerRow(player, stats) {
                         style="margin-left: 5px; vertical-align: middle;"
                         onerror="this.style.display='none'">`;
     }
-    
+
     return `
     <tr>
         <td>${player.position}</td>
         <td style="position: relative;">
             <div style="display: flex; align-items: center; position: relative;">
+                ${streakHtml}
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
                 ${flagHtml}
-                ${streakHtml}
+
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
@@ -397,6 +399,7 @@ function createPlayerRow(player, stats) {
     </tr>`;
 }
 
+// Add this function to determine the player's rank name by ELO
 function getPlayerRankName(elo) {
     if (elo >= 2000) return 'Emerald';
     if (elo >= 1800) return 'Gold';
@@ -405,6 +408,8 @@ function getPlayerRankName(elo) {
     return 'Unranked';
 }
 
+// Add this function right before updateLadderDisplay function (around line 280)
+
 // Function to get the last ELO change for each player
 async function getPlayersLastEloChanges(usernames) {
     // Initialize changes map first
@@ -412,16 +417,16 @@ async function getPlayersLastEloChanges(usernames) {
     usernames.forEach(username => {
         changes.set(username, 0);
     });
-    
+
     try {
         // First step: Create a mapping between user IDs and usernames
         const playersRef = collection(db, 'players');
         const playersSnapshot = await getDocs(playersRef);
-        
+
         // Create two mappings: id→username and username→id (both case-insensitive)
         const userIdToUsername = new Map();
         const usernameToUserId = new Map();
-        
+
         playersSnapshot.forEach(doc => {
             const userData = doc.data();
             if (userData.username) {
@@ -429,18 +434,18 @@ async function getPlayersLastEloChanges(usernames) {
                 usernameToUserId.set(userData.username.toLowerCase(), doc.id);
             }
         });
-        
-        
+
+
         // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistory');
         const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(300));
         const eloSnapshot = await getDocs(eloQuery);
-        
+
         if (eloSnapshot.empty) {
             console.log('ELO history collection is empty');
             return changes;
         }
-                
+
         // Log sample entry structure
         if (eloSnapshot.docs.length > 0) {
             const sample = eloSnapshot.docs[0].data();
@@ -448,15 +453,15 @@ async function getPlayersLastEloChanges(usernames) {
             if (sample.player && userIdToUsername.has(sample.player)) {
             }
         }
-        
+
         // Process entries and group by username
         const entriesByUsername = new Map();
         let matchCount = 0;
-        
+
         eloSnapshot.forEach(doc => {
             const entry = doc.data();
             let username = null;
-            
+
             // First try: Direct user ID match in the player field
             if (entry.player && userIdToUsername.has(entry.player)) {
                 username = userIdToUsername.get(entry.player);
@@ -469,38 +474,38 @@ async function getPlayersLastEloChanges(usernames) {
             else if (entry.playerUsername && usernameToUserId.has(entry.playerUsername.toLowerCase())) {
                 username = entry.playerUsername;
             }
-            
+
             if (username && usernames.includes(username)) {
                 matchCount++;
-                
+
                 if (!entriesByUsername.has(username)) {
                     entriesByUsername.set(username, []);
                 }
-                
+
                 entriesByUsername.get(username).push({
                     ...entry,
                     timestamp: entry.timestamp?.seconds || 0
                 });
             }
         });
-        
+
         // For each player, find and record their most recent ELO change
         entriesByUsername.forEach((playerEntries, username) => {
             if (playerEntries.length > 0) {
                 // Sort entries by timestamp descending to ensure we get the most recent
                 playerEntries.sort((a, b) => b.timestamp - a.timestamp);
-                
+
                 // Use the first (most recent) entry that has valid change information
                 const recentEntry = playerEntries.find(entry => 
                     entry.change !== undefined || 
                     (entry.newElo !== undefined && entry.previousElo !== undefined) ||
                     (entry.newEloRating !== undefined && entry.oldEloRating !== undefined)
                 );
-                
+
                 if (recentEntry) {
                     // Calculate ELO change from available fields
                     let eloChange;
-                    
+
                     if (recentEntry.change !== undefined) {
                         eloChange = parseInt(recentEntry.change);
                     } else if (recentEntry.newElo !== undefined && entry.previousElo !== undefined) {
@@ -508,7 +513,7 @@ async function getPlayersLastEloChanges(usernames) {
                     } else if (recentEntry.newEloRating !== undefined && entry.oldEloRating !== undefined) {
                         eloChange = parseInt(recentEntry.newEloRating) - parseInt(recentEntry.oldEloRating);
                     }
-                    
+
                     if (!isNaN(eloChange) && eloChange !== 0) {
                         // Store the change
                         changes.set(username, eloChange);
@@ -516,11 +521,11 @@ async function getPlayersLastEloChanges(usernames) {
                 }
             }
         });
-            
+
     } catch (error) {
         console.error('Error fetching ELO history:', error);
     }
-    
+
     return changes;
 }
 
@@ -531,7 +536,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
         console.error('Ladder table body not found');
         return;
     }
-    
+
     // Update the table header with new columns
     const thead = document.querySelector('#ladder thead tr');
     if (thead) {
@@ -546,15 +551,15 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
             <th>Win Rate</th>
         `;
     }
-    
+
     // Get all usernames for batch processing
     const usernames = ladderData.map(p => p.username);
-    
+
     // If match stats not provided, fetch them
     if (!matchStatsBatch) {
         matchStatsBatch = await fetchBatchMatchStats(usernames);
     }
-    
+
     // Create all rows at once for better performance
     const rowsHtml = ladderData.map(player => {
         // Get pre-fetched stats from our batch operation
@@ -562,13 +567,13 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
             totalMatches: 0, wins: 0, losses: 0, 
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
-        
+
         return createPlayerRow(player, stats);
     }).join('');
-    
+
     // Append all rows at once (much faster than individual DOM operations)
     tbody.innerHTML = rowsHtml;
-    
+
     // Get all ELO changes at once
     getPlayersLastEloChanges(usernames)
         .then(changes => {
@@ -579,7 +584,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
                     rowMap.set(usernames[index], row);
                 }
             });
-            
+
             changes.forEach((change, username) => {
                 const row = rowMap.get(username);
                 if (row && change !== 0) {
@@ -587,7 +592,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
                     if (eloCell) {
                         // Format the change value with + or - sign
                         const formattedChange = change > 0 ? `+${change}` : `${change}`;
-                        
+
                         // Find the indicator element that's already in the DOM
                         const indicator = eloCell.querySelector('.trend-indicator');
                         if (indicator) {                            
@@ -613,17 +618,17 @@ function initLadderToggles() {
     const d1Toggle = document.getElementById('d1-switch');
     const d2Toggle = document.getElementById('d2-switch');
     const d3Toggle = document.getElementById('d3-switch');
-    
+
     const d1Container = document.getElementById('d1-ladder-container');
     const d2Container = document.getElementById('d2-ladder-container');
     const d3Container = document.getElementById('d3-ladder-container');
-    
+
     function hideAllLadders() {
         // First, remove active class from all containers
         if (d1Container) d1Container.classList.remove('active');
         if (d2Container) d2Container.classList.remove('active');
         if (d3Container) d3Container.classList.remove('active');
-        
+
         // Also ensure display is none (as a fallback)
         if (d1Container) d1Container.style.display = 'none';
         if (d2Container) d2Container.style.display = 'none';
@@ -635,76 +640,76 @@ function initLadderToggles() {
         d1Toggle.addEventListener('click', () => {
             console.log("D1 toggle clicked");
             hideAllLadders(); // Hide all ladders first
-            
+
             // Show D1 ladder
             if (d1Container) {
                 d1Container.classList.add('active');
                 d1Container.style.display = 'block';
             }
-            
+
             // Show D1 recommendation, hide others
             document.getElementById('elo-recommendation-text-d1').style.display = 'block';
             document.getElementById('elo-recommendation-text-d2').style.display = 'none';
             document.getElementById('elo-recommendation-text-d3').style.display = 'none';
-            
+
             // Update button UI
             if (d1Toggle) d1Toggle.classList.add('active');
             if (d2Toggle) d2Toggle.classList.remove('active');
             if (d3Toggle) d3Toggle.classList.remove('active');
-            
+
             // Load ladder data
             displayLadder();
             findBestOpponent('d1');
         });
     }
-    
+
     // Similarly update the D2 and D3 button event listeners
     if (d2Toggle) {
         d2Toggle.addEventListener('click', () => {
             console.log("D2 toggle clicked");
             hideAllLadders(); // Hide all ladders first
-            
+
             if (d2Container) {
                 d2Container.classList.add('active');
                 d2Container.style.display = 'block';
             }
-            
+
             // Show D2 recommendation, hide others
             document.getElementById('elo-recommendation-text-d1').style.display = 'none';
             document.getElementById('elo-recommendation-text-d2').style.display = 'block';
             document.getElementById('elo-recommendation-text-d3').style.display = 'none';
-            
+
             // Update button UI
             if (d2Toggle) d2Toggle.classList.add('active');
             if (d1Toggle) d1Toggle.classList.remove('active');
             if (d3Toggle) d3Toggle.classList.remove('active');
-            
+
             // Load ladder data
             displayLadderD2();
             findBestOpponent('d2');
         });
     }
-    
+
     if (d3Toggle) {
         d3Toggle.addEventListener('click', () => {
             console.log("D3 toggle clicked");
             hideAllLadders(); // Hide all ladders first
-            
+
             if (d3Container) {
                 d3Container.classList.add('active');
                 d3Container.style.display = 'block';
             }
-            
+
             // Show D3 recommendation, hide others
             document.getElementById('elo-recommendation-text-d1').style.display = 'none';
             document.getElementById('elo-recommendation-text-d2').style.display = 'none';
             document.getElementById('elo-recommendation-text-d3').style.display = 'block';
-            
+
             // Update button UI
             if (d3Toggle) d3Toggle.classList.add('active');
             if (d1Toggle) d1Toggle.classList.remove('active');
             if (d2Toggle) d2Toggle.classList.remove('active');
-            
+
             // Load ladder data
             displayLadderD3();
             findBestOpponent('d3');
@@ -717,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLadderToggles();
     displayLadder();  // Initial display of the ladder
     findBestOpponent('d1'); // Initial opponent recommendation
-    
+
     // Show only D1 recommendation initially (D1 is the default ladder)
     document.getElementById('elo-recommendation-text-d1').style.display = 'block';
 });
@@ -733,12 +738,12 @@ async function findBestOpponent(currentLadder = 'd1') {
     // Get the appropriate recommendation element based on ladder type
     const recommendationElId = `elo-recommendation-text-${currentLadder}`;
     const recommendationEl = document.getElementById(recommendationElId);
-    
+
     if (!recommendationEl) {
         console.error(`Recommendation element for ${currentLadder} not found`);
         return;
     }
-    
+
     // Get the current user
     const user = auth.currentUser;
     if (!user) {
@@ -750,97 +755,97 @@ async function findBestOpponent(currentLadder = 'd1') {
         // Get the user's profile
         const profileRef = doc(db, 'userProfiles', user.uid);
         const profileDoc = await getDoc(profileRef);
-        
+
         if (!profileDoc.exists()) {
             console.log('No user profile found');
             recommendationEl.textContent = 'Complete your profile to see recommended opponents';
             return;
         }
-        
+
         const profile = profileDoc.data();
         const username = profile.username;
-        
+
         if (!username) {
             recommendationEl.textContent = 'Set your username to see recommended opponents';
             return;
         }
-        
+
         // Determine which collection to query based on current ladder
         const ladderCollection = currentLadder === 'd1' ? 'players' : 
                                currentLadder === 'd2' ? 'playersD2' : 'playersD3';
-        
+
         // Get the user's ELO from the appropriate ladder
         const playersRef = collection(db, ladderCollection);
         const playerQuery = query(playersRef, where('username', '==', username));
         const playerSnapshot = await getDocs(playerQuery);
-        
+
         if (playerSnapshot.empty) {
             recommendationEl.textContent = 
                 `You're not registered on the ${currentLadder.toUpperCase()} ladder`;
             return;
         }
-        
+
         const playerData = playerSnapshot.docs[0].data();
         const userElo = parseInt(playerData.eloRating) || 1500;
-        
+
         // Get all players to find best match
         const allPlayersSnapshot = await getDocs(playersRef);
         let bestMatch = null;
         let bestMatchScore = -1; // Use a score-based approach instead
-        
+
         // Get user's rank tier
         const userRankTier = getPlayerRankName(userElo);
-        
+
         allPlayersSnapshot.forEach(doc => {
             const potentialOpponent = doc.data();
-            
+
             // Skip if this is the current user
             if (potentialOpponent.username === username) return;
-            
+
             const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
             const opponentRankTier = getPlayerRankName(opponentElo);
-            
+
             // Calculate ELO difference (absolute value)
             const eloDifference = Math.abs(opponentElo - userElo);
-            
+
             // Calculate expected ELO gain using the ELO formula
             const K = 32;
             const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400));
             const potentialEloGain = Math.round(K * (1 - expectedScore));
-            
+
             // Skip opponents where you wouldn't gain any ELO
             if (potentialEloGain <= 0) return;
-            
+
             // Calculate match quality score - balances closeness and potential gain
             // Lower ELO difference is better, but we still want some gain
             // Perfect score would be someone very close to your ELO but slightly higher
             let matchScore = 0;
-            
+
             // 1. Base score from ELO proximity - closer is better
             // Maximum proximity score for players within 100 ELO points
             const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
-            
+
             // 2. ELO gain score - some gain is good, but we don't want to overweight it
             // Maximum gain score for 5-10 point gains
             const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
                              potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
-            
+
             // 3. Same rank tier bonus
             const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
-            
+
             // Calculate final score
             matchScore = proximityScore + gainScore + tierBonus;
-            
+
             // Update best match if we found a better one
             if (matchScore > bestMatchScore) {
                 bestMatch = potentialOpponent;
                 bestMatchScore = matchScore;
             }
         });
-        
+
         if (bestMatch) {
             const opponentElo = parseInt(bestMatch.eloRating) || 1500;
-            
+
             // Set ELO-based colors (same logic used in createPlayerRow)
             let usernameColor = 'gray'; // Default for unranked
             if (opponentElo >= 2000) {
@@ -852,12 +857,12 @@ async function findBestOpponent(currentLadder = 'd1') {
             } else if (opponentElo >= 1400) {
                 usernameColor = '#CD7F32'; // Bronze
             }
-            
+
             recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
         } else {
             recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
         }
-            
+
     } catch (error) {
         console.error('Error finding best opponent:', error);
         recommendationEl.textContent = 'Error finding recommended opponent';
@@ -870,7 +875,7 @@ auth.onAuthStateChanged(user => {
     const d1Active = document.getElementById('d1-ladder-container').classList.contains('active');
     const d2Active = document.getElementById('d2-ladder-container').classList.contains('active');
     const d3Active = document.getElementById('d3-ladder-container').classList.contains('active');
-    
+
     const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : 'd3';
     findBestOpponent(currentLadder);
 });

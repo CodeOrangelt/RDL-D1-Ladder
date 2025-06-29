@@ -1,4 +1,4 @@
-import { 
+import {
     collection,
     doc, 
     getDoc, 
@@ -48,28 +48,28 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     try {
         // Get batch instance
         const batch = writeBatch(db);
-        
+
         // Get player references
         const winnerRef = doc(db, 'players', winnerId);
         const loserRef = doc(db, 'players', loserId);
-        
+
         // Get current player data
         const [winnerDoc, loserDoc] = await Promise.all([
             getDoc(winnerRef),
             getDoc(loserRef)
         ]);
-        
+
         if (!winnerDoc.exists() || !loserDoc.exists()) {
             throw new Error('One or both players not found');
         }
-        
+
         const winnerData = winnerDoc.data();
         const loserData = loserDoc.data();
-        
+
         // Store original positions
         const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
         const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
-        
+
         // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateElo(
             winnerData.eloRating || 1200,
@@ -83,20 +83,20 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
         if (winnerPosition > loserPosition) {
             // Winner was ranked lower than loser, so winner moves up
             console.log('Position swap needed - winner was lower ranked');
-            
+
             // Winner takes loser's position
             newWinnerPosition = loserPosition;
-            
+
             // Loser moves down one spot
             newLoserPosition = loserPosition + 1;
-            
+
             // Move everyone else between the old positions down one spot
             const playersToUpdate = query(
                 collection(db, 'players'),
                 where('position', '>', loserPosition),
                 where('position', '<', winnerPosition)
             );
-            
+
             const playersSnapshot = await getDocs(playersToUpdate);
             for (const playerDoc of playersSnapshot.docs) {
                 if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
@@ -111,35 +111,6 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             console.log('Winner already ranked higher - keeping positions');
         }
 
-        // Add this after the position update logic (around line 120)
-
-        // Handle #1 position streak tracking
-        if (newWinnerPosition === 1) {
-            // New champion - start their streak
-            batch.update(winnerRef, {
-                firstPlaceDate: serverTimestamp(),
-                streakDays: 1
-            });
-            
-            console.log(`${winnerData.username} is now #1 - starting streak tracking`);
-        } else {
-            // Winner didn't reach #1, clear any existing streak data
-            batch.update(winnerRef, {
-                firstPlaceDate: null,
-                streakDays: 0
-            });
-        }
-
-        // If loser was displaced from #1, reset their streak
-        if (loserPosition === 1 && newLoserPosition > 1) {
-            batch.update(loserRef, {
-                firstPlaceDate: null,
-                streakDays: 0
-            });
-            
-            console.log(`${loserData.username} lost #1 position - streak reset`);
-        }
-
         // Use ONLY the fields specifically allowed in the security rules
         const winnerUpdate = {
             eloRating: newWinnerRating,
@@ -147,23 +118,23 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
             position: newWinnerPosition,
             lastMatchId: matchId
         };
-        
+
         const loserUpdate = {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
             position: newLoserPosition,
             lastMatchId: matchId
         };
-        
+
         // Update the documents with the limited field set
         batch.update(winnerRef, winnerUpdate);
         batch.update(loserRef, loserUpdate);
-        
+
         // Commit the batch
         await batch.commit();
-        
+
         console.log('ELO ratings updated successfully');
-        
+
         // Create ELO history entries
         await Promise.all([
             recordEloChange({
@@ -217,13 +188,13 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         // Get the report data
         const reportRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(reportRef);
-        
+
         if (!reportSnapshot.exists()) {
             throw new Error('Report not found');
         }
-        
+
         const reportData = reportSnapshot.data();
-        
+
         // Create updated report data
         const updatedReportData = {
             ...reportData,
@@ -235,7 +206,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             approvedAt: serverTimestamp(),
             approvedBy: auth.currentUser.uid
         };
-        
+
         // Move match to approved collection first
         await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
         await deleteDoc(reportRef);

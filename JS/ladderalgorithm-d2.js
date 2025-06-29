@@ -36,28 +36,28 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
     try {
         // Get batch instance
         const batch = writeBatch(db);
-        
+
         // Get player references - note the collection is playersD2
         const winnerRef = doc(db, 'playersD2', winnerId);
         const loserRef = doc(db, 'playersD2', loserId);
-        
+
         // Get current player data
         const [winnerDoc, loserDoc] = await Promise.all([
             getDoc(winnerRef),
             getDoc(loserRef)
         ]);
-        
+
         if (!winnerDoc.exists() || !loserDoc.exists()) {
             throw new Error('One or both D2 players not found');
         }
-        
+
         const winnerData = winnerDoc.data();
         const loserData = loserDoc.data();
-        
+
         // Store original positions
         const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
         const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
-        
+
         // Calculate new ELO ratings
         const { newWinnerRating, newLoserRating } = calculateEloD2(
             winnerData.eloRating || 1200,
@@ -71,20 +71,20 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
         if (winnerPosition > loserPosition) {
             // Winner was ranked lower than loser, so winner moves up
             console.log('D2 Position swap needed - winner was lower ranked');
-            
+
             // Winner takes loser's position
             newWinnerPosition = loserPosition;
-            
+
             // Loser moves down one spot
             newLoserPosition = loserPosition + 1;
-            
+
             // Move everyone else between the old positions down one spot
             const playersToUpdate = query(
                 collection(db, 'playersD2'),
                 where('position', '>', loserPosition),
                 where('position', '<', winnerPosition)
             );
-            
+
             const playersSnapshot = await getDocs(playersToUpdate);
             for (const playerDoc of playersSnapshot.docs) {
                 if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
@@ -98,35 +98,6 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
             console.log('D2 Winner already ranked higher - keeping positions');
         }
 
-        // Add the same streak logic to D2 algorithm (around line 120)
-
-        // Handle #1 position streak tracking
-        if (newWinnerPosition === 1) {
-            // New champion - start their streak
-            batch.update(winnerRef, {
-                firstPlaceDate: serverTimestamp(),
-                streakDays: 1
-            });
-            
-            console.log(`D2: ${winnerData.username} is now #1 - starting streak tracking`);
-        } else {
-            // Winner didn't reach #1, clear any existing streak data
-            batch.update(winnerRef, {
-                firstPlaceDate: null,
-                streakDays: 0
-            });
-        }
-
-        // If loser was displaced from #1, reset their streak
-        if (loserPosition === 1 && newLoserPosition > 1) {
-            batch.update(loserRef, {
-                firstPlaceDate: null,
-                streakDays: 0
-            });
-            
-            console.log(`D2: ${loserData.username} lost #1 position - streak reset`);
-        }
-
         // Update the documents with the limited field set
         batch.update(winnerRef, {
             eloRating: newWinnerRating,
@@ -134,19 +105,19 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
             position: newWinnerPosition,
             lastMatchId: matchId
         });
-        
+
         batch.update(loserRef, {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
             position: newLoserPosition,
             lastMatchId: matchId
         });
-        
+
         // Commit the batch
         await batch.commit();
-        
+
         console.log('D2 ELO ratings updated successfully');
-        
+
         // Create ELO history entries using D2-specific function
         await Promise.all([
             recordEloChangeD2({
@@ -197,7 +168,7 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
 export async function approveReportD2(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
         console.log('Starting approveReportD2 function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
-        
+
         const currentUser = auth.currentUser;
         if (!currentUser) {
             console.log('No user logged in');
@@ -221,7 +192,7 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
 
         const reportData = reportSnapshot.data();
         console.log('D2 Report data:', reportData);
-        
+
         // Check if user is the winner
         if (currentUsername !== reportData.winnerUsername) {
             throw new Error('Only the winner can approve D2 matches');
