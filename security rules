@@ -1,5 +1,4 @@
 rules_version = '2';
-//persm for HIGHLIGHTS VIDEO
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -8,44 +7,50 @@ service cloud.firestore {
 
     // Checks admin emails (replace with your actual list)
     function isAdminEmail() {
-      // Ensure request.auth is not null before accessing token.email
       return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
     }
 
     // Checks user profile for specific roles
     function hasRole(userId, allowedRoles) {
       let profilePath = /databases/$(database)/documents/userProfiles/$(userId);
-      // Check existence first.
       return exists(profilePath) &&
-             // Directly access data and perform checks if profile exists
              (
-               // Calculate effective role directly using safe gets and ternary operator
                (
                  (get(profilePath).data.get('roleName', '') != '' ?
                   get(profilePath).data.get('roleName', '') :
                   get(profilePath).data.get('role', '')
                  )
-                 .lower() // Convert the chosen role to lower case
+                 .lower()
                )
-               // Check if the effective role is in the allowed list
                in allowedRoles
              );
     }
 
     // Function to check if user can manage articles
     function canManageArticles(userId) {
-      // Allow if user is admin by email OR has specific roles in their profile
-      // Ensure request.auth is not null before checking email or roles
       return request.auth != null && (isAdminEmail() || hasRole(userId, ['admin', 'owner', 'creative lead']));
+    }
+
+    // isAdmin function
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
+    }
+
+    // Function to check if a user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // isVerifiedUser function
+    function isVerifiedUser() {
+      return request.auth != null;
     }
 
     // --- Collections ---
 
     // Articles Collection
     match /articles/{articleId} {
-      // Anyone can read articles
       allow read: if true;
-      // Only authorized roles can create, update, delete
       allow create, update, delete: if request.auth != null && canManageArticles(request.auth.uid);
     }
 
@@ -53,54 +58,84 @@ service cloud.firestore {
     match /userProfiles/{userId} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && (request.auth.uid == userId || canManageArticles(request.auth.uid));
+      allow update: if request.auth != null && (
+        request.auth.uid == userId || 
+        canManageArticles(request.auth.uid) ||
+        (
+          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['points', 'inventory', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
+        )
+      );
       allow delete: if request.auth != null && isAdminEmail();
     }
 
-    // Match Comments Collection - NEW
+    // Match Comments Collection
     match /matchComments/{commentId} {
-      // Anyone can read comments
       allow read: if true;
-      
-      // Only allow creation if user is authenticated and the userId field matches auth ID
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid &&
                      request.resource.data.keys().hasAll(['matchId', 'userId', 'username', 'text', 'timestamp']);
-      
-      // Only allow updates by the original comment author
       allow update: if request.auth != null && 
                      resource.data.userId == request.auth.uid;
-      
-      // Only allow deletion by the original comment author or admins
       allow delete: if request.auth != null && 
                      (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // --- Your Existing Rules ---
-
-    // isAdmin function (Consider removing if isAdminEmail is sufficient)
-    function isAdmin() {
-      // Ensure request.auth check
-      return request.auth != null && request.auth.token.email in ['admin@ladder.com', 'brian2af@outlook.com'];
+    // Game Invitations Collection (for the inbox system and team invitations)
+    match /gameInvitations/{invitationId} {
+      // Users can read invitations sent to them or sent by them
+      allow read: if request.auth != null && (
+        resource.data.toUserId == request.auth.uid ||
+        resource.data.fromUserId == request.auth.uid ||
+        isAdminEmail()
+      );
+      
+      // Users can create invitations (sender must match auth user)
+      allow create: if request.auth != null && 
+        request.resource.data.fromUserId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'fromUserId', 'fromUsername', 'toUserId', 'toUsername', 
+          'type', 'status', 'createdAt', 'message'
+        ]) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.type is string &&
+        (
+          // Original game invitation types
+          (request.resource.data.type in ['home', 'subgame', 'subgame-home'] &&
+           request.resource.data.keys().hasAll(['value'])) ||
+          // Team invitation type
+          (request.resource.data.type == 'team_invite' &&
+           request.resource.data.keys().hasAll(['teamData']) &&
+           request.resource.data.teamData.keys().hasAll(['proposedTeamName', 'teamColor', 'ladder']) &&
+           request.resource.data.teamData.ladder == 'duos')
+        );
+      
+      // Users can update invitations sent to them (to change status) or sent by them
+      allow update: if request.auth != null && (
+        (resource.data.toUserId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'respondedAt']) &&
+        request.resource.data.status in ['accepted', 'declined']) ||
+        (resource.data.fromUserId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status'])) ||
+        isAdminEmail()
+      );
+      
+      // Users can delete invitations they sent
+      allow delete: if request.auth != null && (
+        resource.data.fromUserId == request.auth.uid ||
+        isAdminEmail()
+      );
     }
 
-    // Function to check if a user is signed in (used by other rules)
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // isVerifiedUser function (Identical to isSignedIn, consider removing if not specifically needed elsewhere)
-    function isVerifiedUser() {
-      return request.auth != null;
-    }
-
-    // --- Existing Match Blocks ---
+    // Player Collections
     match /players/{playerId} {
       allow read: if true;
       allow create: if request.auth != null;
-      // Ensure request.auth != null for all parts of update rule
       allow update: if request.auth != null && (
-        isAdmin() || // isAdmin() already checks request.auth
+        isAdmin() ||
         request.auth.uid == playerId ||
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId', 'wins', 'losses'])
@@ -111,7 +146,7 @@ service cloud.firestore {
     match /playersD2/{playerId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update: if request.auth != null; // Consider more specific rules
+      allow update: if request.auth != null;
       allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
@@ -121,25 +156,23 @@ service cloud.firestore {
       allow update: if request.auth != null && (
                    isAdmin() ||
                    request.auth.uid == playerId ||
-                   // Simplified rule for match updates
                    request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['eloRating', 'lastMatch', 'wins', 'losses', 'lastEloChange', 'position'])
                    );
-      // Update this line to match D1/D2 permissions
       allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
     }
 
     match /playersDuos/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if request.auth != null && ( // Ensure outer request.auth check
+      allow update: if request.auth != null && (
                    isAdmin() ||
                    request.auth.uid == playerId ||
                    (request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAll(['eloRating', 'lastMatchDate', 'position'])) ||
+                    .hasAny(['tierValue', 'lastMatchDate', 'position', 'teamId', 'teamName', 'teammate', 'hasTeam', 'teamColor'])) ||
                    (isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                    .hasAny(['eloRating', 'lastPromotedAt', 'promotedBy']))
+                    .hasAny(['tierValue', 'lastPromotedAt', 'promotedBy']))
                    );
       allow delete: if isAdmin();
     }
@@ -147,7 +180,7 @@ service cloud.firestore {
     match /playersCTF/{playerId} {
       allow read: if true;
       allow create: if isVerifiedUser();
-      allow update: if request.auth != null && ( // Ensure outer request.auth check
+      allow update: if request.auth != null && (
                    isAdmin() ||
                    request.auth.uid == playerId ||
                    (request.resource.data.diff(resource.data).affectedKeys()
@@ -159,6 +192,68 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Match Collections
+    match /pendingMatches/{matchId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    match /approvedMatches/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    match /pendingMatchesD2/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    match /approvedMatchesD2/{matchId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+      allow delete: if isAdmin();
+    }
+
+    match /pendingMatchesD3/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    match /approvedMatchesD3/{matchId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    match /pendingMatchesDuos/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    match /approvedMatchesDuos/{matchId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    match /pendingMatchesCTF/{matchId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    match /approvedMatchesCTF/{matchId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // Other Collections
     match /nonParticipants/{userId} {
       allow read: if true;
       allow create: if isVerifiedUser();
@@ -169,8 +264,7 @@ service cloud.firestore {
     match /pendingRegistrations/{registrationId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update: if request.auth != null &&
-                   (request.auth.uid == registrationId || isAdmin());
+      allow update: if request.auth != null && (request.auth.uid == registrationId || isAdmin());
       allow delete: if isAdmin();
     }
 
@@ -185,111 +279,47 @@ service cloud.firestore {
     }
 
     match /invites/{userId} {
-      allow read, write: if true; // Consider restricting write access
+      allow read, write: if true;
     }
 
     match /processedMatches/{matchId} {
-      allow read, write: if request.auth != null; // Consider restricting write access
+      allow read, write: if request.auth != null;
     }
 
     match /readyPlayers/{userId} {
-      allow read, write: if true; // Consider restricting write access
+      allow read, write: if true;
     }
 
     match /playerStats/{userId} {
       allow read: if true;
-      allow write: if isSignedIn() && // isSignedIn checks request.auth
-        (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
     match /system/{document} {
-      allow read, write: if true; // Consider restricting write access, maybe only isAdmin()
-    }
-
-    match /pendingMatches/{matchId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      // Allow update/delete only by participants or admin?
-      allow update, delete: if request.auth != null; // Consider more specific rules
-    }
-
-    match /approvedMatches/{matchId} {
-      allow read: if true;
-      allow create: if request.auth != null; // Should only admin create approved matches?
-      allow update, delete: if isAdmin();
-    }
-
-    match /pendingMatchesD2/{matchId} {
-      allow read: if true; // Should this be request.auth != null?
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // Consider more specific rules
-    }
-
-    match /approvedMatchesD2/{matchId} {
-      allow read: if true;
-      allow create, update: if request.auth != null; // Should only admin create/update approved?
-      allow delete: if isAdmin();
-    }
-
-    match /eloHistoryD2/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null; // Should only admin write history?
-    }
-
-    match /eloHistoryD3/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null; // Allow any authenticated user to write
-    }
-
-    match /pendingMatchesD3/{matchId} {
-      allow read: if true; // Should this be request.auth != null?
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // Consider more specific rules
-    }
-
-    match /approvedMatchesD3/{matchId} {
-      allow read: if true;
-      allow create, update: if request.auth != null; // Should only admin create/update approved?
-      allow delete: if false; // Explicitly disallowed
-    }
-
-    match /pendingMatchesDuos/{matchId} {
-      allow read: if true; // Should this be request.auth != null?
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // Consider more specific rules
-    }
-
-    match /approvedMatchesDuos/{matchId} {
-      allow read: if true;
-      allow create, update: if request.auth != null; // Should only admin create/update approved?
-      allow delete: if false; // Explicitly disallowed
-    }
-
-    match /pendingMatchesCTF/{matchId} {
-      allow read: if true; // Should this be request.auth != null?
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null; // Consider more specific rules
-    }
-
-    match /approvedMatchesCTF/{matchId} {
-      allow read: if true;
-      allow create, update: if request.auth != null; // Should only admin create/update approved?
-      allow delete: if false; // Explicitly disallowed
+      allow read, write: if true;
     }
 
     match /eloHistory/{historyId} {
       allow read: if true;
-      allow create: if request.auth != null; // Should only admin create history?
+      allow create: if request.auth != null;
       allow update, delete: if isAdmin();
+    }
+
+    match /eloHistoryD2/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /eloHistoryD3/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     match /retroTracker/{docId} {
       allow read: if true;
       allow create: if request.auth != null &&
-                   request.resource.data.keys().hasAll([
-                     'gameName', 'players', 'timestamp'
-                   ]);
-      allow write: if request.auth != null; // Consider restricting write access
+                   request.resource.data.keys().hasAll(['gameName', 'players', 'timestamp']);
+      allow write: if request.auth != null;
     }
 
     match /metadata/seasonCount {
@@ -304,7 +334,6 @@ service cloud.firestore {
 
     match /promotionViews/{docId} {
       allow read: if request.auth != null;
-      // Ensure request.auth.token.email is not null before split
       allow write: if request.auth != null &&
                    request.auth.token.email != null &&
                    docId.matches('promotion_.*_' + request.auth.token.email.split('@')[0]) &&
@@ -347,7 +376,7 @@ service cloud.firestore {
           request.resource.data.type in ['promotion', 'demotion']
         )
       );
-      allow update, delete: if false; // Explicitly disallowed
+      allow update, delete: if false;
     }
 
     match /users/{userId} {
@@ -356,11 +385,11 @@ service cloud.firestore {
     }
 
     match /notifiedMatches/{matchId} {
-      allow read, write: if true; // Consider restricting write access
+      allow read, write: if true;
     }
     
-        match /notifiedMatchesD2/{matchId} {
-      allow read, write: if true; // Consider restricting write access
+    match /notifiedMatchesD2/{matchId} {
+      allow read, write: if true;
     }
 
     match /RejectedD1/{matchId} {
@@ -368,7 +397,6 @@ service cloud.firestore {
       allow create: if request.auth != null && (
         request.resource.data.winnerId == request.auth.uid ||
         request.resource.data.winnerEmail == request.auth.token.email ||
-        // Safely check player existence before getting data
         (exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
         isAdmin()
@@ -381,7 +409,6 @@ service cloud.firestore {
       allow create: if request.auth != null && (
         request.resource.data.winnerId == request.auth.uid ||
         request.resource.data.winnerEmail == request.auth.token.email ||
-        // Safely check player existence before getting data
         (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
         isAdmin()
@@ -389,21 +416,6 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    match /userTrophies/{trophyId} {
-      allow read: if true;  // Anyone can see which trophies users have
-      allow create, update: if request.auth != null && 
-                              (isAdmin() || 
-                               request.auth.token.email == request.resource.data.awardedBy);
-      allow delete: if request.auth != null && isAdmin();
-    }
-    
-    // Also add a rule for the trophy definitions
-    match /trophyDefinitions/{trophyId} {
-      allow read: if true;  // Anyone can view trophy definitions
-      allow create, update, delete: if request.auth != null && isAdmin();
-    }
-
-        // Add this if you're using RejectedD3 collection
     match /RejectedD3/{matchId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && (
@@ -415,238 +427,152 @@ service cloud.firestore {
       );
       allow update, delete: if isAdmin();
     }
+
+    match /userTrophies/{trophyId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && 
+                              (isAdmin() || 
+                               request.auth.token.email == request.resource.data.awardedBy);
+      allow delete: if request.auth != null && isAdmin();
+    }
     
-    match /promotionNotifications/{document=**} 
-    	{
-      	allow write: if request.auth != null;
-      }
-      
-          // Add this rule to allow access to promotionNotifications
+    match /trophyDefinitions/{trophyId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && isAdmin();
+    }
+    
     match /promotionNotifications/{document=**} {
-      allow read, write: if true; // For testing only - restrict this in production
+      allow read, write: if true;
     }
     
-    // Also make sure processedPromotions is accessible
     match /processedPromotions/{document=**} {
-      allow read, write: if true; // For testing only - restrict this in production
+      allow read, write: if true;
     }
     
-        // Allow public read access to highlights
     match /highlights/{highlightId} {
-      allow read: if true; // Anyone can read highlights
-      allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
-    }
-    
-    
-        match /articles/{document=**} {
-        allow read: if true; // Anyone can read highlights
-        allow write: if request.auth != null; // Example: Only logged-in users can write (adjust as needed)
+      allow read: if true;
+      allow write: if request.auth != null;
     }
     
     match /aggregatedMembers/{userId} {
-      allow read: if true; // Public read access for member display
-      allow write: if request.auth != null && isAdmin(); // Only admins can write
+      allow read: if true;
+      allow write: if request.auth != null && isAdmin();
     }    
 
     match /storeItems/{itemId} {
-      // Anyone can read store items
       allow read: if true;
-
-      // Only admins can modify store items
       allow create, update, delete: if request.auth != null && (
         isAdmin() || 
         (exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.isAdmin == true)
       );
     }
+
+    match /pointsHistory/{historyId} {
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'previousPoints', 'newPoints', 'action', 
+        'amount', 'timestamp'
+      ]);
+      allow update, delete: if false;
+    }
+
+    match /itemAwardHistory/{awardId} {
+      allow read: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
+      allow create: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      ) && request.resource.data.keys().hasAll([
+        'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
+      ]);
+      allow update, delete: if false;
+    }
+
+    match /playerRibbons/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    match /playerRibbonsD2/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    match /playerRibbonsD3/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    match /playerSeasonStats/{statsId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    match /playerSeasonStatsD2/{statsId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
+
+    match /playerSeasonStatsD3/{statsId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && (
+        isAdminEmail() || 
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
+      );
+      allow delete: if request.auth != null && isAdminEmail();
+    }
     
-        // Add these rules within the match /databases/{database}/documents block
-
-    // Points History Collection
-    match /pointsHistory/{historyId} {
-      // Only admins and owners can read points history
-      allow read: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-      
-      // Only admins and owners can create points history entries
-      allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      ) && request.resource.data.keys().hasAll([
-        'userId', 'previousPoints', 'newPoints', 'action', 
-        'amount', 'timestamp'
-      ]);
-      
-      // Prevent updates and deletes to maintain audit trail
-      allow update, delete: if false;
+    match /eventVotes/{voteId}/votes/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /eventVoteSummaries/{voteId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    match /eventVotes/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /eventVoteSummaries/{document=**} {
+      allow read, write: if request.auth != null;
     }
 
-    // Item Award History Collection
-    match /itemAwardHistory/{awardId} {
-      // Only admins and owners can read award history
-      allow read: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-      
-      // Only admins and owners can create award history entries
-      allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      ) && request.resource.data.keys().hasAll([
-        'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
-      ]);
-      
-      // Prevent updates and deletes to maintain audit trail
-      allow update, delete: if false;
-    }
-
-    // Store Items Collection (for the admin to manage store items)
-    match /storeItems/{itemId} {
-      // Anyone can read store items
-      allow read: if true;
-      
-      // Only admins and owners can modify store items
-      allow create, update, delete: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-    }
-
-    // Update User Profiles to allow inventory management
-    match /userProfiles/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // Allow users to update their own profile OR admins to update any profile
-      allow update: if request.auth != null && (
-        request.auth.uid == userId || 
-        canManageArticles(request.auth.uid) ||
-        // Allow admins to update points and inventory
-        (
-          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['points', 'inventory', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
-        )
-      );
-      
-      allow delete: if request.auth != null && isAdminEmail();
-    }
-
-    // Points History Collection
-    match /pointsHistory/{historyId} {
-      // Only admins and owners can read points history
-      allow read: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-      
-      // Only admins and owners can create points history entries
-      allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      ) && request.resource.data.keys().hasAll([
-        'userId', 'previousPoints', 'newPoints', 'action', 
-        'amount', 'timestamp'
-      ]);
-      
-      // Prevent updates and deletes to maintain audit trail
-      allow update, delete: if false;
-    }
-
-    // Item Award History Collection
-    match /itemAwardHistory/{awardId} {
-      // Only admins and owners can read award history
-      allow read: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-      
-      // Only admins and owners can create award history entries
-      allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      ) && request.resource.data.keys().hasAll([
-        'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
-      ]);
-      
-      // Prevent updates and deletes to maintain audit trail
-      allow update, delete: if false;
-    }
-
-    // Store Items Collection (for the admin to manage store items)
-    match /storeItems/{itemId} {
-      // Anyone can read store items
-      allow read: if true;
-      
-      // Only admins and owners can modify store items
-      allow create, update, delete: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
-      );
-    }
-
-    // Update User Profiles to allow inventory management
-    match /userProfiles/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // Allow users to update their own profile OR admins to update any profile
-      allow update: if request.auth != null && (
-        request.auth.uid == userId || 
-        canManageArticles(request.auth.uid) ||
-        // Allow admins to update points and inventory
-        (
-          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
-          request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['points', 'inventory', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
-        )
-      );
-      
-      allow delete: if request.auth != null && isAdminEmail();
-    }
-
-// Game Invitations Collection (for the inbox system)
-match /gameInvitations/{invitationId} {
-  // Users can read invitations sent to them or sent by them
-  allow read: if request.auth != null && (
-    resource.data.toUserId == request.auth.uid ||
-    resource.data.fromUserId == request.auth.uid ||
-    isAdminEmail()
-  );
-  
-  // Users can create invitations (sender must match auth user)
-  allow create: if request.auth != null && 
-    request.resource.data.fromUserId == request.auth.uid &&
-    request.resource.data.keys().hasAll([
-      'fromUserId', 'fromUsername', 'toUserId', 'toUsername', 
-      'type', 'value', 'status', 'createdAt', 'message'
-    ]) &&
-    request.resource.data.status == 'pending' &&
-    request.resource.data.type is string &&
-    request.resource.data.type in ['home', 'subgame', 'subgame-home'];
-  
-  // Users can update invitations sent to them (to change status) or sent by them
-  allow update: if request.auth != null && (
-    (resource.data.toUserId == request.auth.uid && 
-    request.resource.data.diff(resource.data).affectedKeys()
-      .hasOnly(['status', 'respondedAt']) &&
-    request.resource.data.status in ['accepted', 'declined']) ||
-    (resource.data.fromUserId == request.auth.uid && 
-    request.resource.data.diff(resource.data).affectedKeys()
-      .hasOnly(['status'])) ||
-    isAdminEmail()
-  );
-  
-  // Users can delete invitations they sent, recipients can't delete
-  allow delete: if request.auth != null && (
-    resource.data.fromUserId == request.auth.uid ||
-    isAdminEmail()
-  );
+  }
 }
-    
-  } // Closing brace for match /databases/{database}/documents
-} // Closing brace for service cloud.firestore
-// NO CHARACTERS OR BRACES BELOW THIS LINE

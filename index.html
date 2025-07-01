@@ -261,8 +261,8 @@
             <input type="radio" id="d3-switch" name="ladder" value="D3">
             <label for="d3-switch">D3 Solo's</label>
             
-            <input type="radio" id="duos-switch" name="ladder" value="DUOS" disabled>
-            <label for="duos-switch" class="coming-soon">Duo's</label>
+            <input type="radio" id="duos-switch" name="ladder" value="DUOS">
+            <label for="duos-switch">Duo's</label>
             
             <input type="radio" id="ctf-switch" name="ladder" value="CTF" disabled>
             <label for="ctf-switch" class="coming-soon">CTF</label>
@@ -315,10 +315,35 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Duos Ladder Container -->
+            <div id="duos-ladder-container" class="ladder-container table-container">
+                <table id="ladder-duos">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>ELO</th>
+                            <th>Matches</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>K/D</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Duos Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
 
-            <!-- Inside your outer-container, after the ladder tables -->
+           <!-- Inside your outer-container, after the ladder tables -->
             <!-- Adjust placement as needed -->
-            <div id="ladder-retire-tiny-container">
+            <div id="ladder-retire-tiny-container" style="display: flex; gap: 8px; align-items: center;">
+                <!-- Leave Team Button (shows next to retire button for DUOS ladder) -->
+                <button id="leave-team-button" class="tiny-retire-button" style="display: none; background: #dc3545;">
+                    Leave Team
+                </button>
                 <button id="tiny-retire-button" class="tiny-retire-button" style="display: none;">Retire</button>
             </div>
 
@@ -327,11 +352,28 @@
                 <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
             </div>
         </div>
+
+        <!-- Leave Team Confirmation Modal -->
+        <div id="leave-team-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                
+                <p>Are you sure you want to leave your current team?</p>
+                <p class="retire-warning">This will remove you from your current team and dissolve it. Your teammate will become a solo player, but you will remain on the DUOS ladder as a solo player and can form a new team.</p>
+                <div class="join-form">
+                    <label for="leave-team-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="leave-team-username-input" placeholder="Your username">
+                    <button id="confirm-leave-team-button" class="join-ladder-button danger-button">Leave Team</button>
+                </div>
+                <span id="leave-team-status" class="ladder-join-status"></span>
+            </div>
+        </div>
         
         <!-- Separate recommendation text for each ladder -->
         <p id="elo-recommendation-text-d1" class="elo-recommendation-text ladder-d1"></p>
         <p id="elo-recommendation-text-d2" class="elo-recommendation-text ladder-d2" style="display: none;"></p>
         <p id="elo-recommendation-text-d3" class="elo-recommendation-text ladder-d3" style="display: none;"></p>
+        <p id="elo-recommendation-text-duos" class="elo-recommendation-text ladder-duos" style="display: none;"></p>
 
         <!-- Add new container for queue display -->
         <div class="queue-section">
@@ -380,6 +422,8 @@
         </div>
         </div>
 
+        
+
     </main>
 
     <div id="footer-placeholder"></div>
@@ -408,6 +452,7 @@
     <script type="module" src="./JS/promotions.js"></script>
     <script type="module" src="./JS/ladder-join.js"></script>
     <script type="module" src="./JS/ladder-retire.js"></script>
+    <script type="module" src="./JS/ladderduos.js"></script>
     <script type="module" src="./JS/whosplaying.js"></script>
     <script src="./JS/announcements.js" defer></script> <!--announcement template-->
 

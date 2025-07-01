@@ -61,6 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Update the getCollectionName function to ensure proper Duos support
+function getCollectionName(ladderType) {
+    switch(ladderType?.toUpperCase()) {
+        case 'D1':
+            return 'players';
+        case 'D2':
+            return 'playersD2';
+        case 'D3':
+            return 'playersD3';
+        case 'DUOS':
+        case 'DUO':
+            return 'playersDuos';
+        case 'CTF':
+            return 'playersCTF';
+        default:
+            console.warn(`Unknown ladder type: ${ladderType}, defaulting to D1`);
+            return 'players';
+    }
+}
+
 // Update the checkUserLadderStatus function with additional security checks
 async function checkUserLadderStatus() {
     console.log("Checking user status for ladder:", currentLadder);
@@ -88,15 +108,8 @@ async function checkUserLadderStatus() {
             return;
         }
         
-        // Get the collection name based on the current ladder
-        let collectionName;
-        if (currentLadder === 'D1') {
-            collectionName = 'players';
-        } else if (currentLadder === 'D2') {
-            collectionName = 'playersD2';
-        } else if (currentLadder === 'D3') {
-            collectionName = 'playersD3';
-        }
+        // Get the collection name based on the current ladder - UPDATED TO USE HELPER FUNCTION
+        const collectionName = getCollectionName(currentLadder);
         
         // Check if user exists in this ladder collection
         const userDocRef = doc(db, collectionName, user.uid);
@@ -137,7 +150,7 @@ async function checkUserLadderStatus() {
     }
 }
 
-// Update the handleJoinLadder function to properly verify authentication
+// Update the handleJoinLadder function to support DUOS
 async function handleJoinLadder() {
     const user = auth.currentUser;
     const joinButton = document.getElementById('join-ladder-button');
@@ -222,16 +235,8 @@ async function handleJoinLadder() {
         // Username verified, now continue with the join process
         joinStatus.textContent = `Joining ${currentLadder} ladder...`;
         
-        // Get the collection name based on the current ladder
-        let collectionName;
-        if (currentLadder === 'D1') {
-            collectionName = 'players';
-        } else if (currentLadder === 'D2') {
-            collectionName = 'playersD2';
-        } else if (currentLadder === 'D3') {
-            collectionName = 'playersD3';
-        }
-    
+        // Get the collection name based on the current ladder - UPDATED TO INCLUDE DUOS
+        const collectionName = getCollectionName(currentLadder);
         
         // Check if user already exists in this ladder collection
         const userDocRef = doc(db, collectionName, user.uid);
@@ -279,11 +284,27 @@ async function handleJoinLadder() {
             matches: 0,
             wins: 0,
             losses: 0,
-            gameMode: currentLadder
+            gameMode: currentLadder,
+            // Enhanced team-related fields for DUOS
+            ...(currentLadder === 'DUOS' && {
+                hasTeam: false,
+                teamId: null,
+                teamName: null,
+                teammate: null,
+                teamColor: null,
+                lookingForTeam: true, // New field to indicate they're looking for teammates
+                tierValue: 1000 // Initialize tier value for Duos ladder
+            })
         });
         
-        // Show success message
-        joinStatus.textContent = `Successfully joined the ${currentLadder} ladder! The page will refresh...`;
+      await setDoc(userDocRef, playerData);
+        
+        // Show success message with Duos-specific guidance
+        if (currentLadder === 'DUOS') {
+            joinStatus.textContent = `Successfully joined the Duos ladder! You can now form teams with other players. The page will refresh...`;
+        } else {
+            joinStatus.textContent = `Successfully joined the ${currentLadder} ladder! The page will refresh...`;
+        }
         joinStatus.className = 'ladder-join-status success';
         
         // Refresh the page after a delay to show the updated ladder
