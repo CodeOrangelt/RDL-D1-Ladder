@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Profile - RDL Duos Ladder</title>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Main container styling */
+        .team-container {
+            max-width: 1300px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(28,28,28,.95);
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
+            color: #e0e0e0;
+        }
+        
+        /* Banner styling */
+        .team-banner {
+            height: 160px;
+            background-position: center;
+            background-size: cover;
+            background-color: #222;
+            position: relative;
+            margin: -20px -20px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,.8));
+            padding: 20px;
+        }
+        
+        .edit-banner-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,.6);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+        
+        .edit-banner-btn:hover {opacity: 1}
+        
+        /* Team name and badges */
+        .team-name {
+            font-size: 2.2rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,.5);
+            color: #fff
+
+        }
+        
+        .team-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: .8rem;
+        }
+        
+        .tier-badge {color: #fff}
+        .tier-badge.masters, .tier-badge.emerald {background: #50C878}
+        .tier-badge.gold {background: #FFD700; color: #000}
+        .tier-badge.silver {background: #C0C0C0; color: #000}
+        .tier-badge.bronze {background: #CD7F32}
+        
+        /* Header with stats */
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+        
+        .team-quick-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-pill {
+            background: #333;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .stat-pill i {
+            opacity: .7;
+        }
+        
+        /* Content layout */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 3fr 4fr;
+            gap: 20px;
+        }
+        
+        /* Cards styling */
+        .card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        
+        .card-title {
+            margin: 0 0 15px;
+            color: #9c27b0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .card-title-noborder {
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        
+        /* Team info */
+        .team-info {
+            padding: 5px 0;
+            font-size: .9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .team-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .team-info-item i {
+            color: #9c27b0;
+            width: 16px;
+            text-align: center;
+            margin-top: 3px;
+        }
+        
+        /* Stats rows */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .stat-row:last-child {border-bottom: none}
+        .win {color: #50C878}
+        .loss {color: #ff6b6b}
+        
+        /* Tier breakdown */
+        .tier-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .tier-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        /* Team members */
+        .member-card {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .member-card:last-child {border-bottom: none}
+        
+        .member-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+        
+        .member-name {
+            margin: 0 0 5px;
+            font-size: 1rem;
+        }
+        
+        .member-role {
+            color: #888;
+            font-size: .85rem;
+            margin-bottom: 8px;
+        }
+        
+        .member-stats {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .member-stat {
+            font-size: .75rem;
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        /* Matches */
+        .match-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            align-items: center;
+        }
+        
+        .match-item:last-child {border-bottom: none}
+        .match-item:hover {background: #333}
+        
+        .match-result {
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .match-opponent {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .match-meta {
+            font-size: .8rem;
+            color: #888;
+        }
+        
+        .match-scores {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Buttons */
+        .btn-sm {
+            background: #9c27b0;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: .85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-sm:hover {background: #7b1fa2}
+        
+        /* Debug */
+        .debug-banner {
+            padding: 10px;
+            margin: 10px 0;
+            background: #222;
+            border-left: 4px solid #ff6b6b;
+            font-size: .85rem;
+            display: none;
+        }
+        
+        /* Modal */
+        .team-edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .modal-title {
+            margin: 0;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #9c27b0;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .banner-preview {
+            width: 100%;
+            height: 120px;
+            background-color: #222;
+            background-position: center;
+            background-size: cover;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .banner-upload {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .banner-upload-btn {
+            background: #444;
+            color: #ccc;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .banner-upload-btn:hover {background: #555}
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+        }
+        
+        .btn {
+            background: #333;
+            color: #ccc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #9c27b0;
+            color: #fff;
+        }
+        
+        .btn:hover {background: #444}
+        .btn-primary:hover {background: #7b1fa2}
+        
+        /* Loading and error states */
+        .loading-container {
+            text-align: center;
+            padding: 50px 0;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #9c27b0;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% {transform: rotate(0)}
+            100% {transform: rotate(360deg)}
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(255,107,107,.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255,107,107,.3);
+        }
+        
+        /* Dynamic theme classes - better placed */
+        .theme-masters {border-color: #50C878}
+        .theme-masters .card-title {color: #50C878}
+        .theme-masters .team-info-item i {color: #50C878}
+        .theme-masters .btn-sm, .theme-masters .btn-primary {background: #50C878}
+        .theme-masters .btn-sm:hover, .theme-masters .btn-primary:hover {background: #3aa55c}
+        
+        .theme-emerald {border-color: #50C878}
+        .theme-emerald .card-title {color: #50C878}
+        .theme-emerald .team-info-item i {color: #50C878}
+        .theme-emerald .btn-sm, .theme-emerald .btn-primary {background: #50C878}
+        .theme-emerald .btn-sm:hover, .theme-emerald .btn-primary:hover {background: #3aa55c}
+        
+        .theme-gold {border-color: #FFD700}
+        .theme-gold .card-title {color: #D4AF37}
+        .theme-gold .team-info-item i {color: #D4AF37}
+        .theme-gold .btn-sm, .theme-gold .btn-primary {background: #D4AF37}
+        .theme-gold .btn-sm:hover, .theme-gold .btn-primary:hover {background: #BB9830}
+        
+        .theme-silver {border-color: #C0C0C0}
+        .theme-silver .card-title {color: #A0A0A0}
+        .theme-silver .team-info-item i {color: #A0A0A0}
+        .theme-silver .btn-sm, .theme-silver .btn-primary {background: #A0A0A0}
+        .theme-silver .btn-sm:hover, .theme-silver .btn-primary:hover {background: #888888}
+        
+        .theme-bronze {border-color: #CD7F32}
+        .theme-bronze .card-title {color: #CD7F32}
+        .theme-bronze .team-info-item i {color: #CD7F32}
+        .theme-bronze .btn-sm, .theme-bronze .btn-primary {background: #CD7F32}
+        .theme-bronze .btn-sm:hover, .theme-bronze .btn-primary:hover {background: #B36922}
+        
+        /* Responsive design */
+        @media (max-width: 900px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .team-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+        
+        .tab-active {
+            color: #fff !important;
+            border-bottom: 2px solid #9c27b0 !important;
+        }
+        
+        /* Add this to your existing theme classes */
+        .theme-masters .tab-active {border-bottom-color: #50C878 !important;}
+        .theme-emerald .tab-active {border-bottom-color: #50C878 !important;}
+        .theme-gold .tab-active {border-bottom-color: #D4AF37 !important;}
+        .theme-silver .tab-active {border-bottom-color: #A0A0A0 !important;}
+        .theme-bronze .tab-active {border-bottom-color: #CD7F32 !important;}
+    </style>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+
+    <div class="team-container">
+        <div id="loading-state" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Loading team data...</p>
+        </div>
+        
+        <div id="error-state" class="error-container" style="display:none">
+            <h3>Team Not Found</h3>
+            <p>The requested team could not be found or you don't have permission to view it.</p>
+        </div>
+        
+        <div id="team-content" style="display:none">
+            <!-- Team Banner -->
+            <div id="team-banner" class="team-banner">
+                <div class="banner-overlay">
+                    <h1 id="team-name" class="team-name">Team Name</h1>
+                    <div class="team-badges">
+                        <span id="team-tier" class="badge tier-badge masters">Masters</span>
+                    </div>
+                </div>
+                <button id="edit-banner-btn" class="edit-banner-btn" style="display:none">
+                    <i class="fas fa-camera"></i> Change Banner
+                </button>
+            </div>
+
+            <!-- Team Header with Edit Button and Stats -->
+            <div class="team-header">
+                <div>
+                    <div id="edit-team-btn-container" style="display:none">
+                        <button id="edit-team-btn" class="btn-sm">
+                            <i class="fas fa-edit"></i> Edit Team Info
+                        </button>
+                    </div>
+                    <div id="debug-info" class="debug-banner" style="display:none">
+                        User authentication status: <span id="debug-auth">Not checked</span><br>
+                        Team membership status: <span id="debug-member">Not checked</span>
+                    </div>
+                </div>
+                <div class="team-quick-stats">
+                    <div class="stat-pill"><i class="fas fa-chart-pie"></i> <span id="team-winrate">85.7%</span> Win Rate</div>
+                    <div class="stat-pill"><i class="fas fa-gamepad"></i> <span id="team-matches">14</span> Matches</div>
+                    <div class="stat-pill"><i class="fas fa-calendar"></i> Created <span id="team-created">Jun 10</span></div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content-wrapper">
+                <!-- Left Column -->
+                <div>
+                    <!-- Team Info Card -->
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> Team Information</h3>
+                        <div id="team-info" class="team-info">
+                            <div class="team-info-item">
+                                <i class="fas fa-globe"></i>
+                                <div id="team-timezone" class="team-info-text">Not specified</div>
+                            </div>
+                            <div class="team-info-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div id="team-schedule" class="team-info-text">Not specified</div>
+                            </div>
+                            <div class="team-info-item">
+                                <i class="fab fa-discord"></i>
+                                <div id="team-discord" class="team-info-text">Not specified</div>
+                            </div>
+                            <div class="team-info-item">
+                                <i class="fas fa-comment"></i>
+                                <div id="team-bio" class="team-info-text">No team bio available</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Stats Card -->
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-chart-line"></i> Team Stats</h3>
+                        <div class="stat-row"><span>Total Matches:</span><span id="total-matches">0</span></div>
+                        <div class="stat-row"><span>Wins:</span><span id="total-wins" class="win">0</span></div>
+                        <div class="stat-row"><span>Losses:</span><span id="total-losses" class="loss">0</span></div>
+                        <div class="stat-row"><span>Combined K/D:</span><span id="combined-kd">0.00</span></div>
+                        <div id="admin-details" class="stat-row" style="display:none">
+                        </div>
+                    </div>
+
+                    <!-- Team Details Card -->
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-id-card"></i> Team Details</h3>
+                        <div class="stat-row"><span>Team ID:</span><span id="team-id">team_123abc</span></div>
+                        <div class="stat-row"><span>Formation Date:</span><span id="formation-date">June 10, 2023</span></div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Tier Breakdown Card -->
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> Tier Breakdown</h3>
+                        <div id="tier-breakdown" class="tier-breakdown">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                    
+                    <!-- Team Members Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title card-title-noborder"><i class="fas fa-users"></i> Team Members</h3>
+                        </div>
+                        <div id="team-members">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Matches Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title card-title-noborder"><i class="fas fa-history"></i> Recent Matches</h3>
+                            <a href="matches.html?team=team_123abc" class="btn-sm"><i class="fas fa-list"></i> View All</a>
+                        </div>
+                        <div id="recent-matches">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Edit Modal -->
+    <div id="team-edit-modal" class="team-edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Team Information</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <form id="team-edit-form">
+                <!-- Banner Image Upload -->
+                <div class="form-group">
+                    <label class="form-label">Team Banner</label>
+                    <div id="banner-preview" class="banner-preview"></div>
+                    
+                    <!-- Add tabs for upload vs URL -->
+                    <div style="display:flex;margin-bottom:10px;border-bottom:1px solid #444">
+                        <button type="button" id="url-tab-btn" class="tab-btn tab-active" style="flex:1;background:none;border:none;padding:8px;color:#ccc;cursor:pointer;border-bottom:2px solid transparent">Use Image URL</button>
+                        <button type="button" id="upload-tab-btn" class="tab-btn" style="flex:1;background:none;border:none;padding:8px;color:#ccc;cursor:pointer;border-bottom:2px solid transparent">Upload Image</button>
+                    </div>
+                    
+                    <!-- URL input section -->
+                    <div id="url-tab" class="tab-content">
+                        <input type="text" id="banner-url-input" class="form-control" placeholder="Enter image URL (https://...)">
+                        <div style="margin-top:5px;font-size:0.8rem;color:#888">Enter a direct link to an image (must start with https://)</div>
+                    </div>
+                    
+                    <!-- File upload section -->
+                    <div id="upload-tab" class="tab-content" style="display:none">
+                        <div class="banner-upload">
+                            <input type="file" id="banner-file" accept="image/*" style="display:none">
+                            <button type="button" id="banner-upload-btn" class="banner-upload-btn">
+                                <i class="fas fa-upload"></i> Choose Image
+                            </button>
+                            <span id="banner-filename" style="font-size:.8rem;color:#999"></span>
+                        </div>
+                        <div style="margin-top:5px;font-size:0.8rem;color:#ff6b6b">Note: File uploads may be restricted by permissions</div>
+                    </div>
+                </div>
+
+                <!-- Team Bio -->
+                <div class="form-group">
+                    <label for="team-bio-input" class="form-label">Team Bio</label>
+                    <textarea id="team-bio-input" class="form-control" placeholder="Tell others about your team..."></textarea>
+                </div>
+
+                <!-- Timezone -->
+                <div class="form-group">
+                    <label for="team-timezone-input" class="form-label">Timezone</label>
+                    <select id="team-timezone-input" class="form-control">
+                        <option value="">Select timezone...</option>
+                        <option value="UTC-12:00">UTC-12:00</option>
+                        <option value="UTC-11:00">UTC-11:00</option>
+                        <option value="UTC-10:00">UTC-10:00 (Hawaii)</option>
+                        <option value="UTC-09:00">UTC-09:00 (Alaska)</option>
+                        <option value="UTC-08:00">UTC-08:00 (Pacific Time)</option>
+                        <option value="UTC-07:00">UTC-07:00 (Mountain Time)</option>
+                        <option value="UTC-06:00">UTC-06:00 (Central Time)</option>
+                        <option value="UTC-05:00">UTC-05:00 (Eastern Time)</option>
+                        <option value="UTC-04:00">UTC-04:00 (Atlantic Time)</option>
+                        <option value="UTC-03:00">UTC-03:00</option>
+                        <option value="UTC-02:00">UTC-02:00</option>
+                        <option value="UTC-01:00">UTC-01:00</option>
+                        <option value="UTC+00:00">UTC+00:00 (GMT)</option>
+                        <option value="UTC+01:00">UTC+01:00 (Central European Time)</option>
+                        <option value="UTC+02:00">UTC+02:00 (Eastern European Time)</option>
+                        <option value="UTC+03:00">UTC+03:00</option>
+                        <option value="UTC+04:00">UTC+04:00</option>
+                        <option value="UTC+05:00">UTC+05:00</option>
+                        <option value="UTC+05:30">UTC+05:30 (India)</option>
+                        <option value="UTC+06:00">UTC+06:00</option>
+                        <option value="UTC+07:00">UTC+07:00</option>
+                        <option value="UTC+08:00">UTC+08:00 (China, Australia Western)</option>
+                        <option value="UTC+09:00">UTC+09:00 (Japan, Korea)</option>
+                        <option value="UTC+10:00">UTC+10:00 (Australia Eastern)</option>
+                        <option value="UTC+11:00">UTC+11:00</option>
+                        <option value="UTC+12:00">UTC+12:00 (New Zealand)</option>
+                    </select>
+                </div>
+
+                <!-- Availability/Schedule -->
+                <div class="form-group">
+                    <label for="team-schedule-input" class="form-label">Available Play Times</label>
+                    <input type="text" id="team-schedule-input" class="form-control" placeholder="e.g. Weekdays 6-10pm, Weekends all day">
+                </div>
+
+                <!-- Discord -->
+                <div class="form-group">
+                    <label for="team-discord-input" class="form-label">Discord Username(s)</label>
+                    <input type="text" id="team-discord-input" class="form-control" placeholder="e.g. username#1234">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn" id="cancel-edit">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-team-info">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+        import { firebaseConfig } from "../JS/firebase-config.js";
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        let currentTeamData = null;
+        
+        if (!teamId) showError(); 
+        else onAuthStateChanged(auth, (user) => loadTeamData(teamId, user));
+
+        async function loadTeamData(teamId, user) {
+            try {
+                // Set up debugging
+                const debugInfo = document.getElementById("debug-info");
+                const debugAuth = document.getElementById("debug-auth");
+                const debugMember = document.getElementById("debug-member");
+                
+                // Show debug info for testing (you can remove this line later)
+                debugInfo.style.display = "block";
+                
+                // Update auth status
+                debugAuth.textContent = user ? "Signed in as " + user.email : "Not signed in";
+                debugMember.textContent = "Checking...";
+                
+                // Query for team members
+                const playersRef = collection(db, "playersDuos");
+                const teamQuery = query(playersRef, where("teamId", "==", teamId));
+                const teamSnapshot = await getDocs(teamQuery);
+                
+                if (teamSnapshot.empty) { 
+                    showError(); 
+                    return; 
+                }
+                
+                const teamMembers = [];
+                teamSnapshot.forEach(doc => teamMembers.push(doc.data()));
+                
+                // Check if current user is a team member
+                let isCurrentUserTeamMember = false;
+                if (user) {
+                    // Get the user's username from their profile
+                    const userProfileRef = doc(db, "userProfiles", user.uid);
+                    const userProfile = await getDoc(userProfileRef);
+                    
+                    if (userProfile.exists()) {
+                        const username = userProfile.data().username;
+                        
+                        console.log("Current user:", username);
+                        console.log("Team members:", teamMembers.map(m => m.username));
+                        
+                        isCurrentUserTeamMember = teamMembers.some(member => 
+                            member.username.toLowerCase() === username.toLowerCase());
+                        
+                        // Update debug info
+                        debugMember.textContent = isCurrentUserTeamMember ? 
+                            "Member of team (username: " + username + ")" : 
+                            "Not a member of this team (username: " + username + ")";
+                        
+                        if (isCurrentUserTeamMember) {
+                            document.getElementById("edit-team-btn-container").style.display = "block";
+                            document.getElementById("edit-banner-btn").style.display = "block";
+                        }
+                    } else {
+                        debugMember.textContent = "User profile not found";
+                    }
+                } else {
+                    debugMember.textContent = "Not signed in";
+                }
+                
+                let teamInfo = null;
+                
+                // Try to get team info but handle permission errors gracefully
+                try {
+                    const teamRef = doc(db, "teamsInfo", teamId);
+                    const teamDoc = await getDoc(teamRef);
+                    
+                    if (teamDoc.exists()) {
+                        teamInfo = teamDoc.data();
+                    } else if (isCurrentUserTeamMember) {
+                        // If user is team member and document doesn't exist, create it
+                        try {
+                            // Use setDoc instead of updateDoc for a document that might not exist
+                            await setDoc(teamRef, {
+                                createdAt: new Date(),
+                                updatedAt: new Date()
+                            });
+                            teamInfo = { createdAt: new Date(), updatedAt: new Date() };
+                        } catch (createError) {
+                            console.error("Error creating team info document:", createError);
+                        }
+                    }
+                } catch (infoError) {
+                    console.log("Could not access teamsInfo collection:", infoError);
+                }
+                
+                // Get recent matches
+                const matchesRef = collection(db, "approvedMatchesDuos");
+                const recentMatchesQuery = query(
+                    matchesRef, 
+                    where("participants", "array-contains", teamId), 
+                    orderBy("date", "desc"), 
+                    limit(5)
+                );
+                const matchesSnapshot = await getDocs(recentMatchesQuery);
+                
+                const matches = [];
+                matchesSnapshot.forEach(doc => matches.push({id: doc.id, ...doc.data()}));
+                
+                // Check if user is admin
+                let isAdmin = false;
+                if (user) {
+                    const userProfileRef = doc(db, "userProfiles", user.uid);
+                    const userProfileDoc = await getDoc(userProfileRef);
+                    isAdmin = userProfileDoc.exists() && userProfileDoc.data().isAdmin;
+                }
+                
+                // Combine all data
+                currentTeamData = {
+                    info: teamInfo || {},
+                    members: teamMembers,
+                    matches
+                };
+                
+                // Set team member status for other functions to use
+                window.isCurrentUserTeamMember = isCurrentUserTeamMember;
+                
+                displayTeamData(currentTeamData, isAdmin);
+                setupEditFunctionality();
+                
+            } catch (error) {
+                console.error("Error loading team data:", error);
+                showError();
+            }
+        }
+
+        function displayTeamData({info, members, matches}, isAdmin) {
+            document.getElementById("loading-state").style.display = "none";
+            document.getElementById("team-content").style.display = "block";
+            
+            if (members.length === 0) { showError(); return; }
+
+            const team = members[0];
+            document.getElementById("team-name").textContent = team.teamName || "Unnamed Team";
+            document.getElementById("team-id").textContent = team.teamId;
+            
+            // Set banner image if available
+            if (info.bannerUrl) {
+                document.getElementById("team-banner").style.backgroundImage = `url(${info.bannerUrl})`;
+            }
+            
+            // Set team information if available
+            document.getElementById("team-timezone").textContent = info.timezone || "Not specified";
+            document.getElementById("team-schedule").textContent = info.schedule || "Not specified";
+            document.getElementById("team-discord").textContent = info.discord || "Not specified";
+            document.getElementById("team-bio").textContent = info.bio || "No team bio available";
+            
+            // Pre-fill form fields for team members
+            if (window.isCurrentUserTeamMember) {
+                document.getElementById("team-bio-input").value = info.bio || "";
+                document.getElementById("team-timezone-input").value = info.timezone || "";
+                document.getElementById("team-schedule-input").value = info.schedule || "";
+                document.getElementById("team-discord-input").value = info.discord || "";
+                
+                if (info.bannerUrl) {
+                    document.getElementById("banner-preview").style.backgroundImage = `url(${info.bannerUrl})`;
+                }
+            }
+                        
+            const tierElement = document.getElementById("team-tier");
+            const winRate = team.winRate || 0;
+            let [tierName, tierClass] = ["Bronze", "bronze"];
+            
+            if (winRate >= 90) [tierName, tierClass] = ["Masters", "masters"];
+            else if (winRate >= 80) [tierName, tierClass] = ["Emerald", "emerald"];
+            else if (winRate >= 70) [tierName, tierClass] = ["Gold", "gold"];
+            else if (winRate >= 60) [tierName, tierClass] = ["Silver", "silver"];
+            
+            tierElement.textContent = tierName;
+            tierElement.className = `badge tier-badge ${tierClass}`;
+            
+            // Apply team theme based on tier
+            const container = document.querySelector(".team-container");
+            container.classList.remove("theme-masters", "theme-emerald", "theme-gold", "theme-silver", "theme-bronze");
+            container.classList.add(`theme-${tierClass}`);
+            
+            document.getElementById("team-winrate").textContent = `${(team.winRate || 0).toFixed(1)}%`;
+            document.getElementById("team-matches").textContent = team.totalMatches || 0;
+            
+            const formationDate = team.createdAt ? new Date(team.createdAt.seconds * 1000) : new Date();
+            document.getElementById("formation-date").textContent = formationDate.toLocaleDateString();
+            document.getElementById("team-created").textContent = formationDate.toLocaleDateString(undefined, {month:'short',day:'numeric'});
+            
+            document.getElementById("total-matches").textContent = team.totalMatches || 0;
+            document.getElementById("total-wins").textContent = team.wins || 0;
+            document.getElementById("total-losses").textContent = team.losses || 0;
+            document.getElementById("combined-kd").textContent = (team.kd || 0).toFixed(2);
+            
+            if (isAdmin) {
+                document.getElementById("admin-details").style.display = "flex";
+            }
+            
+            const tierBreakdown = document.getElementById("tier-breakdown");
+            tierBreakdown.innerHTML = '';
+            
+            const tierStats = team.tierStats || {};
+            const tiers = [
+                {key:'masters',name:'Masters',color:'#50C878'},
+                {key:'emerald',name:'Emerald',color:'#50C878'},
+                {key:'gold',name:'Gold',color:'#FFD700'},
+                {key:'silver',name:'Silver',color:'#C0C0C0'},
+                {key:'bronze',name:'Bronze',color:'#CD7F32'}
+            ];
+            
+            let hasTierStats = false;
+            tiers.forEach(tier => {
+                const stats = tierStats[tier.key];
+                if (stats && stats.total > 0) {
+                    hasTierStats = true;
+                    const winRate = ((stats.wins/stats.total)*100).toFixed(1);
+                    tierBreakdown.innerHTML += `<div class="tier-item"><span style="color:${tier.color}">${tier.name}</span><span>${stats.wins}/${stats.total} (${winRate}%)</span></div>`;
+                }
+            });
+            
+            if (!hasTierStats) tierBreakdown.innerHTML = '<div style="text-align:center;color:#888;padding:10px;font-size:.8rem">No tier statistics available yet</div>';
+            
+            const teamMembersContainer = document.getElementById("team-members");
+            teamMembersContainer.innerHTML = '';
+            
+            members.forEach((member, index) => {
+                const flagHtml = member.country ? `<img src="../images/flags/${member.country.toLowerCase()}.png" alt="${member.country}" style="width:12px;height:9px;margin-left:5px;vertical-align:middle" onerror="this.style.display='none'">` : '';
+                teamMembersContainer.innerHTML += `
+                    <div class="member-card">
+                        <div class="member-avatar"><i class="fas fa-user"></i></div>
+                        <div>
+                            <h3 class="member-name"><a href="profile.html?username=${encodeURIComponent(member.username)}" style="color:inherit;text-decoration:none">${member.username}</a>${flagHtml}</h3>
+                            <div class="member-role">${index===0?'Team Captain':'Team Member'}</div>
+                            <div class="member-stats">
+                                <span class="member-stat">WR: ${member.personalWinRate?member.personalWinRate.toFixed(1)+'%':'N/A'}</span>
+                                <span class="member-stat">K/D: ${member.kd?member.kd.toFixed(2):'N/A'}</span>
+                                <span class="member-stat">Rank: ${member.soloRank||'Unranked'}</span>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            
+            const recentMatchesContainer = document.getElementById("recent-matches");
+            recentMatchesContainer.innerHTML = '';
+            
+            if (matches.length === 0) {
+                recentMatchesContainer.innerHTML = '<div style="text-align:center;color:#888;padding:10px;font-size:.8rem">No matches played yet</div>';
+            } else {
+                matches.forEach(match => {
+                    const isWin = match.winnerTeamId === team.teamId;
+                    const opponent = isWin ? match.loserTeamName : match.winnerTeamName;
+                    const matchDate = match.date ? new Date(match.date.seconds * 1000) : new Date();
+                    
+                    recentMatchesContainer.innerHTML += `
+                        <div class="match-item">
+                            <div class="match-result ${isWin?'win':'loss'}">${isWin?'WIN':'LOSS'}</div>
+                            <div>
+                                <div class="match-opponent">vs ${opponent||'Unknown Team'}</div>
+                                <div class="match-meta">${matchDate.toLocaleDateString()} • ${match.map||'Unknown Map'}</div>
+                            </div>
+                            <div class="match-scores">${isWin?match.winnerScore:match.loserScore}-${isWin?match.loserScore:match.winnerScore}</div>
+                        </div>`;
+                });
+            }
+        }
+
+        function setupEditFunctionality() {
+            if (!window.isCurrentUserTeamMember) {
+                console.log("Not setting up edit functionality as user is not a team member");
+                return;
+            }
+            
+            console.log("Setting up edit functionality for team member");
+            
+            const modal = document.getElementById("team-edit-modal");
+            const editButton = document.getElementById("edit-team-btn");
+            const editBannerButton = document.getElementById("edit-banner-btn");
+            const closeButton = document.getElementById("close-modal");
+            const cancelButton = document.getElementById("cancel-edit");
+            const bannerUploadBtn = document.getElementById("banner-upload-btn");
+            const bannerFileInput = document.getElementById("banner-file");
+            const bannerUrlInput = document.getElementById("banner-url-input");
+            const form = document.getElementById("team-edit-form");
+            
+            // Tab switching functionality
+            const urlTabBtn = document.getElementById("url-tab-btn");
+            const uploadTabBtn = document.getElementById("upload-tab-btn");
+            const urlTab = document.getElementById("url-tab");
+            const uploadTab = document.getElementById("upload-tab");
+            
+            urlTabBtn.addEventListener("click", () => {
+                urlTabBtn.classList.add("tab-active");
+                uploadTabBtn.classList.remove("tab-active");
+                urlTab.style.display = "block";
+                uploadTab.style.display = "none";
+            });
+            
+            uploadTabBtn.addEventListener("click", () => {
+                uploadTabBtn.classList.add("tab-active");
+                urlTabBtn.classList.remove("tab-active");
+                uploadTab.style.display = "block";
+                urlTab.style.display = "none";
+            });
+            
+            // Make sure buttons exist before adding event listeners
+            if (!editButton || !editBannerButton) {
+                console.error("Edit buttons not found in the DOM");
+                return;
+            }
+            
+            // Open modal when edit button is clicked
+            editButton.addEventListener("click", () => {
+                console.log("Edit button clicked");
+                modal.style.display = "flex";
+            });
+            
+            // Open modal when banner edit button is clicked
+            editBannerButton.addEventListener("click", () => {
+                console.log("Edit banner button clicked");
+                modal.style.display = "flex";
+                // Pre-fill URL input if banner exists
+                if (currentTeamData.info.bannerUrl) {
+                    bannerUrlInput.value = currentTeamData.info.bannerUrl;
+                }
+            });
+            
+            // Close modal
+            closeButton.addEventListener("click", () => {
+                modal.style.display = "none";
+            });
+            
+            cancelButton.addEventListener("click", () => {
+                modal.style.display = "none";
+            });
+            
+            // Banner upload button
+            bannerUploadBtn.addEventListener("click", () => {
+                bannerFileInput.click();
+            });
+            
+            // Handle file selection
+            bannerFileInput.addEventListener("change", (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        document.getElementById("banner-preview").style.backgroundImage = `url(${e.target.result})`;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                    document.getElementById("banner-filename").textContent = file.name;
+                }
+            });
+            
+            // Handle URL input
+            bannerUrlInput.addEventListener("input", (e) => {
+                const url = e.target.value.trim();
+                if (url.startsWith("https://")) {
+                    document.getElementById("banner-preview").style.backgroundImage = `url(${url})`;
+                }
+            });
+            
+            // Form submission
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                try {
+                    const bio = document.getElementById("team-bio-input").value.trim();
+                    const timezone = document.getElementById("team-timezone-input").value;
+                    const schedule = document.getElementById("team-schedule-input").value.trim();
+                    const discord = document.getElementById("team-discord-input").value.trim();
+                    
+                    // Get banner URL from either input or file upload
+                    let bannerUrl = currentTeamData.info.bannerUrl || null;
+                    
+                    // Check if URL input is provided
+                    const urlInputValue = bannerUrlInput.value.trim();
+                    if (urlInputValue.startsWith("https://")) {
+                        bannerUrl = urlInputValue;
+                    }
+                    // Only try to upload file if URL tab is not active and a file is selected
+                    else if (uploadTabBtn.classList.contains("tab-active") && 
+                             bannerFileInput.files && 
+                             bannerFileInput.files[0]) {
+                        try {
+                            const file = bannerFileInput.files[0];
+                            const storageRef = ref(storage, `teamBanners/${teamId}_${Date.now()}`);
+                            
+                            const snapshot = await uploadBytes(storageRef, file);
+                            bannerUrl = await getDownloadURL(snapshot.ref);
+                        } catch (uploadError) {
+                            console.error("Error uploading file:", uploadError);
+                            alert("Could not upload file. Using image URL option instead.");
+                        }
+                    }
+                    
+                    // Create or update team info document
+                    const teamInfoRef = doc(db, "teamsInfo", teamId);
+                    
+                    // Check if document exists first
+                    const docSnapshot = await getDoc(teamInfoRef);
+                    
+                    if (docSnapshot.exists()) {
+                        await updateDoc(teamInfoRef, {
+                            bio,
+                            timezone,
+                            schedule,
+                            discord,
+                            bannerUrl,
+                            updatedAt: new Date()
+                        });
+                    } else {
+                        await setDoc(teamInfoRef, {
+                            bio,
+                            timezone,
+                            schedule,
+                            discord,
+                            bannerUrl,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+                    }
+                    
+                    // Update local data and display
+                    currentTeamData.info = {
+                        ...currentTeamData.info,
+                        bio,
+                        timezone,
+                        schedule,
+                        discord,
+                        bannerUrl
+                    };
+                    
+                    // Update UI
+                    document.getElementById("team-banner").style.backgroundImage = bannerUrl ? `url(${bannerUrl})` : '';
+                    document.getElementById("team-timezone").textContent = timezone || "Not specified";
+                    document.getElementById("team-schedule").textContent = schedule || "Not specified";
+                    document.getElementById("team-discord").textContent = discord || "Not specified";
+                    document.getElementById("team-bio").textContent = bio || "No team bio available";
+                    
+                    modal.style.display = "none";
+                    alert("Team information updated successfully!");
+                    
+                } catch (error) {
+                    console.error("Error updating team info:", error);
+                    alert("Failed to update team information. Please try again.");
+                }
+            });
+        }
+
+        function showError() {
+            document.getElementById("loading-state").style.display = "none";
+            document.getElementById("error-state").style.display = "block";
+        }
+    </script>
+
+    <script>
+        Promise.all([
+            fetch("../HTML/nav.html").then(response => response.text()),
+            fetch("../HTML/footer.html").then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById("nav-placeholder").innerHTML = navData;
+            document.getElementById("footer-placeholder").innerHTML = footerData;
+        }).catch(error => console.error("Error loading navigation or footer:", error));
+    </script>
+</body>
+</html>

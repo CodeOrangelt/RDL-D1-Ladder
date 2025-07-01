@@ -22,6 +22,8 @@ import {
     getEloHistoryBatch, 
     setupEfficientListener 
 } from './services/firebaseService.js';
+import { displayLadderDuos } from './ladderduos.js';
+
 
 const auth = getAuth();
 
@@ -618,16 +620,20 @@ function initLadderToggles() {
     const d1Toggle = document.getElementById('d1-switch');
     const d2Toggle = document.getElementById('d2-switch');
     const d3Toggle = document.getElementById('d3-switch');
+    const duosToggle = document.getElementById('duos-switch');
+
 
     const d1Container = document.getElementById('d1-ladder-container');
     const d2Container = document.getElementById('d2-ladder-container');
     const d3Container = document.getElementById('d3-ladder-container');
+    const duosContainer = document.getElementById('duos-ladder-container');
 
     function hideAllLadders() {
         // First, remove active class from all containers
         if (d1Container) d1Container.classList.remove('active');
         if (d2Container) d2Container.classList.remove('active');
         if (d3Container) d3Container.classList.remove('active');
+        if (duosContainer) duosContainer.style.display = 'none';
 
         // Also ensure display is none (as a fallback)
         if (d1Container) d1Container.style.display = 'none';
@@ -715,6 +721,24 @@ function initLadderToggles() {
             findBestOpponent('d3');
         });
     }
+
+        // Duos button event listener
+    if (duosToggle) {
+        duosToggle.addEventListener('click', () => {
+            hideAllLadders();
+            if (duosContainer) duosContainer.style.display = 'block';
+            displayLadderDuos();
+            findBestOpponent('duos');
+            if (document.getElementById('elo-recommendation-text-duos')) {
+                document.getElementById('elo-recommendation-text-duos').style.display = 'block';
+            }
+
+        // Show Duos recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none'; 
+        });
+    }
 }
 
 // Add document ready event to initialize everything
@@ -771,10 +795,97 @@ async function findBestOpponent(currentLadder = 'd1') {
         }
 
         // Determine which collection to query based on current ladder
-        const ladderCollection = currentLadder === 'd1' ? 'players' : 
-                               currentLadder === 'd2' ? 'playersD2' : 'playersD3';
+        let ladderCollection;
+        switch(currentLadder) {
+            case 'd1':
+                ladderCollection = 'players';
+                break;
+            case 'd2':
+                ladderCollection = 'playersD2';
+                break;
+            case 'd3':
+                ladderCollection = 'playersD3';
+                break;
+            case 'duos':
+                ladderCollection = 'playersDuos';
+                break;
+            default:
+                ladderCollection = 'players';
+        }
 
-        // Get the user's ELO from the appropriate ladder
+        // Special handling for DUOS ladder
+        if (currentLadder === 'duos') {
+            // Get the user's data from DUOS ladder
+            const playersRef = collection(db, ladderCollection);
+            const playerQuery = query(playersRef, where('username', '==', username));
+            const playerSnapshot = await getDocs(playerQuery);
+
+            if (playerSnapshot.empty) {
+                recommendationEl.textContent = 
+                    `You're not registered on the DUOS ladder`;
+                return;
+            }
+
+            const playerData = playerSnapshot.docs[0].data();
+            const userElo = parseInt(playerData.eloRating) || 1200;
+
+            // Check if user has a team
+            if (playerData.hasTeam && playerData.teammate) {
+                recommendationEl.innerHTML = `You're teamed with <span class="recommendation-highlight">${playerData.teammate}</span>. Challenge other teams!`;
+                return;
+            }
+
+            // If no team, find potential teammates or opponents
+            const allPlayersSnapshot = await getDocs(playersRef);
+            let bestTeammate = null;
+            let bestTeammateScore = -1;
+
+            allPlayersSnapshot.forEach(doc => {
+                const potentialTeammate = doc.data();
+
+                // Skip if this is the current user
+                if (potentialTeammate.username === username) return;
+
+                // Skip if they already have a team
+                if (potentialTeammate.hasTeam) return;
+
+                const teammateElo = parseInt(potentialTeammate.eloRating) || 1200;
+                const eloDifference = Math.abs(teammateElo - userElo);
+
+                // Calculate teammate compatibility score
+                // Closer ELO is better for teamwork
+                const compatibilityScore = Math.max(0, 200 - eloDifference);
+
+                if (compatibilityScore > bestTeammateScore) {
+                    bestTeammate = potentialTeammate;
+                    bestTeammateScore = compatibilityScore;
+                }
+            });
+
+            if (bestTeammate) {
+                const teammateElo = parseInt(bestTeammate.eloRating) || 1200;
+
+                // Set ELO-based colors
+                let usernameColor = 'gray';
+                if (teammateElo >= 2000) {
+                    usernameColor = '#50C878'; // Emerald Green
+                } else if (teammateElo >= 1800) {
+                    usernameColor = '#FFD700'; // Gold
+                } else if (teammateElo >= 1600) {
+                    usernameColor = '#C0C0C0'; // Silver
+                } else if (teammateElo >= 1400) {
+                    usernameColor = '#CD7F32'; // Bronze
+                }
+
+                recommendationEl.innerHTML = `Looking for a teammate? Consider <span class="recommendation-highlight" style="color: ${usernameColor};">${bestTeammate.username}</span> (ELO: ${teammateElo})`;
+            } else {
+                recommendationEl.textContent = `No available teammates found. More players needed on DUOS ladder!`;
+            }
+
+            return;
+        }
+
+        // Original logic for solo ladders (D1, D2, D3)
         const playersRef = collection(db, ladderCollection);
         const playerQuery = query(playersRef, where('username', '==', username));
         const playerSnapshot = await getDocs(playerQuery);
@@ -791,7 +902,7 @@ async function findBestOpponent(currentLadder = 'd1') {
         // Get all players to find best match
         const allPlayersSnapshot = await getDocs(playersRef);
         let bestMatch = null;
-        let bestMatchScore = -1; // Use a score-based approach instead
+        let bestMatchScore = -1;
 
         // Get user's rank tier
         const userRankTier = getPlayerRankName(userElo);
@@ -816,21 +927,17 @@ async function findBestOpponent(currentLadder = 'd1') {
             // Skip opponents where you wouldn't gain any ELO
             if (potentialEloGain <= 0) return;
 
-            // Calculate match quality score - balances closeness and potential gain
-            // Lower ELO difference is better, but we still want some gain
-            // Perfect score would be someone very close to your ELO but slightly higher
+            // Calculate match quality score
             let matchScore = 0;
 
-            // 1. Base score from ELO proximity - closer is better
-            // Maximum proximity score for players within 100 ELO points
+            // Base score from ELO proximity
             const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
 
-            // 2. ELO gain score - some gain is good, but we don't want to overweight it
-            // Maximum gain score for 5-10 point gains
+            // ELO gain score
             const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
                              potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
 
-            // 3. Same rank tier bonus
+            // Same rank tier bonus
             const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
 
             // Calculate final score
@@ -846,8 +953,8 @@ async function findBestOpponent(currentLadder = 'd1') {
         if (bestMatch) {
             const opponentElo = parseInt(bestMatch.eloRating) || 1500;
 
-            // Set ELO-based colors (same logic used in createPlayerRow)
-            let usernameColor = 'gray'; // Default for unranked
+            // Set ELO-based colors
+            let usernameColor = 'gray';
             if (opponentElo >= 2000) {
                 usernameColor = '#50C878'; // Emerald Green
             } else if (opponentElo >= 1800) {
@@ -872,10 +979,138 @@ async function findBestOpponent(currentLadder = 'd1') {
 // Listen for auth state changes to update recommendations
 auth.onAuthStateChanged(user => {
     // Get current active ladder
-    const d1Active = document.getElementById('d1-ladder-container').classList.contains('active');
-    const d2Active = document.getElementById('d2-ladder-container').classList.contains('active');
-    const d3Active = document.getElementById('d3-ladder-container').classList.contains('active');
+    const d1Active = document.getElementById('d1-ladder-container') && document.getElementById('d1-ladder-container').style.display !== 'none';
+    const d2Active = document.getElementById('d2-ladder-container') && document.getElementById('d2-ladder-container').style.display !== 'none';
+    const d3Active = document.getElementById('d3-ladder-container') && document.getElementById('d3-ladder-container').style.display !== 'none';
+    const duosActive = document.getElementById('duos-ladder-container') && document.getElementById('duos-ladder-container').style.display !== 'none';
 
-    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : 'd3';
+    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : 'd1';
     findBestOpponent(currentLadder);
 });
+
+// Add this to your main ladder switching JavaScript (likely in ladder.js or inline script)
+document.addEventListener('DOMContentLoaded', () => {
+    // Add admin check for DUOS radio button
+    const duosRadio = document.getElementById('duos-switch');
+    const duosLabel = document.querySelector('label[for="duos-switch"]');
+    
+    if (duosRadio && duosLabel) {
+        // Check if user is admin when they try to select DUOS
+        duosRadio.addEventListener('change', async (e) => {
+            if (e.target.checked) {
+                const user = auth?.currentUser;
+                const isUserAdmin = await checkIfUserIsAdmin(user);
+                
+                if (!isUserAdmin) {
+                    // Prevent selection and reset to D1
+                    e.preventDefault();
+                    const d1Radio = document.getElementById('d1-switch');
+                    if (d1Radio) {
+                        d1Radio.checked = true;
+                        // Trigger the D1 change event
+                        d1Radio.dispatchEvent(new Event('change'));
+                    }
+                    
+                    // Show admin-only message
+                    showAdminOnlyMessage();
+                    return false;
+                }
+            }
+        });
+        
+        // Also disable the radio button visually for non-admins
+        auth.onAuthStateChanged(async (user) => {
+            const isUserAdmin = await checkIfUserIsAdmin(user);
+            if (!isUserAdmin) {
+                duosRadio.disabled = true;
+                duosLabel.style.opacity = '0.5';
+                duosLabel.style.cursor = 'not-allowed';
+                duosLabel.title = 'Duos ladder is currently admin-only';
+            } else {
+                duosRadio.disabled = false;
+                duosLabel.style.opacity = '1';
+                duosLabel.style.cursor = 'pointer';
+                duosLabel.title = '';
+            }
+        });
+    }
+});
+
+// Add the admin check function
+async function checkIfUserIsAdmin(user) {
+    if (!user) return false;
+    
+    try {
+        // Check admin emails first
+        const adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
+        if (user.email && adminEmails.includes(user.email.toLowerCase())) {
+            return true;
+        }
+        
+        // Check for admin roles in database
+        const collections = ['userProfiles', 'players', 'playersD2', 'playersD3'];
+        const adminRoles = ['admin', 'owner', 'council', 'creative lead'];
+        
+        for (const collectionName of collections) {
+            try {
+                const docRef = doc(db, collectionName, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    const roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        return true;
+                    }
+                }
+            } catch (err) {
+                console.warn(`Error checking ${collectionName}:`, err);
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+function showAdminOnlyMessage() {
+    // Remove any existing message
+    const existingMessage = document.getElementById('admin-only-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create new message
+    const messageDiv = document.createElement('div');
+    messageDiv.id = 'admin-only-message';
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2a2a2a;
+        border: 2px solid #ff6b6b;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        color: #ff6b6b;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    `;
+    messageDiv.innerHTML = `
+        <strong>🔒 Duos Ladder - Admin Only</strong><br>
+        <span style="color: #ccc;">Currently in testing phase</span>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 3000);
+}

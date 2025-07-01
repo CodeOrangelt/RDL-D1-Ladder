@@ -102,16 +102,45 @@ class InboxManager {
         
         const timeAgo = this.getTimeAgo(createdAt);
         
-        return `
-            <div class="invitation-card ${invitation.status}" data-invitation-id="${invitation.id}">
-                <div class="invitation-header">
-                    <div>
-                        <div class="invitation-from">${invitation.fromUsername}</div>
-                        <div class="invitation-time">${timeAgo}</div>
+        // Handle different invitation types
+        let invitationContent = '';
+        
+        if (invitation.type === 'team_invite') {
+            // Team invitation specific content
+            invitationContent = `
+                <div class="invitation-details">
+                    <p>${invitation.message}</p>
+                    <div class="team-invite-preview" style="background: #1a1a1a; padding: 1rem; border-radius: 4px; margin: 0.5rem 0;">
+                        <h4 style="color: ${invitation.teamData.teamColor}; margin: 0 0 0.5rem 0;">
+                            ${invitation.teamData.proposedTeamName}
+                        </h4>
+                        <p style="color: #888; font-size: 0.9em; margin: 0;">
+                            Duos Ladder Team • Color: ${invitation.teamData.teamColor}
+                        </p>
                     </div>
-                    <span class="status-badge status-${invitation.status}">${invitation.status}</span>
                 </div>
                 
+                <div class="invitation-game-info">
+                    <div class="game-detail">
+                        <span class="detail-label">Invitation Type</span>
+                        <span class="detail-value">Team Formation</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">Ladder</span>
+                        <span class="detail-value">Duos</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">From Player</span>
+                        <span class="detail-value">
+                            <a href="./profile.html?username=${encodeURIComponent(invitation.fromUsername)}" 
+                               class="player-link">${invitation.fromUsername}</a>
+                        </span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Game invitation content (existing)
+            invitationContent = `
                 <div class="invitation-details">
                     <p>${invitation.message}</p>
                 </div>
@@ -133,6 +162,20 @@ class InboxManager {
                         </span>
                     </div>
                 </div>
+            `;
+        }
+        
+        return `
+            <div class="invitation-card ${invitation.status}" data-invitation-id="${invitation.id}">
+                <div class="invitation-header">
+                    <div>
+                        <div class="invitation-from">${invitation.fromUsername}</div>
+                        <div class="invitation-time">${timeAgo}</div>
+                    </div>
+                    <span class="status-badge status-${invitation.status}">${invitation.status}</span>
+                </div>
+                
+                ${invitationContent}
                 
                 ${invitation.status === 'pending' ? `
                     <div class="invitation-actions">
@@ -142,9 +185,11 @@ class InboxManager {
                         <button class="action-btn decline-btn" data-action="decline" data-invitation-id="${invitation.id}">
                             <i class="fas fa-times"></i> Decline
                         </button>
-                        <button class="action-btn respond-btn" data-action="respond" data-invitation-id="${invitation.id}">
-                            <i class="fas fa-reply"></i> Send Message
-                        </button>
+                        ${invitation.type !== 'team_invite' ? `
+                            <button class="action-btn respond-btn" data-action="respond" data-invitation-id="${invitation.id}">
+                                <i class="fas fa-reply"></i> Send Message
+                            </button>
+                        ` : ''}
                     </div>
                 ` : ''}
             </div>
@@ -186,16 +231,21 @@ class InboxManager {
     
     async updateInvitationStatus(invitationId, status) {
         try {
+            const invitation = this.invitations.find(inv => inv.id === invitationId);
+            
+            if (invitation && invitation.type === 'team_invite' && status === 'accepted') {
+                // Handle team creation
+                await this.createTeamFromInvitation(invitation);
+            }
+            
             const invitationRef = doc(db, 'gameInvitations', invitationId);
             
-            // Only update necessary fields
             await updateDoc(invitationRef, {
                 status: status,
                 respondedAt: new Date()
             });
             
             // Update local cache immediately for better UX
-            const invitation = this.invitations.find(inv => inv.id === invitationId);
             if (invitation) {
                 invitation.status = status;
                 invitation.respondedAt = new Date();
@@ -318,6 +368,31 @@ class InboxManager {
                 modal.remove();
             }
         });
+    }
+    
+    async createTeamFromInvitation(invitation) {
+        try {
+            // Import the team creation function
+            const { createTeam } = await import('./ladderduos.js');
+            
+            const result = await createTeam(
+                invitation.fromUsername, 
+                invitation.toUsername, 
+                invitation.teamData.proposedTeamName,
+                invitation.teamData.teamColor
+            );
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            
+            // Show success message
+            alert(`Team "${invitation.teamData.proposedTeamName}" created successfully!`);
+            
+        } catch (error) {
+            console.error('Error creating team:', error);
+            throw new Error('Failed to create team: ' + error.message);
+        }
     }
     
     updateNotificationCount() {
