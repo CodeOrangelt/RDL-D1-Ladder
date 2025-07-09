@@ -747,37 +747,46 @@ body {
     border-radius: 4px;
 }
 
-.comment-popup-close {
-    display: block;
-    margin: 0 auto;
-    padding: 10px 20px;
-    background-color: #49104b;
-    color: white;
-    border: none;
+/* Add or update these styles for button alignment */
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.comment-popup-close,
+.comment-popup-report,
+.popup-btn {
+    padding: 8px 16px;
     border-radius: 4px;
+    border: none;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    font-size: 14px;
+    min-width: 80px;
 }
 
-.comment-popup-close:hover {
-    background-color: #5a1a5c;
+.comment-popup-close,
+.close-btn {
+    background-color: #555;
+    color: white;
 }
 
-.close-popup {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 1.5em;
-    cursor: pointer;
-    color: #aaa;
-    transition: color 0.2s;
+.comment-popup-report,
+.report-btn {
+    background-color: #d32f2f;
+    color: white;
 }
 
-.close-popup:hover {
-    color: #fff;
+.comment-popup-close:hover,
+.close-btn:hover {
+    background-color: #444;
 }
 
+.comment-popup-report:hover,
+.report-btn:hover {
+    background-color: #b71c1c;
+}
 /* Loading indicator */
 .loading-indicator {
     display: none;

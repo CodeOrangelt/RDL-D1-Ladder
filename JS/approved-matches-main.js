@@ -842,7 +842,7 @@ function getSubgameClass(subgameType) {
         'Altered Powerups': 'altered-powerups',  // Fixed: no hyphen
         'Mega Match': 'mega-match', 
         'Dogfight': 'dogfight',          
-        'Gauss and Mercs': 'gauss-and-mercs'  
+        'Gauss and Mercs': 'gauss-and-mercs',  
     };
     
     return subgameClassMap[subgameType] || '';
@@ -1381,27 +1381,77 @@ function getEloRankClass(elo) {
     else return "unranked";
 }
 
-function showPreviewCommentPopup(comment, player, color) {
-  const popup = document.getElementById('commentPopupPreview');
-  const overlay = document.getElementById('commentOverlayPreview');
-  const title = document.getElementById('commentPopupTitlePreview');
-  const content = document.getElementById('commentPopupContentPreview');
+function showPreviewCommentPopup(commentText, username, usernameColor = "#fff") {
+    const popup = document.getElementById('commentPopupPreview');
+    const overlay = document.getElementById('commentOverlayPreview');
+    const title = document.getElementById('commentPopupTitlePreview');
+    const content = document.getElementById('commentPopupContentPreview');
+    const reportBtn = document.getElementById('reportCommentButton');
 
-  if (!popup || !overlay || !title || !content) return;
+    if (!popup || !overlay || !title || !content || !reportBtn) return;
 
-  title.style.color = color;
-  title.textContent = `${player}'s Comment`;
-  content.textContent = comment;
+    // Store comment data as attributes for reporting
+    popup.dataset.commentText = commentText;
+    popup.dataset.commentUser = username;
 
-  popup.style.display = 'block';
-  overlay.style.display = 'block';
+    title.style.color = usernameColor;
+    title.textContent = `Comment from ${username}`;
+    content.textContent = commentText;
+
+    // Set up report button event handler
+    reportBtn.onclick = reportComment;
+
+    popup.style.display = 'block';
+    overlay.style.display = 'block';
 }
 
+// Make sure this is adapted to your existing close function
 function closePreviewCommentPopup() {
-  const popup = document.getElementById('commentPopupPreview');
-  const overlay = document.getElementById('commentOverlayPreview');
-  if (popup) popup.style.display = 'none';
-  if (overlay) overlay.style.display = 'none';
+    const popup = document.getElementById('commentPopupPreview');
+    const overlay = document.getElementById('commentOverlayPreview');
+    
+    if (popup) popup.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+}
+
+async function reportComment() {
+    // Check if user is authenticated
+    const currentUser = window.auth.currentUser;
+    if (!currentUser) {
+        alert("You need to be signed in to report comments");
+        return;
+    }
+    
+    // Confirm reporting
+    if (!confirm("Are you sure you want to report this comment as inappropriate?")) {
+        return;
+    }
+    
+    try {
+        const popup = document.getElementById('commentPopupPreview');
+        
+        // Get comment data from popup dataset
+        const commentData = {
+            commentAuthor: popup.dataset.commentUser || 'Unknown User',
+            commentText: popup.dataset.commentText || '',
+            matchId: previewState.currentMatchId || '', // From the current state
+            reportedBy: currentUser.uid,
+            reporterUsername: currentUser.displayName || 'Anonymous User',
+            reportedAt: serverTimestamp()
+        };
+        
+        // Add the report to the badComments collection
+        const badCommentsRef = collection(window.db, "badComments");
+        await addDoc(badCommentsRef, commentData);
+        
+        // Provide feedback and close popup
+        alert("Thank you. The comment has been reported and will be reviewed.");
+        closePreviewCommentPopup();
+        
+    } catch (error) {
+        console.error("Error reporting comment:", error);
+        alert(`Failed to report comment: ${error.message}`);
+    }
 }
 
 function showFullCommentLightbox(comment) {
@@ -1429,6 +1479,43 @@ function showFullCommentLightbox(comment) {
     } else {
         content.textContent = comment.text;
     }
+
+    // Store the comment data for reporting
+    popup.dataset.commentId = comment.id || '';
+    popup.dataset.commentUser = comment.username || '';
+    popup.dataset.commentText = comment.text || '';
+    popup.dataset.matchId = comment.matchId || '';
+
+    // Update buttons to include report button
+    const buttonsContainer = popup.querySelector('.popup-actions') || document.createElement('div');
+    if (!popup.querySelector('.popup-actions')) {
+        buttonsContainer.className = 'popup-actions';
+        buttonsContainer.style.display = 'flex';
+        buttonsContainer.style.justifyContent = 'center';
+        buttonsContainer.style.gap = '10px';
+        buttonsContainer.style.marginTop = '15px';
+        popup.appendChild(buttonsContainer);
+    } else {
+        buttonsContainer.innerHTML = ''; // Clear existing buttons
+    }
+
+    // Create Close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.className = 'popup-btn close-btn';
+    closeButton.id = 'closeCommentPopupPreview';
+    closeButton.addEventListener('click', closePreviewCommentPopup);
+
+    // Create Report button
+    const reportButton = document.createElement('button');
+    reportButton.textContent = 'Report';
+    reportButton.className = 'popup-btn report-btn';
+    reportButton.style.backgroundColor = '#d32f2f';
+    reportButton.addEventListener('click', reportComment);
+
+    // Add buttons to container
+    buttonsContainer.appendChild(closeButton);
+    buttonsContainer.appendChild(reportButton);
 
     popup.style.display = 'block';
     overlay.style.display = 'block';
