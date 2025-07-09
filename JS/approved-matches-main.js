@@ -221,23 +221,32 @@ function applyEnhancedClientFilters(docsData) {
     
     return docsData.filter(matchData => {
         // Pilots filter
-        if (previewState.enhancedFilters.subgames.length > 0) {
-            // Check both legacy subgameType and new subgameTypes fields
-            const matchSubgames = match.subgameTypes || [];
-            const legacySubgame = match.subgameType;
-            
-            // If no subgame tags at all, treat as Standard Match
-            if (matchSubgames.length === 0 && (!legacySubgame || legacySubgame.trim() === '')) {
-                if (!previewState.enhancedFilters.subgames.includes('Standard Match')) {
-                    return false;
-                }
-            }
-            // Check if any of the match's subgames are in the filter list
-            else if (!previewState.enhancedFilters.subgames.some(s => 
-                matchSubgames.includes(s) || s === legacySubgame)) {
+        if (previewState.enhancedFilters.pilots) {
+            const pilotsSearch = previewState.enhancedFilters.pilots.toLowerCase();
+            const winner = (matchData.winnerUsername || '').toLowerCase();
+            const loser = (matchData.loserUsername || '').toLowerCase();
+            if (!winner.includes(pilotsSearch) && !loser.includes(pilotsSearch)) {
                 return false;
             }
         }
+        
+        // Levels filter
+        if (previewState.enhancedFilters.levels) {
+            const levelsSearch = previewState.enhancedFilters.levels.toLowerCase();
+            const mapPlayed = (matchData.mapPlayed || '').toLowerCase();
+            if (!mapPlayed.includes(levelsSearch)) {
+                return false;
+            }
+        }
+        
+        // Subgames filter
+        if (previewState.enhancedFilters.subgames.length > 0) {
+            const matchSubgame = matchData.subgameType || 'Standard Match';
+            if (!previewState.enhancedFilters.subgames.includes(matchSubgame)) {
+                return false;
+            }
+        }
+        
         return true;
     });
 }
@@ -569,43 +578,42 @@ async function renderMatchCards(docsData) {
         card.querySelector('.match-map').textContent = match.mapPlayed || 'Unknown Map';
         card.querySelector('.match-date').textContent = formatDate(match.approvedAt || match.createdAt);
 
+        const winnerNameEl = card.querySelector('.player.winner .player-name');
+        winnerNameEl.textContent = match.winnerUsername || 'Unknown';
+        winnerNameEl.style.color = getEloColor(match.winnerOldElo);
+        card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
+        
+        // Add winner suicides
+        const winnerSuicidesEl = card.querySelector('.player.winner .player-suicides');
+        const winnerSuicides = match.winnerSuicides || 0;
+        winnerSuicidesEl.textContent = `S: ${winnerSuicides}`;
+
+        const loserNameEl = card.querySelector('.player.loser .player-name');
+        loserNameEl.textContent = match.loserUsername || 'Unknown';
+        loserNameEl.style.color = getEloColor(match.loserOldElo);
+        card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
+        
+        // Add loser suicides
+        const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
+        const loserSuicides = match.loserSuicides || 0;
+        loserSuicidesEl.textContent = `S: ${loserSuicides}`;
+
+        // Add subgame type display
         const subgameEl = card.querySelector('.match-subgame');
         if (subgameEl) {
-            // Clear existing content
-            subgameEl.innerHTML = '';
-            
-            if (match.subgameTypes && match.subgameTypes.length > 0) {
-                // Display multiple subgame tags
-                subgameEl.classList.add('multi-subgame');
-                
-                match.subgameTypes.forEach(subgame => {
-                    const tagEl = document.createElement('span');
-                    tagEl.className = 'subgame-tag';
-                    tagEl.textContent = subgame;
-                    
-                    // Add color class
-                    const subgameClass = getSubgameClass(subgame);
-                    if (subgameClass) {
-                        tagEl.classList.add(subgameClass);
-                    }
-                    
-                    subgameEl.appendChild(tagEl);
-                });
-            } 
-            // For backward compatibility with old records
-            else if (match.subgameType && match.subgameType.trim() !== '') {
+            if (match.subgameType && match.subgameType.trim() !== '') {
                 subgameEl.textContent = match.subgameType;
+                subgameEl.style.display = 'block';
+                // Add the CSS class for color coding
                 const subgameClass = getSubgameClass(match.subgameType);
                 if (subgameClass) {
                     subgameEl.classList.add(subgameClass);
                 }
-            } 
-            else {
+            } else {
                 subgameEl.textContent = 'Standard Match';
-                subgameEl.style.opacity = '0.6';
+                subgameEl.style.display = 'block';
+                subgameEl.style.opacity = '0.6'; // Make it more subtle for standard matches
             }
-            
-            subgameEl.style.display = 'flex';
         }
 
         // Player comments handling remains the same
