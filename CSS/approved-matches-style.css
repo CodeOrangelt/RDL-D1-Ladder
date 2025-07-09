@@ -1057,6 +1057,16 @@ body {
     color: white;
 }
 
+.match-subgame.dogfight {
+    background-color: #4169E1; /* Royal blue */
+    color: white;
+}
+
+.match-subgame.gauss-and-mercs {
+    background-color: #DAA520; /* Goldenrod */
+    color: black;
+}
+
 /* Date - hugs right side */
 .match-date {
     font-size: 0.9em;

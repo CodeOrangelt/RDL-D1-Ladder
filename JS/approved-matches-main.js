@@ -14,6 +14,38 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+const mutedUsers = [
+    { username: "Daz", muteFromDate: new Date("2025-07-02").getTime() }, // muted for 60 days. Varibale, depends on Behavior.
+  ];
+  
+  // Function to check if a username should be muted
+  function isUsernameMuted(username, timestamp) {
+    if (!username) return false;
+    
+    const user = mutedUsers.find(u => u.username === username);
+    if (!user) return false;
+    
+    // If no timestamp provided, mute by default (for preview cases)
+    if (!timestamp) return true;
+    
+    // Convert Firestore timestamp to milliseconds
+    const commentTime = timestamp instanceof Date 
+      ? timestamp.getTime() 
+      : (timestamp.seconds ? timestamp.seconds * 1000 : Date.now());
+    
+    // Only mute if comment was posted after the mute date
+    return commentTime >= user.muteFromDate;
+  }
+  
+  // Function to filter comments based on mute status
+  function filterComment(comment, username, timestamp) {
+    if (!comment) return "-";
+    if (isUsernameMuted(username, timestamp)) {
+      return "Muted.";
+    }
+    return comment;
+  }
+
 // --- State for PREVIEW SECTION ---
 const previewState = {
   currentMode: "D1",
@@ -189,32 +221,23 @@ function applyEnhancedClientFilters(docsData) {
     
     return docsData.filter(matchData => {
         // Pilots filter
-        if (previewState.enhancedFilters.pilots) {
-            const pilotsSearch = previewState.enhancedFilters.pilots.toLowerCase();
-            const winner = (matchData.winnerUsername || '').toLowerCase();
-            const loser = (matchData.loserUsername || '').toLowerCase();
-            if (!winner.includes(pilotsSearch) && !loser.includes(pilotsSearch)) {
-                return false;
-            }
-        }
-        
-        // Levels filter
-        if (previewState.enhancedFilters.levels) {
-            const levelsSearch = previewState.enhancedFilters.levels.toLowerCase();
-            const mapPlayed = (matchData.mapPlayed || '').toLowerCase();
-            if (!mapPlayed.includes(levelsSearch)) {
-                return false;
-            }
-        }
-        
-        // Subgames filter
         if (previewState.enhancedFilters.subgames.length > 0) {
-            const matchSubgame = matchData.subgameType || 'Standard Match';
-            if (!previewState.enhancedFilters.subgames.includes(matchSubgame)) {
+            // Check both legacy subgameType and new subgameTypes fields
+            const matchSubgames = match.subgameTypes || [];
+            const legacySubgame = match.subgameType;
+            
+            // If no subgame tags at all, treat as Standard Match
+            if (matchSubgames.length === 0 && (!legacySubgame || legacySubgame.trim() === '')) {
+                if (!previewState.enhancedFilters.subgames.includes('Standard Match')) {
+                    return false;
+                }
+            }
+            // Check if any of the match's subgames are in the filter list
+            else if (!previewState.enhancedFilters.subgames.some(s => 
+                matchSubgames.includes(s) || s === legacySubgame)) {
                 return false;
             }
         }
-        
         return true;
     });
 }
@@ -546,42 +569,43 @@ async function renderMatchCards(docsData) {
         card.querySelector('.match-map').textContent = match.mapPlayed || 'Unknown Map';
         card.querySelector('.match-date').textContent = formatDate(match.approvedAt || match.createdAt);
 
-        const winnerNameEl = card.querySelector('.player.winner .player-name');
-        winnerNameEl.textContent = match.winnerUsername || 'Unknown';
-        winnerNameEl.style.color = getEloColor(match.winnerOldElo);
-        card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
-        
-        // Add winner suicides
-        const winnerSuicidesEl = card.querySelector('.player.winner .player-suicides');
-        const winnerSuicides = match.winnerSuicides || 0;
-        winnerSuicidesEl.textContent = `S: ${winnerSuicides}`;
-
-        const loserNameEl = card.querySelector('.player.loser .player-name');
-        loserNameEl.textContent = match.loserUsername || 'Unknown';
-        loserNameEl.style.color = getEloColor(match.loserOldElo);
-        card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
-        
-        // Add loser suicides
-        const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
-        const loserSuicides = match.loserSuicides || 0;
-        loserSuicidesEl.textContent = `S: ${loserSuicides}`;
-
-        // Add subgame type display
         const subgameEl = card.querySelector('.match-subgame');
         if (subgameEl) {
-            if (match.subgameType && match.subgameType.trim() !== '') {
+            // Clear existing content
+            subgameEl.innerHTML = '';
+            
+            if (match.subgameTypes && match.subgameTypes.length > 0) {
+                // Display multiple subgame tags
+                subgameEl.classList.add('multi-subgame');
+                
+                match.subgameTypes.forEach(subgame => {
+                    const tagEl = document.createElement('span');
+                    tagEl.className = 'subgame-tag';
+                    tagEl.textContent = subgame;
+                    
+                    // Add color class
+                    const subgameClass = getSubgameClass(subgame);
+                    if (subgameClass) {
+                        tagEl.classList.add(subgameClass);
+                    }
+                    
+                    subgameEl.appendChild(tagEl);
+                });
+            } 
+            // For backward compatibility with old records
+            else if (match.subgameType && match.subgameType.trim() !== '') {
                 subgameEl.textContent = match.subgameType;
-                subgameEl.style.display = 'block';
-                // Add the CSS class for color coding
                 const subgameClass = getSubgameClass(match.subgameType);
                 if (subgameClass) {
                     subgameEl.classList.add(subgameClass);
                 }
-            } else {
+            } 
+            else {
                 subgameEl.textContent = 'Standard Match';
-                subgameEl.style.display = 'block';
-                subgameEl.style.opacity = '0.6'; // Make it more subtle for standard matches
+                subgameEl.style.opacity = '0.6';
             }
+            
+            subgameEl.style.display = 'flex';
         }
 
         // Player comments handling remains the same
@@ -590,22 +614,30 @@ async function renderMatchCards(docsData) {
         const fullWinnerComment = match.winnerComment || "";
         const fullLoserComment = match.loserComment || "";
 
+        // Get timestamps - use match creation/approval time if comment timestamp not available
+        const commentTimestamp = match.approvedAt || match.createdAt;
+
+        // Filter comments if author is muted (now including date check)
+        const filteredWinnerComment = filterComment(fullWinnerComment, match.winnerUsername, commentTimestamp);
+        const filteredLoserComment = filterComment(fullLoserComment, match.loserUsername, commentTimestamp);
+
         winnerCommentEl.textContent = `"${truncateComment(fullWinnerComment)}"`;
         loserCommentEl.textContent = `"${truncateComment(fullLoserComment)}"`;
 
-        if (fullWinnerComment) {
-            winnerCommentEl.onclick = () => showPreviewCommentPopup(fullWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo));
+        if (fullWinnerComment && !isUsernameMuted(match.winnerUsername, commentTimestamp)) {
+            winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo));
         } else {
-             winnerCommentEl.textContent = "-";
-             winnerCommentEl.style.cursor = 'default';
-             winnerCommentEl.onclick = null;
+            winnerCommentEl.textContent = filteredWinnerComment === "Muted." ? "Muted." : "-";
+            winnerCommentEl.style.cursor = 'default';
+            winnerCommentEl.onclick = null;
         }
-        if (fullLoserComment) {
-            loserCommentEl.onclick = () => showPreviewCommentPopup(fullLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo));
+        
+        if (fullLoserComment && !isUsernameMuted(match.loserUsername)) {
+            loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo));
         } else {
-             loserCommentEl.textContent = "-";
-             loserCommentEl.style.cursor = 'default';
-             loserCommentEl.onclick = null;
+            loserCommentEl.textContent = filteredLoserComment === "Muted." ? "Muted." : "-";
+            loserCommentEl.style.cursor = 'default';
+            loserCommentEl.onclick = null;
         }
 
         // Now handle the community comments section
@@ -683,47 +715,56 @@ async function renderMatchCards(docsData) {
                             }
                             
                         } else {
-                            // Render as regular comment (existing code)
-                            commentEl.className = 'comment-item';
-                            
-                            // Get truncated text for display
-                            const displayText = truncateToWords(comment.text || "", 15);
-                            
-                            // Use default username if not provided
-                            const username = comment.username || 'Anonymous';
-                            
-                            // Create the compact format with delete button for user's own comments
-                            const currentUser = window.auth.currentUser;
-                            const isOwnComment = currentUser && comment.userId === currentUser.uid;
-                            
-                            // Add delete button for user's own comments
-                            let deleteButton = '';
-                            if (isOwnComment) {
-                                deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                        // Regular comment
+                        commentEl.className = 'comment-item';
+                        
+                        // Check if the comment author is muted - now with timestamp check
+                        const isMuted = isUsernameMuted(comment.username, comment.timestamp);
+                        
+                        // Get text for display - muted or truncated
+                        const displayText = isMuted ? 
+                            "Muted." : 
+                            truncateToWords(comment.text || "", 15);
+                        
+                        // Use default username if not provided
+                        const username = comment.username || 'Anonymous';
+                        
+                        // Create the compact format with delete button for user's own comments
+                        const currentUser = window.auth.currentUser;
+                        const isOwnComment = currentUser && comment.userId === currentUser.uid;
+                        
+                        // Add delete button for user's own comments
+                        let deleteButton = '';
+                        if (isOwnComment) {
+                            deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                        }
+                        
+                        commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
+                        
+                        // Add click handler for delete button
+                        if (isOwnComment) {
+                            const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+                            if (deleteBtn) {
+                                deleteBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation(); // Prevent opening the comment popup
+                                    deleteComment(comment.id, commentEl);
+                                });
                             }
-                            
-                            commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
-                            
-                            // Add click handler for delete button
-                            if (isOwnComment) {
-                                const deleteBtn = commentEl.querySelector('.delete-comment-btn');
-                                if (deleteBtn) {
-                                    deleteBtn.addEventListener('click', (e) => {
-                                        e.stopPropagation(); // Prevent opening the comment popup
-                                        deleteComment(comment.id, commentEl);
-                                    });
-                                }
-                            }
-                            
-                            // Add click handler to show full comment in lightbox
+                        }
+                        
+                        // Add click handler to show full comment in lightbox only if not muted
+                        if (!isMuted) {
                             commentEl.addEventListener('click', () => {
                                 showFullCommentLightbox(comment);
                             });
+                        } else {
+                            commentEl.style.cursor = 'default';
                         }
-                        
-                        // Insert at the beginning to show newest first
-                        commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
-                    });
+                    }
+                    
+                    // Insert at the beginning to show newest first
+                    commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
+                });
                 } else {
                     if (noCommentsMsg) noCommentsMsg.style.display = 'block';
                 }
@@ -791,7 +832,9 @@ function getSubgameClass(subgameType) {
         'Disorientation': 'disorientation',
         'Ratting': 'ratting',
         'Altered Powerups': 'altered-powerups',  // Fixed: no hyphen
-        'Mega Match': 'mega-match' 
+        'Mega Match': 'mega-match', 
+        'Dogfight': 'dogfight',          
+        'Gauss and Mercs': 'gauss-and-mercs'  
     };
     
     return subgameClassMap[subgameType] || '';
@@ -1354,7 +1397,12 @@ function closePreviewCommentPopup() {
 }
 
 function showFullCommentLightbox(comment) {
-    // Use the existing popup system to show the full comment
+    // Check if the comment author is muted
+    if (isUsernameMuted(comment.username)) {
+        return; // Don't show lightbox for muted users
+    }
+    
+    // Rest of the existing function
     const popup = document.getElementById('commentPopupPreview');
     const overlay = document.getElementById('commentOverlayPreview');
     const title = document.getElementById('commentPopupTitlePreview');
@@ -1364,7 +1412,6 @@ function showFullCommentLightbox(comment) {
 
     title.style.color = "#fff";
     title.textContent = `Comment from ${comment.username}`;
-    content.textContent = comment.text;
     
     // Add date information if available
     if (comment.timestamp) {

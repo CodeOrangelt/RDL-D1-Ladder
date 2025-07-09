@@ -273,8 +273,8 @@ async function handleJoinLadder() {
             nextPosition = (highestPositionDoc.position || 0) + 1;
         }
         
-        // Create player document in the ladder collection
-        await setDoc(userDocRef, {
+            // Create a proper playerData variable first
+        const playerData = {
             username: username,
             email: user.email,
             eloRating: 1200,
@@ -292,12 +292,13 @@ async function handleJoinLadder() {
                 teamName: null,
                 teammate: null,
                 teamColor: null,
-                lookingForTeam: true, // New field to indicate they're looking for teammates
-                tierValue: 1000 // Initialize tier value for Duos ladder
+                lookingForTeam: true,
+                tierValue: 1000
             })
-        });
-        
-      await setDoc(userDocRef, playerData);
+        };
+
+        // Now playerData is defined and can be used
+        await setDoc(userDocRef, playerData);
         
         // Show success message with Duos-specific guidance
         if (currentLadder === 'DUOS') {
