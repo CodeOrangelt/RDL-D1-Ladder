@@ -6,6 +6,7 @@ import {
     getDocs,
     updateDoc,
     deleteDoc,
+    setDoc,
     query,
     collection,
     where
@@ -27,6 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaveTeamStatusSpan = document.getElementById('leave-team-status');
     const confirmLeaveTeamButton = document.getElementById('confirm-leave-team-button');
     const leaveTeamUsernameInput = document.getElementById('leave-team-username-input');
+    
+    // New elements for hiatus functionality
+    const hiatusButton = document.getElementById('hiatus-button');
+    const hiatusPrompt = document.getElementById('hiatus-prompt');
+    const hiatusLadderTypeSpan = document.getElementById('hiatus-ladder-type');
+    const hiatusUsernameInput = document.getElementById('hiatus-username-input');
+    const confirmHiatusButton = document.getElementById('confirm-hiatus-button');
+    const hiatusStatusSpan = document.getElementById('hiatus-status');
+
+    // Removed duplicate declaration of unhiatusButton
+    const unhiatusPrompt = document.getElementById('unhiatus-prompt');
+    const unhiatusLadderTypeSpan = document.getElementById('unhiatus-ladder-type');
+    const unhiatusUsernameInput = document.getElementById('unhiatus-username-input');
+    const confirmUnhiatusButton = document.getElementById('confirm-unhiatus-button');
+    const unhiatusStatusSpan = document.getElementById('unhiatus-status');
     
     let currentLadderMode = 'D1'; // Default to D1
     
@@ -76,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) {
             if (tinyRetireButton) tinyRetireButton.style.display = 'none';
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
+            if (unhiatusButton) unhiatusButton.style.display = 'none';
             return;
         }
         
@@ -83,7 +101,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Check if player is on the selected ladder and if they're in a team
-    async function checkPlayerStatus(user) {
+    // Check if player is on the selected ladder and if they're in a team
+async function checkPlayerStatus(user) {
+    try {
+        // First check if user is on hiatus - with proper error handling
+        try {
+            const hiatusRef = doc(db, 'playerHiatus', user.uid);
+            const hiatusDoc = await getDoc(hiatusRef);
+            
+            if (hiatusDoc.exists()) {
+                const hiatusData = hiatusDoc.data();
+                console.log(`User is on hiatus from ${hiatusData.fromLadder} ladder`);
+                
+                // Show unhiatus button
+                if (unhiatusButton) unhiatusButton.style.display = 'block';
+                // Hide other buttons
+                if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+                if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                if (hiatusButton) hiatusButton.style.display = 'none';
+                
+                return;
+            }
+        } catch (hiatusError) {
+            console.warn("Error checking hiatus status (this is expected if permissions aren't set):", hiatusError);
+            // Continue with normal ladder check even if hiatus check fails
+        }
+        
+        // Check ladder membership (this is the same approach used for retire button)
         try {
             const playerCollection = getCollectionName(currentLadderMode);
             console.log(`Checking if user is in ${playerCollection} collection`);
@@ -94,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (playerDoc.exists()) {
                 console.log(`User is on the ${currentLadderMode} ladder`);
                 if (tinyRetireButton) tinyRetireButton.style.display = 'block';
+                if (hiatusButton) hiatusButton.style.display = 'block';
                 
                 // Check if user is in a team (for DUOS ladder)
                 if (currentLadderMode === 'DUOS') {
@@ -112,13 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`User is NOT on the ${currentLadderMode} ladder`);
                 if (tinyRetireButton) tinyRetireButton.style.display = 'none';
                 if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                if (hiatusButton) hiatusButton.style.display = 'none';
             }
-        } catch (error) {
-            console.error("Error checking player status:", error);
+        } catch (playerError) {
+            console.error("Error checking player status:", playerError);
             if (tinyRetireButton) tinyRetireButton.style.display = 'none';
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
         }
+    } catch (error) {
+        console.error("Main error in checkPlayerStatus:", error);
+        // Hide all buttons if there's a general error
+        if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+        if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+        if (hiatusButton) hiatusButton.style.display = 'none';
+        if (unhiatusButton) unhiatusButton.style.display = 'none';
     }
+}
     
     // Handle team dissolution for DUOS ladder
     async function handleTeamDissolution(userData, collectionName) {
@@ -230,6 +285,94 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Function to handle going on hiatus
+    async function goOnHiatus(username, user) {
+        const playerCollection = getCollectionName(currentLadderMode);
+        const hiatusCollection = 'playerHiatus';
+        
+        try {
+            // Get player document to verify
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (!playerDoc.exists()) {
+                throw new Error('You are not on this ladder.');
+            }
+            
+            const playerData = playerDoc.data();
+            
+            // Verify username matches
+            if (playerData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Handle special cases for DUOS ladder
+            if (currentLadderMode === 'DUOS' && playerData.hasTeam) {
+                await handleTeamDissolution(playerData, playerCollection);
+            }
+            
+            // Store player data in hiatus collection with ladder info
+            const hiatusData = {
+                ...playerData,
+                fromLadder: currentLadderMode,
+                hiatusDate: new Date(),
+                playerCollection: playerCollection
+            };
+            
+            // Add to hiatus collection
+            await setDoc(doc(db, hiatusCollection, user.uid), hiatusData);
+            
+            // Remove from ladder collection
+            await deleteDoc(playerRef);
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error("Error going on hiatus:", error);
+            throw error;
+        }
+    }
+    
+    // Function to handle returning from hiatus
+    async function returnFromHiatus(username, user) {
+        const hiatusCollection = 'playerHiatus';
+        
+        try {
+            // Get hiatus document to verify
+            const hiatusRef = doc(db, hiatusCollection, user.uid);
+            const hiatusDoc = await getDoc(hiatusRef);
+            
+            if (!hiatusDoc.exists()) {
+                throw new Error('You are not on hiatus.');
+            }
+            
+            const hiatusData = hiatusDoc.data();
+            
+            // Verify username matches
+            if (hiatusData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Get the original ladder collection
+            const playerCollection = hiatusData.playerCollection || getCollectionName(hiatusData.fromLadder);
+            
+            // Prepare player data (remove hiatus-specific fields)
+            const { hiatusDate, fromLadder, playerCollection: _, ...playerData } = hiatusData;
+            
+            // Add back to original ladder collection
+            await setDoc(doc(db, playerCollection, user.uid), playerData);
+            
+            // Remove from hiatus collection
+            await deleteDoc(hiatusRef);
+            
+            return { success: true, ladder: fromLadder };
+            
+        } catch (error) {
+            console.error("Error returning from hiatus:", error);
+            throw error;
+        }
+    }
+    
     // Set up auth state listener
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -239,6 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
             if (retirePrompt) retirePrompt.style.display = 'none';
             if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
+            if (unhiatusButton) unhiatusButton.style.display = 'none';
         }
     });
     
@@ -279,6 +424,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (leaveTeamUsernameInput) {
                 leaveTeamUsernameInput.value = '';
+            }
+        });
+    }
+    
+    // Toggle hiatus form visibility when hiatus button is clicked
+    if (hiatusButton) {
+        hiatusButton.addEventListener('click', () => {
+            console.log("Hiatus button clicked");
+            if (hiatusPrompt) {
+                hiatusPrompt.style.display = 'flex';
+            }
+            if (hiatusLadderTypeSpan) {
+                hiatusLadderTypeSpan.textContent = currentLadderMode;
+            }
+            
+            // Clear previous feedback
+            if (hiatusStatusSpan) {
+                hiatusStatusSpan.textContent = '';
+                hiatusStatusSpan.style.color = '';
+            }
+            if (hiatusUsernameInput) {
+                hiatusUsernameInput.value = '';
             }
         });
     }
@@ -401,6 +568,189 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Handle hiatus form submission
+    if (confirmHiatusButton) {
+        confirmHiatusButton.addEventListener('click', async () => {
+            const username = hiatusUsernameInput ? hiatusUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = 'Please enter your username to confirm.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = 'You must be logged in to go on hiatus.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            confirmHiatusButton.disabled = true;
+            if (hiatusStatusSpan) {
+                hiatusStatusSpan.textContent = `Going on hiatus from ${currentLadderMode} ladder...`;
+                hiatusStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                await goOnHiatus(username, user);
+                
+                // Success feedback
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = `Successfully went on hiatus from ${currentLadderMode} ladder!`;
+                    hiatusStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide hiatus elements and reload page after delay
+                setTimeout(() => {
+                    if (hiatusButton) hiatusButton.style.display = 'none';
+                    if (hiatusPrompt) hiatusPrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error during hiatus:", error);
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                confirmHiatusButton.disabled = false;
+            }
+        });
+    }
+    
+    // Create and add the unhiatus button to the DOM
+    function createUnhiatusButton() {
+        // Check if button already exists
+        let unhiatusBtn = document.getElementById('unhiatus-button');
+        if (!unhiatusBtn) {
+            unhiatusBtn = document.createElement('button');
+            unhiatusBtn.id = 'unhiatus-button';
+            unhiatusBtn.className = 'tiny-retire-button';
+            unhiatusBtn.style.display = 'none';
+            unhiatusBtn.style.background = '#27ae60';
+            unhiatusBtn.textContent = 'Return from Hiatus';
+            unhiatusBtn.style.position = 'relative';
+            unhiatusBtn.style.left = '-50px';
+            
+            // Add to container
+            const container = document.getElementById('ladder-retire-tiny-container');
+            if (container) {
+                container.appendChild(unhiatusBtn);
+            }
+        }
+        return unhiatusBtn;
+    }
+    
+    // Add this to your initialization
+    const unhiatusButton = createUnhiatusButton();
+    
+    // Handle unhiatus button click
+    if (unhiatusButton) {
+        unhiatusButton.addEventListener('click', async () => {
+            console.log("Unhiatus button clicked");
+            
+            // Get hiatus info for the user
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            try {
+                const hiatusRef = doc(db, 'playerHiatus', user.uid);
+                const hiatusDoc = await getDoc(hiatusRef);
+                
+                if (hiatusDoc.exists()) {
+                    const hiatusData = hiatusDoc.data();
+                    const ladderType = hiatusData.fromLadder || 'D1';
+                    
+                    if (unhiatusPrompt) {
+                        unhiatusPrompt.style.display = 'flex';
+                    }
+                    if (unhiatusLadderTypeSpan) {
+                        unhiatusLadderTypeSpan.textContent = ladderType;
+                    }
+                    
+                    // Clear previous feedback
+                    if (unhiatusStatusSpan) {
+                        unhiatusStatusSpan.textContent = '';
+                        unhiatusStatusSpan.style.color = '';
+                    }
+                    if (unhiatusUsernameInput) {
+                        unhiatusUsernameInput.value = '';
+                    }
+                }
+            } catch (error) {
+                console.error("Error getting hiatus data:", error);
+            }
+        });
+    }
+    
+    // Handle unhiatus form submission
+    if (confirmUnhiatusButton) {
+        confirmUnhiatusButton.addEventListener('click', async () => {
+            const username = unhiatusUsernameInput ? unhiatusUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = 'Please enter your username to confirm.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = 'You must be logged in to return from hiatus.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            confirmUnhiatusButton.disabled = true;
+            if (unhiatusStatusSpan) {
+                unhiatusStatusSpan.textContent = `Returning from hiatus...`;
+                unhiatusStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                const result = await returnFromHiatus(username, user);
+                
+                // Success feedback
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = `Successfully returned to ${result.ladder} ladder!`;
+                    unhiatusStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide unhiatus elements and reload page after delay
+                setTimeout(() => {
+                    if (unhiatusButton) unhiatusButton.style.display = 'none';
+                    if (unhiatusPrompt) unhiatusPrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error during return from hiatus:", error);
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                confirmUnhiatusButton.disabled = false;
+            }
+        });
+    }
+    
     // Close retire prompt functionality
     const closeRetireButton = document.querySelector('#ladder-retire-prompt .close-button');
     if (closeRetireButton) {
@@ -414,6 +764,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeLeaveTeamButton) {
         closeLeaveTeamButton.addEventListener('click', () => {
             if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
+        });
+    }
+    
+    // Close hiatus prompt functionality
+    const closeHiatusButton = document.querySelector('#hiatus-prompt .close-button');
+    if (closeHiatusButton) {
+        closeHiatusButton.addEventListener('click', () => {
+            if (hiatusPrompt) hiatusPrompt.style.display = 'none';
+        });
+    }
+    
+    // Close unhiatus prompt functionality
+    const closeUnhiatusButton = document.querySelector('#unhiatus-prompt .close-button');
+    if (closeUnhiatusButton) {
+        closeUnhiatusButton.addEventListener('click', () => {
+            if (unhiatusPrompt) unhiatusPrompt.style.display = 'none';
         });
     }
     
@@ -431,6 +797,24 @@ document.addEventListener('DOMContentLoaded', () => {
         leaveTeamPrompt.addEventListener('click', (e) => {
             if (e.target === leaveTeamPrompt) {
                 leaveTeamPrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close on outside click for hiatus prompt
+    if (hiatusPrompt) {
+        hiatusPrompt.addEventListener('click', (e) => {
+            if (e.target === hiatusPrompt) {
+                hiatusPrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close on outside click for unhiatus prompt
+    if (unhiatusPrompt) {
+        unhiatusPrompt.addEventListener('click', (e) => {
+            if (e.target === unhiatusPrompt) {
+                unhiatusPrompt.style.display = 'none';
             }
         });
     }

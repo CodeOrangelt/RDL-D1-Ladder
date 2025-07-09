@@ -337,20 +337,23 @@
                 </table>
             </div>
 
-           <!-- Inside your outer-container, after the ladder tables -->
-            <!-- Adjust placement as needed -->
-            <div id="ladder-retire-tiny-container" style="display: flex; gap: 8px; align-items: center;">
-                <!-- Leave Team Button (shows next to retire button for DUOS ladder) -->
-                <button id="leave-team-button" class="tiny-retire-button" style="display: none; background: #dc3545;">
-                    Leave Team
-                </button>
-                <button id="tiny-retire-button" class="tiny-retire-button" style="display: none;">Retire</button>
-            </div>
-
-            <!-- Tiny join button container, positioned at the bottom right of the ladder container -->
-            <div id="ladder-join-tiny-container">
-                <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
-            </div>
+        <!-- Inside your outer-container, after the ladder tables -->
+        <!-- Adjust placement as needed -->
+        <div id="ladder-retire-tiny-container" style="display: flex; gap: 8px; align-items: center;">
+            <!-- Leave Team Button (shows next to retire button for DUOS ladder) -->
+            <button id="leave-team-button" class="tiny-retire-button" style="display: none; background: #dc3545;">
+                Leave Team
+            </button>
+            <!-- Hiatus Button -->
+            <button id="hiatus-button" class="tiny-retire-button" style="display: none; background: #f39c12;">
+                Hiatus
+            </button>
+            <button id="tiny-retire-button" class="tiny-retire-button" style="display: none;">Retire</button>
+        </div>
+        <!-- Tiny join button container, positioned at the bottom right of the ladder container -->
+        <div id="ladder-join-tiny-container">
+            <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
+        </div>
         </div>
 
         <!-- Leave Team Confirmation Modal -->
@@ -366,6 +369,36 @@
                     <button id="confirm-leave-team-button" class="join-ladder-button danger-button">Leave Team</button>
                 </div>
                 <span id="leave-team-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Hiatus Confirmation Modal -->
+        <div id="hiatus-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <p>Are you sure you want to go on hiatus from the <span id="hiatus-ladder-type"></span> ladder?</p>
+                <p class="retire-warning">This will temporarily remove you from the ladder rankings. You can return at any time with your same rank.</p>
+                <div class="join-form">
+                    <label for="hiatus-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="hiatus-username-input" placeholder="Your username">
+                    <button id="confirm-hiatus-button" class="join-ladder-button warning-button">Go on Hiatus</button>
+                </div>
+                <span id="hiatus-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Unhiatus Confirmation Modal -->
+        <div id="unhiatus-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <p>Return to the <span id="unhiatus-ladder-type"></span> ladder?</p>
+                <p>This will restore your previous rank and stats on the ladder.</p>
+                <div class="join-form">
+                    <label for="unhiatus-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="unhiatus-username-input" placeholder="Your username">
+                    <button id="confirm-unhiatus-button" class="join-ladder-button success-button">Return to Ladder</button>
+                </div>
+                <span id="unhiatus-status" class="ladder-join-status"></span>
             </div>
         </div>
         
