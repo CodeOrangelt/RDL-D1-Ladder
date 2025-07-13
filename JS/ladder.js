@@ -300,6 +300,7 @@ async function fetchBatchMatchStats(usernames) {
     return matchStats;
 }
 
+/*
 // Calculate how many days a player has been in first place
 function calculateStreakDays(firstPlaceDate) {
     if (!firstPlaceDate) return 0;
@@ -328,6 +329,7 @@ function calculateStreakDays(firstPlaceDate) {
 
     return diffDays;
 }
+*/
 
 // Function to create HTML for a single player row
 function createPlayerRow(player, stats) {
@@ -345,6 +347,7 @@ function createPlayerRow(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
+   /*
     // Create streak HTML if player is #1
     let streakHtml = '';
     if (player.position === 1 && player.firstPlaceDate) {
@@ -362,6 +365,7 @@ function createPlayerRow(player, stats) {
 
         }
     }
+   */
 
     // Create flag HTML if player has country
     let flagHtml = '';
@@ -378,7 +382,6 @@ function createPlayerRow(player, stats) {
         <td>${player.position}</td>
         <td style="position: relative;">
             <div style="display: flex; align-items: center; position: relative;">
-                ${streakHtml}
                 <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}

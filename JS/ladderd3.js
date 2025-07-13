@@ -392,6 +392,7 @@ function createPlayerRowD3(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
     
+    /*
     // IMPROVED: Create streak HTML if player is #1 AND has active streak
     let streakHtml = '';
     if (player.position === 1) {
@@ -409,7 +410,8 @@ function createPlayerRowD3(player, stats) {
             streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
         }
     }
-    
+    */
+
     // Create flag HTML if player has country (same as D1/D2)
     let flagHtml = '';
     if (player.country) {
@@ -429,7 +431,6 @@ function createPlayerRowD3(player, stats) {
                     ${player.username}
                 </a>
                 ${flagHtml}
-                ${streakHtml}
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
