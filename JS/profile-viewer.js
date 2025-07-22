@@ -717,6 +717,37 @@ displayProfile(data) {
         roleContainer = document.createElement('div');
         roleContainer.className = 'role-container';
     }
+
+        // Format availability for display
+        let availabilityText = 'Not set';
+        if (data.availability && data.availability.days) {
+            let daysLabel = '';
+            if (data.availability.days === 'weekdays') daysLabel = 'weekdays';
+            else if (data.availability.days === 'weekends') daysLabel = 'weekends';
+            else if (data.availability.days === 'custom' && Array.isArray(data.availability.customDays)) {
+                daysLabel = data.availability.customDays.join(', ');
+            } else daysLabel = data.availability.days;
+
+            function formatTime(t) {
+                if (!t) return '';
+                let [h, m] = t.split(':');
+                h = parseInt(h);
+                const suffix = h >= 12 ? 'pm' : 'am';
+                h = h % 12 || 12;
+                return `${h}${m !== '00' ? ':' + m : ''}${suffix}`;
+            }
+
+            const start = formatTime(data.availability.start);
+            const end = formatTime(data.availability.end);
+            const tz = data.timezone || 'ET';
+
+            availabilityText = `${daysLabel} ${start}${end ? '-' + end : ''} ${tz}`;
+        }
+
+        const availabilityView = document.getElementById('availability-view');
+        if (availabilityView) {
+            availabilityView.textContent = availabilityText;
+        }
     
     // Handle role badges if present
     if (roleName && roleContainer) {
@@ -2682,8 +2713,7 @@ showSuccessMessage(message) {
             `;
         }
     }
-    
-toggleEditMode(isEditing) {
+    toggleEditMode(isEditing) {
     const viewMode = document.querySelector('.view-mode');
     const editMode = document.querySelector('.edit-mode');
     
@@ -2706,6 +2736,11 @@ toggleEditMode(isEditing) {
             'home-level-2': this.currentProfileData.homeLevel2 || '',
             'home-level-3': this.currentProfileData.homeLevel3 || '',
             
+            // Availability fields
+            'availability-days-edit': this.currentProfileData.availability?.days || '',
+            'availability-start-edit': this.currentProfileData.availability?.start || '',
+            'availability-end-edit': this.currentProfileData.availability?.end || '',
+            
             // Dynamic favorite subgame homes
             'favorite-subgame-home-1': this.getFavoriteSubgameHome(1),
             'favorite-subgame-home-2': this.getFavoriteSubgameHome(2),
@@ -2718,6 +2753,9 @@ toggleEditMode(isEditing) {
             if (element) element.value = value;
         }
         
+        // Setup availability custom days
+        this.setupAvailabilityToggle();
+        
         // Setup dynamic subgame homes
         this.setupDynamicSubgameHomes();
         
@@ -2727,6 +2765,22 @@ toggleEditMode(isEditing) {
             favoriteSubgameSelect.dispatchEvent(new Event('change'));
         }
         
+        // Handle availability custom days if they exist
+        if (this.currentProfileData.availability?.days === 'custom' && 
+            Array.isArray(this.currentProfileData.availability.customDays)) {
+            // Check the appropriate checkboxes
+            this.currentProfileData.availability.customDays.forEach(day => {
+                const checkbox = document.querySelector(`#availability-custom-days input[value="${day}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+        
+        // Trigger availability change to show/hide custom days
+        const availabilitySelect = document.getElementById('availability-days-edit');
+        if (availabilitySelect) {
+            availabilitySelect.dispatchEvent(new Event('change'));
+        }
+        
         // Show edit mode
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
@@ -2734,6 +2788,36 @@ toggleEditMode(isEditing) {
         // Show view mode
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
+    }
+}
+
+// Add this new method to handle availability toggle:
+setupAvailabilityToggle() {
+    const daysSelect = document.getElementById('availability-days-edit');
+    const customDaysDiv = document.getElementById('availability-custom-days');
+    
+    if (daysSelect && customDaysDiv) {
+        // Remove any existing listeners
+        const newDaysSelect = daysSelect.cloneNode(true);
+        daysSelect.parentNode.replaceChild(newDaysSelect, daysSelect);
+        
+        // Add the change listener
+        newDaysSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customDaysDiv.style.display = 'block';
+            } else {
+                customDaysDiv.style.display = 'none';
+                // Clear checked boxes when not custom
+                customDaysDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        });
+        
+        // Initial state check
+        if (newDaysSelect.value === 'custom') {
+            customDaysDiv.style.display = 'block';
+        } else {
+            customDaysDiv.style.display = 'none';
+        }
     }
 }
 
@@ -2760,6 +2844,21 @@ async handleSubmit(event) {
         const country = document.getElementById('country-selector')?.value.trim() || '';
         const division = document.getElementById('division-edit')?.value.trim() || '';
         const timezone = document.getElementById('timezone-edit')?.value.trim() || '';
+        const availabilityDays = document.getElementById('availability-days-edit')?.value || '';
+        const availabilityStart = document.getElementById('availability-start-edit')?.value || '';
+        const availabilityEnd = document.getElementById('availability-end-edit')?.value || '';
+
+        let customDays = [];
+        if (availabilityDays === 'custom') {
+            customDays = Array.from(document.querySelectorAll('#availability-custom-days input:checked')).map(cb => cb.value);
+        }
+        
+        const availability = {
+            days: availabilityDays,
+            customDays,
+            start: availabilityStart,
+            end: availabilityEnd
+        };
 
         // Get dynamic subgame homes and merge with profile data
         const dynamicSubgameHomes = this.getDynamicSubgameHomes();
@@ -2777,6 +2876,7 @@ async handleSubmit(event) {
             country,
             division,
             timezone,
+            availability,
             ...dynamicSubgameHomes, // Spread the dynamic subgame homes
             updatedAt: new Date()
         };
