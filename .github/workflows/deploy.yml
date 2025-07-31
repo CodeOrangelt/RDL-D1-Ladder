@@ -72,19 +72,16 @@ jobs:
           input_path: JS
           output_path: JS
           compact: true
-          control_flow_flattening: true
-          control_flow_flattening_threshold: 0.9
-          dead_code_injection: true
-          dead_code_injection_threshold: 0.8
-          debug_protection: true
-          debug_protection_interval: 2000
-          disable_console_output: true
+          control_flow_flattening: false
+          dead_code_injection: false
+          debug_protection: false
+          disable_console_output: false
           identifier_names_generator: mangled
-          self_defending: true
+          self_defending: false
           string_array: true
-          string_array_threshold: 0.9
-          string_array_encoding: 'rc4'
-          transform_object_keys: true
+          string_array_threshold: 0.5
+          string_array_encoding: 'base64'
+          transform_object_keys: false
           target: browser
 
       - name: Deploy to GitHub Pages
