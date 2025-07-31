@@ -90,41 +90,30 @@ jobs:
           target: browser
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.7
+        uses: cross-the-world/ssh-pipeline@master
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          user: ${{ secrets.VPS_USERNAME }}
+          pass: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Navigate to your web directory
             cd /var/www/html
-            
-            # Backup current deployment
             if [ -d "current" ]; then
               mv current backup_$(date +%Y%m%d_%H%M%S)
             fi
-            
-            # Create new deployment directory
             mkdir -p current
 
-      - name: Upload files to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT }}
-          source: "./*"
-          target: "/var/www/html/"
-          strip_components: 0
+      - name: Upload files to VPS  
+        run: |
+          sudo apt-get update && sudo apt-get install -y sshpass rsync
+          sshpass -p '${{ secrets.VPS_PASSWORD }}' rsync -avz --delete ./ root@${{ secrets.VPS_HOST }}:/var/www/html/
 
-      - name: Set permissions and restart services
-        uses: appleboy/ssh-action@v0.1.7
+      - name: Set permissions
+        uses: cross-the-world/ssh-pipeline@master
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          user: ${{ secrets.VPS_USERNAME }}
+          pass: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
             cd /var/www/html
