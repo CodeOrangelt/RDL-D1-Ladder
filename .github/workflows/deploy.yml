@@ -46,8 +46,8 @@ jobs:
       - name: Create distribution path
         run: |
           mkdir -p distribution_path
-          # Copy all files to distribution path first
-          cp -r . distribution_path/
+          # Copy all files to distribution path first, excluding the distribution_path itself
+          find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
           # Remove the JS folder from distribution since we'll replace it with obfuscated version
           rm -rf distribution_path/JS
       
