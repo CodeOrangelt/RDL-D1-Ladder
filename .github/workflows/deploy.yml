@@ -83,7 +83,7 @@ jobs:
           self_defending: true
           string_array: true
           string_array_threshold: 0.9
-          string_array_encoding: ['rc4']
+          string_array_encoding: 'rc4'
           transform_object_keys: true
           target: browser
 
