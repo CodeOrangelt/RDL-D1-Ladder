@@ -16,34 +16,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install obfuscation tools
+      - name: Prepare root files
         run: |
-          npm init -y
-          npm install --save-dev javascript-obfuscator terser html-minifier-terser clean-css-cli
-
-      - name: Create dist directory
-        run: |
-          mkdir -p dist/JS
-          mkdir -p dist/CSS
-          mkdir -p dist/images
-
-      - name: Copy and minify CSS
-        run: |
-          for file in CSS/*.css; do
-            if [ -f "$file" ]; then
-              npx cleancss -o "dist/CSS/$(basename "$file")" "$file"
-            fi
-          done
-
-      - name: Copy images
-        run: |
-          cp -r images/* dist/images/ 2>/dev/null || :
-          cp -r *.ico dist/ 2>/dev/null || :
+          # Copy all HTML files to root 
+          cp -r ./HTML/* ./
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # CRITICAL: Fix import paths in JavaScript files too
+          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
 
       - name: Create Firebase Config
         run: |
@@ -56,105 +43,30 @@ jobs:
           sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
 
-      - name: Remove console logs and debug code
-        run: |
-          # Remove all console statements
-          find JS -name "*.js" -type f -exec sed -i '/console\.\(log\|error\|warn\|info\|debug\|trace\|assert\|dir\|time\|timeEnd\|clear\|table\)/d' {} \;
-          
-          # Remove debugger statements
-          find JS -name "*.js" -type f -exec sed -i '/debugger/d' {} \;
-          
-          # Remove comments (// and /* */)
-          find JS -name "*.js" -type f -exec sed -i 's|//.*||g' {} \;
-          find JS -name "*.js" -type f -exec sed -i '/\/\*/,/\*\//d' {} \;
-
-      - name: Ultra-strong obfuscation
-        run: |
-          npx javascript-obfuscator JS \
-            --output dist/JS \
-            --compact true \
-            --control-flow-flattening true \
-            --control-flow-flattening-threshold 0.8 \
-            --dead-code-injection true \
-            --dead-code-injection-threshold 0.4 \
-            --debug-protection true \
-            --disable-console-output true \
-            --identifier-names-generator 'hexadecimal' \
-            --log false \
-            --numbers-to-expressions true \
-            --rename-globals true \
-            --self-defending true \
-            --simplify true \
-            --split-strings true \
-            --split-strings-chunk-length 10 \
-            --string-array true \
-            --string-array-calls-transform true \
-            --string-array-calls-transform-threshold 0.8 \
-            --string-array-encoding 'none' \
-            --string-array-index-shift true \
-            --string-array-rotate true \
-            --string-array-shuffle true \
-            --string-array-threshold 0.8 \
-            --transform-object-keys true \
-            --unicode-escape-sequence true
-
-      - name: Additional obfuscation with Terser
-        run: |
-          # Second pass with Terser for maximum compression
-          for file in dist/JS/*.js; do
-            if [ -f "$file" ]; then
-              npx terser "$file" \
-                --compress drop_console=true,drop_debugger=true,pure_funcs=['console.log','console.error','console.warn','console.info','console.debug'],passes=3 \
-                --mangle toplevel=true,reserved=['require','exports','module'] \
-                --output "$file"
-            fi
-          done
-
-      - name: Process HTML files (no minification)
-        run: |
-          # Copy HTML files to dist
-          cp -r ./HTML/* ./dist/
-          
-          # Update paths in HTML files to point to obfuscated assets
-          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
-          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
-          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
-          
-          # Remove HTML comments and extra whitespace
-          find ./dist -type f -name "*.html" -exec sed -i '/<!--.*-->/d' {} \;
-          find ./dist -type f -name "*.html" -exec sed -i 's/^[ \t]*//g' {} \;
-
-      - name: Create root structure for deployment
-        run: |
-          # Copy all dist contents to root for GitHub Pages
-          cp -r ./dist/* ./
-          
-          # Make sure index.html is in root
-          cp ./dist/index.html ./index.html 2>/dev/null || cp ./HTML/index.html ./index.html
-
-      - name: Remove source files from deployment
-        run: |
-          # Remove original source directories to prevent exposure
-          rm -rf ./HTML/
-          rm -rf ./dist/
-          rm -rf ./.github/
-          rm -rf ./node_modules/
-          rm -f ./package*.json
-          rm -f ./README.md
-          rm -f ./firebase-config.template.js
-
-      - name: Create build info
-        run: |
-          echo "Build Date: $(date)" > build-info.txt
-          echo "Commit: ${{ github.sha }}" >> build-info.txt
-          echo "Branch: ${{ github.ref_name }}" >> build-info.txt
-          echo "Obfuscated: ultra-strong" >> build-info.txt
-          echo "Console logs: removed" >> build-info.txt
-          echo "Comments: removed" >> build-info.txt
+      - name: Obfuscate JavaScript
+        uses: AndrewMarchukov/javascript-obfuscator-github-action@v1.0.0
+        with:
+          source: JS
+          destination: JS
+          compact: true
+          controlFlowFlattening: true
+          controlFlowFlatteningThreshold: 0.75
+          deadCodeInjection: true
+          deadCodeInjectionThreshold: 0.4
+          debugProtection: false
+          disableConsoleOutput: true
+          identifierNamesGenerator: hexadecimal
+          log: false
+          renameGlobals: false
+          selfDefending: true
+          stringArray: true
+          stringArrayThreshold: 0.75
+          stringArrayEncoding: base64
+          transformObjectKeys: true
+          unicodeEscapeSequence: false
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: .
-          clean: true
