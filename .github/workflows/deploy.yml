@@ -61,7 +61,7 @@ jobs:
           npx javascript-obfuscator JS \
             --output dist/JS \
             --string-array true \
-            --rotate-string-array true \
+            --string-array-rotate true \
             --string-array-threshold 0.8 \
             --unicode-escape-sequence true \
             --control-flow-flattening true \
@@ -123,6 +123,7 @@ jobs:
           echo "Commit: ${{ github.sha }}" >> build-info.txt
           echo "Branch: ${{ github.ref_name }}" >> build-info.txt
           echo "Obfuscated: true" >> build-info.txt
+          echo "Console logs: removed" >> build-info.txt
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
