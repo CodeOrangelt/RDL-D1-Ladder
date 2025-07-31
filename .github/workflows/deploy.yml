@@ -94,11 +94,11 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Navigate to your web directory - check if this path exists first
-            cd /var/www/html || cd /home/vmuser221021/public_html || cd /root/public_html
+            # Navigate to your web directory
+            cd /var/www/html
             
             # Backup current deployment
             if [ -d "current" ]; then
@@ -113,7 +113,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           source: "./*"
           target: "/var/www/html/"
@@ -124,17 +124,11 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Set proper permissions
             cd /var/www/html
             find . -type f -exec chmod 644 {} \;
             find . -type d -exec chmod 755 {} \;
-            
-            # Make sure web server can read the files
             chmod -R 755 /var/www/html
-            
-            # Check if Apache is running and start it if needed
-            systemctl status apache2 || systemctl start apache2
             systemctl reload apache2 2>/dev/null || true
