@@ -19,11 +19,15 @@ jobs:
           # Simply copy HTML files to root - don't move CSS/JS/images since they're already correct
           cp ./HTML/* ./
           
-          # Your HTML files already have correct paths (../CSS, ../JS, ../images)
-          # But since we're moving HTML to root, we need to remove the ../ 
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
+          # Convert relative paths to absolute paths from root (add leading slash)
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\/CSS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\/JS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/\/images/g' {} \;
+          
+          # Also fix any existing relative references without ../
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"CSS\//"\/CSS\//g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"JS\//"\/JS\//g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"images\//"\/images\//g' {} \;
           
           # Remove the problematic root-index.html if it exists
           rm -f root-index.html
