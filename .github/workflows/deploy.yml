@@ -5,239 +5,121 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to VPS via Git Clone
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare root files
+        run: |
+          # Copy all HTML files to root 
+          cp -r ./HTML/* ./
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # CRITICAL: Fix import paths in JavaScript files too
+          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
+
+      - name: Remove file extensions for clean URLs
+        run: |
+          # Create .htaccess for clean URLs (if using Apache)
+          cat > .htaccess << 'EOF'
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteRule ^([^\.]+)$ $1.html [NC,L]
+          
+          # Remove .html extension from URLs
+          RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
+          RewriteRule ^ /%1 [NC,L,R]
+          EOF
+          
+          # For GitHub Pages, also create extensionless copies
+          for file in *.html; do
+            if [[ "$file" != "index.html" ]]; then
+              basename="${file%.html}"
+              mkdir -p "$basename"
+              cp "$file" "$basename/index.html"
+            fi
+          done
+
+      - name: Create Firebase Config
+        run: |
+          cp JS/firebase-config.template.js JS/firebase-config.js
+          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
+
+      - name: Obfuscate JavaScript
+        uses: KevinRohn/github-action-javascript-obfuscator@v1
+        with:
+          input_path: JS
+          output_path: JS
+          compact: true
+          control_flow_flattening: false
+          dead_code_injection: false
+          debug_protection: false
+          disable_console_output: false
+          identifier_names_generator: mangled
+          self_defending: false
+          string_array: true
+          string_array_threshold: 0.5
+          string_array_encoding: 'base64'
+          transform_object_keys: false
+          target: browser
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: .
+
+      - name: Deploy to VPS
+        if: github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: 192.210.140.94
-          username: root
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
           script: |
-            # Stop nginx/apache if running
-            systemctl stop nginx 2>/dev/null || systemctl stop apache2 2>/dev/null || true
-            
-            # Create temporary directory for build
-            rm -rf /tmp/website-build
-            mkdir -p /tmp/website-build
-            cd /tmp/website-build
-            
-            # Clone the repository
-            git clone https://github.com/Descent-Collective/RDL-D1-Ladder.git .
-            
-            echo "=== Repository cloned successfully ==="
-            echo "Files in repository:"
-            find . -type f | wc -l
-            echo ""
-            
-            # Prepare root files (same as your existing logic)
-            cp ./HTML/* ./
-            
-            # Convert relative paths to absolute paths from root
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\/CSS/g' {} \;
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\/JS/g' {} \;
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/\/images/g' {} \;
-            
-            # Also fix any existing relative references without ../
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"CSS\//"\/CSS\//g' {} \;
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"JS\//"\/JS\//g' {} \;
-            find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"images\//"\/images\//g' {} \;
-            
-            # Remove problematic files
-            rm -f root-index.html
-            rm -rf .git .github
-            
-            # Create Firebase Config
-            if [ -f "JS/firebase-config.template.js" ]; then
-              cp JS/firebase-config.template.js JS/firebase-config.js
-              sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
-              sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
+            # Backup current deployment
+            if [ -d "/var/www/rdl" ]; then
+              cp -r /var/www/rdl /var/backups/rdl-$(date +%Y%m%d-%H%M%S)
             fi
             
-            # Create .htaccess for clean URLs
-            cat > .htaccess << 'EOF'
-            RewriteEngine On
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteRule ^([^\.]+)$ $1.html [NC,L]
+            # Clean and clone fresh
+            rm -rf /var/www/rdl
+            mkdir -p /var/www/rdl
+            cd /tmp
+            git clone https://github.com/${{ github.repository }}.git rdl-deploy
+            cp -r rdl-deploy/* /var/www/rdl/
+            rm -rf rdl-deploy
             
-            # Remove .html extension from URLs
-            RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
-            RewriteRule ^ /%1 [NC,L,R]
-            EOF
+            # Set up web structure
+            cd /var/www/rdl
+            cp -r HTML/* .
+            rm -rf HTML
             
-            # Create extensionless copies for clean URLs
-            for file in *.html; do
-              if [[ "$file" != "index.html" ]]; then
-                basename="${file%.html}"
-                mkdir -p "$basename"
-                cp "$file" "$basename/index.html"
-              fi
-            done
+            # Fix permissions
+            chown -R www-data:www-data /var/www/rdl
+            find /var/www/rdl -type d -exec chmod 755 {} \;
+            find /var/www/rdl -type f -exec chmod 644 {} \;
             
-            echo "=== Build preparation complete ==="
-            echo "Final file structure:"
-            find . -type d | sort
-            echo ""
-            echo "File counts by type:"
-            echo "HTML: $(find . -name "*.html" | wc -l)"
-            echo "CSS: $(find . -name "*.css" | wc -l)"
-            echo "JS: $(find . -name "*.js" | wc -l)"
-            echo "Images: $(find . -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.ico" -o -name "*.svg" | wc -l)"
-            echo ""
-            
-            # Clear and deploy to web directory
-            rm -rf /var/www/html/*
-            rm -rf /var/www/html/.*
-            cp -r . /var/www/html/
-            
-            # Set proper permissions
-            chown -R www-data:www-data /var/www/html
-            find /var/www/html -type d -exec chmod 755 {} \;
-            find /var/www/html -type f -exec chmod 644 {} \;
-            
-            # Install and configure nginx
-            if ! command -v nginx &> /dev/null; then
-              apt update
-              apt install -y nginx
-            fi
-            
-            # Configure nginx
-            cat > /etc/nginx/sites-available/default << 'EOF'
-            server {
-                listen 80 default_server;
-                listen [::]:80 default_server;
-                
-                root /var/www/html;
-                index index.html index.htm;
-                
-                server_name _;
-                
-                # Security headers
-                add_header X-Frame-Options "SAMEORIGIN" always;
-                add_header X-Content-Type-Options "nosniff" always;
-                add_header X-XSS-Protection "1; mode=block" always;
-                
-                # Main location block for clean URLs
-                location / {
-                    try_files $uri $uri.html $uri/ =404;
-                }
-                
-                # Handle CSS files with proper MIME type
-                location ~* \.css$ {
-                    add_header Content-Type text/css;
-                    expires 1y;
-                    add_header Cache-Control "public, immutable";
-                }
-                
-                # Handle JS files with proper MIME type
-                location ~* \.js$ {
-                    add_header Content-Type application/javascript;
-                    expires 1y;
-                    add_header Cache-Control "public, immutable";
-                }
-                
-                # Handle images with caching
-                location ~* \.(jpg|jpeg|png|gif|ico|svg|webp|bmp|tiff)$ {
-                    expires 1y;
-                    add_header Cache-Control "public, immutable";
-                }
-                
-                # Handle fonts
-                location ~* \.(woff|woff2|ttf|eot|otf)$ {
-                    expires 1y;
-                    add_header Cache-Control "public, immutable";
-                }
-                
-                # Specific handling for your directories
-                location /CSS/ {
-                    try_files $uri =404;
-                }
-                
-                location /JS/ {
-                    try_files $uri =404;
-                }
-                
-                location /images/ {
-                    try_files $uri =404;
-                }
-                
-                location /HTML/ {
-                    try_files $uri =404;
-                }
-                
-                location /Files/ {
-                    try_files $uri =404;
-                }
-                
-                location /Archive/ {
-                    try_files $uri =404;
-                }
-                
-                # Remove .html extension from URLs
-                location ~ ^/(.*)\.html$ {
-                    return 301 /$1;
-                }
-                
-                # Deny access to sensitive files
-                location ~ /\.(git|env) {
-                    deny all;
-                }
-                
-                location ~ /\.ht {
-                    deny all;
-                }
-            }
-            EOF
-            
-            # Test and start nginx
-            nginx -t
-            systemctl enable nginx
-            systemctl start nginx
+            # Reload Nginx
             systemctl reload nginx
-            
-            # Final verification
-            echo "=== DEPLOYMENT VERIFICATION ==="
-            echo "Total files deployed:"
-            find /var/www/html -type f | wc -l
-            echo ""
-            
-            echo "Directory structure on VPS:"
-            ls -la /var/www/html/
-            echo ""
-            
-            echo "Sample files by type:"
-            echo "CSS files: $(find /var/www/html -name "*.css" | wc -l)"
-            find /var/www/html -name "*.css" | head -3
-            echo ""
-            
-            echo "JS files: $(find /var/www/html -name "*.js" | wc -l)"
-            find /var/www/html -name "*.js" | head -3
-            echo ""
-            
-            echo "HTML files: $(find /var/www/html -name "*.html" | wc -l)"
-            find /var/www/html -name "*.html" | head -3
-            echo ""
-            
-            echo "Image files: $(find /var/www/html -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.ico" -o -name "*.svg" | wc -l)"
-            find /var/www/html -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.ico" -o -name "*.svg" | head -3
-            echo ""
-            
-            # Test nginx response
-            echo "Testing nginx response:"
-            curl -I http://localhost/ 2>/dev/null | head -5 || echo "Failed to test nginx"
-            
-            # Cleanup
-            rm -rf /tmp/website-build
-            
-            echo "=== Deployment complete and verified ==="
