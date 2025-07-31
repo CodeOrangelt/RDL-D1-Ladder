@@ -32,6 +32,29 @@ jobs:
           # CRITICAL: Fix import paths in JavaScript files too
           find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
 
+      - name: Remove file extensions for clean URLs
+        run: |
+          # Create .htaccess for clean URLs (if using Apache)
+          cat > .htaccess << 'EOF'
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteRule ^([^\.]+)$ $1.html [NC,L]
+          
+          # Remove .html extension from URLs
+          RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
+          RewriteRule ^ /%1 [NC,L,R]
+          EOF
+          
+          # For GitHub Pages, also create extensionless copies
+          for file in *.html; do
+            if [[ "$file" != "index.html" ]]; then
+              basename="${file%.html}"
+              mkdir -p "$basename"
+              cp "$file" "$basename/index.html"
+            fi
+          done
+
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
@@ -50,16 +73,19 @@ jobs:
           output_path: JS
           compact: true
           control_flow_flattening: true
-          control_flow_flattening_threshold: 0.75
+          control_flow_flattening_threshold: 0.9
           dead_code_injection: true
-          dead_code_injection_threshold: 0.4
+          dead_code_injection_threshold: 0.8
+          debug_protection: true
+          debug_protection_interval: 2000
           disable_console_output: true
-          identifier_names_generator: hexadecimal
+          identifier_names_generator: mangled
           self_defending: true
           string_array: true
-          string_array_threshold: 0.75
-          string_array_encoding: 'base64'
+          string_array_threshold: 0.9
+          string_array_encoding: ['rc4']
           transform_object_keys: true
+          target: browser
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
