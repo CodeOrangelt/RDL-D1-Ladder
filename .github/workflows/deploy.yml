@@ -44,26 +44,22 @@ jobs:
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
 
       - name: Obfuscate JavaScript
-        uses: AndrewMarchukov/javascript-obfuscator-github-action@v1.0.0
+        uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
-          source: JS
-          destination: JS
+          input_path: JS
+          output_path: JS
           compact: true
-          controlFlowFlattening: true
-          controlFlowFlatteningThreshold: 0.75
-          deadCodeInjection: true
-          deadCodeInjectionThreshold: 0.4
-          debugProtection: false
-          disableConsoleOutput: true
-          identifierNamesGenerator: hexadecimal
-          log: false
-          renameGlobals: false
-          selfDefending: true
-          stringArray: true
-          stringArrayThreshold: 0.75
-          stringArrayEncoding: base64
-          transformObjectKeys: true
-          unicodeEscapeSequence: false
+          control_flow_flattening: true
+          control_flow_flattening_threshold: 0.75
+          dead_code_injection: true
+          dead_code_injection_threshold: 0.4
+          disable_console_output: true
+          identifier_names_generator: hexadecimal
+          self_defending: true
+          string_array: true
+          string_array_threshold: 0.75
+          string_array_encoding: 'base64'
+          transform_object_keys: true
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
