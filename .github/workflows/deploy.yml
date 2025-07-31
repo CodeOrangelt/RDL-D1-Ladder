@@ -74,7 +74,7 @@ jobs:
             --rename-globals true \
             --self-defending true
 
-      - name: Process and minify HTML files
+      - name: Process HTML files (no minification)
         run: |
           # Copy HTML files to dist
           cp -r ./HTML/* ./dist/
@@ -84,20 +84,10 @@ jobs:
           find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
           find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
           
-          # Minify HTML files
-          for file in dist/*.html; do
-            if [ -f "$file" ]; then
-              npx html-minifier-terser \
-                --collapse-whitespace \
-                --remove-comments \
-                --remove-redundant-attributes \
-                --use-short-doctype \
-                --minify-css true \
-                --minify-js true \
-                --output "$file" \
-                "$file"
-            fi
-          done
+          # List processed files for verification
+          echo "Processed HTML files:"
+          find ./dist -name "*.html" -type f
+
 
       - name: Create root structure for deployment
         run: |
