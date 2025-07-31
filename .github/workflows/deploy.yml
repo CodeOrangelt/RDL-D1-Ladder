@@ -16,21 +16,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Prepare root files
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install obfuscation tools
         run: |
-          # Copy all HTML files to root 
-          cp -r ./HTML/* ./
-          
-          # Make a proper root index.html
-          cp ./HTML/index.html ./index.html
-          
-          # Update paths in HTML files
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
-          
-          # CRITICAL: Fix import paths in JavaScript files too
-          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
+          npm init -y
+          npm install --save-dev javascript-obfuscator terser html-minifier-terser clean-css-cli
+
+      - name: Create dist directory
+        run: |
+          mkdir -p dist/JS
+          mkdir -p dist/CSS
+          mkdir -p dist/images
+
+      - name: Copy and minify CSS
+        run: |
+          for file in CSS/*.css; do
+            if [ -f "$file" ]; then
+              npx cleancss -o "dist/CSS/$(basename "$file")" "$file"
+            fi
+          done
+
+      - name: Copy images
+        run: |
+          cp -r images/* dist/images/ 2>/dev/null || :
+          cp -r *.ico dist/ 2>/dev/null || :
 
       - name: Create Firebase Config
         run: |
@@ -43,8 +56,77 @@ jobs:
           sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
 
+      - name: Obfuscate JavaScript
+        run: |
+          npx javascript-obfuscator JS \
+            --output dist/JS \
+            --string-array true \
+            --rotate-string-array true \
+            --string-array-threshold 0.8 \
+            --unicode-escape-sequence true \
+            --control-flow-flattening true \
+            --control-flow-flattening-threshold 0.5 \
+            --dead-code-injection true \
+            --dead-code-injection-threshold 0.3 \
+            --debug-protection true \
+            --disable-console-output true \
+            --identifier-names-generator hexadecimal \
+            --rename-globals true \
+            --self-defending true
+
+      - name: Process and minify HTML files
+        run: |
+          # Copy HTML files to dist
+          cp -r ./HTML/* ./dist/
+          
+          # Update paths in HTML files to point to obfuscated assets
+          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find ./dist -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # Minify HTML files
+          for file in dist/*.html; do
+            if [ -f "$file" ]; then
+              npx html-minifier-terser \
+                --collapse-whitespace \
+                --remove-comments \
+                --remove-redundant-attributes \
+                --use-short-doctype \
+                --minify-css true \
+                --minify-js true \
+                --output "$file" \
+                "$file"
+            fi
+          done
+
+      - name: Create root structure for deployment
+        run: |
+          # Copy all dist contents to root for GitHub Pages
+          cp -r ./dist/* ./
+          
+          # Make sure index.html is in root
+          cp ./dist/index.html ./index.html 2>/dev/null || cp ./HTML/index.html ./index.html
+
+      - name: Remove source files from deployment
+        run: |
+          # Remove original source directories to prevent exposure
+          rm -rf ./HTML/
+          rm -rf ./dist/
+          rm -rf ./.github/
+          rm -rf ./node_modules/
+          rm -f ./package*.json
+          rm -f ./README.md
+
+      - name: Create build info
+        run: |
+          echo "Build Date: $(date)" > build-info.txt
+          echo "Commit: ${{ github.sha }}" >> build-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> build-info.txt
+          echo "Obfuscated: true" >> build-info.txt
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: .
+          clean: true
