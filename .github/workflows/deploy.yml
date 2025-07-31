@@ -96,7 +96,7 @@ jobs:
             --string-array true \
             --string-array-calls-transform true \
             --string-array-calls-transform-threshold 1 \
-            --string-array-encoding '["base64"]' \
+            --string-array-encoding 'base64' \
             --string-array-index-shift true \
             --string-array-rotate true \
             --string-array-shuffle true \
