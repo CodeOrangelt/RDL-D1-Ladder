@@ -74,37 +74,27 @@ jobs:
             --output dist/JS \
             --compact true \
             --control-flow-flattening true \
-            --control-flow-flattening-threshold 1 \
+            --control-flow-flattening-threshold 0.8 \
             --dead-code-injection true \
-            --dead-code-injection-threshold 1 \
+            --dead-code-injection-threshold 0.4 \
             --debug-protection true \
-            --debug-protection-interval 4000 \
             --disable-console-output true \
-            --identifier-names-generator 'mangled-shuffled' \
+            --identifier-names-generator 'hexadecimal' \
             --log false \
             --numbers-to-expressions true \
             --rename-globals true \
-            --rename-properties true \
-            --rename-properties-mode 'unsafe' \
-            --reserved-names '[]' \
-            --reserved-strings '[]' \
-            --seed 0 \
             --self-defending true \
             --simplify true \
             --split-strings true \
-            --split-strings-chunk-length 5 \
+            --split-strings-chunk-length 10 \
             --string-array true \
             --string-array-calls-transform true \
-            --string-array-calls-transform-threshold 1 \
-            --string-array-encoding 'base64' \
+            --string-array-calls-transform-threshold 0.8 \
+            --string-array-encoding 'none' \
             --string-array-index-shift true \
             --string-array-rotate true \
             --string-array-shuffle true \
-            --string-array-wrappers-count 5 \
-            --string-array-wrappers-chained-calls true \
-            --string-array-wrappers-parameters-max-count 5 \
-            --string-array-wrappers-type 'function' \
-            --string-array-threshold 1 \
+            --string-array-threshold 0.8 \
             --transform-object-keys true \
             --unicode-escape-sequence true
 
