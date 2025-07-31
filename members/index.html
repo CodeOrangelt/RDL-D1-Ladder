@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDL - Members</title>
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/pagination.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f0f0f0;
+        }
+        
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-top: 40px; /* Add space above the filters (now at bottom) */
+            margin-bottom: 0; /* Remove bottom margin since it's now at the bottom */
+            border-top: 1px solid rgba(255, 255, 255, 0.1); /* Add a subtle separator */
+            padding-top: 30px; /* Add padding at the top */
+        }
+        
+        .filter-section {
+            width: 100%;
+        }
+        
+        .search-section {
+            margin-bottom: 10px;
+        }
+        
+        .search-container {
+            width: 100%;
+            max-width: none;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s;
+        }
+        
+        .search-container input:focus {
+            box-shadow: 0 0 0 2px #9c27b0;
+            outline: none;
+        }
+        
+        .members-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 25px; /* Increased from 20px */
+            min-height: 400px;
+            width: 100%;
+            padding: 10px; /* Add padding around the entire grid */
+        }
+        
+        /* Responsive adjustments for different screen sizes */
+        @media (max-width: 1200px) {
+            .members-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .members-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .members-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        /* Ensure all cards have consistent styling */
+        .member-card {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            height: 100%;
+            box-sizing: border-box;
+            background-color: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Updated card header with simple line instead of gradient */
+        .member-header {
+            position: relative;
+            height: 40px; /* Increased from 35px */
+            background-color: #222; /* Solid background */
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center content horizontally */
+            border-top: 3px solid #333; /* Simple line with consistent color for all cards */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+        }
+        
+        /* Remove all the rank-specific styling */
+        .elo-emerald .member-header,
+        .elo-gold .member-header,
+        .elo-silver .member-header,
+        .elo-bronze .member-header {
+            border-top: 3px solid #333; /* Use same color for all ranks */
+        }
+        
+        /* Updated flag and country name container */
+        .country-info {
+            position: static; /* Changed from absolute positioning */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* Increased spacing between flag and name */
+            background-color: rgba(35, 35, 38, 0.8);
+            padding: 4px 8px; /* Slightly more padding for larger text */
+            border-radius: 3px;
+            margin: 0 auto; /* Center horizontally */
+        }
+
+        .country-name {
+            font-size: 20px; /* Increased from 14px */
+            color: #ddd;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2; /* Slightly increased line height */
+        }
+        
+        /* Update flag styling */
+        .member-flag {
+            width: 32px; /* Increased from 30px */
+            height: 22px; /* Increased from 20px */
+            object-fit: cover;
+            align-items: center;
+        }
+        
+        .member-avatar {
+            width: 90px; /* Increased from 70px */
+            height: 90px; /* Increased from 70px */
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            margin-top: 10px; 
+            margin-bottom: 15px;
+            background-color: #222;
+            object-fit: cover;
+        }
+        
+        /* Improved ladder badge containers */
+        .member-ladder-badges {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Consistent badge styling for ALL ladder categories */
+        .ladder-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: white;
+        }
+        
+        /* Make colors consistent but distinct for each ladder */
+        .ladder-badge.d1 { 
+            background: linear-gradient(to right, #ff5722, #e64a19); 
+        }
+        
+        .ladder-badge.d2 { 
+            background: linear-gradient(to right, #2196f3, #1976d2); 
+        }
+        
+        .ladder-badge.d3 { 
+            background: linear-gradient(to right, #9c27b0, #7b1fa2); 
+        }
+        
+        .member-body {
+            padding: 10px 18px 18px;
+            background-color: #222;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .member-name {
+            font-size: 24px; /* Increased from 22px */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        .member-ladder-badges {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .ladder-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .info-item {
+            background-color: transparent;
+            padding: 5px 0;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Remove hover effects for info items */
+        .info-item:hover {
+            background-color: transparent;
+        }
+        
+        .info-label {
+            font-size: 12px; /* Slightly larger */
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 15px; /* Slightly larger */
+            color: #ddd;
+            font-weight: 400;
+            word-break: break-word;
+        }
+        
+        .profile-link {
+            padding: 10px 16px;
+            background-color: #9c27b0;
+            border-radius: 4px;
+            transition: all 0.2s;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            width: 90%;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .profile-link:hover {
+            background-color: rgba(156, 39, 176, 1);
+            transform: translateY(-2px);
+        }
+        
+        .member-footer {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            background-color: #222;
+            border-top: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            grid-column: 1 / -1;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #9c27b0;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .page-nav {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .refresh-btn {
+            background-color: #673ab7;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            background-color: #5e35b1;
+        }
+
+        /* Enhanced filter button styling */
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(50, 50, 50, 0.7);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            min-width: 110px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(70, 70, 70, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
+            box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3);
+            font-weight: 600;
+        }
+
+        /* Ladder-specific button styling */
+        .filter-btn[data-ladder="d1"] {
+            border-top: 3px solid #ff5722;
+        }
+
+        .filter-btn[data-ladder="d2"] {
+            border-top: 3px solid #2196f3;
+        }
+
+        .filter-btn[data-ladder="d3"] {
+            border-top: 3px solid #9c27b0;
+        }
+
+        .filter-btn[data-ladder="non"] {
+            border-top: 3px solid #757575;
+            background-color: rgba(60, 60, 60, 0.7);
+        }
+
+        .filter-btn i {
+            font-size: 16px;
+        }
+
+        /* Enhanced ladder badge colors */
+        .ladder-badge.d1 { 
+            background: linear-gradient(to right, #ff5722, #e64a19); 
+            color: white; 
+        }
+
+        .ladder-badge.d2 { 
+            background: linear-gradient(to right, #2196f3, #1976d2); 
+            color: white; 
+        }
+
+        .ladder-badge.d3 { 
+            background: linear-gradient(to right, #9c27b0, #7b1fa2); 
+            color: white; 
+        }
+
+        /* Make the non-participant button more distinctive */
+        .filter-btn[data-ladder="non"] {
+            border-top: 3px solid #757575;
+            background-color: rgba(60, 60, 60, 0.7);
+        }
+        
+        .filter-btn[data-ladder="non"].active {
+            background: linear-gradient(135deg, #757575 0%, #424242 100%);
+        }
+
+        /* Make the non-participant badge more visible */
+        .non-participant-badge {
+            background-color: rgba(60, 60, 60, 0.95);
+            color: white;
+            padding: 4px 10px;
+            font-size: 11px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            align-items: center;
+        }
+
+        /* Fix non-participant badge positioning with the new header */
+        .non-participant-badge {
+            background-color: rgba(60, 60, 60, 0.95);
+            color: white;
+            padding: 4px 10px;
+            font-size: 11px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            align-items: center;
+        }
+        
+        /* Updated header layout to center the country info */
+        .member-header {
+            position: relative;
+            height: 40px; /* Increased from 35px */
+            background-color: #222;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Center content horizontally */
+            border-top: 3px solid #333;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+        }
+
+        /* Center the country info in the header */
+        .country-info {
+            position: static; /* Changed from absolute positioning */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* Increased spacing between flag and name */
+            background-color: rgba(35, 35, 38, 0.8);
+            padding: 4px 8px; /* Slightly more padding for larger text */
+            border-radius: 3px;
+            margin: 0 auto; /* Center horizontally */
+        }
+
+        /* Ensure country name text is centered properly */
+        .country-name {
+            font-size: 16px; /* Increased from 14px */
+            color: #ddd;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2; /* Slightly increased line height */
+        }
+
+        /* Make sure non-participant badge doesn't overlap with country */
+        .member-card:has(.non-participant-badge) .country-info {
+            display: none;
+        }
+
+        /* Username already centered but enforce it */
+        .member-name {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 600;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="navPlaceholder"></div>
+    
+    <div class="content">
+        <h1>RDL Members</h1>
+        
+        <div class="members-grid" id="membersGrid">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading members...</p>
+            </div>
+        </div>
+        
+        <div class="page-nav" id="pagination">
+            <!-- Pagination will be inserted here -->
+        </div>
+        
+        <!-- Filters moved to bottom -->
+        <div class="filters">
+            <div class="filter-section search-section">
+                <h3>Search Members</h3>
+                <div class="search-container">
+                    <input type="text" id="memberSearch" placeholder="Search by username...">
+                </div>
+            </div>
+            
+            <!-- Updated filter buttons without icons -->
+            <div class="filter-section">
+                <h3>Filter by Ladder</h3>
+                <div class="filter-buttons ladder-filters">
+                    <button class="filter-btn active" data-ladder="all">All Players</button>
+                    <button class="filter-btn" data-ladder="d1">D1</button>
+                    <button class="filter-btn" data-ladder="d2">D2</button>
+                    <button class="filter-btn" data-ladder="d3">D3</button>
+                    <button class="filter-btn" data-ladder="non">Non-Participants</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="footerPlaceholder"></div>
+
+    <script type="module">
+    // Firebase imports - same as before
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        getDocs, 
+        query, 
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+    import { firebaseConfig } from "./JS/firebase-config.js";
+
+    // Initialize Firebase - same as before
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    
+    const DEFAULT_PROFILE_IMAGE = "./images/shieldorb.png";
+    
+    // 🚀 ULTRA-OPTIMIZED CACHING - 30 minute cache vs 10 minute
+    const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+    
+    // Global variables - keep exactly the same
+    let allMembers = [];
+    let displayedMembers = [];
+    let currentPage = 1;
+    const MEMBERS_PER_PAGE = 12;
+    let currentLadderFilter = 'all';
+    let currentSearchTerm = '';
+    let isLoading = false;
+
+    // DOM references - same as before
+    const membersGrid = document.getElementById('membersGrid');
+    const pagination = document.getElementById('pagination');
+    const memberSearch = document.getElementById('memberSearch');
+        
+    // 🔥 ULTRA-OPTIMIZED LOADING - SINGLE COLLECTION READ
+    async function loadAllMembers() {
+        if (isLoading) return;
+        isLoading = true;
+        
+        try {
+            // Show loading
+            membersGrid.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading members with non-participants...</p>
+                </div>
+            `;
+            
+            // Skip aggregated collection for now and go straight to fallback
+            await loadMembersOriginal();
+            
+        } catch (error) {
+            console.error('❌ Error loading members:', error);
+            membersGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>Error loading members</h3>
+                    <p>${error.message}</p>
+                    <button onclick="window.refreshMembers()">Try Again</button>
+                </div>
+            `;
+        } finally {
+            isLoading = false;
+        }
+    }
+    
+    // Enhanced fallback function - GUARANTEED to include non-participants
+    async function loadMembersOriginal() {
+        
+        try {
+            const [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap] = await Promise.all([
+                getDocs(collection(db, 'userProfiles')),
+                getDocs(collection(db, 'players')),
+                getDocs(collection(db, 'playersD2')),
+                getDocs(collection(db, 'playersD3')),
+                getDocs(collection(db, 'nonParticipants'))
+            ]);
+            
+            // Process profiles
+            const profilesMap = new Map();
+            userProfilesSnap.forEach(doc => {
+                profilesMap.set(doc.id, doc.data());
+            });
+            
+            // Build comprehensive username map
+            const usernameMap = new Map();
+            [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap].forEach(snapshot => {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.username || data.name) {
+                        usernameMap.set(doc.id, data.username || data.name);
+                    }
+                });
+            });
+            
+            const playersMap = new Map();
+            
+            // Process ladder players (D1, D2, D3)
+            [
+                { snap: d1Snap, ladder: 'D1' },
+                { snap: d2Snap, ladder: 'D2' },
+                { snap: d3Snap, ladder: 'D3' }
+            ].forEach(({ snap, ladder }) => {
+                snap.forEach(doc => {
+                    const playerData = doc.data();
+                    const userId = doc.id;
+                    const username = usernameMap.get(userId) || playerData.username || "Unknown Player";
+                    
+                    if (username !== "Unknown Player") {
+                        if (!playersMap.has(userId)) {
+                            playersMap.set(userId, {
+                                userId: userId,
+                                username: username,
+                                ladders: [],
+                                isNonParticipant: false
+                            });
+                        }
+                        
+                        playersMap.get(userId).ladders.push({
+                            ladder: ladder,
+                            elo: playerData.eloRating || 1200
+                        });
+                        
+                    }
+                });
+            });
+            
+            // Process NON-PARTICIPANTS - SEPARATE AND EXPLICIT
+            let nonParticipantCount = 0;
+            
+            nonParticipantsSnap.forEach(doc => {
+                const userData = doc.data();
+                const userId = doc.id;
+                const username = userData.username || userData.name || "Unknown Player";
+                                
+                if (username !== "Unknown Player") {
+                    // FORCE add as non-participant (overwrite if exists)
+                    playersMap.set(userId, {
+                        userId: userId,
+                        username: username,
+                        ladders: [], // Empty ladders for non-participants
+                        isNonParticipant: true // Explicitly set to true
+                    });
+                    
+                    nonParticipantCount++;
+                    }
+            });
+                        
+            // Convert to allMembers format
+            allMembers = Array.from(playersMap.values()).map(member => {
+                const profile = profilesMap.get(member.userId) || {};
+                
+                let highestElo = 0;
+                let primaryLadder = null;
+                
+                // Only calculate ELO for participants
+                if (member.ladders.length > 0 && !member.isNonParticipant) {
+                    // Sort by division priority first, then by ELO
+                    const ladderPriority = { 'D1': 1, 'D2': 2, 'D3': 3 };
+                    const sortedLadders = member.ladders.sort((a, b) => {
+                        const aPriority = ladderPriority[a.ladder] || 999;
+                        const bPriority = ladderPriority[b.ladder] || 999;
+                        
+                        if (aPriority !== bPriority) {
+                            return aPriority - bPriority;
+                        }
+                        return b.elo - a.elo;
+                    });
+                    
+                    highestElo = sortedLadders[0].elo;
+                    primaryLadder = sortedLadders[0].ladder;
+                }
+                
+                return {
+                    userId: member.userId,
+                    username: member.username,
+                    profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
+                    country: profile.country || null,
+                    motto: profile.motto || null,
+                    favoriteMap: profile.favoriteMap || null,
+                    favoriteWeapon: profile.favoriteWeapon || null,
+                    isNonParticipant: member.isNonParticipant, // Keep explicit flag
+                    ladders: member.ladders,
+                    primaryLadder,
+                    highestElo,
+                    eloRating: highestElo,
+                    rank: getPlayerRank(highestElo),
+                    fallbackLoaded: true
+                };
+            });
+            
+            // Final count and sort
+            const finalNonParticipantCount = allMembers.filter(m => m.isNonParticipant === true).length;
+            
+            // Sort by division priority: D1 > D2 > D3 > Non-participants
+            allMembers.sort((a, b) => {
+                // Non-participants go to the end
+                if (a.isNonParticipant && !b.isNonParticipant) return 1;
+                if (!a.isNonParticipant && b.isNonParticipant) return -1;
+                
+                // For participants, sort by division priority then ELO
+                if (!a.isNonParticipant && !b.isNonParticipant) {
+                    const ladderPriority = { 'D1': 1, 'D2': 2, 'D3': 3 };
+                    const aPriority = ladderPriority[a.primaryLadder] || 999;
+                    const bPriority = ladderPriority[b.primaryLadder] || 999;
+                    
+                    if (aPriority !== bPriority) {
+                        return aPriority - bPriority;
+                    }
+                    return (b.highestElo || 0) - (a.highestElo || 0);
+                }
+                
+                // For non-participants, sort alphabetically
+                return a.username.localeCompare(b.username);
+            });
+            
+            // Cache the complete data
+            localStorage.setItem('rdl_aggregated_members', JSON.stringify({
+                timestamp: Date.now(),
+                members: allMembers
+            }));
+            
+            // Display the data
+            displayStats();
+            filterAndDisplayMembers();
+            
+        } catch (error) {
+            console.error('❌ Error in loadMembersOriginal:', error);
+            throw error;
+        }
+    }
+    
+    function displayStats() {
+        const d1Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D1')).length;
+        const d2Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D2')).length;
+        const d3Count = allMembers.filter(m => !m.isNonParticipant && m.ladders.some(l => l.ladder === 'D3')).length;
+        const nonCount = allMembers.filter(m => m.isNonParticipant).length;
+            }
+    
+    function getPlayerRank(elo) {
+        if (elo >= 2000) return 'emerald';
+        if (elo >= 1800) return 'gold';
+        if (elo >= 1600) return 'silver';
+        if (elo >= 1400) return 'bronze';
+        return 'unranked';
+    }
+    
+    // Keep all your existing functions exactly the same
+    function filterAndDisplayMembers() {
+        
+        // Apply filters with improved non-participant logic
+        displayedMembers = allMembers.filter(member => {
+            // Ladder filter
+            if (currentLadderFilter !== 'all') {
+                if (currentLadderFilter === 'non') {
+                    // Only show non-participants when non filter is selected
+                    return member.isNonParticipant === true;
+                } else {
+                    // For ladder filters (D1, D2, D3), exclude non-participants
+                    if (member.isNonParticipant === true) return false;
+                    
+                    // Check if player is in the selected ladder
+                    return member.ladders.some(l => l.ladder.toLowerCase() === currentLadderFilter);
+                }
+            }
+            
+            // Search filter
+            if (currentSearchTerm && !member.username.toLowerCase().includes(currentSearchTerm.toLowerCase())) {
+                return false;
+            }
+            
+            return true;
+        });
+                
+        // Reset to first page when filters change
+        currentPage = 1;
+        
+        // Render current page
+        renderCurrentPage();
+    }
+    
+    function renderCurrentPage() {
+        const start = (currentPage - 1) * MEMBERS_PER_PAGE;
+        const end = start + MEMBERS_PER_PAGE;
+        const membersOnPage = displayedMembers.slice(start, end);
+        
+        if (membersOnPage.length === 0) {
+            membersGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>No members found</h3>
+                    <p>Try changing your filters</p>
+                </div>
+            `;
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        membersGrid.innerHTML = membersOnPage.map(member => createMemberCard(member)).join('');
+        
+        // Style N/A values
+        styleNAValues();
+        
+        // Update pagination
+        renderPagination();
+    }
+    
+    function styleNAValues() {
+        document.querySelectorAll('.info-value').forEach(element => {
+            if (element.textContent.trim() === 'N/A') {
+                element.style.color = '#aaa';
+                element.style.fontStyle = 'italic';
+            }
+        });
+    }
+    
+    function createMemberCard(member) {
+        // Updated flag HTML to include country name
+        const flagHtml = member.country ? `
+            <div class="country-info">
+                <img src="./images/flags/${member.country.toLowerCase()}.png" 
+                     alt="${member.country}" 
+                     class="member-flag"
+                     onerror="this.style.display='none'">
+                <span class="country-name">${member.country}</span>
+            </div>
+        ` : '';
+        
+        // Create ladder badges with consistent styling
+        let ladderBadges = '';
+        if (!member.isNonParticipant) {
+            ladderBadges = `
+                <div class="member-ladder-badges">
+                    ${member.ladders.map(ladder => `
+                        <span class="ladder-badge ${ladder.ladder.toLowerCase()}">${ladder.ladder}</span>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Non-participant badge
+        const nonParticipantBadge = member.isNonParticipant ? `
+            <div class="non-participant-badge">NON-PARTICIPANT</div>
+        ` : '';
+        
+        return `
+            <div class="member-card">
+                <div class="member-header">
+                    ${flagHtml}
+                    ${member.isNonParticipant ? nonParticipantBadge : ''}
+                </div>
+                <img src="${member.profileImageUrl}" 
+                     alt="${member.username}" 
+                     class="member-avatar"
+                     onerror="this.src='${DEFAULT_PROFILE_IMAGE}'">
+                <div class="member-body">
+                    <h3 class="member-name">${member.username}</h3>
+                    ${ladderBadges}
+                    <div class="member-info">
+                        <div class="info-item">
+                            <span class="info-label">MOTTO</span>
+                            <span class="info-value">${member.motto || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">FAVORITE MAP</span>
+                            <span class="info-value">${member.favoriteMap || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">FAVORITE WEAPON</span>
+                            <span class="info-value">${member.favoriteWeapon || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-footer">
+                    <a href="profile.html?username=${encodeURIComponent(member.username)}${member.primaryLadder ? '&ladder=' + member.primaryLadder.toLowerCase() : ''}" class="profile-link">
+                        <i class="fas fa-user"></i> View Full Profile
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Keep all remaining functions exactly the same (renderPagination, setupEventListeners, etc.)
+    function renderPagination() {
+        const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let html = `
+            <div class="pagination">
+                <button class="page-btn prev" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+        `;
+        
+        // Show page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) {
+                html += `<span class="page-ellipsis">...</span>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                        data-page="${i}">${i}</button>
+            `;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<span class="page-ellipsis">...</span>`;
+            }
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+        
+        html += `
+                <button class="page-btn next" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        pagination.innerHTML = html;
+    }
+    
+    function setupEventListeners() {
+        // Ladder filter buttons
+        document.querySelectorAll('.ladder-filters .filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ladder-filters .filter-btn').forEach(b => 
+                    b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLadderFilter = btn.dataset.ladder;
+                filterAndDisplayMembers();
+            });
+        });
+        
+        // Search input with debounce
+        memberSearch.addEventListener('input', debounce(() => {
+            currentSearchTerm = memberSearch.value.trim();
+            filterAndDisplayMembers();
+        }, 300));
+        
+        // Pagination event delegation
+        pagination.addEventListener('click', (e) => {
+            const pageBtn = e.target.closest('.page-btn');
+            if (!pageBtn || pageBtn.disabled) return;
+            
+            if (pageBtn.classList.contains('prev')) {
+                currentPage = Math.max(1, currentPage - 1);
+            } else if (pageBtn.classList.contains('next')) {
+                const totalPages = Math.ceil(displayedMembers.length / MEMBERS_PER_PAGE);
+                currentPage = Math.min(totalPages, currentPage + 1);
+            } else if (pageBtn.dataset.page) {
+                currentPage = parseInt(pageBtn.dataset.page);
+            }
+            
+            renderCurrentPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // Refresh function with cache clearing
+    window.refreshMembers = function() {
+        localStorage.removeItem('rdl_aggregated_members');
+        allMembers = [];
+        displayedMembers = [];
+        loadAllMembers();
+    };
+    
+    // Add debug functions
+    window.debugMembers = function() {
+        console.log('🔍 Debug Info:');
+        console.log('All members:', allMembers.length);
+        console.log('Filtered members:', displayedMembers.length);
+        console.log('Current filter:', currentLadderFilter);
+        console.log('Current search:', currentSearchTerm);
+        
+        if (allMembers.length > 0) {
+            console.log('Sample member:', allMembers[0]);
+            console.log('Fallback loaded:', allMembers[0].fallbackLoaded ? 'Yes' : 'No');
+        }
+    };
+    
+    // Add this debug function right after the loadAllMembers function:
+    window.debugNonParticipants = function() {
+        console.log('🔍 Non-Participants Debug:');
+        console.log('Total members:', allMembers.length);
+        
+        const nonParticipants = allMembers.filter(m => m.isNonParticipant === true);
+        console.log('Non-participants found:', nonParticipants.length);
+        
+        if (nonParticipants.length > 0) {
+            console.log('Sample non-participant:', nonParticipants[0]);
+        } else {
+            console.log('❌ NO non-participants found in data!');
+            console.log('Sample member structure:', allMembers[0]);
+            
+            // Check for different property names
+            const alternativeNonParticipants = allMembers.filter(m => 
+                m.nonParticipant === true || 
+                m.isNonParticipant === 'true' || 
+                m.status === 'non-participant' ||
+                m.ladders?.length === 0
+            );
+            console.log('Alternative non-participants:', alternativeNonParticipants.length);
+        }
+        
+        // Check what properties exist on members
+        if (allMembers.length > 0) {
+            console.log('Available properties on first member:', Object.keys(allMembers[0]));
+        }
+    };
+    
+    // Load common elements and initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Load navigation and footer
+        fetch('../HTML/nav.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navPlaceholder').innerHTML = data)
+            .then(() => {
+                if (typeof initNav === 'function') initNav();
+            });
+            
+        fetch('../HTML/footer.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('footerPlaceholder').innerHTML = data);
+        
+        // Load members data with optimized approach
+        await loadAllMembers();
+        
+        // Set up event listeners
+        setupEventListeners();
+    });
+</script>

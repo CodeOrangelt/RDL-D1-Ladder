@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RDL - Ladder History</title>
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/ladderhistory.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div class="page-container">
+            <!-- Ladder History Section -->
+            <div class="container-section">
+                <h2 class="section-title">Ladder History</h2>
+                <button id="season0-btn" class="modal-btn">Season 0 Ladder</button>
+                <button id="season1-btn" class="modal-btn">Season 1 Ladder</button>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="container-section">
+                <h2 class="section-title">Stats</h2>
+                <button id="season0-stats-btn" class="modal-btn">Season 0 Stats</button>
+                <button id="season1-stats-btn" class="modal-btn">Season 1 Stats</button>
+            </div>
+
+            <!-- Matches Section -->
+            <div class="container-section">
+                <h2 class="section-title">Matches</h2>
+                <button id="season0-matches-btn" class="modal-btn">Season 0 Matches</button>
+                <button id="season1-matches-btn" class="modal-btn">Season 1 Matches</button>
+            </div>
+        </div>
+        
+        <!-- Modal for displaying data -->
+        <div id="data-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title">Title</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div id="modal-body" class="modal-body">
+                    <!-- Content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <script type="module" src="./JS/ladderhistory.js"></script>
+    <script>
+        // Fetch nav and footer
+        fetch('../HTML/nav.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('nav-placeholder').innerHTML = data);
+
+        fetch('../HTML/footer.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('footer-placeholder').innerHTML = data);
+    </script>
+</body>
+</html>

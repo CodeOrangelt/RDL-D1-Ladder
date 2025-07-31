@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who is Playing?</title>
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div id="retro-tracker-container">
+            <!-- Content will be populated by whosplaying.js -->
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="./JS/whosplaying.js"></script>
+    <script>
+        // Load nav and footer
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>
