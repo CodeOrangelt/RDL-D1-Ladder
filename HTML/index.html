@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Add these security headers -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <!-- Your existing meta tags -->
+    <title>Redux Descent League</title>
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/promotionlightbox.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        main {
+            padding-top: 20px;
+            /* Add space after banner */
+        }
+
+        /* Mapping Competition Popup - Smaller and below nav */
+        .mapping-competition-popup {
+            position: fixed;
+            top: 80px; /* Position below nav */
+            left: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            z-index: 999; /* Below nav but above content */
+            max-width: 240px;
+            color: white;
+            animation: slideInLeft 0.4s ease-out;
+            font-family: inherit;
+        }
+
+        .mapping-competition-popup.hidden {
+            display: none;
+        }
+
+        .mapping-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .mapping-popup-title {
+            color: #f0f0f0;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .mapping-popup-close {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-left: 8px;
+            transition: color 0.2s ease;
+            line-height: 1;
+        }
+
+        .mapping-popup-close:hover {
+            color: #fff;
+        }
+
+        .mapping-popup-content {
+            margin-bottom: 10px;
+        }
+
+        .mapping-popup-subtitle {
+            color: #aaa;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .mapping-popup-button {
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
+            color: #1a1a1a;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .mapping-popup-button:hover {
+            background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(240, 240, 240, 0.3);
+        }
+
+        .mapping-popup-button:active {
+            transform: translateY(0);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .mapping-competition-popup {
+                top: 70px; /* Adjust for mobile nav height */
+                left: 10px;
+                max-width: 200px;
+                padding: 10px 12px;
+            }
+
+            .mapping-popup-title {
+                font-size: 0.85rem;
+            }
+
+            .mapping-popup-subtitle {
+                font-size: 0.7rem;
+            }
+
+            .mapping-popup-button {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+        }
+
+        /* Adjustment for very small screens */
+        @media (max-width: 480px) {
+            .mapping-competition-popup {
+                top: 60px;
+                max-width: 180px;
+            }
+        }
+
+        /* Ladder mode toggle buttons */
+        .ladder-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap; /* Allow wrapping for mobile */
+        }
+
+        .ladder-toggle button {
+            padding: 8px 20px;
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .ladder-toggle button:hover {
+            background-color: #444;
+        }
+
+        /* D1 Button - Pumpkin Orange when active */
+        .ladder-toggle button#d1-toggle.active {
+            background-color: #FF8C00; /* Pumpkin Orange */
+            color: white;
+            border-color: #FF6D00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+        }
+
+        /* D2 Button - Cobalt Blue when active */
+        .ladder-toggle button#d2-toggle.active {
+            background-color: #0047AB; /* Cobalt Blue */
+            color: white;
+            border-color: #003399;
+            box-shadow: 0 0 10px rgba(0, 71, 171, 0.4);
+        }
+
+        /* Coming soon button style */
+        .ladder-toggle button.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .ladder-toggle button.coming-soon::after {
+            content: "Coming Soon";
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Hide inactive ladders */
+        .ladder-container {
+            display: none;
+        }
+
+        .ladder-container.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav-placeholder"></div>
+    
+    <!-- Mapping Competition Popup - Now positioned below nav -->
+    <div id="mapping-competition-popup" class="mapping-competition-popup hidden">
+        <div class="mapping-popup-header">
+            <h3 class="mapping-popup-title">
+                <i class="fas fa-map" style="font-size: 0.8rem;"></i> RDL Map Competition<br>
+                <span style="color: goldenrod; font-size: 0.8em;">June 2025</span>
+            </h3>
+            <button class="mapping-popup-close" onclick="closeMappingPopup()" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mapping-popup-content">
+            <p class="mapping-popup-subtitle">
+                Results have been announced!
+            </p>
+        </div>
+        <button class="mapping-popup-button" onclick="goToMappingCompetition()">
+            <i style="font-size: 0.7rem;"></i> Take Me There!
+        </button>
+    </div>
+
+    <main>
+        <div id="promotion-banner-container" class="promotion-container"></div>
+        <!-- Add ladder mode toggle buttons -->
+        <div class="ladder-switch">
+            <input type="radio" id="d1-switch" name="ladder" value="D1" checked>
+            <label for="d1-switch">D1 Solo's</label>
+            
+            <input type="radio" id="d2-switch" name="ladder" value="D2">
+            <label for="d2-switch">D2 Solo's</label>
+            
+            <input type="radio" id="d3-switch" name="ladder" value="D3">
+            <label for="d3-switch">D3 Solo's</label>
+            
+            <input type="radio" id="duos-switch" name="ladder" value="DUOS">
+            <label for="duos-switch">Duo's</label>
+            
+            <input type="radio" id="ctf-switch" name="ladder" value="CTF" disabled>
+            <label for="ctf-switch" class="coming-soon">CTF</label>
+        </div>
+
+        <div class="outer-container">
+            <img src="./images/RDL.png" alt="Ladder Backdrop" class="ladder-backdrop">
+
+            <!-- D1 Ladder Container -->
+            <div id="d1-ladder-container" class="ladder-container table-container active">
+                <table id="ladder">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D1 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- D2 Ladder Container -->
+            <div id="d2-ladder-container" class="ladder-container table-container">
+                <table id="ladder-d2">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D2 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- D3 Ladder Container -->
+            <div id="d3-ladder-container" class="ladder-container table-container">
+                <table id="ladder-d3">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- D3 Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Duos Ladder Container -->
+            <div id="duos-ladder-container" class="ladder-container table-container">
+                <table id="ladder-duos">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>ELO</th>
+                            <th>Matches</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>K/D</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Duos Ladder rankings will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+        <!-- Inside your outer-container, after the ladder tables -->
+        <!-- Adjust placement as needed -->
+        <div id="ladder-retire-tiny-container" style="display: flex; gap: 8px; align-items: center;">
+            <!-- Leave Team Button (shows next to retire button for DUOS ladder) -->
+            <button id="leave-team-button" class="tiny-retire-button" style="display: none; background: #dc3545;">
+                Leave Team
+            </button>
+            <!-- Hiatus Button -->
+            <button id="hiatus-button" class="tiny-retire-button" style="display: none; background: #f39c12;">
+                Hiatus
+            </button>
+            <button id="tiny-retire-button" class="tiny-retire-button" style="display: none;">Retire</button>
+        </div>
+        <!-- Tiny join button container, positioned at the bottom right of the ladder container -->
+        <div id="ladder-join-tiny-container">
+            <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
+        </div>
+        </div>
+
+        <!-- Leave Team Confirmation Modal -->
+        <div id="leave-team-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                
+                <p>Are you sure you want to leave your current team?</p>
+                <p class="retire-warning">This will remove you from your current team and dissolve it. Your teammate will become a solo player, but you will remain on the DUOS ladder as a solo player and can form a new team.</p>
+                <div class="join-form">
+                    <label for="leave-team-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="leave-team-username-input" placeholder="Your username">
+                    <button id="confirm-leave-team-button" class="join-ladder-button danger-button">Leave Team</button>
+                </div>
+                <span id="leave-team-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Hiatus Confirmation Modal -->
+        <div id="hiatus-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <p>Are you sure you want to go on hiatus from the <span id="hiatus-ladder-type"></span> ladder?</p>
+                <p class="retire-warning">This will temporarily remove you from the ladder rankings. You can return at any time with your same rank.</p>
+                <div class="join-form">
+                    <label for="hiatus-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="hiatus-username-input" placeholder="Your username">
+                    <button id="confirm-hiatus-button" class="join-ladder-button warning-button">Go on Hiatus</button>
+                </div>
+                <span id="hiatus-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Unhiatus Confirmation Modal -->
+        <div id="unhiatus-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <button class="close-button" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: #ccc; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <p>Return to the <span id="unhiatus-ladder-type"></span> ladder?</p>
+                <p>This will restore your previous rank and stats on the ladder.</p>
+                <div class="join-form">
+                    <label for="unhiatus-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="unhiatus-username-input" placeholder="Your username">
+                    <button id="confirm-unhiatus-button" class="join-ladder-button success-button">Return to Ladder</button>
+                </div>
+                <span id="unhiatus-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+        
+        <!-- Separate recommendation text for each ladder -->
+        <p id="elo-recommendation-text-d1" class="elo-recommendation-text ladder-d1"></p>
+        <p id="elo-recommendation-text-d2" class="elo-recommendation-text ladder-d2" style="display: none;"></p>
+        <p id="elo-recommendation-text-d3" class="elo-recommendation-text ladder-d3" style="display: none;"></p>
+        <p id="elo-recommendation-text-duos" class="elo-recommendation-text ladder-duos" style="display: none;"></p>
+
+        <!-- Add new container for queue display -->
+        <div class="queue-section">
+            <div id="queue-container">
+                <div class="queue-box">
+                    <h2>Waiting for a game</h2>
+                    <div class="queue-list">
+                        <!-- Dynamic content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <!-- Remove the original ladder-join-prompt div and add this below the outer-container div -->
+        <div id="ladder-join-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Want to join the <span id="join-ladder-type"></span> ladder?</p>
+                <div class="join-form">
+                    <label for="join-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="join-username-input" placeholder="Your username">
+                    <button id="join-ladder-button" class="join-ladder-button">Join</button>
+                </div>
+                <span id="ladder-join-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+
+        <!-- Add this section where you want the retire ladder functionality to appear -->
+        <div id="ladder-retire-section" class="section">
+        </div>
+
+        <div id="ladder-retire-prompt" class="ladder-join-prompt" style="display: none;">
+            <div class="ladder-join-message">
+                <p>Are you sure you want to retire from the <span id="retire-ladder-type"></span> ladder?</p>
+                <p class="retire-warning">This will remove you from the ladder rankings. Your records will be preserved
+                    but you will need to re-register if you want to participate again.</p>
+                <div class="join-form">
+                    <label for="retire-username-input">Enter your username to confirm:</label>
+                    <input type="text" id="retire-username-input" placeholder="Your username">
+                    <button id="retire-ladder-button" class="join-ladder-button danger-button">Retire from
+                        Ladder</button>
+                </div>
+                <span id="ladder-retire-status" class="ladder-join-status"></span>
+            </div>
+        </div>
+        </div>
+
+        
+
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Single promotion-banner-container -->
+    <div id="promotion-banner-container"></div>
+    
+    <!-- Scripts -->
+    
+    <!-- Firebase and core app scripts -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+
+    <!-- Page components (navigation, footer, Discord widget) -->
+    <script src="./JS/page-components.js"></script>
+
+    <!-- Application scripts -->
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <script type="module" src="./JS/current-user.js"></script>
+    <script type="module" src="./JS/logout.js"></script>
+    <script type="module" src="./JS/ladder.js"></script>
+    <script type="module" src="./JS/ladderd2.js"></script>
+    <script type="module" src="./JS/ladderd3.js"></script>
+    <script type="module" src="./JS/queue.js"></script>
+    <script type="module" src="./JS/promotions.js"></script>
+    <script type="module" src="./JS/ladder-join.js"></script>
+    <script type="module" src="./JS/ladder-retire.js"></script>
+    <script type="module" src="./JS/ladderduos.js"></script>
+    <script type="module" src="./JS/whosplaying.js"></script>
+    <script src="./JS/announcements.js" defer></script> <!--announcement template-->
+
+    <!-- Mapping Competition Popup JavaScript -->
+    <script>
+        // Mapping Competition Popup Functions
+        function closeMappingPopup() {
+            console.log('Closing mapping popup...');
+            const popup = document.getElementById('mapping-competition-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                console.log('Popup closed');
+                
+                // Remember that user closed it
+                localStorage.setItem('mappingCompetitionPopupClosed', 'true');
+            }
+        }
+
+        function goToMappingCompetition() {
+            console.log('Navigating to mapping competition...');
+            window.location.href = 'Mapcomp01.html';
+        }
+
+        // Show popup after nav loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, checking for mapping popup...');
+            
+            // Wait for nav to load first
+            const checkNavLoaded = setInterval(() => {
+                const nav = document.querySelector('nav') || document.querySelector('.navbar');
+                if (nav) {
+                    clearInterval(checkNavLoaded);
+                    console.log('Nav detected, showing mapping popup...');
+                    
+                    const popup = document.getElementById('mapping-competition-popup');
+                    const wasClosed = localStorage.getItem('mappingCompetitionPopupClosed');
+                    
+                    // Show popup if it wasn't previously closed
+                    if (!wasClosed && popup) {
+                        setTimeout(() => {
+                            popup.classList.remove('hidden');
+                            console.log('Mapping popup shown');
+                        }, 800); // Small delay after nav loads
+                    }
+                }
+            }, 100);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                clearInterval(checkNavLoaded);
+                console.log('Nav loading timeout - showing popup anyway');
+                const popup = document.getElementById('mapping-competition-popup');
+                const wasClosed = localStorage.getItem('mappingCompetitionPopupClosed');
+                if (!wasClosed && popup) {
+                    popup.classList.remove('hidden');
+                }
+            }, 5000);
+        });
+
+        // For testing - uncomment to reset popup
+        // localStorage.removeItem('mappingCompetitionPopupClosed');
+    </script>
+
+    <!-- Add this new script to check for pending matches on index page -->
+    <script type="module">
+        import { auth } from './JS/firebase-config.js';
+        import { checkPendingMatches } from './JS/checkPendingMatches.js';
+        
+        // Wait for nav to load since it's dynamically inserted
+        document.addEventListener('DOMContentLoaded', () => {
+            // First wait for nav to be fully loaded
+            const checkNavLoaded = setInterval(() => {
+                const reportMatchLink = document.querySelector('.nav-notification');
+                if (reportMatchLink) {
+                    clearInterval(checkNavLoaded);
+                    console.log('Nav loaded on index page, checking for pending matches');
+                    
+                    // Run notification check with a little delay
+                    setTimeout(() => {
+                        try {
+                            checkPendingMatches();
+                        } catch (err) {
+                            console.error('Error checking pending matches on index page:', err);
+                        }
+                    }, 1000);
+                    
+                    // Also check when auth state changes
+                    auth.onAuthStateChanged(user => {
+                        if (user) {
+                            setTimeout(() => checkPendingMatches(), 1000);
+                        }
+                    });
+                }
+            }, 200); // Check every 200ms
+            
+            // Timeout the check after 10 seconds to avoid infinite loop
+            setTimeout(() => clearInterval(checkNavLoaded), 10000);
+        });
+    </script>
+</body>
+
+</html>

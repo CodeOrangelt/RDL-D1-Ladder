@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/report-style.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <style>
+        
+        /* Make container position relative to properly position the absolute button */
+        .container {
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.75);
+            border: 5px solid white;
+            margin: 50px auto 0; /* Added top margin to make room for the button */
+            border-radius: 15px;
+            width: 50%;
+            max-width: 700px;
+            min-width: 300px;
+            padding: 15px;
+            min-height: 600px;
+            overflow: hidden;
+        }
+        
+        /* Game mode toggle buttons */
+        .game-mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .game-mode-toggle button {
+            padding: 8px 20px;
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .game-mode-toggle button:hover {
+            background-color: #444;
+        }
+        
+        .game-mode-toggle button.active {
+            background-color: #b026b9; /* Purple to match theme */
+            color: white;
+            border-color: #b026b9;
+        }
+        
+        /* Modal specific styles */
+        .report-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .report-lightbox.show {
+            display: flex;
+        }
+        
+        .lightbox-content {
+            background-color: #222;
+            color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 20px rgba(176, 38, 185, 0.5);
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    </script>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    
+    <script src="./JS/page-components.js"></script>
+
+    <main>
+        <div class="container">           
+            <!-- Game Mode Toggle Buttons -->
+            <div class="game-mode-toggle" id="game-mode-toggle">
+                <button id="d1-mode" class="active">D1</button>
+                <button id="d2-mode">D2</button>
+                <button id="d3-mode">D3</button>
+            </div>
+            
+            <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
+            
+            <!-- Pending Invitations Section -->
+            <div id="pending-invitations-section" style="display: none;">
+                <div class="pending-invitations-banner">
+                    <div class="banner-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="banner-content">
+                        <h3>You have pending game invitations!</h3>
+                        <p id="invitation-count-text">Check your inbox to see invitations from other players.</p>
+                        <div class="banner-actions">
+                            <button id="view-invitations-btn" class="btn btn-primary">
+                                <i class="fas fa-inbox"></i> View Invitations
+                            </button>
+                            <button id="dismiss-invitations-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Report Form -->
+            <form id="report-form" class="form" style="display: none;">
+                <div class="form-group">
+                    <span id="loser-username" class="username-display"></span>
+                </div>
+                <div class="form-group">
+                    <label for="winner-username">Opponent:</label>
+                    <select id="winner-username" required>
+                        <option value="">Select Winner</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="loser-score">Your Score:</label>
+                    <input type="number" id="loser-score" placeholder="Loser Score" required>
+                </div>
+                <div class="form-group">
+                    <label for="suicides">Suicides:</label>
+                    <input type="number" id="suicides" placeholder="Suicides" required>
+                </div>
+                <div class="form-group">
+                    <label for="map-played">Map Played:</label>
+                    <input type="text" id="map-played" placeholder="Map Played" required>
+                </div>
+                <div class="form-group">
+                    <label for="subgame-type">Subgame Type (Optional):</label>
+                    <select id="subgame-type" name="subgame-type">
+                        <option value="">None / Standard Match</option>
+                        <option value="Fusion Match">Fusion Match</option>
+                        <option value="≥6 Missiles">≥6 Missiles</option>
+                        <option value="Weapon Imbalance">Weapon Imbalance</option>
+                        <option value="Blind Match">Blind Match</option>
+                        <option value="Rematch">Rematch</option>
+                        <option value="Disorientation">Disorientation</option>
+                        <option value="Ratting">Ratting</option>
+                        <option value="Altered Powerups">Altered Powerups</option>
+                        <option value="Mega Match">Mega Match</option>
+                        <option value="Dogfight">Dogfight</option>
+                        <option value="Gauss and Mercs">Gauss and Mercs</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="loser-comment">Your Comment:</label>
+                    <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
+                </div>
+                <!-- Report form submit button and Outstanding Matches button in a row -->
+                <div class="button-container">
+                    <button type="submit" class="btn">Report Game</button>
+                    <div id="view-outstanding-container" style="display: none;">
+                        <button type="button" id="view-outstanding-btn" class="btn">View Your Outstanding Matches</button>
+                    </div>
+                </div>
+            </form>
+            <div id="report-error" class="error"></div>
+
+            <div id="report-lightbox" class="report-lightbox">
+                <div class="lightbox-content">
+                    <h2>Report Details</h2>
+                    <p>Game Mode: <span id="lightbox-game-mode"></span></p>
+                    <p>Winner: <span id="lightbox-winner"></span></p>
+                    <p>Loser: <span id="lightbox-loser"></span></p>
+                    <p>Loser Score: <span id="lightbox-loser-score"></span></p>
+                    <p>Suicides: <span id="lightbox-suicides"></span></p>
+                    <p>Map: <span id="lightbox-map"></span></p>
+                    <p>Loser Comment: <span id="lightbox-comment"></span></p>
+                    
+                    <div class="form-group">
+                        <label for="winner-score">Winner Score:</label>
+                        <input type="number" id="winner-score" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="winner-suicides">Winner Suicides:</label>
+                        <input type="number" id="winner-suicides" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="winner-comment">Winner Comment:</label>
+                        <textarea id="winner-comment" required></textarea>
+                    </div>
+                    
+                    <!-- New subgame type detail -->
+                    <div class="lightbox-detail">
+                        <span class="lightbox-label">Subgame Type:</span>
+                        <span id="lightbox-subgame"></span>
+                    </div>
+                    
+                    <div class="lightbox-buttons">
+                        <button id="approve-button" class="button">Approve</button>
+                        <button id="cancel-button" class="button">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Outstanding Matches Modal -->
+    <div id="outstanding-modal" class="report-lightbox">
+        <div class="lightbox-content">
+            <h2>Your Outstanding Matches</h2>
+            <p>These matches are waiting patiently:</p>
+            <div id="outstanding-matches-list" class="matches-list">
+                <!-- Matches will be populated here -->
+                <div class="loading">Loading your matches...</div>
+            </div>
+            <div class="lightbox-buttons">
+                <button id="close-outstanding-btn" class="button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <script type="module" src="./JS/ladderalgorithm.js"></script>
+    <script type="module" src="./JS/current-user.js"></script>
+    <script type="module" src="./JS/logout.js"></script>
+    <script type="module" src="./JS/reports.js"></script>
+    
+    <div id="footer-placeholder"></div>
+</body>
+</html>

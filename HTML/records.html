@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDL Records Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/records.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    
+    <main>
+        <!-- Game selector -->
+        <div class="game-selector">
+            <div class="selector-container">
+                <h1>Records Dashboard</h1>
+                <div class="game-toggle">
+                    <button class="toggle-btn active" data-game="d1">Descent 1</button>
+                    <button class="toggle-btn" data-game="d2">Descent 2</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard header -->
+        <div class="dashboard-header">
+            <div class="stat-summary">
+                <div class="summary-item">
+                    <div class="summary-icon">🏆</div>
+                    <div class="summary-data">
+                        <span id="total-matches" class="summary-value">0</span>
+                        <span class="summary-label">Total Matches</span>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon">👨‍✈️</div>
+                    <div class="summary-data">
+                        <span id="total-players" class="summary-value">0</span>
+                        <span class="summary-label">Active Players</span>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon">📅</div>
+                    <div class="summary-data">
+                        <span id="last-updated" class="summary-value">-</span>
+                        <span class="summary-label">Last Updated</span>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon">📈</div>
+                    <div class="summary-data">
+                        <span id="season-status" class="summary-value">ACTIVE</span>
+                        <span class="summary-label">Season Status</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main dashboard panels -->
+        <div class="dashboard-grid">
+            <!-- Player Records Panel -->
+            <div class="dashboard-panel player-records">
+                <div class="panel-header">
+                    <h2>Player Records</h2>
+                </div>
+                
+                <div class="record-grid">
+                    <div class="record-card">
+                        <div class="record-icon">🥇</div>
+                        <h3>Most Wins</h3>
+                        <div id="most-wins" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">📈</div>
+                        <h3>Best Win Rate</h3>
+                        <div id="best-winrate" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">⚔️</div>
+                        <h3>Best K/D Ratio</h3>
+                        <div id="best-kd" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">🎮</div>
+                        <h3>Most Matches</h3>
+                        <div id="most-matches" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">🎯</div>
+                        <h3>Best Score Diff</h3>
+                        <div id="best-differential" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">❌</div>
+                        <h3>Most Losses</h3>
+                        <div id="most-losses" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">🛡️</div>
+                        <h3>Least Suicides</h3>
+                        <div id="least-suicides" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">🩸</div>
+                        <h3>Most Kills</h3>
+                        <div id="most-kills" class="record-value">Loading...</div>
+                    </div>
+
+                    <div class="record-card">
+                        <div class="record-icon">⭐</div>
+                        <h3>Best ELO</h3>
+                        <div id="best-elo" class="record-value">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map Statistics Panel -->
+            <div class="dashboard-panel map-panel">
+                <div class="panel-header">
+                    <h2>Map Statistics</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mapStatsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Top Players Panel -->
+            <div class="dashboard-panel top-players">
+                <div class="panel-header">
+                    <h2>Top Players</h2>
+                </div>
+                <div class="tier-container">
+                    <div class="tier emerald">
+                        <h3>Emerald</h3>
+                        <div class="tier-players" id="emerald-players">
+                            <div class="loading-msg">Loading players...</div>
+                        </div>
+                    </div>
+                    <div class="tier gold">
+                        <h3>Gold</h3>
+                        <div class="tier-players" id="gold-players">
+                            <div class="loading-msg">Loading players...</div>
+                        </div>
+                    </div>
+                    <div class="tier silver">
+                        <h3>Silver</h3>
+                        <div class="tier-players" id="silver-players">
+                            <div class="loading-msg">Loading players...</div>
+                        </div>
+                    </div>
+                    <div class="tier bronze">
+                        <h3>Bronze</h3>
+                        <div class="tier-players" id="bronze-players">
+                            <div class="loading-msg">Loading players...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load nav and footer
+            Promise.all([
+                fetch('../HTML/nav.html').then(response => response.text()),
+                fetch('../HTML/footer.html').then(response => response.text()) // 👈 Added missing '=>'
+            ]).then(([navData, footerData]) => {
+                document.getElementById('nav-placeholder').innerHTML = navData;
+                document.getElementById('footer-placeholder').innerHTML = footerData;
+            }).catch(error => {
+                console.error('Error loading nav/footer:', error);
+            });
+        });
+    </script>
+    <script type="module" src="./JS/records.js"></script>
+    <script type="module" src="./JS/firebase-config.js"></script>
+    <script type="module" src="./JS/current-user.js"></script>
+    <script type="module" src="./JS/logout.js"></script>
+</body>
+</html>

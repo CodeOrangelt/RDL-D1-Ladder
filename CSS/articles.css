@@ -1,1 +1,116 @@
-.articles-main{max-width:900px;margin:40px auto;padding:30px;background-color:rgba(5,5,10,.85);border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,.6);border:2px solid #f0f0f0}.articles-main h1{text-align:center;padding:10px 0;border-radius:5px;margin-bottom:40px;color:#fff;font-size:2.5em;text-shadow:1px 1px 3px rgba(0,0,0,.5)}.articles-container{display:flex;flex-direction:column;gap:40px}.article-card{background-color:var(--background-secondary,#2a2a2e);border:1px solid #555;border-radius:8px;overflow:hidden;box-shadow:0 3px 8px rgba(0,0,0,.5);transition:transform .2s ease-in-out,box-shadow .2s ease-in-out}.article-card:hover{transform:translateY(-5px);box-shadow:0 6px 12px rgba(0,0,0,.7);border-color:#777}.article-header img{width:100%;max-height:300px;object-fit:cover;display:block;border-bottom:1px solid #444}.article-body{padding:25px;color:var(--text-primary,#f0f0f0)}.article-body h2{margin-top:0;margin-bottom:15px;color:var(--text-highlight,#fff);font-size:1.8em}.article-meta{font-size:.9em;color:var(--text-muted,#ccc);margin-bottom:20px;border-bottom:1px dashed var(--border-color,#555);padding-bottom:10px}.article-content{line-height:1.7;color:var(--text-primary,#f0f0f0);margin-top:15px}.article-content p{margin-bottom:1em;color:inherit}.article-content ol,.article-content ul{margin-left:20px;margin-bottom:1em;color:inherit}.article-content a{color:var(--accent-color,#cda4ff);text-decoration:none;border-bottom:1px dotted var(--accent-color,#cda4ff);transition:color .2s,border-bottom-color .2s}.article-content a:hover{color:var(--text-highlight,#fff);border-bottom-color:var(--text-highlight,#fff)}.article-content img{max-width:100%;height:auto;border-radius:4px;margin:15px 0;box-shadow:0 2px 5px rgba(0,0,0,.4)}.error-message,.loading-message{text-align:center;padding:20px;color:var(--text-muted,#ccc)}
+/* filepath: c:\Descent Nexus Repo\RDL-D1-Ladder\CSS\articles.css */
+.articles-main {
+    max-width: 900px;
+    margin: 40px auto; /* Increased top/bottom margin */
+    padding: 30px; /* Increased padding */
+    background-color: rgba(5, 5, 10, 0.85); /* Darker, slightly more opaque background */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6); /* Slightly stronger shadow */
+    border: 2px solid #f0f0f0; /* Bright white border */
+}
+
+.articles-main h1 {
+    text-align: center;
+    padding: 10px 0; /* Add some padding */
+    border-radius: 5px; /* Optional: round corners */
+    margin-bottom: 40px; /* Increased spacing */
+    color: #ffffff; /* Pure white for max contrast */
+    font-size: 2.5em; /* Larger heading */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Slightly stronger text shadow */
+}
+
+.articles-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Increased gap */
+}
+
+.article-card {
+    background-color: var(--background-secondary, #2a2a2e); /* Slightly lighter secondary bg */
+    border: 1px solid #555; /* Add a subtle border to the card itself */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); /* Darker shadow for card */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Stronger hover shadow */
+    border-color: #777; /* Slightly lighter border on hover */
+}
+
+.article-header img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid #444; /* Add back a subtle separator */
+}
+
+.article-body {
+    padding: 25px;
+    color: var(--text-primary, #f0f0f0); /* Bright primary text */
+}
+
+.article-body h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-highlight, #ffffff); /* Pure white highlight */
+    font-size: 1.8em;
+}
+
+.article-meta {
+    font-size: 0.9em;
+    color: var(--text-muted, #cccccc); /* Lighter muted gray */
+    margin-bottom: 20px;
+    border-bottom: 1px dashed var(--border-color, #555); /* Slightly more visible dashed line */
+    padding-bottom: 10px;
+}
+
+.article-content {
+    line-height: 1.7;
+    color: var(--text-primary, #f0f0f0); /* Bright primary text */
+    margin-top: 15px;
+}
+
+/* Allow basic HTML within content */
+.article-content p {
+    margin-bottom: 1em;
+    color: inherit; /* Inherit from .article-content */
+}
+.article-content ul,
+.article-content ol {
+    margin-left: 20px;
+    margin-bottom: 1em;
+    color: inherit; /* Ensure list items also inherit color */
+}
+
+/* Style links within content */
+.article-content a {
+    color: var(--accent-color, #cda4ff); /* Brighter accent color */
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent-color, #cda4ff);
+    transition: color 0.2s, border-bottom-color 0.2s;
+}
+
+.article-content a:hover {
+    color: var(--text-highlight, #ffffff); /* White on hover */
+    border-bottom-color: var(--text-highlight, #ffffff);
+}
+
+/* Style images within content */
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 15px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4); /* Slightly stronger shadow */
+}
+
+.loading-message,
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted, #cccccc); /* Use lighter muted color */
+}
