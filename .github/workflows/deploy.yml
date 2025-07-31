@@ -32,29 +32,6 @@ jobs:
           # CRITICAL: Fix import paths in JavaScript files too
           find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
 
-      - name: Remove file extensions for clean URLs
-        run: |
-          # Create .htaccess for clean URLs (if using Apache)
-          cat > .htaccess << 'EOF'
-          RewriteEngine On
-          RewriteCond %{REQUEST_FILENAME} !-d
-          RewriteCond %{REQUEST_FILENAME} !-f
-          RewriteRule ^([^\.]+)$ $1.html [NC,L]
-          
-          # Remove .html extension from URLs
-          RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
-          RewriteRule ^ /%1 [NC,L,R]
-          EOF
-          
-          # For GitHub Pages, also create extensionless copies
-          for file in *.html; do
-            if [[ "$file" != "index.html" ]]; then
-              basename="${file%.html}"
-              mkdir -p "$basename"
-              cp "$file" "$basename/index.html"
-            fi
-          done
-
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
@@ -65,24 +42,6 @@ jobs:
           sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
-
-      - name: Obfuscate JavaScript
-        uses: KevinRohn/github-action-javascript-obfuscator@v1
-        with:
-          input_path: JS
-          output_path: JS
-          compact: true
-          control_flow_flattening: false
-          dead_code_injection: false
-          debug_protection: false
-          disable_console_output: true
-          identifier_names_generator: mangled
-          self_defending: false
-          string_array: true
-          string_array_threshold: 0.5
-          string_array_encoding: 'base64'
-          transform_object_keys: false
-          target: browser
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
