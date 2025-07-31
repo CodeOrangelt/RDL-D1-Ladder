@@ -36,7 +36,7 @@ jobs:
             # Install nginx if not present
             apt update && apt install -y nginx
             
-            # Simple nginx config - serve files as-is
+            # Configure nginx to serve from HTML directory but allow access to root assets
             cat > /etc/nginx/sites-available/default << 'EOF'
             server {
                 listen 80 default_server;
@@ -44,8 +44,14 @@ jobs:
                 index index.html;
                 server_name _;
                 
+                # Serve HTML files from /HTML/ directory as if they're at root
                 location / {
-                    try_files $uri $uri/ =404;
+                    try_files /HTML$uri /HTML$uri/ /HTML$uri.html =404;
+                }
+                
+                # Serve CSS, JS, images directly from root
+                location ~ ^/(CSS|JS|images)/ {
+                    try_files $uri =404;
                 }
             }
             EOF
