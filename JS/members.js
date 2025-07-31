@@ -1,1 +1,178 @@
-const a38C=a38d;(function(a,b){const z=a38d,c=a();while(!![]){try{const d=-parseInt(z(0xd8))/0x1*(parseInt(z(0xc6))/0x2)+parseInt(z(0xf4))/0x3*(parseInt(z(0xe2))/0x4)+-parseInt(z(0xbf))/0x5+-parseInt(z(0xe5))/0x6+parseInt(z(0xc9))/0x7+-parseInt(z(0xd0))/0x8+parseInt(z(0xcb))/0x9*(parseInt(z(0xf1))/0xa);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a38c,0x522c1));const a38b=(function(){let a=!![];return function(b,c){const d=a?function(){const A=a38d;if(c){const e=c[A(0xe4)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a38a=a38b(this,function(){const B=a38d;let a;try{const d=Function('return\x20(function()\x20'+B(0xf6)+');');a=d();}catch(f){a=window;}const b=a[B(0xf7)]=a['console']||{},c=[B(0xc0),'warn','info','error',B(0xde),'table','trace'];for(let g=0x0;g<c[B(0xc3)];g++){const h=a38b[B(0xc4)]['prototype']['bind'](a38b),i=c[g],j=b[i]||h;h['__proto__']=a38b[B(0xce)](a38b),h['toString']=j[B(0xee)]['bind'](j),b[i]=h;}});a38a();function a38c(){const M=['CgfYyw1Z','mJeYoxPxz2PrAG','zwXVuMf0Aw5N','twvTyMvYCYbSAxn0ihjLyNvPBhqGC3vJy2vZC2z1BgX5','Ahr0Chm','Dw5Yyw5Rzwq','yMf0y2G','zxHJzxb0Aw9U','y29TBwL0','y29SBgvJDgLVBG','C3rHDhvZ','ntu4ote2AMzyDwnQ','AgfZ','yxbWBhK','mZu0nJi4mMngyvPfCa','ChjVzMLSzuLTywDLvxjS','B25xCML0zq','zMLYzwjHC2uTzNvUy3rPB25Z','BM9UugfYDgLJAxbHBNrZ','rMLLBgrwywX1zq','vw5RBM93BG','C2XPy2u','E2nVBgXLy3rPB259l3TKB2njzh0','Dg9tDhjPBMC','C2vYDMvYvgLTzxn0yw1W','ChvZAa','mtbPEK9XEhC','C2v0','zgvSzxrL','m1HtBeDsAW','zgf0yq','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','y29UC29Szq','yNjVBNPL','zg9Jswq','mtq3nduYmfnbBfrdyq','Bg9N','zM9YrwfJAa','ywDNCMvNyxrLze1LBwjLCNm','BgvUz3rO','y29UC3rYDwn0B3i','BgfKzgvYCW','ndmYvefwtg5A','rxjYB3iGCMvIDwLSzgLUzYbTzw1IzxjZigXPC3q','rxjYB3iGDxbKyxrPBMCGBwvTyMvYCYbSAxn0oG','mJC2mZa3nunoz0nlyq','zw1LCMfSza','mtqWndyZmJDHshPtzwy','zwXV','DxnLCM5HBwu','yMLUza','CgXHEwvYC0qY','mZmWmJeYmezMBejZCa','zg9J','z2v0','C2vUza','DxnLCLbYB2zPBgvZ','zMLYzxn0B3jL','CgXHEwvYCW'];a38c=function(){return M;};return a38c();}const functions=require(a38C(0xe8)),admin=require('firebase-admin');admin['initializeApp']();const db=admin['firestore']();exports['updateMembersList']=functions['firestore']['document'](a38C(0xed))[a38C(0xe7)](async(a,b)=>{const D=a38C,c=b[D(0xd7)][D(0xe0)],d=b[D(0xd7)][D(0xf9)];if(!['players',D(0xcf),'playersD3',D(0xd4),D(0xe9)]['includes'](c))return null;try{await rebuildMembersList(),console['log']('Successfully\x20updated\x20aggregated\x20members\x20list');}catch(e){console['error'](D(0xc8),e);}});async function rebuildMembersList(){const E=a38C,a=db[E(0xdd)](),[b,c,d,e,f]=await Promise['all']([db[E(0xe0)]('userProfiles')['get'](),db['collection'](E(0xd6))[E(0xd2)](),db['collection'](E(0xcf))['get'](),db[E(0xe0)]('playersD3')[E(0xd2)](),db[E(0xe0)](E(0xe9))['get']()]),g=new Map();b[E(0xc1)](q=>{g['set'](q['id'],q['data']());});const h=new Map(),j=(q,r)=>{q['forEach'](s=>{const F=a38d,t=s[F(0xf5)](),u=s['id'];!h[F(0xe3)](u)&&h[F(0xf2)](u,{'userId':u,'username':t[F(0xcd)]||F(0xeb),'ladders':[],'isNonParticipant':![]});const v=h[F(0xd2)](u);v[F(0xc5)]['push']({'ladder':r,'elo':t[F(0xd9)]||0x4b0,'active':t['active']!==![]});});};j(c,'D1'),j(d,'D2'),j(e,'D3'),f[E(0xc1)](q=>{const G=E,r=q['data'](),s=q['id'];!h['has'](s)&&r[G(0xcd)]&&h[G(0xf2)](s,{'userId':s,'username':r['username'],'ladders':[],'isNonParticipant':!![]});});const k=[];h['forEach']((q,r)=>{const H=E,s=g[H(0xd2)](r)||{};let t=0x0,u=null;if(q['ladders'][H(0xc3)]>0x0){const w=q['ladders']['sort']((x,y)=>y['elo']-x['elo']);t=w[0x0][H(0xcc)],u=w[0x0]['ladder'];}const v={'userId':r,'username':q[H(0xcd)],'profileImageUrl':s[H(0xe6)]||null,'country':s['country']||null,'motto':s['motto']||null,'favoriteMap':s['favoriteMap']||null,'favoriteWeapon':s['favoriteWeapon']||null,'isNonParticipant':q['isNonParticipant'],'ladders':q['ladders'],'primaryLadder':u,'highestElo':t,'rank':getPlayerRank(t),'lastUpdated':admin[H(0xd5)][H(0xea)][H(0xef)]()};k[H(0xf0)](v);});const l=db[E(0xe0)](E(0xc2)),m=await l[E(0xd2)](),n=[];m[E(0xc1)](q=>{const I=E;n[I(0xf0)](q['ref'][I(0xf3)]());}),await Promise['all'](n);const o=0x1f4,p=[];for(let q=0x0;q<k[E(0xc3)];q+=o){const r=db['batch'](),s=k[E(0xec)](q,q+o);s[E(0xc1)](t=>{const J=E,u=l[J(0xd1)](t['userId']);r['set'](u,t);}),p[E(0xf0)](r[E(0xdf)]());}await Promise['all'](p);}function a38d(a,b){const c=a38c();return a38d=function(d,e){d=d-0xbf;let f=c[d];if(a38d['nXGwnO']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a38d['bQimgu']=g,a=arguments,a38d['nXGwnO']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a38d['bQimgu'](f),a[i]=f):f=j,f;},a38d(a,b);}function getPlayerRank(a){const K=a38C;if(a>=0x7d0)return K(0xca);if(a>=0x708)return'gold';if(a>=0x640)return'silver';if(a>=0x578)return K(0xf8);return K(0xdc);}exports['rebuildMembersListManual']=functions[a38C(0xdb)]['onRequest'](async(a,b)=>{const L=a38C;try{await rebuildMembersList(),b['status'](0xc8)['send'](L(0xda));}catch(c){console['error']('Error\x20rebuilding\x20members\x20list:',c),b[L(0xe1)](0x1f4)[L(0xd3)](L(0xc7));}});
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+
+admin.initializeApp();
+const db = admin.firestore();
+
+// Aggregated member data updater
+exports.updateMembersList = functions.firestore
+    .document('{collection}/{docId}')
+    .onWrite(async (change, context) => {
+        const collection = context.params.collection;
+        const docId = context.params.docId;
+        
+        // Only trigger for relevant collections
+        if (!['players', 'playersD2', 'playersD3', 'userProfiles', 'nonParticipants'].includes(collection)) {
+            return null;
+        }
+                
+        try {
+            await rebuildMembersList();
+            console.log('Successfully updated aggregated members list');
+        } catch (error) {
+            console.error('Error updating members list:', error);
+        }
+    });
+
+// Rebuild the entire members list (called by trigger or manually)
+async function rebuildMembersList() {
+    const batch = db.batch();
+    
+    // Fetch all collections in parallel
+    const [userProfilesSnap, d1Snap, d2Snap, d3Snap, nonParticipantsSnap] = await Promise.all([
+        db.collection('userProfiles').get(),
+        db.collection('players').get(),
+        db.collection('playersD2').get(),
+        db.collection('playersD3').get(),
+        db.collection('nonParticipants').get()
+    ]);
+    
+    // Create profiles map
+    const profilesMap = new Map();
+    userProfilesSnap.forEach(doc => {
+        profilesMap.set(doc.id, doc.data());
+    });
+    
+    // Process all player data
+    const membersMap = new Map();
+    
+    // Helper function to process ladder players
+    const processLadder = (snapshot, ladderName) => {
+        snapshot.forEach(doc => {
+            const playerData = doc.data();
+            const userId = doc.id;
+            
+            if (!membersMap.has(userId)) {
+                membersMap.set(userId, {
+                    userId,
+                    username: playerData.username || 'Unknown',
+                    ladders: [],
+                    isNonParticipant: false
+                });
+            }
+            
+            const member = membersMap.get(userId);
+            member.ladders.push({
+                ladder: ladderName,
+                elo: playerData.eloRating || 1200,
+                active: playerData.active !== false
+            });
+        });
+    };
+    
+    // Process each ladder
+    processLadder(d1Snap, 'D1');
+    processLadder(d2Snap, 'D2');
+    processLadder(d3Snap, 'D3');
+    
+    // Process non-participants
+    nonParticipantsSnap.forEach(doc => {
+        const userData = doc.data();
+        const userId = doc.id;
+        
+        if (!membersMap.has(userId) && userData.username) {
+            membersMap.set(userId, {
+                userId,
+                username: userData.username,
+                ladders: [],
+                isNonParticipant: true
+            });
+        }
+    });
+    
+    // Combine with profiles and create final aggregated data
+    const aggregatedMembers = [];
+    
+    membersMap.forEach((member, userId) => {
+        const profile = profilesMap.get(userId) || {};
+        
+        // Calculate highest ELO and primary ladder
+        let highestElo = 0;
+        let primaryLadder = null;
+        
+        if (member.ladders.length > 0) {
+            const sortedLadders = member.ladders.sort((a, b) => b.elo - a.elo);
+            highestElo = sortedLadders[0].elo;
+            primaryLadder = sortedLadders[0].ladder;
+        }
+        
+        const aggregatedMember = {
+            userId,
+            username: member.username,
+            profileImageUrl: profile.profileImageUrl || null,
+            country: profile.country || null,
+            motto: profile.motto || null,
+            favoriteMap: profile.favoriteMap || null,
+            favoriteWeapon: profile.favoriteWeapon || null,
+            isNonParticipant: member.isNonParticipant,
+            ladders: member.ladders,
+            primaryLadder,
+            highestElo,
+            rank: getPlayerRank(highestElo),
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        aggregatedMembers.push(aggregatedMember);
+    });
+    
+    // Clear existing aggregated collection and write new data
+    const aggregatedRef = db.collection('aggregatedMembers');
+    
+    // Delete existing documents in batches
+    const existingDocs = await aggregatedRef.get();
+    const deletePromises = [];
+    
+    existingDocs.forEach(doc => {
+        deletePromises.push(doc.ref.delete());
+    });
+    
+    await Promise.all(deletePromises);
+    
+    // Write new aggregated data in batches
+    const batchSize = 500;
+    const batches = [];
+    
+    for (let i = 0; i < aggregatedMembers.length; i += batchSize) {
+        const batch = db.batch();
+        const batchMembers = aggregatedMembers.slice(i, i + batchSize);
+        
+        batchMembers.forEach(member => {
+            const docRef = aggregatedRef.doc(member.userId);
+            batch.set(docRef, member);
+        });
+        
+        batches.push(batch.commit());
+    }
+    
+    await Promise.all(batches);
+
+}
+
+function getPlayerRank(elo) {
+    if (elo >= 2000) return 'emerald';
+    if (elo >= 1800) return 'gold';
+    if (elo >= 1600) return 'silver';
+    if (elo >= 1400) return 'bronze';
+    return 'unranked';
+}
+
+// Manual trigger function for initial setup
+exports.rebuildMembersListManual = functions.https.onRequest(async (req, res) => {
+    try {
+        await rebuildMembersList();
+        res.status(200).send('Members list rebuilt successfully');
+    } catch (error) {
+        console.error('Error rebuilding members list:', error);
+        res.status(500).send('Error rebuilding members list');
+    }
+});

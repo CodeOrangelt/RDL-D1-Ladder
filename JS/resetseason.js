@@ -1,1 +1,75 @@
-(function(a,b){const k=a49d,c=a();while(!![]){try{const d=parseInt(k(0x1eb))/0x1*(-parseInt(k(0x1ec))/0x2)+-parseInt(k(0x1ee))/0x3*(parseInt(k(0x1e9))/0x4)+-parseInt(k(0x201))/0x5*(-parseInt(k(0x200))/0x6)+parseInt(k(0x1fe))/0x7+-parseInt(k(0x204))/0x8+-parseInt(k(0x202))/0x9*(parseInt(k(0x1ed))/0xa)+parseInt(k(0x1f1))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a49c,0x604a1));const a49b=(function(){let a=!![];return function(b,c){const d=a?function(){const l=a49d;if(c){const e=c[l(0x1e8)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a49a=a49b(this,function(){const m=a49d;let a;try{const d=Function(m(0x1f2)+m(0x1e6)+');');a=d();}catch(f){a=window;}const b=a['console']=a['console']||{},c=['log',m(0x1ff),'info',m(0x203),'exception','table','trace'];for(let g=0x0;g<c[m(0x1f3)];g++){const h=a49b['constructor'][m(0x1fb)]['bind'](a49b),i=c[g],j=b[i]||h;h[m(0x1fa)]=a49b['bind'](a49b),h['toString']=j[m(0x1ea)]['bind'](j),b[i]=h;}});a49a();import{db}from'./firebase-config.js';import{collection,getDocs,setDoc,doc,query,orderBy}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';async function archiveSeason0(){const n=a49d;try{const a=await getDocs(collection(db,'players'));for(const b of a[n(0x1f7)]){const c=b[n(0x1ef)]();await setDoc(doc(db,n(0x1f9),b['id']),{...c,'archivedAt':new Date(),'originalId':b['id']});}return console['log'](n(0x1f5)),!![];}catch(d){console[n(0x203)]('Error\x20archiving\x20season:',d);throw d;}}function a49d(a,b){const c=a49c();return a49d=function(d,e){d=d-0x1e5;let f=c[d];if(a49d['auQskh']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a49d['LnjiHp']=g,a=arguments,a49d['auQskh']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a49d['LnjiHp'](f),a[i]=f):f=j,f;},a49d(a,b);}function a49c(){const q=['nMDRBMHoDW','mZm5nteWCK9hvwHL','mtu5mZu0oufYEgnNvq','zgf0yq','C25HChnOB3q','mtGWndG5ndnLA0zwy0K','CMv0DxjUicHMDw5JDgLVBIGPia','BgvUz3rO','CMvJB3jKCW','u3vJy2vZC2z1BgX5igfYy2HPDMvKihbSyxLLCNmGDg8GC2vHC29Uma','zM9YrwfJAa','zg9JCW','DxnLCM5HBwu','C2vHC29Uma','x19WCM90B19F','ChjVDg90ExbL','D2LUuMf0zq','C2vHC29UmhjLy29Yzhm','mtmYmJC2mKfRuMPJBa','D2fYBG','nK9kDM9NtW','nte5mZe1A296z29s','mtHoy0zszNe','zxjYB3i','ntu5mZyXnMrTqM9qDa','Bg9ZC2vZ','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','rxjYB3iGyxjJAgL2Aw5NihjLy29Yzhm6','yxbWBhK','ne9suxHKBW','Dg9tDhjPBMC','odaZmtHbvuX5DhC'];a49c=function(){return q;};return a49c();}async function archiveRecords(){const o=a49d;try{const a=collection(db,o(0x1f4)),b=query(a,orderBy('wins','desc')),c=await getDocs(b),d=[];return c[o(0x1f6)](e=>{const p=o,f=e['data']();d['push']({'username':f[p(0x1f8)],'wins':f['wins']||0x0,'losses':f[p(0x1e5)]||0x0,'winRate':f[p(0x1fc)]||0x0,'timestamp':new Date()});}),await setDoc(doc(db,o(0x1fd),o(0x1f0)),{'records':d,'archivedAt':new Date()}),console['log']('Successfully\x20archived\x20records'),!![];}catch(e){console['error'](o(0x1e7),e);throw e;}}export{archiveSeason0,archiveRecords};
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    setDoc,
+    doc,
+    query,
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+async function archiveSeason0() {
+    try {
+        // Get all players
+        const playersSnapshot = await getDocs(collection(db, 'players'));
+        
+        // Archive each player's data
+        for (const playerDoc of playersSnapshot.docs) {
+            const playerData = playerDoc.data();
+            
+            // Create a document in season0 collection with the same data
+            await setDoc(
+                doc(db, 'season0', playerDoc.id), 
+                {
+                    ...playerData,
+                    archivedAt: new Date(),
+                    originalId: playerDoc.id
+                }
+            );
+        }
+        
+        console.log('Successfully archived players to season0');
+        return true;
+    } catch (error) {
+        console.error('Error archiving season:', error);
+        throw error;
+    }
+}
+
+async function archiveRecords() {
+    try {
+        const recordsRef = collection(db, 'records');
+        const q = query(recordsRef, orderBy('wins', 'desc'));
+        const recordsSnapshot = await getDocs(q);
+        
+        const recordsArray = [];
+        recordsSnapshot.forEach(doc => {
+            const data = doc.data();
+            recordsArray.push({
+                username: data.username,
+                wins: data.wins || 0,
+                losses: data.losses || 0,
+                winRate: data.winRate || 0,
+                timestamp: new Date()
+            });
+        });
+
+        // Store in season0records collection
+        await setDoc(
+            doc(db, 'season0records', 'snapshot'), 
+            {
+                records: recordsArray,
+                archivedAt: new Date()
+            }
+        );
+        
+        console.log('Successfully archived records');
+        return true;
+    } catch (error) {
+        console.error('Error archiving records:', error);
+        throw error;
+    }
+}
+
+export { archiveSeason0, archiveRecords };
+

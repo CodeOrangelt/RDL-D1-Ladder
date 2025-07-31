@@ -1,1 +1,455 @@
-(function(a,b){const v=a36d,c=a();while(!![]){try{const d=parseInt(v(0x20c))/0x1+-parseInt(v(0x1e9))/0x2+parseInt(v(0x1fe))/0x3+-parseInt(v(0x208))/0x4*(-parseInt(v(0x1cb))/0x5)+parseInt(v(0x1e8))/0x6*(-parseInt(v(0x1fb))/0x7)+-parseInt(v(0x221))/0x8+-parseInt(v(0x1fa))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a36c,0x56867));const a36b=(function(){let a=!![];return function(b,c){const d=a?function(){const w=a36d;if(c){const e=c[w(0x1ec)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a36a=a36b(this,function(){const x=a36d,a=function(){let f;try{f=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b[x(0x1ca)]=b['console']||{},d=['log','warn',x(0x1d4),x(0x1d1),x(0x211),x(0x1dc),'trace'];for(let e=0x0;e<d['length'];e++){const f=a36b[x(0x1c7)][x(0x220)][x(0x1dd)](a36b),g=d[e],h=c[g]||f;f['__proto__']=a36b[x(0x1dd)](a36b),f[x(0x1c2)]=h[x(0x1c2)]['bind'](h),c[g]=f;}});a36a();import{createUserWithEmailAndPassword,signInWithEmailAndPassword,sendEmailVerification,signOut}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{doc,setDoc,collection,getDocs,query,where,getDoc,updateDoc,deleteDoc,orderBy,limit,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{auth,db}from'./firebase-config.js';function setupVerificationListener(a,b){const y=a36d;console['log'](y(0x203),a);const c=setInterval(async()=>{const z=y;try{console[z(0x1f2)](z(0x1ef));const d=await signInWithEmailAndPassword(auth,a,b),e=d[z(0x1d8)];await e['getIdToken'](!![]),e['emailVerified']?(console[z(0x1f2)](z(0x1f6)),clearInterval(c),document['getElementById']('register-error')['innerHTML']=z(0x218),await signOut(auth),setTimeout(()=>{const A=z;document['getElementById'](A(0x1d6))['style']['display']='none',document[A(0x1e5)](A(0x212))['style']['display']='block',document[A(0x1e5)](A(0x21c))[A(0x21e)]=a,document[A(0x1e5)](A(0x20a))[A(0x1c6)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22success-message\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Your\x20account\x20has\x20been\x20verified!\x20You\x20can\x20now\x20log\x20in.\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>';},0x7d0)):(console['log'](z(0x202)),await signOut(auth));}catch(f){console['error'](z(0x215),f),clearInterval(c);}},0x1388);window[y(0x20e)]=c,setTimeout(()=>{const B=y;window[B(0x20e)]&&(clearInterval(window['verificationCheckInterval']),window[B(0x20e)]=null,console[B(0x1f2)]('Stopped\x20checking\x20for\x20email\x20verification\x20(timeout\x20reached)'));},0x5*0x3c*0x3e8);}async function isUsernameAvailable(a){const C=a36d;if(!a||typeof a!==C(0x1f8)||a[C(0x201)]()[C(0x1da)]<0x3)return document[C(0x1e5)](C(0x1e1))['textContent']='Username\x20must\x20be\x20at\x20least\x203\x20characters\x20long',![];const b=a['trim']();try{const c=/^[a-zA-Z0-9_-]{3,20}$/;if(!c['test'](b))return document['getElementById']('register-error')['textContent']='Username\x20can\x20only\x20contain\x20letters,\x20numbers,\x20underscores\x20and\x20hyphens',![];const [d,e,f]=await Promise[C(0x207)]([getDocs(query(collection(db,C(0x1f0)),where('username','==',b))),getDocs(query(collection(db,'pendingRegistrations'),where('username','==',b))),getDocs(query(collection(db,'nonParticipants'),where('username','==',b)))]);if(!d[C(0x1e4)]||!e[C(0x1e4)]||!f['empty'])return document[C(0x1e5)](C(0x1e1))[C(0x1f9)]='Username\x20is\x20already\x20taken',![];return!![];}catch(g){return console['error'](C(0x219),g),document[C(0x1e5)](C(0x1e1))['textContent']=C(0x1d3),![];}}async function handleRegister(a){const D=a36d;a[D(0x1d7)]();const b=document[D(0x1e5)](D(0x1e1));b[D(0x1f9)]='';const c=document['getElementById'](D(0x20d))['value'],d=document[D(0x1e5)](D(0x1c9))[D(0x21e)],f=document['getElementById']('register-username')[D(0x21e)],g=document['getElementById']('verification-answer')['value'][D(0x1ee)](),h=document[D(0x1e5)](D(0x1e7))['value'],i=document['getElementById']('non-participant')?.['checked']||![];if(i&&h!==''){b[D(0x1f9)]='Please\x20unselect\x20a\x20game\x20mode\x20if\x20you\x20choose\x20Non-Participant.';return;}if(!i&&h===''){b['textContent']=D(0x1e0);return;}try{const j=[D(0x1ff),D(0x1d5)];if(!j['includes'](g)){b['textContent']=D(0x21d);return;}const k=await isUsernameAvailable(f);if(!k)return;const l=await createUserWithEmailAndPassword(auth,c,d),m=l[D(0x1d8)];await sendEmailVerification(m),await setDoc(doc(db,D(0x217),m['uid']),{'username':f['trim'](),'email':c,'gameMode':h,'nonParticipant':i,'createdAt':new Date(),'verified':![]}),b['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22success-message\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Registration\x20pending!\x20Please\x20check\x20your\x20email\x20to\x20verify\x20your\x20account.\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<br><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22resendVerificationEmail(\x27'+c+'\x27)\x22\x20class=\x22resend-button\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Resend\x20Verification\x20Email\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>',await signOut(auth),setupVerificationListener(c,d);}catch(n){console['error']('Registration\x20error:',n),b['textContent']=n[D(0x1d0)]===D(0x1c8)?'Email\x20address\x20is\x20already\x20registered':'Registration\x20failed.\x20Please\x20try\x20again\x20later.';}}async function handleLogin(a){const E=a36d;a[E(0x1d7)]();const b=document['getElementById']('login-email')['value'],c=document['getElementById'](E(0x204))[E(0x21e)],d=document['getElementById']('login-error');console['log']('Login\x20attempt\x20started\x20for:',b),d[E(0x1f9)]='';try{console[E(0x1f2)](E(0x21f));const f=await signInWithEmailAndPassword(auth,b,c),g=f[E(0x1d8)];console['log'](E(0x1d2),g['uid']);const h=[E(0x1f0),'playersD2',E(0x1c3),'playersDuos','playersCTF','nonParticipants'];console[E(0x1f2)]('Checking\x20if\x20user\x20exists\x20in\x20any\x20collection...');let j=![],k=await Promise[E(0x207)](h[E(0x1ea)](l=>getDoc(doc(db,l,g['uid']))));for(let l=0x0;l<k['length'];l++){if(k[l][E(0x1db)]()){j=!![],console['log'](E(0x21b)+h[l]+E(0x1e6));break;}}if(!j){console[E(0x1f2)](E(0x1f1));const m=doc(db,'pendingRegistrations',g['uid']),n=await getDoc(m);if(n[E(0x1db)]()){const o=n[E(0x1f4)]();console[E(0x1f2)]('Found\x20pending\x20registration:',o);if(g['emailVerified']){console[E(0x1f2)](E(0x213)),d[E(0x1c6)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22success-message\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Setting\x20up\x20your\x20account...\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>';if(o[E(0x1c5)])console[E(0x1f2)](E(0x200)),await setDoc(doc(db,'nonParticipants',g['uid']),{'username':o['username'],'email':g[E(0x209)],'createdAt':serverTimestamp(),'isNonParticipant':!![]}),console['log'](E(0x1f5)+o['username']+'\x20added\x20to\x20nonParticipants\x20collection');else{let p;switch(o[E(0x1fd)]){case'D1':p='players';break;case'D2':p='playersD2';break;case'D3':p='playersD3';break;case E(0x20b):p=E(0x1fc);break;case E(0x1be):p=E(0x1ed);break;default:p=E(0x1f0);}console[E(0x1f2)](E(0x1de)+o['gameMode']+E(0x1bd)+p);const q=collection(db,p),r=query(q,orderBy('position','desc'),limit(0x1)),s=await getDocs(r),t=s['empty']?0x1:s['docs'][0x0]['data']()['position']+0x1;await setDoc(doc(db,p,g['uid']),{'username':o['username'],'email':g['email'],'eloRating':0x4b0,'position':t,'createdAt':serverTimestamp(),'isAdmin':![],'matches':0x0,'wins':0x0,'losses':0x0,'gameMode':o[E(0x1fd)]}),console['log'](E(0x1eb)+o['username']+E(0x20f)+p+'\x20at\x20position\x20'+t);}await deleteDoc(m),setTimeout(()=>{const F=E;window[F(0x1f7)]['href']='../index.html';},0x7d0);return;}else{d[E(0x1c6)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22warning-message\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Please\x20verify\x20your\x20email\x20to\x20complete\x20your\x20registration.\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<br><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20id=\x22resend-button\x22\x20class=\x22resend-button\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Resend\x20Verification\x20Email\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>',document['getElementById'](E(0x206))[E(0x1cc)](E(0x1df),()=>{resendVerificationEmail(b);}),await signOut(auth);return;}}}window[E(0x1f7)]['href']='../index.html';}catch(u){console['error'](E(0x1f3),u),d['textContent']='Login\x20failed:\x20'+u[E(0x21a)];}}function loginFormHandler(a){const G=a36d;a[G(0x1d7)]();const b=document['getElementById']('login-email')[G(0x21e)]['trim'](),c=document['getElementById']('login-password')['value'],d=document[G(0x1e5)]('login-error');signInWithEmailAndPassword(auth,b,c)['then'](e=>{const H=G;console['log'](H(0x1d2),e['user']),window['location']['href']='../index.html';})['catch'](e=>{const I=G;console[I(0x1d1)](I(0x1f3),e),d['textContent']='Login\x20error:\x20'+e['message'],d['style'][I(0x1bf)]='block';});}function a36d(a,b){const c=a36c();return a36d=function(d,e){d=d-0x1bd;let f=c[d];if(a36d['dBGJzZ']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a36d['lypbxl']=g,a=arguments,a36d['dBGJzZ']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a36d['lypbxl'](f),a[i]=f):f=j,f;},a36d(a,b);}function a36c(){const O=['mti3mJiWnfLTtgPqyq','nJG0nJKXAxHewuH1','CgXHEwvYC0r1B3m','z2fTzu1Vzgu','mtmYnZyYnM1Jz0jcrG','ChvYCgXL','uhjVy2vZC2LUzYbUB24TCgfYDgLJAxbHBNqGCMvNAxn0CMf0Aw9U','DhjPBq','rw1HAwWGBM90ihLLDcb2zxjPzMLLzcWGD2fPDgLUzY4UlG','u2v0DgLUzYb1CcbLBwfPBcb2zxjPzMLJyxrPB24GBgLZDgvUzxiGzM9YoG','Bg9NAw4TCgfZC3DVCMq','BM9Uzq','CMvZzw5Klwj1DhrVBG','ywXS','otu5ndHKvNjoEKm','zw1HAwW','Bg9NAw4TzxjYB3i','rhvVCW','mtaWmZmWA2TxrfbX','CMvNAxn0zxiTzw1HAwW','DMvYAwzPy2f0Aw9Uq2HLy2TjBNrLCNzHBa','igfKzgvKihrVia','C3vIBwL0','zxHJzxb0Aw9U','Bg9NAw4Ty29UDgfPBMvY','rw1HAwWGAxmGDMvYAwzPzwqSihbYB2nLC3nPBMCGCMvNAxn0CMf0Aw9U','vMvYAwzPy2f0Aw9UigvTywLSihnLBNq','rxjYB3iGy2HLy2TPBMCGDMvYAwzPy2f0Aw9Uihn0yxr1CZO','v2LUzg93lNjLC2vUzfzLCMLMAwnHDgLVBKvTywLSignHBgXLzcb3AxrOoG','CgvUzgLUz1jLz2LZDhjHDgLVBNm','cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IC3vJy2vZCY1TzxnZywDLiJ4kicaGicaGicaGicaGicaGicaGicaGicaGrw1HAwWGDMvYAwzPzwqGC3vJy2vZC2z1BgX5isbzB3uGy2fUig5VDYbSB2CGAw4UcIaGicaGicaGicaGicaGicaGicaGpc9KAxy+','rxjYB3iGy2HLy2TPBMCGDxnLCM5HBwu6','BwvZC2fNzq','vxnLCIbMB3vUzcbPBIa','Bg9NAw4Tzw1HAwW','sw5JB3jYzwn0igfUC3DLCIb0BYb2zxjPzMLJyxrPB24GCxvLC3rPB24','DMfSDwu','qxr0zw1WDgLUzYbgAxjLyMfZzsbZAwDUsw5xAxrOrw1HAwXbBMrqyxnZD29Yzc4UlG','ChjVDg90ExbL','odq0mty4thnNt3PZ','ihbSyxLLCIbYzwDPC3rYyxrPB24GDg8G','q1rg','zgLZCgXHEq','rxjYB3iGC2vUzgLUzYb2zxjPzMLJyxrPB24Gzw1HAwW6ia','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNn1y2nLC3mTBwvZC2fNzsi+cIaGicaGicaGicaGicaGicbwzxjPzMLJyxrPB24Gzw1HAwWGAgfZigjLzw4GCMvZzw50ihrVia','Dg9tDhjPBMC','CgXHEwvYC0qZ','C3r5Bgu','BM9UugfYDgLJAxbHBNq','Aw5Uzxjive1m','y29UC3rYDwn0B3i','yxv0Ac9LBwfPBc1HBhjLywr5lwLUlxvZzq','CMvNAxn0zxiTCgfZC3DVCMq','y29UC29Szq','odv5AMLUq1u','ywrKrxzLBNrmAxn0zw5LCG','ugfZC3DVCMqGBM90igf2ywLSywjSzsbMB3iGCMvZzw5KAw5NihzLCMLMAwnHDgLVBG','BM9UlxbHCNrPy2LWyw50','C2HVDY1YzwDPC3rLCG','y29Kzq','zxjYB3i','vxnLCIbZAwDUzwqGAw46','vw5HyMXLihrVihzLCMLMEsb1C2vYBMfTzsbHDMfPBgfIAwXPDhKUifbSzwfZzsb0CNKGywDHAw4GBgf0zxiU','Aw5MBW','BwfNzw50yq','CMvNAxn0zxiTy29UDgfPBMvY','ChjLDMvUDerLzMf1Bhq','DxnLCG','Bg9NAw4TzM9YBq','BgvUz3rO','zxHPC3rZ','DgfIBgu','yMLUza','uhjVy2vZC2LUzYa','y2XPy2S','ugXLyxnLihnLBgvJDcbHigDHBwuGBw9KzsbVCIbJAgvJAYboB24TugfYDgLJAxbHBNqU','CMvNAxn0zxiTzxjYB3i','qxr0zw1WDgLUzYb0BYbYzxnLBMqGDMvYAwzPy2f0Aw9UigvTywLSihrVoG','DwLK','zw1WDhK','z2v0rwXLBwvUDej5swq','ignVBgXLy3rPB24','CMvNAxn0zxiTBw9Kzq','nK9urLLSwG','ntaZmta4rMXWEwHw','BwfW','tMv3ihbSyxLLCIa','yxbWBhK','CgXHEwvYC0nurG','Dg9mB3DLCKnHC2u','q2HLy2TPBMCGAwyGzw1HAwWGAgfZigjLzw4GDMvYAwzPzwqUlI4','CgXHEwvYCW','vxnLCIbUB3qGzM91BMqGAw4Gyw55ignVBgXLy3rPB24SignOzwnRAw5NihbLBMrPBMCGCMvNAxn0CMf0Aw9U','Bg9N','tg9NAw4GzxjYB3i6','zgf0yq','vxnLCIa','rw1HAwWGAgfZigjLzw4GDMvYAwzPzwqHifjLzgLYzwn0Aw5NihrVigXVz2LUihbHz2uUlI4','Bg9JyxrPB24','C3rYAw5N','Dgv4DenVBNrLBNq'];a36c=function(){return O;};return a36c();}async function resendVerificationEmail(a){const J=a36d;console[J(0x1f2)](J(0x1e2),a);try{const b=document['getElementById'](J(0x204))?.['value'];if(!b){console[J(0x1d1)](J(0x1cd)),document['getElementById']('login-error')[J(0x1f9)]='Please\x20enter\x20your\x20password\x20to\x20resend\x20verification\x20email';return;}const c=await signInWithEmailAndPassword(auth,a,b),d=c[J(0x1d8)];console[J(0x1f2)]('User\x20signed\x20in\x20for\x20verification\x20email:',d[J(0x1e3)]),await sendEmailVerification(d),console['log'](J(0x214)),document[J(0x1e5)]('login-error')['innerHTML']=J(0x1c1)+a+'.\x20Please\x20check\x20your\x20inbox.\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>',await signOut(auth);}catch(e){console[J(0x1d1)]('Error\x20resending\x20verification\x20email:',e),document['getElementById']('login-error')[J(0x1f9)]=J(0x1c0)+e['message'];}}window['resendVerificationEmail']=function(a){const K=a36d;console['log'](K(0x216),a),resendVerificationEmail(a);},document['addEventListener']('DOMContentLoaded',()=>{const L=a36d,a=document[L(0x1e5)](L(0x1ce)),b=document[L(0x1e5)]('register-mode');a&&b&&a[L(0x1cc)]('change',function(){this['checked']?(b['value']='',b['disabled']=!![]):b['disabled']=![];});const c=document['getElementById']('register-form'),d=document[L(0x1e5)](L(0x1d9));c&&c['addEventListener']('submit',handleRegister);d&&d['addEventListener'](L(0x210),handleLogin);const e=document['getElementById'](L(0x1cf)),f=document[L(0x1e5)]('show-login');e&&e['addEventListener']('click',g=>{const M=L;g['preventDefault'](),document[M(0x1e5)](M(0x212))['style'][M(0x1bf)]=M(0x205),document[M(0x1e5)](M(0x1d6))['style'][M(0x1bf)]='block';}),f&&f['addEventListener']('click',g=>{const N=L;g['preventDefault'](),document[N(0x1e5)](N(0x1d6))[N(0x1c4)]['display']=N(0x205),document['getElementById'](N(0x212))['style']['display']='block';});});
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    doc, 
+    setDoc,
+    collection,
+    getDocs,
+    query,
+    where,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    orderBy,
+    limit,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+
+// Add this function near the top of your file
+function setupVerificationListener(email, password) {
+    console.log("Setting up email verification listener for:", email);
+    
+    // Create an interval that checks verification status
+    const intervalId = setInterval(async () => {
+        try {
+            console.log("Checking if email has been verified...");
+            // Sign in to refresh user state
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Force token refresh to get latest emailVerified status
+            await user.getIdToken(true);
+            
+            if (user.emailVerified) {
+                console.log("Email has been verified! Redirecting to login page...");
+                clearInterval(intervalId); // Stop checking
+                
+                // Show success message
+                document.getElementById('register-error').innerHTML = `
+                    <div class="success-message">
+                        Email verified successfully! You can now log in.
+                    </div>`;
+                
+                // Sign out the user
+                await signOut(auth);
+                
+                // Switch to login form after a short delay
+                setTimeout(() => {
+                    document.getElementById('register-container').style.display = 'none';
+                    document.getElementById('login-container').style.display = 'block';
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-error').innerHTML = `
+                        <div class="success-message">
+                            Your account has been verified! You can now log in.
+                        </div>`;
+                }, 2000);
+            } else {
+                console.log("Email not yet verified, waiting...");
+                // Sign out again to not keep user signed in
+                await signOut(auth);
+            }
+        } catch (error) {
+            console.error("Error checking verification status:", error);
+            // Stop checking if there's an error
+            clearInterval(intervalId);
+        }
+    }, 5000); // Check every 5 seconds
+    
+    // Store the interval ID in a global variable so we can clear it if needed
+    window.verificationCheckInterval = intervalId;
+    
+    // Set a timeout to eventually stop checking (after 5 minutes)
+    setTimeout(() => {
+        if (window.verificationCheckInterval) {
+            clearInterval(window.verificationCheckInterval);
+            window.verificationCheckInterval = null;
+            console.log("Stopped checking for email verification (timeout reached)");
+        }
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
+// Check username availability (pending + active)
+async function isUsernameAvailable(username) {
+    if (!username || typeof username !== 'string' || username.trim().length < 3) {
+        document.getElementById('register-error').textContent = 
+            'Username must be at least 3 characters long';
+        return false;
+    }
+    const trimmedUsername = username.trim();
+    try {
+        const validUsernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+        if (!validUsernameRegex.test(trimmedUsername)) {
+            document.getElementById('register-error').textContent = 
+                'Username can only contain letters, numbers, underscores and hyphens';
+            return false;
+        }
+        const [playersSnapshot, pendingSnapshot, nonParticipantsSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "players"), where("username", "==", trimmedUsername))),
+            getDocs(query(collection(db, "pendingRegistrations"), where("username", "==", trimmedUsername))),
+            getDocs(query(collection(db, "nonParticipants"), where("username", "==", trimmedUsername)))
+        ]);
+        if (!playersSnapshot.empty || !pendingSnapshot.empty || !nonParticipantsSnapshot.empty) {
+            document.getElementById('register-error').textContent = 
+                'Username is already taken';
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Error checking username:", error);
+        document.getElementById('register-error').textContent = 
+            'Unable to verify username availability. Please try again later.';
+        return false;
+    }
+}
+
+// Handle registration submission
+async function handleRegister(e) {
+    e.preventDefault();
+    const errorElement = document.getElementById('register-error');
+    errorElement.textContent = '';
+
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const username = document.getElementById('register-username').value;
+    const verificationAnswer = document.getElementById('verification-answer').value.toLowerCase();
+    
+    // Get gameMode and non-participant flag
+    const gameMode = document.getElementById('register-mode').value;
+    const nonParticipant = document.getElementById('non-participant')?.checked || false;
+
+    // Prevent both inputs from being provided
+    if (nonParticipant && gameMode !== "") {
+        errorElement.textContent = "Please unselect a game mode if you choose Non-Participant.";
+        return;
+    }
+    if (!nonParticipant && gameMode === "") {
+        errorElement.textContent = "Please select a game mode or check Non-Participant.";
+        return;
+    }
+
+    try {
+        const validAnswers = ['purple', 'magenta'];
+        if (!validAnswers.includes(verificationAnswer)) {
+            errorElement.textContent = 'Incorrect answer to verification question';
+            return;
+        }
+        const isAvailable = await isUsernameAvailable(username);
+        if (!isAvailable) return;
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await sendEmailVerification(user);
+
+        await setDoc(doc(db, "pendingRegistrations", user.uid), {
+            username: username.trim(),
+            email: email,
+            gameMode: gameMode,
+            nonParticipant: nonParticipant,
+            createdAt: new Date(),
+            verified: false
+        });
+
+        errorElement.innerHTML = `
+            <div class="success-message">
+                Registration pending! Please check your email to verify your account.
+                <br><br>
+                <button onclick="resendVerificationEmail('${email}')" class="resend-button">
+                    Resend Verification Email
+                </button>
+            </div>`;
+
+        await signOut(auth);
+
+        // Start the verification listener
+        setupVerificationListener(email, password);
+    } catch (error) {
+        console.error('Registration error:', error);
+        errorElement.textContent = error.code === 'auth/email-already-in-use' 
+            ? 'Email address is already registered'
+            : 'Registration failed. Please try again later.';
+    }
+}
+
+// Handle login submission - updated for multiple game modes
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorElement = document.getElementById('login-error');
+
+    console.log("Login attempt started for:", email);
+    errorElement.textContent = ''; // Clear any previous error
+
+    try {
+        console.log("Attempting Firebase signInWithEmailAndPassword...");
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("User signed in:", user.uid);
+
+        // Check if the user exists in any of our collections
+        const playerCollections = [
+            "players",    // D1
+            "playersD2",
+            "playersD3",
+            "playersDuos",
+            "playersCTF", 
+            "nonParticipants"
+        ];
+        
+        // Check all collections to find user
+        console.log("Checking if user exists in any collection...");
+        let userExists = false;
+        let existingDocs = await Promise.all(
+            playerCollections.map(collection => getDoc(doc(db, collection, user.uid)))
+        );
+        
+        for (let i = 0; i < existingDocs.length; i++) {
+            if (existingDocs[i].exists()) {
+                userExists = true;
+                console.log(`User found in ${playerCollections[i]} collection`);
+                break;
+            }
+        }
+        
+        // If user doesn't exist in any collection, check pending registration
+        if (!userExists) {
+            console.log("User not found in any collection, checking pending registration");
+            const pendingRef = doc(db, "pendingRegistrations", user.uid);
+            const pendingDoc = await getDoc(pendingRef);
+            
+            if (pendingDoc.exists()) {
+                const pendingData = pendingDoc.data();
+                console.log("Found pending registration:", pendingData);
+                
+                // Process the registration if the email is verified
+                if (user.emailVerified) {
+                    console.log("Email is verified, processing registration");
+                    
+                    // Show success message
+                    errorElement.innerHTML = `
+                        <div class="success-message">
+                            Setting up your account...
+                        </div>`;
+                    
+                    // Handle non-participant users
+                    if (pendingData.nonParticipant) {
+                        console.log("Processing non-participant registration");
+                        await setDoc(doc(db, "nonParticipants", user.uid), {
+                            username: pendingData.username,
+                            email: user.email,
+                            createdAt: serverTimestamp(),
+                            isNonParticipant: true
+                        });
+                        console.log(`User ${pendingData.username} added to nonParticipants collection`);
+                    } 
+                    // Handle different game modes
+                    else {
+                        // Determine which collection to use based on game mode
+                        let collectionName;
+                        switch (pendingData.gameMode) {
+                            case "D1":
+                                collectionName = "players";
+                                break;
+                            case "D2":
+                                collectionName = "playersD2";
+                                break;
+                            case "D3":
+                                collectionName = "playersD3";
+                                break;
+                            case "Duos":
+                                collectionName = "playersDuos";
+                                break;
+                            case "CTF":
+                                collectionName = "playersCTF";
+                                break;
+                            default:
+                                collectionName = "players"; // fallback
+                        }
+                        
+                        console.log(`Processing ${pendingData.gameMode} player registration to ${collectionName}`);
+                        
+                        // Get next position on ladder for this game mode
+                        const playersRef = collection(db, collectionName);
+                        const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
+                        const playersSnapshot = await getDocs(playersQuery);
+                        const nextPosition = playersSnapshot.empty ? 1 : playersSnapshot.docs[0].data().position + 1;
+                        
+                        // Create player document in the appropriate collection
+                        await setDoc(doc(db, collectionName, user.uid), {
+                            username: pendingData.username,
+                            email: user.email,
+                            eloRating: 1200,
+                            position: nextPosition,
+                            createdAt: serverTimestamp(),
+                            isAdmin: false,
+                            matches: 0,
+                            wins: 0,
+                            losses: 0,
+                            gameMode: pendingData.gameMode // Store the game mode in the user document
+                        });
+                        console.log(`New player ${pendingData.username} added to ${collectionName} at position ${nextPosition}`);
+                    }
+                    
+                    // Clean up pending registration
+                    await deleteDoc(pendingRef);
+                    
+                    // Short delay to show success message before redirecting
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 2000);
+                    return;
+                } 
+                else {
+                    // Email not verified, show warning but still let them proceed to verify
+                    errorElement.innerHTML = `
+                        <div class="warning-message">
+                            Please verify your email to complete your registration.
+                            <br><br>
+                            <button type="button" id="resend-button" class="resend-button">
+                                Resend Verification Email
+                            </button>
+                        </div>`;
+                    
+                    // Add event listener for the resend button
+                    document.getElementById('resend-button').addEventListener('click', () => {
+                        resendVerificationEmail(email);
+                    });
+                    
+                    // Sign out until email is verified
+                    await signOut(auth);
+                    return;
+                }
+            }
+        }
+
+        // Existing user, redirect to index.html
+        window.location.href = '../index.html';
+    } catch (error) {
+        console.error('Login error:', error);
+        errorElement.textContent = 'Login failed: ' + error.message;
+    }
+}
+
+// Handle login submission
+function loginFormHandler(event) {
+  event.preventDefault();
+  
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorElement = document.getElementById('login-error');
+  
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      console.log("User signed in:", userCredential.user);
+      window.location.href = "../index.html";
+    })
+    .catch((error) => {
+      console.error("Login error:", error);
+      errorElement.textContent = `Login error: ${error.message}`;
+      errorElement.style.display = 'block';
+    });
+}
+
+// Resend verification email function
+async function resendVerificationEmail(email) {
+    console.log("Attempting to resend verification email to:", email);
+    try {
+        // Need to sign in again to get the user object
+        const password = document.getElementById('login-password')?.value;
+        if (!password) {
+            console.error("Password not available for resending verification");
+            document.getElementById('login-error').textContent = 
+                'Please enter your password to resend verification email';
+            return;
+        }
+        
+        // Sign in to get user object
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("User signed in for verification email:", user.uid);
+        
+        await sendEmailVerification(user);
+        console.log("Verification email sent");
+        
+        document.getElementById('login-error').innerHTML = `
+            <div class="success-message">
+                Verification email has been resent to ${email}. Please check your inbox.
+            </div>`;
+        
+        // Sign out again
+        await signOut(auth);
+    } catch (error) {
+        console.error("Error resending verification email:", error);
+        document.getElementById('login-error').textContent = 
+            'Error sending verification email: ' + error.message;
+    }
+}
+
+// Keep exposing the function, but with a proper function implementation
+window.resendVerificationEmail = function(email) {
+    console.log("Window.resendVerificationEmail called with:", email);
+    resendVerificationEmail(email);
+};
+
+// Setup event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Toggle game mode select based on Non-Participant status
+    const nonParticipantCheckbox = document.getElementById('non-participant');
+    const registerModeSelect = document.getElementById('register-mode');
+    
+    if (nonParticipantCheckbox && registerModeSelect) {
+        nonParticipantCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                registerModeSelect.value = "";
+                registerModeSelect.disabled = true;
+            } else {
+                registerModeSelect.disabled = false;
+            }
+        });
+    }
+
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const showRegister = document.getElementById('show-register');
+    const showLogin = document.getElementById('show-login');
+    
+    if (showRegister) {
+        showRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        });
+    }
+    
+    if (showLogin) {
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
+    }
+});

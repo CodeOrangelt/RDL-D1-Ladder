@@ -1,1 +1,201 @@
-const a53t=a53d;(function(a,b){const q=a53d,c=a();while(!![]){try{const d=parseInt(q(0x13c))/0x1*(parseInt(q(0x11b))/0x2)+-parseInt(q(0x13a))/0x3*(-parseInt(q(0x12b))/0x4)+-parseInt(q(0x132))/0x5+parseInt(q(0x11c))/0x6*(parseInt(q(0x133))/0x7)+parseInt(q(0x115))/0x8*(-parseInt(q(0x119))/0x9)+-parseInt(q(0x127))/0xa*(parseInt(q(0x120))/0xb)+parseInt(q(0x138))/0xc;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a53c,0x3b957));function a53c(){const D=['zg9J','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','zM9YrwfJAa','zgL2AxnPB25F','ntyYntbwzNbQvfC','mZG4nw1NCLnTrq','DxnLCM5HBwu','BgvUz3rO','BwfW','yMLUza','oda1nJq0qwfOC0LJ','CgXHEwvYCW','nJy4ngL4tNjMEa','Dg9tDhjPBMC','muTirNn4EG','zgf0yq','CgXHEwvYC0q','y29UC29Szq','mJq4menjv3jrBa','C2XPy2u','DhLWzq','CgXHEwvYswq','oti1mKHXtKvnrW','rxjYB3iGzMv0y2HPBMCGyMf0y2GGruXpigHPC3rVCNK6','ntK5ode0C3P2EMPX','ndiWnLnlCevSqq','zg9JCW','DgfIBgu','x19WCM90B19F','mtf6D2LxtNG','C2v0','CgXHEwvYC0qZ','BM93','DgLTzxn0yw1W','D2fYBG','Aw5JBhvKzxm','mJm3ode0mfnszxvftW','ChjVDg90ExbL','zxHPC3rZ','z2v0','mtaWuKfjsMn3','DxnLCLbYB2zPBgvZ','zwXVsgLZDg9YEuq'];a53c=function(){return D;};return a53c();}function a53d(a,b){const c=a53c();return a53d=function(d,e){d=d-0x115;let f=c[d];if(a53d['MoOzNS']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a53d['IfjzYg']=g,a=arguments,a53d['MoOzNS']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a53d['IfjzYg'](f),a[i]=f):f=j,f;},a53d(a,b);}const a53b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a53a=a53b(this,function(){const s=a53d,a=function(){const r=a53d;let f;try{f=Function('return\x20(function()\x20'+r(0x12f)+');')();}catch(g){f=window;}return f;},b=a(),c=b[s(0x13f)]=b[s(0x13f)]||{},d=['log',s(0x125),'info','error','exception',s(0x11e),'trace'];for(let e=0x0;e<d['length'];e++){const f=a53b['constructor'][s(0x128)][s(0x137)](a53b),g=d[e],h=c[g]||f;f[s(0x11f)]=a53b['bind'](a53b),f[s(0x13b)]=h['toString'][s(0x137)](h),c[g]=f;}});a53a();import{db}from'../firebase-config.js';import{collection,doc,getDoc,getDocs,query,limit,startAfter,where,onSnapshot}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';const cache={'userProfiles':new Map(),'ladderPlayers':new Map(),'matchResults':new Map(),'eloHistory':new Map()},CACHE_EXPIRY={'userProfiles':0x5*0x3c*0x3e8,'ladderPlayers':0x2*0x3c*0x3e8,'matchResults':0x1*0x3c*0x3e8,'eloHistory':0x3*0x3c*0x3e8};export const userProfilesRef=collection(db,a53t(0x12c));export async function fetchPaginatedData(a,b=0xa,c=null){const u=a53t;let d=query(a,limit(b));c&&(d=query(d,startAfter(c)));const e=await getDocs(d),f=e[u(0x11d)][e[u(0x11d)][u(0x135)]-0x1];return{'data':e['docs'][u(0x136)](g=>({'id':g['id'],...g[u(0x13d)]()})),'lastVisible':f,'hasMore':e[u(0x11d)][u(0x135)]===b};}export async function getUserProfile(a){const v=a53t,b=cache[v(0x12c)][v(0x12a)](a);if(b&&Date[v(0x123)]()-b[v(0x124)]<CACHE_EXPIRY['userProfiles'])return b[v(0x13d)];const c=await getDoc(doc(userProfilesRef,a));if(c[v(0x129)]()){const d=c['data']();return cache['userProfiles']['set'](a,{'data':d,'timestamp':Date['now']()}),d;}return null;}export async function getLadderData(a=0x1){const w=a53t,b=w(0x131)+a,c=cache['ladderPlayers']['get'](b);if(c&&Date[w(0x123)]()-c['timestamp']<CACHE_EXPIRY['ladderPlayers'])return c[w(0x13d)];const d=a===0x1?'players':w(0x13e)+a,e=collection(db,d),f=await getDocs(query(e,limit(0x64))),g=f[w(0x11d)][w(0x136)](h=>({'id':h['id'],...h['data']()}));return cache['ladderPlayers']['set'](b,{'data':g,'timestamp':Date['now']()}),g;}export async function getEloHistoryBatch(a,b=0x1){const x=a53t,c=b===0x1?'eloHistory':x(0x12d)+b,d=collection(db,c),e={},f=[];a['forEach'](h=>{const y=x,j=h+'_'+b,k=cache['eloHistory'][y(0x12a)](j);k&&Date[y(0x123)]()-k[y(0x124)]<CACHE_EXPIRY['eloHistory']?e[h]=k['data']:f['push'](h);});const g=0xa;for(let h=0x0;h<f[x(0x135)];h+=g){const j=f[x(0x116)](h,h+g);if(j['length']>0x0)try{const k=query(d,where('playerId','in',j),limit(0x64)),l=await getDocs(k);l[x(0x11d)]['forEach'](m=>{const z=x,n=m['data'](),o=n[z(0x118)];if(!e[o])e[o]=[];e[o]['push'](n);const p=o+'_'+b;cache['eloHistory'][z(0x121)](p,{'data':e[o],'timestamp':Date['now']()});});}catch(m){console['error'](x(0x11a),m);}}return e;}let usernameCache=new Map(),usernameCacheTimestamp=Date[a53t(0x123)]();export function setupEfficientListener(a,b=[],c){const d=collection(db,a),e=query(d,...b),f=onSnapshot(e,g=>{const A=a53d,h=g['docChanges']()[A(0x136)](i=>({'type':i[A(0x117)],'id':i[A(0x12e)]['id'],'data':i[A(0x12e)][A(0x13d)]()}));h['length']>0x0&&c(h,g[A(0x11d)]);});return f;}export async function bulkResolveUsernames(a){const B=a53t,b=new Map();if(!a||a[B(0x135)]===0x0)return b;const c=[B(0x139),'playersD2',B(0x122),'nonParticipants'];for(const d of c){const e=collection(db,d),f=await getDocs(e);f[B(0x130)](g=>{const C=B,h=g['data']();h[C(0x134)]&&a[C(0x126)](g['id'])&&b[C(0x121)](g['id'],h[C(0x134)]);});}return b;}
+import { db } from '../firebase-config.js';
+import { 
+    collection, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    query, 
+    limit, 
+    startAfter, 
+    where, 
+    onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// In-memory cache
+const cache = {
+  userProfiles: new Map(),
+  ladderPlayers: new Map(),
+  matchResults: new Map(),
+  eloHistory: new Map(),
+};
+
+// Cache expiration times (in milliseconds)
+const CACHE_EXPIRY = {
+  userProfiles: 5 * 60 * 1000, // 5 minutes
+  ladderPlayers: 2 * 60 * 1000, // 2 minutes
+  matchResults: 1 * 60 * 1000,  // 1 minute
+  eloHistory: 3 * 60 * 1000,    // 3 minutes
+};
+
+// Unified user profile collection
+export const userProfilesRef = collection(db, 'userProfiles');
+
+// Paginated data fetching
+export async function fetchPaginatedData(collectionRef, pageSize = 10, lastDoc = null) {
+  let q = query(collectionRef, limit(pageSize));
+  
+  if (lastDoc) {
+    q = query(q, startAfter(lastDoc));
+  }
+  
+  const snapshot = await getDocs(q);
+  const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+  
+  return {
+    data: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+    lastVisible,
+    hasMore: snapshot.docs.length === pageSize
+  };
+}
+
+// User profile management
+export async function getUserProfile(userId) {
+  const cachedUser = cache.userProfiles.get(userId);
+  
+  if (cachedUser && (Date.now() - cachedUser.timestamp) < CACHE_EXPIRY.userProfiles) {
+    return cachedUser.data;
+  }
+  
+  const userDoc = await getDoc(doc(userProfilesRef, userId));
+  if (userDoc.exists()) {
+    const userData = userDoc.data();
+    cache.userProfiles.set(userId, {
+      data: userData,
+      timestamp: Date.now()
+    });
+    return userData;
+  }
+  
+  return null;
+}
+
+// Efficient ladder data loading
+export async function getLadderData(division = 1) {
+  const cacheKey = `division_${division}`;
+  const cachedData = cache.ladderPlayers.get(cacheKey);
+  
+  if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRY.ladderPlayers) {
+    return cachedData.data;
+  }
+  
+  const collectionName = division === 1 ? 'players' : `playersD${division}`;
+  const playersRef = collection(db, collectionName);
+  
+  const playersSnapshot = await getDocs(query(playersRef, limit(100)));
+  const players = playersSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  
+  cache.ladderPlayers.set(cacheKey, {
+    data: players,
+    timestamp: Date.now()
+  });
+  
+  return players;
+}
+
+// Efficient batch ELO history fetching
+export async function getEloHistoryBatch(userIds, division = 1) {
+  const collectionName = division === 1 ? 'eloHistory' : `eloHistoryD${division}`;
+  const historyRef = collection(db, collectionName);
+  
+  const results = {};
+  const uncachedIds = [];
+  
+  // Check cache first
+  userIds.forEach(userId => {
+    const cacheKey = `${userId}_${division}`;
+    const cachedHistory = cache.eloHistory.get(cacheKey);
+    
+    if (cachedHistory && (Date.now() - cachedHistory.timestamp) < CACHE_EXPIRY.eloHistory) {
+      results[userId] = cachedHistory.data;
+    } else {
+      uncachedIds.push(userId);
+    }
+  });
+  
+  // Batch fetch only what's needed (in chunks of 10 to avoid Firestore limitations)
+  const batchSize = 10;
+  for (let i = 0; i < uncachedIds.length; i += batchSize) {
+    const batchIds = uncachedIds.slice(i, i + batchSize);
+    if (batchIds.length > 0) {
+      try {
+        const q = query(historyRef, where('playerId', 'in', batchIds), limit(100));
+        const snapshot = await getDocs(q);
+        
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const userId = data.playerId;
+          
+          if (!results[userId]) results[userId] = [];
+          results[userId].push(data);
+          
+          // Update cache
+          const cacheKey = `${userId}_${division}`;
+          cache.eloHistory.set(cacheKey, {
+            data: results[userId],
+            timestamp: Date.now()
+          });
+        });
+      } catch (error) {
+        console.error('Error fetching batch ELO history:', error);
+      }
+    }
+  }
+  
+  return results;
+}
+
+// Username cache
+let usernameCache = new Map();
+let usernameCacheTimestamp = Date.now();
+
+// Efficient real-time listener with unsubscribe capability
+export function setupEfficientListener(collectionPath, queryConstraints = [], callback) {
+  const collectionRef = collection(db, collectionPath);
+  const q = query(collectionRef, ...queryConstraints);
+  
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const changes = snapshot.docChanges().map(change => ({
+      type: change.type,
+      id: change.doc.id,
+      data: change.doc.data()
+    }));
+    
+    // Only trigger callback if there are actual changes
+    if (changes.length > 0) {
+      callback(changes, snapshot.docs);
+    }
+  });
+  
+  return unsubscribe;
+}
+
+/**
+ * Resolves multiple usernames efficiently
+ * @param {Array<string>} userIds - Array of user IDs to resolve
+ * @returns {Promise<Map<string, string>>} Map of userId to username
+ */
+export async function bulkResolveUsernames(userIds) {
+    const usernameMap = new Map();
+    
+    if (!userIds || userIds.length === 0) return usernameMap;
+    
+    // Check all player collections
+    const collections = ['players', 'playersD2', 'playersD3', 'nonParticipants'];
+    
+    for (const collectionName of collections) {
+        const playersRef = collection(db, collectionName);
+        const snapshot = await getDocs(playersRef);
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.username && userIds.includes(doc.id)) {
+                usernameMap.set(doc.id, data.username);
+            }
+        });
+    }
+    
+    return usernameMap;
+}

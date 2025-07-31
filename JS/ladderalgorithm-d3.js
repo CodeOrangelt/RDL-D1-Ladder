@@ -1,1 +1,232 @@
-(function(a,b){const u=a29d,c=a();while(!![]){try{const d=parseInt(u(0x1a8))/0x1*(parseInt(u(0x198))/0x2)+parseInt(u(0x191))/0x3+-parseInt(u(0x1ae))/0x4+-parseInt(u(0x197))/0x5*(parseInt(u(0x1a1))/0x6)+parseInt(u(0x189))/0x7*(parseInt(u(0x1a9))/0x8)+-parseInt(u(0x196))/0x9*(parseInt(u(0x199))/0xa)+parseInt(u(0x187))/0xb*(parseInt(u(0x186))/0xc);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a29c,0x5e69b));const a29b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a29a=a29b(this,function(){const v=a29d,a=function(){let f;try{f=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=['log','warn','info',v(0x19b),'exception',v(0x193),'trace'];for(let e=0x0;e<d['length'];e++){const f=a29b['constructor'][v(0x19d)]['bind'](a29b),g=d[e],h=c[g]||f;f['__proto__']=a29b[v(0x18d)](a29b),f['toString']=h[v(0x1a3)][v(0x18d)](h),c[g]=f;}});function a29c(){const z=['mZC3nJa4EfbQyKP3','yxbWCM92zwrnyxrJAgvZrdm','CM91BMq','Bg9N','yMLUza','Bg9ZCW','ywXS','rxjYB3iGAw4GyxbWCM92zvjLCg9YDeqZoG','ndG3nZaXAe5kDgTI','zwXVuMf0Aw5N','DgfIBgu','t25Lig9YigjVDgGGrdmGCgXHEwvYCYbUB3qGzM91BMq','tM8GDxnLCIbSB2DNzwqGAw4','otLjuLndA2G','mZG5nZbeu2ngAui','ntaWoenpu1jhtq','nJK0odiWvwLAENfr','zxHPC3rZ','zxjYB3i','zgf0yq','ChjVDg90ExbL','Bg9ZzxjvC2vYBMfTzq','rdmGv2LUBMvYigfSCMvHzhKGCMfUA2vKigHPz2HLCIaTigTLzxbPBMCGCg9ZAxrPB25Z','zg9JCW','mJe2sKXywKvH','zw1WDhK','Dg9tDhjPBMC','tufyx1nbrKvFsu5uruDfuG','y29TBwL0','DxbKyxrL','DwLK','mtm5D1DdCvrJ','ntzLq095z2K','CgXHEwvYC0qZ','zw1HAwW','q3vYCMvUDcb1C2vYBMfTztO','Cg9ZAxrPB24','mJa2odrbvNvhBLm','rdmGtwf0y2GGBw92zwqGDg8GyxbWCM92zwqGy29SBgvJDgLVBG','nJu4mJq5mM1NtffxDa','mtfMDLnpvwO','DxnLCM5HBwu'];a29c=function(){return z;};return a29c();}a29a();import{addDoc,updateDoc,serverTimestamp,collection,doc,getDoc,getDocs,query,where,setDoc,deleteDoc,writeBatch}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db,auth}from'./firebase-config.js';import{recordEloChangeD3}from'./elo-history-d3.js';function a29d(a,b){const c=a29c();return a29d=function(d,e){d=d-0x185;let f=c[d];if(a29d['WvoYRh']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a29d['ASZJHh']=g,a=arguments,a29d['WvoYRh']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a29d['ASZJHh'](f),a[i]=f):f=j,f;},a29d(a,b);}export function calculateEloD3(a,b,c=0x20){const w=a29d,d=0x1/(0x1+Math['pow'](0xa,(b-a)/0x190)),e=0x1/(0x1+Math['pow'](0xa,(a-b)/0x190)),f=a+c*(0x1-d),g=b+c*(0x0-e);return{'newWinnerRating':Math[w(0x18b)](f),'newLoserRating':Math['round'](g)};}export async function updateEloRatingsD3(a,b,c){const x=a29d;try{const d=writeBatch(db),e=doc(db,x(0x1aa),a),f=doc(db,'playersD3',b),[g,h]=await Promise['all']([getDoc(e),getDoc(f)]);if(!g['exists']()||!h[x(0x19a)]())throw new Error(x(0x194));const i=g[x(0x19c)](),j=h[x(0x19c)](),k=i['position']||Number[x(0x1a4)],l=j[x(0x1ad)]||Number['MAX_SAFE_INTEGER'],{newWinnerRating:m,newLoserRating:n}=calculateEloD3(i[x(0x192)]||0x4b0,j['eloRating']||0x4b0);let o=k,p=l;if(k>l){console['log']('D3\x20Position\x20swap\x20needed\x20-\x20winner\x20was\x20lower\x20ranked'),o=l,p=l+0x1;const q=query(collection(db,'playersD3'),where(x(0x1ad),'>',l),where(x(0x1ad),'<',k)),r=await getDocs(q);for(const s of r['docs']){s['id']!==a&&s['id']!==b&&d['update'](doc(db,'playersD3',s['id']),{'position':s['data']()[x(0x1ad)]+0x1});}}else console['log'](x(0x19f));return d['update'](e,{'eloRating':m,'lastMatchDate':serverTimestamp(),'position':o,'lastMatchId':c}),d[x(0x1a6)](f,{'eloRating':n,'lastMatchDate':serverTimestamp(),'position':p,'lastMatchId':c}),await d[x(0x1a5)](),console[x(0x18c)]('D3\x20ELO\x20ratings\x20updated\x20successfully'),await Promise[x(0x18f)]([recordEloChangeD3({'playerId':a,'previousElo':i[x(0x192)]||0x4b0,'newElo':m,'opponentId':b,'matchResult':'win','previousPosition':k,'newPosition':o,'isPromotion':o<k,'matchId':c,'timestamp':serverTimestamp()}),recordEloChangeD3({'playerId':b,'previousElo':j[x(0x192)]||0x4b0,'newElo':n,'opponentId':a,'matchResult':x(0x18e),'previousPosition':l,'newPosition':p,'isDemotion':p>l,'matchId':c,'timestamp':serverTimestamp()})]),!![];}catch(t){console['error']('Error\x20in\x20updateEloRatingsD3:',t);throw t;}}export async function approveReportD3(a,b,c,d){const y=a29d;try{console['log']('Starting\x20approveReportD3\x20function\x20with:',{'reportId':a,'winnerScore':b,'winnerSuicides':c,'winnerComment':d});const e=auth['currentUser'];if(!e){console['log'](y(0x195));throw new Error('You\x20must\x20be\x20logged\x20in\x20to\x20approve\x20D3\x20matches');}console['log']('Current\x20user:',e[y(0x1ab)]);const f=await getDoc(doc(db,'playersD3',e[y(0x1a7)])),g=f[y(0x19a)]()?f[y(0x19c)]()[y(0x188)]:null;console['log'](y(0x1ac),g);const h=doc(db,'pendingMatchesD3',a),i=await getDoc(h);if(!i[y(0x19a)]()){console['log']('D3\x20Report\x20not\x20found\x20with\x20ID:',a);throw new Error('D3\x20match\x20report\x20not\x20found');}const j=i['data']();console['log']('D3\x20Report\x20data:',j);if(g!==j['winnerUsername'])throw new Error('Only\x20the\x20winner\x20can\x20approve\x20D3\x20matches');const k={...j,'winnerScore':b,'winnerSuicides':c,'winnerComment':d,'approved':!![],'approvedAt':serverTimestamp(),'approvedBy':g,'createdAt':j['createdAt']||serverTimestamp(),'winnerUsername':j['winnerUsername'],'loserUsername':j[y(0x19e)]};await setDoc(doc(db,y(0x18a),a),k),await deleteDoc(h),console['log'](y(0x185));const [l,m]=await Promise[y(0x18f)]([getDocs(query(collection(db,'playersD3'),where('username','==',j['winnerUsername']))),getDocs(query(collection(db,'playersD3'),where(y(0x188),'==',j[y(0x19e)])))]);if(l[y(0x1a2)]||m[y(0x1a2)])throw new Error('Could\x20not\x20find\x20D3\x20player\x20documents');const n=l['docs'][0x0]['id'],o=m[y(0x1a0)][0x0]['id'];return await updateEloRatingsD3(n,o,a),console['log']('D3\x20Match\x20successfully\x20approved\x20and\x20ELO\x20updated'),!![];}catch(p){console['error'](y(0x190),p);throw p;}}
+import { 
+    addDoc, 
+    updateDoc, 
+    serverTimestamp, 
+    collection, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    query,
+    where,
+    setDoc,
+    deleteDoc,
+    writeBatch
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, auth } from './firebase-config.js';
+import { recordEloChangeD3 } from './elo-history-d3.js';
+
+// EXACT SAME ELO calculation as D1/D2
+export function calculateEloD3(winnerRating, loserRating, kFactor = 32) {
+    const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
+    const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
+
+    const newWinnerRating = winnerRating + kFactor * (1 - expectedScoreWinner);
+    const newLoserRating = loserRating + kFactor * (0 - expectedScoreLoser);
+
+    return {
+        newWinnerRating: Math.round(newWinnerRating),
+        newLoserRating: Math.round(newLoserRating)
+    };
+}
+
+// EXACT SAME ELO update function as D1/D2
+export async function updateEloRatingsD3(winnerId, loserId, matchId) {
+    try {
+        // Get batch instance
+        const batch = writeBatch(db);
+
+        // Get player references - using playersD3 collection
+        const winnerRef = doc(db, 'playersD3', winnerId);
+        const loserRef = doc(db, 'playersD3', loserId);
+
+        // Get current player data
+        const [winnerDoc, loserDoc] = await Promise.all([
+            getDoc(winnerRef),
+            getDoc(loserRef)
+        ]);
+
+        if (!winnerDoc.exists() || !loserDoc.exists()) {
+            throw new Error('One or both D3 players not found');
+        }
+
+        const winnerData = winnerDoc.data();
+        const loserData = loserDoc.data();
+
+        // Store original positions
+        const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
+        const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
+
+        // Calculate new ELO ratings - SAME AS D1/D2
+        const { newWinnerRating, newLoserRating } = calculateEloD3(
+            winnerData.eloRating || 1200,
+            loserData.eloRating || 1200
+        );
+
+        // Handle position updating based on ladder rules - SAME AS D1/D2
+        let newWinnerPosition = winnerPosition;
+        let newLoserPosition = loserPosition;
+
+        if (winnerPosition > loserPosition) {
+            // Winner was ranked lower than loser, so winner moves up
+            console.log('D3 Position swap needed - winner was lower ranked');
+
+            // Winner takes loser's position
+            newWinnerPosition = loserPosition;
+
+            // Loser moves down one spot
+            newLoserPosition = loserPosition + 1;
+
+            // Move everyone else between the old positions down one spot
+            const playersToUpdate = query(
+                collection(db, 'playersD3'),
+                where('position', '>', loserPosition),
+                where('position', '<', winnerPosition)
+            );
+
+            const playersSnapshot = await getDocs(playersToUpdate);
+            for (const playerDoc of playersSnapshot.docs) {
+                if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
+                    batch.update(doc(db, 'playersD3', playerDoc.id), {
+                        position: playerDoc.data().position + 1
+                    });
+                }
+            }
+        } else {
+            // Winner was already ranked higher than loser, positions stay the same
+            console.log('D3 Winner already ranked higher - keeping positions');
+        }
+
+        // Update the documents with the limited field set - SAME AS D1/D2
+        batch.update(winnerRef, {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            position: newWinnerPosition,
+            lastMatchId: matchId
+        });
+
+        batch.update(loserRef, {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            position: newLoserPosition,
+            lastMatchId: matchId
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        console.log('D3 ELO ratings updated successfully');
+
+        // Create ELO history entries using D3-specific function - SAME PATTERN AS D1/D2
+        await Promise.all([
+            recordEloChangeD3({
+                playerId: winnerId,
+                previousElo: winnerData.eloRating || 1200,
+                newElo: newWinnerRating,
+                opponentId: loserId,
+                matchResult: 'win',
+                previousPosition: winnerPosition,
+                newPosition: newWinnerPosition,
+                isPromotion: newWinnerPosition < winnerPosition,
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            }),
+            recordEloChangeD3({
+                playerId: loserId,
+                previousElo: loserData.eloRating || 1200,
+                newElo: newLoserRating,
+                opponentId: winnerId,
+                matchResult: 'loss',
+                previousPosition: loserPosition,
+                newPosition: newLoserPosition,
+                isDemotion: newLoserPosition > loserPosition,
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            })
+        ]);
+
+        return true;
+
+    } catch (error) {
+        console.error('Error in updateEloRatingsD3:', error);
+        throw error;
+    }
+}
+
+// EXACT SAME match approval function as D1/D2
+export async function approveReportD3(reportId, winnerScore, winnerSuicides, winnerComment) {
+    try {
+        console.log('Starting approveReportD3 function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            console.log('No user logged in');
+            throw new Error('You must be logged in to approve D3 matches');
+        }
+        console.log('Current user:', currentUser.email);
+
+        // Get user's player document
+        const userDoc = await getDoc(doc(db, 'playersD3', currentUser.uid));
+        const currentUsername = userDoc.exists() ? userDoc.data().username : null;
+        console.log('Current username:', currentUsername);
+
+        // Get the pending match - using pendingMatchesD3 collection
+        const pendingMatchRef = doc(db, 'pendingMatchesD3', reportId);
+        const reportSnapshot = await getDoc(pendingMatchRef);
+
+        if (!reportSnapshot.exists()) {
+            console.log('D3 Report not found with ID:', reportId);
+            throw new Error('D3 match report not found');
+        }
+
+        const reportData = reportSnapshot.data();
+        console.log('D3 Report data:', reportData);
+
+        // Check if user is the winner
+        if (currentUsername !== reportData.winnerUsername) {
+            throw new Error('Only the winner can approve D3 matches');
+        }
+
+        // Add winner details to report data
+        const updatedReportData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
+            winnerComment: winnerComment,
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: currentUsername,
+            createdAt: reportData.createdAt || serverTimestamp(),
+            winnerUsername: reportData.winnerUsername,
+            loserUsername: reportData.loserUsername
+        };
+
+        // Move match to approved collection first - using approvedMatchesD3 collection
+        await setDoc(doc(db, 'approvedMatchesD3', reportId), updatedReportData);
+        await deleteDoc(pendingMatchRef);
+
+        console.log('D3 Match moved to approved collection');
+
+        // Get player IDs - using D3-specific player collection
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, 'playersD3'), where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'playersD3'), where('username', '==', reportData.loserUsername)))
+        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            throw new Error('Could not find D3 player documents');
+        }
+
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
+
+        // Update ELO ratings using D3-specific function
+        await updateEloRatingsD3(winnerId, loserId, reportId);
+
+        console.log('D3 Match successfully approved and ELO updated');
+        return true;
+
+    } catch (error) {
+        console.error('Error in approveReportD3:', error);
+        throw error;
+    }
+}

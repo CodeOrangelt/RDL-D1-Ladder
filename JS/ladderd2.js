@@ -1,1 +1,576 @@
-(function(a,b){const t=a32d,c=a();while(!![]){try{const d=-parseInt(t(0x13e))/0x1*(parseInt(t(0x14c))/0x2)+parseInt(t(0x143))/0x3+parseInt(t(0x14d))/0x4+parseInt(t(0x175))/0x5+-parseInt(t(0x17d))/0x6*(-parseInt(t(0x181))/0x7)+-parseInt(t(0x153))/0x8*(-parseInt(t(0x169))/0x9)+-parseInt(t(0x167))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a32c,0x57d47));const a32b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a32a=a32b(this,function(){const v=a32d,a=function(){const u=a32d;let f;try{f=Function(u(0x172)+u(0x171)+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[v(0x173)]||{},d=['log','warn','info',v(0x16d),'exception',v(0x18e),v(0x148)];for(let e=0x0;e<d[v(0x145)];e++){const f=a32b['constructor'][v(0x16a)]['bind'](a32b),g=d[e],h=c[g]||f;f['__proto__']=a32b[v(0x166)](a32b),f['toString']=h['toString']['bind'](h),c[g]=f;}});a32a();import{collection,getDocs,deleteDoc,doc,getDoc,query,where,updateDoc,Timestamp,onSnapshot,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db}from'./firebase-config.js';import{getRankStyle}from'./ranks.js';import a32e from'./firebase-idle-wrapper.js';const playerCacheD2={'data':null,'timestamp':0x0},CACHE_DURATION=0x7530;async function displayLadderD2(a=![]){const w=a32d,b=document[w(0x187)]('#ladder-d2\x20tbody');if(!b){console['error']('D2\x20Ladder\x20table\x20body\x20not\x20found');return;}b[w(0x142)]=w(0x14e);try{const c=Date[w(0x140)]();if(!a&&playerCacheD2[w(0x151)]&&c-playerCacheD2[w(0x18f)]<CACHE_DURATION){updateLadderDisplayD2(playerCacheD2[w(0x151)]);return;}const d=collection(db,'playersD2'),e=query(d,orderBy('position','asc')),f=await a32e[w(0x14a)](d),g=[];f[w(0x15e)](m=>{const x=w,n=m[x(0x151)]();n[x(0x165)]&&g[x(0x178)]({...n,'id':m['id'],'elo':n['eloRating']||0x0,'position':n['position']||Number[x(0x133)]});});const h=collection(db,'userProfiles'),i=await getDocs(h),j=new Map();i[w(0x15e)](m=>{const y=w,n=m[y(0x151)]();n[y(0x165)]&&j['set'](n[y(0x165)]['toLowerCase'](),n);});for(const m of g){const n=m[w(0x165)][w(0x135)]();if(j['has'](n)){const o=j[w(0x183)](n);o[w(0x159)]&&(m[w(0x159)]=o[w(0x159)]['toLowerCase']());}}const k=g[w(0x16b)](q=>q['username']),l=await fetchBatchMatchStatsD2(k);g['sort']((p,q)=>{const z=w,r=l['get'](p[z(0x165)])?.['totalMatches']||0x0,s=l[z(0x183)](q[z(0x165)])?.['totalMatches']||0x0;if(r===0x0!==(s===0x0))return r===0x0?0x1:-0x1;return(p['position']||0x3e7)-(q[z(0x18b)]||0x3e7);}),g['forEach']((p,q)=>{const A=w;p[A(0x18b)]=q+0x1;}),playerCacheD2[w(0x151)]=g,playerCacheD2[w(0x18f)]=c,updateLadderDisplayD2(g);}catch(p){console[w(0x16d)](w(0x189),p),b['innerHTML']=w(0x170)+p[w(0x141)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}}function getNextAvailablePositionD2(a){const B=a32d;if(a[B(0x145)]===0x0)return 0x1;let b=0x0;return a[B(0x15e)](c=>{const C=B;c[C(0x18b)]&&typeof c[C(0x18b)]==='number'&&c[C(0x18b)]>b&&(b=c['position']);}),b+0x1;}async function updatePlayerPositions(a,b){const D=a32d;try{const c=collection(db,D(0x15c)),d=await getDocs(c),e=[];d['forEach'](h=>{const E=D;e[E(0x178)]({'id':h['id'],...h['data']()});});const f=e['find'](h=>h['username']===a),g=e['find'](h=>h['username']===b);if(!f||!g){console['error'](D(0x184));return;}if(f['position']>g[D(0x18b)]){const h=g[D(0x18b)];for(const i of e){i[D(0x18b)]>=g['position']&&i[D(0x18b)]<f['position']&&i[D(0x165)]!==a&&await updateDoc(doc(db,'playersD2',i['id']),{'position':i[D(0x18b)]+0x1});}await updateDoc(doc(db,D(0x15c),f['id']),{'position':h});if(h===0x1){const j=doc(db,'playersD2',f['id']),k=await getDoc(j);!k['data']()[D(0x154)]&&await updateDoc(j,{'firstPlaceDate':Timestamp[D(0x140)]()});}if(g['position']===0x1){const l=doc(db,'playersD2',g['id']);await updateDoc(l,{'firstPlaceDate':null});}playerCacheD2['timestamp']=0x0;}}catch(m){console['error']('Error\x20updating\x20D2\x20player\x20positions:',m);}}function a32d(a,b){const c=a32c();return a32d=function(d,e){d=d-0x133;let f=c[d];if(a32d['SyFLGi']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a32d['IBmgim']=g,a=arguments,a32d['SyFLGi']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a32d['IBmgim'](f),a[i]=f):f=j,f;},a32d(a,b);}function calculateStreakDays(a){const F=a32d;if(!a)return 0x0;const b=a['toDate'](),c=new Date(),d=Math['abs'](c-b);return Math[F(0x13b)](d/(0x3e8*0x3c*0x3c*0x18));}function getPlayerRankNameD2(a){const G=a32d;if(a>=0x834)return G(0x182);if(a>=0x708)return G(0x185);if(a>=0x640)return'Silver';if(a>=0x578)return'Bronze';return G(0x17a);}async function updateLadderDisplayD2(a){const H=a32d;a[H(0x137)]((g,h)=>g['position']-h[H(0x18b)]);const b=document[H(0x187)]('#ladder-d2\x20tbody');if(!b)return;b[H(0x142)]='';const c=a['map'](g=>g[H(0x165)]),d=await fetchBatchMatchStatsD2(c),e=document[H(0x187)]('#ladder-d2\x20thead\x20tr');e&&(e[H(0x142)]=H(0x138));const f=a[H(0x16b)](g=>{const h=d['get'](g['username'])||{'totalMatches':0x0,'wins':0x0,'losses':0x0,'kda':0x0,'winRate':0x0,'totalKills':0x0,'totalDeaths':0x0};return createPlayerRowD2(g,h);})['join']('');b['innerHTML']=f,getPlayersLastEloChangesD2(c)[H(0x155)](g=>{const h=new Map();b['querySelectorAll']('tr')['forEach']((i,j)=>{const I=a32d;j<c['length']&&h[I(0x150)](c[j],i);}),g['forEach']((i,j)=>{const J=a32d,k=h[J(0x183)](j);if(k&&i!==0x0){const l=k['querySelector'](J(0x186));if(l){const m=i>0x0?'+'+i:''+i,n=l['querySelector'](J(0x157));n&&(n[J(0x174)]=m,n[J(0x16e)]['color']=i>0x0?J(0x179):'#F44336',n[J(0x16e)][J(0x16f)]='bold',n[J(0x16e)][J(0x152)]=J(0x160),n[J(0x16e)][J(0x134)]=J(0x17c),n['style'][J(0x15a)]='visible',n[J(0x16e)]['opacity']='1');}}});})['catch'](g=>console['error'](H(0x191),g));}function a32c(){const U=['ndGZndi3DgzHD0jZ','rw1LCMfSza','z2v0','q291BgqGBM90igzPBMqGD2LUBMvYig9YigXVC2vYigLUieqYihbSyxLLCNmGBgLZDa','r29Sza','Dgq6BNrOlwnOAwXKkdmP','CxvLCNLtzwXLy3rVCG','i0nen0yZmG','rxjYB3iGBg9HzgLUzYbemIbSywrKzxi6','CgXHEwvYvxnLCM5HBwu','Cg9ZAxrPB24','BMv3rwXV','z3jHEq','DgfIBgu','DgLTzxn0yw1W','jMXHzgrLCJ1KmIiGcIaGicaGicaGicaGicaGicaGicbZDhLSzt0Iy29SB3i6ia','rxjYB3iGDxbKyxrPBMCGrdiGruXpihrYzw5KigLUzgLJyxrVCNm6','tufyx1nbrKvFsu5uruDfuG','zgLZCgXHEq','Dg9mB3DLCKnHC2u','iIakicaGicaGicaGicaGicaGicaGicaGicaGy2XHC3m9iNbSyxLLCI1MBgfNiIakicaGicaGicaGicaGicaGicaGicaGicaGC3r5Bgu9iM1HCMDPBI1Szwz0oIa1ChG7ihzLCNrPy2fSlwfSAwDUoIbTAwrKBgu7iGOGicaGicaGicaGicaGicaGicaGicaGicbVBMvYCM9Ypsj0AgLZlNn0EwXLlMrPC3bSyxK9j25VBMuNiJ4','C29YDa','cIaGicaGicaGicaGidX0Ad5syw5Rpc90Ad4kicaGicaGicaGicaGphrOpLvZzxjUyw1Lpc90Ad4kicaGicaGicaGicaGphrOpKvmtZWVDgG+cIaGicaGicaGicaGidX0Ad5nyxrJAgvZpc90Ad4kicaGicaGicaGicaGphrOpLDPBNm8l3rOpGOGicaGicaGicaGica8DgG+tg9ZC2vZpc90Ad4kicaGicaGicaGicaGphrOpKSVrdWVDgG+cIaGicaGicaGicaGidX0Ad5xAw4GuMf0ztWVDgG+cIaGicaGicaG','rxjYB3iGzMv0y2HPBMCGyMf0y2GGrdiGBwf0y2GGC3rHDhm6','Aw5JBhvKzxm','y2vPBa','i0zgrdCWma','Dg90ywXnyxrJAgvZ','nxHbB2rWza','CgXHEwvY','BM93','BwvZC2fNzq','Aw5Uzxjive1m','mtaZndmWn1LrAg53CW','A2rH','BgvUz3rO','zwXVsgLZDg9YEuqY','D2LUBMvYvxnLCM5HBwu','DhjHy2u','zgvZyW','z2v0rg9JDw1LBNrZ','lNbUzYiGcIaGicaGicaGicaGicaGicaGicaGicaGigfSDd0I','mti2mtG2DujkuNLb','odKYotjywu5KDLK','phrYpJX0zcbJB2XZCgfUpsi4iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NieqYigXHzgrLCIbKyxrHlI4Upc90zd48l3rYpG','oYb0zxH0lwrLy29YyxrPB246ig5VBMu7iJ4kicaGicaGicaGicaGicaGicaGica','C2v0','zgf0yq','zM9UDfnPEMu','mtC5mZy3mKTdCMjgAa','zMLYC3rqBgfJzurHDgu','DgHLBG','zwXV','lNrYzw5KlwLUzgLJyxrVCG','D2LUuMf0zq','y291BNrYEq','DMLZAwjPBgL0Eq','Dg90ywXlAwXSCW','CgXHEwvYC0qY','Dg9gAxHLza','zM9YrwfJAa','Bg9ZC2vZ','mc44nwvT','D2LUBMvYu2nVCMu','D2LUCW','cIaGicaGicaGicaGidWVzgL2pGOGicaGicaGidWVDgq+cIaGicaGicaGphrKihn0EwXLpsjJB2XVCJOG','rdi6ievYCM9YigzLDgnOAw5NievmtYbOAxn0B3j5oG','DxnLCM5HBwu','yMLUza','mtiZodKZnJbUwff3D1a','Dg90ywXezwf0Ahm','ourKqLLbzq','ChjVDg90ExbL','BwfW','AgfZ','zxjYB3i','C3r5Bgu','zM9UDfDLAwDODa','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi4iIbZDhLSzt0IDgv4Dc1HBgLNBJOGy2vUDgvYoYbJB2XVCJOGCMvKoYi+cIaGicaGicaGicaGicaGicaGicaGrxjYB3iGBg9HzgLUzYbemIbSywrKzxiGzgf0ytOG','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','CMv0DxjUicHMDw5JDgLVBIGPia','y29UC29Szq','Dgv4DenVBNrLBNq','mZuWnJuXme5OvKLSEq','i0mWqZbdma','pc90zd4kicaGicaGica8Dgq+','ChvZAa','iZrdquy1ma','vw5Yyw5Rzwq','cIaGica8Dhi+cIaGicaGicaGphrKpG','Aw5SAw5L','ntrXrxzgwMq','ChjLDMLVDxnfBg8','igzHBgXIywnRievmtYbJAgfUz2u6ia','y2HHBMDL'];a32c=function(){return U;};return a32c();}function createPlayerRowD2(a,b){const K=a32d,c=parseFloat(a[K(0x156)])||0x0;let d=K(0x18d);if(c>=0x7d0)d='#50C878';else{if(c>=0x708)d=K(0x13c);else{if(c>=0x640)d=K(0x176);else c>=0x578&&(d=K(0x188));}}let e='';return a[K(0x159)]&&(e='<img\x20src=\x22../images/flags/'+a['country']['toLowerCase']()+K(0x14b)+a[K(0x159)]+K(0x136)),K(0x17b)+a['position']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x20position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(a['username'])+K(0x190)+d+K(0x14f)+a[K(0x165)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+e+K(0x163)+d+';\x20position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22elo-container\x22\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22elo-value\x22>'+c+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22trend-indicator\x22\x20style=\x22margin-left:\x205px;\x22></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+b[K(0x13d)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+b['wins']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+b['losses']+K(0x177)+b[K(0x144)]+K(0x177)+b[K(0x158)]+'%</td>\x0a\x20\x20\x20\x20</tr>';}async function getPlayersLastEloChangesD2(a){const L=a32d,b=new Map();a[L(0x15e)](c=>b[L(0x150)](c,0x0));try{const c=collection(db,L(0x146)),d=query(c,orderBy(L(0x18f),'desc'),limit(0x64)),e=await getDocs(d),f=new Map(),g=await getDocs(collection(db,'playersD2'));g['forEach'](i=>{const M=L,j=i[M(0x151)]();j['username']&&f['set'](i['id'],j[M(0x165)]);});const h=new Map();e['forEach'](i=>{const N=L,j=i['data']();let k=j[N(0x165)]||j['playerUsername'];!k&&j[N(0x13f)]&&f[N(0x16c)](j['player'])&&(k=f['get'](j['player']));if(!k&&j['matchId']){}k&&a['includes'](k)&&(!h[N(0x16c)](k)&&h[N(0x150)](k,[]),h['get'](k)[N(0x178)]({...j,'timestamp':j[N(0x18f)]?.['seconds']||0x0,'username':k}));}),h['forEach']((i,j)=>{const O=L;if(i[O(0x145)]>0x0){i[O(0x137)]((l,m)=>m[O(0x18f)]-l['timestamp']);const k=i['find'](l=>l['change']!==undefined||l['newElo']!==undefined&&l[O(0x17e)]!==undefined);if(k){let l;if(k[O(0x180)]!==undefined)l=k['change'];else k['newElo']!==undefined&&k['previousElo']!==undefined&&(l=k['newElo']-k['previousElo']);l!==undefined&&b['set'](j,l);}}});if(h['size']===0x0){const i=collection(db,'eloHistory'),j=query(i,where('gameMode','==','D2'),orderBy(L(0x18f),L(0x149)),limit(0x32));try{const k=await getDocs(j);console['log']('D2:\x20Found',k['size'],'fallback\x20entries'),k[L(0x15e)](l=>{const P=L,m=l[P(0x151)](),n=m[P(0x165)]||m[P(0x18a)];if(n&&a[P(0x13a)](n)){const o=m['change']||(m[P(0x18c)]!==undefined&&m[P(0x17e)]!==undefined?m[P(0x18c)]-m['previousElo']:0x0);o!==0x0&&(b['set'](n,o),console['log']('D2:\x20'+n+P(0x17f)+o));}});}catch(l){}}}catch(m){console[L(0x16d)](L(0x164),m);}return b;}async function fetchBatchMatchStatsD2(a){const Q=a32d,b=new Map();try{a[Q(0x15e)](e=>{const R=Q;b[R(0x150)](e,{'totalMatches':0x0,'wins':0x0,'losses':0x0,'totalKills':0x0,'totalDeaths':0x0,'kda':0x0,'winRate':0x0});});const c=collection(db,'approvedMatchesD2'),d=await getDocs(c);d[Q(0x15e)](e=>{const S=Q,f=e[S(0x151)](),g=f[S(0x147)],h=f['loserUsername'];if(a[S(0x13a)](g)){const i=b[S(0x183)](g);i[S(0x162)]++,i[S(0x13d)]++,i[S(0x15b)]+=parseInt(f[S(0x161)])||0x0,i[S(0x168)]+=parseInt(f['loserScore'])||0x0;}if(a[S(0x13a)](h)){const j=b['get'](h);j[S(0x15f)]++,j['totalMatches']++,j['totalKills']+=parseInt(f['loserScore'])||0x0,j['totalDeaths']+=parseInt(f['winnerScore'])||0x0;}}),a[Q(0x15e)](e=>{const T=Q,f=b[T(0x183)](e);f[T(0x144)]=f[T(0x168)]>0x0?(f['totalKills']/f[T(0x168)])['toFixed'](0x2):f[T(0x15b)][T(0x15d)](0x2),f[T(0x158)]=f[T(0x13d)]>0x0?(f['wins']/f['totalMatches']*0x64)[T(0x15d)](0x1):0x0;});}catch(e){console['error'](Q(0x139),e);}return b;}export{displayLadderD2,updatePlayerPositions};
+import { 
+    collection, 
+    getDocs,
+    deleteDoc,
+    doc,
+    getDoc,
+    query,
+    where,
+    updateDoc,
+    Timestamp,
+    onSnapshot,
+    orderBy,
+    limit
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+import { getRankStyle } from './ranks.js';
+import firebaseIdle from './firebase-idle-wrapper.js';
+
+// Add caching system like in D1 ladder
+const playerCacheD2 = {
+    data: null,
+    timestamp: 0
+};
+const CACHE_DURATION = 30000; // 30 seconds cache validity
+
+// Optimized display function with caching
+async function displayLadderD2(forceRefresh = false) {
+    const tableBody = document.querySelector('#ladder-d2 tbody');
+    if (!tableBody) {
+        console.error('D2 Ladder table body not found');
+        return;
+    }
+
+    // Clear the table first to prevent duplicates
+    tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading D2 ladder data...</td></tr>';
+    
+    try {
+        // Use cache if available and not expired
+        const now = Date.now();
+        if (!forceRefresh && playerCacheD2.data && (now - playerCacheD2.timestamp < CACHE_DURATION)) {
+            updateLadderDisplayD2(playerCacheD2.data);
+            return;
+        }
+        
+        // Query players with server-side ordering for efficiency
+        const playersRef = collection(db, 'playersD2');
+        const orderedQuery = query(playersRef, orderBy('position', 'asc'));
+        const querySnapshot = await firebaseIdle.getDocuments(playersRef);
+        
+        // Process players in a single pass
+        const players = [];
+        querySnapshot.forEach((doc) => {
+            const playerData = doc.data();
+            if (playerData.username) { // Ensure valid player
+                players.push({
+                    ...playerData,
+                    id: doc.id,
+                    elo: playerData.eloRating || 0,
+                    position: playerData.position || Number.MAX_SAFE_INTEGER
+                });
+            }
+        });
+        
+        // Fetch profiles for flags
+        const profilesRef = collection(db, 'userProfiles');
+        const profilesSnapshot = await getDocs(profilesRef);
+
+        // Create a map of username -> profile data
+        const profilesByUsername = new Map();
+        profilesSnapshot.forEach((doc) => {
+            const profileData = doc.data();
+            if (profileData.username) {
+                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+            }
+        });
+
+        // Match profiles to players
+        for (const player of players) {
+            const username = player.username.toLowerCase();
+            if (profilesByUsername.has(username)) {
+                const profile = profilesByUsername.get(username);
+                
+                // Set country from profile
+                if (profile.country) {
+                    player.country = profile.country.toLowerCase();
+                }
+            }
+        }
+        
+        // Get all usernames for batch processing
+        const usernames = players.map(p => p.username);
+        
+        // Pre-fetch all match statistics in a single batch operation
+        const matchStatsBatch = await fetchBatchMatchStatsD2(usernames);
+        
+        // Sort players: players with 0 matches at the bottom
+        players.sort((a, b) => {
+            const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
+            const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
+            
+            // First check: put players with no matches at the bottom
+            if ((aMatches === 0) !== (bMatches === 0)) {
+                return aMatches === 0 ? 1 : -1;
+            }
+            
+            // Then sort by position for players in the same category
+            return (a.position || 999) - (b.position || 999);
+        });
+        
+        // Reassign positions sequentially
+        players.forEach((player, index) => {
+            player.position = index + 1;
+        });
+        
+        // Cache the results
+        playerCacheD2.data = players;
+        playerCacheD2.timestamp = now;
+        
+        // Update display
+        updateLadderDisplayD2(players);
+        
+    } catch (error) {
+        console.error("Error loading D2 ladder:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; color: red;">
+                    Error loading D2 ladder data: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Helper function to get the next available position
+function getNextAvailablePositionD2(players) {
+    if (players.length === 0) return 1;
+    
+    // Find the highest position number
+    let maxPosition = 0;
+    players.forEach(player => {
+        if (player.position && typeof player.position === 'number' && player.position > maxPosition) {
+            maxPosition = player.position;
+        }
+    });
+    
+    return maxPosition + 1;
+}
+
+// Improved function to handle all position update scenarios for D2
+async function updatePlayerPositions(winnerUsername, loserUsername) {
+    try {
+        // Get all players
+        const playersRef = collection(db, 'playersD2');
+        const querySnapshot = await getDocs(playersRef);
+        const players = [];
+        
+        querySnapshot.forEach((doc) => {
+            players.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        // Get winner and loser positions
+        const winner = players.find(p => p.username === winnerUsername);
+        const loser = players.find(p => p.username === loserUsername);
+
+        if (!winner || !loser) {
+            console.error("Could not find winner or loser in D2 players list");
+            return;
+        }
+
+        // Only update positions if winner is below loser in the ladder
+        if (winner.position > loser.position) {
+            const winnerNewPosition = loser.position;
+            
+            // Update positions for players between winner and loser
+            for (const player of players) {
+                if (player.position >= loser.position && player.position < winner.position && player.username !== winnerUsername) {
+                    // Move everyone down one position
+                    await updateDoc(doc(db, 'playersD2', player.id), {
+                        position: player.position + 1
+                    });
+                }
+            }
+
+            // Update winner's position
+            await updateDoc(doc(db, 'playersD2', winner.id), {
+                position: winnerNewPosition
+            });
+
+            // Handle #1 position streak tracking (same as D1)
+            if (winnerNewPosition === 1) {
+                const winnerDoc = doc(db, 'playersD2', winner.id);
+                const winnerData = await getDoc(winnerDoc);
+                
+                if (!winnerData.data().firstPlaceDate) {
+                    await updateDoc(winnerDoc, {
+                        firstPlaceDate: Timestamp.now()
+                    });
+                }
+            }
+            
+            // If the previous #1 player is displaced
+            if (loser.position === 1) {
+                const loserDoc = doc(db, 'playersD2', loser.id);
+                await updateDoc(loserDoc, {
+                    firstPlaceDate: null // Reset their streak
+                });
+            }
+            
+            // Invalidate cache to ensure fresh data is loaded
+            playerCacheD2.timestamp = 0;
+        }
+    } catch (error) {
+        console.error("Error updating D2 player positions:", error);
+    }
+}
+
+// Helper function to calculate streak days
+function calculateStreakDays(startDate) {
+    if (!startDate) return 0;
+    const start = startDate.toDate();
+    const now = new Date();
+    const diffTime = Math.abs(now - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Update the D2 ladder structure to match D1
+function getPlayerRankNameD2(elo) {
+    if (elo >= 2100) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
+}
+
+// Optimized displayLadder with batch processing
+async function updateLadderDisplayD2(ladderData) {
+    // Sort by position before displaying
+    ladderData.sort((a, b) => a.position - b.position);
+    
+    const tbody = document.querySelector('#ladder-d2 tbody');
+    if (!tbody) return;
+    
+    // Clear any existing content
+    tbody.innerHTML = '';
+    
+    // Get all usernames for batch processing
+    const usernames = ladderData.map(p => p.username);
+    
+    // Pre-fetch all match statistics in a single batch operation
+    const matchStatsBatch = await fetchBatchMatchStatsD2(usernames);
+    
+    // Update the table header to match D1
+    const thead = document.querySelector('#ladder-d2 thead tr');
+    if (thead) {
+        thead.innerHTML = `
+            <th>Rank</th>
+            <th>Username</th>
+            <th>ELO</th>
+            <th>Matches</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>K/D</th>
+            <th>Win Rate</th>
+        `;
+    }
+    
+    // Create all rows at once for better performance
+    const rowsHtml = ladderData.map(player => {
+        const stats = matchStatsBatch.get(player.username) || {
+            totalMatches: 0, wins: 0, losses: 0, 
+            kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
+        };
+        
+        return createPlayerRowD2(player, stats);
+    }).join('');
+    
+    // Append all rows at once
+    tbody.innerHTML = rowsHtml;
+    
+    // Get all ELO changes and update indicators (same pattern as D1)
+    getPlayersLastEloChangesD2(usernames)
+        .then(changes => {
+            // Create a mapping of username to row for quick updates
+            const rowMap = new Map();
+            tbody.querySelectorAll('tr').forEach((row, index) => {
+                if (index < usernames.length) {
+                    rowMap.set(usernames[index], row);
+                }
+            });
+            
+            changes.forEach((change, username) => {
+                const row = rowMap.get(username);
+                if (row && change !== 0) {
+                    const eloCell = row.querySelector('td:nth-child(3)');
+                    if (eloCell) {
+                        // Format the change value with + or - sign
+                        const formattedChange = change > 0 ? `+${change}` : `${change}`;
+                        
+                        // Find the indicator element that's already in the DOM
+                        const indicator = eloCell.querySelector('.trend-indicator');
+                        if (indicator) {
+                            // Update the existing indicator (same as D1)
+                            indicator.textContent = formattedChange;
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.85em';
+                            indicator.style.display = 'inline';
+                            indicator.style.visibility = 'visible';
+                            indicator.style.opacity = '1';
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error updating D2 ELO trend indicators:', error));
+}
+
+function createPlayerRowD2(player, stats) {
+    const elo = parseFloat(player.elo) || 0;
+    
+    // Set ELO-based colors (same as D1)
+    let usernameColor = 'gray';
+    if (elo >= 2000) {
+        usernameColor = '#50C878'; // Emerald Green
+    } else if (elo >= 1800) {
+        usernameColor = '#FFD700'; // Gold
+    } else if (elo >= 1600) {
+        usernameColor = '#C0C0C0'; // Silver
+    } else if (elo >= 1400) {
+        usernameColor = '#CD7F32'; // Bronze
+    }
+
+   /*
+    // IMPROVED: Create streak HTML if player is #1 AND has active streak
+    let streakHtml = '';
+    if (player.position === 1) {
+        let streakDays = 0;
+        
+        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
+        if (player.streakDays && player.streakDays > 0) {
+            streakDays = player.streakDays;
+        } else if (player.firstPlaceDate) {
+            streakDays = calculateStreakDays(player.firstPlaceDate);
+        }
+        
+        if (streakDays > 0) {
+            const pluralDays = streakDays === 1 ? 'day' : 'days';
+            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
+        }
+    }
+    */
+
+    // Create flag HTML if player has country (same as D1)
+    let flagHtml = '';
+    if (player.country) {
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle;"
+                        onerror="this.style.display='none'">`;
+    }
+
+    return `
+    <tr>
+        <td>${player.position}</td>
+        <td style="position: relative;">
+            <div style="display: flex; align-items: center; position: relative;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+            </div>
+        </td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
+        <td>${stats.totalMatches}</td>
+        <td>${stats.wins}</td>
+        <td>${stats.losses}</td>
+        <td>${stats.kda}</td>
+        <td>${stats.winRate}%</td>
+    </tr>`;
+}
+
+// Function for D2 ELO change tracking - KEEP THIS AS IS
+async function getPlayersLastEloChangesD2(usernames) {
+    const changes = new Map();
+    usernames.forEach(username => changes.set(username, 0));
+    
+    try {
+        // Try direct Firestore call first in case the idle wrapper is causing issues
+        const eloHistoryRef = collection(db, 'eloHistoryD2');
+        const recentHistoryQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
+        const snapshot = await getDocs(recentHistoryQuery);
+                
+        // Build a player ID to username mapping to improve matching
+        const playerIdToUsername = new Map();
+        const playersQuery = await getDocs(collection(db, 'playersD2'));
+        playersQuery.forEach(doc => {
+            const data = doc.data();
+            if (data.username) {
+                playerIdToUsername.set(doc.id, data.username);
+            }
+        });
+        
+        // Process entries by username with enhanced matching
+        const entriesByUsername = new Map();
+        
+        snapshot.forEach(doc => {
+            const entry = doc.data();
+            // Try different fields for username
+            let username = entry.username || entry.playerUsername;
+            
+            // If we have a player ID, try to match it
+            if (!username && entry.player && playerIdToUsername.has(entry.player)) {
+                username = playerIdToUsername.get(entry.player);
+            }
+            
+            // If still no username but we have match ID, try to get from match data
+            if (!username && entry.matchId) {
+                // This will be handled later if needed
+            }
+            
+            if (username && usernames.includes(username)) {
+                if (!entriesByUsername.has(username)) {
+                    entriesByUsername.set(username, []);
+                }
+                
+                // Add entry to the user's history
+                entriesByUsername.get(username).push({
+                    ...entry,
+                    timestamp: entry.timestamp?.seconds || 0,
+                    username: username // Ensure username is set
+                });
+            }
+        });
+                
+        entriesByUsername.forEach((entries, username) => {
+            if (entries.length > 0) {
+                entries.sort((a, b) => b.timestamp - a.timestamp);
+                
+                const recentEntry = entries.find(entry => 
+                    entry.change !== undefined || 
+                    (entry.newElo !== undefined && entry.previousElo !== undefined)
+                );
+                
+                if (recentEntry) {
+                    let eloChange;
+                    if (recentEntry.change !== undefined) {
+                        eloChange = recentEntry.change;
+                    } else if (recentEntry.newElo !== undefined && recentEntry.previousElo !== undefined) {
+                        eloChange = recentEntry.newElo - recentEntry.previousElo;
+                    }
+                    
+                    if (eloChange !== undefined) {
+                        changes.set(username, eloChange);
+                    }
+                }
+            }
+        });
+        
+        // If we didn't find any changes, try fallback to main eloHistory
+        if (entriesByUsername.size === 0) {
+            
+            const fallbackRef = collection(db, 'eloHistory');
+            const fallbackQuery = query(
+                fallbackRef, 
+                where('gameMode', '==', 'D2'), 
+                orderBy('timestamp', 'desc'), 
+                limit(50)
+            );
+            
+            try {
+                const fallbackSnapshot = await getDocs(fallbackQuery);
+                console.log('D2: Found', fallbackSnapshot.size, 'fallback entries');
+                
+                fallbackSnapshot.forEach(doc => {
+                    const entry = doc.data();
+                    const username = entry.username || entry.playerUsername;
+                    
+                    if (username && usernames.includes(username)) {
+                        const eloChange = entry.change || 
+                            (entry.newElo !== undefined && entry.previousElo !== undefined ? 
+                             entry.newElo - entry.previousElo : 0);
+                        
+                        if (eloChange !== 0) {
+                            changes.set(username, eloChange);
+                            console.log(`D2: ${username} fallback ELO change: ${eloChange}`);
+                        }
+                    }
+                });
+            } catch (fallbackError) {
+            }
+        }
+    } catch (error) {
+        console.error('D2: Error fetching ELO history:', error);
+    }
+    
+    return changes;
+}
+
+// Helper function to fetch all D2 match stats at once - much more efficient
+async function fetchBatchMatchStatsD2(usernames) {
+    const matchStats = new Map();
+    
+    try {
+        // Initialize stats for all players
+        usernames.forEach(username => {
+            matchStats.set(username, {
+                totalMatches: 0,
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                kda: 0,
+                winRate: 0
+            });
+        });
+        
+        // Get all matches in one query instead of per-player
+        const approvedMatchesRef = collection(db, 'approvedMatchesD2');
+        const allMatches = await getDocs(approvedMatchesRef);
+        
+        // Process all matches in a single pass
+        allMatches.forEach(doc => {
+            const match = doc.data();
+            const winnerUsername = match.winnerUsername;
+            const loserUsername = match.loserUsername;
+            
+            if (usernames.includes(winnerUsername)) {
+                const stats = matchStats.get(winnerUsername);
+                stats.wins++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.winnerScore) || 0;
+                stats.totalDeaths += parseInt(match.loserScore) || 0;
+            }
+            
+            if (usernames.includes(loserUsername)) {
+                const stats = matchStats.get(loserUsername);
+                stats.losses++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.loserScore) || 0;
+                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+            }
+        });
+        
+        // Calculate derived stats
+        usernames.forEach(username => {
+            const stats = matchStats.get(username);
+            
+            // Calculate KDA ratio
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+            
+            // Calculate win rate
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+        });
+        
+    } catch (error) {
+        console.error("Error fetching batch D2 match stats:", error);
+    }
+    
+    return matchStats;
+}
+
+// Export the D2 ladder functions
+export { displayLadderD2, updatePlayerPositions };

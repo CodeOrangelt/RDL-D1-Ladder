@@ -1,1 +1,114 @@
-function a40d(a,b){const c=a40c();return a40d=function(d,e){d=d-0x6d;let f=c[d];if(a40d['JuIAjx']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a40d['hVOjyv']=g,a=arguments,a40d['JuIAjx']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a40d['hVOjyv'](f),a[i]=f):f=j,f;},a40d(a,b);}const a40s=a40d;(function(a,b){const k=a40d,c=a();while(!![]){try{const d=-parseInt(k(0x7f))/0x1*(parseInt(k(0x96))/0x2)+-parseInt(k(0x73))/0x3*(-parseInt(k(0x71))/0x4)+-parseInt(k(0x86))/0x5*(parseInt(k(0x6f))/0x6)+-parseInt(k(0x77))/0x7*(parseInt(k(0x95))/0x8)+-parseInt(k(0xa1))/0x9*(-parseInt(k(0x90))/0xa)+-parseInt(k(0x9c))/0xb+parseInt(k(0x92))/0xc;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a40c,0x64309));const a40b=(function(){let a=!![];return function(b,c){const d=a?function(){const l=a40d;if(c){const e=c[l(0x99)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a40a=a40b(this,function(){const m=a40d;let a;try{const d=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a['console']=a[m(0x81)]||{},c=[m(0x7d),'warn','info',m(0x70),m(0x7e),'table',m(0x89)];for(let g=0x0;g<c[m(0x88)];g++){const h=a40b['constructor']['prototype'][m(0x8e)](a40b),i=c[g],j=b[i]||h;h[m(0x8b)]=a40b[m(0x8e)](a40b),h['toString']=j['toString'][m(0x8e)](j),b[i]=h;}});function a40c(){const t=['pc9ZCgfUpGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0ICgfNzs1ZzwfYy2GIpGOGicaGicaGicaGicaGicaGicaGidXPBNb1Dcb0ExbLpsjUDw1IzxiIigLKpsjWywDLsw5WDxqIig1PBJ0ImsiGBwf4psi','pc90zd4kicaGicaGica8l3rYpGOGicaG','pLbYzxzPB3vZpc9IDxr0B24+cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNbHz2uTBMf2AwDHDgLVBIi+cIaGicaGicaGicaGicaGica8C3bHBJ5qywDLia','Aw5Zzxj0qMvMB3jL','nZmYmZe4Dfj6C3Hk','zxjYB3i','mJK2Du1Wt2jL','ChjLDMLVDxnfBg8','nJqXmvruBwvLtW','ChjLDLbHz2u','re9nq29UDgvUDeXVywrLza','phrYpJX0zcbJB2XZCgfUpsi2iJ5oBYbfte8GAgLZDg9YEsbHDMfPBgfIBgu8l3rKpJWVDhi+','n3nyvLP4AG','CgfNAw5HDgLVBG','DgfYz2v0','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zd4','pc90zd4kicaGicaGicaGicaGicaGidX0zd4','DgLTzxn0yw1W','Bg9N','zxHJzxb0Aw9U','mtu2ntzqALzSsKe','AM9PBG','y29UC29Szq','y2XHC3noyw1L','Dg9mB2nHBgvtDhjPBMC','CgXHEwvY','ywrKrxzLBNrmAxn0zw5LCG','mtvuvNDgq3C','zgLZywjSzwq','BgvUz3rO','DhjHy2u','i2vSBY1OAxn0B3j5ihrIB2r5','x19WCM90B19F','phrYpJX0zcbJB2XZCgfUpsi2iJ5fCNjVCIbSB2fKAw5NievmtYbOAxn0B3j5pc90zd48l3rYpG','pc90zd4kicaGicaGicaGicaGpc90CJ4kicaGicaGica','yMLUza','z2v0rwXLBwvUDej5swq','mtK3ntbsEg9PD0y','iIb2ywX1zt0I','mJaZnJm3mtj4ueHWCe0','Bwf0y2Hszxn1Bhq','rw50zxi','ndKZmdq1nNPJC2z4ra','nJrRqLrWyLu','A2v5ChjLC3m','y2XPy2S','yxbWBhK','ig9Mia','BMv3rwXV','mJa0mdK0zKLOywzk','BwfW','y2vPBa','iJ4kicaGicaGicaGicaGicaGicaGica8yNv0Dg9UigLKpsjNB1rVugfNzsi+r288l2j1DhrVBJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpgj1DhrVBIbPzd0IBMv4DfbHz2uIia','Dg9eyxrL','mJyXyxbxsNDx','y2HHBMDL','Aw5Uzxjive1m'];a40c=function(){return t;};return a40c();}a40a();import{getEloHistory,resetPagination}from'./elo-history.js';let currentPage=0x1,allMatches=[];const matchesPerPage=0xa;async function displayEloHistory(){const n=a40d,a=document['querySelector']('#elo-history\x20tbody'),b=document[n(0x8f)](n(0x78));try{const {entries:c,hasMore:d}=await getEloHistory();if(c[n(0x88)]===0x0){a['innerHTML']=n(0x76);return;}allMatches=c,a['innerHTML']=c['map'](e=>n(0x7a)+(e['timestamp']?new Date(e['timestamp']['toDate']())['toLocaleString']():'N/A')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+e['player']+n(0x7b)+e[n(0x72)]+n(0x7b)+e['newElo']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(e[n(0xa2)]>0x0?'+'+e['change']:e['change'])+n(0x7b)+e['opponent']+n(0x7b)+e[n(0x93)]+n(0x8d))[n(0x80)](''),createPaginationControls();}catch(e){console[n(0x70)]('Error\x20displaying\x20ELO\x20history:',e),a['innerHTML']=n(0x8c);}}function createPaginationControls(){const o=a40d,a=Math[o(0x9e)](allMatches['length']/matchesPerPage),b=document['createElement']('div');b[o(0x82)]='pagination-wrapper',b[o(0xa3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22pagination-controls\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22prevPage\x22\x20'+(currentPage===0x1?o(0x87):'')+o(0x6d)+currentPage+o(0x9a)+a+o(0xa4)+a+o(0x91)+currentPage+o(0x9f)+(currentPage===a?o(0x87):'')+'>Next</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20';const c=document['querySelector']('#elo-history');c['parentNode'][o(0x6e)](b,c['nextSibling']),document['getElementById'](o(0x74))[o(0x85)]('click',()=>{if(currentPage>0x1)displayMatchesPage(currentPage-0x1);}),document['getElementById']('nextPage')['addEventListener']('click',()=>{if(currentPage<a)displayMatchesPage(currentPage+0x1);}),document[o(0x8f)]('goToPage')['addEventListener'](o(0x98),()=>{const p=o,d=document[p(0x8f)]('pageInput'),e=parseInt(d['value']);e>=0x1&&e<=a&&displayMatchesPage(e);}),document[o(0x8f)]('pageInput')[o(0x85)](o(0x97),d=>{const q=o;if(d['key']===q(0x94)){const f=parseInt(d[q(0x79)]['value']);f>=0x1&&f<=a&&displayMatchesPage(f);}});}async function displayMatchesPage(a){const r=a40d;currentPage=a;const b=(currentPage-0x1)*matchesPerPage,c=b+matchesPerPage,d=allMatches['slice'](b,c),e=document['querySelector'](r(0x8a));e[r(0xa3)]=d[r(0x9d)](f=>'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f['timestamp']?new Date(f[r(0x7c)][r(0xa0)]())[r(0x83)]():'N/A')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f[r(0x84)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f[r(0x72)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f[r(0x9b)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f[r(0xa2)]>0x0?'+'+f[r(0xa2)]:f['change'])+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f['opponent']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f[r(0x93)]+r(0xa5))['join'](''),createPaginationControls();}document['addEventListener'](a40s(0x75),displayEloHistory);
+import { getEloHistory, resetPagination } from './elo-history.js';
+
+let currentPage = 1;
+let allMatches = [];
+const matchesPerPage = 10;
+
+async function displayEloHistory() {
+    const tableBody = document.querySelector('#elo-history tbody');
+    const paginationDiv = document.getElementById('pagination');
+    
+    try {
+        const { entries, hasMore } = await getEloHistory();
+        
+        if (entries.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6">No ELO history available</td></tr>';
+            return;
+        }
+
+        allMatches = entries;
+
+        tableBody.innerHTML = entries.map(entry => `
+            <tr>
+                <td>${entry.timestamp ? new Date(entry.timestamp.toDate()).toLocaleString() : 'N/A'}</td>
+                <td>${entry.player}</td>
+                <td>${entry.previousElo}</td>
+                <td>${entry.newElo}</td>
+                <td>${entry.change > 0 ? '+' + entry.change : entry.change}</td>
+                <td>${entry.opponent}</td>
+                <td>${entry.matchResult}</td>
+            </tr>
+        `).join('');
+
+        createPaginationControls();
+
+    } catch (error) {
+        console.error("Error displaying ELO history:", error);
+        tableBody.innerHTML = '<tr><td colspan="6">Error loading ELO history</td></tr>';
+    }
+}
+
+function createPaginationControls() {
+    const totalPages = Math.ceil(allMatches.length / matchesPerPage);
+    const paginationContainer = document.createElement('div');
+    paginationContainer.className = 'pagination-wrapper';
+    paginationContainer.innerHTML = `
+        <div class="pagination-controls">
+            <button id="prevPage" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+            <div class="page-navigation">
+                <span>Page ${currentPage} of ${totalPages}</span>
+                <div class="page-search">
+                    <input type="number" id="pageInput" min="1" max="${totalPages}" value="${currentPage}">
+                    <button id="goToPage">Go</button>
+                </div>
+            </div>
+            <button id="nextPage" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+        </div>
+    `;
+
+    // Add pagination controls after the table
+    const table = document.querySelector('#elo-history');
+    table.parentNode.insertBefore(paginationContainer, table.nextSibling);
+
+    // Add event listeners
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) displayMatchesPage(currentPage - 1);
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage < totalPages) displayMatchesPage(currentPage + 1);
+    });
+
+    document.getElementById('goToPage').addEventListener('click', () => {
+        const pageInput = document.getElementById('pageInput');
+        const pageNumber = parseInt(pageInput.value);
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            displayMatchesPage(pageNumber);
+        }
+    });
+
+    // Add enter key support for page input
+    document.getElementById('pageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const pageNumber = parseInt(e.target.value);
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                displayMatchesPage(pageNumber);
+            }
+        }
+    });
+}
+
+async function displayMatchesPage(pageNumber) {
+    currentPage = pageNumber;
+    const startIndex = (currentPage - 1) * matchesPerPage;
+    const endIndex = startIndex + matchesPerPage;
+    const matchesToDisplay = allMatches.slice(startIndex, endIndex);
+
+    const tableBody = document.querySelector('#elo-history tbody');
+    tableBody.innerHTML = matchesToDisplay.map(entry => `
+        <tr>
+            <td>${entry.timestamp ? new Date(entry.timestamp.toDate()).toLocaleString() : 'N/A'}</td>
+            <td>${entry.player}</td>
+            <td>${entry.previousElo}</td>
+            <td>${entry.newElo}</td>
+            <td>${entry.change > 0 ? '+' + entry.change : entry.change}</td>
+            <td>${entry.opponent}</td>
+            <td>${entry.matchResult}</td>
+        </tr>
+    `).join('');
+
+    createPaginationControls();
+}
+
+// Initialize the display when the page loads
+document.addEventListener('DOMContentLoaded', displayEloHistory);

@@ -1,1 +1,133 @@
-const a13l=a13d;(function(a,b){const i=a13d,c=a();while(!![]){try{const d=-parseInt(i(0xfc))/0x1+-parseInt(i(0x10b))/0x2*(-parseInt(i(0x10e))/0x3)+parseInt(i(0x105))/0x4*(parseInt(i(0x101))/0x5)+-parseInt(i(0xf3))/0x6+parseInt(i(0x103))/0x7*(parseInt(i(0xfb))/0x8)+-parseInt(i(0x108))/0x9*(-parseInt(i(0x109))/0xa)+-parseInt(i(0xfe))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a13c,0x22555));function a13c(){const r=['Aw5JBhvKzxm','zgLZy29Yza','yxbWBhK','zxjYB3i','y2XPy2S','nZjsrLHqveK','otCZmtDtwuLIrLe','y29UC29Szq','mJe2mti0n1fKsNvszW','re9nq29UDgvUDeXVywrLza','cIaGicaGicaGlYOGsw1WCM92zwqGrgLZy29Yzcb3AwrNzxqGC3r5BgLUzYaQlWOGicaGicaGicnKAxnJB3jKlxDPzgDLDcb7cIaGicaGicaGicaGigjHy2TNCM91BMqTy29SB3i6icmZnJm5m2y7cIaGicaGicaGicaGigjVCMrLCI1YywrPDxm6idHWEdSkicaGicaGicaGicaGyM94lxnOywrVDZOGmca0ChGGmtjWEcbYz2jHkdaSmcWWldaUmtuPoWOGicaGicaGicaGicbVDMvYzMXVDZOGAgLKzgvUoWOGicaGicaGicaGicb0CMfUC2L0Aw9UoIbHBgWGmc4ZCYbLyxnLoWOGicaGicaGih0kicaGicaGicakicaGicaGicaJzgLZy29Yzc13AwrNzxqUy29SBgfWC2vKihSkicaGicaGicaGicaGBwf4lwHLAwDODdOGmdSkicaGicaGicaGicaGB3bHy2L0EtOGmdSkicaGicaGicb9cIaGicaGicaGcIaGicaGicaGi2rPC2nVCMqTD2LKz2v0oM5VDcGUy29SBgfWC2vKksb7cIaGicaGicaGicaGig1HEc1OzwLNAhq6iduWmhb4oWOGicaGicaGicaGicbVCgfJAxr5oIaXoWOGicaGicaGih0kicaGicaGicakicaGicaGicaJzgLZy29Yzc13AwrNzxqGAwzYyw1LihSkicaGicaGicaGicaGyM9YzgvYoIbUB25LicfPBxbVCNrHBNq7cIaGicaGicaGicaGihDPzhrOoIaXmdaLoWOGicaGicaGicaGicbOzwLNAhq6iduWmhb4oWOGicaGicaGih0kicaGicaGicakicaGicaGicaVkIbqCMv2zw50ihDPzgDLDcbMCM9TigjLAw5Nign1DcbVzMyGkI8kicaGicaGicaUzgLZy29Yzc1JB250ywLUzxiGEWOGicaGicaGicaGicbTyxjNAw4TyM90Dg9ToIaZmhb4oWOGicaGicaGicaGicbWB3nPDgLVBJOGCMvSyxrPDMu7cIaGicaGicaGicaGihOTAw5KzxG6ideWoWOGicaGicaGih0kicaGicaGicakicaGicaGicaVkIbtDhLSzsb0B2DNBguGyNv0Dg9UicOVcIaGicaGicaGlMrPC2nVCMqTDg9Nz2XLihSkicaGicaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicaGicaGywXPz24TAxrLBxm6ignLBNrLCJSkicaGicaGicaGicaGz2fWoIa4ChG7cIaGicaGicaGicaGigjHy2TNCM91BMqTy29SB3i6icm1ody1rJi7cIaGicaGicaGicaGignVBg9YoIb3AgL0ztSkicaGicaGicaGicaGyM9YzgvYoIbUB25LoWOGicaGicaGicaGicbWywrKAw5NoIa4ChGGmtzWEdSkicaGicaGicaGicaGyM9YzgvYlxjHzgL1CZOGnhb4oWOGicaGicaGicaGicbJDxjZB3i6ihbVAw50zxi7cIaGicaGicaGicaGigzVBNqTD2vPz2H0oIbIB2XKoWOGicaGicaGicaGicb0CMfUC2L0Aw9UoIbIywnRz3jVDw5KlwnVBg9YidaUmNm7cIaGicaGicaGFqOGicaGicaGiaOGicaGicaGic5KAxnJB3jKlxrVz2DSztPOB3zLCIb7cIaGicaGicaGicaGigjHy2TNCM91BMqTy29SB3i6icm0nZuYyZq7cIaGicaGicaGFqOGicaG','nde4mZvhrfvAD1a','y3jLyxrLrwXLBwvUDa','mtyZndu3uhfsB1zP','ywrKrxzLBNrmAxn0zw5LCG','otjPs0LHAMC','rMfPBgvKihrVigXVywqGCMvZB3vYy2u','Bg9N','ndu0otG2zu9vq09R','mZbZyKP4qKS','Aw5Uzxjive1m','nJiYmerwshLRsG','Dgv4DenVBNrLBNq','DhjHy2u','mtjrrfbLweu','D2fYBG','DgfIBgu','Dg9tDhjPBMC','BwvZC2fNzq','C3rYAw5N','D2LKz2v0lwf2yxrHCNm','nZKZnJC0sMD2zvjr','ChjVDg90ExbL','yMLUza'];a13c=function(){return r;};return a13c();}function a13d(a,b){const c=a13c();return a13d=function(d,e){d=d-0xf2;let f=c[d];if(a13d['KSjfqp']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a13d['JgKbyc']=g,a=arguments,a13d['KSjfqp']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a13d['JgKbyc'](f),a[i]=f):f=j,f;},a13d(a,b);}const a13b=(function(){let a=!![];return function(b,c){const d=a?function(){const j=a13d;if(c){const e=c[j(0xf8)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a13a=a13b(this,function(){const k=a13d,a=function(){let f;try{f=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[k(0xfd)]||{},d=['log',k(0x10f),'info',k(0xf9),'exception',k(0x110),k(0x10d)];for(let e=0x0;e<d['length'];e++){const f=a13b['constructor'][k(0xf4)]['bind'](a13b),g=d[e],h=c[g]||f;f['__proto__']=a13b['bind'](a13b),f['toString']=h[k(0x111)][k(0xf5)](h),c[g]=f;}});a13a(),document[a13l(0x104)](a13l(0xff),function(){const m=a13l,a=document['getElementById']('discord-widget');a&&(a[m(0x10a)]='');const b=document['getElementById']('toggle-discord');b&&a&&b[m(0x104)](m(0xfa),function(){a['classList']['toggle']('collapsed');});const c=document[m(0x102)]('style');c[m(0x10c)]=m(0x100),document['head']['appendChild'](c);const d=console[m(0xf9)],e=console['warn'],f=console['log'];console[m(0xf9)]=function(){const n=m;if(arguments[0x0]&&typeof arguments[0x0]===n(0x113)&&(arguments[0x0][n(0xf6)]('discord')||arguments[0x0]['includes'](n(0xf2))||arguments[0x0]['includes']('CORS\x20policy')||arguments[0x0]['includes']('blocked\x20by\x20CORS')))return;d[n(0xf8)](console,arguments);},console['warn']=function(){const o=m;if(arguments[0x0]&&typeof arguments[0x0]==='string'&&(arguments[0x0]['includes'](o(0xf7))||arguments[0x0][o(0xf6)]('CORS')))return;e['apply'](console,arguments);},console[m(0x107)]=function(){const p=m;if(arguments[0x0]&&typeof arguments[0x0]===p(0x113)&&arguments[0x0]['includes'](p(0x106)))return;f['apply'](console,arguments);},loadDiscordWidget(),window[m(0x104)]('error',function(g){const q=m;if(g['message']&&(g['message'][q(0xf6)](q(0xf7))||g[q(0x112)][q(0xf6)]('CORS')||g['filename'][q(0xf6)]('discord')))return g['preventDefault'](),!![];},!![]);});
+/**
+ * Discord Widget Enhancement
+ * - Improves appearance even with CORS errors
+ * - Handles widget toggle functionality
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // First, completely remove the iframe to prevent CORS errors
+    const widgetContainer = document.getElementById('discord-widget');
+    if (widgetContainer) {
+        // Clear any existing iframe
+        widgetContainer.innerHTML = '';
+    }
+
+    // Get widget elements
+    const toggleButton = document.getElementById('toggle-discord');
+    
+    // Initialize toggle functionality
+    if (toggleButton && widgetContainer) {
+        toggleButton.addEventListener('click', function() {
+            widgetContainer.classList.toggle('collapsed');
+        });
+    }
+    
+    // Apply better styling that works with CORS limitations
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+        /* Improved Discord widget styling */
+        #discord-widget {
+            background-color: #36393f;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        #discord-widget.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        #discord-widget:not(.collapsed) {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        #discord-widget iframe {
+            border: none !important;
+            width: 100%;
+            height: 500px;
+        }
+        
+        /* Prevent widget from being cut off */
+        .discord-container {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Style toggle button */
+        .discord-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #5865F2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .discord-toggle:hover {
+            background-color: #4752c4;
+        }
+    `;
+    document.head.appendChild(styleEl);
+    
+    // Much more comprehensive error suppression
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleLog = console.log;
+    
+    // Enhanced error handler that catches ALL discord-related errors
+    console.error = function() {
+        // Ignore ANY Discord-related errors by checking for various patterns
+        if (arguments[0] && typeof arguments[0] === 'string' && (
+            arguments[0].includes('discord') ||
+            arguments[0].includes('widget-avatars') ||
+            arguments[0].includes('CORS policy') ||
+            arguments[0].includes('blocked by CORS')
+        )) {
+            return; // Silently ignore the error
+        }
+        originalConsoleError.apply(console, arguments);
+    };
+    
+    // Also suppress warnings that might be related
+    console.warn = function() {
+        if (arguments[0] && typeof arguments[0] === 'string' && (
+            arguments[0].includes('discord') ||
+            arguments[0].includes('CORS')
+        )) {
+            return;
+        }
+        originalConsoleWarn.apply(console, arguments);
+    };
+
+    // Suppress CORS-related logs
+    console.log = function() {
+        if (arguments[0] && typeof arguments[0] === 'string' && 
+            arguments[0].includes('Failed to load resource')) {
+            return;
+        }
+        originalConsoleLog.apply(console, arguments);
+    };
+
+    // Load custom Discord widget
+    loadDiscordWidget();
+    
+    // Add a global error handler for more coverage
+    window.addEventListener('error', function(e) {
+        if (e.message && (
+            e.message.includes('discord') ||
+            e.message.includes('CORS') ||
+            e.filename.includes('discord')
+        )) {
+            e.preventDefault();
+            return true; // Prevent the error from showing in console
+        }
+    }, true);
+});

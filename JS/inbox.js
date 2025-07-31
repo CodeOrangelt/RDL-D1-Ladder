@@ -1,1 +1,437 @@
-const a24o=a24d;(function(a,b){const i=a24d,c=a();while(!![]){try{const d=parseInt(i(0x112))/0x1*(parseInt(i(0x144))/0x2)+parseInt(i(0xff))/0x3*(-parseInt(i(0x15b))/0x4)+-parseInt(i(0x113))/0x5+-parseInt(i(0x15d))/0x6*(-parseInt(i(0x104))/0x7)+parseInt(i(0x10f))/0x8*(parseInt(i(0x15c))/0x9)+-parseInt(i(0x129))/0xa*(parseInt(i(0x103))/0xb)+parseInt(i(0x139))/0xc;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a24c,0xdf791));const a24b=(function(){let a=!![];return function(b,c){const d=a?function(){const j=a24d;if(c){const e=c[j(0xfb)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a24a=a24b(this,function(){const l=a24d,a=function(){const k=a24d;let f;try{f=Function('return\x20(function()\x20'+k(0x154)+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=[l(0x130),l(0x13a),l(0x15f),'error','exception',l(0x14d),'trace'];for(let e=0x0;e<d[l(0x162)];e++){const f=a24b['constructor'][l(0x116)]['bind'](a24b),g=d[e],h=c[g]||f;f['__proto__']=a24b['bind'](a24b),f['toString']=h['toString']['bind'](h),c[g]=f;}});a24a();import{auth,db}from'./firebase-config.js';function a24d(a,b){const c=a24c();return a24d=function(d,e){d=d-0xf8;let f=c[d];if(a24d['YKFLMs']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a24d['oUHfBe']=g,a=arguments,a24d['YKFLMs']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a24d['oUHfBe'](f),a[i]=f):f=j,f;},a24d(a,b);}import{collection,query,where,orderBy,getDocs,doc,updateDoc,onSnapshot,limit,startAfter}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';class InboxManager{constructor(){const m=a24d;this['currentFilter']=m(0x10a),this['invitations']=[],this['unsubscribe']=null,this['pageSize']=0x14,this[m(0x160)]=null,this[m(0xf8)]=!![],this['init']();}async['init'](){auth['onAuthStateChanged'](a=>{const n=a24d;a?(this['loadInvitations'](a['uid']),this[n(0x110)]()):window[n(0x132)][n(0x141)]=n(0x11f);});}[a24o(0x110)](){const p=a24o;document[p(0x10d)]('.filter-btn')['forEach'](a=>{const q=p;a['addEventListener'](q(0xf9),()=>{const r=q;document['querySelectorAll'](r(0x121))[r(0x106)](c=>c['classList'][r(0x158)]('active')),a['classList']['add'](r(0x15e)),this[r(0x12e)]=a['dataset']['filter'],this[r(0x11a)]();});});}[a24o(0x127)](a){const s=a24o,b=collection(db,'gameInvitations');let c=query(b,where(s(0xfd),'==',a),orderBy(s(0x13c),s(0x12a)),limit(this['pageSize']));this[s(0x102)]=onSnapshot(c,d=>{const t=s;this[t(0x10e)]=d['docs'][t(0x105)](e=>({'id':e['id'],...e[t(0x142)]()})),this['renderInvitations'](),this['updateNotificationCount']();});}[a24o(0x11a)](){const u=a24o,a=document[u(0x14e)](u(0x115));if(!a)return;let b=this[u(0x10e)];this[u(0x12e)]!==u(0x10a)&&(b=this['invitations'][u(0xfa)](c=>c['status']===this[u(0x12e)]));if(b['length']===0x0){a[u(0x149)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22empty-inbox\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-inbox\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3>No\x20'+(this[u(0x12e)]===u(0x10a)?'':this[u(0x12e)])+'\x20invitations</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>When\x20other\x20players\x20invite\x20you\x20to\x20games,\x20they\x27ll\x20appear\x20here.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}a['innerHTML']=b[u(0x105)](c=>this[u(0x12f)](c))['join'](''),this['setupActionListeners']();}['createInvitationCard'](a){const v=a24o,b=a[v(0x13c)]?.['toDate']?a['createdAt'][v(0x101)]():new Date(a[v(0x13c)]),c=this[v(0x140)](b);let d='';return a['type']==='team_invite'?d=v(0x11c)+a['message']+v(0x147)+a['teamData'][v(0x13e)]+';\x20margin:\x200\x200\x200.5rem\x200;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+a['teamData']['proposedTeamName']+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</h4>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20style=\x22color:\x20#888;\x20font-size:\x200.9em;\x20margin:\x200;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Duos\x20Ladder\x20Team\x20•\x20Color:\x20'+a['teamData'][v(0x13e)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-game-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-detail\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-label\x22>Invitation\x20Type</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-value\x22>Team\x20Formation</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-detail\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-label\x22>Ladder</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-value\x22>Duos</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-detail\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-label\x22>From\x20Player</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-value\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22./profile.html?username='+encodeURIComponent(a['fromUsername'])+v(0x150)+a[v(0x157)]+v(0x146):d=v(0x11c)+a['message']+v(0x14f)+(a['type']===v(0x13b)?'Home\x20Level':'Subgame')+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-detail\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-label\x22>'+(a['type']===v(0x13b)?'Level':'Game\x20Mode')+v(0x135)+a['value']+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-detail\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-label\x22>From\x20Player</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22detail-value\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22./profile.html?username='+encodeURIComponent(a['fromUsername'])+v(0x150)+a[v(0x157)]+v(0x146),'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-card\x20'+a[v(0x108)]+'\x22\x20data-invitation-id=\x22'+a['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-from\x22>'+a['fromUsername']+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-time\x22>'+c+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22status-badge\x20status-'+a[v(0x108)]+'\x22>'+a[v(0x108)]+v(0x12d)+d+v(0x11b)+(a['status']==='pending'?v(0x151)+a['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-check\x22></i>\x20Accept\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-btn\x20decline-btn\x22\x20data-action=\x22decline\x22\x20data-invitation-id=\x22'+a['id']+v(0x152)+(a['type']!==v(0x14b)?'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-btn\x20respond-btn\x22\x20data-action=\x22respond\x22\x20data-invitation-id=\x22'+a['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-reply\x22></i>\x20Send\x20Message\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':'')+v(0x126):'')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}[a24o(0x14a)](){const w=a24o;document[w(0x10d)]('.action-btn')[w(0x106)](a=>{a['addEventListener']('click',async b=>{const x=a24d,c=a[x(0x123)]['action'],d=a['dataset']['invitationId'];a['disabled']=!![];const f=a[x(0x149)];a['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>';try{switch(c){case'accept':await this['updateInvitationStatus'](d,x(0x134));break;case x(0x114):await this['updateInvitationStatus'](d,x(0x145));break;case x(0x11d):this[x(0x13d)](d);break;}}catch(g){console[x(0x131)](x(0x153)+c+':',g),alert('Failed\x20to\x20'+c+'\x20invitation.\x20Please\x20try\x20again.');}finally{a[x(0x109)]=![],a['innerHTML']=f;}});});}async['updateInvitationStatus'](a,b){const y=a24o;try{const c=this['invitations'][y(0x13f)](e=>e['id']===a);c&&c['type']==='team_invite'&&b==='accepted'&&await this['createTeamFromInvitation'](c);const d=doc(db,y(0x133),a);await updateDoc(d,{'status':b,'respondedAt':new Date()}),c&&(c['status']=b,c[y(0x100)]=new Date(),this['renderInvitations']());}catch(e){console['error']('Error\x20updating\x20invitation\x20status:',e);throw e;}}[a24o(0x13d)](a){const z=a24o,b=this['invitations'][z(0x13f)](d=>d['id']===a);if(!b)return;const c=document['createElement'](z(0x111));c[z(0x136)]='modal-overlay',c[z(0x149)]=z(0xfc)+b[z(0x157)]+z(0x11e)+b[z(0x10b)]+'</strong></p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<textarea\x20id=\x22response-message\x22\x20placeholder=\x22Type\x20your\x20message\x20here...\x22\x20rows=\x224\x22></textarea>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22modal-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-btn\x20respond-btn\x22\x20id=\x22send-response\x22>Send\x20Message</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22action-btn\x22\x20id=\x22cancel-response\x22>Cancel</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';if(!document[z(0x14e)](z(0x10c))){const d=document[z(0x159)]('style');d['id']=z(0x10c),d['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-overlay\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20right:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.8);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-content\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#2a2a2a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2090%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-width:\x20500px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-height:\x2090vh;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow-y:\x20auto;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-header\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20space-between;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-close\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-body\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-body\x20textarea\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#1a1a1a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20resize:\x20vertical;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-top:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-footer\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-top:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',document['head']['appendChild'](d);}document['body'][z(0x12b)](c),c['querySelector']('.modal-close')[z(0x143)]('click',()=>c[z(0x158)]()),c['querySelector'](z(0x120))[z(0x143)](z(0xf9),()=>c[z(0x158)]()),c['addEventListener']('click',f=>{if(f['target']===c)c['remove']();}),c['querySelector']('#send-response')[z(0x143)]('click',()=>{const A=z,e=document['getElementById'](A(0x137))['value'][A(0x14c)]();e&&(alert('Message\x20sent!\x20(Feature\x20will\x20be\x20fully\x20implemented\x20in\x20future\x20update)'),c[A(0x158)]());});}async['createTeamFromInvitation'](a){const B=a24o;try{const {createTeam:b}=await import(B(0x122)),c=await b(a[B(0x157)],a['toUsername'],a[B(0x15a)][B(0x155)],a['teamData']['teamColor']);if(!c[B(0x148)])throw new Error(c[B(0x131)]);alert(B(0x12c)+a['teamData'][B(0x155)]+'\x22\x20created\x20successfully!');}catch(d){console['error'](B(0x124),d);throw new Error(B(0x156)+d['message']);}}['updateNotificationCount'](){const C=a24o,a=this['invitations'][C(0xfa)](c=>c['status']==='pending')[C(0x162)],b=document[C(0x14e)]('inbox-notification');b&&(a>0x0?(b[C(0x125)]['display']='inline-block',b['textContent']=a>0x9?'9+':a):b[C(0x125)][C(0xfe)]='none');}['getTimeAgo'](a){const D=a24o,b=new Date(),c=b-a,d=Math[D(0x107)](c/(0x3e8*0x3c)),e=Math[D(0x107)](c/(0x3e8*0x3c*0x3c)),f=Math[D(0x107)](c/(0x3e8*0x3c*0x3c*0x18));if(d<0x1)return D(0x128);if(d<0x3c)return d+D(0x119);if(e<0x18)return e+D(0x161);if(f<0x7)return f+D(0x118);return a[D(0x117)]();}['destroy'](){this['unsubscribe']&&this['unsubscribe']();}}function a24c(){const E=['ChjVDg90ExbL','Dg9mB2nHBgveyxrLu3rYAw5N','zcbHz28','BsbHz28','CMvUzgvYsw52AxrHDgLVBNm','cIaGicaGicaGicaGicaGicakicaGicaGicaGicaGicaGia','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjPBNzPDgf0Aw9UlwrLDgfPBhmIpGOGicaGicaGicaGicaGicaGicaGidXWpG','CMvZCg9Uza','pc9OmZ4kicaGicaGicaGicaGicaGicaGica8yNv0Dg9UignSyxnZpsjTB2rHBc1JBg9Zzsi+jNrPBwvZoZWVyNv0Dg9UpGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjTB2rHBc1IB2r5iJ4kicaGicaGicaGicaGicaGicaGica8Cd5szwDHCMrPBMCGAw52AxrHDgLVBIb0BZOGphn0CM9UzZ4','lI9SB2DPBI5ODg1S','i2nHBMnLBc1YzxnWB25Zzq','lMzPBhrLCI1IDg4','lI9SywrKzxjKDw9ZlMPZ','zgf0yxnLDa','rxjYB3iGy3jLyxrPBMCGDgvHBtO','C3r5Bgu','cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGica','Bg9HzeLUDML0yxrPB25Z','sNvZDcbUB3C','ntCZndCZmejYBxb6sG','zgvZyW','yxbWzw5Kq2HPBgq','vgvHBsaI','pc9ZCgfUpGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicakicaGicaGicaGicaGicaGia','y3vYCMvUDezPBhrLCG','y3jLyxrLsw52AxrHDgLVBKnHCMq','Bg9N','zxjYB3i','Bg9JyxrPB24','z2fTzuLUDML0yxrPB25Z','ywnJzxb0zwq','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0Izgv0ywLSlxzHBhvLiJ4','y2XHC3noyw1L','CMvZCg9UC2uTBwvZC2fNzq','re9nq29UDgvUDeXVywrLza','mZe4nZyYmtjjD1Htsey','D2fYBG','Ag9Tzq','y3jLyxrLzef0','B3bLBLjLC3bVBNnLtw9KywW','DgvHBunVBg9Y','zMLUza','z2v0vgLTzufNBW','AhjLzG','zgf0yq','ywrKrxzLBNrmAxn0zw5LCG','mZrbELbMCwe','zgvJBgLUzwq','pc9HpGOGicaGicaGicaGicaGicaGicaGicaGica8l3nWyw4+cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaG','pc9WpGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNrLyw0TAw52AxrLlxbYzxzPzxCIihn0EwXLpsjIywnRz3jVDw5KoIaJmweXytfHoYbWywrKAw5NoIaXCMvToYbIB3jKzxiTCMfKAxvZoIa0ChG7ig1HCMDPBJOGmc41CMvTida7iJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgG0ihn0EwXLpsjJB2XVCJOG','C3vJy2vZCW','Aw5Uzxjive1m','C2v0Dxbby3rPB25mAxn0zw5LCNm','DgvHBv9PBNzPDgu','DhjPBq','DgfIBgu','z2v0rwXLBwvUDej5swq','pc9WpGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicakicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMLUDML0yxrPB24Tz2fTzs1PBMzViJ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjNyw1LlwrLDgfPBci+cIaGicaGicaGicaGicaGicaGicaGicaGidXZCgfUignSyxnZpsjKzxrHAwWTBgfIzwWIpKLUDML0yxrPB24GvhLWztWVC3bHBJ4kicaGicaGicaGicaGicaGicaGicaGicaGphnWyw4Gy2XHC3m9iMrLDgfPBc12ywX1zsi+','iIakicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGignSyxnZpsjWBgf5zxiTBgLUAYi+','cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IAw52AxrHDgLVBI1Hy3rPB25ZiJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0Iywn0Aw9Ulwj0BIbHy2nLChqTyNrUiIbKyxrHlwfJDgLVBJ0IywnJzxb0iIbKyxrHlwLUDML0yxrPB24TAwq9iG','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTDgLTzxmIpJWVAt4GrgvJBgLUzqOGicaGicaGicaGicaGicaGicaGicaGica8l2j1DhrVBJ4kicaGicaGicaGicaGicaGicaGicaGicaG','rxjYB3iGCgvYzM9YBwLUzYa','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','ChjVCg9ZzwruzwfTtMfTzq','rMfPBgvKihrVignYzwf0zsb0zwfToIa','zNjVBvvZzxjUyw1L','CMvTB3zL','y3jLyxrLrwXLBwvUDa','DgvHBurHDge','ntzmz0X6Bgu','mta5nJa4m3HXtLngva','nKvnvgL6zq','ywn0AxzL','Aw5MBW','BgfZDerVyW','AcbHz28','BgvUz3rO','AgfZtw9Yzq','y2XPy2S','zMLSDgvY','yxbWBhK','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iM1VzgfSlwnVBNrLBNqIpGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBw9KywWTAgvHzgvYiJ4kicaGicaGicaGicaGicaGicaGica8Adm+u2vUzcbnzxnZywDLihrVia','Dg9vC2vYswq','zgLZCgXHEq','mZaXnZu4BunUExnq','CMvZCg9UzgvKqxq','Dg9eyxrL','Dw5ZDwjZy3jPyMu','mZnsvfbmCem','mZu3mtm3mKjLBhPkzW','BwfW','zM9YrwfJAa','zMXVB3i','C3rHDhvZ','zgLZywjSzwq','ywXS','DMfSDwu','Bw9KywWTC3r5BgvZ','CxvLCNLtzwXLy3rVCKfSBa','Aw52AxrHDgLVBNm','ntzwwxvbyuS','C2v0DxbfDMvUDeXPC3rLBMvYCW','zgL2','nde2otnou2HHCLu','mZqXotm0nu16swTTAa','zgvJBgLUzq','Aw5IB3GTy29UDgvUDa'];a24c=function(){return E;};return a24c();}document['addEventListener'](a24o(0x138),()=>{new InboxManager();});
+import { auth, db } from './firebase-config.js';
+import { 
+    collection, 
+    query, 
+    where, 
+    orderBy, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    onSnapshot,
+    limit,
+    startAfter
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+class InboxManager {
+    constructor() {
+        this.currentFilter = 'all';
+        this.invitations = [];
+        this.unsubscribe = null;
+        this.pageSize = 20; // Pagination
+        this.lastDoc = null;
+        this.hasMore = true;
+        this.init();
+    }
+    
+    async init() {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                this.loadInvitations(user.uid);
+                this.setupEventListeners();
+            } else {
+                window.location.href = './login.html';
+            }
+        });
+    }
+    
+    setupEventListeners() {
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentFilter = btn.dataset.filter;
+                this.renderInvitations();
+            });
+        });
+    }
+    
+    loadInvitations(userId) {
+        // Use more efficient query with pagination
+        const invitationsRef = collection(db, 'gameInvitations');
+        let q = query(
+            invitationsRef,
+            where('toUserId', '==', userId),
+            orderBy('createdAt', 'desc'),
+            limit(this.pageSize)
+        );
+        
+        // Set up real-time listener only for recent invitations
+        this.unsubscribe = onSnapshot(q, (snapshot) => {
+            this.invitations = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            
+            this.renderInvitations();
+            this.updateNotificationCount();
+        });
+    }
+    
+    renderInvitations() {
+        const container = document.getElementById('inbox-content');
+        if (!container) return;
+        
+        // Filter invitations
+        let filteredInvitations = this.invitations;
+        if (this.currentFilter !== 'all') {
+            filteredInvitations = this.invitations.filter(inv => inv.status === this.currentFilter);
+        }
+        
+        if (filteredInvitations.length === 0) {
+            container.innerHTML = `
+                <div class="empty-inbox">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No ${this.currentFilter === 'all' ? '' : this.currentFilter} invitations</h3>
+                    <p>When other players invite you to games, they'll appear here.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = filteredInvitations.map(invitation => this.createInvitationCard(invitation)).join('');
+        
+        // Add event listeners to action buttons
+        this.setupActionListeners();
+    }
+    
+    createInvitationCard(invitation) {
+        const createdAt = invitation.createdAt?.toDate ? 
+            invitation.createdAt.toDate() : 
+            new Date(invitation.createdAt);
+        
+        const timeAgo = this.getTimeAgo(createdAt);
+        
+        // Handle different invitation types
+        let invitationContent = '';
+        
+        if (invitation.type === 'team_invite') {
+            // Team invitation specific content
+            invitationContent = `
+                <div class="invitation-details">
+                    <p>${invitation.message}</p>
+                    <div class="team-invite-preview" style="background: #1a1a1a; padding: 1rem; border-radius: 4px; margin: 0.5rem 0;">
+                        <h4 style="color: ${invitation.teamData.teamColor}; margin: 0 0 0.5rem 0;">
+                            ${invitation.teamData.proposedTeamName}
+                        </h4>
+                        <p style="color: #888; font-size: 0.9em; margin: 0;">
+                            Duos Ladder Team • Color: ${invitation.teamData.teamColor}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="invitation-game-info">
+                    <div class="game-detail">
+                        <span class="detail-label">Invitation Type</span>
+                        <span class="detail-value">Team Formation</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">Ladder</span>
+                        <span class="detail-value">Duos</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">From Player</span>
+                        <span class="detail-value">
+                            <a href="./profile.html?username=${encodeURIComponent(invitation.fromUsername)}" 
+                               class="player-link">${invitation.fromUsername}</a>
+                        </span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Game invitation content (existing)
+            invitationContent = `
+                <div class="invitation-details">
+                    <p>${invitation.message}</p>
+                </div>
+                
+                <div class="invitation-game-info">
+                    <div class="game-detail">
+                        <span class="detail-label">Invitation Type</span>
+                        <span class="detail-value">${invitation.type === 'home' ? 'Home Level' : 'Subgame'}</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">${invitation.type === 'home' ? 'Level' : 'Game Mode'}</span>
+                        <span class="detail-value">${invitation.value}</span>
+                    </div>
+                    <div class="game-detail">
+                        <span class="detail-label">From Player</span>
+                        <span class="detail-value">
+                            <a href="./profile.html?username=${encodeURIComponent(invitation.fromUsername)}" 
+                               class="player-link">${invitation.fromUsername}</a>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="invitation-card ${invitation.status}" data-invitation-id="${invitation.id}">
+                <div class="invitation-header">
+                    <div>
+                        <div class="invitation-from">${invitation.fromUsername}</div>
+                        <div class="invitation-time">${timeAgo}</div>
+                    </div>
+                    <span class="status-badge status-${invitation.status}">${invitation.status}</span>
+                </div>
+                
+                ${invitationContent}
+                
+                ${invitation.status === 'pending' ? `
+                    <div class="invitation-actions">
+                        <button class="action-btn accept-btn" data-action="accept" data-invitation-id="${invitation.id}">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button class="action-btn decline-btn" data-action="decline" data-invitation-id="${invitation.id}">
+                            <i class="fas fa-times"></i> Decline
+                        </button>
+                        ${invitation.type !== 'team_invite' ? `
+                            <button class="action-btn respond-btn" data-action="respond" data-invitation-id="${invitation.id}">
+                                <i class="fas fa-reply"></i> Send Message
+                            </button>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    setupActionListeners() {
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const action = btn.dataset.action;
+                const invitationId = btn.dataset.invitationId;
+                
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                try {
+                    switch (action) {
+                        case 'accept':
+                            await this.updateInvitationStatus(invitationId, 'accepted');
+                            break;
+                        case 'decline':
+                            await this.updateInvitationStatus(invitationId, 'declined');
+                            break;
+                        case 'respond':
+                            this.openResponseModal(invitationId);
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`Error performing ${action}:`, error);
+                    alert(`Failed to ${action} invitation. Please try again.`);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            });
+        });
+    }
+    
+    async updateInvitationStatus(invitationId, status) {
+        try {
+            const invitation = this.invitations.find(inv => inv.id === invitationId);
+            
+            if (invitation && invitation.type === 'team_invite' && status === 'accepted') {
+                // Handle team creation
+                await this.createTeamFromInvitation(invitation);
+            }
+            
+            const invitationRef = doc(db, 'gameInvitations', invitationId);
+            
+            await updateDoc(invitationRef, {
+                status: status,
+                respondedAt: new Date()
+            });
+            
+            // Update local cache immediately for better UX
+            if (invitation) {
+                invitation.status = status;
+                invitation.respondedAt = new Date();
+                this.renderInvitations();
+            }
+        } catch (error) {
+            console.error('Error updating invitation status:', error);
+            throw error;
+        }
+    }
+    
+    openResponseModal(invitationId) {
+        // Find the invitation
+        const invitation = this.invitations.find(inv => inv.id === invitationId);
+        if (!invitation) return;
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Send Message to ${invitation.fromUsername}</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Regarding invitation to: <strong>${invitation.value}</strong></p>
+                    <textarea id="response-message" placeholder="Type your message here..." rows="4"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn respond-btn" id="send-response">Send Message</button>
+                    <button class="action-btn" id="cancel-response">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        // Add modal styles
+        if (!document.getElementById('modal-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'modal-styles';
+            styleEl.textContent = `
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                }
+                
+                .modal-content {
+                    background: #2a2a2a;
+                    border-radius: 8px;
+                    width: 90%;
+                    max-width: 500px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                }
+                
+                .modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem;
+                    border-bottom: 1px solid #444;
+                }
+                
+                .modal-close {
+                    background: none;
+                    border: none;
+                    color: #888;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                }
+                
+                .modal-body {
+                    padding: 1rem;
+                }
+                
+                .modal-body textarea {
+                    width: 100%;
+                    padding: 0.5rem;
+                    background: #1a1a1a;
+                    border: 1px solid #444;
+                    color: white;
+                    border-radius: 4px;
+                    resize: vertical;
+                    margin-top: 0.5rem;
+                }
+                
+                .modal-footer {
+                    display: flex;
+                    gap: 0.5rem;
+                    padding: 1rem;
+                    border-top: 1px solid #444;
+                }
+            `;
+            document.head.appendChild(styleEl);
+        }
+        
+        document.body.appendChild(modal);
+        
+        // Modal event listeners
+        modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+        modal.querySelector('#cancel-response').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+        
+        modal.querySelector('#send-response').addEventListener('click', () => {
+            const message = document.getElementById('response-message').value.trim();
+            if (message) {
+                // Here you could implement a messaging system
+                // For now, just show success and close modal
+                alert('Message sent! (Feature will be fully implemented in future update)');
+                modal.remove();
+            }
+        });
+    }
+    
+    async createTeamFromInvitation(invitation) {
+        try {
+            // Import the team creation function
+            const { createTeam } = await import('./ladderduos.js');
+            
+            const result = await createTeam(
+                invitation.fromUsername, 
+                invitation.toUsername, 
+                invitation.teamData.proposedTeamName,
+                invitation.teamData.teamColor
+            );
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            
+            // Show success message
+            alert(`Team "${invitation.teamData.proposedTeamName}" created successfully!`);
+            
+        } catch (error) {
+            console.error('Error creating team:', error);
+            throw new Error('Failed to create team: ' + error.message);
+        }
+    }
+    
+    updateNotificationCount() {
+        const pendingCount = this.invitations.filter(inv => inv.status === 'pending').length;
+        const notificationDot = document.getElementById('inbox-notification');
+        
+        if (notificationDot) {
+            if (pendingCount > 0) {
+                notificationDot.style.display = 'inline-block';
+                notificationDot.textContent = pendingCount > 9 ? '9+' : pendingCount;
+            } else {
+                notificationDot.style.display = 'none';
+            }
+        }
+    }
+    
+    getTimeAgo(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    destroy() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new InboxManager();
+});

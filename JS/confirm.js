@@ -1,1 +1,75 @@
-const a11m=a11d;function a11d(a,b){const c=a11c();return a11d=function(d,e){d=d-0x6f;let f=c[d];if(a11d['NtCTJU']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a11d['VgadGc']=g,a=arguments,a11d['NtCTJU']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a11d['VgadGc'](f),a[i]=f):f=j,f;},a11d(a,b);}(function(a,b){const k=a11d,c=a();while(!![]){try{const d=parseInt(k(0xa3))/0x1+parseInt(k(0xa1))/0x2+-parseInt(k(0x9b))/0x3*(parseInt(k(0x7a))/0x4)+parseInt(k(0x6f))/0x5*(-parseInt(k(0x7f))/0x6)+-parseInt(k(0xa4))/0x7*(parseInt(k(0xa5))/0x8)+-parseInt(k(0x77))/0x9*(-parseInt(k(0x87))/0xa)+parseInt(k(0x91))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a11c,0x1a497));const a11b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a11a=a11b(this,function(){const l=a11d;let a;try{const d=Function('return\x20(function()\x20'+l(0xa2)+');');a=d();}catch(f){a=window;}const b=a[l(0x79)]=a[l(0x79)]||{},c=[l(0x81),l(0x82),l(0x78),'error',l(0xa7),'table',l(0x85)];for(let g=0x0;g<c[l(0x97)];g++){const h=a11b['constructor'][l(0x96)][l(0x98)](a11b),i=c[g],j=b[i]||h;h['__proto__']=a11b[l(0x98)](a11b),h[l(0x7d)]=j[l(0x7d)]['bind'](j),b[i]=h;}});a11a(),document[a11m(0x76)]('DOMContentLoaded',()=>{const n=a11m;firebase[n(0x9f)]()[n(0x9e)](d=>{const o=n;d?(console[o(0x81)]('User\x20signed\x20in:',d[o(0x7e)]||d[o(0x8e)]),a(d[o(0x7e)]||d['displayName'])):(console['log']('No\x20user\x20signed\x20in'),document[o(0x9d)]('auth-warning')['style'][o(0xa9)]='block');});function a(d){const p=n;db[p(0x7b)]('pendingMatches')[p(0x73)](p(0x95),'==',d)[p(0x73)](p(0x8d),'==',![])[p(0x70)]()['then'](e=>{const q=p;if(!e[q(0x7c)]){const f=e[q(0x9c)][0x0]['data'](),g=e[q(0x9c)][0x0]['id'];b(f,g);}else console[q(0x81)](q(0x9a)),document['getElementById']('auth-warning')[q(0x92)]=q(0x71);})[p(0x8a)](e=>{const r=p;console['error'](r(0x86),e);});}function b(d,e){const s=n;document[s(0x9d)](s(0x90))['textContent']=d['loserUsername'],document[s(0x9d)]('winner-username')['textContent']=d['winnerUsername'],document[s(0x9d)]('final-score')['textContent']=d['finalScore'],document['getElementById']('suicides')['textContent']=d['suicides'],document['getElementById']('map-played')[s(0x92)]=d['mapPlayed'],document[s(0x9d)](s(0x72))[s(0x92)]=d['loserComment'],document[s(0x9d)](s(0x84))['style'][s(0xa9)]=s(0x75),document['getElementById']('confirm-form')['addEventListener'](s(0x89),f=>{const t=s;f['preventDefault']();const g=document[t(0x9d)](t(0x93))['value'];c(e,d,g);});}function c(d,e,f){const u=n;e[u(0x8c)]=f,e[u(0x8d)]=!![],db[u(0x7b)](u(0x88))['doc'](d)[u(0x80)](e)[u(0x8f)](()=>{const v=u;console['log']('Report\x20successfully\x20added\x20to\x20approvedMatches.'),db['collection']('pendingMatches')[v(0xa6)](d)[v(0x99)]()['then'](()=>{const w=v;console[w(0x81)](w(0x94)),alert('Report\x20confirmed\x20successfully.'),document[w(0x9d)]('confirm-form')['reset'](),document['getElementById'](w(0x84))[w(0xa0)][w(0xa9)]='none';})['catch'](g=>{const x=v;console[x(0x83)](x(0x74),g),document['getElementById'](x(0xa8))[x(0x92)]='Error\x20confirming\x20report.\x20Please\x20try\x20again.';});})[u(0x8a)](g=>{const y=u;console['error']('Error\x20adding\x20report\x20to\x20approvedMatches:',g),document[y(0x9d)]('confirm-error')[y(0x92)]=y(0x8b);});}});function a11c(){const z=['z2v0rwXLBwvUDej5swq','B25bDxrOu3rHDgvdAgfUz2vK','yxv0Aa','C3r5Bgu','mtC0mdi0ALDwrvLq','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','mZq5ndnNwuDLwLC','nZCWyLrxwvLh','nJy0qMLhsfnn','zg9J','zxHJzxb0Aw9U','y29UzMLYBs1LCNjVCG','zgLZCgXHEq','mtmXnwDiyw1Qqq','z2v0','tM8GB3v0C3rHBMrPBMCGCMvWB3j0CYb0BYbJB25MAxjTlG','Bg9ZzxiTy29TBwvUDa','D2HLCMu','rxjYB3iGzgvSzxrPBMCGCMvWB3j0igzYB20GCgvUzgLUz01HDgnOzxm6','yMXVy2S','ywrKrxzLBNrmAxn0zw5LCG','mtyZmtDzwfL3DuW','Aw5MBW','y29UC29Szq','mtu2CKnoyuXl','y29SBgvJDgLVBG','zw1WDhK','Dg9tDhjPBMC','zw1HAwW','ndG1nhH1tLHmBW','C2v0','Bg9N','D2fYBG','zxjYB3i','y29UzMLYBs1MB3jT','DhjHy2u','rxjYB3iGy2HLy2TPBMCGzM9Yig91Dhn0yw5KAw5NihjLCg9YDhm6','nJmWCKvZywXQ','yxbWCM92zwrnyxrJAgvZ','C3vIBwL0','y2f0y2G','rxjYB3iGy29UzMLYBwLUzYbYzxbVCNqUifbSzwfZzsb0CNKGywDHAw4U','D2LUBMvYq29TBwvUDa','yxbWCM92zwq','zgLZCgXHEu5HBwu','DgHLBG','Bg9ZzxiTDxnLCM5HBwu','mta3nZuYn1DouNPHqq','Dgv4DenVBNrLBNq','D2LUBMvYlwnVBw1LBNq','uMvWB3j0ihn1y2nLC3nMDwXSEsbKzwXLDgvKigzYB20GCgvUzgLUz01HDgnOzxmU','D2LUBMvYvxnLCM5HBwu','ChjVDg90ExbL','BgvUz3rO','yMLUza','zgvSzxrL','tM8GB3v0C3rHBMrPBMCGCMvWB3j0CYbMB3vUza','mZuXEMrhy2nS','zg9JCW'];a11c=function(){return z;};return a11c();}
+document.addEventListener('DOMContentLoaded', () => {
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            console.log('User signed in:', user.email || user.displayName);
+
+            checkForOutstandingReports(user.email || user.displayName);
+        } else {
+            console.log('No user signed in');
+            document.getElementById('auth-warning').style.display = 'block';
+        }
+    });
+
+    function checkForOutstandingReports(username) {
+        db.collection('pendingMatches')
+            .where('winnerUsername', '==', username)
+            .where('approved', '==', false)
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    const reportData = snapshot.docs[0].data();
+                    const reportId = snapshot.docs[0].id;
+                    autofillConfirmForm(reportData, reportId);
+                } else {
+                    console.log('No outstanding reports found');
+                    document.getElementById('auth-warning').textContent = 'No outstanding reports to confirm.';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking for outstanding reports:', error);
+            });
+    }
+
+    function autofillConfirmForm(reportData, reportId) {
+        document.getElementById('loser-username').textContent = reportData.loserUsername;
+        document.getElementById('winner-username').textContent = reportData.winnerUsername;
+        document.getElementById('final-score').textContent = reportData.finalScore;
+        document.getElementById('suicides').textContent = reportData.suicides;
+        document.getElementById('map-played').textContent = reportData.mapPlayed;
+        document.getElementById('loser-comment').textContent = reportData.loserComment;
+
+        document.getElementById('confirm-form').style.display = 'block';
+
+        document.getElementById('confirm-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const winnerComment = document.getElementById('winner-comment').value;
+            confirmReport(reportId, reportData, winnerComment);
+        });
+    }
+
+    function confirmReport(reportId, reportData, winnerComment) {
+        reportData.winnerComment = winnerComment;
+        reportData.approved = true;
+
+        db.collection('approvedMatches').doc(reportId).set(reportData)
+            .then(() => {
+                console.log('Report successfully added to approvedMatches.');
+
+                db.collection('pendingMatches').doc(reportId).delete()
+                    .then(() => {
+                        console.log('Report successfully deleted from pendingMatches.');
+                        alert('Report confirmed successfully.');
+                        document.getElementById('confirm-form').reset();
+                        document.getElementById('confirm-form').style.display = 'none';
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting report from pendingMatches:', error);
+                        document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+                    });
+            })
+            .catch((error) => {
+                console.error('Error adding report to approvedMatches:', error);
+                document.getElementById('confirm-error').textContent = 'Error confirming report. Please try again.';
+            });
+    }
+});

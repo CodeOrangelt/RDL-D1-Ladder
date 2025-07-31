@@ -1,1 +1,119 @@
-const a16q=a16d;(function(a,b){const m=a16d,c=a();while(!![]){try{const d=-parseInt(m(0x1dd))/0x1+-parseInt(m(0x1d2))/0x2+-parseInt(m(0x1ca))/0x3+-parseInt(m(0x1df))/0x4*(-parseInt(m(0x1cd))/0x5)+-parseInt(m(0x1d3))/0x6*(-parseInt(m(0x1e4))/0x7)+-parseInt(m(0x1d0))/0x8*(-parseInt(m(0x1d7))/0x9)+parseInt(m(0x1d6))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a16c,0x4f2c2));const a16b=(function(){let a=!![];return function(b,c){const d=a?function(){const n=a16d;if(c){const e=c[n(0x1e5)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a16a=a16b(this,function(){const p=a16d,a=function(){const o=a16d;let f;try{f=Function(o(0x1d5)+o(0x1de)+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=['log','warn',p(0x1c6),p(0x1c9),p(0x1cb),'table','trace'];for(let e=0x0;e<d['length'];e++){const f=a16b['constructor']['prototype'][p(0x1d1)](a16b),g=d[e],h=c[g]||f;f[p(0x1e2)]=a16b['bind'](a16b),f['toString']=h['toString']['bind'](h),c[g]=f;}});a16a();import{collection,addDoc,serverTimestamp,query,orderBy,getDocs,limit,startAfter,doc,setDoc,getDoc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a16d(a,b){const c=a16c();return a16d=function(d,e){d=d-0x1c5;let f=c[d];if(a16d['lXUQPr']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a16d['AeEaQP']=g,a=arguments,a16d['lXUQPr']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a16d['AeEaQP'](f),a[i]=f):f=j,f;},a16d(a,b);}import{db}from'./firebase-config.js';const ELO_THRESHOLDS=[{'name':a16q(0x1e1),'elo':0x708},{'name':a16q(0x1e0),'elo':0x640},{'name':'Bronze','elo':0x578},{'name':a16q(0x1cf),'elo':0x4b0}];function a16c(){const v=['x19WCM90B19F','zgvZyW','n0v4uvrnwq','yxbWBhK','rxjYB3iGzMv0y2HPBMCGruXpigHPC3rVCNK6','Aw5MBW','DgLTzxn0yw1W','DxnLCM5HBwu','zxjYB3i','ndqWntK4sgXqy0jf','zxHJzxb0Aw9U','zgvTB3rPB24','nwHAveDWsq','zgf0yq','vw5Yyw5Rzwq','nZK5mtq0Cfv6zMDp','yMLUza','otqXnZG4v3HrqNfu','mZe3mtK2nMrlEMfQuW','rw1LCMfSza','CMv0DxjUicHMDw5JDgLVBIGPia','ody0nZa0mejUBfLszW','ouPeu09ACG','vw5RBM93BIbqBgf5zxi','ywXS','ChjVBw90Aw9U','BMv3rwXV','ruXpigHPC3rVCNKGCMvJB3jKzwqGzM9Yia','nJmXmJeZwhfnCMXf','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','mZiWmdiWuNH2zLvp','u2LSDMvY','r29Sza'];a16c=function(){return v;};return a16c();}async function getUsernameById(a){const r=a16q;try{if(!a)return r(0x1d8);const b=await getDoc(doc(db,'players',a));return b['exists']()?b['data']()[r(0x1c8)]:'Unknown\x20Player';}catch(c){return console[r(0x1c9)]('Error\x20fetching\x20username:',c),r(0x1d8);}}export async function recordEloChange({playerId:a,previousElo:b,newElo:c,opponentId:d,matchResult:e,previousPosition:f,newPosition:g,isPromotion:isPromotion=![],isDemotion:isDemotion=![],timestamp:h}){const s=a16q;try{const i=doc(collection(db,'eloHistory'));let j='match';if(isPromotion)j=s(0x1da);if(isDemotion)j=s(0x1cc);let k='Unranked';if(c>=0x834)k=s(0x1d4);else{if(c>=0x708)k='Gold';else{if(c>=0x640)k=s(0x1e0);else{if(c>=0x578)k='Bronze';}}}return await setDoc(i,{'type':j,'player':a,'opponent':d,'previousElo':b,'newElo':c,'change':c-b,'matchResult':e,'previousPosition':f,'newPosition':g,'rankAchieved':k,'timestamp':h}),console['log'](s(0x1dc)+a),!![];}catch(l){console[s(0x1c9)]('Error\x20recording\x20ELO\x20history:',l);throw l;}}export async function getEloHistory(){const t=a16q;try{const a=collection(db,'eloHistory'),b=query(a,orderBy('timestamp',t(0x1e3))),c=await getDocs(b),d=c['docs']['map'](async f=>{const u=t,g=f[u(0x1ce)](),[h,i]=await Promise[u(0x1d9)]([getUsernameById(g['player']),getUsernameById(g['opponent'])]);return{...g,'playerUsername':h,'opponentUsername':i,'change':g[u(0x1db)]-g['previousElo'],'timestamp':g[u(0x1c7)]};}),e=await Promise['all'](d);return{'entries':e};}catch(f){console['error'](t(0x1c5),f);throw f;}}export function resetPagination(){lastVisible=null;}
+import { 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    query, 
+    orderBy, 
+    getDocs,
+    limit,
+    startAfter,
+    doc,
+    setDoc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+
+// Add these threshold constants at the top of the file
+const ELO_THRESHOLDS = [
+    { name: 'Gold', elo: 1800 },
+    { name: 'Silver', elo: 1600 },
+    { name: 'Bronze', elo: 1400 },
+    { name: 'Unranked', elo: 1200 }
+];
+
+async function getUsernameById(userId) {
+    try {
+        if (!userId) return 'Unknown Player';
+        
+        const playerDoc = await getDoc(doc(db, 'players', userId));
+        return playerDoc.exists() ? playerDoc.data().username : 'Unknown Player';
+    } catch (error) {
+        console.error('Error fetching username:', error);
+        return 'Unknown Player';
+    }
+}
+
+export async function recordEloChange({
+    playerId,
+    previousElo,
+    newElo,
+    opponentId,
+    matchResult,
+    previousPosition,
+    newPosition,
+    isPromotion = false,
+    isDemotion = false,
+    timestamp
+}) {
+    try {
+        const historyRef = doc(collection(db, 'eloHistory'));
+        
+        // Determine the type and rank
+        let type = 'match';
+        if (isPromotion) type = 'promotion';
+        if (isDemotion) type = 'demotion';
+        
+        // Calculate rank based on new ELO
+        let rankAchieved = 'Unranked';
+        if (newElo >= 2100) rankAchieved = 'Emerald';
+        else if (newElo >= 1800) rankAchieved = 'Gold';
+        else if (newElo >= 1600) rankAchieved = 'Silver';
+        else if (newElo >= 1400) rankAchieved = 'Bronze';
+
+        await setDoc(historyRef, {
+            type,
+            player: playerId,
+            opponent: opponentId,
+            previousElo,
+            newElo,
+            change: newElo - previousElo,
+            matchResult,
+            previousPosition,
+            newPosition,
+            rankAchieved, // Make sure this is set for both promotions and demotions
+            timestamp
+        });
+
+        console.log(`ELO history recorded for ${playerId}`);
+        return true;
+    } catch (error) {
+        console.error('Error recording ELO history:', error);
+        throw error;
+    }
+}
+
+export async function getEloHistory() {
+    try {
+        const eloHistoryRef = collection(db, 'eloHistory');
+        const q = query(eloHistoryRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        // Use Promise.all to fetch all usernames concurrently
+        const entryPromises = querySnapshot.docs.map(async doc => {
+            const data = doc.data();
+            const [playerUsername, opponentUsername] = await Promise.all([
+                getUsernameById(data.player),
+                getUsernameById(data.opponent)
+            ]);
+
+            return {
+                ...data,
+                playerUsername,
+                opponentUsername,
+                change: data.newElo - data.previousElo,
+                timestamp: data.timestamp
+            };
+        });
+
+        const resolvedEntries = await Promise.all(entryPromises);
+        return { entries: resolvedEntries };
+
+    } catch (error) {
+        console.error("Error fetching ELO history:", error);
+        throw error;
+    }
+}
+
+export function resetPagination() {
+    lastVisible = null;
+}

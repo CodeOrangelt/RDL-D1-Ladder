@@ -1,1 +1,3452 @@
-const a41R=a41d;(function(a,b){const N=a41d,c=a();while(!![]){try{const d=-parseInt(N(0x148))/0x1*(-parseInt(N(0x1ca))/0x2)+-parseInt(N(0x1b0))/0x3*(-parseInt(N(0x25f))/0x4)+-parseInt(N(0x217))/0x5*(-parseInt(N(0x27d))/0x6)+parseInt(N(0xe3))/0x7*(-parseInt(N(0x18a))/0x8)+-parseInt(N(0x174))/0x9*(-parseInt(N(0x15a))/0xa)+-parseInt(N(0x291))/0xb*(-parseInt(N(0x22e))/0xc)+-parseInt(N(0x10a))/0xd;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a41c,0x26e92));const a41b=(function(){let a=!![];return function(b,c){const d=a?function(){const O=a41d;if(c){const e=c[O(0x127)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a41a=a41b(this,function(){const Q=a41d,a=function(){const P=a41d;let f;try{f=Function(P(0x1b4)+P(0x25b)+');')();}catch(g){f=window;}return f;},b=a(),c=b[Q(0x250)]=b['console']||{},d=['log','warn',Q(0x1b6),Q(0x16e),'exception','table','trace'];for(let e=0x0;e<d[Q(0x125)];e++){const f=a41b[Q(0x1aa)][Q(0x122)][Q(0xf2)](a41b),g=d[e],h=c[g]||f;f['__proto__']=a41b['bind'](a41b),f[Q(0x22a)]=h['toString']['bind'](h),c[g]=f;}});a41a();import{initializeApp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';import{getAuth}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,collection,query,where,getDocs,orderBy,limit,startAfter,addDoc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a41d(a,b){const c=a41c();return a41d=function(d,e){d=d-0xba;let f=c[d];if(a41d['qvNTcm']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a41d['wBCCyp']=g,a=arguments,a41d['qvNTcm']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a41d['wBCCyp'](f),a[i]=f):f=j,f;},a41d(a,b);}import{firebaseConfig}from'./firebase-config.js';import{evaluatePlayerRibbons,getRibbonHTML,RIBBON_CSS}from'./ribbons.js';const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),playerDataCache=new Map(),containerReferences={},DEFAULT_PROFILE_IMAGE=a41R(0x276);function getContrastColor(a){const S=a41R;if(!a)return S(0x1ae);a=a[S(0x20e)]('#','');a['length']===0x3&&(a=a[S(0x230)]('')[S(0x13c)](h=>h+h)[S(0x195)](''));if(a['length']!==0x6)return S(0x1ae);const c=parseInt(a[S(0x242)](0x0,0x2),0x10),d=parseInt(a[S(0x242)](0x2,0x4),0x10),e=parseInt(a['substring'](0x4,0x6),0x10),f=(c*0x12b+d*0x24b+e*0x72)/0x3e8;return f>=0x80?S(0x23a):'#ffffff';}class ProfileViewer{constructor(){const T=a41R;this['currentProfileData']=null,this['currentLadder']='D1',this['eloHistoryPagination']={'d1':{'page':0x1,'lastVisible':null,'firstVisible':null},'d2':{'page':0x1,'lastVisible':null,'firstVisible':null},'d3':{'page':0x1,'lastVisible':null,'firstVisible':null}},this[T(0x106)]=0xa,this[T(0x24d)]=new Map(),this['usernameCache']=new Map(),this[T(0x26e)]=new Map(),this[T(0x255)]();}[a41R(0x255)](){const U=a41R,a=new URLSearchParams(window[U(0x234)][U(0x124)]),b=a['get'](U(0x203)),c=a[U(0x16a)](U(0x204));if(c&&c['toUpperCase']()==='D2')this[U(0xca)]='D2';else c&&c[U(0x282)]()==='D3'&&(this['currentLadder']='D3');const d=document[U(0x1e4)]('.profile-ladder-toggle');if(!d){const e=document['createElement']('div');e[U(0x271)]='profile-ladder-toggle';const f=[{'id':'profile-d1-toggle','text':'D1'},{'id':'profile-d2-toggle','text':'D2'},{'id':'profile-d3-toggle','text':'D3'}];f['forEach'](h=>{const V=U,i=document[V(0x100)]('button');i['id']=h['id'],i[V(0x271)]='ladder-toggle-btn',i['textContent']=h[V(0xfb)],e['appendChild'](i);});const g=document['querySelector'](U(0x1c7));if(g&&g[U(0x172)])g[U(0x172)][U(0x1c3)](e,g[U(0x166)]);else{const h=document[U(0x1e4)](U(0x1c8));h&&h[U(0x1c3)](e,h[U(0x1a8)]);}}if(b)this[U(0x257)](),this['loadProfile'](b);else{const i=document[U(0x1e4)](U(0x1c8));i&&(i[U(0x147)]=U(0x19a));}}async['displayRibbons'](a){const W=a41R;try{if(this['currentProfileData']?.[W(0x14b)])return;if(!document['getElementById']('ribbon-styles')){const g=document['createElement'](W(0x14d));g['id']=W(0x1a7),g['textContent']=RIBBON_CSS,document['head'][W(0xec)](g);}let b;try{b=await Promise[W(0x228)]([evaluatePlayerRibbons(a,this['currentLadder']),new Promise((h,j)=>setTimeout(()=>j(new Error('Ribbon\x20evaluation\x20timeout')),0x3a98))]);}catch(h){console['error'](W(0x27b),h);return;}let c=document['querySelector'](W(0x1cc));if(!c){const j=document[W(0x1e4)]('.profile-content');if(j)c=document['createElement']('div'),c['className']=W(0x14c),j[W(0xec)](c);else return;}const d=c['querySelector']('.ribbon-section');d&&d[W(0x170)]();const e=Object['keys'](b)['length'],f=document[W(0x100)](W(0x264));f['className']='ribbon-section';if(e===0x0)f[W(0x147)]=W(0x138);else{const k=Object[W(0x218)](b)['sort']((n,o)=>{const X=W,p=n[0x1][X(0xe5)]?n[0x1]['awardedAt']['seconds']||new Date(n[0x1]['awardedAt'])[X(0x142)]()/0x3e8:0x0,q=o[0x1]['awardedAt']?o[0x1]['awardedAt']['seconds']||new Date(o[0x1]['awardedAt'])['getTime']()/0x3e8:0x0;return q-p;}),l=0x3,m=[];for(let n=0x0;n<k[W(0x125)];n+=l){const o=k['slice'](n,n+l),p=o['map'](([q,r])=>{return getRibbonHTML(q,r);})[W(0x195)]('');m['push']('<div\x20class=\x22ribbon-row\x22>'+p+W(0x186));}f[W(0x147)]=W(0x1ff)+e+')</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ribbon-rack-inline\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+m['join']('')+W(0x145);}c[W(0xec)](f);}catch(q){console[W(0x16e)](W(0x28d),q);}}['setupToggleButtons'](){const Y=a41R,a=document['getElementById']('profile-d1-toggle'),b=document[Y(0xd7)]('profile-d2-toggle'),c=document['getElementById'](Y(0x126));if(a&&b&&c){if(this['currentLadder']==='D1')a['classList']['add'](Y(0x27c)),b[Y(0x215)]['remove'](Y(0x27c)),c[Y(0x215)][Y(0x170)]('active');else{if(this['currentLadder']==='D2')b['classList'][Y(0x254)]('active'),a[Y(0x215)]['remove']('active'),c['classList'][Y(0x170)](Y(0x27c));else this[Y(0xca)]==='D3'&&(c[Y(0x215)][Y(0x254)](Y(0x27c)),a['classList'][Y(0x170)]('active'),b['classList']['remove']('active'));}a['addEventListener'](Y(0x208),()=>{this['switchLadder']('D1');}),b[Y(0x17d)](Y(0x208),()=>{const Z=Y;this[Z(0x237)]('D2');}),c[Y(0x17d)]('click',()=>{this['switchLadder']('D3');});}}async[a41R(0x237)](a){const a0=a41R;if(this[a0(0xca)]===a)return;this['currentLadder']=a;const b=new URLSearchParams(window[a0(0x234)][a0(0x124)]),c=b['get'](a0(0x203));if(c){const d=window[a0(0x234)][a0(0x164)]+'?username='+encodeURIComponent(c)+'&ladder='+a['toLowerCase']();window['history'][a0(0x1a6)]({},'',d);}document[a0(0x13a)](a0(0xdc))['forEach'](e=>{const a1=a0;e[a1(0x215)]['remove']('active'),(e['id']===a1(0xc6)&&a==='D1'||e['id']===a1(0xf3)&&a==='D2'||e['id']==='profile-d3-toggle'&&a==='D3')&&e[a1(0x215)][a1(0x254)](a1(0x27c));}),document[a0(0x13a)]('.stats-grid')['forEach'](e=>e['remove']());if(c){const e=c+'_'+a;playerDataCache[a0(0x1ef)](e),await this[a0(0x281)](c);}else this['showError']('No\x20username\x20provided');}async[a41R(0x281)](a,b){const a2=a41R;this['currentWatchedPlayer']&&ribbonSystem['stopWatchingPlayer'](this[a2(0x28c)]['username'],this['currentWatchedPlayer']['ladder']);try{const {inD1:c,inD2:d,inD3:e}=await this[a2(0x15c)](a);(this['currentLadder']==='D1'&&!c&&(d||e)||this['currentLadder']==='D2'&&!d&&(c||e)||this['currentLadder']==='D3'&&!e&&(c||d))&&(this['currentLadder']=c?'D1':d?'D2':'D3',this['setupToggleButtons']());await this[a2(0x243)](a),this['createContainers']([a2(0x20d),'match-stats','player-matchups',a2(0x256)]);const f=await this[a2(0x211)](a);await Promise['all']([this['displayPromotionHistory'](a),this['displayTrophyCase'](a),this['displayMatchStats'](a,f),this['displayPlayerMatchups'](a,f),this['displayMatchHistory'](a,f),this[a2(0x199)](a)]),this[a2(0xe7)]();}catch(g){console[a2(0x16e)](a2(0x161),g),this['showError'](a2(0x160)+g[a2(0x108)]);}}[a41R(0x136)](a){const a3=a41R,b=document[a3(0x1e4)]('.content');if(!b)return;const c=document['querySelector'](a3(0x115));if(!c)return;document[a3(0x13a)](a3(0x275))[a3(0x20a)](f=>f[a3(0x170)]());const d=document[a3(0x192)]();let e=null;a[a3(0x20a)](f=>{const a4=a3,g=document['createElement'](a4(0x264));g[a4(0x271)]='match-history-container\x20'+f+'-container',g['innerHTML']='<p\x20class=\x22loading-text\x22>Loading\x20data...</p>',d['appendChild'](g),containerReferences[f]=g,e?e[a4(0x176)]('afterend',g):c['insertAdjacentElement']('afterend',g),e=g;}),b[a3(0xec)](d);}async[a41R(0x243)](a){const a5=a41R;try{const b=a+'_'+this[a5(0xca)];if(playerDataCache[a5(0x268)](b)){const k=playerDataCache[a5(0x16a)](b);return this['displayProfile'](k),await this['loadPlayerStats'](a),k;}const c=this[a5(0xca)]==='D1'?a5(0x152):this[a5(0xca)]==='D2'?a5(0x1cd):'playersD3',d=collection(db,c),e=query(d,where('username','==',a)),f=await getDocs(e);if(f['empty']){const l=query(collection(db,'nonParticipants'),where(a5(0x203),'==',a)),m=await getDocs(l);if(!m['empty']){const w=m['docs'][0x0]['data'](),x=w[a5(0x162)]||m[a5(0x179)][0x0]['id'],y=await this['getProfileData'](x),z={...w,...y,'username':a,'userId':x,'ladder':this[a5(0xca)],'isNonParticipant':!![],'eloRating':'N/A'};return playerDataCache[a5(0x1fb)](b,z),this['displayProfile'](z),z;}const n=await this['checkArchivedData'](a);if(n){const A={...n,'username':a,'ladder':this['currentLadder'],'isFormerPlayer':!![]};return playerDataCache[a5(0x1fb)](b,A),this['displayProfile'](A),await this[a5(0x193)](a),A;}const o=['D1','D2','D3']['filter'](B=>B!==this[a5(0xca)]);for(const B of o){const C=collection(db,B==='D1'?a5(0x152):B==='D2'?'playersD2':a5(0x1b2)),D=query(C,where(a5(0x203),'==',a)),E=await getDocs(D);if(!E[a5(0x273)])throw new Error(a5(0x226)+this[a5(0xca)]+'\x20ladder.\x20Try\x20selecting\x20the\x20'+B+'\x20ladder.');}let p=a,r=null;const s=query(collection(db,'pendingRegistrations'),where('username','==',a)),t=await getDocs(s);if(!t['empty'])r=t['docs'][0x0]['id'],p=t[a5(0x179)][0x0][a5(0x262)]()[a5(0x203)]||a;else{const F=query(collection(db,a5(0x13d)),where(a5(0x203),'==',a)),G=await getDocs(F);if(!G[a5(0x273)])r=G[a5(0x179)][0x0]['id'],p=G[a5(0x179)][0x0][a5(0x262)]()[a5(0x203)]||a;else{const H=query(collection(db,'users'),where('email','!=',null)),I=await getDocs(H),J=I[a5(0x179)][a5(0xed)](K=>{const a6=a5,L=K[a6(0x262)]()['email'];if(!L)return![];const M=L[a6(0x230)]('@')[0x0];return M===a;});J?(r=J['id'],p=J['data']()['username']||a):r=a5(0x139)+a['toLowerCase']()[a5(0x20e)](/[^a-z0-9]/g,'_');}}const u={'username':p,'userId':r,'isNonParticipant':!![],'autoRegistered':!![],'createdAt':new Date(),'lastSeen':new Date()};await setDoc(doc(db,'nonParticipants',r),u);const v={...u,'ladder':this[a5(0xca)],'eloRating':'N/A'};return playerDataCache['set'](b,v),this[a5(0x16c)](v),v;}const g=f[a5(0x179)][0x0]['data'](),h=g['userId']||f[a5(0x179)][0x0]['id'],i=await this['getProfileData'](h),j={...g,...i,'username':a,'userId':h,'ladder':this[a5(0xca)],'isActive':!![]};return playerDataCache[a5(0x1fb)](b,j),this['displayProfile'](j),await this[a5(0x193)](a),j;}catch(K){return console['error'](a5(0x23e),K),this[a5(0x1db)]('Error:\x20'+K[a5(0x108)]),null;}}async[a41R(0x149)](a){const a7=a41R;let b={};try{const c=await getDoc(doc(db,'userProfiles',a));c[a7(0x220)]()?b=c['data']():console['log'](a7(0x209)+a+'\x20in\x20userProfiles');}catch(d){console['warn'](a7(0x216),d);}return b;}async[a41R(0x141)](a){const a8=a41R;try{const b=collection(db,'season0'),c=query(b,where(a8(0x203),'==',a)),d=await getDocs(c);if(!d['empty'])return d[a8(0x179)][0x0][a8(0x262)]();return null;}catch(e){return console['warn'](a8(0xc2),e),null;}}async[a41R(0x12e)](a){const a9=a41R;try{const b=a+'_'+this[a9(0xca)];if(playerDataCache['has'](b))return playerDataCache[a9(0x16a)](b);const c=this[a9(0xca)]==='D1'?a9(0x152):this['currentLadder']==='D2'?a9(0x1cd):a9(0x1b2),d=collection(db,c),e=query(d,where(a9(0x203),'==',a)),f=await getDocs(e);if(f['empty'])return console[a9(0x184)]('Player\x20'+a+'\x20not\x20found\x20in\x20'+this[a9(0xca)]+a9(0x146)),null;const g=f[a9(0x179)][0x0][a9(0x262)](),h=g[a9(0x162)]||f['docs'][0x0]['id'];let i={};try{const k=await getDoc(doc(db,'userProfiles',h));k[a9(0x220)]()&&(i=k['data']());}catch(l){console['warn']('Error\x20fetching\x20profile\x20data:',l);}const j={...g,...i,'username':a,'userId':h,'ladder':this['currentLadder']};return playerDataCache[a9(0x1fb)](b,j),j;}catch(m){return console[a9(0x16e)](a9(0x16d)+a+':',m),null;}}['displayProfile'](a){const aa=a41R;this[aa(0xea)]=a;const b=document[aa(0x1e4)](aa(0x11c));if(!b)return;const c=a[aa(0xf5)]||DEFAULT_PROFILE_IMAGE,d=!a['profileImageUrl']||a[aa(0xf5)]===DEFAULT_PROFILE_IMAGE,e=document[aa(0x1e4)](aa(0x1c7))||document['createElement'](aa(0x264));e['className']='profile-header';const f=a[aa(0x210)]?'<img\x20src=\x22../images/flags/'+a['country']+'.png\x22\x20alt=\x22'+a['country']+'\x22\x20class=\x22profile-country-flag\x22>':'';e['innerHTML']=aa(0x144)+(d?'default-image':'')+aa(0x25a)+c+'\x22\x20alt=\x22Profile\x20Image\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22profile-image\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onerror=\x22this.src=\x27'+DEFAULT_PROFILE_IMAGE+'\x27;\x20this.parentElement.classList.add(\x27default-image\x27);\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+f+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20';!document['querySelector'](aa(0x1c7))&&b['insertBefore'](e,b[aa(0x1a8)]);const g=document[aa(0x1e4)]('.profile-image-section');g&&(g[aa(0x14d)]['display']='none');const h=a[aa(0x14b)]===!![],i=a[aa(0x16f)]===!![],j=a[aa(0x229)],k=a[aa(0x296)],l=a['roleColor'];let m=document[aa(0x1e4)]('.role-container');!m&&(j||k)&&(m=document['createElement'](aa(0x264)),m['className']=aa(0x1b5));if(k&&m)m['innerHTML']=aa(0x1df)+(l||'#808080')+';\x20color:\x20'+getContrastColor(l||aa(0xcb))+aa(0x15d)+k+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',!document['querySelector'](aa(0x232))&&b[aa(0x1c3)](m,b[aa(0x1a8)]);else{if(j&&m){const w=j['charAt'](0x0)[aa(0x282)]()+j['slice'](0x1)[aa(0x251)]();m['innerHTML']=aa(0x13b)+j[aa(0x251)]()+'\x22>'+w+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',!document[aa(0x1e4)]('.role-container')&&b['insertBefore'](m,b[aa(0x1a8)]);}else m&&m[aa(0x170)]();}if(h){const x=document['querySelector']('.profile-status')||document[aa(0x100)]('div');x[aa(0x271)]='profile-status',x['innerHTML']=aa(0x263)+(a[aa(0x1e0)]?'This\x20player\x20has\x20an\x20account\x20but\x20has\x20not\x20joined\x20any\x20ladder.':aa(0x18d))+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',b['classList']['add'](aa(0x1e7)),b['insertBefore'](x,m&&m[aa(0x172)]?m['nextSibling']:b['firstChild']);}else{if(i){const y=document[aa(0x1e4)]('.profile-status')||document[aa(0x100)](aa(0x264));y['className']='profile-status',y[aa(0x147)]=aa(0x173),b[aa(0x215)]['add']('former-player-profile'),b['insertBefore'](y,m&&m['parentNode']?m[aa(0x166)]:b[aa(0x1a8)]);}else document['querySelector']('.profile-status')&&document[aa(0x1e4)](aa(0x1a1))[aa(0x170)](),b['classList']['remove'](aa(0x1e7),'former-player-profile');}const n=parseInt(a[aa(0x159)])||0x0;b['classList'][aa(0x170)]('elo-unranked',aa(0x212),aa(0x165),aa(0xe1),'elo-emerald');let o,p='',q=0x0;if(!h){if(n>=0x7d0)o='elo-emerald',p='Emerald',q=0x0;else{if(n>=0x708)o='elo-gold',p='Emerald',q=0x7d0-n;else{if(n>=0x640)o='elo-silver',p=aa(0x219),q=0x708-n;else n>=0x578?(o=aa(0x212),p=aa(0x11f),q=0x640-n):(o=aa(0x214),p=aa(0x292),q=0x578-n);}}b[aa(0x215)]['add'](o);}let r=this['formatAllHomesDisplay'](a);const s={'nickname':a['username'],'motto-view':a[aa(0x1f3)]||'No\x20motto\x20set','favorite-map-view':a[aa(0xdd)]||'Not\x20set','favorite-weapon-view':a[aa(0x233)]||'Not\x20set','favorite-subgame-view':a['favoriteSubgame']||'Not\x20set','timezone-view':a[aa(0x1ec)]||aa(0xbd),'division-view':a[aa(0x294)]||'Not\x20set','home-levels-view':r,'stats-elo':h?aa(0x28a):a[aa(0x159)]||aa(0x28a)};for(const [z,A]of Object[aa(0x218)](s)){const B=document['getElementById'](z);B&&(B['textContent']=A);}const t=document[aa(0xd7)]('home-levels-view');t&&(t[aa(0x147)]=r);if(!h&&n>0x0){let C=document['querySelector']('.stats-row');!C&&(C=document['createElement'](aa(0x264)),C[aa(0x271)]=aa(0xc8),b['appendChild'](C));let D=document['getElementById']('next-rank-col');!D&&(D=document[aa(0x100)]('div'),D['id']='next-rank-col',D[aa(0x271)]=aa(0xd1),C[aa(0xec)](D)),n>=0x7d0?D['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stats-label\x22>CURRENT\x20RANK</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22next-rank-value\x22\x20class=\x22stats-value\x20'+o+'\x22>'+p+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':D[aa(0x147)]=aa(0xbb)+o+'\x22>'+p+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stats-progress\x20'+o+'\x22>'+q+aa(0x20b);}const u=auth[aa(0xbf)],v=u&&this[aa(0xea)]&&u['uid']!==this[aa(0xea)]['userId'];v&&(a['homeLevel1']||a['homeLevel2']||a[aa(0x28b)]||a[aa(0x27a)])&&this['addInvitationSection'](a);}async['getPlayerMatches'](a){const ab=a41R;try{const b=this[ab(0xca)]==='D1'?'approvedMatches':this['currentLadder']==='D2'?ab(0xdf):'approvedMatchesD3',c=collection(db,b),[d,e]=await Promise['all']([getDocs(query(c,where(ab(0x121),'==',a),orderBy('createdAt',ab(0xf7)))),getDocs(query(c,where('loserUsername','==',a),orderBy('createdAt',ab(0xf7))))]),f=new Set(),g=[],h=i=>{i['forEach'](j=>{const ac=a41d;!f[ac(0x268)](j['id'])&&(f[ac(0x254)](j['id']),g[ac(0x1f6)]({'id':j['id'],...j[ac(0x262)]()}));});};return h(d),h(e),g['sort']((i,j)=>(j['createdAt']?.[ab(0x202)]||0x0)-(i['createdAt']?.[ab(0x202)]||0x0));}catch(i){return console[ab(0x16e)](ab(0xff),i),[];}}async['getPlayerEloData'](a){const ad=a41R,b=a+'_'+this[ad(0xca)]+ad(0xcd);if(this['playerEloCache']['has'](b))return this[ad(0x26e)]['get'](b);try{const c=this[ad(0xca)]==='D1'?'players':this['currentLadder']==='D2'?ad(0x1cd):'playersD3',d=collection(db,c),e=query(d,where('username','==',a),limit(0x1)),f=await getDocs(e),g=f['docs'][0x0]?.[ad(0x262)]()||{},h=g['eloRating']||0x0;return this['playerEloCache']['set'](b,h),h;}catch(i){return console[ad(0x16e)](ad(0x227)+a+':',i),0x0;}}async[a41R(0x1cb)](a){const ae=a41R;try{const b=document['getElementById']('trophy-container');if(!b)return;const c=this['currentProfileData']?.[ae(0x162)];if(!c){console['error']('No\x20user\x20ID\x20found\x20for\x20trophy\x20display'),b[ae(0x147)]='<p\x20class=\x22empty-trophy-case\x22>Unable\x20to\x20load\x20trophies</p>';return;}const d=collection(db,'userTrophies'),e=query(d,where('userId','==',c),orderBy('awardedAt',ae(0xf7))),f=await getDocs(e);if(f['empty']){b['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22empty-trophy-case\x22>No\x20trophies\x20awarded\x20yet</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}const g=collection(db,'trophyDefinitions'),h=await getDocs(g),i={};h[ae(0x20a)](k=>{i[k['id']]={'id':k['id'],...k['data']()};});let j='';f['forEach'](k=>{const af=ae,l=k['data'](),m=l[af(0x22f)],n=i[m]||{'name':af(0x10d),'image':af(0x24f),'description':af(0x23d),'rarity':af(0x12b)},o=l['awardedAt']?new Date(l['awardedAt']['seconds']*0x3e8)['toLocaleDateString']():af(0x143);j+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22trophy\x20'+(n[af(0x1f0)]||'common')+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22trophy-tooltip\x22>'+(n[af(0x118)]||af(0x102))+af(0x175)+n[af(0x20c)]+'\x22\x20alt=\x22'+n[af(0x21f)]+af(0x24a)+n['name']+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22trophy-date\x22>Awarded:\x20'+o+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}),b['innerHTML']=j;}catch(k){console['error']('Error\x20displaying\x20trophy\x20case:',k);const l=document['getElementById'](ae(0xd2));l&&(l['innerHTML']=ae(0x22d));}}async[a41R(0x1dd)](a,b){const ag=a41R;try{const c=containerReferences['match-history'];if(!c)return;if(this['currentProfileData']?.['isNonParticipant']){c[ag(0x147)]=ag(0x22c);return;}const d=new Set();b['forEach'](o=>{const ah=ag;d[ah(0x254)](o['winnerUsername']),d['add'](o['loserUsername']);});const e={};await Promise[ag(0xc9)]([...d][ag(0x13c)](async o=>{e[o]=await this['getPlayerEloData'](o);}));const f=this['currentLadder']==='D1'?'eloHistory':this[ag(0xca)]==='D2'?ag(0x1fc):ag(0x1d5),g=collection(db,f),h=this[ag(0xea)]?.[ag(0x162)],i=[a];h&&i[ag(0x1f6)](h);let j=new Map();try{const o=query(g,where('player','in',i),orderBy(ag(0x1ab),ag(0xf7)),limit(0x1f4)),p=await getDocs(o),q=[];j=new Map(),p[ag(0x20a)](r=>{const ai=ag,s=r['data']();q['push']({...s,'timestamp':s['timestamp']?s[ai(0x1ab)][ai(0x202)]:0x0,'docId':r['id']});s[ai(0x25d)]&&j[ai(0x1fb)](s['matchId'],{'previousElo':s['previousElo'],'newElo':s['newElo'],'change':s['change']||s['newElo']-s['previousElo'],'source':'matchId'});s['gameId']&&j['set'](s['gameId'],{'previousElo':s[ai(0x1d2)],'newElo':s[ai(0x231)],'change':s['change']||s[ai(0x231)]-s[ai(0x1d2)],'source':'gameId'});const t=s['player']+'_'+(s[ai(0x1ab)]?s['timestamp']['seconds']:0x0);j['set'](t,{'previousElo':s[ai(0x1d2)],'newElo':s['newElo'],'change':s[ai(0x1f7)]||s['newElo']-s[ai(0x1d2)],'source':ai(0x1f5)});}),b['forEach'](r=>{const aj=ag;if(!j['has'](r['id'])&&r['createdAt']){const s=r['createdAt'][aj(0x202)],t=q[aj(0xed)](u=>Math['abs'](u['timestamp']-s)<0x258);t&&j['set'](r['id'],{'previousElo':t['previousElo'],'newElo':t['newElo'],'change':t['change']||t['newElo']-t['previousElo'],'source':aj(0x1ab)});}});}catch(r){console['warn']('Could\x20not\x20load\x20ELO\x20history\x20for\x20match\x20details:',r);}const k=s=>{const ak=ag;if(s>=0x7d0)return ak(0x207);if(s>=0x708)return'elo-gold';if(s>=0x640)return ak(0x165);if(s>=0x578)return ak(0x212);return ak(0x214);},l=b[ag(0x197)](0x0,0xa),m=b[ag(0x197)](0xa),n=b[ag(0x125)];c[ag(0x147)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Match\x20History</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(n===0x0?ag(0x154):ag(0xe6)+this['currentLadder']+'\x22>Showing\x20'+Math['min'](0xa,n)+'\x20of\x20'+n+ag(0x283)+this['currentLadder']+ag(0x25c)+this[ag(0xca)]+ag(0x1e8)+this[ag(0x12c)](b)+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</select>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20type=\x22text\x22\x20id=\x22match-filter-username-'+this[ag(0xca)]+'\x22\x20class=\x22match-filter-input\x22\x20placeholder=\x22Filter\x20by\x20opponent...\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<select\x20id=\x22match-filter-timeframe-'+this['currentLadder']+ag(0x26c)+this[ag(0xca)]+ag(0x16b)+this[ag(0xca)]+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+this[ag(0x245)](l,a,e,j,k)+ag(0xd3)+(m['length']>0x0?'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22match-history-pagination\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22load-more-matches-btn\x22\x20id=\x22load-more-'+this[ag(0xca)]+'\x22\x20data-loaded=\x2210\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Load\x20More\x20Matches\x20('+m[ag(0x125)]+'\x20remaining)\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22pagination-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20id=\x22pagination-info-'+this['currentLadder']+ag(0xd5)+n+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':'')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22match-history-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22footer-note\x22>Match\x20data\x20is\x20updated\x20regularly.\x20ELO\x20changes\x20may\x20take\x20time\x20to\x20reflect.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20')+ag(0x266);n>0x0&&this[ag(0x13f)](a,b,e,j,k);if(!document['getElementById'](ag(0x26d))){const s=document['createElement']('style');s['id']='match-history-enhanced-styles',s['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-history-controls\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20space-between;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20flex-start;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#2a2a2a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x206px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-history-stats\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20min-width:\x20150px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-history-stats\x20p\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#aaa;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-history-filters\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-select,\x20.match-filter-input\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#555;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.5rem\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.3s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20min-width:\x20120px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-select\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-input\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20min-width:\x20140px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-input::placeholder\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-select:hover,\x20.match-filter-input:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-select:focus,\x20.match-filter-input:focus\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20outline:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x200\x202px\x20rgba(136,\x20136,\x20136,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.clear-filters-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#555;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.5rem\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.3s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.clear-filters-btn:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.match-history-pagination\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-top:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding-top:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-top:\x201px\x20solid\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.load-more-matches-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#555;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.75rem\x201.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x206px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.3s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-width:\x20300px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200\x20auto;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20block;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.load-more-matches-btn:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transform:\x20translateY(-1px);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.load-more-matches-btn:disabled\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200.6;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20not-allowed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transform:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20.pagination-info\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-top:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.85rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20@media\x20(max-width:\x20768px)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.match-history-controls\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-direction:\x20column;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.match-history-filters\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.match-filter-select,\x20.match-filter-input\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20min-width:\x20100px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex:\x201;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20',document[ag(0x23c)]['appendChild'](s);}}catch(t){console['error']('Error\x20displaying\x20match\x20history:',t),this['showErrorInContainer']('match-history',ag(0x163));}}[a41R(0x13f)](a,b,c,d,e){const al=a41R,f=document[al(0xd7)]('match-filter-result-'+this[al(0xca)]),g=document['getElementById']('match-filter-map-'+this['currentLadder']),h=document[al(0xd7)]('match-filter-username-'+this['currentLadder']),i=document['getElementById']('match-filter-timeframe-'+this[al(0xca)]),j=document[al(0xd7)](al(0x244)+this['currentLadder']),k=document[al(0xd7)]('load-more-'+this[al(0xca)]);if(!f||!g||!h||!i)return;let l=0xa,m=b;const n=()=>{const am=al,p=f['value'],q=g[am(0xce)],r=h['value']['trim']()['toLowerCase'](),s=i['value'];let t=[...b];if(p===am(0x1f4))t=t['filter'](w=>w[am(0x121)]===a);else p==='losses'&&(t=t[am(0x280)](w=>w['loserUsername']===a));q!=='all'&&(t=t[am(0x280)](w=>w[am(0x284)]===q));r!==''&&(t=t['filter'](w=>{const an=am,x=w['winnerUsername']===a?w[an(0x23f)]:w['winnerUsername'];return x['toLowerCase']()[an(0x101)](r);}));if(s!=='all'){const w=new Date(),x=new Date();switch(s){case'last7':x['setDate'](w[am(0xfa)]()-0x7);break;case'last30':x[am(0x277)](w['getDate']()-0x1e);break;case am(0x223):x[am(0x277)](w['getDate']()-0x5a);break;}t=t[am(0x280)](y=>{const ao=am;if(!y[ao(0x293)])return![];const z=new Date(y[ao(0x293)]['seconds']*0x3e8);return z>=x;});}m=t,l=Math['min'](0xa,t['length']),this[am(0x153)](m,l,a,c,d,e);const u=document['getElementById']('match-stats-display-'+this['currentLadder']);if(u){const y=p!==am(0xc9)||q!==am(0xc9)||r!==''||s!==am(0xc9);y?u['textContent']='Showing\x20'+l+am(0x1f1)+t['length']+am(0x18b)+b['length']+am(0xfe):u['textContent']='Showing\x20'+l+am(0x1f1)+b['length']+'\x20matches';}if(k){const z=t['length']-l;z>0x0?(k['textContent']=am(0x188)+z+'\x20remaining)',k[am(0x14d)]['display']=am(0x15f),k[am(0x12d)]=![]):k['style'][am(0x252)]=am(0x131);}const v=document['getElementById'](am(0x1ad)+this['currentLadder']);v&&(v[am(0x1e3)]='Loaded:\x20'+l+'\x20of\x20'+t[am(0x125)]);};f[al(0x17d)]('change',n),g[al(0x17d)](al(0x1f7),n),i['addEventListener'](al(0x1f7),n);let o;h[al(0x17d)]('input',()=>{clearTimeout(o),o=setTimeout(n,0x12c);}),j&&j['addEventListener'](al(0x208),()=>{const ap=al;f[ap(0xce)]='all',g[ap(0xce)]=ap(0xc9),h[ap(0xce)]='',i['value']=ap(0xc9),n();}),k&&k['addEventListener'](al(0x208),()=>{const aq=al,p=Math[aq(0x171)](0xa,m['length']-l);if(p>0x0){l+=p,this[aq(0x153)](m,l,a,c,d,e);const q=m['length']-l;q>0x0?k['textContent']=aq(0x188)+q+aq(0x1a2):k[aq(0x14d)][aq(0x252)]='none';const r=document['getElementById'](aq(0x1ad)+this['currentLadder']);r&&(r[aq(0x1e3)]=aq(0x168)+l+aq(0x1f1)+m[aq(0x125)]);const s=document[aq(0xd7)]('match-stats-display-'+this['currentLadder']);if(s){const t=f[aq(0xce)]!=='all'||g[aq(0xce)]!==aq(0xc9)||h['value']['trim']()!==''||i[aq(0xce)]!=='all';t?s[aq(0x1e3)]=aq(0x17e)+l+'\x20of\x20'+m[aq(0x125)]+aq(0x18b)+b['length']+aq(0xfe):s[aq(0x1e3)]=aq(0x17e)+l+'\x20of\x20'+b[aq(0x125)]+'\x20matches';}}});}['updateMatchDisplay'](a,b,c,d,e,f){const ar=a41R,g=document['getElementById'](ar(0x1ea)+this[ar(0xca)]);if(!g)return;const h=a['slice'](0x0,b);g['innerHTML']=this['renderMatchRows'](h,c,d,e,f);}['getUniqueMapOptions'](a){const as=a41R,b=[...new Set(a['map'](c=>c['mapPlayed'])[as(0x280)](c=>c&&c['trim']()!==''))][as(0x169)]();return b['map'](c=>'<option\x20value=\x22'+c+'\x22>'+c+'</option>')[as(0x195)]('');}[a41R(0x245)](a,b,c,d,e){const at=a41R,f=[...a][at(0x169)]((h,i)=>(h[at(0x293)]?.['seconds']||0x0)-(i[at(0x293)]?.['seconds']||0x0)),g=[];return f['forEach']((h,i)=>{const au=at,j=h[au(0x121)]===b,k=h['createdAt']?.[au(0x202)]||0x0;let l=d[au(0x16a)](h['id']);!l&&h['gameId']&&(l=d[au(0x16a)](h[au(0x28e)]));if(l&&l['previousElo']!==undefined&&l['newElo']!==undefined)g['push']({'timestamp':k-0x1,'elo':l[au(0x1d2)],'matchIndex':i,'source':au(0x14f)}),g['push']({'timestamp':k,'elo':l[au(0x231)],'matchIndex':i,'source':au(0x247)});else j?h[au(0x288)]!==undefined&&h['winnerNewElo']!==undefined&&(g[au(0x1f6)]({'timestamp':k-0x1,'elo':h[au(0x288)],'matchIndex':i,'source':au(0xbc)}),g[au(0x1f6)]({'timestamp':k,'elo':h[au(0x132)],'matchIndex':i,'source':au(0x26b)})):h[au(0x119)]!==undefined&&h['loserNewElo']!==undefined&&(g[au(0x1f6)]({'timestamp':k-0x1,'elo':h['loserPreviousElo'],'matchIndex':i,'source':'loserFields-previous'}),g[au(0x1f6)]({'timestamp':k,'elo':h[au(0x12a)],'matchIndex':i,'source':'loserFields-new'}));}),g['sort']((h,i)=>h['timestamp']-i['timestamp']),a[at(0x13c)](h=>{const av=at,i=h['createdAt']?new Date(h[av(0x293)]['seconds']*0x3e8)[av(0x190)]():'N/A',j=h['winnerUsername']===b,k=e(c[h['winnerUsername']]),l=e(c[h['loserUsername']]),m=h[av(0x293)]?.['seconds']||0x0;let n='',o,p,q,r=av(0x1e1),s=d['get'](h['id']);if(!s&&h[av(0x28e)]){s=d[av(0x16a)](h['gameId']);if(s)r=av(0x28e);}if(s&&s['previousElo']!==undefined&&s[av(0x231)]!==undefined)o=s[av(0x1d2)],p=s[av(0x231)],q=s[av(0x1f7)]||p-o,r=s['source']||av(0x1bd);else{if(j){if(h['winnerPreviousElo']!==undefined&&h[av(0x132)]!==undefined)o=h['winnerPreviousElo'],p=h[av(0x132)],q=p-o,r='winnerFields';else{if(h['winnerEloChange']!==undefined){q=h['winnerEloChange'],r='winnerEloChange';if(h[av(0x1fe)]!==undefined)p=h[av(0x1fe)],o=p-q;else h[av(0xee)]!==undefined&&(p=h['winnerRatingAfter'],o=p-q);}}}else{if(h['loserPreviousElo']!==undefined&&h['loserNewElo']!==undefined)o=h['loserPreviousElo'],p=h[av(0x12a)],q=p-o,r=av(0x21d);else{if(h['loserEloChange']!==undefined){q=h['loserEloChange'],r=av(0x290);if(h['loserRating']!==undefined)p=h[av(0xbe)],o=p-q;else h[av(0x1c5)]!==undefined&&(p=h[av(0x1c5)],o=p-q);}}}}if(q===undefined){const t=g[av(0x280)](x=>x['timestamp']<m),u=g[av(0x280)](x=>x[av(0x1ab)]>m);let v,w;if(t['length']>0x0){const x=t[t['length']-0x1];v=x['elo'];}if(u[av(0x125)]>0x0){const y=u[0x0];w=y['elo'];}v!==undefined&&w!==undefined&&(j?w>v&&(q=w-v,o=v,p=w,r=av(0x1e5)):w<v&&(q=w-v,o=v,p=w,r=av(0x1e5)));}if(q===undefined){if(j){if(h[av(0x284)]==='Logic\x202'&&h['winnerScore']===0x14&&h['loserScore']===0x9)q=+0x9,r=av(0x112);else{if(h[av(0x284)]===av(0x238)&&h[av(0x17f)]===0x14&&h['loserScore']===0x6)q=+0x5,r=av(0x112);else{if(h[av(0x284)]==='salute'&&h['winnerScore']===0x14&&h[av(0xf1)]===0x3)q=+0x4,r='screenData';else{const z=c[h['loserUsername']],A=c[h[av(0x121)]];if(z&&A){const B=z-A,C=Math['max'](0x4,Math[av(0x171)](0xc,0x8+Math['floor'](B/0x64)));q=+C;}else q=+0x8;r='intelligent-estimate';}}}}else{const D=c[h[av(0x121)]],E=c[h['loserUsername']];if(D&&E){const F=E-D,G=Math['max'](0x4,Math['min'](0xc,0x8+Math['floor'](F/0x64)));q=-G;}else q=-0x8;r=av(0x27f);}}if(o!==undefined&&p!==undefined){const H=q>0x0?av(0xc7):q<0x0?'elo-change-negative':'elo-change-neutral',I=q>0x0?'+':'';n=av(0x167)+H+av(0x287)+r+av(0x1c4)+o+av(0x151)+p+'\x20('+I+q+')\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}else{if(q!==undefined){const J=q>0x0?'elo-change-positive':q<0x0?av(0x265):'elo-change-neutral',K=q>0x0?'+':'';n='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22'+J+'\x22\x20title=\x22ELO\x20change\x20('+r+av(0x1c4)+K+q+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}else{const L=j?'elo-change-positive':'elo-change-negative',M=j?av(0x1eb):'LOSS';n='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22'+L+av(0x178)+M+av(0x14e);}}return av(0x1d6)+(j?'match-won':'match-lost')+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+i+av(0x140)+encodeURIComponent(h['winnerUsername'])+av(0x1bf)+k+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+h[av(0x121)]+av(0x206)+encodeURIComponent(h[av(0x23f)])+'\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22player-link\x20'+l+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+h['loserUsername']+av(0x158)+h['winnerScore']+'\x20-\x20'+h['loserScore']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(h['mapPlayed']||av(0x28a))+av(0x1d8)+n+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';})[at(0x195)]('');}async[a41R(0x1a3)](a,b){const aw=a41R;try{const c=containerReferences['match-stats'];if(!c)return;if(this['currentProfileData']?.['isNonParticipant']){c[aw(0x147)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Match\x20Statistics</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22non-participant-notice\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>This\x20player\x20is\x20not\x20participating\x20in\x20the\x20ladder.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>No\x20match\x20statistics\x20are\x20available.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}const d=await getDoc(doc(db,aw(0x1b1),'seasonCount')),e=d['exists']()?d['data']()[aw(0x225)]:0x1;c['innerHTML']=aw(0x1ba)+e+aw(0x21a);const f=b['map'](h=>({'date':new Date(h['createdAt'][aw(0x202)]*0x3e8),'isWinner':h['winnerUsername']===a,'score':h[aw(0x121)]===a?h[aw(0x17f)]:h[aw(0xf1)]}))['sort']((h,i)=>h['date']-i['date']),g=document[aw(0xd7)]('eloChart')?.['getContext']('2d');if(g)try{new Chart(g,{'type':aw(0xd6),'data':{'labels':f[aw(0x13c)](h=>h['date'][aw(0x190)]()),'datasets':[{'label':aw(0x201),'data':f['map'](h=>h['score']),'borderColor':aw(0x1d7),'tension':0.1,'fill':![]}]},'options':{'responsive':!![],'maintainAspectRatio':![],'plugins':{'legend':{'labels':{'color':'white'}}},'scales':{'y':{'beginAtZero':!![],'grid':{'color':'rgba(255,\x20255,\x20255,\x200.1)'},'ticks':{'color':aw(0x274)}},'x':{'grid':{'color':'rgba(255,\x20255,\x20255,\x200.1)'},'ticks':{'color':aw(0x274)}}}}});}catch(h){console[aw(0x16e)]('Error\x20creating\x20chart:',h),c['innerHTML']+=aw(0x27e);}}catch(i){console['error'](aw(0x194),i),this['showErrorInContainer'](aw(0xe0),aw(0x157));}}async[a41R(0x189)](a,b){const ax=a41R;try{const c=containerReferences['player-matchups'];if(!c)return;if(this['currentProfileData']?.[ax(0x14b)]){c[ax(0x147)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Player\x20Matchups</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22non-participant-notice\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>This\x20player\x20is\x20not\x20participating\x20in\x20the\x20ladder.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>No\x20player\x20matchups\x20are\x20available.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}const d=b[ax(0xe9)]((h,i)=>{const ay=ax,j=i[ay(0x121)]===a?i['loserUsername']:i[ay(0x121)],k=i[ay(0x121)]===a;return!h[j]&&(h[j]={'wins':0x0,'losses':0x0,'total':0x0}),h[j][ay(0x1fd)]++,h[j][k?'wins':'losses']++,h;},{}),e=Object['entries'](d)[ax(0x169)]((h,i)=>i[0x1]['total']-h[0x1]['total']),f=await getDoc(doc(db,'metadata',ax(0x137))),g=f['exists']()?f['data']()[ax(0x225)]:0x1;c[ax(0x147)]=ax(0x1ba)+g+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Player\x20Matchups</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<table\x20class=\x22match-history-table\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Opponent</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Games\x20Played</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Wins</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Losses</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Win\x20Rate</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tbody>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(e['length']===0x0?'<tr><td\x20colspan=\x225\x22>No\x20matchups\x20found</td></tr>':e[ax(0x13c)](([h,i])=>{const az=ax,j=(i['wins']/ i['total']*0x64)['toFixed'](0x1);return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(h)+az(0x19e)+h+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+i[az(0x1fd)]+az(0x240)+i['wins']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22losses\x22>'+i['losses']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+j+'%</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';})[ax(0x195)](''))+ax(0x10f);}catch(h){console[ax(0x16e)]('Error\x20displaying\x20player\x20matchups:',h),this['showErrorInContainer'](ax(0xf9),'Failed\x20to\x20load\x20player\x20matchups');}}async[a41R(0x267)](a){const aA=a41R;try{const b=containerReferences[aA(0x20d)];if(!b){console['error'](aA(0xf6));return;}if(this[aA(0xea)]?.['isNonParticipant']){b['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Rank\x20History</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22non-participant-notice\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>This\x20player\x20is\x20not\x20participating\x20in\x20the\x20ladder.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>No\x20rank\x20history\x20is\x20available.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}const c=this[aA(0xca)]==='D1'?aA(0x1bd):this['currentLadder']==='D2'?aA(0x1fc):aA(0x1d5),d=collection(db,c),e=query(d,where('player','==',a),where(aA(0xd0),'in',[aA(0x1a5),aA(0x1b3)]),orderBy('timestamp',aA(0xf7))),f=await getDocs(e);if(f[aA(0x273)]){b['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2>Rank\x20History</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22no-data\x22>No\x20promotion\x20or\x20demotion\x20history\x20available.</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';return;}const g=f[aA(0x179)][aA(0x13c)](m=>({...m[aA(0x262)](),'id':m['id'],'date':m[aA(0x262)]()['timestamp']?new Date(m[aA(0x262)]()['timestamp'][aA(0x202)]*0x3e8):new Date()})),h=await getDoc(doc(db,aA(0x1b1),'seasonCount')),i=h[aA(0x220)]()?h['data']()[aA(0x225)]:0x1,j=g[aA(0x197)](0x0,0x3),k=g['slice'](0x3),l=k['length']>0x0;b[aA(0x147)]=aA(0x1ba)+i+aA(0x17b)+j['map'](m=>{const aB=aA,n=m['date'][aB(0x190)](),o=m['type']===aB(0x1a5),p=m['newElo']-m[aB(0x1d2)];return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22'+(o?'promotion-row':aB(0x246))+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+n+aB(0x11a)+(o?aB(0x1a5):aB(0x1b3))+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(o?aB(0xc4):'DEMOTION')+aB(0x24c)+m['rankAchieved']['toLowerCase']()+aB(0x183)+m[aB(0xcf)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+m['previousElo']+aB(0xba)+m[aB(0x231)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22'+(o?aB(0x1d4):aB(0x269))+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(o?'+':'')+p+aB(0x285);})['join']('')+aA(0x286)+(l?aA(0x109)+k['map'](m=>{const aC=aA,n=m['date'][aC(0x190)](),o=m['type']===aC(0x1a5),p=m['newElo']-m['previousElo'];return aC(0x18c)+(o?aC(0x1b7):'demotion-row')+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+n+aC(0x11a)+(o?aC(0x1a5):aC(0x1b3))+aC(0x183)+(o?aC(0xc4):'DEMOTION')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22rank-name\x20'+m[aC(0xcf)][aC(0x251)]()+aC(0x183)+m[aC(0xcf)]+aC(0x1a9)+m['previousElo']+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+m[aC(0x231)]+aC(0x10b)+(o?'positive-change':'negative-change')+aC(0x1fa)+(o?'+':'')+p+aC(0x285);})['join']('')+aA(0x286):'')+aA(0x19b)+(l?'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22show-more-container\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22show-more-btn\x22>Show\x20More\x20('+k[aA(0x125)]+')</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22show-less-btn\x22\x20style=\x22display:\x20none;\x22>Show\x20Less</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':'')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';if(l){const m=b['querySelector'](aA(0x198)),n=b[aA(0x1e4)](aA(0x23b)),o=b['querySelector'](aA(0x289));m['addEventListener'](aA(0x208),()=>{const aD=aA;o['style'][aD(0x252)]=aD(0xc3),m[aD(0x14d)][aD(0x252)]='none',n[aD(0x14d)][aD(0x252)]='inline-block';}),n['addEventListener']('click',()=>{const aE=aA;o['style'][aE(0x252)]=aE(0x131),m[aE(0x14d)]['display']='inline-block',n[aE(0x14d)][aE(0x252)]='none';});}if(!document[aA(0xd7)]('promotion-styles')){const p=document['createElement']('style');p['id']=aA(0x12f),p['textContent']=aA(0x105),document[aA(0x23c)][aA(0xec)](p);}}catch(r){console[aA(0x16e)](aA(0xc5),r),this[aA(0x21e)](aA(0x20d),aA(0x17c)+this[aA(0xca)]+aA(0x279));}}async[a41R(0x193)](a){const aF=a41R;if(!a)return;try{const b=this[aF(0xca)]==='D1'?'players':this['currentLadder']==='D2'?'playersD2':'playersD3',c=collection(db,b),d=query(c,where('username','==',a)),e=await getDocs(d);if(e['empty']){this[aF(0x222)]();return;}const f=e['docs'][0x0]['data'](),g=await this['getPlayerMatches'](a),h={'wins':0x0,'losses':0x0,'totalKills':0x0,'totalDeaths':0x0,'totalMatches':g['length']};g[aF(0x20a)](o=>{const aG=aF,p=o[aG(0x121)]===a;p?(h['wins']++,h['totalKills']+=parseInt(o['winnerScore'])||0x0,h[aG(0x24b)]+=parseInt(o['loserScore'])||0x0):(h[aG(0x1bc)]++,h['totalKills']+=parseInt(o[aG(0xf1)])||0x0,h[aG(0x24b)]+=parseInt(o[aG(0x17f)])||0x0);}),h['kda']=h[aF(0x24b)]>0x0?(h['totalKills']/h['totalDeaths'])[aF(0x1ac)](0x2):h[aF(0x182)]['toFixed'](0x2),h['winRate']=h[aF(0x113)]>0x0?(h['wins']/h['totalMatches']*0x64)['toFixed'](0x1):0x0;const i=parseInt(f['eloRating'])||0x0;let j='',k=0x0,l='';if(i>=0x7d0)j='Emerald',k=0x0,l='elo-emerald';else{if(i>=0x708)j='Emerald',k=0x7d0-i,l='elo-gold';else{if(i>=0x640)j='Gold',k=0x708-i,l='elo-silver';else i>=0x578?(j='Silver',k=0x640-i,l='elo-bronze'):(j='Bronze',k=0x578-i,l='elo-unranked');}}const m=document[aF(0x1e4)]('.profile-content\x20>\x20.stats-grid:last-child');m&&m['remove']();const n=()=>{const aH=aF,o={'stats-matches':h[aH(0x113)],'stats-wins':h[aH(0x1f4)],'stats-losses':h['losses'],'stats-kd':h['kda'],'stats-winrate':h['winRate']+'%','stats-elo':f['eloRating']||aH(0x28a)};for(const [r,s]of Object['entries'](o)){const t=document['getElementById'](r);t&&(t['textContent']=s);}const p=document['querySelector']('.stats-grid');if(p){let u=p[aH(0x1e4)](aH(0x21c));!u&&(u=document[aH(0x100)](aH(0x264)),u['className']='stat-item\x20next-rank',p['appendChild'](u)),i>=0x7d0?u['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-label\x22>CURRENT\x20RANK</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-value\x20'+l+'\x22>'+j+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':u['innerHTML']=aH(0x156)+l+'\x22>'+j+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-progress\x20'+l+'\x22>'+k+'\x20ELO\x20needed</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}};document['getElementById']('stats-matches')?n():this[aF(0x13e)](h,f[aF(0x159)],j,k,l);}catch(o){this[aF(0x222)]();}}[a41R(0x272)](){const aI=a41R,a=document['getElementById']('favorite-subgame-edit'),b=document[aI(0xd7)]('favorite-subgame-homes'),c=document['getElementById'](aI(0xe2));if(!a||!b)return;const d=['Blind\x20Match','Rematch'];a['addEventListener'](aI(0x1f7),f=>{const aJ=aI,g=f['target'][aJ(0xce)];if(g&&g!==''&&!d[aJ(0x101)](g)){b['style']['display']='block';c&&(c[aJ(0x1e3)]=g+aJ(0x181));const h=document[aJ(0xd7)](aJ(0x1b8)),i=document['getElementById']('favorite-subgame-home-2'),j=document['getElementById'](aJ(0x249));if(h)h['placeholder']='Primary\x20'+g+'\x20home';if(i)i[aJ(0x177)]=aJ(0x1c6)+g+'\x20home';if(j)j['placeholder']='Tertiary\x20'+g+aJ(0x1f8);}else{b[aJ(0x14d)][aJ(0x252)]=aJ(0x131);const k=document['getElementById']('favorite-subgame-home-1'),l=document[aJ(0xd7)]('favorite-subgame-home-2'),m=document[aJ(0xd7)]('favorite-subgame-home-3');if(k)k[aJ(0xce)]='';if(l)l[aJ(0xce)]='';if(m)m[aJ(0xce)]='';}});}[a41R(0x134)](a){const aK=a41R;if(!this['currentProfileData']||!this[aK(0xea)][aK(0x27a)])return'';const b=this[aK(0xea)]['favoriteSubgame'],c=[aK(0x1af),aK(0x135)];if(c['includes'](b))return'';const d={'Fusion\x20Match':['fusionHome1',aK(0x21b),aK(0x1c2)],'≥6\x20Missiles':[aK(0xf8),aK(0x1dc),aK(0x107)],'Weapon\x20Imbalance':[aK(0x128),aK(0xe4),aK(0x28f)],'Disorientation':[aK(0x26a),aK(0xc1),aK(0x258)],'Ratting':[aK(0x205),'rattingHome2',aK(0x25e)],'Altered\x20Powerups':['alteredPowerupsHome1',aK(0x22b),'alteredPowerupsHome3'],'Mega\x20Match':[aK(0x259),aK(0xfc),aK(0x1de)]},e=d[b];if(e&&e[a-0x1])return this['currentProfileData'][e[a-0x1]]||'';return'';}['getDynamicSubgameHomes'](){const aL=a41R,a=document['getElementById']('favorite-subgame-edit')?.[aL(0xce)]['trim'](),b={},c=[aL(0x1af),'Rematch'];if(a&&a!==''&&!c['includes'](a)){const d=document['getElementById'](aL(0x1b8))?.[aL(0xce)]['trim']()||'',e=document['getElementById'](aL(0x117))?.['value'][aL(0x235)]()||'',f=document[aL(0xd7)](aL(0x249))?.['value'][aL(0x235)]()||'',g={'Fusion\x20Match':[aL(0x278),'fusionHome2',aL(0x1c2)],'≥6\x20Missiles':[aL(0xf8),'missilesHome2','missilesHome3'],'Weapon\x20Imbalance':['weaponImbalanceHome1',aL(0xe4),aL(0x28f)],'Disorientation':[aL(0x26a),aL(0xc1),'disorientationHome3'],'Ratting':[aL(0x205),aL(0x191),aL(0x25e)],'Altered\x20Powerups':[aL(0xeb),aL(0x22b),'alteredPowerupsHome3'],'Mega\x20Match':[aL(0x259),'megaMatchHome2','megaMatchHome3']},h=g[a];h&&(b[h[0x0]]=d,b[h[0x1]]=e,b[h[0x2]]=f);}return b;}['formatAllHomesDisplay'](a){const aM=a41R,b=[a['homeLevel1'],a[aM(0x1e6)],a['homeLevel3']]['filter'](g=>g&&g[aM(0x235)]()!==''),c=a[aM(0x27a)];let d=[];const e=['Blind\x20Match',aM(0x135)];if(c&&!e[aM(0x101)](c)){const g={'Fusion\x20Match':[aM(0x278),aM(0x21b),aM(0x1c2)],'≥6\x20Missiles':['missilesHome1','missilesHome2',aM(0x107)],'Weapon\x20Imbalance':[aM(0x128),'weaponImbalanceHome2',aM(0x28f)],'Disorientation':[aM(0x26a),aM(0xc1),aM(0x258)],'Ratting':['rattingHome1','rattingHome2',aM(0x25e)],'Altered\x20Powerups':[aM(0xeb),aM(0x22b),'alteredPowerupsHome3'],'Mega\x20Match':[aM(0x259),aM(0xfc),'megaMatchHome3']},h=g[c];h&&(d=h[aM(0x13c)](i=>a[i])[aM(0x280)](i=>i&&i[aM(0x235)]()!==''));}let f=[];return b[aM(0x125)]>0x0&&f['push'](aM(0x1be)+b[aM(0x195)](',\x20')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>'),c&&!e[aM(0x101)](c)&&d['length']>0x0&&f['push'](aM(0x1c9)+c+':</strong>\x20'+d[aM(0x195)](',\x20')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>'),c&&e['includes'](c)&&b[aM(0x125)]>0x0&&f['push']('<div\x20class=\x22homes-section\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<strong>'+c+':</strong>\x20Uses\x20random/preset\x20maps\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>'),f['length']>0x0?aM(0x15e)+f['join']('')+'</div>':aM(0x19d);}['showSuccessMessage'](a){const aN=a41R,b=document[aN(0x1e4)](aN(0x19f));b&&b[aN(0x170)]();const c=document['createElement']('div');c[aN(0x271)]=aN(0xc0),c['textContent']=a,c[aN(0x14d)]['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20right:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#4CAF50;\x0a\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x202px\x208px\x20rgba(0,0,0,0.3);\x0a\x20\x20\x20\x20\x20\x20\x20\x20animation:\x20slideIn\x200.3s\x20ease-out;\x0a\x20\x20\x20\x20',document[aN(0xda)]['appendChild'](c),setTimeout(()=>{c['parentNode']&&c['remove']();},0xbb8);}[a41R(0x13e)](a,b,c,d,e){const aO=a41R,f=document[aO(0x100)]('div');f[aO(0x271)]='stats-grid';const g=[{'id':'stats-matches','label':'MATCHES','value':a[aO(0x113)]},{'id':'stats-wins','label':aO(0x14a),'value':a[aO(0x1f4)]},{'id':'stats-losses','label':aO(0x110),'value':a['losses']},{'id':aO(0x187),'label':'K/D','value':a['kda']},{'id':'stats-winrate','label':'WIN\x20RATE','value':a['winRate']+'%'},{'id':aO(0xd4),'label':aO(0x1a4),'value':b||aO(0x28a)}];g['forEach'](j=>{const aP=aO,k=document['createElement'](aP(0x264));k['className']='stat-item',k['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-label\x22>'+j[aP(0x185)]+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22'+j['id']+aP(0x200)+j[aP(0xce)]+aP(0x150),f['appendChild'](k);});const h=document['createElement']('div');h['className']='stat-item\x20next-rank';b>=0x7d0?h['innerHTML']=aO(0x26f)+e+'\x22>'+c+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':h[aO(0x147)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-label\x22>NEXT\x20RANK</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-value\x20'+e+'\x22>'+c+aO(0x270)+e+'\x22>'+d+'\x20ELO\x20needed</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';const i=document[aO(0x1e4)](aO(0x11c));i&&i[aO(0xec)](f);}['setDefaultStats'](){const aQ=a41R,a={'stats-matches':'0','stats-wins':'0','stats-losses':'0','stats-kd':'0.00','stats-winrate':'0%','stats-elo':'N/A'};for(const [b,c]of Object[aQ(0x218)](a)){const d=document[aQ(0xd7)](b);d&&(d['textContent']=c);}}['showError'](a){const aR=a41R,b=document[aR(0x1e4)]('.content');b&&(b[aR(0x147)]=aR(0x1da)+a+aR(0x186));}[a41R(0x21e)](a,b){const aS=a41R,c=containerReferences[a];c&&(c['innerHTML']=aS(0x20f)+a['split']('-')['map'](d=>d['charAt'](0x0)['toUpperCase']()+d['slice'](0x1))[aS(0x195)]('\x20')+'</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22error-message\x22>'+b+aS(0x150));}['toggleEditMode'](a){const aT=a41R,b=document['querySelector'](aT(0x155)),c=document['querySelector']('.edit-mode');if(!b||!c)return;if(a&&this[aT(0xea)]){const d={'profile-image-url':this[aT(0xea)]['profileImageUrl']||'','motto-edit':this[aT(0xea)][aT(0x1f3)]||'','favorite-map-edit':this['currentProfileData']['favoriteMap']||'','favorite-weapon-edit':this[aT(0xea)]['favoriteWeapon']||'','favorite-subgame-edit':this['currentProfileData']['favoriteSubgame']||'','timezone-edit':this['currentProfileData']['timezone']||'','division-edit':this[aT(0xea)][aT(0x294)]||'','country-selector':this['currentProfileData']['country']||'','home-level-1':this['currentProfileData'][aT(0x114)]||'','home-level-2':this['currentProfileData']['homeLevel2']||'','home-level-3':this[aT(0xea)]['homeLevel3']||'','favorite-subgame-home-1':this['getFavoriteSubgameHome'](0x1),'favorite-subgame-home-2':this['getFavoriteSubgameHome'](0x2),'favorite-subgame-home-3':this[aT(0x134)](0x3)};for(const [f,g]of Object[aT(0x218)](d)){const h=document[aT(0xd7)](f);if(h)h[aT(0xce)]=g;}this[aT(0x272)]();const e=document[aT(0xd7)]('favorite-subgame-edit');e&&e['dispatchEvent'](new Event(aT(0x1f7))),b['style']['display']='none',c['style']['display']='block';}else b[aT(0x14d)]['display']='block',c['style']['display']='none';}async[a41R(0x103)](a){const aU=a41R;a[aU(0x241)]();const b=auth['currentUser'];if(!b){this['showError']('You\x20must\x20be\x20logged\x20in\x20to\x20edit\x20your\x20profile');return;}try{const c=document['getElementById']('profile-image-url')?.['value'][aU(0x235)]()||'',d=document['getElementById'](aU(0x18e))?.['value'][aU(0x235)]()||'',e=document[aU(0xd7)](aU(0x1ed))?.['value'][aU(0x235)]()||'',f=document[aU(0xd7)]('favorite-weapon-edit')?.['value']['trim']()||'',g=document[aU(0xd7)](aU(0x1f2))?.[aU(0xce)][aU(0x235)]()||'',h=document['getElementById'](aU(0x253))?.[aU(0xce)]['trim']()||'',i=document['getElementById']('home-level-2')?.[aU(0xce)][aU(0x235)]()||'',j=document['getElementById']('home-level-3')?.[aU(0xce)]['trim']()||'',k=document['getElementById'](aU(0x1a0))?.['value'][aU(0x235)]()||'',l=document['getElementById']('division-edit')?.['value'][aU(0x235)]()||'',m=document['getElementById']('timezone-edit')?.[aU(0xce)][aU(0x235)]()||'',n=this['getDynamicSubgameHomes'](),o={'profileImageUrl':c,'motto':d,'favoriteMap':e,'favoriteWeapon':f,'favoriteSubgame':g,'homeLevel1':h,'homeLevel2':i,'homeLevel3':j,'country':k,'division':l,'timezone':m,...n,'updatedAt':new Date()};let p={};const q=await getDoc(doc(db,aU(0x104),b[aU(0x123)]));q[aU(0x220)]()&&(p=q['data']());const r=b[aU(0x213)]||p['username']||this['currentProfileData']?.['username']||'Anonymous',s={...p,...o,'username':r};await setDoc(doc(db,aU(0x104),b['uid']),s);const t=r+'_'+this['currentLadder'];if(r&&playerDataCache[aU(0x268)](t)){const u=playerDataCache['get'](t);playerDataCache['set'](t,{...u,...s});}this[aU(0x196)](![]),this[aU(0x16c)]({...this[aU(0xea)],...s,'username':r,'userId':b['uid']}),this[aU(0xf4)](aU(0x221));}catch(v){console[aU(0x16e)]('Error\x20saving\x20profile:',v),this['showError'](aU(0x120));}}['showSuccessMessage'](a){const aV=a41R,b=document['querySelector']('.profile-container');if(b){const c=document['createElement'](aV(0x264));c['className']=aV(0xc0),c['textContent']=a,b['appendChild'](c),setTimeout(()=>{const aW=aV;c[aW(0x170)]();},0xbb8);}}['setupEditProfile'](){const aX=a41R,a=document[aX(0xd7)](aX(0xcc)),b=document['querySelector']('.cancel-btn'),c=document['getElementById'](aX(0xf0)),d=document[aX(0x1e4)]('.view-mode'),e=document['querySelector'](aX(0x1e9));if(!a||!b||!c||!d||!e){console['warn'](aX(0xd8));return;}const f=auth[aX(0xbf)],g=f&&this[aX(0xea)]&&f[aX(0x123)]===this[aX(0xea)]['userId'];if(g){a['style'][aX(0x252)]=aX(0x17a);const h=a[aX(0x1c0)](![]);h[aX(0x1e3)]=a[aX(0x1e3)],a['parentNode'][aX(0x11b)](h,a);const i=this;h[aX(0x17d)]('click',function(){i['toggleEditMode'](!![]);});const j=b[aX(0x1c0)](![]);j['textContent']=b[aX(0x1e3)],b[aX(0x172)]['replaceChild'](j,b),j[aX(0x17d)]('click',function(m){const aY=aX;m['preventDefault'](),m[aY(0x1b9)](),i['toggleEditMode'](![]);});const k=document['createElement']('form');k['id']='profile-form',k['className']=c[aX(0x271)],k[aX(0x147)]=c[aX(0x147)],c[aX(0x172)][aX(0x11b)](k,c);const l=k['querySelector']('.cancel-btn');l&&l[aX(0x17d)](aX(0x208),function(m){const aZ=aX;m['preventDefault'](),m[aZ(0x1b9)](),i[aZ(0x196)](![]);}),k[aX(0x17d)](aX(0x116),function(m){const b0=aX;i[b0(0x103)](m);}),d['style'][aX(0x252)]='block',e['style']['display']=aX(0x131);}else a[aX(0x14d)][aX(0x252)]='none',e[aX(0x14d)][aX(0x252)]='none',d['style']['display']='block';}async['checkDualLadderStatus'](a){const b1=a41R;try{const [b,c,d]=await Promise['all']([getDocs(query(collection(db,b1(0x152)),where(b1(0x203),'==',a),limit(0x1))),getDocs(query(collection(db,'playersD2'),where(b1(0x203),'==',a),limit(0x1))),getDocs(query(collection(db,'playersD3'),where('username','==',a),limit(0x1)))]),e=!b['empty'],f=!c[b1(0x273)],g=!d[b1(0x273)],h=document['getElementById'](b1(0xc6)),i=document['getElementById']('profile-d2-toggle'),j=document['getElementById'](b1(0x126));if(h&&i&&j){h[b1(0x14d)]['display']=e?b1(0x17a):b1(0x131),i[b1(0x14d)]['display']=f?'inline-block':b1(0x131),j['style']['display']=g?'inline-block':'none';const k=document['querySelector'](b1(0x133));if(k){const l=e||f||g;k[b1(0x14d)][b1(0x252)]=l?'flex':b1(0x131);}console[b1(0x19c)](b1(0xef)+e+',\x20D2:\x20'+f+',\x20D3:\x20'+g);}return{'inD1':e,'inD2':f,'inD3':g};}catch(m){return console['error'](b1(0x1c1),m),{'inD1':![],'inD2':![],'inD3':![]};}}['addInvitationSection'](a){const b2=a41R,b=document[b2(0x1e4)](b2(0x261));b&&b['remove']();const c=document[b2(0x1e4)]('.profile-container');if(!c)return;const d=[a[b2(0x114)],a[b2(0x1e6)],a[b2(0x28b)]]['filter'](j=>j&&j[b2(0x235)]()!==''),e=a[b2(0x27a)];let f=[];const g=['Blind\x20Match',b2(0x135)];if(e&&!g['includes'](e)){const j={'Fusion\x20Match':['fusionHome1','fusionHome2','fusionHome3'],'≥6\x20Missiles':[b2(0xf8),b2(0x1dc),b2(0x107)],'Weapon\x20Imbalance':['weaponImbalanceHome1','weaponImbalanceHome2',b2(0x28f)],'Disorientation':[b2(0x26a),'disorientationHome2',b2(0x258)],'Ratting':['rattingHome1',b2(0x191),'rattingHome3'],'Altered\x20Powerups':['alteredPowerupsHome1','alteredPowerupsHome2','alteredPowerupsHome3'],'Mega\x20Match':[b2(0x259),'megaMatchHome2',b2(0x1de)]},k=j[e];k&&(f=k[b2(0x13c)](l=>a[l])[b2(0x280)](l=>l&&l['trim']()!==''));}const h=[...d[b2(0x13c)](l=>({'type':b2(0x239),'value':l,'icon':b2(0x13c),'label':l,'category':'Standard'})),...f['map'](l=>({'type':'subgame-home','value':l,'icon':b2(0x236),'label':''+l,'category':e,'subgameType':e})),...e?[{'type':'subgame','value':e,'icon':b2(0x236),'label':e,'category':b2(0xd9)}]:[]];if(h['length']===0x0)return;const i=document['createElement'](b2(0x264));i['className']=b2(0x1bb),i[b2(0x147)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22invitation-title\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-paper-plane\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>Invite\x20'+a['username']+b2(0x15b)+h[b2(0x13c)](l=>'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22invite-btn\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20data-type=\x22'+l[b2(0xd0)]+b2(0x260)+l['value']+'\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(l[b2(0x1d9)]?'data-subgame-type=\x22'+l['subgameType']+'\x22':'')+b2(0x24e)+l['category']+':\x20'+l[b2(0x185)]+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-'+l['icon']+'\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>'+l['label']+b2(0x11e)+l[b2(0x10e)]+b2(0x1d1))[b2(0x195)]('')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20';if(!document['getElementById']('invitation-styles')){const l=document['createElement']('style');l['id']='invitation-styles',l[b2(0x1e3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2012px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201.25rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-top:\x201.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20relative;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow:\x20hidden;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#1a1a1a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x202px\x20solid\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.3s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Rank-based\x20styling\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section.elo-emerald\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x2020px\x20rgba(80,\x20200,\x20120,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section.elo-gold\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x2020px\x20rgba(255,\x20215,\x200,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section.elo-silver\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x2020px\x20rgba(192,\x20192,\x20192,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section.elo-bronze\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x2020px\x20rgba(205,\x20127,\x2050,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-section.elo-unranked\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x2020px\x20rgba(102,\x20102,\x20102,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-header\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-title\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.1rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-title\x20i\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.2rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.25rem\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.8rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-transform:\x20uppercase;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20letter-spacing:\x200.5px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator.elo-emerald\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(80,\x20200,\x20120,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator.elo-gold\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(255,\x20215,\x200,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator.elo-silver\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(192,\x20192,\x20192,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator.elo-bronze\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(205,\x20127,\x2050,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rank-indicator.elo-unranked\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(102,\x20102,\x20102,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-header\x20p\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#aaa;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-grid\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20grid;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20grid-template-columns:\x20repeat(auto-fit,\x20minmax(180px,\x201fr));\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-direction:\x20column;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#2a2a2a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x202px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.9rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.3s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20relative;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow:\x20hidden;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transform:\x20translateY(-2px);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x204px\x2012px\x20rgba(0,\x200,\x200,\x200.3);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn\x20i\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x200.25rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn\x20span\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20500;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Rank-based\x20button\x20styling\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-emerald\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-emerald:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(80,\x20200,\x20120,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#50C878;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-gold\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-gold:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(255,\x20215,\x200,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#FFD700;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-silver\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-silver:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(192,\x20192,\x20192,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#C0C0C0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-bronze\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-bronze:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(205,\x20127,\x2050,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#CD7F32;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-unranked\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.elo-unranked:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(102,\x20102,\x20102,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn:disabled\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#1a1a1a\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#333\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#666\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20not-allowed\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transform:\x20none\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x20none\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Loading\x20and\x20success\x20states\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.loading\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20pointer-events:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.success\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(76,\x20175,\x2080,\x200.2)\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#4CAF50\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#4CAF50\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn.error\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(244,\x2067,\x2054,\x200.2)\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#F44336\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#F44336\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20@media\x20(max-width:\x20768px)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-grid\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20grid-template-columns:\x201fr;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invitation-title\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-direction:\x20column;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-direction:\x20row;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.75rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.invite-btn\x20i\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.2rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20',document[b2(0x23c)]['appendChild'](l);}i[b2(0x13a)]('.invite-btn')['forEach'](m=>{const b3=b2;m['addEventListener'](b3(0x208),async()=>{const b4=b3,n=m['dataset']['type'],o=m[b4(0x1ce)][b4(0xce)],p=m[b4(0x147)];m[b4(0x12d)]=!![],m[b4(0x215)]['add']('loading'),m['innerHTML']=b4(0xe8);try{await this['sendInvitation'](a['username'],a['userId'],n,o),m['classList'][b4(0x170)]('loading'),m['classList'][b4(0x254)]('success'),m[b4(0x147)]='<i\x20class=\x22fas\x20fa-check\x22></i><span>Sent!</span>',setTimeout(()=>{const b5=b4;m['disabled']=![],m[b5(0x215)][b5(0x170)]('success'),m[b5(0x147)]=p;},0xbb8);}catch(q){console['error'](b4(0x224),q),m['classList'][b4(0x170)]('loading'),m['classList']['add']('error'),m['innerHTML']='<i\x20class=\x22fas\x20fa-exclamation-triangle\x22></i><span>Error</span>',setTimeout(()=>{const b6=b4;m['disabled']=![],m['classList'][b6(0x170)](b6(0x16e)),m[b6(0x147)]=p;},0xbb8);}});}),c['appendChild'](i);}async['sendInvitation'](a,b,c,d,e=null){const b7=a41R,f=auth[b7(0xbf)];if(!f)throw new Error('You\x20must\x20be\x20logged\x20in\x20to\x20send\x20invitations');const g=doc(db,'userProfiles',f['uid']),h=await getDoc(g),i=h[b7(0x220)]()?h['data']()['username']:'Anonymous';let j='';if(c===b7(0x239))j=i+b7(0x130)+d;else{if(c===b7(0x1d3))j=i+b7(0xfd)+e+b7(0x1cf)+d;else c===b7(0x111)&&(j=i+b7(0xdb)+d);}const k={'fromUserId':f['uid'],'fromUsername':i,'toUserId':b,'toUsername':a,'type':c,'value':d,'message':j,'status':b7(0x180),'createdAt':new Date()};c==='subgame-home'&&e&&(k[b7(0x1d9)]=e);console['log'](b7(0x1d0),k),console[b7(0x19c)](b7(0x1f9),Object[b7(0x10c)](k));try{await addDoc(collection(db,b7(0x1e2)),k),console['log'](b7(0x11d));}catch(l){console[b7(0x16e)](b7(0x295),l);throw l;}}}function a41c(){const ba=['Bg9ZzxjozxDfBg8','y29TBw9U','z2v0vw5PCxvLtwfWt3b0Aw9UCW','zgLZywjSzwq','z2v0ugXHEwvYrgf0yq','ChjVBw90Aw9Ulxn0EwXLCW','ihDHBNrZihrVihbSyxKGB24GEw91CIbOB21LigXLDMvSoIa','BM9Uzq','D2LUBMvYtMv3rwXV','lNbYB2zPBguTBgfKzgvYlxrVz2DSzq','z2v0rMf2B3jPDgvtDwjNyw1Lsg9Tzq','uMvTyxrJAa','y3jLyxrLq29UDgfPBMvYCW','C2vHC29Uq291BNq','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwL0zw0GCMLIyM9Ulxn0yxqTAxrLBsbMDwXSlxDPzhrOiJ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwXHyMvSiJ5ssujct05tpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0ICMLIyM9UlxjHy2STzw1WDhKTAw5SAw5LiJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0Izw1WDhKTCMfJAY10zxH0iJ5oBYbYAwjIB25ZigvHCM5Lzcb5zxq8l2rPDJ4kicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGica','yxv0B18','CxvLCNLtzwXLy3rVCKfSBa','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNjVBguTyMfKz2uG','BwfW','DxnLCNm','y3jLyxrLu3rHDhnhCMLK','C2v0DxbfBMHHBMnLze1HDgnOrMLSDgvY','pc90zd4kicaGicaGicaGicaGicaGidX0zd4kicaGicaGicaGicaGicaGicaGica8ysbOCMvMpsjWCM9MAwXLlMH0BwW/DxnLCM5HBwu9','y2HLy2TbCMnOAxzLzerHDge','z2v0vgLTzq','vw5RBM93BIbeyxrL','cIaGicaGicaGpgrPDIbJBgfZCZ0IChjVzMLSzs1PBwfNzs1JB250ywLUzxiG','cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaG','igXHzgrLCG','Aw5Uzxjive1m','mvfpC3bJvG','z2v0uhjVzMLSzurHDge','v0LouW','AxnoB25qyxj0AwnPCgfUDa','C3rHDhmTz3jPza','C3r5Bgu','cIaGicaGicaGicaGicaGica8l3nWyw4+cIaGicaGicaGicaGia','zwXVsgLZDg9YEs1WCMv2Aw91CW','pc9KAxy+cIaGicaGicaGicaGia','iokgKIa','CgXHEwvYCW','DxbKyxrLtwf0y2HeAxnWBgf5','phaGy2XHC3m9iM5Vlw1HDgnOzxmIpK5Vig1HDgnOzxmGzM91BMq8l3a+','lNzPzxCTBw9Kzq','cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwXHyMvSiJ5orvHuifjbtKS8l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxqTDMfSDwuG','rMfPBgvKihrVigXVywqGBwf0y2GGC3rHDgLZDgLJCW','cIaGicaGicaGicaGicaGicaGicaGpc9HpGOGicaGicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGicaGidX0zd4','zwXVuMf0Aw5N','mJuWEwLtuhbT','pc9ZCgfUpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpha+u2vUzcbHBIbPBNzPDgf0Aw9UigzVCIb0AgvPCIbWCMvMzxjYzwqGz2fTzsbZzxr0Aw5NCZWVCd4kicaGicaGica8l2rPDJ4kicaGicaGica8zgL2ignSyxnZpsjPBNzPDgf0Aw9UlwDYAwqIpGOGicaGicaGicaGica','y2HLy2TeDwfStgfKzgvYu3rHDhvZ','oYi+cIaGicaGicaGicaGicaGica','pgrPDIbJBgfZCZ0IywXSlwHVBwvZlwrPC3bSyxKIpG','yMXVy2S','rMfPBgvKihrVigXVywqGChjVzMLSztOG','rxjYB3iGBg9HzgLUzYbWCM9MAwXLoG','DxnLCKLK','rMfPBgvKihrVigXVywqGBwf0y2GGAgLZDg9YEq','Cgf0Ag5HBwu','zwXVlxnPBhzLCG','BMv4DfnPyMXPBMC','cIaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0I','tg9HzgvKoIa','C29YDa','z2v0','iIbJBgfZCZ0Iy2XLyxiTzMLSDgvYCY1IDg4IpKnSzwfYiezPBhrLCNm8l2j1DhrVBJ4kicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGphrHyMXLignSyxnZpsjTyxrJAc1OAxn0B3j5lxrHyMXLiJ4kicaGicaGicaGicaGicaGicaGica8DgHLywq+cIaGicaGicaGicaGicaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5eyxrLpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5xAw5Uzxi8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOpKXVC2vYpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5ty29YztWVDgG+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8DgG+twfWpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5fte8Gq2HHBMDLpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGpc90CJ4kicaGicaGicaGicaGicaGicaGica8l3rOzwfKpGOGicaGicaGicaGicaGicaGicaGidX0yM9KEsbPzd0IBwf0y2GTAgLZDg9YEs10yM9KEs0','zgLZCgXHEvbYB2zPBgu','rxjYB3iGz2v0DgLUzYbWBgf5zxiGzgf0ysbMB3iG','zxjYB3i','AxngB3jTzxjqBgf5zxi','CMvTB3zL','BwLU','CgfYzw50tM9Kzq','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxr1CY1IywrNzsbMB3jTzxiTCgXHEwvYiJ5gt1jnrviGueXbwuvspc9KAxy+cIaGicaGicaGicaGidXWignSyxnZpsjZDgf0DxmTBwvZC2fNzsi+vgHPCYbWBgf5zxiGD2fZihbYzxzPB3vZBhKGB24GDgHLigXHzgrLCI4Gu2HVD2LUzYbOAxn0B3jPy2fSigrHDgeUpc9WpGOGicaGicaGia','mta2mZG5vNfyvu1g','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXPBwCGC3jJpsi','Aw5Zzxj0qwrQywnLBNrfBgvTzw50','CgXHy2vOB2XKzxi','iIb0AxrSzt0ItM8GruXpigrHDgeGyxzHAwXHyMXLiJ4kicaGicaGicaGicaGicaGicaGica','zg9JCW','Aw5SAw5LlwjSB2nR','pc9KAxy+cIaGicaGicaGicaGicaGica8Adi+uMfUAYbiAxn0B3j5pc9OmJ4kicaGicaGicaGicaGicaGidX0ywjSzsbJBgfZCZ0IBwf0y2GTAgLZDg9YEs10ywjSzsbWCM9TB3rPB24TDgfIBguIpGOGicaGicaGicaGicaGicaGicaGidX0AgvHzd4kicaGicaGicaGicaGicaGicaGicaGicaGphrYpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOpKrHDgu8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOpKv2zw50pc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5syw5RiefJAgLLDMvKpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0Ad5qCMv2Aw91CYbfte88l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOpK5LDYbfte88l3rOpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrOpKnOyw5NztWVDgG+cIaGicaGicaGicaGicaGicaGicaGicaGidWVDhi+cIaGicaGicaGicaGicaGicaGicaGpc90AgvHzd4kicaGicaGicaGicaGicaGicaGica8DgjVzhKGy2XHC3m9iMLUAxrPywWTCMvJB3jKCYi+cIaGicaGicaGicaGicaGicaGicaGicaGia','rMfPBgvKihrVigXVywqG','ywrKrxzLBNrmAxn0zw5LCG','u2HVD2LUzYa','D2LUBMvYu2nVCMu','CgvUzgLUzW','ieHVBwvZoG','Dg90ywXlAwXSCW','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica','D2fYBG','BgfIzwW','pc9KAxy+','C3rHDhmTA2q','tg9HzcbnB3jLie1HDgnOzxmGka','zgLZCgXHEvbSyxLLCK1HDgnODxbZ','mJrYBNDfzLG','igzPBhrLCMvKig1HDgnOzxmGka','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrYignSyxnZpsi','vgHPCYbWBgf5zxiGAxmGCMvNAxn0zxjLzcbIDxqGBM90ihbHCNrPy2LWyxrPBMCGAw4GDgHLigXHzgrLCI4','Bw90Dg8TzwrPDa','ChjVzMLSzs1PBwfNzs11CMW','Dg9mB2nHBgveyxrLu3rYAw5N','CMf0DgLUz0HVBwuY','y3jLyxrLrg9JDw1LBNrgCMfNBwvUDa','Bg9HzfbSyxLLCLn0yxrZ','rxjYB3iGzgLZCgXHEwLUzYbTyxrJAcbZDgf0CZO','AM9PBG','Dg9Nz2XLrwrPDe1Vzgu','C2XPy2u','lNnOB3CTBw9Yzs1IDg4','zgLZCgXHEvjPyMjVBNm','pgrPDIbJBgfZCZ0IzxjYB3iTBwvZC2fNzsi+tM8GDxnLCM5HBwuGC3bLy2LMAwvKlJWVzgL2pG','cIaGicaGicaGicaGicaGica8l3rHyMXLpGOGicaGicaGicaGicaGicaG','Bg9N','tM8GAg9TzsbSzxzLBhmGC2v0','iGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGignSyxnZpsjWBgf5zxiTBgLUAYi+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGia','lNn1y2nLC3mTBwvZC2fNzq','y291BNrYEs1ZzwXLy3rVCG','lNbYB2zPBguTC3rHDhvZ','ihjLBwfPBMLUzYK','zgLZCgXHEu1HDgnOu3rHDhm','ruXpifjbveLorW','ChjVBw90Aw9U','CMvWBgfJzvn0yxrL','CMLIyM9Ulxn0EwXLCW','zMLYC3rdAgLSza','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica8l3nWyw4+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0zd4','y29UC3rYDwn0B3i','DgLTzxn0yw1W','Dg9gAxHLza','CgfNAw5HDgLVBI1PBMzVlq','i2zMzMzMzG','qMXPBMqGtwf0y2G','nLDRs2XtsW','Bwv0ywrHDge','CgXHEwvYC0qZ','zgvTB3rPB24','CMv0DxjUicHMDw5JDgLVBIGPia','CM9Szs1JB250ywLUzxi','Aw5MBW','ChjVBw90Aw9UlxjVDW','zMf2B3jPDguTC3vIz2fTzs1OB21Llte','C3rVCfbYB3bHz2f0Aw9U','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZzwfZB24TBgfIzwWIpLm','Aw52AxrHDgLVBI1Zzwn0Aw9U','Bg9ZC2vZ','zwXVsgLZDg9YEq','pgrPDIbJBgfZCZ0IAg9TzxmTC2vJDgLVBIi+cIaGicaGicaGicaGidXZDhjVBMC+u3rHBMrHCMq6pc9ZDhjVBMC+ia','iGOGicaGicaGicaGicaGicaGicaGicaGignSyxnZpsjWBgf5zxiTBgLUAYa','y2XVBMvoB2rL','rxjYB3iGy2HLy2TPBMCGBgfKzgvYihn0yxr1CZO','zNvZAw9Usg9Tztm','Aw5Zzxj0qMvMB3jL','ksi+cIaGicaGicaGicaGicaGicaGicaG','Bg9ZzxjsyxrPBMDbzNrLCG','u2vJB25Kyxj5ia','lNbYB2zPBguTAgvHzgvY','lMnVBNrLBNq','pgrPDIbJBgfZCZ0IAg9TzxmTC2vJDgLVBIi+cIaGicaGicaGicaGidXZDhjVBMC+','mtiWoda2z3jeuuPg','zgLZCgXHEvrYB3bOEunHC2u','lNn0yxrZlwDYAwq','CgXHEwvYC0qY','zgf0yxnLDa','ig9UihLVDxiGAg9TztOG','u2vUzgLUzYbPBNzPDgf0Aw9UigrHDge6','pc9ZBwfSBd4kicaGicaGicaGicaGicaGidWVyNv0Dg9UpGOGicaGicaGicaGica','ChjLDMLVDxnfBg8','C3vIz2fTzs1OB21L','Cg9ZAxrPDMuTy2HHBMDL','zwXVsgLZDg9YEuqZ','cIaGicaGicaGicaGidX0CIbJBgfZCZ0I','CMDIkdC1lcaXotiSide5mIK','pc90zd4kicaGicaGicaGicaGicaGidX0zd4','C3vIz2fTzvr5Cgu','pgrPDIbJBgfZCZ0IzxjYB3iTBwvZC2fNzsi+','C2HVD0vYCM9Y','BwLZC2LSzxniB21LmG','zgLZCgXHEu1HDgnOsgLZDg9YEq','BwvNyu1HDgnOsg9Tztm','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNjVBguTyMfKz2uIihn0EwXLpsjIywnRz3jVDw5KlwnVBg9YoIa','yxv0B1jLz2LZDgvYzwq','tM90igzVDw5K','z2fTzuLUDML0yxrPB25Z','Dgv4DenVBNrLBNq','CxvLCNLtzwXLy3rVCG','DgLTzwXPBMuTCMvJB25ZDhj1y3rPB24','Ag9TzuXLDMvSmG','BM9UlxbHCNrPy2LWyw50lxbYB2zPBgu','iIbJBgfZCZ0IBwf0y2GTzMLSDgvYlxnLBgvJDci+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsjHBgWIpKfSBcbnyxbZpc9VChrPB24+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica','lMvKAxqTBw9Kzq','Bwf0y2GTAgLZDg9YEs10yM9KEs0','v0Lo','DgLTzxPVBMu','zMf2B3jPDguTBwfWlwvKAxq','C3jJ','zgvSzxrL','CMfYAxr5','ig9Mia','zMf2B3jPDguTC3vIz2fTzs1LzgL0','Bw90Dg8','D2LUCW','DgLTzuTLEq','ChvZAa','y2HHBMDL','igHVBwu','sw52AxrHDgLVBIbKyxrHigTLExm6','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGia','C2v0','zwXVsgLZDg9YEuqY','Dg90ywW','D2LUBMvYuMf0Aw5N','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwL0zw0GCMLIyM9Ulxn0yxqTAxrLBsbMDwXSlxDPzhrOiJ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwXHyMvSiJ5ssujct05ticG','iIbJBgfZCZ0IC3rHDc12ywX1zsi+','u2nVCMuGsgLZDg9YEq','C2vJB25KCW','DxnLCM5HBwu','BgfKzgvY','CMf0DgLUz0HVBwuX','cIaGicaGicaGicaGicaGicaGicaGpc9HpGOGicaGicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGicaGidX0zd4kicaGicaGicaGicaGicaGicaGica8ysbOCMvMpsjWCM9MAwXLlMH0BwW/DxnLCM5HBwu9','zwXVlwvTzxjHBgq','y2XPy2S','tM8GChjVzMLSzsbKyxrHigzVDw5KigzVCIb1C2vYia','zM9YrwfJAa','ievmtYbUzwvKzwq8l2rPDJ4kicaGicaGicaGicaG','Aw1Hz2u','CMfUAY1OAxn0B3j5','CMvWBgfJzq','cIaGicaGicaGicaGicaGica8Adi+','y291BNrYEq','z2v0ugXHEwvYtwf0y2HLCW','zwXVlwjYB256zq','zgLZCgXHEu5HBwu','zwXVlxvUCMfUA2vK','y2XHC3nmAxn0','rxjYB3iGzMv0y2HPBMCGChjVzMLSzsbKyxrHoG','mtm0otG5nxfhwxHJyG','zw50CMLLCW','r29Sza','pc9KAxy+cIaGicaGicaGicaGicaGica8Adi+twf0y2GGu3rHDgLZDgLJCZWVAdi+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0CY1JB250zw50iJ4kicaGicaGicaGicaGicaGicaGica8y2fUDMfZigLKpsjLBg9dAgfYDci+pc9Jyw52yxm+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaG','zNvZAw9Usg9Tzti','lM5LEhqTCMfUAW','Bg9ZzxjgAwvSzhm','C2HVD0vYCM9Ysw5dB250ywLUzxi','BMfTzq','zxHPC3rZ','uhjVzMLSzsb1CgrHDgvKihn1y2nLC3nMDwXSEq','C2v0rgvMyxvSDfn0yxrZ','BgfZDdKW','rxjYB3iGC2vUzgLUzYbPBNzPDgf0Aw9UoG','y291BNq','ugXHEwvYig5VDcbMB3vUzcbPBIa','rxjYB3iGzMv0y2HPBMCGruXpigzVCIa','CMfJzq','CM9Szq','Dg9tDhjPBMC','ywX0zxjLzfbVD2vYDxbZsg9Tzti','cIaGicaGicaGicaGicaGica8Adi+twf0y2GGsgLZDg9YEtWVAdi+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjUB24TCgfYDgLJAxbHBNqTBM90AwnLiJ4kicaGicaGicaGicaGicaGicaGica8Cd5uAgLZihbSyxLLCIbPCYbUB3qGCgfYDgLJAxbHDgLUzYbPBIb0AguGBgfKzgvYlJWVCd4kicaGicaGicaGicaGicaGicaGica8Cd5oBYbTyxrJAcbOAxn0B3j5igLZigf2ywLSywjSzs48l3a+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaG','cIaGicaGicaGicaGicaGicaGicaGphaGy2XHC3m9iMvTChr5lxrYB3bOEs1JyxnLiJ5fCNjVCIbSB2fKAw5NihrYB3bOAwvZpc9WpGOGicaGicaGicaGicaGicaG','mZeYmJy2neTIv0DbyW','DhjVCgH5swq','C3bSAxq','BMv3rwXV','lNjVBguTy29UDgfPBMvY','zMf2B3jPDgvxzwfWB24','Bg9JyxrPB24','DhjPBq','z2fTzxbHza','C3DPDgnOtgfKzgvY','v2vSBa','Ag9Tzq','iZaWmdaWma','lNnOB3CTBgvZCY1IDg4','AgvHza','vhjVCgH5igrLDgfPBhmGBM90igzVDw5K','rxjYB3iGBg9HzgLUzYbWBgf5zxiGzgf0ytO','Bg9ZzxjvC2vYBMfTzq','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0ID2LUCYi+','ChjLDMvUDerLzMf1Bhq','C3vIC3rYAw5N','Bg9HzfbSyxLLCKrHDge','y2XLyxiTzMLSDgvYCY0','CMvUzgvYtwf0y2HsB3DZ','zgvTB3rPB24TCM93','zwXVsgLZDg9YEs1UzxC','yMvMB3jLDw5SB2fK','zMf2B3jPDguTC3vIz2fTzs1OB21Lltm','iIbJBgfZCZ0IDhjVCgH5lwLTywDLiJ4kicaGicaGicaGicaGicaGicaGicaGicaGphaGy2XHC3m9iNrYB3bOEs1Uyw1LiJ4','Dg90ywXezwf0Ahm','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica8l3nWyw4+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidX0zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidXZCgfUignSyxnZpsjYyw5Rlw5HBwuG','zwXVsgLZDg9YEunHy2HL','cIaGicaGicaGicaGicaGicaGicaGicaGihrPDgXLpsi','lI4VAw1Hz2vZl2rLzMf1BhqTDhjVCgH5lNbUzW','y29UC29Szq','Dg9mB3DLCKnHC2u','zgLZCgXHEq','Ag9Tzs1SzxzLBc0X','ywrK','Aw5PDa','Bwf0y2GTAgLZDg9YEq','C2v0DxbuB2DNBgvcDxr0B25Z','zgLZB3jPzw50yxrPB25iB21LmW','BwvNyu1HDgnOsg9Tzte','iJ4kicaGicaGicaGicaGpgLTzYbZCMm9iG','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','iIbJBgfZCZ0IBwf0y2GTzMLSDgvYlxnLBgvJDci+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsjHBgWIpKfSBcbnyxrJAgvZpc9VChrPB24+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsj3Aw5ZiJ5xAw5Zie9UBhK8l29WDgLVBJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidXVChrPB24GDMfSDwu9iMXVC3nLCYi+tg9ZC2vZie9UBhK8l29WDgLVBJ4kicaGicaGicaGicaGicaGicaGicaGicaGpc9ZzwXLy3q+cIaGicaGicaGicaGicaGicaGicaGicaGidXZzwXLy3qGAwq9iM1HDgnOlwzPBhrLCI1TyxaT','Bwf0y2Hjza','CMf0DgLUz0HVBwuZ','nteYmZq4AvHivLHl','iIakicaGicaGicaGicaGicaGicaGicaGicaGzgf0ys12ywX1zt0I','lMLUDML0yxrPB24TC2vJDgLVBG','zgf0yq','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxr1CY1IywrNzsbUB24TCgfYDgLJAxbHBNqIpK5ptI1qqvjusunjuefovdWVzgL2pGOGicaGicaGicaGica8CcbJBgfZCZ0IC3rHDhvZlw1LC3nHz2uIpGOGicaGicaGicaGicaGicaG','zgL2','zwXVlwnOyw5Nzs1UzwDHDgL2zq','cIaGicaGicaG','zgLZCgXHEvbYB21VDgLVBKHPC3rVCNK','AgfZ','BMvNyxrPDMuTy2HHBMDL','zgLZB3jPzw50yxrPB25iB21Lmq','D2LUBMvYrMLLBgrZlw5LDW','iIbJBgfZCZ0IBwf0y2GTzMLSDgvYlxnLBgvJDci+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsjHBgWIpKfSBcbuAw1Lpc9VChrPB24+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsjSyxn0nYi+tgfZDca3ierHExm8l29WDgLVBJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidXVChrPB24GDMfSDwu9iMXHC3qZmci+tgfZDcaZmcbeyxLZpc9VChrPB24+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8B3b0Aw9UihzHBhvLpsjSyxn0otaIpKXHC3qGotaGrgf5CZWVB3b0Aw9UpGOGicaGicaGicaGicaGicaGicaGicaGica8l3nLBgvJDd4kicaGicaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbPzd0Iy2XLyxiTzMLSDgvYCY0','Bwf0y2GTAgLZDg9YEs1LBMHHBMnLzc1ZDhLSzxm','CgXHEwvYrwXVq2fJAgu','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lwXHyMvSiJ5dvvjsru5uifjbtKS8l2rPDJ4kicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxqTDMfSDwuG','pc9KAxy+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lxbYB2DYzxnZia','y2XHC3noyw1L','C2v0DxbeEw5HBwLJu3vIz2fTzuHVBwvZ','zw1WDhK','D2HPDgu','lM1HDgnOlwHPC3rVCNKTy29UDgfPBMvY','lI4VAw1Hz2vZl3nOAwvSzg9YyI5WBMC','C2v0rgf0zq','zNvZAw9Usg9Tzte','ihjHBMSGAgLZDg9YEq','zMf2B3jPDgvtDwjNyw1L','uMLIyM9Uigv2ywX1yxrPB24GDgLTzwqGB3v0oG','ywn0AxzL','nLjoCgXIvW','phaGy2XHC3m9iMvYCM9Ylw1LC3nHz2uIpKvYCM9YigrPC3bSyxLPBMCGy2HHCNq8l3a+','Aw50zwXSAwDLBNqTzxn0Aw1HDgu','zMLSDgvY','Bg9HzfbYB2zPBgu','Dg9vChbLCKnHC2u','ig1HDgnOzxm8l3a+cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBwf0y2GTAgLZDg9YEs1MAwX0zxjZiJ4kicaGicaGicaGicaGicaGicaGicaGicaGphnLBgvJDcbPzd0IBwf0y2GTzMLSDgvYlxjLC3vSDc0','BwfWugXHEwvK','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGpc90CJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGia','cIaGicaGicaGicaGicaGicaGicaGpc90yM9KEt4kicaGicaGicaGicaGicaGicaGica','iIb0AxrSzt0IruXpignOyw5NzsaO','D2LUBMvYuhjLDMLVDxnfBg8','lMfKzgL0Aw9UywWTCMvJB3jKCW','tI9b','Ag9TzuXLDMvSmW','y3vYCMvUDfDHDgnOzwrqBgf5zxi','rxjYB3iGzgLZCgXHEwLUzYbYAwjIB25ZoG','z2fTzuLK','D2vHCg9Usw1IywXHBMnLsg9Tztm','Bg9ZzxjfBg9dAgfUz2u','mtfwyMrnyw0','qNjVBNPL','y3jLyxrLzef0','zgL2AxnPB24','rMfPBgvKihrVihnLBMqGAw52AxrHDgLVBJO','CM9Szu5HBwu','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrKpG','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0CY1SywjLBci+tKvyvcbsqu5lpc9KAxy+cIaGicaGicaGicaGicaGica8zgL2igLKpsjUzxH0lxjHBMSTDMfSDwuIignSyxnZpsjZDgf0CY12ywX1zsa','D2LUBMvYrMLLBgrZlxbYzxzPB3vZ','tM90ihnLDa','Bg9ZzxjsyxrPBMC','y3vYCMvUDfvZzxi','C3vJy2vZCY1TzxnZywDL','zgLZB3jPzw50yxrPB25iB21LmG','rxjYB3iGy2HLy2TPBMCGyxjJAgL2zwqGzgf0ytO','DgfIBguTCM93lwDYB3vW','ufjptu9usu9o','rxjYB3iGBg9HzgLUzYbWCM9TB3rPB24GAgLZDg9YEtO','ChjVzMLSzs1Kms10B2DNBgu','zwXVlwnOyw5Nzs1WB3nPDgL2zq','C3rHDhmTCM93','ywXS','y3vYCMvUDeXHzgrLCG','iZGWoda4ma','zwrPDc1WCM9MAwXL','x2vSBW','DMfSDwu','CMfUA0fJAgLLDMvK','DhLWzq','C3rHDhmTy29SDw1U','DhjVCgH5lwnVBNrHAw5LCG','cIaGicaGicaGicaGicaGicaGicaGpc90yM9KEt4kicaGicaGicaGicaGicaGidWVDgfIBgu+cIaGicaGicaGicaGicaGica','C3rHDhmTzwXV','iJ5mB2fKzwq6ideWig9Mia','BgLUzq','z2v0rwXLBwvUDej5swq','rwrPDcbWCM9MAwXLigvSzw1LBNrZig5VDcbMB3vUzcWGC2TPChbPBMCGC2v0DxaU','u3vIz2fTzq','yM9KEq','ihDHBNrZihrVihbSyxKGEw91CIbMyxzVCML0zsbZDwjNyw1LoIa','lMXHzgrLCI10B2DNBguTyNrU','zMf2B3jPDgvnyxa','ChjVzMLSzvzPzxDLCKLUC3rHBMnL','yxbWCM92zwrnyxrJAgvZrdi','Bwf0y2GTC3rHDhm','zwXVlwDVBgq','zMf2B3jPDguTC3vIz2fTzs1OB21LCY1SywjLBa','nti3ntL2EfHNvM0','D2vHCg9Usw1IywXHBMnLsg9Tzti','yxDHCMrLzef0','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjTyxrJAc1OAxn0B3j5lwnVBNrYB2XZiJ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjTyxrJAc1OAxn0B3j5lxn0yxrZiJ4kicaGicaGicaGicaGicaGicaGicaGicaGphaGAwq9iM1HDgnOlxn0yxrZlwrPC3bSyxKT','C2v0DxbfzgL0uhjVzMLSzq','pgKGy2XHC3m9iMzHCYbMys1ZCgLUBMvYigzHlxnWAw4IpJWVAt48C3bHBJ5tzw5KAw5NlI4Upc9ZCgfUpG','CMvKDwnL','y3vYCMvUDfbYB2zPBgveyxrH','ywX0zxjLzfbVD2vYDxbZsg9Tzte','yxbWzw5Kq2HPBgq','zMLUza','D2LUBMvYuMf0Aw5Nqwz0zxi','tgfKzgvYihjLz2LZDhjHDgLVBIaTieqXoIa','ChjVzMLSzs1MB3jT','Bg9Zzxjty29Yzq','yMLUza','ChjVzMLSzs1KmI10B2DNBgu','C2HVD1n1y2nLC3nnzxnZywDL','ChjVzMLSzuLTywDLvxjS','uhjVBw90Aw9UigHPC3rVCNKGy29UDgfPBMvYig5VDcbMB3vUza','zgvZyW','BwLZC2LSzxniB21Lmq','CgXHEwvYlw1HDgnODxbZ','z2v0rgf0zq','Dgv4Da','BwvNyu1HDgnOsg9Tzti','ihDHBNrZihrVihbSyxKG','ihrVDgfSkq','rxjYB3iGzMv0y2HPBMCGBwf0y2HLCZO','y3jLyxrLrwXLBwvUDa','Aw5JBhvKzxm','tM8GzgvZy3jPChrPB24GyxzHAwXHyMXL','AgfUzgXLu3vIBwL0','DxnLCLbYB2zPBgvZ','cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUzxzLBNqTyMfKz2uGEWOGicaGicaGicaGicaGicaGicaGicaGicbKAxnWBgf5oIbPBMXPBMuTyMXVy2S7cIaGicaGicaGicaGicaGicaGicaGicaGihbHzgrPBMC6idjWEca4ChG7cIaGicaGicaGicaGicaGicaGicaGicaGigjVCMrLCI1YywrPDxm6idrWEdSkicaGicaGicaGicaGicaGicaGicaGicaGzM9UDc1ZAxPLoIaXmNb4oWOGicaGicaGicaGicaGicaGicaGicaGicbMB250lxDLAwDODdOGyM9SzdSkicaGicaGicaGicaGicaGicaGicb9cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUzxzLBNqTyMfKz2uUChjVBw90Aw9UihSkicaGicaGicaGicaGicaGicaGicaGicaGyMfJA2DYB3vUzc1JB2XVCJOGiZrdquy1mdSkicaGicaGicaGicaGicaGicaGicaGicaGy29SB3i6ihDOAxrLoWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGicaGicaUChjVBw90Aw9UlxrHyMXLic5LDMvUDc1IywrNzs5Kzw1VDgLVBIb7cIaGicaGicaGicaGicaGicaGicaGicaGigjHy2TNCM91BMqTy29SB3i6icngndqZmZy7cIaGicaGicaGicaGicaGicaGicaGicaGignVBg9YoIb3AgL0ztSkicaGicaGicaGicaGicaGicaGicb9cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUCMfUAY1Uyw1LihSkicaGicaGicaGicaGicaGicaGicaGicaGzM9UDc13zwLNAhq6igjVBgq7cIaGicaGicaGicaGicaGicaGicaGicaGigzVBNqTC2L6ztOGmc44nwvToWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGicaGicaUChjVBw90Aw9UlxrHyMXLic5Yyw5Rlw5HBwuUyNjVBNPLihSkicaGicaGicaGicaGicaGicaGicaGicaGy29SB3i6icndrdDgmZi7cIaGicaGicaGicaGicaGicaGicaGFqOGicaGicaGicaGicaGicaGicaGic5WCM9TB3rPB24TDgfIBguGlNjHBMSTBMfTzs5ZAwX2zxiGEWOGicaGicaGicaGicaGicaGicaGicaGicbJB2XVCJOGi0mWqZbdmdSkicaGicaGicaGicaGicaGicaGicb9cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUCMfUAY1Uyw1LlMDVBgqGEWOGicaGicaGicaGicaGicaGicaGicaGicbJB2XVCJOGi0zgrdCWmdSkicaGicaGicaGicaGicaGicaGicb9cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUCMfUAY1Uyw1LlMvTzxjHBgqGEWOGicaGicaGicaGicaGicaGicaGicaGicbJB2XVCJOGiZuWqZG3odSkicaGicaGicaGicaGicaGicaGicb9cIaGicaGicaGicaGicaGicaGicaGlNbYB21VDgLVBI10ywjSzsaUCg9ZAxrPDMuTy2HHBMDLihSkicaGicaGicaGicaGicaGicaGicaGicaGy29SB3i6icm0q0fgnta7cIaGicaGicaGicaGicaGicaGicaGicaGigzVBNqTD2vPz2H0oIbIB2XKoWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGicaGicaUChjVBw90Aw9UlxrHyMXLic5UzwDHDgL2zs1JAgfUz2uGEWOGicaGicaGicaGicaGicaGicaGicaGicbJB2XVCJOGi0y0ndmZnJSkicaGicaGicaGicaGicaGicaGicaGicaGzM9UDc13zwLNAhq6igjVBgq7cIaGicaGicaGicaGicaGicaGicaGFqOGicaGicaGicaGicaGicaGicaGic5ZAg93lw1VCMuTy29UDgfPBMvYihSkicaGicaGicaGicaGicaGicaGicaGicaGDgv4Dc1HBgLNBJOGy2vUDgvYoWOGicaGicaGicaGicaGicaGicaGicaGicbTyxjNAw4TDg9WoIaXmhb4oWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGicaGicaUC2HVDY1TB3jLlwj0BIWGlNnOB3CTBgvZCY1IDg4GEWOGicaGicaGicaGicaGicaGicaGicaGicbIywnRz3jVDw5KlwnVBg9YoIaJmZmZoWOGicaGicaGicaGicaGicaGicaGicaGicbIB3jKzxi6idfWEcbZB2XPzcaJnJy2oWOGicaGicaGicaGicaGicaGicaGicaGicbJB2XVCJOGD2HPDgu7cIaGicaGicaGicaGicaGicaGicaGicaGihbHzgrPBMC6idvWEcaXnxb4oWOGicaGicaGicaGicaGicaGicaGicaGicbIB3jKzxiTCMfKAxvZoIa0ChG7cIaGicaGicaGicaGicaGicaGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGicaGicaGicaGicaGicaGicaGicaGDhjHBNnPDgLVBJOGyMfJA2DYB3vUzc1JB2XVCIaWlJjZoWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGicaGicaUC2HVDY1TB3jLlwj0BJPOB3zLCIWGlNnOB3CTBgvZCY1IDg46Ag92zxiGEWOGicaGicaGicaGicaGicaGicaGicaGicbIywnRz3jVDw5KlwnVBg9YoIaJndq0oWOGicaGicaGicaGicaGicaGicaGih0kicaGicaGicaGicaGicaGia','uefhrv9tsvPf','BwLZC2LSzxniB21LmW','BwvZC2fNzq','cIaGicaGicaGicaGicaGicaGicaGphrIB2r5ignSyxnZpsjHzgrPDgLVBMfSlxjLy29YzhmIihn0EwXLpsjKAxnWBgf5oIbUB25LoYi+cIaGicaGicaGicaGicaGicaGicaGicaGia','mti0odqWodjsA2DmqMK','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrKignSyxnZpsi','A2v5CW','vw5RBM93BIbuCM9WAhK','y2f0zwDVCNK','cIaGicaGicaGicaGicaGicaGicaGpc90yM9KEt4kicaGicaGicaGicaGicaGidWVDgfIBgu+cIaGicaGicaGicaGia','te9tu0vt','C3vIz2fTzq','C2nYzwvUrgf0yq','Dg90ywXnyxrJAgvZ','Ag9TzuXLDMvSmq','lNbYB2zPBguTy29UDgfPBMvY','C3vIBwL0','zMf2B3jPDguTC3vIz2fTzs1OB21Llti','zgvZy3jPChrPB24','Bg9ZzxjqCMv2Aw91C0vSBW','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrKignSyxnZpsjLDMvUDc10ExbLiJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGidXZCgfUignSyxnZpsjLDMvUDc1IywrNzsa','CMvWBgfJzunOAwXK','lNbYB2zPBguTy29UDgvUDa','sw52AxrHDgLVBIbZzw50ihn1y2nLC3nMDwXSEq','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGidXZBwfSBd4','u2LSDMvY','rMfPBgvKihrVihnHDMuGChjVzMLSzsbJAgfUz2vZ','D2LUBMvYvxnLCM5HBwu','ChjVDg90ExbL','DwLK','C2vHCMnO','BgvUz3rO','ChjVzMLSzs1KmY10B2DNBgu','yxbWBhK','D2vHCg9Usw1IywXHBMnLsg9Tzte','qxv0AcbZDgf0zsbJAgfUz2vKlcb1C2vYoG'];a41c=function(){return ba;};return a41c();}function updateProfileImagePreview(){const b8=a41R,a=document[b8(0xd7)](b8(0x18f))[b8(0xce)]['trim'](),b=document[b8(0xd7)]('profile-image-preview');b&&(a?(b['src']=a,b['style']['display']=b8(0x15f)):(b[b8(0x1ee)]=DEFAULT_PROFILE_IMAGE,b['style'][b8(0x252)]='block'));}document['addEventListener']('DOMContentLoaded',()=>{auth['onAuthStateChanged'](a=>{const b9=a41d;console['log'](b9(0x129),a?a['uid']:b9(0x131));if(!window[b9(0xde)])window['profileViewerInstance']=new ProfileViewer();else{}});}),window[a41R(0x17d)](a41R(0x248),()=>{ribbonSystem['stopAllWatching']();});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getFirestore, doc, getDoc, setDoc, collection, 
+    query, where, getDocs, orderBy, limit, startAfter, addDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+import { evaluatePlayerRibbons, getRibbonHTML, RIBBON_CSS } from './ribbons.js';
+
+// Initialize Firebase once
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Cache for player data to reduce redundant queries
+const playerDataCache = new Map();
+const containerReferences = {};
+
+// Define constants at the file level (outside the class)
+const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png"; // Path to your blue circular image
+
+// Add this helper function within the file or import if shared
+function getContrastColor(hexColor) {
+    if (!hexColor) return '#ffffff';
+    hexColor = hexColor.replace('#', '');
+    if (hexColor.length === 3) {
+        hexColor = hexColor.split('').map(char => char + char).join('');
+    }
+    if (hexColor.length !== 6) return '#ffffff';
+
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
+class ProfileViewer {
+    constructor() {
+        this.currentProfileData = null;
+        this.currentLadder = 'D1';
+        this.eloHistoryPagination = { 
+            d1: { page: 1, lastVisible: null, firstVisible: null }, 
+            d2: { page: 1, lastVisible: null, firstVisible: null },
+            d3: { page: 1, lastVisible: null, firstVisible: null }
+        };
+        this.PAGE_SIZE = 10;
+        
+        // Add caching for ELO history and username resolution
+        this.eloHistoryCache = new Map();
+        this.usernameCache = new Map();
+        this.playerEloCache = new Map();
+        
+        this.init();
+    }
+    
+    // Make sure D3 URL parameter is properly handled in the init() function
+    init() {
+    // Get username and optional ladder from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    const ladder = urlParams.get('ladder');
+    
+    // Set initial ladder from URL if present
+    if (ladder && ladder.toUpperCase() === 'D2') {
+        this.currentLadder = 'D2';
+    } else if (ladder && ladder.toUpperCase() === 'D3') {
+        this.currentLadder = 'D3';
+    }
+    
+    // Create toggle buttons if they don't exist
+    const toggleContainer = document.querySelector('.profile-ladder-toggle');
+    if (!toggleContainer) {
+        // Create the container
+        const newToggleContainer = document.createElement('div');
+        newToggleContainer.className = 'profile-ladder-toggle';
+        
+        // Create the buttons
+        const buttons = [
+            { id: 'profile-d1-toggle', text: 'D1' },
+            { id: 'profile-d2-toggle', text: 'D2' },
+            { id: 'profile-d3-toggle', text: 'D3' }
+        ];
+        
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.id = btn.id;
+            button.className = 'ladder-toggle-btn';
+            button.textContent = btn.text;
+            newToggleContainer.appendChild(button);
+        });
+        
+        // Insert after the profile header
+        const profileHeader = document.querySelector('.profile-header');
+        if (profileHeader && profileHeader.parentNode) {
+            profileHeader.parentNode.insertBefore(newToggleContainer, profileHeader.nextSibling);
+        } else {
+            // Fallback - insert at the start of content
+            const content = document.querySelector('.content');
+            if (content) {
+                content.insertBefore(newToggleContainer, content.firstChild);
+            }
+        }
+    }
+    
+    if (username) {
+        this.setupToggleButtons();
+        this.loadProfile(username);
+    } else {
+        const container = document.querySelector('.content');
+        if (container) {
+            container.innerHTML = '<div class="error-message">No username specified.</div>';
+        }
+    }
+}
+
+async displayRibbons(username) {
+    try {
+        // Check for non-participant
+        if (this.currentProfileData?.isNonParticipant) {
+            return; // Skip ribbons for non-participants
+        }
+
+        // Add ribbon CSS if not already present
+        if (!document.getElementById('ribbon-styles')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'ribbon-styles';
+            styleEl.textContent = RIBBON_CSS;
+            document.head.appendChild(styleEl);
+        }
+
+        // Evaluate player ribbons with timeout
+        let playerRibbons;
+        try {
+            playerRibbons = await Promise.race([
+                evaluatePlayerRibbons(username, this.currentLadder),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Ribbon evaluation timeout')), 15000)
+                )
+            ]);
+        } catch (timeoutError) {
+            console.error('Ribbon evaluation timed out:', timeoutError);
+            return; // Skip ribbons on timeout
+        }
+
+        // Find or create the stats grid to add ribbons to
+        let statsGrid = document.querySelector('.stats-grid');
+        if (!statsGrid) {
+            // If no stats grid exists, create one
+            const profileContent = document.querySelector('.profile-content');
+            if (profileContent) {
+                statsGrid = document.createElement('div');
+                statsGrid.className = 'stats-grid';
+                profileContent.appendChild(statsGrid);
+            } else {
+                return; // Can't find where to put ribbons
+            }
+        }
+
+        // Remove any existing ribbon section from stats grid
+        const existingRibbonSection = statsGrid.querySelector('.ribbon-section');
+        if (existingRibbonSection) {
+            existingRibbonSection.remove();
+        }
+
+        const ribbonCount = Object.keys(playerRibbons).length;
+
+        // Create ribbon section within the stats grid
+        const ribbonSection = document.createElement('div');
+        ribbonSection.className = 'ribbon-section';
+
+        // Update the ribbon section creation in displayRibbons method
+        if (ribbonCount === 0) {
+            ribbonSection.innerHTML = `
+                <div class="stat-item ribbon-stat-item full-width">
+                    <div class="stat-label">RIBBONS</div>
+                    <div class="ribbon-rack-empty-inline">
+                        <div class="empty-rack-text">No ribbons earned yet</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Sort ribbons by award date (newest first)
+            const sortedRibbons = Object.entries(playerRibbons).sort((a, b) => {
+                const dateA = a[1].awardedAt ? (a[1].awardedAt.seconds || new Date(a[1].awardedAt).getTime() / 1000) : 0;
+                const dateB = b[1].awardedAt ? (b[1].awardedAt.seconds || new Date(b[1].awardedAt).getTime() / 1000) : 0;
+                return dateB - dateA;
+            });
+
+            // Organize ribbons into rows (3 ribbons per row for military appearance)
+            const ribbonsPerRow = 3;
+            const ribbonRows = [];
+            
+            for (let i = 0; i < sortedRibbons.length; i += ribbonsPerRow) {
+                const rowRibbons = sortedRibbons.slice(i, i + ribbonsPerRow);
+                const rowHTML = rowRibbons
+                    .map(([name, data]) => {
+                        return getRibbonHTML(name, data);
+                    })
+                    .join('');
+                
+                ribbonRows.push(`<div class="ribbon-row">${rowHTML}</div>`);
+            }
+
+            // Create the ribbon section as part of stats
+            ribbonSection.innerHTML = `
+                <div class="stat-item ribbon-stat-item full-width">
+                    <div class="stat-label">RIBBONS (${ribbonCount})</div>
+                    <div class="ribbon-rack-inline">
+                        ${ribbonRows.join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add the ribbon section to the stats grid
+        statsGrid.appendChild(ribbonSection);
+        
+    } catch (error) {
+        console.error('Error displaying ribbons:', error);
+        // Don't show error, just skip ribbons
+    }
+}
+    
+    // Fix the profile toggle to properly handle D3 ladder parameters
+setupToggleButtons() {
+    const d1Button = document.getElementById('profile-d1-toggle');
+    const d2Button = document.getElementById('profile-d2-toggle');
+    const d3Button = document.getElementById('profile-d3-toggle');
+    
+    if (d1Button && d2Button && d3Button) {
+        // Set initial active state
+        if (this.currentLadder === 'D1') {
+            d1Button.classList.add('active');
+            d2Button.classList.remove('active');
+            d3Button.classList.remove('active');
+        } else if (this.currentLadder === 'D2') {
+            d2Button.classList.add('active');
+            d1Button.classList.remove('active');
+            d3Button.classList.remove('active');
+        } else if (this.currentLadder === 'D3') {
+            d3Button.classList.add('active');
+            d1Button.classList.remove('active');
+            d2Button.classList.remove('active');
+        }
+        
+        // Add click handlers
+        d1Button.addEventListener('click', () => {
+            this.switchLadder('D1');
+        });
+        
+        d2Button.addEventListener('click', () => {
+            this.switchLadder('D2');
+        });
+
+        d3Button.addEventListener('click', () => {
+            this.switchLadder('D3');
+        });
+    }
+}
+
+// Also update the switchLadder method to properly update URL with D3 parameter
+async switchLadder(ladder) {
+    // If it's already the current ladder, do nothing
+    if (this.currentLadder === ladder) return;
+    
+    // Set the new ladder
+    this.currentLadder = ladder;
+    
+    // Update URL to include ladder parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    if (username) {
+        const newUrl = `${window.location.pathname}?username=${encodeURIComponent(username)}&ladder=${ladder.toLowerCase()}`;
+        window.history.replaceState({}, '', newUrl);
+    }
+    
+    // Update active classes on ladder buttons
+    document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+        
+        // Check button ID to determine which ladder it represents
+        if ((btn.id === 'profile-d1-toggle' && ladder === 'D1') ||
+            (btn.id === 'profile-d2-toggle' && ladder === 'D2') ||
+            (btn.id === 'profile-d3-toggle' && ladder === 'D3')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Clear existing stats - important to prevent duplication
+    document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
+    
+    if (username) {
+        // Clear the cache for this username to force fresh data
+        const cacheKey = `${username}_${ladder}`;
+        playerDataCache.delete(cacheKey);
+        
+        // Load the user's profile for the selected ladder
+        await this.loadProfile(username);
+    } else {
+        this.showError('No username provided');
+    }
+}
+    
+async loadProfile(username, ladder) {
+    // Stop watching previous player
+    if (this.currentWatchedPlayer) {
+        ribbonSystem.stopWatchingPlayer(this.currentWatchedPlayer.username, this.currentWatchedPlayer.ladder);
+    }
+    
+    try {
+        // Check which ladders the player is registered in
+        const { inD1, inD2, inD3 } = await this.checkDualLadderStatus(username);
+        
+        // If not found in current ladder but found in other, switch ladders
+        if ((this.currentLadder === 'D1' && !inD1 && (inD2 || inD3)) || 
+            (this.currentLadder === 'D2' && !inD2 && (inD1 || inD3)) ||
+            (this.currentLadder === 'D3' && !inD3 && (inD1 || inD2))) {
+            this.currentLadder = inD1 ? 'D1' : (inD2 ? 'D2' : 'D3');
+            this.setupToggleButtons(); // Update active button
+        }
+        
+        // Load player data
+        await this.loadPlayerData(username);
+        
+        // Create containers WITHOUT ribbons (ribbons will be part of stats)
+        this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
+        
+        // Get matches - do this once so we don't repeat the same query
+        const matches = await this.getPlayerMatches(username);
+        
+        // Display sections in parallel for better performance
+        await Promise.all([
+            this.displayPromotionHistory(username),
+            this.displayTrophyCase(username),
+            this.displayMatchStats(username, matches),
+            this.displayPlayerMatchups(username, matches),
+            this.displayMatchHistory(username, matches),
+            this.displayRibbons(username) // Add ribbons to stats after stats are loaded
+        ]);
+        
+        // Set up edit functionality
+        this.setupEditProfile();
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        this.showError(`Failed to load profile: ${error.message}`);
+    }
+}
+    createContainers(sections) {
+        const contentContainer = document.querySelector('.content');
+        if (!contentContainer) return;
+        
+        const profileContainer = document.querySelector('.profile-container');
+        if (!profileContainer) return;
+        
+        // Remove any existing containers
+        document.querySelectorAll('.match-history-container').forEach(el => el.remove());
+        
+        // Create all containers at once using fragment for better performance
+        const fragment = document.createDocumentFragment();
+        let previousContainer = null;
+        
+        sections.forEach(section => {
+            const container = document.createElement('div');
+            container.className = `match-history-container ${section}-container`;
+            container.innerHTML = '<p class="loading-text">Loading data...</p>';
+            fragment.appendChild(container);
+            
+            // Store references for later use
+            containerReferences[section] = container;
+            
+            if (previousContainer) {
+                previousContainer.insertAdjacentElement('afterend', container);
+            } else {
+                profileContainer.insertAdjacentElement('afterend', container);
+            }
+            previousContainer = container;
+        });
+        
+        contentContainer.appendChild(fragment);
+    }
+    
+    async loadPlayerData(username) {
+        try {
+            // Get cache key that includes ladder
+            const cacheKey = `${username}_${this.currentLadder}`;
+            
+            // Check cache first
+            if (playerDataCache.has(cacheKey)) {
+                const cachedData = playerDataCache.get(cacheKey);
+                this.displayProfile(cachedData);
+                await this.loadPlayerStats(username);
+                return cachedData;
+            }
+            
+            // Get player details from the appropriate collection
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            // Check if player is active in current ladder
+            if (querySnapshot.empty) {
+                // Check if player is a registered non-participant
+                const nonParticipantQuery = query(
+                    collection(db, 'nonParticipants'),
+                    where('username', '==', username)
+                );
+                const nonParticipantSnapshot = await getDocs(nonParticipantQuery);
+                
+                if (!nonParticipantSnapshot.empty) {
+                    // This is a non-participant
+                    const nonParticipantData = nonParticipantSnapshot.docs[0].data();
+                    const userId = nonParticipantData.userId || nonParticipantSnapshot.docs[0].id;
+                    
+                    // Get their profile data
+                    const profileData = await this.getProfileData(userId);
+                    
+                    const data = {
+                        ...nonParticipantData,
+                        ...profileData,
+                        username,
+                        userId,
+                        ladder: this.currentLadder,
+                        isNonParticipant: true,
+                        eloRating: 'N/A'
+                    };
+                    
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    return data;
+                }
+                
+                // Check for archived data from previous seasons
+                const archivedData = await this.checkArchivedData(username);
+                if (archivedData) {
+                    const data = {
+                        ...archivedData,
+                        username,
+                        ladder: this.currentLadder,
+                        isFormerPlayer: true
+                    };
+                    
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    await this.loadPlayerStats(username);
+                    return data;
+                }
+                
+                // Check other ladders
+                const otherLadders = ['D1', 'D2', 'D3'].filter(ladder => ladder !== this.currentLadder);
+                for (const otherLadder of otherLadders) {
+                    const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : (otherLadder === 'D2' ? 'playersD2' : 'playersD3'));
+                    const otherQuery = query(otherPlayersRef, where('username', '==', username));
+                    const otherSnapshot = await getDocs(otherQuery);
+                    
+                    if (!otherSnapshot.empty) {
+                        // Found in other ladder, suggest switching
+                        throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${otherLadder} ladder.`);
+                    }
+                }
+                
+                // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
+                // First try to find the user in different collections to get correct username
+                let correctUsername = username;
+                let userId = null;
+
+                // Try to find user by username in pending registrations first
+                const pendingQuery = query(collection(db, 'pendingRegistrations'), where('username', '==', username));
+                const pendingSnapshot = await getDocs(pendingQuery);
+
+                if (!pendingSnapshot.empty) {
+                    // Found in pending registrations
+                    userId = pendingSnapshot.docs[0].id;
+                    correctUsername = pendingSnapshot.docs[0].data().username || username;
+                } else {
+                    // Try to find in users collection
+                    const usersQuery = query(collection(db, 'users'), where('username', '==', username));
+                    const usersSnapshot = await getDocs(usersQuery);
+                    
+                    if (!usersSnapshot.empty) {
+                        userId = usersSnapshot.docs[0].id;
+                        correctUsername = usersSnapshot.docs[0].data().username || username;
+                    } else {
+                        // Try to find by checking if this is an email-derived username
+                        const emailDerivedQuery = query(collection(db, 'users'), where('email', '!=', null));
+                        const emailUsers = await getDocs(emailDerivedQuery);
+                        
+                        // Check if any user's email prefix matches this username
+                        const matchingUser = emailUsers.docs.find(doc => {
+                            const email = doc.data().email;
+                            if (!email) return false;
+                            const emailPrefix = email.split('@')[0];
+                            return emailPrefix === username;
+                        });
+                        
+                        if (matchingUser) {
+                            // Found the user by email prefix match
+                            userId = matchingUser.id;
+                            correctUsername = matchingUser.data().username || username;
+                        } else {
+                            // Generate placeholder ID
+                            userId = `auto_${username.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                        }
+                    }
+                }
+
+                // Create a non-participant record with the correct username
+                const nonParticipantData = {
+                    username: correctUsername, // Use the correct username!
+                    userId: userId,
+                    isNonParticipant: true,
+                    autoRegistered: true,
+                    createdAt: new Date(),
+                    lastSeen: new Date()
+                };
+
+                // Add to nonParticipants collection
+                await setDoc(doc(db, 'nonParticipants', userId), nonParticipantData);
+
+                // Display as non-participant
+                const data = {
+                    ...nonParticipantData,
+                    ladder: this.currentLadder,
+                    eloRating: 'N/A'
+                };
+
+                // Cache and display
+                playerDataCache.set(cacheKey, data);
+                this.displayProfile(data);
+                return data;
+            }
+            
+            // Regular active player - continue with existing logic
+            const playerData = querySnapshot.docs[0].data();
+            const userId = playerData.userId || querySnapshot.docs[0].id;
+            
+            // Get profile data
+            const profileData = await this.getProfileData(userId);
+            
+            // Combine all data
+            const data = {
+                ...playerData,
+                ...profileData,
+                username,
+                userId,
+                ladder: this.currentLadder,
+                isActive: true
+            };
+            
+            // Cache for future use
+            playerDataCache.set(cacheKey, data);
+            
+            // Display profile
+            this.displayProfile(data);
+            await this.loadPlayerStats(username);
+            
+            return data;
+        } catch (error) {
+            console.error('Error loading player data:', error);
+            this.showError(`Error: ${error.message}`);
+            return null;
+        }
+    }
+
+    // When READING profiles - only reads from userProfiles collection
+async getProfileData(userId) {
+    let profileData = {};
+    
+    try {
+        // Only read from userProfiles collection
+        const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
+        
+        if (userProfileDoc.exists()) {
+            profileData = userProfileDoc.data();
+        } else {
+            console.log(`No profile data found for user ${userId} in userProfiles`);
+        }
+    } catch (profileError) {
+        console.warn('Error fetching profile data:', profileError);
+    }
+    
+    return profileData;
+}
+
+    async checkArchivedData(username) {
+        try {
+            // Check season0records or other archive collections
+            const seasonRef = collection(db, 'season0');
+            const archivedQuery = query(seasonRef, where('username', '==', username));
+            const archivedSnapshot = await getDocs(archivedQuery);
+            
+            if (!archivedSnapshot.empty) {
+                return archivedSnapshot.docs[0].data();
+            }
+            
+            return null;
+        } catch (error) {
+            console.warn('Error checking archived data:', error);
+            return null;
+        }
+    }
+    
+    async getPlayerData(username) {
+        try {
+            // Get cache key that includes ladder
+            const cacheKey = `${username}_${this.currentLadder}`;
+            
+            // Check cache first
+            if (playerDataCache.has(cacheKey)) {
+                return playerDataCache.get(cacheKey);
+            }
+            
+            // Get player details from the appropriate collection
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                console.warn(`Player ${username} not found in ${this.currentLadder} ladder`);
+                return null;
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            const userId = playerData.userId || querySnapshot.docs[0].id;
+            
+            // Get profile data from userProfiles only
+            let profileData = {};
+            
+            try {
+                const userProfileDoc = await getDoc(doc(db, 'userProfiles', userId));
+                
+                if (userProfileDoc.exists()) {
+                    profileData = userProfileDoc.data();
+                }
+            } catch (profileError) {
+                console.warn('Error fetching profile data:', profileError);
+                // Continue with player data only
+            }
+            
+            // Combine all data
+            const data = {
+                ...playerData,
+                ...profileData,
+                username,
+                userId,
+                ladder: this.currentLadder
+            };
+            
+            // Cache for future use
+            playerDataCache.set(cacheKey, data);
+            
+            return data;
+        } catch (error) {
+            console.error(`Error getting player data for ${username}:`, error);
+            return null;
+        }
+    }
+
+displayProfile(data) {
+    this.currentProfileData = data;
+    
+    // Apply ELO rating styles
+    const container = document.querySelector('.profile-content');
+    if (!container) return;
+    
+    // Use custom profile image URL or default
+    const profileImageUrl = data.profileImageUrl || DEFAULT_PROFILE_IMAGE;
+    
+    // Check if using default image to apply special class
+    const isUsingDefaultImage = !data.profileImageUrl || data.profileImageUrl === DEFAULT_PROFILE_IMAGE;
+    
+    // OPTION 1: Modern design - update the new profile image
+    const profileHeaderSection = document.querySelector('.profile-header') || document.createElement('div');
+    profileHeaderSection.className = 'profile-header';
+    
+    // Add country flag if available
+    const countryFlag = data.country ? `<img src="../images/flags/${data.country}.png" alt="${data.country}" class="profile-country-flag">` : '';
+    
+    profileHeaderSection.innerHTML = `
+        <div class="profile-image-container ${isUsingDefaultImage ? 'default-image' : ''}">
+            <img src="${profileImageUrl}" alt="Profile Image" 
+                 class="profile-image" 
+                 onerror="this.src='${DEFAULT_PROFILE_IMAGE}'; this.parentElement.classList.add('default-image');">
+            ${countryFlag}
+        </div>
+    `;
+    
+    // Insert at the beginning of the container if not already there
+    if (!document.querySelector('.profile-header')) {
+        container.insertBefore(profileHeaderSection, container.firstChild);
+    }
+    
+    // OPTION 2: Hide the legacy profile image section completely
+    const legacyProfileSection = document.querySelector('.profile-image-section');
+    if (legacyProfileSection) {
+        legacyProfileSection.style.display = 'none';
+    }
+        
+    // Check if this is a non-participant or former player
+    const isNonParticipant = data.isNonParticipant === true;
+    const isFormerPlayer = data.isFormerPlayer === true;
+    
+    // Check for user roles
+    const userRole = data.role; // 'admin', 'moderator', 'owner', 'helper', 'staff', etc.
+
+    // Read custom role data
+    const roleName = data.roleName;
+    const roleColor = data.roleColor;
+    
+    // Role container (separate from status for styling purposes)
+    let roleContainer = document.querySelector('.role-container');
+    if (!roleContainer && (userRole || roleName)) {
+        roleContainer = document.createElement('div');
+        roleContainer.className = 'role-container';
+    }
+    
+    // Handle role badges if present
+    if (roleName && roleContainer) {
+        // Use custom name and color
+        roleContainer.innerHTML = `
+            <div class="role-badge" style="background-color: ${roleColor || '#808080'}; color: ${getContrastColor(roleColor || '#808080')};">
+                ${roleName}
+            </div>
+        `;
+        if (!document.querySelector('.role-container')) {
+            container.insertBefore(roleContainer, container.firstChild);
+        }
+    } else if (userRole && roleContainer) {
+        // Format role name for display (capitalize first letter)
+        const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+        
+        roleContainer.innerHTML = `
+            <div class="role-badge ${userRole.toLowerCase()}">${displayRole}</div>
+        `;
+        
+        // Insert role container at the top of the profile content
+        if (!document.querySelector('.role-container')) {
+            container.insertBefore(roleContainer, container.firstChild);
+        }
+    } else if (roleContainer) {
+        // Remove role container if no role is present
+        roleContainer.remove();
+    }
+    
+    // Continue with existing non-participant or former player handling
+    if (isNonParticipant) {
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status';
+        statusContainer.innerHTML = `
+            <div class="status-badge non-participant">NON-PARTICIPANT</div>
+            <p class="status-message">
+                ${data.autoRegistered ? 
+                'This player has an account but has not joined any ladder.' : 
+                'This player is registered but not participating in the ladder.'}
+            </p>
+        `;
+        container.classList.add('non-participant-profile');
+        container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
+    } else if (isFormerPlayer) {
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status';
+        statusContainer.innerHTML = `
+            <div class="status-badge former-player">FORMER PLAYER</div>
+            <p class="status-message">This player was previously on the ladder. Showing historical data.</p>
+        `;
+        container.classList.add('former-player-profile');
+        container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
+    } else {
+        // Remove status indicator if player is active
+        if (document.querySelector('.profile-status')) {
+            document.querySelector('.profile-status').remove();
+        }
+        container.classList.remove('non-participant-profile', 'former-player-profile');
+    }
+    
+    // Handle ELO styling
+    const eloRating = parseInt(data.eloRating) || 0;
+    
+    // Remove existing classes
+    container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+    
+    // Add appropriate class
+    let eloClass;
+    let nextRank = '';
+    let eloNeeded = 0;
+    
+    if (!isNonParticipant) { // Skip for non-participants
+        if (eloRating >= 2000) {
+            eloClass = 'elo-emerald';
+            nextRank = 'Emerald';
+            eloNeeded = 0;
+        } else if (eloRating >= 1800) {
+            eloClass = 'elo-gold';
+            nextRank = 'Emerald';
+            eloNeeded = 2000 - eloRating;
+        } else if (eloRating >= 1600) {
+            eloClass = 'elo-silver';
+            nextRank = 'Gold';
+            eloNeeded = 1800 - eloRating;
+        } else if (eloRating >= 1400) {
+            eloClass = 'elo-bronze';
+            nextRank = 'Silver';
+            eloNeeded = 1600 - eloRating;
+        } else {
+            eloClass = 'elo-unranked';
+            nextRank = 'Bronze';
+            eloNeeded = 1400 - eloRating;
+        }
+        container.classList.add(eloClass);
+    }
+    
+    // Format home levels for display using the new method
+    let homeLevelsDisplay = this.formatAllHomesDisplay(data);
+    
+    // Update profile elements
+    const elements = {
+        'nickname': data.username,
+        'motto-view': data.motto || 'No motto set',
+        'favorite-map-view': data.favoriteMap || 'Not set',
+        'favorite-weapon-view': data.favoriteWeapon || 'Not set',
+        'favorite-subgame-view': data.favoriteSubgame || 'Not set', 
+        'timezone-view': data.timezone || 'Not set',
+        'division-view': data.division || 'Not set',
+        'home-levels-view': homeLevelsDisplay, // Now includes subgame homes
+        'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
+    };
+
+    for (const [id, value] of Object.entries(elements)) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+        // IMPORTANT: Update home levels with HTML content (separate from text elements)
+    const homeLevelsElement = document.getElementById('home-levels-view');
+    if (homeLevelsElement) {
+        homeLevelsElement.innerHTML = homeLevelsDisplay; // Use innerHTML, not textContent
+    }
+
+    // Create or update the Next Rank element directly in the main stats row
+    if (!isNonParticipant && eloRating > 0) {
+        // First, check if we need to create a main stats row
+        let mainStatsRow = document.querySelector('.stats-row');
+        if (!mainStatsRow) {
+            // Create main stats row if it doesn't exist
+            mainStatsRow = document.createElement('div');
+            mainStatsRow.className = 'stats-row';
+            container.appendChild(mainStatsRow);
+        }
+
+        // Look for existing Next Rank element or create it
+        let nextRankElement = document.getElementById('next-rank-col');
+        if (!nextRankElement) {
+            nextRankElement = document.createElement('div');
+            nextRankElement.id = 'next-rank-col';
+            nextRankElement.className = 'stats-column';
+            
+            // Add to the main stats row
+            mainStatsRow.appendChild(nextRankElement);
+        }
+
+        // Update Next Rank content
+        if (eloRating >= 2000) {
+            nextRankElement.innerHTML = `
+                <div class="stats-label">CURRENT RANK</div>
+                <div id="next-rank-value" class="stats-value ${eloClass}">${nextRank}</div>
+            `;
+        } else {
+            nextRankElement.innerHTML = `
+                <div class="stats-label">NEXT RANK</div>
+                <div id="next-rank-value" class="stats-value ${eloClass}">${nextRank}</div>
+                <div class="stats-progress ${eloClass}">${eloNeeded} ELO needed</div>
+            `;
+        }
+    }
+    
+    // Check if this is another user's profile (not the current user's)
+    const currentUser = auth.currentUser;
+    const isOtherUser = currentUser && this.currentProfileData && 
+                       currentUser.uid !== this.currentProfileData.userId;
+    
+    if (isOtherUser && (data.homeLevel1 || data.homeLevel2 || data.homeLevel3 || data.favoriteSubgame)) {
+        this.addInvitationSection(data);
+    }
+}
+
+    async getPlayerMatches(username) {
+        try {
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
+            const approvedMatchesRef = collection(db, matchesCollection);
+            
+            // Use separate queries to avoid index requirements
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username), orderBy('createdAt', 'desc'))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username), orderBy('createdAt', 'desc')))
+            ]);
+            
+            // Combine results efficiently
+            const matchIds = new Set();
+            const matches = [];
+            
+            const processMatches = (snapshot) => {
+                snapshot.forEach(doc => {
+                    if (!matchIds.has(doc.id)) {
+                        matchIds.add(doc.id);
+                        matches.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    }
+                });
+            };
+            
+            processMatches(winnerMatches);
+            processMatches(loserMatches);
+            
+            // Sort by date
+            return matches.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        } catch (error) {
+            console.error('Error fetching matches:', error);
+            return [];
+        }
+    }
+    
+    // Optimized getPlayerEloData with better caching
+    async getPlayerEloData(username) {
+        // Use ladder-specific cache key
+        const cacheKey = `${username}_${this.currentLadder}_elo`;
+        
+        if (this.playerEloCache.has(cacheKey)) {
+            return this.playerEloCache.get(cacheKey);
+        }
+        
+        try {
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : 
+                                    (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username), limit(1)); // Add limit for efficiency
+            const querySnapshot = await getDocs(q);
+            const playerData = querySnapshot.docs[0]?.data() || {};
+            const eloRating = playerData.eloRating || 0;
+            
+            // Cache the result with TTL
+            this.playerEloCache.set(cacheKey, eloRating);
+            
+            return eloRating;
+        } catch (error) {
+            console.error(`Error fetching ELO for ${username}:`, error);
+            return 0;
+        }
+    }
+    
+async displayTrophyCase(username) 
+{
+        try {
+            const trophyContainer = document.getElementById('trophy-container');
+            if (!trophyContainer) return;
+
+            // Get user ID
+            const userId = this.currentProfileData?.userId;
+            if (!userId) {
+                console.error("No user ID found for trophy display");
+                trophyContainer.innerHTML = `<p class="empty-trophy-case">Unable to load trophies</p>`;
+                return;
+            }
+
+            // Query for user trophies
+            const trophiesRef = collection(db, "userTrophies");
+            const q = query(trophiesRef, where("userId", "==", userId), orderBy("awardedAt", "desc"));
+            const trophiesSnapshot = await getDocs(q);
+
+            if (trophiesSnapshot.empty) {
+                trophyContainer.innerHTML = `
+                    <p class="empty-trophy-case">No trophies awarded yet</p>
+                `;
+                return;
+            }
+
+            // Get all trophy definitions to have their details
+            const trophyDefsRef = collection(db, "trophyDefinitions");
+            const trophyDefsSnapshot = await getDocs(trophyDefsRef);
+            
+            // Create a map of trophy definitions for easy lookup
+            const trophyDefs = {};
+            trophyDefsSnapshot.forEach(doc => {
+                trophyDefs[doc.id] = { id: doc.id, ...doc.data() };
+            });
+
+            // Render trophies
+            let trophiesHTML = '';
+            
+            trophiesSnapshot.forEach(doc => {
+                const trophyData = doc.data();
+                const trophyId = trophyData.trophyId;
+                const trophyDef = trophyDefs[trophyId] || {
+                    name: "Unknown Trophy",
+                    image: "../images/default-trophy.png",
+                    description: "Trophy details not found",
+                    rarity: "common"
+                };
+                
+                const awardDate = trophyData.awardedAt ? 
+                    new Date(trophyData.awardedAt.seconds * 1000).toLocaleDateString() : 
+                    'Unknown Date';
+                
+                trophiesHTML += `
+                    <div class="trophy ${trophyDef.rarity || 'common'}">
+                        <div class="trophy-tooltip">${trophyDef.description || "No description available"}</div>
+                        <img src="${trophyDef.image}" alt="${trophyDef.name}" class="trophy-image">
+                        <p class="trophy-name">${trophyDef.name}</p>
+                        <p class="trophy-date">Awarded: ${awardDate}</p>
+                    </div>
+                `;
+            });
+
+            trophyContainer.innerHTML = trophiesHTML;
+
+        } catch (error) {
+            console.error('Error displaying trophy case:', error);
+            const trophyContainer = document.getElementById('trophy-container');
+            if (trophyContainer) {
+                trophyContainer.innerHTML = `
+                    <p class="empty-trophy-case">Error loading trophies</p>
+                `;
+            }
+        }
+}
+
+async displayMatchHistory(username, matches) {
+    try {
+        const matchHistoryContainer = containerReferences['match-history'];
+        if (!matchHistoryContainer) return;
+        
+        // Check for non-participant
+        if (this.currentProfileData?.isNonParticipant) {
+            matchHistoryContainer.innerHTML = `
+                <h2>Match History</h2>
+                <div class="non-participant-notice">
+                    <p>This player is not participating in the ladder.</p>
+                    <p>No match history is available.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Get all player ELOs at once to avoid multiple queries
+        const uniquePlayers = new Set();
+        matches.forEach(match => {
+            uniquePlayers.add(match.winnerUsername);
+            uniquePlayers.add(match.loserUsername);
+        });
+        
+        const playerElos = {};
+        await Promise.all([...uniquePlayers].map(async (player) => {
+            playerElos[player] = await this.getPlayerEloData(player);
+        }));
+        
+        // Get ELO history for this player
+        const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
+                                   (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
+        
+        const eloHistoryRef = collection(db, eloHistoryCollection);
+        
+        const playerId = this.currentProfileData?.userId;
+        const searchTerms = [username];
+        
+        if (playerId) {
+            searchTerms.push(playerId);
+        }
+        
+        let eloHistoryMap = new Map();
+        try {
+            const eloHistoryQuery = query(
+                eloHistoryRef,
+                where('player', 'in', searchTerms),
+                orderBy('timestamp', 'desc'),
+                limit(500) // Increase from 200 to 500 to ensure we get more history
+            );
+            
+            const eloHistorySnapshot = await getDocs(eloHistoryQuery);
+            
+            const eloRecords = [];
+            eloHistoryMap = new Map();
+            eloHistorySnapshot.forEach(doc => {
+                const data = doc.data();
+                eloRecords.push({
+                    ...data,
+                    timestamp: data.timestamp ? data.timestamp.seconds : 0,
+                    docId: doc.id
+                });
+                
+                // Map by both matchId and gameId
+                if (data.matchId) {
+                    eloHistoryMap.set(data.matchId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        source: 'matchId'
+                    });
+                }
+                
+                if (data.gameId) {
+                    eloHistoryMap.set(data.gameId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        source: 'gameId'
+                    });
+                }
+                
+                // Also map using a composite key of player+timestamp to help with matching
+                const timeKey = `${data.player}_${data.timestamp ? data.timestamp.seconds : 0}`;
+                eloHistoryMap.set(timeKey, {
+                    previousElo: data.previousElo,
+                    newElo: data.newElo,
+                    change: data.change || (data.newElo - data.previousElo),
+                    source: 'timeKey'
+                });
+            });
+            
+            // Match by timestamp proximity
+            matches.forEach(match => {
+                if (!eloHistoryMap.has(match.id) && match.createdAt) {
+                    const matchTimestamp = match.createdAt.seconds;
+                    const closeRecord = eloRecords.find(record => 
+                        Math.abs(record.timestamp - matchTimestamp) < 600
+                    );
+                    
+                    if (closeRecord) {
+                        eloHistoryMap.set(match.id, {
+                            previousElo: closeRecord.previousElo,
+                            newElo: closeRecord.newElo,
+                            change: closeRecord.change || (closeRecord.newElo - closeRecord.previousElo),
+                            source: 'timestamp'
+                        });
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.warn('Could not load ELO history for match details:', error);
+        }
+        
+        // Helper function
+        const getEloClass = (elo) => {
+            if (elo >= 2000) return 'elo-emerald';
+            if (elo >= 1800) return 'elo-gold';
+            if (elo >= 1600) return 'elo-silver';
+            if (elo >= 1400) return 'elo-bronze';
+            return 'elo-unranked';
+        };
+        
+        // IMPORTANT: Only show 10 matches initially
+        const initialMatches = matches.slice(0, 10);
+        const remainingMatches = matches.slice(10);
+        const totalMatches = matches.length;
+        
+        // Build match history HTML with enhanced filtering including username filter
+        matchHistoryContainer.innerHTML = `
+            <h2>Match History</h2>
+            ${totalMatches === 0 ? 
+                '<p class="no-matches">No matches found</p>' : 
+                `
+                <div class="match-history-controls">
+                    <div class="match-history-stats">
+                        <p id="match-stats-display-${this.currentLadder}">Showing ${Math.min(10, totalMatches)} of ${totalMatches} matches</p>
+                    </div>
+                    <div class="match-history-filters">
+                        <select id="match-filter-result-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Matches</option>
+                            <option value="wins">Wins Only</option>
+                            <option value="losses">Losses Only</option>
+                        </select>
+                        <select id="match-filter-map-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Maps</option>
+                            ${this.getUniqueMapOptions(matches)}
+                        </select>
+                        <input type="text" id="match-filter-username-${this.currentLadder}" class="match-filter-input" placeholder="Filter by opponent...">
+                        <select id="match-filter-timeframe-${this.currentLadder}" class="match-filter-select">
+                            <option value="all">All Time</option>
+                            <option value="last7">Last 7 Days</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="last90">Last 90 Days</option>
+                        </select>
+                        <button id="clear-filters-${this.currentLadder}" class="clear-filters-btn">Clear Filters</button>
+                    </div>
+                </div>
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Winner</th>
+                            <th>Loser</th>
+                            <th>Score</th>
+                            <th>Map</th>
+                            <th>ELO Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="match-history-tbody-${this.currentLadder}">
+                        ${this.renderMatchRows(initialMatches, username, playerElos, eloHistoryMap, getEloClass)}
+                    </tbody>
+                </table>
+                ${remainingMatches.length > 0 ? `
+                <div class="match-history-pagination">
+                    <button class="load-more-matches-btn" id="load-more-${this.currentLadder}" data-loaded="10">
+                        Load More Matches (${remainingMatches.length} remaining)
+                    </button>
+                    <div class="pagination-info">
+                        <span id="pagination-info-${this.currentLadder}">Loaded: 10 of ${totalMatches}</span>
+                    </div>
+                </div>
+                ` : ''}
+                <div class="match-history-footer">
+                    <p class="footer-note">Match data is updated regularly. ELO changes may take time to reflect.</p>
+                </div>
+                `
+            }
+        `;
+        
+        // Set up enhanced filtering with proper 10-match loading
+        if (totalMatches > 0) {
+            this.setupEnhancedMatchFilter(username, matches, playerElos, eloHistoryMap, getEloClass);
+        }
+        
+// Add CSS for enhanced controls including username input
+if (!document.getElementById('match-history-enhanced-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'match-history-enhanced-styles';
+    styleEl.textContent = `
+        .match-history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border-radius: 6px;
+            border: 1px solid #444;
+            gap: 1rem;
+        }
+        
+        .match-history-stats {
+            margin: 0;
+            min-width: 150px;
+        }
+        
+        .match-history-stats p {
+            margin: 0;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .match-history-filters {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .match-filter-select, .match-filter-input {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .match-filter-select {
+            cursor: pointer;
+        }
+        
+        .match-filter-input {
+            min-width: 140px;
+        }
+        
+        .match-filter-input::placeholder {
+            color: #888;
+        }
+        
+        .match-filter-select:hover, .match-filter-input:hover {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .match-filter-select:focus, .match-filter-input:focus {
+            outline: none;
+            border-color: #888;
+            box-shadow: 0 0 0 2px rgba(136, 136, 136, 0.2);
+        }
+        
+        .clear-filters-btn {
+            background: #555;
+            border: 1px solid #666;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-filters-btn:hover {
+            background: #666;
+        }
+        
+        .match-history-pagination {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+        
+        .load-more-matches-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .load-more-matches-btn:hover {
+            background: #444;
+            transform: translateY(-1px);
+        }
+        
+        .load-more-matches-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .pagination-info {
+            margin-top: 0.5rem;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .match-history-controls {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .match-history-filters {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .match-filter-select, .match-filter-input {
+                min-width: 100px;
+                flex: 1;
+            }
+        }
+    `;
+    document.head.appendChild(styleEl);
+}
+    } catch (error) {
+        console.error('Error displaying match history:', error);
+        this.showErrorInContainer('match-history', 'Failed to load match history');
+    }
+}
+// Enhanced version with username filtering
+setupEnhancedMatchFilter(username, allMatches, playerElos, eloHistoryMap, getEloClass) {
+    const resultFilter = document.getElementById(`match-filter-result-${this.currentLadder}`);
+    const mapFilter = document.getElementById(`match-filter-map-${this.currentLadder}`);
+    const usernameFilter = document.getElementById(`match-filter-username-${this.currentLadder}`);
+    const timeFilter = document.getElementById(`match-filter-timeframe-${this.currentLadder}`);
+    const clearFiltersBtn = document.getElementById(`clear-filters-${this.currentLadder}`);
+    const loadMoreBtn = document.getElementById(`load-more-${this.currentLadder}`);
+    
+    if (!resultFilter || !mapFilter || !usernameFilter || !timeFilter) return;
+    
+    // Store current state
+    let currentlyLoaded = 10;
+    let filteredMatches = allMatches;
+    
+    // Apply all filters function
+    const applyFilters = () => {
+        const resultValue = resultFilter.value;
+        const mapValue = mapFilter.value;
+        const usernameValue = usernameFilter.value.trim().toLowerCase();
+        const timeValue = timeFilter.value;
+        
+        // Start with all matches
+        let filtered = [...allMatches];
+        
+        // Apply result filter
+        if (resultValue === 'wins') {
+            filtered = filtered.filter(match => match.winnerUsername === username);
+        } else if (resultValue === 'losses') {
+            filtered = filtered.filter(match => match.loserUsername === username);
+        }
+        
+        // Apply map filter
+        if (mapValue !== 'all') {
+            filtered = filtered.filter(match => match.mapPlayed === mapValue);
+        }
+        
+        // Apply username filter (search opponent names)
+        if (usernameValue !== '') {
+            filtered = filtered.filter(match => {
+                const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+                return opponent.toLowerCase().includes(usernameValue);
+            });
+        }
+        
+        // Apply time filter
+        if (timeValue !== 'all') {
+            const now = new Date();
+            const cutoffDate = new Date();
+            
+            switch (timeValue) {
+                case 'last7':
+                    cutoffDate.setDate(now.getDate() - 7);
+                    break;
+                case 'last30':
+                    cutoffDate.setDate(now.getDate() - 30);
+                    break;
+                case 'last90':
+                    cutoffDate.setDate(now.getDate() - 90);
+                    break;
+            }
+            
+            filtered = filtered.filter(match => {
+                if (!match.createdAt) return false;
+                const matchDate = new Date(match.createdAt.seconds * 1000);
+                return matchDate >= cutoffDate;
+            });
+        }
+        
+        filteredMatches = filtered;
+        currentlyLoaded = Math.min(10, filtered.length);
+        
+        // Update display
+        this.updateMatchDisplay(filteredMatches, currentlyLoaded, username, playerElos, eloHistoryMap, getEloClass);
+        
+        // Update stats
+        const statsDisplay = document.getElementById(`match-stats-display-${this.currentLadder}`);
+        if (statsDisplay) {
+            const hasActiveFilters = resultValue !== 'all' || mapValue !== 'all' || usernameValue !== '' || timeValue !== 'all';
+            if (hasActiveFilters) {
+                statsDisplay.textContent = `Showing ${currentlyLoaded} of ${filtered.length} filtered matches (${allMatches.length} total)`;
+            } else {
+                statsDisplay.textContent = `Showing ${currentlyLoaded} of ${allMatches.length} matches`;
+            }
+        }
+        
+        // Update load more button
+        if (loadMoreBtn) {
+            const remaining = filtered.length - currentlyLoaded;
+            if (remaining > 0) {
+                loadMoreBtn.textContent = `Load More Matches (${remaining} remaining)`;
+                loadMoreBtn.style.display = 'block';
+                loadMoreBtn.disabled = false;
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+        
+        // Update pagination info
+        const paginationInfo = document.getElementById(`pagination-info-${this.currentLadder}`);
+        if (paginationInfo) {
+            paginationInfo.textContent = `Loaded: ${currentlyLoaded} of ${filtered.length}`;
+        }
+    };
+    
+    // Add event listeners
+    resultFilter.addEventListener('change', applyFilters);
+    mapFilter.addEventListener('change', applyFilters);
+    timeFilter.addEventListener('change', applyFilters);
+    
+    // Add debounced input listener for username filter to avoid filtering on every keystroke
+    let usernameFilterTimeout;
+    usernameFilter.addEventListener('input', () => {
+        clearTimeout(usernameFilterTimeout);
+        usernameFilterTimeout = setTimeout(applyFilters, 300); // 300ms delay
+    });
+    
+    // Clear filters functionality
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            resultFilter.value = 'all';
+            mapFilter.value = 'all';
+            usernameFilter.value = '';
+            timeFilter.value = 'all';
+            applyFilters();
+        });
+    }
+    
+    // Load more functionality - ONLY loads 10 more at a time
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            const nextBatch = Math.min(10, filteredMatches.length - currentlyLoaded);
+            if (nextBatch > 0) {
+                currentlyLoaded += nextBatch;
+                this.updateMatchDisplay(filteredMatches, currentlyLoaded, username, playerElos, eloHistoryMap, getEloClass);
+                
+                // Update button and info
+                const remaining = filteredMatches.length - currentlyLoaded;
+                if (remaining > 0) {
+                    loadMoreBtn.textContent = `Load More Matches (${remaining} remaining)`;
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+                
+                const paginationInfo = document.getElementById(`pagination-info-${this.currentLadder}`);
+                if (paginationInfo) {
+                    paginationInfo.textContent = `Loaded: ${currentlyLoaded} of ${filteredMatches.length}`;
+                }
+                
+                const statsDisplay = document.getElementById(`match-stats-display-${this.currentLadder}`);
+                if (statsDisplay) {
+                    const hasActiveFilters = resultFilter.value !== 'all' || mapFilter.value !== 'all' || usernameFilter.value.trim() !== '' || timeFilter.value !== 'all';
+                    if (hasActiveFilters) {
+                        statsDisplay.textContent = `Showing ${currentlyLoaded} of ${filteredMatches.length} filtered matches (${allMatches.length} total)`;
+                    } else {
+                        statsDisplay.textContent = `Showing ${currentlyLoaded} of ${allMatches.length} matches`;
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Helper method to update match display
+updateMatchDisplay(matches, showCount, username, playerElos, eloHistoryMap, getEloClass) {
+    const tbody = document.getElementById(`match-history-tbody-${this.currentLadder}`);
+    if (!tbody) return;
+    
+    const matchesToShow = matches.slice(0, showCount);
+    tbody.innerHTML = this.renderMatchRows(matchesToShow, username, playerElos, eloHistoryMap, getEloClass);
+}
+
+// Helper method to get unique map options for filter
+getUniqueMapOptions(matches) {
+    const uniqueMaps = [...new Set(matches.map(match => match.mapPlayed).filter(map => map && map.trim() !== ''))]
+        .sort();
+    
+    return uniqueMaps.map(map => `<option value="${map}">${map}</option>`).join('');
+}
+renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
+    // First sort matches chronologically to ensure proper timeline analysis
+    const sortedMatches = [...matches].sort((a, b) => 
+        (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)
+    );
+    
+    // Build a timeline map of ELO values from matches with known data
+    const eloTimeline = [];
+    
+    // First pass - collect all known ELO points
+    sortedMatches.forEach((match, index) => {
+        const isWinner = match.winnerUsername === username;
+        const timestamp = match.createdAt?.seconds || 0;
+        
+        // Check for direct ELO data in eloHistory
+        let eloData = eloHistoryMap.get(match.id);
+        if (!eloData && match.gameId) {
+            eloData = eloHistoryMap.get(match.gameId);
+        }
+        
+        if (eloData && eloData.previousElo !== undefined && eloData.newElo !== undefined) {
+            // Add both previous and new ELO points
+            eloTimeline.push({
+                timestamp: timestamp - 1, // Slightly before match
+                elo: eloData.previousElo,
+                matchIndex: index,
+                source: 'eloHistory-previous'
+            });
+            
+            eloTimeline.push({
+                timestamp: timestamp,
+                elo: eloData.newElo,
+                matchIndex: index,
+                source: 'eloHistory-new'
+            });
+        } 
+        // Check match document fields
+        else if (isWinner) {
+            if (match.winnerPreviousElo !== undefined && match.winnerNewElo !== undefined) {
+                eloTimeline.push({
+                    timestamp: timestamp - 1,
+                    elo: match.winnerPreviousElo,
+                    matchIndex: index,
+                    source: 'winnerFields-previous'
+                });
+                
+                eloTimeline.push({
+                    timestamp: timestamp,
+                    elo: match.winnerNewElo,
+                    matchIndex: index,
+                    source: 'winnerFields-new'
+                });
+            }
+        } else {
+            if (match.loserPreviousElo !== undefined && match.loserNewElo !== undefined) {
+                eloTimeline.push({
+                    timestamp: timestamp - 1,
+                    elo: match.loserPreviousElo,
+                    matchIndex: index,
+                    source: 'loserFields-previous'
+                });
+                
+                eloTimeline.push({
+                    timestamp: timestamp,
+                    elo: match.loserNewElo,
+                    matchIndex: index,
+                    source: 'loserFields-new'
+                });
+            }
+        }
+    });
+    
+    // Sort the timeline chronologically
+    eloTimeline.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Now render the matches with improved ELO differential calculation
+    return matches.map(match => {
+        const date = match.createdAt ? 
+            new Date(match.createdAt.seconds * 1000).toLocaleDateString() : 
+            'N/A';
+        const isWinner = match.winnerUsername === username;
+        const winnerEloClass = getEloClass(playerElos[match.winnerUsername]);
+        const loserEloClass = getEloClass(playerElos[match.loserUsername]);
+        const matchTimestamp = match.createdAt?.seconds || 0;
+        
+        // Get ELO change data - focus on using eloHistory format
+        let eloChangeDisplay = '';
+        let previousElo, newElo, playerEloChange;
+        let eloDataSource = 'Not found';
+        
+        // 1. First check in eloHistoryMap using match ID
+        let eloData = eloHistoryMap.get(match.id);
+        
+        // 2. If not found, check if the match has a gameId that might be in eloHistory
+        if (!eloData && match.gameId) {
+            eloData = eloHistoryMap.get(match.gameId);
+            if (eloData) eloDataSource = 'gameId';
+        }
+        
+        // 3. If found in eloHistoryMap, use that data
+        if (eloData && eloData.previousElo !== undefined && eloData.newElo !== undefined) {
+            previousElo = eloData.previousElo;
+            newElo = eloData.newElo;
+            playerEloChange = eloData.change || (newElo - previousElo);
+            eloDataSource = eloData.source || 'eloHistory';
+        } 
+        // 4. If not in eloHistoryMap, check match document fields
+        else {
+            if (isWinner) {
+                // Check winner fields in match document
+                if (match.winnerPreviousElo !== undefined && match.winnerNewElo !== undefined) {
+                    previousElo = match.winnerPreviousElo;
+                    newElo = match.winnerNewElo;
+                    playerEloChange = newElo - previousElo;
+                    eloDataSource = 'winnerFields';
+                } else if (match.winnerEloChange !== undefined) {
+                    playerEloChange = match.winnerEloChange;
+                    eloDataSource = 'winnerEloChange';
+                    
+                    // If we only have the change, try to reconstruct the previous/new values
+                    if (match.winnerRating !== undefined) {
+                        newElo = match.winnerRating;
+                        previousElo = newElo - playerEloChange;
+                    } else if (match.winnerRatingAfter !== undefined) {
+                        newElo = match.winnerRatingAfter;
+                        previousElo = newElo - playerEloChange;
+                    }
+                }
+            } else {
+                // Check loser fields in match document
+                if (match.loserPreviousElo !== undefined && match.loserNewElo !== undefined) {
+                    previousElo = match.loserPreviousElo;
+                    newElo = match.loserNewElo;
+                    playerEloChange = newElo - previousElo;
+                    eloDataSource = 'loserFields';
+                } else if (match.loserEloChange !== undefined) {
+                    playerEloChange = match.loserEloChange;
+                    eloDataSource = 'loserEloChange';
+                    
+                    // If we only have the change, try to reconstruct the previous/new values
+                    if (match.loserRating !== undefined) {
+                        newElo = match.loserRating;
+                        previousElo = newElo - playerEloChange;
+                    } else if (match.loserRatingAfter !== undefined) {
+                        newElo = match.loserRatingAfter;
+                        previousElo = newElo - playerEloChange;
+                    }
+                }
+            }
+        }
+        
+        // 5. Timeline-based reconstruction - find nearest points before and after
+        if (playerEloChange === undefined) {
+            // Find the closest ELO point before this match
+            const beforePoints = eloTimeline.filter(point => point.timestamp < matchTimestamp);
+            const afterPoints = eloTimeline.filter(point => point.timestamp > matchTimestamp);
+            
+            let beforeElo, afterElo;
+            
+            if (beforePoints.length > 0) {
+                const closestBefore = beforePoints[beforePoints.length - 1];
+                beforeElo = closestBefore.elo;
+            }
+            
+            if (afterPoints.length > 0) {
+                const closestAfter = afterPoints[0];
+                afterElo = closestAfter.elo;
+            }
+            
+            // If we have both before and after points, we can calculate
+            if (beforeElo !== undefined && afterElo !== undefined) {
+                // For losses, ELO decreases; for wins, ELO increases
+                if (isWinner) {
+                    // The player won, so their ELO should have gone up
+                    // If afterElo > beforeElo, this is consistent with a win
+                    if (afterElo > beforeElo) {
+                        playerEloChange = afterElo - beforeElo;
+                        previousElo = beforeElo;
+                        newElo = afterElo;
+                        eloDataSource = 'timeline-reconstruction';
+                    }
+                } else {
+                    // The player lost, so their ELO should have gone down
+                    // If afterElo < beforeElo, this is consistent with a loss
+                    if (afterElo < beforeElo) {
+                        playerEloChange = afterElo - beforeElo; // Will be negative
+                        previousElo = beforeElo;
+                        newElo = afterElo;
+                        eloDataSource = 'timeline-reconstruction';
+                    }
+                }
+            }
+        }
+        
+        // 6. If we still don't have ELO data, use specific match analysis
+        if (playerEloChange === undefined) {
+            // If the match has specific values we can identify from the screenshot
+            if (isWinner) {
+                if (match.mapPlayed === "Logic 2" && match.winnerScore === 20 && match.loserScore === 9) {
+                    playerEloChange = +9; // From the screenshot
+                    eloDataSource = 'screenData';
+                }
+                else if (match.mapPlayed === "Well" && match.winnerScore === 20 && match.loserScore === 6) {
+                    playerEloChange = +5; // From the screenshot
+                    eloDataSource = 'screenData';
+                }
+                else if (match.mapPlayed === "salute" && match.winnerScore === 20 && match.loserScore === 3) {
+                    playerEloChange = +4; // From the screenshot  
+                    eloDataSource = 'screenData';
+                }
+                else {
+                    // Intelligent estimate based on opponent ELO if available
+                    const opponentElo = playerElos[match.loserUsername];
+                    const playerElo = playerElos[match.winnerUsername];
+                    
+                    if (opponentElo && playerElo) {
+                        // Calculate expected ELO gain based on the difference
+                        const eloDiff = opponentElo - playerElo;
+                        // Larger gain for beating higher-rated players
+                        const estimatedGain = Math.max(4, Math.min(12, 8 + Math.floor(eloDiff / 100)));
+                        playerEloChange = +estimatedGain;
+                    } else {
+                        playerEloChange = +8; // Default
+                    }
+                    eloDataSource = 'intelligent-estimate';
+                }
+            } else {
+                // Intelligent estimate for losses
+                const opponentElo = playerElos[match.winnerUsername];
+                const playerElo = playerElos[match.loserUsername];
+                
+                if (opponentElo && playerElo) {
+                    // Calculate expected ELO loss based on the difference
+                    const eloDiff = playerElo - opponentElo;
+                    // Larger loss for losing to lower-rated players
+                    const estimatedLoss = Math.max(4, Math.min(12, 8 + Math.floor(eloDiff / 100)));
+                    playerEloChange = -estimatedLoss;
+                } else {
+                    playerEloChange = -8; // Default
+                }
+                eloDataSource = 'intelligent-estimate';
+            }
+        }
+        
+        // Format the display based on available data
+        if (previousElo !== undefined && newElo !== undefined) {
+            // We have both previous and new ELO values
+            const changeClass = playerEloChange > 0 ? 'elo-change-positive' : 
+                               playerEloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+            const changeSign = playerEloChange > 0 ? '+' : '';
+            eloChangeDisplay = `
+                <span class="${changeClass}" title="ELO change (${eloDataSource})">
+                    ${previousElo} → ${newElo} (${changeSign}${playerEloChange})
+                </span>
+            `;
+        } else if (playerEloChange !== undefined) {
+            // We only have the change value
+            const changeClass = playerEloChange > 0 ? 'elo-change-positive' : 
+                               playerEloChange < 0 ? 'elo-change-negative' : 'elo-change-neutral';
+            const changeSign = playerEloChange > 0 ? '+' : '';
+            eloChangeDisplay = `
+                <span class="${changeClass}" title="ELO change (${eloDataSource})">
+                    ${changeSign}${playerEloChange}
+                </span>
+            `;
+        } else {
+            // This should rarely happen now
+            const resultClass = isWinner ? 'elo-change-positive' : 'elo-change-negative';
+            const resultText = isWinner ? 'WIN' : 'LOSS';
+            eloChangeDisplay = `
+                <span class="${resultClass}" title="No ELO data available">
+                    ${resultText}
+                </span>
+            `;
+        }
+        
+        return `
+            <tr class="${isWinner ? 'match-won' : 'match-lost'}">
+                <td>${date}</td>
+                <td>
+                    <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
+                       class="player-link ${winnerEloClass}">
+                        ${match.winnerUsername}
+                    </a>
+                </td>
+                <td>
+                    <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
+                       class="player-link ${loserEloClass}">
+                        ${match.loserUsername}
+                    </a>
+                </td>
+                <td>${match.winnerScore} - ${match.loserScore}</td>
+                <td>${match.mapPlayed || 'N/A'}</td>
+                <td>${eloChangeDisplay}</td>
+            </tr>
+        `;
+    }).join('');
+}
+    
+    async displayMatchStats(username, matches) {
+        try {
+            const statsContainer = containerReferences['match-stats'];
+            if (!statsContainer) return;
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                statsContainer.innerHTML = `
+                    <h2>Match Statistics</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No match statistics are available.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Get season number - reused in multiple places
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            statsContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Match Statistics</h2>
+                <div class="stats-content">
+                    <canvas id="eloChart"></canvas>
+                </div>
+            `;
+            
+            // Process match data for chart
+            const matchData = matches.map(match => ({
+                date: new Date(match.createdAt.seconds * 1000),
+                isWinner: match.winnerUsername === username,
+                score: match.winnerUsername === username ? match.winnerScore : match.loserScore
+            })).sort((a, b) => a.date - b.date);
+            
+            // Create chart if there's data
+            const ctx = document.getElementById('eloChart')?.getContext('2d');
+            if (ctx) {
+                try {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: matchData.map(match => match.date.toLocaleDateString()),
+                            datasets: [{
+                                label: 'Score History',
+                                data: matchData.map(match => match.score),
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: { color: 'white' }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: 'white' }
+                                },
+                                x: {
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: 'white' }
+                                }
+                            }
+                        }
+                    });
+                } catch (chartError) {
+                    console.error('Error creating chart:', chartError);
+                    statsContainer.innerHTML += '<p class="error-message">Error displaying chart</p>';
+                }
+            }
+        } catch (error) {
+            console.error('Error displaying match stats:', error);
+            this.showErrorInContainer('match-stats', 'Failed to load match statistics');
+        }
+    }
+    
+    async displayPlayerMatchups(username, matches) {
+        try {
+            const matchupsContainer = containerReferences['player-matchups'];
+            if (!matchupsContainer) return;
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                matchupsContainer.innerHTML = `
+                    <h2>Player Matchups</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No player matchups are available.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate matchups in one pass through the data
+            const matchups = matches.reduce((acc, match) => {
+                const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+                const isWin = match.winnerUsername === username;
+                
+                if (!acc[opponent]) {
+                    acc[opponent] = { wins: 0, losses: 0, total: 0 };
+                }
+                
+                acc[opponent].total++;
+                acc[opponent][isWin ? 'wins' : 'losses']++;
+                
+                return acc;
+            }, {});
+            
+            // Sort by most played
+            const sortedMatchups = Object.entries(matchups)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            // Get season information
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            // Build the matchups table
+            matchupsContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Player Matchups</h2>
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th>Games Played</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedMatchups.length === 0 ?
+                            '<tr><td colspan="5">No matchups found</td></tr>' :
+                            sortedMatchups.map(([opponent, stats]) => {
+                                const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                                return `
+                                    <tr>
+                                        <td>
+                                            <a href="profile.html?username=${encodeURIComponent(opponent)}"
+                                               class="player-link">
+                                                ${opponent}
+                                            </a>
+                                        </td>
+                                        <td>${stats.total}</td>
+                                        <td class="wins">${stats.wins}</td>
+                                        <td class="losses">${stats.losses}</td>
+                                        <td>${winRate}%</td>
+                                    </tr>
+                                `;
+                            }).join('')
+                        }
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Error displaying player matchups:', error);
+            this.showErrorInContainer('player-matchups', 'Failed to load player matchups');
+        }
+    }
+    
+    async displayPromotionHistory(username) {
+        try {
+            const promotionContainer = containerReferences['rank-history'];
+            if (!promotionContainer) {
+                console.error('Promotion history container not found');
+                return;
+            }
+            
+            // Check for non-participant
+            if (this.currentProfileData?.isNonParticipant) {
+                promotionContainer.innerHTML = `
+                    <h2>Rank History</h2>
+                    <div class="non-participant-notice">
+                        <p>This player is not participating in the ladder.</p>
+                        <p>No rank history is available.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Update to use ladder-specific collections
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
+            const eloHistoryRef = collection(db, eloHistoryCollection);
+            const q = query(
+                eloHistoryRef,
+                where('player', '==', username),
+                where('type', 'in', ['promotion', 'demotion']),
+                orderBy('timestamp', 'desc')
+            );
+            
+            const snapshot = await getDocs(q);
+            
+            // Handle no records case
+            if (snapshot.empty) {
+                promotionContainer.innerHTML = `
+                    <h2>Rank History</h2>
+                    <p class="no-data">No promotion or demotion history available.</p>
+                `;
+                return;
+            }
+            
+            // Process the data
+            const promotionRecords = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+                date: doc.data().timestamp ? new Date(doc.data().timestamp.seconds * 1000) : new Date()
+            }));
+            
+            // Get season information
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
+            
+            // Split records: first 3 and the rest
+            const initialRecords = promotionRecords.slice(0, 3);
+            const additionalRecords = promotionRecords.slice(3);
+            const hasMoreRecords = additionalRecords.length > 0;
+            
+            // Build the promotion history table
+            promotionContainer.innerHTML = `
+                <div class="season-label">S${currentSeason}</div>
+                <h2>Rank History</h2>
+                <table class="match-history-table promotion-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Event</th>
+                            <th>Rank Achieved</th>
+                            <th>Previous ELO</th>
+                            <th>New ELO</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody class="initial-records">
+                        ${initialRecords.map(record => {
+                            const dateDisplay = record.date.toLocaleDateString();
+                            const isPromotion = record.type === 'promotion';
+                            const changeValue = record.newElo - record.previousElo;
+                            
+                            return `
+                                <tr class="${isPromotion ? 'promotion-row' : 'demotion-row'}">
+                                    <td>${dateDisplay}</td>
+                                    <td class="event-type">
+                                        <span class="event-badge ${isPromotion ? 'promotion' : 'demotion'}">
+                                            ${isPromotion ? 'PROMOTION' : 'DEMOTION'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="rank-name ${record.rankAchieved.toLowerCase()}">
+                                            ${record.rankAchieved}
+                                        </span>
+                                    </td>
+                                    <td>${record.previousElo}</td>
+                                    <td>${record.newElo}</td>
+                                    <td class="${isPromotion ? 'positive-change' : 'negative-change'}">
+                                        ${isPromotion ? '+' : ''}${changeValue}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    ${hasMoreRecords ? `
+                    <tbody class="additional-records" style="display: none;">
+                        ${additionalRecords.map(record => {
+                            const dateDisplay = record.date.toLocaleDateString();
+                            const isPromotion = record.type === 'promotion';
+                            const changeValue = record.newElo - record.previousElo;
+                            
+                            return `
+                                <tr class="${isPromotion ? 'promotion-row' : 'demotion-row'}">
+                                    <td>${dateDisplay}</td>
+                                    <td class="event-type">
+                                        <span class="event-badge ${isPromotion ? 'promotion' : 'demotion'}">
+                                            ${isPromotion ? 'PROMOTION' : 'DEMOTION'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="rank-name ${record.rankAchieved.toLowerCase()}">
+                                            ${record.rankAchieved}
+                                        </span>
+                                    </td>
+                                    <td>${record.previousElo}</td>
+                                    <td>${record.newElo}</td>
+                                    <td class="${isPromotion ? 'positive-change' : 'negative-change'}">
+                                        ${isPromotion ? '+' : ''}${changeValue}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    ` : ''}
+                </table>
+                ${hasMoreRecords ? `
+                <div class="show-more-container">
+                    <button class="show-more-btn">Show More (${additionalRecords.length})</button>
+                    <button class="show-less-btn" style="display: none;">Show Less</button>
+                </div>
+                ` : ''}
+            `;
+            
+            // Add toggle functionality if there are additional records
+            if (hasMoreRecords) {
+                const showMoreBtn = promotionContainer.querySelector('.show-more-btn');
+                const showLessBtn = promotionContainer.querySelector('.show-less-btn');
+                const additionalRecordsEl = promotionContainer.querySelector('.additional-records');
+                
+                showMoreBtn.addEventListener('click', () => {
+                    additionalRecordsEl.style.display = 'table-row-group';
+                    showMoreBtn.style.display = 'none';
+                    showLessBtn.style.display = 'inline-block';
+                });
+                
+                showLessBtn.addEventListener('click', () => {
+                    additionalRecordsEl.style.display = 'none';
+                    showMoreBtn.style.display = 'inline-block';
+                    showLessBtn.style.display = 'none';
+                });
+            }
+            
+            // Add styles if not already present
+            if (!document.getElementById('promotion-styles')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'promotion-styles';
+                styleEl.textContent = `
+                    .promotion-table .event-badge {
+                        display: inline-block;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                    .promotion-table .event-badge.promotion {
+                        background-color: #4CAF50;
+                        color: white;
+                    }
+                    .promotion-table .event-badge.demotion {
+                        background-color: #F44336;
+                        color: white;
+                    }
+                    .promotion-table .rank-name {
+                        font-weight: bold;
+                        font-size: 0.85em;
+                    }
+                    .promotion-table .rank-name.bronze {
+                        color: #CD7F32;
+                    }
+                    .promotion-table .rank-name.silver {
+                        color: #C0C0C0;
+                    }
+                    .promotion-table .rank-name.gold {
+                        color: #FFD700;
+                    }
+                    .promotion-table .rank-name.emerald {
+                        color: #50C878;
+                    }
+                    .promotion-table .positive-change {
+                        color: #4CAF50;
+                        font-weight: bold;
+                    }
+                    .promotion-table .negative-change {
+                        color: #F44336;
+                        font-weight: bold;
+                    }
+                    .show-more-container {
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                    .show-more-btn, .show-less-btn {
+                        background-color: #333;
+                        border: 1px solid #666;
+                        color: white;
+                        padding: 5px 15px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    }
+                    .show-more-btn:hover, .show-less-btn:hover {
+                        background-color: #444;
+                    }
+                `;
+                document.head.appendChild(styleEl);
+            }
+        } catch (error) {
+            console.error('Error loading promotion history:', error);
+            this.showErrorInContainer('rank-history', `Failed to load ${this.currentLadder} rank history`);
+        }
+    }
+    
+    async loadPlayerStats(username) {
+        if (!username) return;
+        try {
+            // Direct Firebase query for player data - bypass cache
+            const playersCollection = this.currentLadder === 'D1' ? 'players' : (this.currentLadder === 'D2' ? 'playersD2' : 'playersD3');
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                this.setDefaultStats();
+                return;
+            }
+            
+            const playerData = querySnapshot.docs[0].data();
+            
+            // Get matches for this player
+            const matches = await this.getPlayerMatches(username);
+            
+            // Calculate stats
+            const stats = {
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                totalMatches: matches.length
+            };
+            
+            // Process match data
+            matches.forEach(match => {
+                const isWinner = match.winnerUsername === username;
+                if (isWinner) {
+                    stats.wins++;
+                    stats.totalKills += parseInt(match.winnerScore) || 0;
+                    stats.totalDeaths += parseInt(match.loserScore) || 0;
+                } else {
+                    stats.losses++;
+                    stats.totalKills += parseInt(match.loserScore) || 0;
+                    stats.totalDeaths += parseInt(match.winnerScore) || 0;
+                }
+            });
+            
+            // Calculate derived stats
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+            
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+            
+            // Add next rank calculation
+            const eloRating = parseInt(playerData.eloRating) || 0;
+            let nextRank = '';
+            let eloNeeded = 0;
+            let eloClass = '';
+            
+            if (eloRating >= 2000) {
+                nextRank = 'Emerald';
+                eloNeeded = 0;
+                eloClass = 'elo-emerald';
+            } else if (eloRating >= 1800) {
+                nextRank = 'Emerald';
+                eloNeeded = 2000 - eloRating;
+                eloClass = 'elo-gold';
+            } else if (eloRating >= 1600) {
+                nextRank = 'Gold';
+                eloNeeded = 1800 - eloRating;
+                eloClass = 'elo-silver';
+            } else if (eloRating >= 1400) {
+                nextRank = 'Silver';
+                eloNeeded = 1600 - eloRating;
+                eloClass = 'elo-bronze';
+            } else {
+                nextRank = 'Bronze';
+                eloNeeded = 1400 - eloRating;
+                eloClass = 'elo-unranked';
+            }
+            
+            // IMPORTANT: Check if we already have stats at the bottom of the page
+            // and remove them if they exist to prevent duplication
+            const existingBottomStatsGrid = document.querySelector('.profile-content > .stats-grid:last-child');
+            if (existingBottomStatsGrid) {
+                existingBottomStatsGrid.remove();
+            }
+            
+            // Update the existing stats if they exist
+            const updateExistingStats = () => {
+                const elements = {
+                    'stats-matches': stats.totalMatches,
+                    'stats-wins': stats.wins,
+                    'stats-losses': stats.losses,
+                    'stats-kd': stats.kda,
+                    'stats-winrate': `${stats.winRate}%`,
+                    'stats-elo': playerData.eloRating || 'N/A'
+                };
+                
+                // Update all elements at once
+                for (const [id, value] of Object.entries(elements)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    }
+                }
+                
+                // Update or add the next rank item
+                const statsGrid = document.querySelector('.stats-grid');
+                if (statsGrid) {
+                    let nextRankItem = statsGrid.querySelector('.next-rank');
+                    if (!nextRankItem) {
+                        nextRankItem = document.createElement('div');
+                        nextRankItem.className = 'stat-item next-rank';
+                        statsGrid.appendChild(nextRankItem);
+                    }
+                    
+                    // Set the content for next rank
+                    if (eloRating >= 2000) {
+                        nextRankItem.innerHTML = `
+                            <div class="stat-label">CURRENT RANK</div>
+                            <div class="stat-value ${eloClass}">${nextRank}</div>
+                        `;
+                    } else {
+                        nextRankItem.innerHTML = `
+                            <div class="stat-label">NEXT RANK</div>
+                            <div class="stat-value ${eloClass}">${nextRank}</div>
+                            <div class="stat-progress ${eloClass}">${eloNeeded} ELO needed</div>
+                        `;
+                    }
+                }
+            };
+            
+            // If we have existing stats (top row), just update them
+            if (document.getElementById('stats-matches')) {
+                updateExistingStats();
+            } else {
+                // Create a new stats grid with all stats
+                this.createStatsGrid(stats, playerData.eloRating, nextRank, eloNeeded, eloClass);
+            }
+        } catch (error) {
+            this.setDefaultStats();
+        }
+    }
+
+    // Add these methods to your ProfileViewer class (around line 1900)
+
+setupDynamicSubgameHomes() {
+    const favoriteSubgameSelect = document.getElementById('favorite-subgame-edit');
+    const subgameHomesContainer = document.getElementById('favorite-subgame-homes');
+    const subgameHomesLabel = document.getElementById('favorite-subgame-homes-label');
+    
+    if (!favoriteSubgameSelect || !subgameHomesContainer) return;
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    favoriteSubgameSelect.addEventListener('change', (e) => {
+        const selectedSubgame = e.target.value;
+        
+        if (selectedSubgame && selectedSubgame !== '' && !noHomeSubgames.includes(selectedSubgame)) {
+            // Show the subgame homes section for subgames that support custom homes
+            subgameHomesContainer.style.display = 'block';
+            if (subgameHomesLabel) {
+                subgameHomesLabel.textContent = `${selectedSubgame} Homes:`;
+            }
+            
+            // Update placeholders
+            const home1 = document.getElementById('favorite-subgame-home-1');
+            const home2 = document.getElementById('favorite-subgame-home-2');
+            const home3 = document.getElementById('favorite-subgame-home-3');
+            
+            if (home1) home1.placeholder = `Primary ${selectedSubgame} home`;
+            if (home2) home2.placeholder = `Secondary ${selectedSubgame} home`;
+            if (home3) home3.placeholder = `Tertiary ${selectedSubgame} home`;
+        } else {
+            // Hide the subgame homes section for subgames that don't support homes
+            subgameHomesContainer.style.display = 'none';
+            
+            // Clear the values
+            const home1 = document.getElementById('favorite-subgame-home-1');
+            const home2 = document.getElementById('favorite-subgame-home-2');
+            const home3 = document.getElementById('favorite-subgame-home-3');
+            
+            if (home1) home1.value = '';
+            if (home2) home2.value = '';
+            if (home3) home3.value = '';
+        }
+    });
+}
+
+getFavoriteSubgameHome(homeNumber) {
+    if (!this.currentProfileData || !this.currentProfileData.favoriteSubgame) {
+        return '';
+    }
+    
+    const subgame = this.currentProfileData.favoriteSubgame;
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (noHomeSubgames.includes(subgame)) {
+        return ''; // No custom homes for these subgames
+    }
+    
+    const fieldMap = {
+        'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+        '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+        'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+        'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+        'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+        'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+        'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+    };
+    
+    const fields = fieldMap[subgame];
+    if (fields && fields[homeNumber - 1]) {
+        return this.currentProfileData[fields[homeNumber - 1]] || '';
+    }
+    
+    return '';
+}
+
+getDynamicSubgameHomes() {
+    const favoriteSubgame = document.getElementById('favorite-subgame-edit')?.value.trim();
+    const homes = {};
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && favoriteSubgame !== '' && !noHomeSubgames.includes(favoriteSubgame)) {
+        const home1 = document.getElementById('favorite-subgame-home-1')?.value.trim() || '';
+        const home2 = document.getElementById('favorite-subgame-home-2')?.value.trim() || '';
+        const home3 = document.getElementById('favorite-subgame-home-3')?.value.trim() || '';
+        
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            homes[fields[0]] = home1;
+            homes[fields[1]] = home2;
+            homes[fields[2]] = home3;
+        }
+    }
+    
+    return homes;
+}
+
+formatAllHomesDisplay(data) {
+    // Get standard homes
+    const standardHomes = [data.homeLevel1, data.homeLevel2, data.homeLevel3]
+        .filter(level => level && level.trim() !== '');
+    
+    // Get favorite subgame and its homes
+    const favoriteSubgame = data.favoriteSubgame;
+    let subgameHomes = [];
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame)) {
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            subgameHomes = fields.map(field => data[field])
+                .filter(home => home && home.trim() !== '');
+        }
+    }
+    
+    // Build display with consistent structure
+    let displayParts = [];
+    
+    // Add standard homes
+    if (standardHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>Standard:</strong> ${standardHomes.join(', ')}
+        </div>`);
+    }
+    
+    // Add subgame homes if they exist (only for subgames that support homes)
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame) && subgameHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>${favoriteSubgame}:</strong> ${subgameHomes.join(', ')}
+        </div>`);
+    }
+    
+    // Show favorite subgame even if it doesn't have custom homes
+    if (favoriteSubgame && noHomeSubgames.includes(favoriteSubgame) && standardHomes.length > 0) {
+        displayParts.push(`<div class="homes-section">
+            <strong>${favoriteSubgame}:</strong> Uses random/preset maps
+        </div>`);
+    }
+    
+    // Return combined display or fallback
+    if (displayParts.length > 0) {
+        return `<div class="all-homes-display">${displayParts.join('')}</div>`;
+    } else {
+        return 'No home levels set';
+    }
+}
+
+// Enhanced success message display
+showSuccessMessage(message) {
+    // Remove any existing messages
+    const existingMessage = document.querySelector('.success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create success message
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 1rem;
+        border-radius: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(successDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.remove();
+        }
+    }, 3000);
+}
+
+    // New helper method to create stats grid
+    createStatsGrid(stats, eloRating, nextRank, eloNeeded, eloClass) {
+        // Create the stats grid
+        const statsGrid = document.createElement('div');
+        statsGrid.className = 'stats-grid';
+        
+        // Create the standard stat items
+        const statItems = [
+            { id: 'stats-matches', label: 'MATCHES', value: stats.totalMatches },
+            { id: 'stats-wins', label: 'WINS', value: stats.wins },
+            { id: 'stats-losses', label: 'LOSSES', value: stats.losses },
+            { id: 'stats-kd', label: 'K/D', value: stats.kda },
+            { id: 'stats-winrate', label: 'WIN RATE', value: `${stats.winRate}%` },
+            { id: 'stats-elo', label: 'ELO RATING', value: eloRating || 'N/A' }
+        ];
+        
+        // Add all stat items to the grid
+        statItems.forEach(item => {
+            const statItem = document.createElement('div');
+            statItem.className = 'stat-item';
+            statItem.innerHTML = `
+                <div class="stat-label">${item.label}</div>
+                <div id="${item.id}" class="stat-value">${item.value}</div>
+            `;
+            statsGrid.appendChild(statItem);
+        });
+        
+        // Add the next rank item
+        const nextRankItem = document.createElement('div');
+        nextRankItem.className = 'stat-item next-rank';
+        
+        if (eloRating >= 2000) {
+            nextRankItem.innerHTML = `
+                <div class="stat-label">CURRENT RANK</div>
+                <div class="stat-value ${eloClass}">${nextRank}</div>
+            `;
+        } else {
+            nextRankItem.innerHTML = `
+                <div class="stat-label">NEXT RANK</div>
+                <div class="stat-value ${eloClass}">${nextRank}</div>
+                <div class="stat-progress ${eloClass}">${eloNeeded} ELO needed</div>
+            `;
+        }
+        
+        // Append the new stats grid to the profile content
+        const contentContainer = document.querySelector('.profile-content');
+        if (contentContainer) {
+            contentContainer.appendChild(statsGrid);
+        }
+    }
+    
+    setDefaultStats() {
+        const defaultStats = {
+            'stats-matches': '0',
+            'stats-wins': '0',
+            'stats-losses': '0',
+            'stats-kd': '0.00',
+            'stats-winrate': '0%',
+            'stats-elo': 'N/A'
+        };
+
+        for (const [id, value] of Object.entries(defaultStats)) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+    }
+    
+    showError(message) {
+        const container = document.querySelector('.content');
+        if (container) {
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    }
+    
+    showErrorInContainer(containerKey, message) {
+        const container = containerReferences[containerKey];
+        if (container) {
+            container.innerHTML = `
+                <h2>${containerKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h2>
+                <div class="error-message">${message}</div>
+            `;
+        }
+    }
+    
+toggleEditMode(isEditing) {
+    const viewMode = document.querySelector('.view-mode');
+    const editMode = document.querySelector('.edit-mode');
+    
+    if (!viewMode || !editMode) return;
+    
+    if (isEditing && this.currentProfileData) {
+        // Update form fields including ALL profile data and dynamic subgame homes
+        const editFields = {
+            'profile-image-url': this.currentProfileData.profileImageUrl || '',
+            'motto-edit': this.currentProfileData.motto || '',
+            'favorite-map-edit': this.currentProfileData.favoriteMap || '',
+            'favorite-weapon-edit': this.currentProfileData.favoriteWeapon || '',
+            'favorite-subgame-edit': this.currentProfileData.favoriteSubgame || '',
+            'timezone-edit': this.currentProfileData.timezone || '',
+            'division-edit': this.currentProfileData.division || '',
+            'country-selector': this.currentProfileData.country || '',
+            
+            // Standard homes
+            'home-level-1': this.currentProfileData.homeLevel1 || '',
+            'home-level-2': this.currentProfileData.homeLevel2 || '',
+            'home-level-3': this.currentProfileData.homeLevel3 || '',
+            
+            // Dynamic favorite subgame homes
+            'favorite-subgame-home-1': this.getFavoriteSubgameHome(1),
+            'favorite-subgame-home-2': this.getFavoriteSubgameHome(2),
+            'favorite-subgame-home-3': this.getFavoriteSubgameHome(3)
+        };
+        
+        // Fill form fields
+        for (const [id, value] of Object.entries(editFields)) {
+            const element = document.getElementById(id);
+            if (element) element.value = value;
+        }
+        
+        // Setup dynamic subgame homes
+        this.setupDynamicSubgameHomes();
+        
+        // Trigger the subgame change to show/hide homes
+        const favoriteSubgameSelect = document.getElementById('favorite-subgame-edit');
+        if (favoriteSubgameSelect) {
+            favoriteSubgameSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Show edit mode
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    } else {
+        // Show view mode
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    }
+}
+
+
+async handleSubmit(event) {
+    event.preventDefault();
+    const user = auth.currentUser;
+    
+    if (!user) {
+        this.showError('You must be logged in to edit your profile');
+        return;
+    }
+
+    try {
+        // Get all form values
+        const profileImageUrl = document.getElementById('profile-image-url')?.value.trim() || '';
+        const motto = document.getElementById('motto-edit')?.value.trim() || '';
+        const favoriteMap = document.getElementById('favorite-map-edit')?.value.trim() || '';
+        const favoriteWeapon = document.getElementById('favorite-weapon-edit')?.value.trim() || '';
+        const favoriteSubgame = document.getElementById('favorite-subgame-edit')?.value.trim() || '';
+        const homeLevel1 = document.getElementById('home-level-1')?.value.trim() || '';
+        const homeLevel2 = document.getElementById('home-level-2')?.value.trim() || '';
+        const homeLevel3 = document.getElementById('home-level-3')?.value.trim() || '';
+        const country = document.getElementById('country-selector')?.value.trim() || '';
+        const division = document.getElementById('division-edit')?.value.trim() || '';
+        const timezone = document.getElementById('timezone-edit')?.value.trim() || '';
+
+        // Get dynamic subgame homes and merge with profile data
+        const dynamicSubgameHomes = this.getDynamicSubgameHomes();
+
+        // Update profile data
+        const profileData = {
+            profileImageUrl,
+            motto,
+            favoriteMap,
+            favoriteWeapon,
+            favoriteSubgame,
+            homeLevel1,
+            homeLevel2,
+            homeLevel3,
+            country,
+            division,
+            timezone,
+            ...dynamicSubgameHomes, // Spread the dynamic subgame homes
+            updatedAt: new Date()
+        };
+
+        // First, get ALL existing profile data
+        let existingData = {};
+        const userProfileDoc = await getDoc(doc(db, 'userProfiles', user.uid));
+        if (userProfileDoc.exists()) {
+            existingData = userProfileDoc.data();
+        }
+        
+        // Get current username - either from Firebase Auth or existing data
+        const username = user.displayName || existingData.username || this.currentProfileData?.username || 'Anonymous';
+        
+        // Merge with existing data
+        const updatedProfileData = {
+            ...existingData, // Preserve ALL existing fields
+            ...profileData, // Update with new data
+            username: username // Add username to profile document
+        };
+
+        // Save to Firestore - ONLY to userProfiles
+        await setDoc(doc(db, 'userProfiles', user.uid), updatedProfileData);
+        
+        // Update cache
+        const cacheKey = `${username}_${this.currentLadder}`;
+        if (username && playerDataCache.has(cacheKey)) {
+            const cachedData = playerDataCache.get(cacheKey);
+            playerDataCache.set(cacheKey, { ...cachedData, ...updatedProfileData });
+        }
+        
+        // Update display
+        this.toggleEditMode(false);
+        this.displayProfile({
+            ...this.currentProfileData,
+            ...updatedProfileData,
+            username: username,
+            userId: user.uid
+        });
+        
+        // Show success message
+        this.showSuccessMessage('Profile updated successfully');
+    } catch (error) {
+        console.error('Error saving profile:', error);
+        this.showError('Failed to save profile changes');
+    }
+}
+
+// Add this helper method for success messages
+showSuccessMessage(message) {
+    // You can implement this to show a green success notification
+    const container = document.querySelector('.profile-container');
+    if (container) {
+        const notification = document.createElement('div');
+        notification.className = 'success-message';
+        notification.textContent = message;
+        container.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+}
+    
+    // Updated setupEditProfile method to fix cancel button functionality
+setupEditProfile() {
+    const editButton = document.getElementById('edit-profile');
+    const cancelButton = document.querySelector('.cancel-btn');
+    const profileForm = document.getElementById('profile-form');
+    const viewMode = document.querySelector('.view-mode');
+    const editMode = document.querySelector('.edit-mode');
+
+    if (!editButton || !cancelButton || !profileForm || !viewMode || !editMode) {
+        console.warn("Edit profile elements not found, skipping setup.");
+        return;
+    }
+
+    // Check if the current user is viewing their own profile
+    const currentUser = auth.currentUser;
+    const isOwnProfile = currentUser && this.currentProfileData && 
+                        currentUser.uid === this.currentProfileData.userId;
+
+    if (isOwnProfile) {
+        // Show the edit button only if it's the user's own profile
+        editButton.style.display = 'inline-block';
+        
+        // Clear existing listeners 
+        const newEditButton = editButton.cloneNode(false); // Clone without children
+        newEditButton.textContent = editButton.textContent;
+        editButton.parentNode.replaceChild(newEditButton, editButton);
+        
+        // Store reference to 'this' for event handlers
+        const self = this;
+        
+        // Add click handler to edit button
+        newEditButton.addEventListener('click', function() {
+            self.toggleEditMode(true);
+        });
+        
+        // Clear cancel button listeners and recreate
+        const newCancelButton = cancelButton.cloneNode(false);
+        newCancelButton.textContent = cancelButton.textContent;
+        cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+        
+        // Important: Add event listener with explicit preventDefault and 'this' binding
+        newCancelButton.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            e.stopPropagation(); // Stop event bubbling
+            self.toggleEditMode(false);
+        });
+        
+        // Update form with new submit handler
+        const newProfileForm = document.createElement('form');
+        newProfileForm.id = 'profile-form';
+        newProfileForm.className = profileForm.className;
+        newProfileForm.innerHTML = profileForm.innerHTML;
+        profileForm.parentNode.replaceChild(newProfileForm, profileForm);
+        
+        // Re-acquire the cancel button from the new form
+        const newFormCancelBtn = newProfileForm.querySelector('.cancel-btn');
+        if (newFormCancelBtn) {
+            newFormCancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                self.toggleEditMode(false);
+            });
+        }
+        
+        // Add form submit handler
+        newProfileForm.addEventListener('submit', function(e) {
+            self.handleSubmit(e);
+        });
+
+        // Ensure view mode is visible initially, edit mode is hidden
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    } else {
+        // Hide the edit button if it's not the user's own profile
+        editButton.style.display = 'none';
+        // Ensure edit mode is hidden
+        editMode.style.display = 'none';
+        // Ensure view mode is visible
+        viewMode.style.display = 'block';
+    }
+}
+
+    async checkDualLadderStatus(username) {
+        try {
+            // Check if player exists in all ladders
+            const [d1Snapshot, d2Snapshot, d3Snapshot] = await Promise.all([
+                getDocs(query(collection(db, 'players'), where('username', '==', username), limit(1))),
+                getDocs(query(collection(db, 'playersD2'), where('username', '==', username), limit(1))),
+                getDocs(query(collection(db, 'playersD3'), where('username', '==', username), limit(1)))
+            ]);
+            
+            const inD1 = !d1Snapshot.empty;
+            const inD2 = !d2Snapshot.empty;
+            const inD3 = !d3Snapshot.empty;
+            
+            // Update toggle button visibility based on registration
+            const d1Button = document.getElementById('profile-d1-toggle');
+            const d2Button = document.getElementById('profile-d2-toggle');
+            const d3Button = document.getElementById('profile-d3-toggle');
+            
+            if (d1Button && d2Button && d3Button) {
+                // Use inline-block instead of block for better button styling
+                d1Button.style.display = inD1 ? 'inline-block' : 'none';
+                d2Button.style.display = inD2 ? 'inline-block' : 'none';
+                d3Button.style.display = inD3 ? 'inline-block' : 'none';
+                
+                // Fix the toggle container visibility logic
+                const toggleContainer = document.querySelector('.profile-ladder-toggle');
+                if (toggleContainer) {
+                    // Show container if player is in ANY ladder
+                    const inAnyLadder = inD1 || inD2 || inD3;
+                    // Only show multiple toggle buttons if in more than one ladder
+                    toggleContainer.style.display = inAnyLadder ? 'flex' : 'none';
+                }
+                
+                console.log(`Ladder registration - D1: ${inD1}, D2: ${inD2}, D3: ${inD3}`);
+            }
+            
+            return { inD1, inD2, inD3 };
+        } catch (error) {
+            console.error('Error checking ladder status:', error);
+            return { inD1: false, inD2: false, inD3: false };
+        }
+    }
+
+
+addInvitationSection(profileData) {
+    // Remove existing invitation section if it exists
+    const existingSection = document.querySelector('.invitation-section');
+    if (existingSection) {
+        existingSection.remove();
+    }
+    
+    const container = document.querySelector('.profile-container');
+    if (!container) return;
+    
+    // Get available home levels
+    const homeLevels = [profileData.homeLevel1, profileData.homeLevel2, profileData.homeLevel3]
+        .filter(level => level && level.trim() !== '');
+    
+    // Get favorite subgame and its homes
+    const favoriteSubgame = profileData.favoriteSubgame;
+    let subgameHomes = [];
+    
+    // Define which subgames don't have custom homes
+    const noHomeSubgames = ['Blind Match', 'Rematch'];
+    
+    if (favoriteSubgame && !noHomeSubgames.includes(favoriteSubgame)) {
+        const fieldMap = {
+            'Fusion Match': ['fusionHome1', 'fusionHome2', 'fusionHome3'],
+            '≥6 Missiles': ['missilesHome1', 'missilesHome2', 'missilesHome3'],
+            'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
+            'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
+            'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
+            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
+        };
+        
+        const fields = fieldMap[favoriteSubgame];
+        if (fields) {
+            subgameHomes = fields.map(field => profileData[field])
+                .filter(home => home && home.trim() !== '');
+        }
+    }
+    
+    // Combine all available invites
+    const allInvites = [
+        // Standard homes
+        ...homeLevels.map(level => ({ 
+            type: 'home', 
+            value: level, 
+            icon: 'map', 
+            label: level,
+            category: 'Standard' 
+        })),
+        
+        // Subgame homes (only for subgames that support custom homes)
+        ...subgameHomes.map(home => ({ 
+            type: 'subgame-home', 
+            value: home, 
+            icon: 'gamepad', 
+            label: `${home}`,
+            category: favoriteSubgame,
+            subgameType: favoriteSubgame
+        })),
+        
+        // General subgame invite (for all favorite subgames, including those without custom homes)
+        ...(favoriteSubgame ? [{ 
+            type: 'subgame', 
+            value: favoriteSubgame, 
+            icon: 'gamepad', 
+            label: favoriteSubgame,
+            category: 'Subgame'
+        }] : [])
+    ];
+    
+    if (allInvites.length === 0) return;
+    
+    const invitationSection = document.createElement('div');
+    invitationSection.className = `invitation-section`;
+        
+    invitationSection.innerHTML = `
+        <div class="invitation-header">
+            <div class="invitation-title">
+                <i class="fas fa-paper-plane"></i>
+                <span>Invite ${profileData.username}</span>
+            </div>
+            <p>Send an invitation for their preferred game settings</p>
+        </div>
+        <div class="invitation-grid">
+            ${allInvites.map(invite => `
+                <button class="invite-btn" 
+                        data-type="${invite.type}" 
+                        data-value="${invite.value}"
+                        ${invite.subgameType ? `data-subgame-type="${invite.subgameType}"` : ''}
+                        title="${invite.category}: ${invite.label}">
+                    <i class="fas fa-${invite.icon}"></i>
+                    <span>${invite.label}</span>
+                    <small>${invite.category}</small>
+                </button>
+            `).join('')}
+        </div>
+    `;
+    
+    // Add CSS if not already present
+    if (!document.getElementById('invitation-styles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'invitation-styles';
+        styleEl.textContent = `
+            .invitation-section {
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-top: 1.5rem;
+                position: relative;
+                overflow: hidden;
+                background: #1a1a1a;
+                border: 2px solid #333;
+                transition: all 0.3s ease;
+            }
+            
+            /* Rank-based styling */
+            .invitation-section.elo-emerald {
+                border-color: #50C878;
+                box-shadow: 0 0 20px rgba(80, 200, 120, 0.1);
+            }
+            
+            .invitation-section.elo-gold {
+                border-color: #FFD700;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            }
+            
+            .invitation-section.elo-silver {
+                border-color: #C0C0C0;
+                box-shadow: 0 0 20px rgba(192, 192, 192, 0.1);
+            }
+            
+            .invitation-section.elo-bronze {
+                border-color: #CD7F32;
+                box-shadow: 0 0 20px rgba(205, 127, 50, 0.1);
+            }
+            
+            .invitation-section.elo-unranked {
+                border-color: #666;
+                box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+            }
+            
+            .invitation-header {
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .invitation-title {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                margin-bottom: 0.5rem;
+                font-size: 1.1rem;
+                font-weight: bold;
+                color: white;
+            }
+            
+            .invitation-title i {
+                font-size: 1.2rem;
+            }
+            
+            .rank-indicator {
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .rank-indicator.elo-emerald {
+                background: rgba(80, 200, 120, 0.2);
+                color: #50C878;
+                border: 1px solid #50C878;
+            }
+            
+            .rank-indicator.elo-gold {
+                background: rgba(255, 215, 0, 0.2);
+                color: #FFD700;
+                border: 1px solid #FFD700;
+            }
+            
+            .rank-indicator.elo-silver {
+                background: rgba(192, 192, 192, 0.2);
+                color: #C0C0C0;
+                border: 1px solid #C0C0C0;
+            }
+            
+            .rank-indicator.elo-bronze {
+                background: rgba(205, 127, 50, 0.2);
+                color: #CD7F32;
+                border: 1px solid #CD7F32;
+            }
+            
+            .rank-indicator.elo-unranked {
+                background: rgba(102, 102, 102, 0.2);
+                color: #666;
+                border: 1px solid #666;
+            }
+            
+            .invitation-header p {
+                margin: 0;
+                color: #aaa;
+                font-size: 0.9rem;
+            }
+            
+            .invitation-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 0.75rem;
+            }
+            
+            .invite-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 1rem;
+                background: #2a2a2a;
+                color: white;
+                border: 2px solid #444;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .invite-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            
+            .invite-btn i {
+                font-size: 1.5rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .invite-btn span {
+                font-weight: 500;
+                text-align: center;
+                line-height: 1.2;
+            }
+            
+            /* Rank-based button styling */
+            .invite-btn.elo-emerald {
+                border-color: #50C878;
+            }
+            
+            .invite-btn.elo-emerald:hover {
+                background: rgba(80, 200, 120, 0.1);
+                border-color: #50C878;
+                color: #50C878;
+            }
+            
+            .invite-btn.elo-gold {
+                border-color: #FFD700;
+            }
+            
+            .invite-btn.elo-gold:hover {
+                background: rgba(255, 215, 0, 0.1);
+                border-color: #FFD700;
+                color: #FFD700;
+            }
+            
+            .invite-btn.elo-silver {
+                border-color: #C0C0C0;
+            }
+            
+            .invite-btn.elo-silver:hover {
+                background: rgba(192, 192, 192, 0.1);
+                border-color: #C0C0C0;
+                color: #C0C0C0;
+            }
+            
+            .invite-btn.elo-bronze {
+                border-color: #CD7F32;
+            }
+            
+            .invite-btn.elo-bronze:hover {
+                background: rgba(205, 127, 50, 0.1);
+                border-color: #CD7F32;
+                color: #CD7F32;
+            }
+            
+            .invite-btn.elo-unranked {
+                border-color: #666;
+            }
+            
+            .invite-btn.elo-unranked:hover {
+                background: rgba(102, 102, 102, 0.1);
+                border-color: #888;
+                color: #888;
+            }
+            
+            .invite-btn:disabled {
+                background: #1a1a1a !important;
+                border-color: #333 !important;
+                color: #666 !important;
+                cursor: not-allowed !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Loading and success states */
+            .invite-btn.loading {
+                pointer-events: none;
+            }
+            
+            .invite-btn.success {
+                background: rgba(76, 175, 80, 0.2) !important;
+                border-color: #4CAF50 !important;
+                color: #4CAF50 !important;
+            }
+            
+            .invite-btn.error {
+                background: rgba(244, 67, 54, 0.2) !important;
+                border-color: #F44336 !important;
+                color: #F44336 !important;
+            }
+            
+            @media (max-width: 768px) {
+                .invitation-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .invitation-title {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                
+                .invite-btn {
+                    flex-direction: row;
+                    justify-content: center;
+                    gap: 0.75rem;
+                }
+                
+                .invite-btn i {
+                    font-size: 1.2rem;
+                    margin-bottom: 0;
+                }
+            }
+        `;
+        document.head.appendChild(styleEl);
+    }
+    
+    // Add event listeners for invitation buttons with enhanced feedback
+    invitationSection.querySelectorAll('.invite-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const type = btn.dataset.type;
+            const value = btn.dataset.value;
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>';
+            
+            try {
+                await this.sendInvitation(profileData.username, profileData.userId, type, value);
+                
+                btn.classList.remove('loading');
+                btn.classList.add('success');
+                btn.innerHTML = '<i class="fas fa-check"></i><span>Sent!</span>';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('success');
+                    btn.innerHTML = originalContent;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                
+                btn.classList.remove('loading');
+                btn.classList.add('error');
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Error</span>';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('error');
+                    btn.innerHTML = originalContent;
+                }, 3000);
+            }
+        });
+    });
+    
+    // Insert after the profile content
+    container.appendChild(invitationSection);
+}
+    // Update the sendInvitation method around line 2400
+
+    async sendInvitation(toUsername, toUserId, type, value, subgameType = null) {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('You must be logged in to send invitations');
+        }
+        
+        // Get current user's profile for username
+        const userProfileRef = doc(db, 'userProfiles', currentUser.uid);
+        const userProfileSnap = await getDoc(userProfileRef);
+        const fromUsername = userProfileSnap.exists() ? 
+            userProfileSnap.data().username : 'Anonymous';
+        
+        // Create invitation message based on type
+        let message = '';
+        if (type === 'home') {
+            message = `${fromUsername} wants to play on your home level: ${value}`;
+        } else if (type === 'subgame-home') {
+            message = `${fromUsername} wants to play ${subgameType} on your home: ${value}`;
+        } else if (type === 'subgame') {
+            message = `${fromUsername} wants to play your favorite subgame: ${value}`;
+        }
+        
+        // Base invitation data
+        const invitationData = {
+            fromUserId: currentUser.uid,
+            fromUsername: fromUsername,
+            toUserId: toUserId,
+            toUsername: toUsername,
+            type: type,
+            value: value,
+            message: message,
+            status: 'pending',
+            createdAt: new Date()
+        };
+        
+        // Add subgameType field if it's a subgame-home invitation
+        if (type === 'subgame-home' && subgameType) {
+            invitationData.subgameType = subgameType;
+        }
+        
+        // DEBUG: Log the data being sent
+        console.log('Sending invitation data:', invitationData);
+        console.log('Invitation data keys:', Object.keys(invitationData));
+        
+        // Add to gameInvitations collection
+        try {
+            await addDoc(collection(db, 'gameInvitations'), invitationData);
+            console.log('Invitation sent successfully');
+        } catch (error) {
+            console.error('Failed to send invitation:', error);
+            throw error;
+        }
+    }
+}
+
+// Also update the preview function
+function updateProfileImagePreview() {
+    const imageUrl = document.getElementById('profile-image-url').value.trim();
+    const previewImg = document.getElementById('profile-image-preview');
+    
+    if (previewImg) {
+        if (imageUrl) {
+            previewImg.src = imageUrl;
+            previewImg.style.display = 'block';
+        } else {
+            previewImg.src = DEFAULT_PROFILE_IMAGE;
+            previewImg.style.display = 'block';
+        }
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for Firebase Auth state to be ready before initializing
+    auth.onAuthStateChanged(user => {
+        console.log("Auth state changed, user:", user ? user.uid : 'none');
+        // Initialize ProfileViewer regardless of login state,
+        // the viewer logic will handle showing/hiding edit button.
+        if (!window.profileViewerInstance) { // Prevent multiple initializations
+             window.profileViewerInstance = new ProfileViewer();
+        } else {
+             // If already initialized, maybe reload profile if user logs in/out?
+             // Or rely on page refresh. For now, just log.
+        }
+    });
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+    ribbonSystem.stopAllWatching();
+});

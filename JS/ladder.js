@@ -1,1 +1,1119 @@
-const a27ao=a27d;(function(a,b){const P=a27d,c=a();while(!![]){try{const d=-parseInt(P(0x1ba))/0x1+-parseInt(P(0x22b))/0x2*(parseInt(P(0x1b5))/0x3)+-parseInt(P(0x1ce))/0x4*(parseInt(P(0x222))/0x5)+parseInt(P(0x1f3))/0x6*(parseInt(P(0x19f))/0x7)+-parseInt(P(0x1b7))/0x8*(parseInt(P(0x1f8))/0x9)+-parseInt(P(0x196))/0xa+parseInt(P(0x1c3))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a27c,0x7f567));function a27c(){const aA=['i2i5zJfMyW','zwXVlxjLy29TBwvUzgf0Aw9UlxrLEhqTzhvVCW','Bg9HzgLUzY1PBMrPy2f0B3i','qwn0AxzL','Aw5Uzxjive1m','B25bDxrOu3rHDgvdAgfUz2vK','y3jLyxrLrwXLBwvUDa','A2rH','D2LUCW','r29Sza','y2HLy2TLza','CM9Szq','yxbWzw5Kq2HPBgq','rxjYB3iGzMLUzgLUzYbIzxn0ig9WCg9Uzw50oG','y2XPy2S','rxjYB3iGzMv0y2HPBMCGruXpigHPC3rVCNK6','ww91j3jLig5VDcbYzwDPC3rLCMvKig9UihrOzsa','mZa3mtr0ENPRtvi','zwXVlxjLy29TBwvUzgf0Aw9UlxrLEhqTzdi','Bg9ZzxjvC2vYBMfTzq','y2f0y2G','CM91BMq','mtCZmtuWmw1dyLn2BG','DxnLCM5HBwu','BMv3rwXV','DxnLCLbYB2zPBgvZ','zdeTBgfKzgvYlwnVBNrHAw5LCG','zMLUza','BMv3rwXVuMf0Aw5N','iZrdquy1ma','Bwf4','BM90lwfSBg93zwq','CgXHEwvYC0qY','tM8GAwrLywWGB3bWB25LBNqGzM91BMqGzM9YihLVDxiGy3vYCMvUDcbfte8Gka','tM8GyxzHAwXHyMXLihrLyw1TyxrLCYbMB3vUzc4Gtw9YzsbWBgf5zxjZig5LzwrLzcbVBIbevu9tigXHzgrLCIe','DgfYz2v0','D2LUBMvYu2nVCMu','iIakicaGicaGicaGicaGicaGicaGicaGicaGy2XHC3m9iNbSyxLLCI1MBgfNiIakicaGicaGicaGicaGicaGicaGicaGicaGC3r5Bgu9iM1HCMDPBI1Szwz0oIa1ChG7ihzLCNrPy2fSlwfSAwDUoIbTAwrKBgu7iGOGicaGicaGicaGicaGicaGicaGicaGicbVBMvYCM9Ypsj0AgLZlNn0EwXLlMrPC3bSyxK9j25VBMuNiJ4','igXHzgrLCG','CxvLCNLtzwXLy3rVCG','zgvZyW','zgf0yq','y2XHC3nmAxn0','ywrKrxzLBNrmAxn0zw5LCG','BgvUz3rO','B2XKrwXVuMf0Aw5N','zg9JCW','y3jLyxrPDMuGBgvHza','zgf0zq','DgfIBgu','yMLUza','tgfKzgvYihrHyMXLigjVzhKGBM90igzVDw5K','ywrTAw4TB25SEs1TzxnZywDL','Dgv4DenVBNrLBNq','BwvZC2fNzq','zM9UDfDLAwDODa','re9nq29UDgvUDeXVywrLza','AM9PBG','i0y0ndmZnG','ywrK','zwXV','rhvVCYbSywrKzxiGAxmGy3vYCMvUDgX5igfKBwLUlw9UBhK','zdiTBgfKzgvYlwnVBNrHAw5LCG','zdeTC3DPDgnO','mJe1ue1UCg1p','CgXHEwvY','zw1WDhK','ChjLDMLVDxnfBg8','BgfIzwXBzM9YpsjKDw9Zlxn3AxrJAcjD','pc9ZCgfUpI4Gq2HHBgXLBMDLig90AgvYihrLyw1Ziq','Bg9N','C29YDa','ksWGEw91ihnOB3vSzcbIzsbWBgf5Aw5NidXZCgfUignSyxnZpsjYzwnVBw1LBMrHDgLVBI1OAwDOBgLNAhqIihn0EwXLpsjJB2XVCJOG','mtqYmtHywK55ugK','rxjYB3iGzMLUzgLUzYbYzwnVBw1LBMrLzcbVChbVBMvUDa','y2HHBMDL','cIaGicaGicaGCg9ZAxrPB246igzPEgvKoWOGicaGicaGihrVCdOGntaLoWOGicaGicaGigXLzNq6iduWjtSkicaGicaGicb0CMfUC2zVCM06ihrYyw5ZBgf0zsGTntaLlcaTntaLktSkicaGicaGicbIywnRz3jVDw5KoIaJmMeYytjHoWOGicaGicaGigjVCMrLCJOGmNb4ihnVBgLKicnMzJzInMi7cIaGicaGicaGyM9YzgvYlxjHzgL1CZOGohb4oWOGicaGicaGihbHzgrPBMC6ideUnxjLBtSkicaGicaGicb0zxH0lwfSAwDUoIbJzw50zxi7cIaGicaGicaGy29SB3i6icnMzJzInMi7cIaGicaGicaGEI1PBMrLEdOGmtaWmdSkicaGicaGicbIB3GTC2HHzg93oIaWidrWEcaXmNb4ihjNyMeOmcWWldaSmc41ktSkicaGia','Cg9ZAxrPB24','Dg9mB3DLCKnHC2u','mc44nwvT','DwLK','zhvVCY1SywrKzxiTy29UDgfPBMvY','zxjYB3i','i0mWqZbdma','DhjHy2u','CMvJzw50qwn0AxzPDhK','zgLZCgXHEq','Bwf0y2HLCW','cIaGicaGidXKAxyGy2XHC3m9iNjHBMSIpIm','Dg9ju09tDhjPBMC','zgL2','CMv0DxjUicHMDw5JDgLVBIGPia','pc9ZCgfUpG','yM9KEq','BwfW','ChjLDMvUDerLzMf1Bhq','CgXHEwvYC0qZ','DgLTzxn0yw1W','BM9Uzq','zw1HAwW','ywrTAw5aBgfKzgvYlMnVBq','D2LUuMf0zq','rxjYB3iGBg9HzgLUzYbSywrKzxiGzgf0ytO','Aw5UzxjuzxH0','oYi+','ruXpigHPC3rVCNKGy29SBgvJDgLVBIbPCYbLBxb0Eq','jtWVDgq+cIaGica8l3rYpG','y3vYCMvUDfvZzxi','Dg9vChbLCKnHC2u','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','nJe5otG0mhrWrgvSqW','BgfKzgvYlwnVBNrHAw5LCG','zgLZywjSzwq','CgXHEwvYCW','qNjVBNPL','iZuWqZG3oa','AgfZvgvHBq','i0nen0yZmG','zwXVuMf0Aw5N','mtmZwK1Rt1Lc','y2XHC3noyw1L','CgXHEwvYC0r1B3m','rdiGDg9Nz2XLignSAwnRzwq','Dg90ywXezwf0Ahm','cIaGicaGicaGicaGicaGica8l2e+cIaGicaGicaGicaGicaGica','C3r5Bgu','ywn0AxzL','Bg9Zzxjty29Yzq','cIaGicaGidWVzgL2pGOGicaG','oYb0zxH0lwrLy29YyxrPB246ig5VBMu7iJ4kicaGicaGicaGicaGicaGicaGica','Dg90ywXnyxrJAgvZ','zM9UDfnPEMu','yMXVy2S','AgfZ','CgfYzw50tM9Kzq','tM8GDxnLCIbWCM9MAwXLigzVDw5K','z2v0','BgfKzgvYlxbSyxLLCG','C2v0','Bg9ZC2vZ','zxHPC3rZ','mteXzvDds25V','CgXHEwvYvxnLCM5HBwu','mtztAgXTyu4','Cg9PBNrLCG','zhvVCW','mZC4otKZtMXVq01Z','pc9KAxy+cIaGicaGidXKAxyGy2XHC3m9iNbSyxLLCI1LBg8IpG','Bwf0y2HLC0q','cIaGicaGicaGicaGicaGica8l3rKpGOGicaGicaGicaGica8l3rYpGOGicaGicaGia','tufyx1nbrKvFsu5uruDfuG','rdmGDg9Nz2XLignSAwnRzwq','DMLZAwjSzq','zgLZCgf0y2HfDMvUDa','y3nZvgv4Da','mZeYnZu3odnQq2HgBhu','D2fYBG','CgXHEwvYC0q','DgHLBG','C2XPy2u','ChvZAa','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi4iIbZDhLSzt0IDgv4Dc1HBgLNBJOGy2vUDgvYoYbJB2XVCJOGCMvKoYi+cIaGicaGicaGicaGicaGicaGicaGrxjYB3iGBg9HzgLUzYbSywrKzxiGzgf0ytOG','C2v0rgf0zq','y29SB3i','zwXVsgLZDg9YEq','CxvLCNLtzwXLy3rVCKfSBa','nZe4mJHPD2zRtwO','yxbWBhK','y291BNrYEq','z2v0rwXLBwvUDej5swq','zwXVlxjLy29TBwvUzgf0Aw9UlxrLEhqTzde','zwXVlxjLy29TBwvUzgf0Aw9UlxrLEhqTzdm','ywjZ','zdiTC3DPDgnO','pc90zd4kicaGicaGica8Dgq+','z3jHEq','DgL0Bgu','B3bHy2L0Eq','BM93','zhvVCY1ZD2L0y2G','Dg9gAxHLza','zM9YrwfJAa','Aw5Hy3rPDMu','i0zgrdCWma','Aw5JBhvKzxm','CMvTB3zL'];a27c=function(){return aA;};return a27c();}const a27b=(function(){let a=!![];return function(b,c){const d=a?function(){const Q=a27d;if(c){const e=c[Q(0x1cf)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a27a=a27b(this,function(){const S=a27d,a=function(){const R=a27d;let f;try{f=Function(R(0x23d)+R(0x195)+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=['log','warn','info',S(0x234),'exception',S(0x213),S(0x236)];for(let e=0x0;e<d['length'];e++){const f=a27b['constructor']['prototype']['bind'](a27b),g=d[e],h=c[g]||f;f['__proto__']=a27b[S(0x214)](a27b),f['toString']=h['toString']['bind'](h),c[g]=f;}});a27a();import{db}from'./firebase-config.js';import{collection,getDocs,deleteDoc,doc,getDoc,query,where,updateDoc,Timestamp,onSnapshot,orderBy,limit}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{getRankStyle}from'./ranks.js';import{displayLadderD2}from'./ladderd2.js';import{displayLadderD3}from'./ladderd3.js';import{getAuth}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{getLadderData,getEloHistoryBatch,setupEfficientListener}from'./services/firebaseService.js';import{displayLadderDuos}from'./ladderduos.js';const auth=getAuth();let activeListeners=[];export async function loadLadderData(a=0x1){const T=a27d;try{document[T(0x1d1)]('loading-indicator')['style'][T(0x238)]=T(0x1ac);const b=await getLadderData(a);b['sort']((f,g)=>g[T(0x21e)]-f[T(0x21e)]);const c=b['map'](f=>f['id']),d=await getEloHistoryBatch(c,a),e=b[T(0x240)]((f,g)=>{const U=T,h=d[f['id']]||[],i=h[U(0x229)]((j,k)=>new Date(k[U(0x212)])-new Date(j[U(0x212)]))[U(0x1c7)](0x0,0x5);return{...f,'rank':g+0x1,'lastMatches':i,'recentActivity':i[U(0x20e)]>0x0};});renderLadder(e),setupRealTimeUpdates(a);}catch(f){console[T(0x234)](T(0x248),f),document['getElementById']('error-message')[T(0x249)]='Failed\x20to\x20load\x20ladder\x20data.\x20Please\x20try\x20again.';}finally{document[T(0x1d1)](T(0x1e4))['style'][T(0x238)]=T(0x244);}}function setupRealTimeUpdates(a=0x1){const V=a27d;activeListeners['forEach'](f=>f()),activeListeners=[];const b=a===0x1?'players':V(0x1c5)+a,c=a===0x1?V(0x239):V(0x1bc)+a,d=new Date();d[V(0x1ca)](d['getDate']()-0x1);const e=setupEfficientListener(c,[where(V(0x212),'>=',d[V(0x23b)]()),limit(0xa),orderBy(V(0x212),V(0x20a))],async f=>{const W=V;f[W(0x20e)]>0x0&&await loadLadderData(a);});activeListeners[V(0x1c8)](e);}export function cleanupListeners(){const X=a27d;activeListeners[X(0x1dd)](a=>a()),activeListeners=[];}function renderLadder(a){const Y=a27d,b=document['getElementById'](Y(0x197));b[Y(0x1e6)]='',a[Y(0x1dd)](c=>{const Z=Y,d=document[Z(0x1e8)](Z(0x23c));d[Z(0x1a0)]=Z(0x1b1),d[Z(0x1e6)]=Z(0x23a)+c['rank']+'</div>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22player-name\x22>'+(c[Z(0x1f9)]||c['id'])+Z(0x1bb)+c['elo']+'</div>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22player-activity\x20'+(c[Z(0x237)]?'active':Z(0x1de))+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20'+(c[Z(0x237)]?Z(0x1e5):'Inactive')+Z(0x1a8),b[Z(0x1ee)](d);});}const playerCache={'data':null,'timestamp':0x0},CACHE_DURATION=0x7530;function a27d(a,b){const c=a27c();return a27d=function(d,e){d=d-0x195;let f=c[d];if(a27d['LpIeYX']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a27d['idBQlW']=g,a=arguments,a27d['LpIeYX']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a27d['idBQlW'](f),a[i]=f):f=j,f;},a27d(a,b);}async function displayLadder(a=![]){const a0=a27d,b=document['querySelector']('#ladder\x20tbody');if(!b){console['error']('Ladder\x20table\x20body\x20not\x20found');return;}b['innerHTML']='<tr><td\x20colspan=\x228\x22\x20class=\x22loading-cell\x22>Loading\x20ladder\x20data...</td></tr>';try{const c=Date[a0(0x1da)]();if(!a&&playerCache['data']&&c-playerCache[a0(0x243)]<CACHE_DURATION){console['log']('Using\x20cached\x20D1\x20ladder\x20data'),updateLadderDisplay(playerCache['data']);return;}const d=collection(db,'players'),e=await getDocs(d),f=[];e[a0(0x1dd)](l=>{const a1=a0,m=l[a1(0x20b)]();f[a1(0x1c8)]({...m,'id':l['id'],'elo':m[a1(0x19e)]||0x0,'position':m['position']||Number[a1(0x1be)]});});const g=collection(db,a0(0x1fb)),h=await getDocs(g),i=new Map();h['forEach'](l=>{const a2=a0,m=l['data']();m[a2(0x1f9)]&&i[a2(0x1b2)](m['username'][a2(0x230)](),m);}),f[a0(0x1dd)](l=>{const a3=a0,m=l['username']?.['toLowerCase']();if(m&&i['has'](m)){const n=i[a3(0x1b0)](m);n[a3(0x1d0)]&&(l['country']=n[a3(0x1d0)][a3(0x230)]());}});const j=f[a0(0x240)](l=>l['username']),k=await fetchBatchMatchStats(j);f['sort']((l,m)=>{const a4=a0,n=k['get'](l['username'])?.[a4(0x1aa)]||0x0,o=k['get'](m['username'])?.['totalMatches']||0x0;if(n===0x0!==(o===0x0))return n===0x0?0x1:-0x1;return(l[a4(0x22f)]||0x3e7)-(m[a4(0x22f)]||0x3e7);}),f['forEach']((l,m)=>{const a5=a0;l[a5(0x22f)]=m+0x1;}),playerCache['data']=f,playerCache['timestamp']=c,updateLadderDisplay(f,k);}catch(l){console[a0(0x234)]('Error\x20loading\x20ladder:',l),b[a0(0x1e6)]=a0(0x1c9)+l[a0(0x218)]+a0(0x1bd);}}async function fetchBatchMatchStats(a){const b=new Map();try{a['forEach'](e=>{b['set'](e,{'totalMatches':0x0,'wins':0x0,'losses':0x0,'totalKills':0x0,'totalDeaths':0x0,'kda':0x0,'winRate':0x0});});const c=collection(db,'approvedMatches'),d=await getDocs(c);d['forEach'](e=>{const a6=a27d,f=e['data'](),g=f['winnerUsername'],h=f[a6(0x1f5)];if(a['includes'](g)){const i=b[a6(0x1b0)](g);i[a6(0x1ea)]++,i[a6(0x1aa)]++,i['totalKills']+=parseInt(f[a6(0x206)])||0x0,i['totalDeaths']+=parseInt(f[a6(0x1a7)])||0x0;}if(a['includes'](h)){const j=b[a6(0x1b0)](h);j['losses']++,j[a6(0x1aa)]++,j['totalKills']+=parseInt(f[a6(0x1a7)])||0x0,j['totalDeaths']+=parseInt(f['winnerScore'])||0x0;}}),a['forEach'](e=>{const a7=a27d,f=b['get'](e);f['kda']=f[a7(0x1a3)]>0x0?(f['totalKills']/f[a7(0x1a3)])['toFixed'](0x2):f['totalKills'][a7(0x1dc)](0x2),f[a7(0x247)]=f['totalMatches']>0x0?(f[a7(0x1ea)]/f[a7(0x1aa)]*0x64)['toFixed'](0x1):0x0;});}catch(e){console['error']('Error\x20fetching\x20batch\x20match\x20stats:',e);}return b;}function createPlayerRow(a,b){const a8=a27d,c=parseFloat(a['elo'])||0x0;let d='gray';if(c>=0x7d0)d=a8(0x19b);else{if(c>=0x708)d=a8(0x1df);else{if(c>=0x640)d=a8(0x1e2);else c>=0x578&&(d='#CD7F32');}}let e='';return a['country']&&(e='<img\x20src=\x22../images/flags/'+a['country'][a8(0x230)]()+'.png\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20alt=\x22'+a['country']+a8(0x207)),'\x0a\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+a[a8(0x22f)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x20position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(a['username'])+'&ladder=d1\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20style=\x22color:\x20'+d+a8(0x1a9)+a['username']+a8(0x1a4)+e+'\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22color:\x20'+d+';\x20position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22elo-container\x22\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22elo-value\x22>'+c+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22trend-indicator\x22\x20style=\x22margin-left:\x205px;\x22></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+b[a8(0x1aa)]+a8(0x1d6)+b[a8(0x1ea)]+a8(0x1d6)+b[a8(0x1b3)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td>'+b[a8(0x1e9)]+a8(0x1d6)+b['winRate']+a8(0x24c);}function getPlayerRankName(a){const a9=a27d;if(a>=0x7d0)return'Emerald';if(a>=0x708)return a9(0x1eb);if(a>=0x640)return'Silver';if(a>=0x578)return a9(0x19a);return'Unranked';}async function getPlayersLastEloChanges(a){const ab=a27d,b=new Map();a['forEach'](c=>{b['set'](c,0x0);});try{const c=collection(db,'players'),d=await getDocs(c),e=new Map(),f=new Map();d['forEach'](l=>{const aa=a27d,m=l['data']();m['username']&&(e['set'](l['id'],m[aa(0x1f9)]),f[aa(0x1b2)](m[aa(0x1f9)]['toLowerCase'](),l['id']));});const g=collection(db,ab(0x1cc)),h=query(g,orderBy('timestamp','desc'),limit(0x12c)),i=await getDocs(h);if(i[ab(0x224)])return console['log'](ab(0x24b)),b;if(i['docs'][ab(0x20e)]>0x0){const l=i[ab(0x210)][0x0]['data']();if(l['player']&&e['has'](l['player'])){}}const j=new Map();let k=0x0;i['forEach'](m=>{const ac=ab,n=m['data']();let o=null;if(n['player']&&e['has'](n[ac(0x223)]))o=e[ac(0x1b0)](n[ac(0x223)]);else{if(n[ac(0x1f9)]&&f[ac(0x1ad)](n['username'][ac(0x230)]()))o=n[ac(0x1f9)];else n['playerUsername']&&f['has'](n[ac(0x1b6)]['toLowerCase']())&&(o=n[ac(0x1b6)]);}o&&a[ac(0x1e0)](o)&&(k++,!j['has'](o)&&j[ac(0x1b2)](o,[]),j[ac(0x1b0)](o)[ac(0x1c8)]({...n,'timestamp':n['timestamp']?.['seconds']||0x0}));}),j['forEach']((m,n)=>{const ad=ab;if(m['length']>0x0){m['sort']((p,q)=>q[ad(0x243)]-p['timestamp']);const o=m[ad(0x1fd)](p=>p['change']!==undefined||p['newElo']!==undefined&&p[ad(0x225)]!==undefined||p[ad(0x1fe)]!==undefined&&p[ad(0x20f)]!==undefined);if(o){let p;if(o[ad(0x22d)]!==undefined)p=parseInt(o['change']);else{if(o['newElo']!==undefined&&entry['previousElo']!==undefined)p=parseInt(o[ad(0x1fa)])-parseInt(o['previousElo']);else o[ad(0x1fe)]!==undefined&&entry['oldEloRating']!==undefined&&(p=parseInt(o[ad(0x1fe)])-parseInt(o['oldEloRating']));}!isNaN(p)&&p!==0x0&&b[ad(0x1b2)](n,p);}}});}catch(m){console['error'](ab(0x1f1),m);}return b;}async function updateLadderDisplay(a,b=null){const ae=a27d,c=document['querySelector']('#ladder\x20tbody');if(!c){console['error'](ae(0x215));return;}const d=document[ae(0x209)]('#ladder\x20thead\x20tr');d&&(d['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Rank</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Username</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>ELO</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Matches</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Wins</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Losses</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>K/D</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Win\x20Rate</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20');const e=a['map'](g=>g['username']);!b&&(b=await fetchBatchMatchStats(e));const f=a[ae(0x240)](g=>{const af=ae,h=b['get'](g[af(0x1f9)])||{'totalMatches':0x0,'wins':0x0,'losses':0x0,'kda':0x0,'winRate':0x0,'totalKills':0x0,'totalDeaths':0x0};return createPlayerRow(g,h);})[ae(0x21b)]('');c['innerHTML']=f,getPlayersLastEloChanges(e)[ae(0x1c6)](g=>{const ag=ae,h=new Map();c[ag(0x1cd)]('tr')['forEach']((i,j)=>{j<e['length']&&h['set'](e[j],i);}),g['forEach']((i,j)=>{const ah=ag,k=h[ah(0x1b0)](j);if(k&&i!==0x0){const l=k['querySelector']('td:nth-child(3)');if(l){const m=i>0x0?'+'+i:''+i,n=l['querySelector']('.trend-indicator');if(n)n['textContent']=m,n['style'][ah(0x1cb)]=i>0x0?ah(0x1ff):ah(0x21c),n[ah(0x1a5)][ah(0x219)]='bold',n[ah(0x1a5)][ah(0x1ab)]=ah(0x231),n['style']['display']='inline',n[ah(0x1a5)]['visibility']=ah(0x1c0),n['style']['opacity']='1';else{}}}});})[ae(0x1f6)](g=>console['error']('Error\x20updating\x20ELO\x20trend\x20indicators:',g));}function initLadderToggles(){const ai=a27d,a=document['getElementById'](ai(0x221)),b=document[ai(0x1d1)](ai(0x1d5)),c=document['getElementById']('d3-switch'),d=document[ai(0x1d1)](ai(0x1db)),e=document[ai(0x1d1)](ai(0x1fc)),f=document['getElementById']('d2-ladder-container'),g=document[ai(0x1d1)]('d3-ladder-container'),h=document['getElementById'](ai(0x233));function i(){const aj=ai;if(e)e[aj(0x20c)][aj(0x1e1)](aj(0x1a6));if(f)f[aj(0x20c)]['remove']('active');if(g)g[aj(0x20c)][aj(0x1e1)]('active');if(h)h[aj(0x1a5)]['display']=aj(0x244);if(e)e['style']['display']=aj(0x244);if(f)f[aj(0x1a5)]['display']=aj(0x244);if(g)g[aj(0x1a5)][aj(0x238)]='none';}a&&a['addEventListener'](ai(0x1f0),()=>{const ak=ai;console[ak(0x228)]('D1\x20toggle\x20clicked'),i();e&&(e[ak(0x20c)]['add'](ak(0x1a6)),e['style']['display']='block');document['getElementById'](ak(0x1d2))[ak(0x1a5)]['display']=ak(0x1ac),document[ak(0x1d1)]('elo-recommendation-text-d2')[ak(0x1a5)]['display']='none',document['getElementById']('elo-recommendation-text-d3')['style'][ak(0x238)]=ak(0x244);if(a)a[ak(0x20c)]['add'](ak(0x1a6));if(b)b[ak(0x20c)][ak(0x1e1)](ak(0x1a6));if(c)c[ak(0x20c)]['remove']('active');displayLadder(),findBestOpponent('d1');}),b&&b['addEventListener'](ai(0x1f0),()=>{const al=ai;console['log'](al(0x1a2)),i();f&&(f[al(0x20c)]['add']('active'),f[al(0x1a5)]['display']='block');document['getElementById'](al(0x1d2))['style']['display']='none',document[al(0x1d1)]('elo-recommendation-text-d2')[al(0x1a5)][al(0x238)]='block',document['getElementById'](al(0x1d3))[al(0x1a5)]['display']='none';if(b)b['classList'][al(0x21d)]('active');if(a)a['classList']['remove']('active');if(c)c['classList']['remove']('active');displayLadderD2(),findBestOpponent('d2');}),c&&c[ai(0x20d)](ai(0x1f0),()=>{const am=ai;console['log'](am(0x1bf)),i();g&&(g['classList'][am(0x21d)]('active'),g[am(0x1a5)]['display']=am(0x1ac));document['getElementById'](am(0x1d2))['style'][am(0x238)]=am(0x244),document['getElementById'](am(0x1f4))[am(0x1a5)][am(0x238)]='none',document[am(0x1d1)](am(0x1d3))[am(0x1a5)][am(0x238)]='block';if(c)c['classList']['add']('active');if(a)a[am(0x20c)][am(0x1e1)](am(0x1a6));if(b)b['classList'][am(0x1e1)](am(0x1a6));displayLadderD3(),findBestOpponent('d3');}),d&&d['addEventListener']('click',()=>{const an=ai;i();if(h)h[an(0x1a5)][an(0x238)]='block';displayLadderDuos(),findBestOpponent('duos'),document[an(0x1d1)](an(0x1e3))&&(document['getElementById'](an(0x1e3))[an(0x1a5)]['display']=an(0x1ac)),document['getElementById'](an(0x1d2))['style']['display']=an(0x244),document[an(0x1d1)]('elo-recommendation-text-d2')[an(0x1a5)][an(0x238)]=an(0x244),document[an(0x1d1)]('elo-recommendation-text-d3')['style']['display']='none';});}document[a27ao(0x20d)](a27ao(0x21a),()=>{const ap=a27ao;initLadderToggles(),displayLadder(),findBestOpponent('d1'),document['getElementById'](ap(0x1d2))['style'][ap(0x238)]='block';});export{displayLadder};async function findBestOpponent(a='d1'){const aq=a27ao,b='elo-recommendation-text-'+a,c=document['getElementById'](b);if(!c){console[aq(0x234)]('Recommendation\x20element\x20for\x20'+a+'\x20not\x20found');return;}const d=auth['currentUser'];if(!d){c['textContent']='';return;}try{const e=doc(db,'userProfiles',d[aq(0x232)]),f=await getDoc(e);if(!f['exists']()){console[aq(0x228)](aq(0x1af)),c['textContent']='Complete\x20your\x20profile\x20to\x20see\x20recommended\x20opponents';return;}const g=f['data'](),h=g['username'];if(!h){c[aq(0x217)]='Set\x20your\x20username\x20to\x20see\x20recommended\x20opponents';return;}let i;switch(a){case'd1':i=aq(0x199);break;case'd2':i=aq(0x202);break;case'd3':i=aq(0x242);break;case aq(0x1b9):i=aq(0x1a1);break;default:i=aq(0x199);}if(a==='duos'){const s=collection(db,i),t=query(s,where(aq(0x1f9),'==',h)),u=await getDocs(t);if(u['empty']){c[aq(0x217)]='You\x27re\x20not\x20registered\x20on\x20the\x20DUOS\x20ladder';return;}const v=u[aq(0x210)][0x0][aq(0x20b)](),w=parseInt(v[aq(0x19e)])||0x4b0;if(v['hasTeam']&&v['teammate']){c['innerHTML']='You\x27re\x20teamed\x20with\x20<span\x20class=\x22recommendation-highlight\x22>'+v['teammate']+aq(0x227);return;}const x=await getDocs(s);let y=null,z=-0x1;x['forEach'](A=>{const ar=aq,B=A[ar(0x20b)]();if(B['username']===h)return;if(B[ar(0x19c)])return;const C=parseInt(B[ar(0x19e)])||0x4b0,D=Math[ar(0x1d4)](C-w),E=Math[ar(0x200)](0x0,0xc8-D);E>z&&(y=B,z=E);});if(y){const A=parseInt(y['eloRating'])||0x4b0;let B=aq(0x1d7);if(A>=0x7d0)B=aq(0x19b);else{if(A>=0x708)B=aq(0x1df);else{if(A>=0x640)B=aq(0x235);else A>=0x578&&(B=aq(0x19d));}}c[aq(0x1e6)]='Looking\x20for\x20a\x20teammate?\x20Consider\x20<span\x20class=\x22recommendation-highlight\x22\x20style=\x22color:\x20'+B+aq(0x24a)+y['username']+'</span>\x20(ELO:\x20'+A+')';}else c[aq(0x217)]=aq(0x204);return;}const j=collection(db,i),k=query(j,where('username','==',h)),l=await getDocs(k);if(l['empty']){c['textContent']=aq(0x1f2)+a[aq(0x24e)]()+aq(0x208);return;}const m=l['docs'][0x0][aq(0x20b)](),n=parseInt(m[aq(0x19e)])||0x5dc,o=await getDocs(j);let p=null,q=-0x1;const r=getPlayerRankName(n);o['forEach'](C=>{const as=aq,D=C[as(0x20b)]();if(D['username']===h)return;const E=parseInt(D['eloRating'])||0x5dc,F=getPlayerRankName(E),G=Math['abs'](E-n),H=0x20,I=0x1/(0x1+Math['pow'](0xa,(E-n)/0x190)),J=Math[as(0x1f7)](H*(0x1-I));if(J<=0x0)return;let L=0x0;const M=Math['max'](0x0,0x64-G*0.5),N=J>=0x3&&J<=0x8?0x32:J>0x0&&J<0xf?0x1e:0xa,O=r===F?0x28:0x0;L=M+N+O,L>q&&(p=D,q=L);});if(p){const C=parseInt(p['eloRating'])||0x5dc;let D=aq(0x1d7);if(C>=0x7d0)D=aq(0x19b);else{if(C>=0x708)D='#FFD700';else{if(C>=0x640)D=aq(0x1e2);else C>=0x578&&(D='#CD7F32');}}c[aq(0x1e6)]='Based\x20on\x20your\x20ELO\x20('+n+aq(0x22a)+D+aq(0x24a)+p[aq(0x1f9)]+aq(0x23e);}else c[aq(0x1e6)]=aq(0x203)+n+')';}catch(E){console[aq(0x234)](aq(0x1ef),E),c['textContent']=aq(0x22c);}}auth[a27ao(0x1e7)](a=>{const at=a27ao,b=document['getElementById']('d1-ladder-container')&&document['getElementById'](at(0x1fc))[at(0x1a5)][at(0x238)]!=='none',c=document['getElementById']('d2-ladder-container')&&document[at(0x1d1)](at(0x220))['style']['display']!=='none',d=document['getElementById']('d3-ladder-container')&&document[at(0x1d1)]('d3-ladder-container')[at(0x1a5)]['display']!=='none',e=document['getElementById'](at(0x233))&&document[at(0x1d1)]('duos-ladder-container')['style']['display']!==at(0x244),f=b?'d1':c?'d2':d?'d3':e?'duos':'d1';findBestOpponent(f);}),document['addEventListener']('DOMContentLoaded',()=>{const au=a27ao,a=document['getElementById'](au(0x1db)),b=document['querySelector'](au(0x226));a&&b&&(a['addEventListener']('change',async c=>{const av=au;if(c[av(0x205)]['checked']){const d=auth?.[av(0x24d)],f=await checkIfUserIsAdmin(d);if(!f){c[av(0x241)]();const g=document[av(0x1d1)](av(0x221));return g&&(g[av(0x1ec)]=!![],g[av(0x1c1)](new Event(av(0x22d)))),showAdminOnlyMessage(),![];}}}),auth['onAuthStateChanged'](async c=>{const aw=au,d=await checkIfUserIsAdmin(c);!d?(a[aw(0x198)]=!![],b['style']['opacity']='0.5',b[aw(0x1a5)]['cursor']=aw(0x201),b[aw(0x1d8)]=aw(0x21f)):(a['disabled']=![],b['style'][aw(0x1d9)]='1',b[aw(0x1a5)]['cursor']=aw(0x1b8),b['title']='');}));});async function checkIfUserIsAdmin(a){const ax=a27ao;if(!a)return![];try{const b=[ax(0x246),'brian2af@outlook.com'];if(a[ax(0x245)]&&b[ax(0x1e0)](a[ax(0x245)]['toLowerCase']()))return!![];const c=['userProfiles',ax(0x199),ax(0x202),ax(0x242)],d=['admin','owner','council',ax(0x211)];for(const e of c){try{const f=doc(db,e,a[ax(0x232)]),g=await getDoc(f);if(g[ax(0x1b4)]()){const h=g['data'](),i=(h['roleName']||h[ax(0x1ed)]||'')['toLowerCase']();if(i&&d[ax(0x1e0)](i))return!![];}}catch(j){console[ax(0x1c4)]('Error\x20checking\x20'+e+':',j);}}return![];}catch(k){return console['error']('Error\x20checking\x20admin\x20status:',k),![];}}function showAdminOnlyMessage(){const ay=a27ao,a=document['getElementById']('admin-only-message');a&&a[ay(0x1e1)]();const b=document[ay(0x1e8)](ay(0x23c));b['id']=ay(0x216),b[ay(0x1a5)][ay(0x1c2)]=ay(0x22e),b[ay(0x1e6)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<strong>🔒\x20Duos\x20Ladder\x20-\x20Admin\x20Only</strong><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20style=\x22color:\x20#ccc;\x22>Currently\x20in\x20testing\x20phase</span>\x0a\x20\x20\x20\x20',document[ay(0x23f)]['appendChild'](b),setTimeout(()=>{const az=ay;b[az(0x1ae)]&&b['remove']();},0xbb8);}
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs,
+    deleteDoc,
+    doc,
+    getDoc,
+    query,
+    where,
+    updateDoc,
+    Timestamp,
+    onSnapshot,
+    orderBy,
+    limit
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getRankStyle } from './ranks.js';
+import { displayLadderD2 } from './ladderd2.js';
+import { displayLadderD3 } from './ladderd3.js'; 
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getLadderData, 
+    getEloHistoryBatch, 
+    setupEfficientListener 
+} from './services/firebaseService.js';
+import { displayLadderDuos } from './ladderduos.js';
+
+
+const auth = getAuth();
+
+// Track active listeners for cleanup
+let activeListeners = [];
+
+// Load ladder data efficiently
+export async function loadLadderData(division = 1) {
+  try {
+    document.getElementById('loading-indicator').style.display = 'block';
+
+    // Get ladder data with caching
+    const players = await getLadderData(division);
+
+    // Sort by ELO descending
+    players.sort((a, b) => b.elo - a.elo);
+
+    // Fetch ELO history in batch
+    const playerIds = players.map(p => p.id);
+    const eloHistoryData = await getEloHistoryBatch(playerIds, division);
+
+    // Process and display ladder
+    const processedPlayers = players.map((player, index) => {
+      const history = eloHistoryData[player.id] || [];
+      const lastMatches = history
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
+
+      return {
+        ...player,
+        rank: index + 1,
+        lastMatches: lastMatches,
+        recentActivity: lastMatches.length > 0
+      };
+    });
+
+    renderLadder(processedPlayers);
+    setupRealTimeUpdates(division);
+
+  } catch (error) {
+    console.error("Error loading ladder data:", error);
+    document.getElementById('error-message').innerText = "Failed to load ladder data. Please try again.";
+  } finally {
+    document.getElementById('loading-indicator').style.display = 'none';
+  }
+}
+
+// Setup efficient real-time updates
+function setupRealTimeUpdates(division = 1) {
+  // Clear previous listeners
+  activeListeners.forEach(unsubscribe => unsubscribe());
+  activeListeners = [];
+
+  // Collection references
+  const collectionName = division === 1 ? 'players' : `playersD${division}`;
+  const matchesCollectionName = division === 1 ? 'matches' : `matchesD${division}`;
+
+  // Listen only for recent matches (last 24 hours)
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+  // Set up efficient listeners with constraints
+  const matchListener = setupEfficientListener(
+    matchesCollectionName,
+    [where('date', '>=', oneDayAgo.toISOString()), limit(10), orderBy('date', 'desc')],
+    async (changes) => {
+      // Only refresh ladder data if there are actual match changes
+      if (changes.length > 0) {
+        await loadLadderData(division);
+      }
+    }
+  );
+
+  activeListeners.push(matchListener);
+}
+
+// Clean up listeners when navigating away
+export function cleanupListeners() {
+  activeListeners.forEach(unsubscribe => unsubscribe());
+  activeListeners = [];
+}
+
+function renderLadder(players) {
+  const ladderContainer = document.getElementById('ladder-container');
+  ladderContainer.innerHTML = '';
+
+  players.forEach(player => {
+    const playerElement = document.createElement('div');
+    playerElement.className = 'ladder-player';
+    playerElement.innerHTML = `
+      <div class="rank">#${player.rank}</div>
+      <div class="player-name">${player.username || player.id}</div>
+      <div class="player-elo">${player.elo}</div>
+      <div class="player-activity ${player.recentActivity ? 'active' : 'inactive'}">
+        ${player.recentActivity ? 'Active' : 'Inactive'}
+      </div>
+    `;
+    ladderContainer.appendChild(playerElement);
+  });
+}
+
+// Add caching system like D2/D3 ladders
+const playerCache = {
+    data: null,
+    timestamp: 0
+};
+const CACHE_DURATION = 30000; // 30 seconds cache validity
+
+async function displayLadder(forceRefresh = false) {
+    const tableBody = document.querySelector('#ladder tbody');
+    if (!tableBody) {
+        console.error('Ladder table body not found');
+        return;
+    }
+
+    // Clear the table first to prevent duplicates
+    tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading ladder data...</td></tr>';
+
+    try {
+        // Use cache if available and not expired
+        const now = Date.now();
+        if (!forceRefresh && playerCache.data && (now - playerCache.timestamp < CACHE_DURATION)) {
+            console.log('Using cached D1 ladder data');
+            updateLadderDisplay(playerCache.data);
+            return;
+        }
+
+        // First get all players
+        const playersRef = collection(db, 'players');
+        const querySnapshot = await getDocs(playersRef);
+        const players = [];
+
+        querySnapshot.forEach((doc) => {
+            const playerData = doc.data();
+            players.push({
+                ...playerData,
+                id: doc.id,
+                elo: playerData.eloRating || 0,
+                position: playerData.position || Number.MAX_SAFE_INTEGER
+            });
+        });
+
+        // Get all user profiles in one go
+        const profilesRef = collection(db, 'userProfiles');
+        const profilesSnapshot = await getDocs(profilesRef);
+
+        // Create a map of username -> profile data
+        const profilesByUsername = new Map();
+        profilesSnapshot.forEach((doc) => {
+            const profileData = doc.data();
+            if (profileData.username) {
+                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+            }
+        });
+
+        // Match profiles to players - assign country data
+        players.forEach(player => {
+            const username = player.username?.toLowerCase();
+            if (username && profilesByUsername.has(username)) {
+                const profile = profilesByUsername.get(username);
+                if (profile.country) {
+                    player.country = profile.country.toLowerCase();
+                }
+            }
+        });
+
+        // Extract all usernames for batch operations
+        const usernames = players.map(p => p.username);
+
+        // Get match stats for all players at once
+        const matchStatsBatch = await fetchBatchMatchStats(usernames);
+
+        // Sort players with match info already available
+        players.sort((a, b) => {
+            const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
+            const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
+
+            // First check: put players with no matches at the bottom
+            if ((aMatches === 0) !== (bMatches === 0)) {
+                return aMatches === 0 ? 1 : -1;
+            }
+
+            // Then sort by position for players in the same category
+            return (a.position || 999) - (b.position || 999);
+        });
+
+        // Reassign positions sequentially
+        players.forEach((player, index) => {
+            player.position = index + 1;
+        });
+
+        // Store in cache
+        playerCache.data = players;
+        playerCache.timestamp = now;
+
+        // Update the display with batch HTML creation
+        updateLadderDisplay(players, matchStatsBatch);
+
+    } catch (error) {
+        console.error("Error loading ladder:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; color: red;">
+                    Error loading ladder data: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Helper function to fetch all match stats at once - much more efficient
+async function fetchBatchMatchStats(usernames) {
+    const matchStats = new Map();
+
+    try {
+        // Initialize stats for all players
+        usernames.forEach(username => {
+            matchStats.set(username, {
+                totalMatches: 0,
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                kda: 0,
+                winRate: 0
+            });
+        });
+
+        // Get all matches in one query instead of per-player
+        const approvedMatchesRef = collection(db, 'approvedMatches');
+        const allMatches = await getDocs(approvedMatchesRef);
+
+        // Process all matches in a single pass
+        allMatches.forEach(doc => {
+            const match = doc.data();
+            const winnerUsername = match.winnerUsername;
+            const loserUsername = match.loserUsername;
+
+            if (usernames.includes(winnerUsername)) {
+                const stats = matchStats.get(winnerUsername);
+                stats.wins++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.winnerScore) || 0;
+                stats.totalDeaths += parseInt(match.loserScore) || 0;
+            }
+
+            if (usernames.includes(loserUsername)) {
+                const stats = matchStats.get(loserUsername);
+                stats.losses++;
+                stats.totalMatches++;
+                stats.totalKills += parseInt(match.loserScore) || 0;
+                stats.totalDeaths += parseInt(match.winnerScore) || 0;
+            }
+        });
+
+        // Calculate derived stats
+        usernames.forEach(username => {
+            const stats = matchStats.get(username);
+
+            // Calculate KDA ratio
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+
+            // Calculate win rate
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+        });
+
+    } catch (error) {
+        console.error("Error fetching batch match stats:", error);
+    }
+
+    return matchStats;
+}
+
+/*
+// Calculate how many days a player has been in first place
+function calculateStreakDays(firstPlaceDate) {
+    if (!firstPlaceDate) return 0;
+
+    // Convert Firebase timestamp to JavaScript Date if needed
+    let dateObj;
+    if (firstPlaceDate.seconds) {
+        // It's a Firebase Timestamp
+        dateObj = new Date(firstPlaceDate.seconds * 1000);
+    } else if (firstPlaceDate instanceof Date) {
+        // It's already a Date object
+        dateObj = firstPlaceDate;
+    } else if (typeof firstPlaceDate === 'string') {
+        // It's a date string
+        dateObj = new Date(firstPlaceDate);
+    } else {
+        // Unknown format
+        console.error('Unknown date format for firstPlaceDate:', firstPlaceDate);
+        return 0;
+    }
+
+    // Calculate difference in days
+    const now = new Date();
+    const diffTime = Math.abs(now - dateObj);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+}
+*/
+
+// Function to create HTML for a single player row
+function createPlayerRow(player, stats) {
+    const elo = parseFloat(player.elo) || 0;
+
+    // Set ELO-based colors
+    let usernameColor = 'gray'; // Default for unranked
+    if (elo >= 2000) {
+        usernameColor = '#50C878'; // Emerald Green
+    } else if (elo >= 1800) {
+        usernameColor = '#FFD700'; // Gold
+    } else if (elo >= 1600) {
+        usernameColor = '#b9f1fc'; // Silver
+    } else if (elo >= 1400) {
+        usernameColor = '#CD7F32'; // Bronze
+    }
+
+   /*
+    // Create streak HTML if player is #1
+    let streakHtml = '';
+    if (player.position === 1 && player.firstPlaceDate) {
+        const streakDays = calculateStreakDays(player.firstPlaceDate);
+
+
+
+
+
+
+
+
+        if (streakDays > 0) {
+            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
+
+        }
+    }
+   */
+
+    // Create flag HTML if player has country
+    let flagHtml = '';
+    if (player.country) {
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle;"
+                        onerror="this.style.display='none'">`;
+    }
+
+    return `
+    <tr>
+        <td>${player.position}</td>
+        <td style="position: relative;">
+            <div style="display: flex; align-items: center; position: relative;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+
+            </div>
+        </td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
+        <td>${stats.totalMatches}</td>
+        <td>${stats.wins}</td>
+        <td>${stats.losses}</td>
+        <td>${stats.kda}</td>
+        <td>${stats.winRate}%</td>
+    </tr>`;
+}
+
+// Add this function to determine the player's rank name by ELO
+function getPlayerRankName(elo) {
+    if (elo >= 2000) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
+}
+
+// Add this function right before updateLadderDisplay function (around line 280)
+
+// Function to get the last ELO change for each player
+async function getPlayersLastEloChanges(usernames) {
+    // Initialize changes map first
+    const changes = new Map();
+    usernames.forEach(username => {
+        changes.set(username, 0);
+    });
+
+    try {
+        // First step: Create a mapping between user IDs and usernames
+        const playersRef = collection(db, 'players');
+        const playersSnapshot = await getDocs(playersRef);
+
+        // Create two mappings: id→username and username→id (both case-insensitive)
+        const userIdToUsername = new Map();
+        const usernameToUserId = new Map();
+
+        playersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.username) {
+                userIdToUsername.set(doc.id, userData.username);
+                usernameToUserId.set(userData.username.toLowerCase(), doc.id);
+            }
+        });
+
+
+        // Query for ELO history
+        const eloHistoryRef = collection(db, 'eloHistory');
+        const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(300));
+        const eloSnapshot = await getDocs(eloQuery);
+
+        if (eloSnapshot.empty) {
+            console.log('ELO history collection is empty');
+            return changes;
+        }
+
+        // Log sample entry structure
+        if (eloSnapshot.docs.length > 0) {
+            const sample = eloSnapshot.docs[0].data();
+            // Check if the player field is a user ID
+            if (sample.player && userIdToUsername.has(sample.player)) {
+            }
+        }
+
+        // Process entries and group by username
+        const entriesByUsername = new Map();
+        let matchCount = 0;
+
+        eloSnapshot.forEach(doc => {
+            const entry = doc.data();
+            let username = null;
+
+            // First try: Direct user ID match in the player field
+            if (entry.player && userIdToUsername.has(entry.player)) {
+                username = userIdToUsername.get(entry.player);
+            }
+            // Second try: Look for username field in case some entries use that
+            else if (entry.username && usernameToUserId.has(entry.username.toLowerCase())) {
+                username = entry.username;
+            }
+            // Third try: Try playerUsername field
+            else if (entry.playerUsername && usernameToUserId.has(entry.playerUsername.toLowerCase())) {
+                username = entry.playerUsername;
+            }
+
+            if (username && usernames.includes(username)) {
+                matchCount++;
+
+                if (!entriesByUsername.has(username)) {
+                    entriesByUsername.set(username, []);
+                }
+
+                entriesByUsername.get(username).push({
+                    ...entry,
+                    timestamp: entry.timestamp?.seconds || 0
+                });
+            }
+        });
+
+        // For each player, find and record their most recent ELO change
+        entriesByUsername.forEach((playerEntries, username) => {
+            if (playerEntries.length > 0) {
+                // Sort entries by timestamp descending to ensure we get the most recent
+                playerEntries.sort((a, b) => b.timestamp - a.timestamp);
+
+                // Use the first (most recent) entry that has valid change information
+                const recentEntry = playerEntries.find(entry => 
+                    entry.change !== undefined || 
+                    (entry.newElo !== undefined && entry.previousElo !== undefined) ||
+                    (entry.newEloRating !== undefined && entry.oldEloRating !== undefined)
+                );
+
+                if (recentEntry) {
+                    // Calculate ELO change from available fields
+                    let eloChange;
+
+                    if (recentEntry.change !== undefined) {
+                        eloChange = parseInt(recentEntry.change);
+                    } else if (recentEntry.newElo !== undefined && entry.previousElo !== undefined) {
+                        eloChange = parseInt(recentEntry.newElo) - parseInt(recentEntry.previousElo);
+                    } else if (recentEntry.newEloRating !== undefined && entry.oldEloRating !== undefined) {
+                        eloChange = parseInt(recentEntry.newEloRating) - parseInt(recentEntry.oldEloRating);
+                    }
+
+                    if (!isNaN(eloChange) && eloChange !== 0) {
+                        // Store the change
+                        changes.set(username, eloChange);
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching ELO history:', error);
+    }
+
+    return changes;
+}
+
+// Updated to use batch HTML creation
+async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
+    const tbody = document.querySelector('#ladder tbody');
+    if (!tbody) {
+        console.error('Ladder table body not found');
+        return;
+    }
+
+    // Update the table header with new columns
+    const thead = document.querySelector('#ladder thead tr');
+    if (thead) {
+        thead.innerHTML = `
+            <th>Rank</th>
+            <th>Username</th>
+            <th>ELO</th>
+            <th>Matches</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>K/D</th>
+            <th>Win Rate</th>
+        `;
+    }
+
+    // Get all usernames for batch processing
+    const usernames = ladderData.map(p => p.username);
+
+    // If match stats not provided, fetch them
+    if (!matchStatsBatch) {
+        matchStatsBatch = await fetchBatchMatchStats(usernames);
+    }
+
+    // Create all rows at once for better performance
+    const rowsHtml = ladderData.map(player => {
+        // Get pre-fetched stats from our batch operation
+        const stats = matchStatsBatch.get(player.username) || {
+            totalMatches: 0, wins: 0, losses: 0, 
+            kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
+        };
+
+        return createPlayerRow(player, stats);
+    }).join('');
+
+    // Append all rows at once (much faster than individual DOM operations)
+    tbody.innerHTML = rowsHtml;
+
+    // Get all ELO changes at once
+    getPlayersLastEloChanges(usernames)
+        .then(changes => {
+            // Create a mapping of username to row for quick updates
+            const rowMap = new Map();
+            tbody.querySelectorAll('tr').forEach((row, index) => {
+                if (index < usernames.length) {
+                    rowMap.set(usernames[index], row);
+                }
+            });
+
+            changes.forEach((change, username) => {
+                const row = rowMap.get(username);
+                if (row && change !== 0) {
+                    const eloCell = row.querySelector('td:nth-child(3)');
+                    if (eloCell) {
+                        // Format the change value with + or - sign
+                        const formattedChange = change > 0 ? `+${change}` : `${change}`;
+
+                        // Find the indicator element that's already in the DOM
+                        const indicator = eloCell.querySelector('.trend-indicator');
+                        if (indicator) {                            
+                            // Update the existing indicator
+                            indicator.textContent = formattedChange;
+                            indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
+                            indicator.style.fontWeight = 'bold';
+                            indicator.style.fontSize = '0.85em'; // Make slightly larger
+                            indicator.style.display = 'inline'; // Ensure it's displayed
+                            indicator.style.visibility = 'visible';
+                            indicator.style.opacity = '1';
+                        } else {
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error updating ELO trend indicators:', error));
+}
+
+// Update the ladder toggle function to properly handle container visibility
+function initLadderToggles() {    
+    const d1Toggle = document.getElementById('d1-switch');
+    const d2Toggle = document.getElementById('d2-switch');
+    const d3Toggle = document.getElementById('d3-switch');
+    const duosToggle = document.getElementById('duos-switch');
+
+
+    const d1Container = document.getElementById('d1-ladder-container');
+    const d2Container = document.getElementById('d2-ladder-container');
+    const d3Container = document.getElementById('d3-ladder-container');
+    const duosContainer = document.getElementById('duos-ladder-container');
+
+    function hideAllLadders() {
+        // First, remove active class from all containers
+        if (d1Container) d1Container.classList.remove('active');
+        if (d2Container) d2Container.classList.remove('active');
+        if (d3Container) d3Container.classList.remove('active');
+        if (duosContainer) duosContainer.style.display = 'none';
+
+        // Also ensure display is none (as a fallback)
+        if (d1Container) d1Container.style.display = 'none';
+        if (d2Container) d2Container.style.display = 'none';
+        if (d3Container) d3Container.style.display = 'none';
+    }
+
+    // D1 button event listener
+    if (d1Toggle) {
+        d1Toggle.addEventListener('click', () => {
+            console.log("D1 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            // Show D1 ladder
+            if (d1Container) {
+                d1Container.classList.add('active');
+                d1Container.style.display = 'block';
+            }
+
+            // Show D1 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+
+            // Update button UI
+            if (d1Toggle) d1Toggle.classList.add('active');
+            if (d2Toggle) d2Toggle.classList.remove('active');
+            if (d3Toggle) d3Toggle.classList.remove('active');
+
+            // Load ladder data
+            displayLadder();
+            findBestOpponent('d1');
+        });
+    }
+
+    // Similarly update the D2 and D3 button event listeners
+    if (d2Toggle) {
+        d2Toggle.addEventListener('click', () => {
+            console.log("D2 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            if (d2Container) {
+                d2Container.classList.add('active');
+                d2Container.style.display = 'block';
+            }
+
+            // Show D2 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+
+            // Update button UI
+            if (d2Toggle) d2Toggle.classList.add('active');
+            if (d1Toggle) d1Toggle.classList.remove('active');
+            if (d3Toggle) d3Toggle.classList.remove('active');
+
+            // Load ladder data
+            displayLadderD2();
+            findBestOpponent('d2');
+        });
+    }
+
+    if (d3Toggle) {
+        d3Toggle.addEventListener('click', () => {
+            console.log("D3 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            if (d3Container) {
+                d3Container.classList.add('active');
+                d3Container.style.display = 'block';
+            }
+
+            // Show D3 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'block';
+
+            // Update button UI
+            if (d3Toggle) d3Toggle.classList.add('active');
+            if (d1Toggle) d1Toggle.classList.remove('active');
+            if (d2Toggle) d2Toggle.classList.remove('active');
+
+            // Load ladder data
+            displayLadderD3();
+            findBestOpponent('d3');
+        });
+    }
+
+        // Duos button event listener
+    if (duosToggle) {
+        duosToggle.addEventListener('click', () => {
+            hideAllLadders();
+            if (duosContainer) duosContainer.style.display = 'block';
+            displayLadderDuos();
+            findBestOpponent('duos');
+            if (document.getElementById('elo-recommendation-text-duos')) {
+                document.getElementById('elo-recommendation-text-duos').style.display = 'block';
+            }
+
+        // Show Duos recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none'; 
+        });
+    }
+}
+
+// Add document ready event to initialize everything
+document.addEventListener('DOMContentLoaded', () => {
+    initLadderToggles();
+    displayLadder();  // Initial display of the ladder
+    findBestOpponent('d1'); // Initial opponent recommendation
+
+    // Show only D1 recommendation initially (D1 is the default ladder)
+    document.getElementById('elo-recommendation-text-d1').style.display = 'block';
+});
+
+// Export the displayLadder function so it can be called from other modules
+export { displayLadder };
+
+// Add this function to ladder.js
+// Add this after the updateLadderDisplay function
+
+// Find the best opponent for the current user
+async function findBestOpponent(currentLadder = 'd1') {
+    // Get the appropriate recommendation element based on ladder type
+    const recommendationElId = `elo-recommendation-text-${currentLadder}`;
+    const recommendationEl = document.getElementById(recommendationElId);
+
+    if (!recommendationEl) {
+        console.error(`Recommendation element for ${currentLadder} not found`);
+        return;
+    }
+
+    // Get the current user
+    const user = auth.currentUser;
+    if (!user) {
+        recommendationEl.textContent = '';
+        return;
+    }
+
+    try {
+        // Get the user's profile
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        const profileDoc = await getDoc(profileRef);
+
+        if (!profileDoc.exists()) {
+            console.log('No user profile found');
+            recommendationEl.textContent = 'Complete your profile to see recommended opponents';
+            return;
+        }
+
+        const profile = profileDoc.data();
+        const username = profile.username;
+
+        if (!username) {
+            recommendationEl.textContent = 'Set your username to see recommended opponents';
+            return;
+        }
+
+        // Determine which collection to query based on current ladder
+        let ladderCollection;
+        switch(currentLadder) {
+            case 'd1':
+                ladderCollection = 'players';
+                break;
+            case 'd2':
+                ladderCollection = 'playersD2';
+                break;
+            case 'd3':
+                ladderCollection = 'playersD3';
+                break;
+            case 'duos':
+                ladderCollection = 'playersDuos';
+                break;
+            default:
+                ladderCollection = 'players';
+        }
+
+        // Special handling for DUOS ladder
+        if (currentLadder === 'duos') {
+            // Get the user's data from DUOS ladder
+            const playersRef = collection(db, ladderCollection);
+            const playerQuery = query(playersRef, where('username', '==', username));
+            const playerSnapshot = await getDocs(playerQuery);
+
+            if (playerSnapshot.empty) {
+                recommendationEl.textContent = 
+                    `You're not registered on the DUOS ladder`;
+                return;
+            }
+
+            const playerData = playerSnapshot.docs[0].data();
+            const userElo = parseInt(playerData.eloRating) || 1200;
+
+            // Check if user has a team
+            if (playerData.hasTeam && playerData.teammate) {
+                recommendationEl.innerHTML = `You're teamed with <span class="recommendation-highlight">${playerData.teammate}</span>. Challenge other teams!`;
+                return;
+            }
+
+            // If no team, find potential teammates or opponents
+            const allPlayersSnapshot = await getDocs(playersRef);
+            let bestTeammate = null;
+            let bestTeammateScore = -1;
+
+            allPlayersSnapshot.forEach(doc => {
+                const potentialTeammate = doc.data();
+
+                // Skip if this is the current user
+                if (potentialTeammate.username === username) return;
+
+                // Skip if they already have a team
+                if (potentialTeammate.hasTeam) return;
+
+                const teammateElo = parseInt(potentialTeammate.eloRating) || 1200;
+                const eloDifference = Math.abs(teammateElo - userElo);
+
+                // Calculate teammate compatibility score
+                // Closer ELO is better for teamwork
+                const compatibilityScore = Math.max(0, 200 - eloDifference);
+
+                if (compatibilityScore > bestTeammateScore) {
+                    bestTeammate = potentialTeammate;
+                    bestTeammateScore = compatibilityScore;
+                }
+            });
+
+            if (bestTeammate) {
+                const teammateElo = parseInt(bestTeammate.eloRating) || 1200;
+
+                // Set ELO-based colors
+                let usernameColor = 'gray';
+                if (teammateElo >= 2000) {
+                    usernameColor = '#50C878'; // Emerald Green
+                } else if (teammateElo >= 1800) {
+                    usernameColor = '#FFD700'; // Gold
+                } else if (teammateElo >= 1600) {
+                    usernameColor = '#C0C0C0'; // Silver
+                } else if (teammateElo >= 1400) {
+                    usernameColor = '#CD7F32'; // Bronze
+                }
+
+                recommendationEl.innerHTML = `Looking for a teammate? Consider <span class="recommendation-highlight" style="color: ${usernameColor};">${bestTeammate.username}</span> (ELO: ${teammateElo})`;
+            } else {
+                recommendationEl.textContent = `No available teammates found. More players needed on DUOS ladder!`;
+            }
+
+            return;
+        }
+
+        // Original logic for solo ladders (D1, D2, D3)
+        const playersRef = collection(db, ladderCollection);
+        const playerQuery = query(playersRef, where('username', '==', username));
+        const playerSnapshot = await getDocs(playerQuery);
+
+        if (playerSnapshot.empty) {
+            recommendationEl.textContent = 
+                `You're not registered on the ${currentLadder.toUpperCase()} ladder`;
+            return;
+        }
+
+        const playerData = playerSnapshot.docs[0].data();
+        const userElo = parseInt(playerData.eloRating) || 1500;
+
+        // Get all players to find best match
+        const allPlayersSnapshot = await getDocs(playersRef);
+        let bestMatch = null;
+        let bestMatchScore = -1;
+
+        // Get user's rank tier
+        const userRankTier = getPlayerRankName(userElo);
+
+        allPlayersSnapshot.forEach(doc => {
+            const potentialOpponent = doc.data();
+
+            // Skip if this is the current user
+            if (potentialOpponent.username === username) return;
+
+            const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
+            const opponentRankTier = getPlayerRankName(opponentElo);
+
+            // Calculate ELO difference (absolute value)
+            const eloDifference = Math.abs(opponentElo - userElo);
+
+            // Calculate expected ELO gain using the ELO formula
+            const K = 32;
+            const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400));
+            const potentialEloGain = Math.round(K * (1 - expectedScore));
+
+            // Skip opponents where you wouldn't gain any ELO
+            if (potentialEloGain <= 0) return;
+
+            // Calculate match quality score
+            let matchScore = 0;
+
+            // Base score from ELO proximity
+            const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
+
+            // ELO gain score
+            const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
+                             potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
+
+            // Same rank tier bonus
+            const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
+
+            // Calculate final score
+            matchScore = proximityScore + gainScore + tierBonus;
+
+            // Update best match if we found a better one
+            if (matchScore > bestMatchScore) {
+                bestMatch = potentialOpponent;
+                bestMatchScore = matchScore;
+            }
+        });
+
+        if (bestMatch) {
+            const opponentElo = parseInt(bestMatch.eloRating) || 1500;
+
+            // Set ELO-based colors
+            let usernameColor = 'gray';
+            if (opponentElo >= 2000) {
+                usernameColor = '#50C878'; // Emerald Green
+            } else if (opponentElo >= 1800) {
+                usernameColor = '#FFD700'; // Gold
+            } else if (opponentElo >= 1600) {
+                usernameColor = '#b9f1fc'; // Silver
+            } else if (opponentElo >= 1400) {
+                usernameColor = '#CD7F32'; // Bronze
+            }
+
+            recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
+        } else {
+            recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
+        }
+
+    } catch (error) {
+        console.error('Error finding best opponent:', error);
+        recommendationEl.textContent = 'Error finding recommended opponent';
+    }
+}
+
+// Listen for auth state changes to update recommendations
+auth.onAuthStateChanged(user => {
+    // Get current active ladder
+    const d1Active = document.getElementById('d1-ladder-container') && document.getElementById('d1-ladder-container').style.display !== 'none';
+    const d2Active = document.getElementById('d2-ladder-container') && document.getElementById('d2-ladder-container').style.display !== 'none';
+    const d3Active = document.getElementById('d3-ladder-container') && document.getElementById('d3-ladder-container').style.display !== 'none';
+    const duosActive = document.getElementById('duos-ladder-container') && document.getElementById('duos-ladder-container').style.display !== 'none';
+
+    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : 'd1';
+    findBestOpponent(currentLadder);
+});
+
+// Add this to your main ladder switching JavaScript (likely in ladder.js or inline script)
+document.addEventListener('DOMContentLoaded', () => {
+    // Add admin check for DUOS radio button
+    const duosRadio = document.getElementById('duos-switch');
+    const duosLabel = document.querySelector('label[for="duos-switch"]');
+    
+    if (duosRadio && duosLabel) {
+        // Check if user is admin when they try to select DUOS
+        duosRadio.addEventListener('change', async (e) => {
+            if (e.target.checked) {
+                const user = auth?.currentUser;
+                const isUserAdmin = await checkIfUserIsAdmin(user);
+                
+                if (!isUserAdmin) {
+                    // Prevent selection and reset to D1
+                    e.preventDefault();
+                    const d1Radio = document.getElementById('d1-switch');
+                    if (d1Radio) {
+                        d1Radio.checked = true;
+                        // Trigger the D1 change event
+                        d1Radio.dispatchEvent(new Event('change'));
+                    }
+                    
+                    // Show admin-only message
+                    showAdminOnlyMessage();
+                    return false;
+                }
+            }
+        });
+        
+        // Also disable the radio button visually for non-admins
+        auth.onAuthStateChanged(async (user) => {
+            const isUserAdmin = await checkIfUserIsAdmin(user);
+            if (!isUserAdmin) {
+                duosRadio.disabled = true;
+                duosLabel.style.opacity = '0.5';
+                duosLabel.style.cursor = 'not-allowed';
+                duosLabel.title = 'Duos ladder is currently admin-only';
+            } else {
+                duosRadio.disabled = false;
+                duosLabel.style.opacity = '1';
+                duosLabel.style.cursor = 'pointer';
+                duosLabel.title = '';
+            }
+        });
+    }
+});
+
+// Add the admin check function
+async function checkIfUserIsAdmin(user) {
+    if (!user) return false;
+    
+    try {
+        // Check admin emails first
+        const adminEmails = ['admin@ladder.com', 'brian2af@outlook.com'];
+        if (user.email && adminEmails.includes(user.email.toLowerCase())) {
+            return true;
+        }
+        
+        // Check for admin roles in database
+        const collections = ['userProfiles', 'players', 'playersD2', 'playersD3'];
+        const adminRoles = ['admin', 'owner', 'council', 'creative lead'];
+        
+        for (const collectionName of collections) {
+            try {
+                const docRef = doc(db, collectionName, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    const roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        return true;
+                    }
+                }
+            } catch (err) {
+                console.warn(`Error checking ${collectionName}:`, err);
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+function showAdminOnlyMessage() {
+    // Remove any existing message
+    const existingMessage = document.getElementById('admin-only-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create new message
+    const messageDiv = document.createElement('div');
+    messageDiv.id = 'admin-only-message';
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2a2a2a;
+        border: 2px solid #ff6b6b;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        color: #ff6b6b;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    `;
+    messageDiv.innerHTML = `
+        <strong>🔒 Duos Ladder - Admin Only</strong><br>
+        <span style="color: #ccc;">Currently in testing phase</span>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 3000);
+}

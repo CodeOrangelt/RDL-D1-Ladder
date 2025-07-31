@@ -1,1 +1,390 @@
-function a19c(){const G=['C3vZCgvUzfnLC3nPB24','w0zPCMvIyxnLswrSzv0GrxjYB3iGCMvZDw1PBMCGBgLZDgvUzxi6','C2L6zq','CMvZDw1LqwXStgLZDgvUzxjZ','ywXS','w0zPCMvIyxnLswrSzv0GvevtvcbgquLmruqGlsbYzwfKihn1y2nLzwrLzcbKDxjPBMCGC3vZCgvUC2LVBG','zxHLy3v0zvbLBMrPBMDpCgvYyxrPB25Z','C3vZCgvUzefSBeXPC3rLBMvYCW','zxjYB3i','DgfIBgu','n2TcwxrjCa','mK5dq2jXEa','w0zPCMvIyxnLswrSzv0GrxjYB3iGzhvYAw5NihrLC3qGkgv4CgvJDgvKktO','B3bLCMf0Aw9U','y29Kzq','w0zPCMvIyxnLswrSzv0Gt3bLCMf0Aw9UigjSB2nRzwqGlsbZzxnZAw9UigLKBgu','zMLYzwjHC2uTC3vZCgvUzc1PBMrPy2f0B3i','y3jLyxrLtgLZDgvUzxi','yxbWzw5Kq2HPBgq','B3bLCMf0Aw9UvhLWzq','w0zPCMvIyxnLswrSzv0Gqwn0AxzLigXPC3rLBMvYCZOG','w0zPCMvIyxnLswrSzv0GrxjYB3iGC3vZCgvUzgLUzYbSAxn0zw5LCJO','w0zPCMvIyxnLswrSzv0GrxjYB3iGy3jLyxrPBMCGBgLZDgvUzxiG','DxbKyxrL','zgvSzxrLrg9JDw1LBNq','w0zPCMvIyxnLswrSzv0GtM8GBgLZDgvUzxjZihrVihjLC3vTzq','y29UC29Szq','zgvIDwC','ig9WzxjHDgLVBG','C2fMzu9WzxjHDgLVBG','rxjYB3iGzxHLy3v0Aw5NihbLBMrPBMCGB3bLCMf0Aw9UoG','ywrKrg9JDw1LBNq','y2XLyxi','w0zPCMvIyxnLswrSzv0Gu2vZC2LVBIbZDxnWzw5KzwqSig5VDcbJCMvHDgLUzYbSAxn0zw5LCJOG','BgvUz3rO','y2HLy2TtzxnZAw9Uqwn0AxzL','w0zPCMvIyxnLswrSzv0Gu3vJy2vZC2z1BgX5ihn1C3bLBMrLzcbSAxn0zw5LCJO','x3n1C3bLBMrLzeXPC3rLBMvYCW','x19WCM90B19F','w0zPCMvIyxnLswrSzv0GrgvIDwCGBw9Kzsa','ig9WzxjHDgLVBNmGzhvYAw5NigLKBguGC3rHDgu','zxHJzxb0Aw9U','CgvUzgLUz1rPBwvVDxq','ndaXmJi0nuXVs1zgqq','Aw5MBW','zM9YrwfJAa','D2fYBG','zMLUywXSEq','CMvTB3zL','w0zPCMvIyxnLswrSzv0GtgLZDgvUzxiGCMvTB3zLzdOG','C3vIC3rYAw5N','CgvUzgLUz09WzxjHDgLVBNm','yM9KEq','rMLYzwjHC2u6ifn1C3bLBMrLza','ndyYmtC4uMPjEvPY','zw5HyMXLrgvIDwC','DxbKyxrLrg9JDw1LBNq','ntiZndC2BgzSu2XV','nZuWnZm1ovPNvKLwBa','mteZmJaYmdbqDezkrxC','z2v0rg9JDw1LBNq','yMXVy2TLze9WzxjHDgLVBNm','uKrmx1nfu1njt05Fu1vtuevoreve','ntm5mZi0mfrnthPfsq','CMvZB3vYy2uTzxHOyxvZDgvK','zw5HyMXLza','CMfUzg9T','ywn0AxzLtgLZDgvUzxjZ','BM93','w0zPCMvIyxnLswrSzv0Gu3vZCgvUzgLUzYbHBgWGywn0AxzLigXPC3rLBMvYCZO','Aw5JBhvKzxm','CMv0DxjUicHMDw5JDgLVBIGPia','C3LZDgvT','mteWodiXmMDRBMPoAW','zgLZywjSzwq','Dg9tDhjPBMC','C2v0rg9JDw1LBNq','Bg9N','CxvLCNK','Dw5HDMfPBgfIBgu','C2v0','zNvUy3rPB24','ng9AELPhza'];a19c=function(){return G;};return a19c();}const a19o=a19d;(function(a,b){const i=a19d,c=a();while(!![]){try{const d=parseInt(i(0x107))/0x1*(parseInt(i(0x12f))/0x2)+parseInt(i(0x11a))/0x3+parseInt(i(0x123))/0x4*(-parseInt(i(0x14f))/0x5)+parseInt(i(0x10a))/0x6+parseInt(i(0x12e))/0x7*(parseInt(i(0x110))/0x8)+parseInt(i(0x10b))/0x9+-parseInt(i(0x10c))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a19c,0x78479));const a19b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a19a=a19b(this,function(){const k=a19d,a=function(){const j=a19d;let f;try{f=Function(j(0x118)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[k(0x13e)]||{},d=['log','warn',k(0x150),'error',k(0x14d),k(0x12d),'trace'];for(let e=0x0;e<d[k(0x146)];e++){const f=a19b['constructor']['prototype']['bind'](a19b),g=d[e],h=c[g]||f;f[k(0x14a)]=a19b['bind'](a19b),f['toString']=h[k(0x11c)]['bind'](h),c[g]=f;}});function a19d(a,b){const c=a19c();return a19d=function(d,e){d=d-0x103;let f=c[d];if(a19d['wiUaEq']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a19d['tCgqOZ']=g,a=arguments,a19d['wiUaEq']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a19d['tCgqOZ'](f),a[i]=f):f=j,f;},a19d(a,b);}a19a();import{auth,db}from'./firebase-config.js';import{handleNetworkError}from'./idle-timeout.js';import{getDoc,getDocs,collection,doc,query,where,orderBy,limit,startAfter,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,getCountFromServer,writeBatch,serverTimestamp,Timestamp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';class FirebaseIdleWrapper{constructor(){this['activeListeners']=new Map(),this['pendingOperations']=new Map(),this['pendingTimeout']=null,this['blockedOperations']=0x0,this['debug']=![];}['checkSessionActive'](){const l=a19d;if(window['RDL_SESSION_SUSPENDED']===!![])return console[l(0x11e)](l(0x133)),this['blockedOperations']=(this['blockedOperations']||0x0)+0x1,this['blockedOperations']%0xa===0x0&&console[l(0x152)]('[FirebaseIdle]\x20Blocked\x20'+this[l(0x10e)]+l(0x14c)),![];if(window['RDL_NETWORK_ERROR']===!![])return console['log']('[FirebaseIdle]\x20Operation\x20blocked\x20-\x20network\x20error'),![];return!![];}async['safeOperation'](a,b,...c){const m=a19d;if(!this[m(0x147)]()){const d=b+'-'+Date[m(0x115)]()+'-'+Math[m(0x113)]()['toString'](0x24)[m(0x103)](0x2,0x9);return this[m(0x104)]['set'](d,{'operation':a,'operationType':b,'args':c}),!this['pendingTimeout']&&(this[m(0x14e)]=setTimeout(()=>{const n=m;this[n(0x104)]['clear'](),this['pendingTimeout']=null;},0x5*0x3c*0x3e8)),null;}try{return await a(...c);}catch(e){if(e[m(0x132)]===m(0x120)||e['code']===m(0x111)||e['message']&&e['message'][m(0x117)]('network'))return handleNetworkError(),null;throw e;}}async[a19o(0x10d)](a){return this['safeOperation'](getDoc,'get',a);}async['getDocuments'](a){const p=a19o;return this['safeOperation'](getDocs,p(0x11f),a);}async[a19o(0x143)](a,b){return this['safeOperation'](addDoc,'add',a,b);}async[a19o(0x11d)](a,b,c={}){return this['safeOperation'](setDoc,'set',a,b,c);}async[a19o(0x109)](a,b){const q=a19o;return this[q(0x141)](updateDoc,q(0x13b),a,b);}async[a19o(0x13c)](a){const r=a19o;return this[r(0x141)](deleteDoc,'delete',a);}['suspendAllListeners'](){const s=a19o;console[s(0x11e)](s(0x116),this[s(0x114)][s(0x126)]),this[s(0x149)]=new Map(this[s(0x114)]),this['activeListeners']['forEach']((a,b)=>{const t=s;console['log']('[FirebaseIdle]\x20Suspending\x20listener:',b);if(typeof a===t(0x122))try{a(),console[t(0x11e)](t(0x148),b);}catch(c){console['error'](t(0x139),b,c);}}),this[s(0x114)][s(0x144)]();if(this['debug']){const a=document['createElement']('div');a['id']=s(0x134),a['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20right:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#ff5555;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x205px\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2012px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x209999;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',a['textContent']=s(0x106),document[s(0x105)][s(0x136)](a);}console[s(0x11e)]('[FirebaseIdle]\x20All\x20listeners\x20suspended');}[a19o(0x127)](){const u=a19o;if(!this['_suspendedListeners']||this[u(0x149)]['size']===0x0){console['log'](u(0x13d));return;}console[u(0x11e)]('[FirebaseIdle]\x20Resuming\x20listeners:',this[u(0x149)][u(0x126)]),this[u(0x149)]['forEach']((b,c)=>{const v=u;console[v(0x11e)]('[FirebaseIdle]\x20Resuming\x20listener:',c);try{if(typeof b==='function'){console[v(0x152)]('[FirebaseIdle]\x20Cannot\x20resume\x20listener\x20directly:',c);return;}const {query:d,callback:e,options:f}=b;if(d&&e){const g=onSnapshot(d,e,f||{});this[v(0x114)][v(0x121)](c,g),console['log']('[FirebaseIdle]\x20Successfully\x20resumed\x20listener:',c);}}catch(h){console['error'](v(0x125),c,h);}}),this['_suspendedListeners'][u(0x144)]();const a=document['getElementById'](u(0x134));a&&a[u(0x154)](),console['log']('[FirebaseIdle]\x20Listeners\x20resumed');}[a19o(0x135)](a,b,c={},d=null){const w=a19o,e=d||'listener_'+Date['now']()+'_'+Math['random']()[w(0x11c)](0x24)['substr'](0x2,0x9);this['debug']&&console[w(0x11e)]('[FirebaseIdle]\x20Creating\x20listener:\x20'+e);if(!this['checkSessionActive']())return console['log'](w(0x145)+e),()=>{};try{const f=onSnapshot(a,b,c);return this[w(0x114)]['set'](e,{'unsubscribe':f,'query':a,'callback':b,'options':c}),this['debug']&&(console[w(0x11e)]('[FirebaseIdle]\x20Listener\x20created:\x20'+e),console['log']('[FirebaseIdle]\x20Active\x20listeners:\x20'+this[w(0x114)]['size'])),()=>{const x=w;this[x(0x13f)]&&console[x(0x11e)]('[FirebaseIdle]\x20Manually\x20unsubscribing\x20listener:\x20'+e);try{f(),this[x(0x114)]['delete'](e),this['debug']&&(console['log'](x(0x155)+e),console[x(0x11e)](x(0x138)+this[x(0x114)]['size']));}catch(g){console[x(0x12c)]('[FirebaseIdle]\x20Error\x20unsubscribing\x20listener\x20'+e+':',g);}};}catch(g){return console[w(0x12c)](w(0x13a)+e+':',g),()=>{};}}[a19o(0x12a)](a=a19o(0x128)){const y=a19o;console[y(0x11e)]('Executing\x20pending\x20'+a+'\x20operations:\x20'+this[y(0x104)]['size']+'\x20total\x20operations');const b=new Map(this['pendingOperations']);this[y(0x104)]['clear'](),b[y(0x151)]((c,d)=>{const z=y;a===z(0x128)||c[z(0x137)]===a?(console[z(0x11e)]('Executing\x20delayed\x20'+c[z(0x137)]+z(0x140)),this[z(0x141)](c[z(0x131)],c[z(0x137)],...c['args'])['catch'](e=>console['error'](z(0x142),e))):this['pendingOperations']['set'](d,c);});}[a19o(0x108)](a=!![]){const A=a19o;this['debug']=a,console[A(0x11e)](A(0x14b)+(a?A(0x112):A(0x11b)));if(a){const b=window[A(0x10f)];window['RDL_SESSION_SUSPENDED']=!![],console[A(0x11e)]('[FirebaseIdle]\x20Testing\x20suspension\x20-\x20attempting\x20read...'),this[A(0x10d)](doc(db,A(0x119),'test'))['then'](c=>{const B=A;console['log'](B(0x129),c);})['catch'](c=>{const C=A;console['log'](C(0x130),c);})[A(0x153)](()=>{const D=A;console[D(0x11e)]('[FirebaseIdle]\x20Suspension\x20test\x20complete'),window['RDL_SESSION_SUSPENDED']=b;});}}}const firebaseIdle=new FirebaseIdleWrapper();export function enhanceIdleTimeout(){const E=a19o,a=window[E(0x124)]||function(){},b=window['resumeSession']||function(){};window[E(0x124)]=function(){const F=E;a(),firebaseIdle[F(0x12b)]();},window['resumeSession']=function(){b(),firebaseIdle['resumeAllListeners']();};}export default firebaseIdle;
+import { auth, db } from './firebase-config.js';
+import { handleNetworkError } from './idle-timeout.js';
+import { 
+    getDoc, getDocs, collection, doc, query, where, orderBy, limit, 
+    startAfter, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot,
+    getCountFromServer, writeBatch, serverTimestamp, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/**
+ * Firebase Idle Wrapper - Prevents operations during idle state to save read/write quota
+ */
+class FirebaseIdleWrapper {
+    constructor() {
+        this.activeListeners = new Map(); // stores all active listeners
+        this.pendingOperations = new Map(); // stores operations that were attempted during idle
+        this.pendingTimeout = null;
+        this.blockedOperations = 0; // NEW: Track blocked operations
+        this.debug = false; // NEW: Debug mode flag
+    }
+    
+    /**
+     * Check if current session is active before performing Firebase operations
+     * @returns {boolean} - Whether session is active
+     */
+    checkSessionActive() {
+        // Check for session suspended flag (from idle-timeout.js)
+        if (window.RDL_SESSION_SUSPENDED === true) {
+            console.log('[FirebaseIdle] Operation blocked - session idle');
+            
+            // NEW: Track metrics
+            this.blockedOperations = (this.blockedOperations || 0) + 1;
+            if (this.blockedOperations % 10 === 0) {
+                console.warn(`[FirebaseIdle] Blocked ${this.blockedOperations} operations during idle state`);
+            }
+            return false;
+        }
+        
+        // Check for network error flag
+        if (window.RDL_NETWORK_ERROR === true) {
+            console.log('[FirebaseIdle] Operation blocked - network error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Safely execute Firebase operation with idle check
+     * @param {Function} operation - Firebase operation to execute
+     * @param {string} operationType - Type of operation for logging
+     * @param {Array} args - Arguments to pass to operation
+     * @returns {Promise} - Result of operation or null if session idle
+     */
+    async safeOperation(operation, operationType, ...args) {
+        if (!this.checkSessionActive()) {
+            // Store operation for potential later execution if needed
+            const opKey = `${operationType}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+            this.pendingOperations.set(opKey, { operation, operationType, args });
+            
+            // Auto-clear pending operations after 5 minutes to prevent memory leaks
+            if (!this.pendingTimeout) {
+                this.pendingTimeout = setTimeout(() => {
+                    this.pendingOperations.clear();
+                    this.pendingTimeout = null;
+                }, 5 * 60 * 1000);
+            }
+            
+            return null;
+        }
+        
+        try {
+            return await operation(...args);
+        } catch (error) {
+            // Handle network-related errors
+            if (error.code === 'unavailable' || 
+                error.code === 'resource-exhausted' ||
+                (error.message && error.message.includes('network'))) {
+                handleNetworkError();
+                return null;
+            }
+            throw error; // Re-throw other errors
+        }
+    }
+    
+    /**
+     * Safe wrapper for getDoc
+     * @param {DocumentReference} docRef - Document reference
+     * @returns {Promise<DocumentSnapshot|null>} - Document snapshot or null if session idle
+     */
+    async getDocument(docRef) {
+        return this.safeOperation(getDoc, 'get', docRef);
+    }
+    
+    /**
+     * Safe wrapper for getDocs
+     * @param {Query|CollectionReference} query - Query or collection reference
+     * @returns {Promise<QuerySnapshot|null>} - Query snapshot or null if session idle
+     */
+    async getDocuments(queryRef) {
+        return this.safeOperation(getDocs, 'query', queryRef);
+    }
+    
+    /**
+     * Safe wrapper for addDoc
+     * @param {CollectionReference} collectionRef - Collection reference
+     * @param {Object} data - Document data
+     * @returns {Promise<DocumentReference|null>} - Document reference or null if session idle
+     */
+    async addDocument(collectionRef, data) {
+        return this.safeOperation(addDoc, 'add', collectionRef, data);
+    }
+    
+    /**
+     * Safe wrapper for setDoc
+     * @param {DocumentReference} docRef - Document reference
+     * @param {Object} data - Document data
+     * @param {Object} options - Options
+     * @returns {Promise<void|null>} - Promise or null if session idle
+     */
+    async setDocument(docRef, data, options = {}) {
+        return this.safeOperation(setDoc, 'set', docRef, data, options);
+    }
+    
+    /**
+     * Safe wrapper for updateDoc
+     * @param {DocumentReference} docRef - Document reference
+     * @param {Object} data - Document data
+     * @returns {Promise<void|null>} - Promise or null if session idle
+     */
+    async updateDocument(docRef, data) {
+        return this.safeOperation(updateDoc, 'update', docRef, data);
+    }
+    
+    /**
+     * Safe wrapper for deleteDoc
+     * @param {DocumentReference} docRef - Document reference
+     * @returns {Promise<void|null>} - Promise or null if session idle
+     */
+    async deleteDocument(docRef) {
+        return this.safeOperation(deleteDoc, 'delete', docRef);
+    }
+    
+    /**
+     * Suspend all active Firebase listeners
+     */
+    suspendAllListeners() {
+        console.log('[FirebaseIdle] Suspending all active listeners:', this.activeListeners.size);
+        
+        // Store current listeners for resumption later
+        this._suspendedListeners = new Map(this.activeListeners);
+        
+        // Unsubscribe each listener
+        this.activeListeners.forEach((unsubscribe, key) => {
+            console.log('[FirebaseIdle] Suspending listener:', key);
+            // Call the unsubscribe function returned by onSnapshot
+            if (typeof unsubscribe === 'function') {
+                try {
+                    unsubscribe();
+                    console.log('[FirebaseIdle] Successfully suspended listener:', key);
+                } catch (error) {
+                    console.error('[FirebaseIdle] Error suspending listener:', key, error);
+                }
+            }
+        });
+        
+        // Clear the active listeners map
+        this.activeListeners.clear();
+        
+        // Add visual indicator if in debug mode
+        if (this.debug) {
+            const indicator = document.createElement('div');
+            indicator.id = 'firebase-suspend-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                background-color: #333;
+                color: #ff5555;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 9999;
+            `;
+            indicator.textContent = 'Firebase: Suspended';
+            document.body.appendChild(indicator);
+        }
+        
+        console.log('[FirebaseIdle] All listeners suspended');
+    }
+    
+    /**
+     * Resume all previously suspended listeners
+     */
+    resumeAllListeners() {
+        if (!this._suspendedListeners || this._suspendedListeners.size === 0) {
+            console.log('[FirebaseIdle] No listeners to resume');
+            return;
+        }
+        
+        console.log('[FirebaseIdle] Resuming listeners:', this._suspendedListeners.size);
+        
+        // We'll need to reestablish all previous listeners
+        this._suspendedListeners.forEach((listenerConfig, key) => {
+            console.log('[FirebaseIdle] Resuming listener:', key);
+            
+            try {
+                // If it's already a function, it's the old way and we just store it back
+                if (typeof listenerConfig === 'function') {
+                    // Can't actually resume this way, need to recreate via the query
+                    console.warn('[FirebaseIdle] Cannot resume listener directly:', key);
+                    return;
+                }
+                
+                // With new format we have the query and callback stored
+                const { query, callback, options } = listenerConfig;
+                if (query && callback) {
+                    // Re-establish the listener
+                    const newUnsubscribe = onSnapshot(query, callback, options || {});
+                    this.activeListeners.set(key, newUnsubscribe);
+                    console.log('[FirebaseIdle] Successfully resumed listener:', key);
+                }
+            } catch (error) {
+                console.error('[FirebaseIdle] Error resuming listener:', key, error);
+            }
+        });
+        
+        // Clear suspended listeners
+        this._suspendedListeners.clear();
+        
+        // Remove visual indicator
+        const indicator = document.getElementById('firebase-suspend-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+        
+        console.log('[FirebaseIdle] Listeners resumed');
+    }
+    
+    /**
+     * Create a real-time listener with idle checking
+     * @param {object} query - Firestore query to listen to
+     * @param {Function} callback - Callback to execute on changes
+     * @param {object} options - onSnapshot options
+     * @param {string} name - Optional name for this listener
+     * @returns {Function} - Unsubscribe function
+     */
+    createListener(query, callback, options = {}, name = null) {
+        // Generate a unique ID for this listener if name not provided
+        const listenerId = name || `listener_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        if (this.debug) {
+            console.log(`[FirebaseIdle] Creating listener: ${listenerId}`);
+        }
+        
+        if (!this.checkSessionActive()) {
+            console.log(`[FirebaseIdle] Session suspended, not creating listener: ${listenerId}`);
+            // Return a dummy unsubscribe function
+            return () => {};
+        }
+        
+        try {
+            // Create the real listener
+            const unsubscribe = onSnapshot(query, callback, options);
+            
+            // Store both the unsubscribe function AND the original query & callback
+            // so we can recreate it later if needed
+            this.activeListeners.set(listenerId, {
+                unsubscribe,
+                query,
+                callback,
+                options
+            });
+            
+            if (this.debug) {
+                console.log(`[FirebaseIdle] Listener created: ${listenerId}`);
+                console.log(`[FirebaseIdle] Active listeners: ${this.activeListeners.size}`);
+            }
+            
+            // Return a special unsubscribe function that also removes from our tracking
+            return () => {
+                if (this.debug) {
+                    console.log(`[FirebaseIdle] Manually unsubscribing listener: ${listenerId}`);
+                }
+                
+                try {
+                    // Call the real unsubscribe
+                    unsubscribe();
+                    
+                    // Remove from our map
+                    this.activeListeners.delete(listenerId);
+                    
+                    if (this.debug) {
+                        console.log(`[FirebaseIdle] Listener removed: ${listenerId}`);
+                        console.log(`[FirebaseIdle] Active listeners: ${this.activeListeners.size}`);
+                    }
+                } catch (error) {
+                    console.error(`[FirebaseIdle] Error unsubscribing listener ${listenerId}:`, error);
+                }
+            };
+        } catch (error) {
+            console.error(`[FirebaseIdle] Error creating listener ${listenerId}:`, error);
+            return () => {}; // Return dummy function
+        }
+    }
+    
+    /**
+     * Execute pending operations (optional, for critical operations)
+     * @param {string} type - Type of operations to execute, or 'all'
+     */
+    executePendingOperations(type = 'all') {
+        console.log(`Executing pending ${type} operations: ${this.pendingOperations.size} total operations`);
+        
+        // Create a copy to avoid modification during iteration
+        const pendingOps = new Map(this.pendingOperations);
+        this.pendingOperations.clear();
+        
+        pendingOps.forEach((op, key) => {
+            if (type === 'all' || op.operationType === type) {
+                console.log(`Executing delayed ${op.operationType} operation`);
+                this.safeOperation(op.operation, op.operationType, ...op.args)
+                    .catch(error => console.error('Error executing pending operation:', error));
+            } else {
+                // Put it back if we're only executing specific types
+                this.pendingOperations.set(key, op);
+            }
+        });
+    }
+    
+    /**
+     * Enable or disable debug mode
+     * @param {boolean} enable - Whether to enable debug mode
+     */
+    enableDebug(enable = true) {
+        this.debug = enable;
+        console.log(`[FirebaseIdle] Debug mode ${enable ? 'enabled' : 'disabled'}`);
+        
+        if (enable) {
+            // Force test suspension
+            const originalStatus = window.RDL_SESSION_SUSPENDED;
+            window.RDL_SESSION_SUSPENDED = true;
+            console.log('[FirebaseIdle] Testing suspension - attempting read...');
+            
+            // Try a sample read operation
+            this.getDocument(doc(db, 'system', 'test'))
+                .then(result => {
+                    console.log('[FirebaseIdle] TEST FAILED - read succeeded during suspension', result);
+                })
+                .catch(err => {
+                    console.log('[FirebaseIdle] Error during test (expected):', err);
+                })
+                .finally(() => {
+                    console.log('[FirebaseIdle] Suspension test complete');
+                    window.RDL_SESSION_SUSPENDED = originalStatus;
+                });
+        }
+    }
+}
+
+// Create singleton instance
+const firebaseIdle = new FirebaseIdleWrapper();
+
+// Modify idle-timeout.js functions to integrate with this wrapper
+export function enhanceIdleTimeout() {
+    // Original functions from idle-timeout.js
+    const originalSuspendSession = window.suspendSession || function() {};
+    const originalResumeSession = window.resumeSession || function() {};
+    
+    // Replace or enhance the suspendSession function
+    window.suspendSession = function() {
+        // Call original function
+        originalSuspendSession();
+        
+        // Additionally suspend all Firebase listeners
+        firebaseIdle.suspendAllListeners();
+    };
+    
+    // Replace or enhance the resumeSession function
+    window.resumeSession = function() {
+        // Call original function
+        originalResumeSession();
+        
+        // Additionally resume all Firebase listeners
+        firebaseIdle.resumeAllListeners();
+        
+        // Optional: Execute only critical pending operations
+        // firebaseIdle.executePendingOperations('critical');
+    };
+}
+
+export default firebaseIdle;

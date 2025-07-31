@@ -1,1 +1,123 @@
-const a39m=a39d;(function(a,b){const i=a39d,c=a();while(!![]){try{const d=parseInt(i(0x1e4))/0x1*(parseInt(i(0x1ef))/0x2)+-parseInt(i(0x1d9))/0x3*(parseInt(i(0x1dc))/0x4)+-parseInt(i(0x1f2))/0x5*(parseInt(i(0x1ee))/0x6)+-parseInt(i(0x1f0))/0x7*(-parseInt(i(0x1eb))/0x8)+-parseInt(i(0x1d8))/0x9+parseInt(i(0x1e8))/0xa*(-parseInt(i(0x1df))/0xb)+parseInt(i(0x1d4))/0xc;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a39c,0x9d55f));const a39b=(function(){let a=!![];return function(b,c){const d=a?function(){const j=a39d;if(c){const e=c[j(0x1da)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a39a=a39b(this,function(){const l=a39d,a=function(){const k=a39d;let f;try{f=Function('return\x20(function()\x20'+k(0x1cc)+');')();}catch(g){f=window;}return f;},b=a(),c=b[l(0x1d6)]=b['console']||{},d=[l(0x1e6),'warn','info',l(0x1d3),l(0x1de),'table','trace'];for(let e=0x0;e<d[l(0x1c8)];e++){const f=a39b['constructor'][l(0x1d1)]['bind'](a39b),g=d[e],h=c[g]||f;f[l(0x1e0)]=a39b[l(0x1cf)](a39b),f[l(0x1d2)]=h['toString'][l(0x1cf)](h),c[g]=f;}});function a39d(a,b){const c=a39c();return a39d=function(d,e){d=d-0x1c5;let f=c[d];if(a39d['jHCFqh']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a39d['ynPYJC']=g,a=arguments,a39d['jHCFqh']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a39d['ynPYJC'](f),a[i]=f):f=j,f;},a39d(a,b);}a39a(),document[a39m(0x1cb)](a39m(0x1ec),function(){const n=a39m,a=document['getElementById']('nav-placeholder');a&&fetch(n(0x1d7))[n(0x1e1)](d=>d[n(0x1e5)]())[n(0x1e1)](d=>{const o=n;a['innerHTML']=d;const e=document[o(0x1c7)](o(0x1d5));e['forEach'](f=>{const p=o;f['closest']('li')?f[p(0x1e3)]('li')['style'][p(0x1d0)]=p(0x1c9):f['style']['display']='none';});})['catch'](d=>{const q=n;console['error'](q(0x1dd),d);});const b=document['getElementById'](n(0x1c5));b&&fetch(n(0x1e2))[n(0x1e1)](d=>d[n(0x1e5)]())['then'](d=>{const r=n;b[r(0x1db)]=d;})[n(0x1ce)](d=>{const s=n;console['error'](s(0x1ed),d);});const c=console[n(0x1d3)];console[n(0x1d3)]=function(){const t=n;if(arguments[0x0]&&typeof arguments[0x0]==='string'&&arguments[0x0][t(0x1c6)]('cdn.discordapp.com/widget-avatars'))return;c[t(0x1da)](console,arguments);};});function createNexusFooterLink(){const u=a39m;if(document[u(0x1ca)](u(0x1f3)))return;const a=document['createElement']('style');a['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Fix\x20horizontal\x20scrolling\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20html,\x20body\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow-x:\x20hidden;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20relative;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Nexus\x20footer\x20link\x20styling\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20.nexus-footer-link\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20left:\x2015px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x2015px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x20100;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20.nexus-footer-link\x20a\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.75);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20rgba(255,\x20255,\x20255,\x200.75);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-decoration:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x206px\x2012px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.85rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20rgba(255,\x20255,\x20255,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20all\x200.2s\x20ease;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20.nexus-footer-link\x20a:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.85);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20rgba(255,\x20255,\x20255,\x201);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transform:\x20translateY(-2px);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x203px\x208px\x20rgba(0,\x200,\x200,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20.nexus-footer-link\x20a\x20img\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2016px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x2016px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20object-fit:\x20contain;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20',document[u(0x1f1)][u(0x1cd)](a);const b=document['createElement']('div');b['className']=u(0x1e9),b[u(0x1db)]=u(0x1e7),document[u(0x1ea)][u(0x1cd)](b);}function a39c(){const v=['mteXoti0mfLsANrWBq','re9nq29UDgvUDeXVywrLza','rxjYB3iGBg9HzgLUzYbMB290zxi6','mtmZofL0BNrKyW','mJy0ndy0zNfIwefP','nJn4EvHIyxi','AgvHza','mJaXntbZsxjxqwW','lM5LEhvZlwzVB3rLCI1SAw5R','zM9VDgvYlxbSywnLAg9SzgvY','Aw5JBhvKzxm','CxvLCNLtzwXLy3rVCKfSBa','BgvUz3rO','BM9Uzq','CxvLCNLtzwXLy3rVCG','ywrKrxzLBNrmAxn0zw5LCG','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','yxbWzw5Kq2HPBgq','y2f0y2G','yMLUza','zgLZCgXHEq','ChjVDg90ExbL','Dg9tDhjPBMC','zxjYB3i','mJm0mdqZmZjJEKHHzM0','lM5HDI1SAw5Rw2HYzwy9iM5LEhvZlMH0BwWIxsWGlM5HDI1PDgvTigfBAhjLzJ0IBMv4DxmUAhrTBcjD','y29UC29Szq','lI4Vsfrntc9UyxyUAhrTBa','mtaXodi0mJLPrxbRtwi','mJa3mZGXvvr4wKf6','yxbWBhK','Aw5Uzxjive1m','mtjiD2f2zum','rxjYB3iGBg9HzgLUzYbUyxzPz2f0Aw9UoG','zxHJzxb0Aw9U','mtf6quDMuu0','x19WCM90B19F','DgHLBG','lI4Vsfrntc9MB290zxiUAhrTBa','y2XVC2vZDa','neLSCMzkvG','Dgv4Da','Bg9N','cIaGicaGicaGpgeGAhjLzJ0IAhr0Chm6lY9JB2rLB3jHBMDLBhqUz2L0AhvIlMLVl0rLC2nLBNqTtMv4DxmViJ4kicaGicaGicaGicaGpgLTzYbZCMm9iI4Ul2LTywDLCY9JBg9HAY5Py28IigfSDd0ItMv4DxmIihDPzhrOpsiXnIiGAgvPz2H0psiXnIi+ie5LEhvZcIaGicaGicaGpc9HpGOGicaG','odu2ntm1mfznzKTvuW','BMv4DxmTzM9VDgvYlwXPBMS','yM9KEq'];a39c=function(){return v;};return a39c();}
+/**
+ * Combined page components script
+ * - Loads navigation and footer
+ * - Enhances Discord widget
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Component Loading ---
+    
+    // Load navigation
+    const navPlaceholder = document.getElementById('nav-placeholder');
+    if (navPlaceholder) {
+        fetch('../HTML/nav.html')
+            .then(response => response.text())
+            .then(html => {
+                navPlaceholder.innerHTML = html;
+                
+                // Hide the Nexus link in navigation after it's loaded
+                const nexusNavLinks = document.querySelectorAll('.nav-link[href="nexus.html"], .nav-item a[href="nexus.html"]');
+                nexusNavLinks.forEach(link => {
+                    if (link.closest('li')) {
+                        link.closest('li').style.display = 'none';
+                    } else {
+                        link.style.display = 'none';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading navigation:', error);
+            });
+    }
+    
+    // Load footer
+    const footerPlaceholder = document.getElementById('footer-placeholder');
+    if (footerPlaceholder) {
+        fetch('../HTML/footer.html')
+            .then(response => response.text())
+            .then(html => {
+                footerPlaceholder.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading footer:', error);
+            });
+    }
+    
+    // Console error silencer - this won't fix CORS but will reduce console spam
+    const originalError = console.error;
+    console.error = function() {
+        // Ignore CORS errors from Discord widget
+        if (arguments[0] && 
+            typeof arguments[0] === 'string' && 
+            arguments[0].includes('cdn.discordapp.com/widget-avatars')) {
+            return;
+        }
+        originalError.apply(console, arguments);
+    };
+});
+
+// Function to create and add Nexus footer link
+function createNexusFooterLink() {
+    // Check if the link already exists
+    if (document.querySelector('.nexus-footer-link')) {
+        return;
+    }
+    
+    // Create the CSS for the footer link
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Fix horizontal scrolling */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Nexus footer link styling */
+        .nexus-footer-link {
+            position: fixed;
+            left: 15px;
+            bottom: 15px;
+            z-index: 100;
+        }
+
+        .nexus-footer-link a {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.75);
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .nexus-footer-link a:hover {
+            background: rgba(0, 0, 0, 0.85);
+            color: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nexus-footer-link a img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Create the footer link element
+    const nexusFooter = document.createElement('div');
+    nexusFooter.className = 'nexus-footer-link';
+    nexusFooter.innerHTML = `
+        <a href="https://codeorangelt.github.io/Descent-Nexus/">
+            <img src="../images/cloak.ico" alt="Nexus" width="16" height="16"> Nexus
+        </a>
+    `;
+    document.body.appendChild(nexusFooter);
+}

@@ -1,1 +1,164 @@
-const a42r=a42d;(function(a,b){const n=a42d,c=a();while(!![]){try{const d=-parseInt(n(0x1ac))/0x1*(parseInt(n(0x1b4))/0x2)+parseInt(n(0x1ae))/0x3*(-parseInt(n(0x198))/0x4)+-parseInt(n(0x193))/0x5+-parseInt(n(0x180))/0x6*(-parseInt(n(0x191))/0x7)+-parseInt(n(0x179))/0x8+parseInt(n(0x1b3))/0x9+parseInt(n(0x19b))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a42c,0x606bf));const a42b=(function(){let a=!![];return function(b,c){const d=a?function(){const o=a42d;if(c){const e=c[o(0x1a8)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a42a=a42b(this,function(){const p=a42d;let a;try{const d=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[p(0x1a9)]=a['console']||{},c=['log',p(0x17e),p(0x196),'error','exception','table','trace'];for(let g=0x0;g<c['length'];g++){const h=a42b[p(0x1aa)]['prototype'][p(0x185)](a42b),i=c[g],j=b[i]||h;h['__proto__']=a42b['bind'](a42b),h[p(0x17f)]=j[p(0x17f)]['bind'](j),b[i]=h;}});a42a();import{initializeApp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';function a42c(){const B=['zMf2B3jPDgvxzwfWB24','AgfUzgXLu3vIBwL0','Bg9Zzxjty29Yzq','Bg9HzfbSyxLLCLn0yxrZ','ChjLDMvUDerLzMf1Bhq','DMfSDwu','zgf0yq','C3vIBwL0','Bw90Dg8','yxbWBhK','y29UC29Szq','y29UC3rYDwn0B3i','z2v0','mtbZELbSBLu','C2L6zq','ntm0nZqXAhfytgjS','CgXHEwvYlxn0yxrZ','C3rHDhmTBg9ZC2vZ','y3vYCMvUDfvZzxi','C3rHDhmT','ntq5nZq4ohjpqvbpsa','mZmYmMTczKzhBa','CgzWsw5WDxq','re9nq29UDgvUDeXVywrLza','zMLSzxm','ChjVzMLSzs1MB3jT','ntq2nda0og9bB3jKrW','BMLJA25HBwu','zMf2B3jPDguTD2vHCg9U','ywrKrxzLBNrmAxn0zw5LCG','C2v0DxbfDMvUDeXPC3rLBMvYCW','D2fYBG','Dg9tDhjPBMC','nK5XwM1QCa','CgzWlxvWBg9Hza','z2v0rwXLBwvUDej5swq','Dg9gAxHLza','D2LUCW','yMLUza','AgfUzgXLsw1Hz2vvCgXVywq','rxjYB3iGBg9HzgLUzYbWCM9MAwXLoG','D2LUBMvYu2nVCMu','zM9YBq','y2HHBMDL','DwLK','ywXS','zxHPC3rZ','CMvHzefZrgf0yvvsta','Bwf0y2HLCW','C3rHDhmTBwf0y2HLCW','mteYnJe5nw5TqMX5Dq','zMf2B3jPDguTBwfW','mJG3mtu4mg1QzhDdqW','Dg9ju09tDhjPBMC','CgzWvxjS','Aw5MBW','C3jJ','ohPlELLwEq','CMvZDwX0','u3rHDhmGy2fSy3vSyxrLzdO','mti1mZy1mJb1DxHjsgi','Dgv4DenVBNrLBNq','D2LUCMf0zq','DgfYz2v0'];a42c=function(){return B;};return a42c();}import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{getFirestore,doc,setDoc,getDoc,collection,getDocs,query,where}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a42d(a,b){const c=a42c();return a42d=function(d,e){d=d-0x179;let f=c[d];if(a42d['DDKaRY']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a42d['lMSnfK']=g,a=arguments,a42d['DDKaRY']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a42d['lMSnfK'](f),a[i]=f):f=j,f;},a42d(a,b);}import{getStorage,ref,uploadBytes,getDownloadURL}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';import{firebaseConfig}from'./firebase-config.js';const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app);class ProfileManager{constructor(){const q=a42d;this[q(0x189)]=document['getElementById'](q(0x1b8)),this[q(0x1b5)]=document['getElementById'](q(0x181)),this['pfpPreview']=document['getElementById']('profile-preview'),this['statsContainer']=document['getElementById'](q(0x1af)),this['setupEventListeners'](),this['loadProfile']();}[a42r(0x17d)](){const s=a42r;this[s(0x1b5)][s(0x17c)](s(0x18a),a=>this[s(0x186)](a)),this[s(0x189)][s(0x17c)](s(0x1a6),a=>this[s(0x1a0)](a));}async['handleImageUpload'](a){const t=a42r,b=a[t(0x19e)][t(0x1b7)][0x0];if(b){const c=new FileReader();c['onload']=d=>{const u=t;this['pfpPreview'][u(0x197)]=d[u(0x19e)][u(0x199)];},c[t(0x18e)](b);}}async['handleSubmit'](a){const v=a42r;a[v(0x1a3)]();const b=auth[v(0x1b1)];if(!b){alert('Please\x20sign\x20in\x20to\x20save\x20your\x20profile');return;}try{const c=new FormData(this['form']),d={'nickname':c[v(0x1ab)]('nickname'),'motto':c['get'](v(0x1a7)),'favoriteMap':c['get'](v(0x192)),'favoriteWeapon':c['get'](v(0x17b)),'updatedAt':new Date()[v(0x194)]()},e=this['pfpInput']['files'][0x0];if(e){const f=ref(storage,'profile-pictures/'+b[v(0x18b)]);await uploadBytes(f,e),d[v(0x195)]=await getDownloadURL(f);}await setDoc(doc(db,'profiles',b['uid']),d),alert('Profile\x20saved\x20successfully!');}catch(g){console['error']('Error\x20saving\x20profile:',g),alert('Error\x20saving\x20profile.\x20Please\x20try\x20again.');}}async['loadProfile'](){onAuthStateChanged(auth,async a=>{const w=a42d;if(a)try{const b=await getDoc(doc(db,'profiles',a[w(0x18b)]));if(b[w(0x18d)]()){const c=b[w(0x1a5)]();document['getElementById'](w(0x17a))[w(0x1a4)]=c[w(0x17a)]||'',document['getElementById'](w(0x1a7))[w(0x1a4)]=c['motto']||'',document['getElementById'](w(0x192))[w(0x1a4)]=c['favoriteMap']||'',document['getElementById'](w(0x17b))['value']=c[w(0x19f)]||'',c['pfpUrl']&&(this['pfpPreview'][w(0x197)]=c[w(0x195)]),await this[w(0x1a2)](c[w(0x17a)]);}}catch(d){console['error'](w(0x187),d);}});}async['loadPlayerStats'](a){const x=a42r;if(!a)return;try{const b=collection(db,'approvedMatches'),[c,d]=await Promise[x(0x18c)]([getDocs(query(b,where('winnerUsername','==',a))),getDocs(query(b,where('loserUsername','==',a)))]),e=c['size'],f=d[x(0x1ad)],g=e+f;let h=0x0,i=0x0;c['forEach'](l=>{const y=x,m=l[y(0x1a5)]();if(m[y(0x188)])h+=parseInt(m[y(0x188)]);if(m[y(0x1a1)])i+=parseInt(m[y(0x1a1)]);}),d['forEach'](l=>{const z=x,m=l['data']();if(m['loserScore'])h+=parseInt(m[z(0x1a1)]);if(m['winnerScore'])i+=parseInt(m[z(0x188)]);});const j=i===0x0?h[x(0x183)](0x2):(h/ i)[x(0x183)](0x2),k=g===0x0?'0':(e/g*0x64)['toFixed'](0x1);console['log'](x(0x19a),{'totalMatches':g,'wins':e,'losses':f,'totalKills':h,'totalDeaths':i,'kdRatio':j,'winRate':k}),document['getElementById'](x(0x190))[x(0x19c)]=g,document[x(0x182)]('stats-wins')['textContent']=e,document['getElementById'](x(0x1b0))[x(0x19c)]=f,document[x(0x182)]('stats-kd')['textContent']=j,document['getElementById']('stats-winrate')['textContent']=k+'%';}catch(l){console['error']('Error\x20loading\x20player\x20stats:',l),[x(0x18f),x(0x184),'losses','kd',x(0x19d)]['forEach'](m=>{const A=x;document['getElementById'](A(0x1b2)+m)['textContent']='-';});}}}document['addEventListener'](a42r(0x1b6),()=>{new ProfileManager();});
+//profile.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { firebaseConfig } from './firebase-config.js';
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+class ProfileManager {
+    constructor() {
+        this.form = document.getElementById('profile-form');
+        this.pfpInput = document.getElementById('pfp-upload');
+        this.pfpPreview = document.getElementById('profile-preview');
+        this.statsContainer = document.getElementById('player-stats');
+        this.setupEventListeners();
+        this.loadProfile();
+    }
+
+    setupEventListeners() {
+        this.pfpInput.addEventListener('change', (e) => this.handleImageUpload(e));
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    }
+
+    async handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.pfpPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async handleSubmit(event) {
+        event.preventDefault();
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Please sign in to save your profile');
+            return;
+        }
+
+        try {
+            const formData = new FormData(this.form);
+            const profileData = {
+                nickname: formData.get('nickname'),
+                motto: formData.get('motto'),
+                favoriteMap: formData.get('favorite-map'),
+                favoriteWeapon: formData.get('favorite-weapon'),
+                updatedAt: new Date().toISOString()
+            };
+
+            // Handle profile picture upload
+            const pfpFile = this.pfpInput.files[0];
+            if (pfpFile) {
+                const storageRef = ref(storage, `profile-pictures/${user.uid}`);
+                await uploadBytes(storageRef, pfpFile);
+                profileData.pfpUrl = await getDownloadURL(storageRef);
+            }
+
+            // Save to Firestore
+            await setDoc(doc(db, 'profiles', user.uid), profileData);
+            alert('Profile saved successfully!');
+
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('Error saving profile. Please try again.');
+        }
+    }
+
+    async loadProfile() {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const profileDoc = await getDoc(doc(db, 'profiles', user.uid));
+                    if (profileDoc.exists()) {
+                        const data = profileDoc.data();
+                        document.getElementById('nickname').value = data.nickname || '';
+                        document.getElementById('motto').value = data.motto || '';
+                        document.getElementById('favorite-map').value = data.favoriteMap || '';
+                        document.getElementById('favorite-weapon').value = data.favoriteWeapon || '';
+                        if (data.pfpUrl) {
+                            this.pfpPreview.src = data.pfpUrl;
+                        }
+                        await this.loadPlayerStats(data.nickname);
+                    }
+                } catch (error) {
+                    console.error('Error loading profile:', error);
+                }
+            }
+        });
+    }
+
+    async loadPlayerStats(username) {
+        if (!username) return;
+
+        try {
+            // Get matches from Firebase
+            const approvedMatchesRef = collection(db, 'approvedMatches');
+            const [winnerMatches, loserMatches] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
+            ]);
+
+            // Calculate basic stats
+            const wins = winnerMatches.size;
+            const losses = loserMatches.size;
+            const totalMatches = wins + losses;
+            let totalKills = 0;
+            let totalDeaths = 0;
+
+            // Calculate kills and deaths from winner matches
+            winnerMatches.forEach(doc => {
+                const match = doc.data();
+                if (match.winnerScore) totalKills += parseInt(match.winnerScore);
+                if (match.loserScore) totalDeaths += parseInt(match.loserScore);
+            });
+
+            // Calculate kills and deaths from loser matches
+            loserMatches.forEach(doc => {
+                const match = doc.data();
+                if (match.loserScore) totalKills += parseInt(match.loserScore);
+                if (match.winnerScore) totalDeaths += parseInt(match.winnerScore);
+            });
+
+            // Calculate K/D ratio and win rate
+            const kdRatio = totalDeaths === 0 ? totalKills.toFixed(2) : (totalKills / totalDeaths).toFixed(2);
+            const winRate = totalMatches === 0 ? '0' : ((wins / totalMatches) * 100).toFixed(1);
+
+            console.log('Stats calculated:', {
+                totalMatches,
+                wins,
+                losses,
+                totalKills,
+                totalDeaths,
+                kdRatio,
+                winRate
+            });
+
+            // Update DOM elements
+            document.getElementById('stats-matches').textContent = totalMatches;
+            document.getElementById('stats-wins').textContent = wins;
+            document.getElementById('stats-losses').textContent = losses;
+            document.getElementById('stats-kd').textContent = kdRatio;
+            document.getElementById('stats-winrate').textContent = `${winRate}%`;
+
+        } catch (error) {
+            console.error('Error loading player stats:', error);
+            // Set default values on error
+            ['matches', 'wins', 'losses', 'kd', 'winrate'].forEach(stat => {
+                document.getElementById(`stats-${stat}`).textContent = '-';
+            });
+        }
+    }
+}
+
+// Initialize profile manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new ProfileManager();
+});

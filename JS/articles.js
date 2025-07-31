@@ -1,1 +1,110 @@
-const a7t=a7d;(function(a,b){const n=a7d,c=a();while(!![]){try{const d=parseInt(n(0x1be))/0x1+parseInt(n(0x1a7))/0x2+-parseInt(n(0x1a3))/0x3+parseInt(n(0x1bf))/0x4*(-parseInt(n(0x1bd))/0x5)+parseInt(n(0x1a8))/0x6+-parseInt(n(0x1c2))/0x7+parseInt(n(0x1b7))/0x8*(-parseInt(n(0x1ae))/0x9);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a7c,0x57382));function a7c(){const u=['phaGy2XHC3m9iMXVywrPBMCTBwvZC2fNzsi+tg9HzgLUzYbUzxDZlI4Upc9WpG','mti1q0zXs0n2','mZm4otGXDMLnDK5n','nJa5mMHRAMDrCa','Aw5MBW','y2XHC3noyw1L','mZu0ntq1ofzVr2Huza','qw5VBNLTB3vZ','Ahr0CdOVlW','zgf0yxnLDa','y3jLyxrLzef0','DgL0Bgu','CMv0DxjUicHMDw5JDgLVBIGPia','y29UC29Szq','zM9YrwfJAa','DhjHy2u','yxj0AwnSzs1JyxjK','jNf1B3q7','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','Bg9N','ndG4odHptw9ltxq','Dg9eyxrL','zgL2','x19WCM90B19F','mtu2nZrivK1SBMO','mZGWmZCYneTAChLABW','iIbHBhq9iG','y29UDgvUDa','y3jLyxrLrwXLBwvUDa','yxbWzw5Kq2HPBgq','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjHCNrPy2XLlwjVzhKIpGOGicaGicaGicaGicaGicaGicaGidXOmJ4','oda1ntLgDMnHq0W','Dg9tDhjPBMC','rgf0zsb1BMTUB3DU','Aw5Uzxjive1m','CMvWBgfJzq','qxj0AwnSzxmGy29UDgfPBMvYig5VDcbMB3vUzce','zgvZyW','pc9ZCgfUpIb8idXZCgfUpG','C3rHCNrZv2L0Aa','ntzeAe9sqxu','ywrKrxzLBNrmAxn0zw5LCG','zxjYB3i','yMLUza','qMXVy2TLzcbWB3rLBNrPywXSEsb1BNnHzMuGvvjmoG'];a7c=function(){return u;};return a7c();}const a7b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a7a=a7b(this,function(){const o=a7d;let a;try{const d=Function(o(0x1c8)+o(0x1ce)+');');a=d();}catch(f){a=window;}const b=a[o(0x1c9)]=a['console']||{},c=[o(0x1a2),'warn',o(0x1c0),'error','exception','table',o(0x1cb)];for(let g=0x0;g<c['length'];g++){const h=a7b['constructor']['prototype'][o(0x1ba)](a7b),i=c[g],j=b[i]||h;h[o(0x1a6)]=a7b[o(0x1ba)](a7b),h[o(0x1af)]=j[o(0x1af)][o(0x1ba)](j),b[i]=h;}});a7a();import{db}from'./firebase-config.js';import{collection,getDocs,query,orderBy,Timestamp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function escapeHtml(a){const p=a7d;if(!a)return'';return a[p(0x1b2)](/&/g,'&amp;')[p(0x1b2)](/</g,'&lt;')[p(0x1b2)](/>/g,'&gt;')[p(0x1b2)](/"/g,p(0x1cd))[p(0x1b2)](/'/g,'&#039;');}function sanitizeUrl(a){const q=a7d;if(!a)return'';const b=a['toLowerCase']();if(b[q(0x1b6)](q(0x1c4))||b[q(0x1b6)]('https://'))return a;return console['warn'](q(0x1bb),a),'';}function sanitizeHtml(a){if(!a)return'';return escapeHtml(a);}function a7d(a,b){const c=a7c();return a7d=function(d,e){d=d-0x1a2;let f=c[d];if(a7d['xaYWoB']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a7d['pSkzwI']=g,a=arguments,a7d['xaYWoB']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a7d['pSkzwI'](f),a[i]=f):f=j,f;},a7d(a,b);}async function loadArticles(){const r=a7d,a=document['getElementById']('articles-container');if(!a){console[r(0x1b9)](r(0x1b3));return;}a['innerHTML']=r(0x1bc);try{const b=collection(db,'articles'),c=query(b,orderBy('createdAt',r(0x1b4))),d=await getDocs(c);if(d['empty']){a[r(0x1b1)]='<p\x20class=\x22empty-message\x22>No\x20news\x20articles\x20found.</p>';return;}a['innerHTML']='',d[r(0x1ca)](e=>{const s=r,f=e['data'](),g=e['id'],h=f['createdAt']?.['toDate']?f[s(0x1c6)][s(0x1a4)]()['toLocaleDateString']():s(0x1b0),i=f['author']||s(0x1c3),j=document[s(0x1ab)](s(0x1a5));j[s(0x1c1)]=s(0x1cc),j[s(0x1c5)]['id']=g;let k='';if(f['imageUrl']){const m=sanitizeUrl(f['imageUrl']);m&&(k='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22article-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22'+m+s(0x1a9)+escapeHtml(f[s(0x1c7)])+'\x20Header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>');}const l=sanitizeHtml(f[s(0x1aa)]);j[s(0x1b1)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+k+s(0x1ad)+escapeHtml(f['title'])+'</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22article-meta\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>By\x20'+escapeHtml(i)+s(0x1b5)+h+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22article-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+l+'\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',a[s(0x1ac)](j);});}catch(e){console[r(0x1b9)]('Error\x20loading\x20articles:',e),a[r(0x1b1)]='<p\x20class=\x22error-message\x22>Failed\x20to\x20load\x20articles.\x20Please\x20try\x20again\x20later.</p>';}}document[a7t(0x1b8)]('DOMContentLoaded',loadArticles);
+// filepath: c:\Descent Nexus Repo\RDL-D1-Ladder\JS\articles.js
+import { db } from './firebase-config.js';
+import { collection, getDocs, query, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+// Basic HTML escaping (Keep this)
+function escapeHtml(unsafe) {
+    if (!unsafe) return ''; // Return empty string if input is null/undefined
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
+// Basic URL sanitization (Keep this)
+function sanitizeUrl(url) {
+    if (!url) return ''; // Return empty string if input is null/undefined
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.startsWith('http://') || lowerUrl.startsWith('https://')) {
+        // Basic check, could be improved (e.g., check for valid characters)
+        return url;
+    }
+    console.warn('Blocked potentially unsafe URL:', url);
+    return ''; // Block non-http(s) URLs
+}
+
+// Basic HTML sanitization (Replace your existing one with this OR remove its usage)
+// WARNING: This is VERY basic and likely INSECURE. Use DOMPurify for production.
+function sanitizeHtml(dirtyHtml) {
+    if (!dirtyHtml) return ''; // Return empty string if input is null/undefined
+
+    // Option 2: Simpler & Safer (for now) - Escape ALL HTML from content
+    // This prevents rendering any HTML tags entered by the user in the content field.
+    // If you *want* users to use basic HTML, you NEED a proper sanitizer library.
+    return escapeHtml(dirtyHtml);
+}
+
+async function loadArticles() {
+    const articlesContainer = document.getElementById('articles-container'); // Ensure this ID exists in articles.html
+    if (!articlesContainer) {
+        console.error('Articles container not found!');
+        return;
+    }
+
+    articlesContainer.innerHTML = '<p class="loading-message">Loading news...</p>';
+
+    try {
+        const articlesRef = collection(db, 'articles');
+        const q = query(articlesRef, orderBy('createdAt', 'desc')); // Order by newest first
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            articlesContainer.innerHTML = '<p class="empty-message">No news articles found.</p>';
+            return;
+        }
+
+        articlesContainer.innerHTML = ''; // Clear loading message
+
+        snapshot.forEach(doc => {
+            const article = doc.data();
+            const articleId = doc.id;
+            const createdAt = article.createdAt?.toDate ? article.createdAt.toDate().toLocaleDateString() : 'Date unknown';
+            const author = article.author || 'Anonymous';
+
+            const articleCard = document.createElement('div');
+            articleCard.className = 'article-card';
+            articleCard.dataset.id = articleId;
+
+            let headerHtml = '';
+            if (article.imageUrl) {
+                // Use sanitizeUrl for the image source
+                const safeImageUrl = sanitizeUrl(article.imageUrl);
+                if (safeImageUrl) {
+                     headerHtml = `
+                        <div class="article-header">
+                            <img src="${safeImageUrl}" alt="${escapeHtml(article.title)} Header">
+                        </div>`;
+                }
+            }
+
+            // *** Use sanitizeHtml for the content ***
+            const safeContent = sanitizeHtml(article.content);
+
+            articleCard.innerHTML = `
+                ${headerHtml}
+                <div class="article-body">
+                    <h2>${escapeHtml(article.title)}</h2>
+                    <div class="article-meta">
+                        <span>By ${escapeHtml(author)}</span> | <span>${createdAt}</span>
+                    </div>
+                    <div class="article-content">
+                        ${safeContent} 
+                    </div>
+                </div>
+            `;
+            // Note: If using Option 2 (escapeHtml) for sanitizeHtml, the content will show HTML tags as plain text.
+            // If using Option 3 (no sanitization), ensure your CSS doesn't hide the content.
+
+            articlesContainer.appendChild(articleCard);
+        });
+
+    } catch (error) {
+        console.error("Error loading articles:", error);
+        articlesContainer.innerHTML = '<p class="error-message">Failed to load articles. Please try again later.</p>';
+    }
+}
+
+// Load articles when the page is ready
+document.addEventListener('DOMContentLoaded', loadArticles);

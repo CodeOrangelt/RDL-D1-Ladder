@@ -1,1 +1,6781 @@
-const a4O=a4d;(function(a,b){const L=a4d,c=a();while(!![]){try{const d=parseInt(L(0x48e))/0x1+-parseInt(L(0x282))/0x2*(parseInt(L(0x2e7))/0x3)+parseInt(L(0x442))/0x4+-parseInt(L(0x177))/0x5*(-parseInt(L(0x2a0))/0x6)+-parseInt(L(0x233))/0x7+-parseInt(L(0x3af))/0x8+parseInt(L(0x1a2))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a4c,0xac5de));const a4b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a4a=a4b(this,function(){const M=a4d;let a;try{const d=Function(M(0x32f)+M(0x3f0)+');');a=d();}catch(f){a=window;}const b=a['console']=a['console']||{},c=[M(0x1aa),'warn','info','error',M(0x399),'table',M(0x1be)];for(let g=0x0;g<c[M(0x3eb)];g++){const h=a4b['constructor'][M(0x215)]['bind'](a4b),i=c[g],j=b[i]||h;h['__proto__']=a4b[M(0x36d)](a4b),h[M(0x1ce)]=j[M(0x1ce)]['bind'](j),b[i]=h;}});a4a();import{collection,getDocs,query,orderBy,addDoc,deleteDoc,where,doc,getDoc,serverTimestamp,setDoc,updateDoc,writeBatch,limit,startAfter,endBefore,limitToLast,onSnapshot,deleteField,or,Timestamp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{auth,db}from'./firebase-config.js';import{getRankStyle}from'./ranks.js';import{isAdmin}from'./admin-check.js';let matchesPagination={'d1':{'page':0x1,'lastVisible':null,'firstVisible':null},'d2':{'page':0x1,'lastVisible':null,'firstVisible':null},'d3':{'page':0x1,'lastVisible':null,'firstVisible':null}};function getContrastColor(a){const N=a4d;if(!a)return'#ffffff';a=a['replace']('#','');a[N(0x3eb)]===0x3&&(a=a[N(0x2ea)]('')[N(0x3f1)](h=>h+h)[N(0x163)](''));if(a[N(0x3eb)]!==0x6)return'#ffffff';const c=parseInt(a[N(0x26a)](0x0,0x2),0x10),d=parseInt(a[N(0x26a)](0x2,0x4),0x10),e=parseInt(a[N(0x26a)](0x4,0x6),0x10),f=(c*0x12b+d*0x24b+e*0x72)/0x3e8;return f>=0x80?N(0x1a8):'#ffffff';}const DEFAULT_TROPHY_IMAGE=a4O(0x26e),charts={};let currentLadder='D1',eloHistoryPagination={'d1':{'page':0x1,'lastVisible':null,'firstVisible':null},'d2':{'page':0x1,'lastVisible':null,'firstVisible':null},'d3':{'page':0x1,'lastVisible':null,'firstVisible':null}};const PAGE_SIZE=0xf;document[a4O(0x295)](a4O(0x464),()=>{auth['onAuthStateChanged'](async a=>{const P=a4d;if(!a){window[P(0x184)]['href']='login.html';return;}try{await initializeAdminDashboard();}catch(b){console[P(0x394)]('Error\x20initializing\x20dashboard:',b),showNotification('Error\x20setting\x20up\x20admin\x20dashboard',P(0x394));}});});async function getUserTabPermissions(a){const Q=a4O;if(!a)return[Q(0x404)];console[Q(0x1aa)]('Looking\x20for\x20user\x20role\x20information\x20for\x20'+a+'\x20in\x20all\x20collections...');const b=[{'name':'userProfiles','displayName':Q(0x297)},{'name':'players','displayName':Q(0x3d3)},{'name':Q(0x197),'displayName':Q(0x41c)},{'name':Q(0x48b),'displayName':'D3\x20Players'},{'name':Q(0x28a),'displayName':'Non-Participants'}],c=auth[Q(0x3c9)];let d=null,e=null;for(const f of b){try{if(c){const g=doc(db,f[Q(0x1cc)],c[Q(0x23c)]),h=await getDoc(g);if(h['exists']()){const i=h[Q(0x2b3)]();console['log'](Q(0x31e)+f['displayName']+Q(0x457),i);const j=(i[Q(0x25c)]||i[Q(0x1ba)]||'')[Q(0x15a)]();if(j&&j!=='none'){d=j,e=f['displayName'],console[Q(0x1aa)](Q(0x219)+d+Q(0x41a)+e);break;}}}if(!d){const k=collection(db,f[Q(0x1cc)]),l=query(k,where(Q(0x29a),'==',a)),m=await getDocs(l);if(!m['empty']){const n=m[Q(0x200)][0x0]['data']();console[Q(0x1aa)]('Found\x20user\x20in\x20'+f[Q(0x32e)]+'\x20with\x20email\x20'+a+':',n);const o=(n['roleName']||n[Q(0x1ba)]||'')[Q(0x15a)]();if(o&&o!=='none'){d=o,e=f['displayName'],console['log']('Found\x20specific\x20role:\x20'+d+'\x20in\x20'+e);break;}}}}catch(p){console[Q(0x394)]('Error\x20checking\x20'+f['displayName']+':',p);}}if(d){console['log'](Q(0x27d)+d+Q(0x1cb)+e+')');const r={'admin':[Q(0x404),Q(0x415),'manage-matches',Q(0x216),'manage-trophies',Q(0x1b3),Q(0x3ea),Q(0x33f),Q(0x430),Q(0x47b),Q(0x283),'user-roles-section','manage-matches',Q(0x2f3),'manage-levels-ribbons',Q(0x226)],'owner':['dashboard','manage-players','manage-matches',Q(0x216),Q(0x430),'manage-ranks',Q(0x3ea),Q(0x33f),Q(0x430),'elo-history','manage-highlights','user-roles-section',Q(0x472),'manage-points',Q(0x3ac),Q(0x226)],'council':['dashboard','manage-players','manage-matches'],'creative\x20lead':[Q(0x404),'manage-articles','manage-trophies','elo-history','manage-highlights']};if(r[d])return console[Q(0x1aa)](Q(0x32c)+d+'\x27\x20has\x20permissions:',r[d]),r[d];}return console[Q(0x1aa)]('No\x20specific\x20permissions\x20for\x20user\x20'+a+',\x20giving\x20default\x20access'),['dashboard'];}function setupSidebarNavigation(a=[]){const R=a4O,b=document[R(0x2e2)](R(0x2e3)),c=document['querySelectorAll'](R(0x266));(!a||a[R(0x3eb)]===0x0)&&(a=['dashboard']);b[R(0x278)](e=>{const S=R,f=e['getAttribute']('data-section');a['includes'](f)?e['style']['display']=S(0x29b):e[S(0x2b2)]['display']=S(0x36f),e['addEventListener']('click',()=>{const T=S,g=e[T(0x2c6)](T(0x217));if(!a['includes'](g)){showNotification(T(0x30e),'error');return;}b[T(0x278)](i=>i['classList']['remove']('active')),e[T(0x408)]['add'](T(0x41b)),c['forEach'](i=>{const U=T;i[U(0x2b2)][U(0x382)]=U(0x36f);});const h=document['getElementById'](g);h&&(h['style']['display']='block',console[T(0x1aa)]('Switched\x20to\x20'+g+T(0x3db)));});});const d=document['querySelector'](R(0x298)+a[0x0]+'\x22]');d&&d['click'](),console['log'](R(0x34c));}function setupTabNavigation(){const V=a4O,a=document[V(0x2e2)]('.nav-item');let b=null,c=new Set();a[V(0x278)](d=>{const W=V;d[W(0x295)](W(0x446),function(){const X=W,e=this['getAttribute']('data-section');if(e===b)return;b&&(document['getElementById'](b)[X(0x2b2)][X(0x382)]=X(0x36f),a[X(0x278)](f=>f[X(0x408)]['remove']('active'))),document[X(0x403)](e)['style']['display']='block',this['classList'][X(0x271)](X(0x41b)),b=e;});});}function loadSectionData(a){return;}async function initializeAdminDashboard(){const Y=a4O;try{const a=auth[Y(0x3c9)],b=await getUserTabPermissions(a[Y(0x29a)]);console[Y(0x1aa)](Y(0x172)+a[Y(0x29a)]+Y(0x267),b),window['userAllowedTabs']=b,setupSidebarNavigation(b),setupLadderSelector(),setupDashboardSection(),b['includes']('manage-players')&&setupManagePlayersSection(),b['includes']('elo-history')&&setupEloHistorySection(),b[Y(0x14b)]('manage-ranks')&&setupRankControls(),b['includes'](Y(0x216))&&setupManageArticlesSection(),b['includes']('user-roles-section')&&setupUserRolesSection(),b[Y(0x14b)](Y(0x430))&&setupTrophyManagementSection(),b[Y(0x14b)](Y(0x283))&&setupManageHighlightsSection(),b['includes'](Y(0x3ea))&&setupInactivePlayersSection(),b[Y(0x14b)](Y(0x472))&&setupManageMatchesSection(),b[Y(0x14b)]('manage-points')&&setupManagePointsSection(),b['includes']('manage-ribbons')&&setupManageRibbonsSection(),setupDataLoadButtons(b);}catch(c){console[Y(0x394)](Y(0x469),c);}}function setupDataLoadButtons(a=[]){const a3=a4O;(!a||a['length']===0x0)&&(a=['dashboard']);const b=document['getElementById']('load-dashboard-data');b&&b['addEventListener']('click',function(){const Z=a4d;this['classList'][Z(0x271)](Z(0x342)),this[Z(0x334)]='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadDashboardOverview()[Z(0x17f)](()=>{const a0=Z;this['classList'][a0(0x486)]('loading'),this['innerHTML']=a0(0x3b9);})[Z(0x3dc)](c=>{const a1=Z;console['error'](a1(0x169),c),this['classList'][a1(0x486)]('loading'),this['innerHTML']=a1(0x268),setTimeout(()=>{const a2=a1;this['innerHTML']=a2(0x3b9);},0xbb8);});});if(a[a3(0x14b)](a3(0x430))){const c=document['getElementById'](a3(0x323));c&&c['addEventListener'](a3(0x446),function(){const a4=a3;console[a4(0x1aa)](a4(0x147)),this['classList']['add']('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadTrophyDefinitions()[a4(0x17f)](()=>{const a5=a4;this['classList'][a5(0x486)](a5(0x342)),this['innerHTML']=a5(0x3c8);})[a4(0x3dc)](d=>{const a6=a4;console['error'](a6(0x3f6),d),this['classList']['remove']('loading'),this['innerHTML']=a6(0x268),setTimeout(()=>{this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Trophies\x20Data';},0xbb8);});});}if(a[a3(0x14b)]('manage-players')){const d=document['getElementById']('load-players-data');d&&d[a3(0x295)]('click',function(){const a7=a3;console['log']('Load\x20players\x20data\x20clicked'),this['classList'][a7(0x271)]('loading'),this[a7(0x334)]=a7(0x406),loadPlayersData()['then'](()=>{const a8=a7;this['classList']['remove'](a8(0x342)),this['innerHTML']=a8(0x29f);})['catch'](e=>{const a9=a7;console[a9(0x394)](a9(0x405),e),this[a9(0x408)]['remove']('loading'),this[a9(0x334)]=a9(0x268),setTimeout(()=>{this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Players\x20Data';},0xbb8);});});}if(a['includes'](a3(0x47b))){const e=document[a3(0x403)](a3(0x31d));e&&e['addEventListener'](a3(0x446),function(){const aa=a3;console[aa(0x1aa)](aa(0x1f8)),this[aa(0x408)][aa(0x271)]('loading'),this[aa(0x334)]='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadEloHistory(0x1)[aa(0x17f)](()=>{const ab=aa;this['classList'][ab(0x486)](ab(0x342)),this[ab(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20History\x20Data';})['catch'](f=>{const ac=aa;console['error'](ac(0x3a1),f),this['classList'][ac(0x486)](ac(0x342)),this[ac(0x334)]=ac(0x268),setTimeout(()=>{const ad=ac;this['innerHTML']=ad(0x240);},0xbb8);});});}if(a[a3(0x14b)]('manage-articles')){const f=document['getElementById'](a3(0x26c));f&&f[a3(0x295)](a3(0x446),function(){const ae=a3;console['log']('Load\x20articles\x20data\x20clicked'),this[ae(0x408)]['add']('loading'),this[ae(0x334)]='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadArticles()[ae(0x17f)](()=>{const af=ae;this[af(0x408)][af(0x486)]('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Articles\x20Data';})['catch'](g=>{const ag=ae;console['error']('Error\x20loading\x20articles:',g),this['classList'][ag(0x486)](ag(0x342)),this[ag(0x334)]=ag(0x268),setTimeout(()=>{this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Articles\x20Data';},0xbb8);});});}if(a[a3(0x14b)](a3(0x26f))){const g=document['getElementById'](a3(0x1c1));g&&g[a3(0x295)]('click',function(){const ah=a3;console[ah(0x1aa)]('Load\x20users\x20data\x20clicked'),this['classList']['add'](ah(0x342)),this[ah(0x334)]=ah(0x406),loadUsersWithRoles()[ah(0x17f)](()=>{const ai=ah;this['classList'][ai(0x486)](ai(0x342)),this['innerHTML']=ai(0x2da);})['catch'](h=>{const aj=ah;console[aj(0x394)](aj(0x47a),h),this[aj(0x408)][aj(0x486)]('loading'),this[aj(0x334)]=aj(0x268),setTimeout(()=>{const ak=aj;this['innerHTML']=ak(0x2da);},0xbb8);});});}if(a['includes'](a3(0x3ea))){const h=document[a3(0x403)]('load-inactive-players-data');h&&h['addEventListener']('click',function(){const al=a3;console[al(0x1aa)]('Load\x20inactive\x20players\x20data\x20clicked'),this['classList']['add'](al(0x342)),this['innerHTML']=al(0x406),loadInactivePlayersData()['then'](()=>{this['classList']['remove']('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Inactive\x20Players';})[al(0x3dc)](i=>{const am=al;console['error']('Error\x20loading\x20inactive\x20players:',i),this['classList'][am(0x486)]('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-exclamation-triangle\x22></i>\x20Error',setTimeout(()=>{this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Inactive\x20Players';},0xbb8);});});}if(a['includes']('manage-highlights')){const i=document[a3(0x403)](a3(0x378));i&&i[a3(0x295)](a3(0x446),function(){const an=a3;console['log']('Load\x20highlights\x20data\x20clicked'),this['classList'][an(0x271)]('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadHighlightsAdmin()[an(0x17f)](()=>{const ao=an;this[ao(0x408)][ao(0x486)](ao(0x342)),this['innerHTML']=ao(0x28d);})[an(0x3dc)](j=>{const ap=an;console['error'](ap(0x466),j),this[ap(0x408)][ap(0x486)]('loading'),this[ap(0x334)]='<i\x20class=\x22fas\x20fa-exclamation-triangle\x22></i>\x20Error',setTimeout(()=>{const aq=ap;this[aq(0x334)]=aq(0x28d);},0xbb8);});});}if(a['includes']('manage-matches')){const j=document[a3(0x403)](a3(0x2fb));j&&j[a3(0x295)]('click',function(){const ar=a3;console[ar(0x1aa)](ar(0x492)),this['classList'][ar(0x271)](ar(0x342)),this['innerHTML']=ar(0x406),loadMatchesData(0x1)['then'](()=>{const as=ar;this['classList']['remove']('loading'),this['innerHTML']=as(0x156);})['catch'](k=>{const at=ar;console['error'](at(0x401),k),this[at(0x408)][at(0x486)](at(0x342)),this[at(0x334)]=at(0x268),setTimeout(()=>{const au=at;this[au(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Matches';},0xbb8);});}),setupCreateTestMatchButton(),setupCreateTestMatchModal();}if(a['includes'](a3(0x226))){const k=document['getElementById']('load-ribbons-data');k&&k['addEventListener']('click',function(){const av=a3;console['log']('Load\x20ribbons\x20data\x20clicked'),this['classList']['add'](av(0x342)),this['innerHTML']=av(0x406),loadRibbonsData()['then'](()=>{this['classList']['remove']('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Ribbons\x20Data';})[av(0x3dc)](l=>{const aw=av;console[aw(0x394)](aw(0x1f7),l),this['classList'][aw(0x486)]('loading'),this[aw(0x334)]='<i\x20class=\x22fas\x20fa-exclamation-triangle\x22></i>\x20Error',setTimeout(()=>{const ax=aw;this[ax(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Ribbons\x20Data';},0xbb8);});});}console['log'](a3(0x21c));}function setupDashboardSection(){const ay=a4O;document['getElementById'](ay(0x383))['textContent']='-',document[ay(0x403)]('match-count')[ay(0x3a4)]='-',document[ay(0x403)](ay(0x27a))['textContent']='-',document['getElementById'](ay(0x398))['textContent']='-';}function setupLadderSelector(){const az=a4O,a=document['querySelectorAll']('.ladder-switch\x20input');a[az(0x278)](c=>{c['addEventListener']('change',()=>{const aA=a4d;currentLadder=c[aA(0x2d8)],document['body'][aA(0x347)](aA(0x1e5),currentLadder);const d=document['getElementById']('current-ladder-display');d&&(d['textContent']=currentLadder),document['getElementById']('player-count')['textContent']='-',document[aA(0x403)](aA(0x332))[aA(0x3a4)]='-',document[aA(0x403)](aA(0x27a))[aA(0x3a4)]='-',document['getElementById']('rejected-count')['textContent']='-',charts[aA(0x381)]&&(charts[aA(0x381)][aA(0x35f)](),charts[aA(0x381)]=null),charts['activity']&&(charts['activity'][aA(0x35f)](),charts['activity']=null),showNotification('Switched\x20to\x20'+currentLadder+aA(0x3d9),aA(0x485));});});const b=document[az(0x403)]('current-ladder-display');b&&(b[az(0x3a4)]=currentLadder);}async function loadDashboardOverview(){const aB=a4O;try{console['log']('Loading\x20dashboard\x20overview\x20data...'),document['getElementById']('player-count')[aB(0x3a4)]='-',document['getElementById']('match-count')['textContent']='-',document['getElementById'](aB(0x27a))[aB(0x3a4)]='-',document['getElementById'](aB(0x398))[aB(0x3a4)]='-';const a=currentLadder==='D1'?'players':currentLadder==='D2'?aB(0x197):aB(0x48b),b=currentLadder==='D1'?aB(0x19e):currentLadder==='D2'?aB(0x220):'approvedMatchesD3',c=currentLadder==='D1'?aB(0x2a1):currentLadder==='D2'?aB(0x186):aB(0x164),d=currentLadder==='D1'?aB(0x3a2):currentLadder==='D2'?'RejectedD2':aB(0x470);console['log']('Using\x20collections\x20for\x20'+currentLadder+':\x20'+a+',\x20'+b);const e=await getDocs(collection(db,a)),f=e[aB(0x435)],g=await getDocs(collection(db,b)),h=g[aB(0x435)],i=await getDocs(collection(db,c)),j=i[aB(0x435)],k=await getDocs(collection(db,d)),l=k[aB(0x435)];return document[aB(0x403)]('player-count')[aB(0x3a4)]=f,document['getElementById'](aB(0x332))['textContent']=h,document['getElementById'](aB(0x27a))[aB(0x3a4)]=j,document['getElementById'](aB(0x398))[aB(0x3a4)]=l,await createRankDistributionChart(),await createActivityChart(),console['log'](aB(0x318)),!![];}catch(m){console[aB(0x394)]('Error\x20loading\x20dashboard\x20data:',m);throw m;}}async function createRankDistributionChart(){const aC=a4O;try{const a=collection(db,currentLadder==='D1'?'players':aC(0x197)),b=await getDocs(a),c={'Unranked':0x0,'Bronze':0x0,'Silver':0x0,'Gold':0x0,'Emerald':0x0};b[aC(0x278)](e=>{const aD=aC,f=e[aD(0x2b3)](),g=f['eloRating']||0x4b0;if(g>=0x7d0)c[aD(0x423)]++;else{if(g>=0x708)c['Gold']++;else{if(g>=0x640)c['Silver']++;else{if(g>=0x578)c['Bronze']++;else c[aD(0x28c)]++;}}}});const d=document[aC(0x403)](aC(0x196));charts[aC(0x381)]&&charts['rankDistribution'][aC(0x35f)](),charts[aC(0x381)]=new Chart(d,{'type':aC(0x3de),'data':{'labels':Object[aC(0x1bc)](c),'datasets':[{'data':Object[aC(0x22a)](c),'backgroundColor':['#808080','#CD7F32',aC(0x3e4),'#FFD700','#50C878'],'borderWidth':0x2}]},'options':{'responsive':!![],'maintainAspectRatio':![],'plugins':{'legend':{'position':'right','labels':{'color':aC(0x46f)}},'title':{'display':!![],'text':currentLadder+aC(0x31f),'color':aC(0x46f),'font':{'size':0x10}}}}});}catch(e){console[aC(0x394)]('Error\x20creating\x20rank\x20distribution\x20chart:',e),document['getElementById']('rank-distribution-chart')['innerHTML']='<div\x20class=\x22chart-error\x22>Error\x20loading\x20chart\x20data</div>';}}async function createActivityChart(){const aE=a4O;try{const a=currentLadder==='D1'?'approvedMatches':'approvedMatchesD2',b=collection(db,a),c=new Date();c['setDate'](c[aE(0x325)]()-0x7);const d=query(b,where('approvedAt','>=',c),orderBy(aE(0x35d),'asc')),e=await getDocs(d),f=[aE(0x261),aE(0x1a6),aE(0x1a1),aE(0x306),'Thursday',aE(0x3b1),aE(0x340)],g=f[aE(0x138)]((i,j)=>({...i,[j]:0x0}),{});e[aE(0x278)](i=>{const aF=aE,j=i[aF(0x2b3)]();if(j[aF(0x35d)]){const k=f[new Date(j['approvedAt'][aF(0x46c)]*0x3e8)['getDay']()];g[k]++;}});const h=document['getElementById'](aE(0x40b));charts[aE(0x433)]&&charts[aE(0x433)]['destroy'](),charts[aE(0x433)]=new Chart(h,{'type':aE(0x1cf),'data':{'labels':f,'datasets':[{'label':'Matches\x20Played','data':f['map'](i=>g[i]),'backgroundColor':currentLadder==='D1'?'rgba(211,\x2047,\x2047,\x200.7)':'rgba(25,\x20118,\x20210,\x200.7)','borderColor':currentLadder==='D1'?aE(0x274):aE(0x2bc),'borderWidth':0x1}]},'options':{'responsive':!![],'maintainAspectRatio':![],'scales':{'y':{'beginAtZero':!![],'ticks':{'color':'#e0e0e0'},'grid':{'color':aE(0x252)}},'x':{'ticks':{'color':'#e0e0e0'},'grid':{'color':'rgba(255,\x20255,\x20255,\x200.1)'}}},'plugins':{'legend':{'labels':{'color':aE(0x46f)}},'title':{'display':!![],'text':currentLadder+'\x20Weekly\x20Activity','color':'#e0e0e0','font':{'size':0x10}}}}});}catch(i){console[aE(0x394)](aE(0x38e),i),document['getElementById'](aE(0x40b))['innerHTML']=aE(0x142);}}async function loadPlayersData(){const aG=a4O,a=document['getElementById']('players-table-body');if(!a)return;a['innerHTML']=aG(0x2ee);try{let b='players';if(currentLadder==='D2')b='playersD2';else currentLadder==='D3'&&(b='playersD3');console[aG(0x1aa)]('Loading\x20players\x20from\x20'+b+aG(0x1c8));const c=collection(db,b),d=query(c,orderBy('eloRating',aG(0x2a9))),e=await getDocs(d);if(e['empty']){a['innerHTML']='<tr><td\x20colspan=\x226\x22\x20class=\x22empty-state\x22>No\x20players\x20found</td></tr>';return;}a['innerHTML']='';let f=0x1;e['forEach'](g=>{const aH=aG,h=g[aH(0x2b3)](),i=getRankFromElo(h['eloRating']||0x4b0),j=getRankStyle(h['eloRating']||0x4b0),k=document['createElement']('tr');k[aH(0x334)]=aH(0x42b)+f+aH(0x1c5)+j[aH(0x32a)]+aH(0x421)+(h[aH(0x2b4)]||aH(0x3ad))+aH(0x458)+(h[aH(0x1da)]||0x4b0)+aH(0x439)+j['color']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+i+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22stats\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(h[aH(0x43e)]||0x0)+'W\x20/\x20'+(h['losses']||0x0)+'L\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22actions\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22edit-btn\x22\x20data-id=\x22'+g['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-pencil-alt\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22delete-btn\x22\x20data-id=\x22'+g['id']+aH(0x2a6),a[aH(0x23a)](k),f++;}),setupPlayerActionButtons();}catch(g){console[aG(0x394)]('Error\x20loading\x20players:',g),a[aG(0x334)]=aG(0x2df)+g[aG(0x1b7)]+aG(0x18a);}}function getRankFromElo(a){const aI=a4O;if(a>=0x7d0)return aI(0x423);if(a>=0x708)return'Gold';if(a>=0x640)return'Silver';if(a>=0x578)return'Bronze';return'Unranked';}function setupPlayerActionButtons(){const aJ=a4O;document[aJ(0x2e2)](aJ(0x487))['forEach'](a=>{const aK=aJ;a['addEventListener'](aK(0x446),async b=>{const aL=aK,c=b[aL(0x20b)]['dataset']['id'];openEditPlayerModal(c);});}),document[aJ(0x2e2)]('.delete-btn')[aJ(0x278)](a=>{a['addEventListener']('click',async b=>{const aM=a4d,c=b[aM(0x20b)][aM(0x2a2)]['id'];confirmDeletePlayer(c);});});}async function openEditPlayerModal(a){const aN=a4O;try{const b=currentLadder==='D1'?'players':aN(0x197),c=doc(db,b,a),d=await getDoc(c);if(!d[aN(0x3b0)]()){showNotification('Player\x20not\x20found','error');return;}const e=d['data'](),f=document['getElementById'](aN(0x15f)),g=document['getElementById']('edit-username'),h=document[aN(0x403)](aN(0x1d8)),i=document[aN(0x403)](aN(0x300)),j=document['getElementById'](aN(0x3e5));g['value']=e['username']||'',h['value']=e[aN(0x1da)]||0x4b0,i['value']=e['wins']||0x0,j['value']=e[aN(0x3fd)]||0x0,f['dataset'][aN(0x3a6)]=a,f['classList'][aN(0x271)]('active');}catch(k){console['error'](aN(0x13c),k),showNotification('Failed\x20to\x20load\x20player\x20data','error');}}async function saveEditedPlayer(){const aO=a4O;try{const a=document[aO(0x403)]('edit-player-modal'),b=a['dataset']['playerId'];if(!b){showNotification('No\x20player\x20selected',aO(0x394));return;}const c=document[aO(0x403)](aO(0x315)),d=document[aO(0x403)](aO(0x1d8)),e=document[aO(0x403)]('edit-wins'),f=document['getElementById'](aO(0x3e5)),g=c[aO(0x2d8)][aO(0x1e7)](),h=parseInt(d[aO(0x2d8)]),i=parseInt(e[aO(0x2d8)]),j=parseInt(f['value']);if(!g||isNaN(h)){showNotification('Please\x20enter\x20valid\x20username\x20and\x20ELO','error');return;}const k=currentLadder==='D1'?'players':aO(0x197),l=doc(db,k,b),m=await getDoc(l),n=m[aO(0x3b0)]()?m[aO(0x2b3)]():{},o=n['eloRating']||0x4b0;await updateDoc(l,{'username':g,'eloRating':h,'wins':i||0x0,'losses':j||0x0,'lastModifiedAt':serverTimestamp(),'lastModifiedBy':auth[aO(0x3c9)]['email']});if(h!==o){const p=currentLadder==='D1'?aO(0x47e):aO(0x42f);await addDoc(collection(db,p),{'player':g,'previousElo':o,'newElo':h,'timestamp':serverTimestamp(),'type':aO(0x319),'modifiedBy':auth[aO(0x3c9)]['email'],'gameMode':currentLadder});}closeEditPlayerModal(),loadPlayersData(),showNotification(aO(0x2d4),'success');}catch(q){console[aO(0x394)]('Error\x20updating\x20player:',q),showNotification('Failed\x20to\x20update\x20player:\x20'+q[aO(0x1b7)],aO(0x394));}}function closeEditPlayerModal(){const aP=a4O,a=document['getElementById'](aP(0x15f));a[aP(0x408)][aP(0x486)]('active'),a[aP(0x2a2)][aP(0x3a6)]='';}async function confirmDeletePlayer(a){const aQ=a4O;if(confirm(aQ(0x2c4)))try{const b=currentLadder==='D1'?aQ(0x493):'playersD2';await deleteDoc(doc(db,b,a)),loadPlayersData(),showNotification('Player\x20deleted\x20successfully','success');}catch(c){console[aQ(0x394)](aQ(0x337),c),showNotification('Failed\x20to\x20delete\x20player:\x20'+c['message'],aQ(0x394));}}async function setupManagePlayersSection(){const aR=a4O,a=document[aR(0x403)]('add-player-form');a&&a[aR(0x295)](aR(0x3a3),async g=>{g['preventDefault'](),await addNewPlayer();});const b=document[aR(0x403)](aR(0x389));b&&b[aR(0x295)](aR(0x38a),debounce(filterPlayerTable,0x12c));const c=document['getElementById'](aR(0x3ee));c&&c['addEventListener']('click',saveEditedPlayer);const d=document[aR(0x403)]('cancel-edit-btn');d&&d[aR(0x295)](aR(0x446),closeEditPlayerModal);const e=document['getElementById']('edit-player-modal');e&&e['addEventListener'](aR(0x446),g=>{g['target']===e&&closeEditPlayerModal();});const f=document['getElementById'](aR(0x202));f&&f['addEventListener'](aR(0x146),()=>{const aS=aR;currentLadder=f[aS(0x2d8)],loadPlayersData();});}async function addNewPlayer(){const aT=a4O;try{const a=document[aT(0x403)](aT(0x463)),b=document['getElementById'](aT(0x3d8)),c=a['value']['trim'](),d=parseInt(b[aT(0x2d8)])||0x4b0;if(!c){alert(aT(0x255));return;}console[aT(0x1aa)](aT(0x371)+c+aT(0x1c7)+d+'\x20to\x20'+currentLadder+'\x20ladder');let e=aT(0x493),f=aT(0x47e);if(currentLadder==='D2')e='playersD2',f=aT(0x42f);else currentLadder==='D3'&&(e='playersD3',f='eloHistoryD3');const g=query(collection(db,e),where(aT(0x2b4),'==',c)),h=await getDocs(g);if(!h[aT(0x3ff)]){alert(aT(0x349)+c+'\x20already\x20exists\x20in\x20'+currentLadder+aT(0x339));return;}const i=auth[aT(0x3c9)],j={'username':c,'eloRating':d,'wins':0x0,'losses':0x0,'createdAt':serverTimestamp(),'createdBy':i?i['email']:aT(0x243),'gameMode':currentLadder};await addDoc(collection(db,e),j),await addDoc(collection(db,f),{'player':c,'previousElo':0x4b0,'newElo':d,'timestamp':serverTimestamp(),'type':'initial_placement','placedBy':i?i[aT(0x29a)]:aT(0x243),'gameMode':currentLadder}),a['value']='',b[aT(0x2d8)]='1200',alert(aT(0x328)+c+aT(0x194)+currentLadder+'\x20ladder!'),loadPlayersData();}catch(k){console['error'](aT(0x168),k),alert('Error\x20adding\x20player:\x20'+k[aT(0x1b7)]);}}document['addEventListener']('DOMContentLoaded',()=>{const aU=a4O,a=document[aU(0x403)]('add-player-form');a&&a[aU(0x295)]('submit',b=>{const aV=aU;b[aV(0x324)](),addNewPlayer();});});function filterPlayerTable(){const aW=a4O,a=document['getElementById'](aW(0x389))['value']['toLowerCase'](),b=document[aW(0x2e2)](aW(0x2c1));let c=0x0;b['forEach'](e=>{const aX=aW,f=e['querySelector']('.username')?.['textContent']['toLowerCase']()||'';f[aX(0x14b)](a)?(e['style'][aX(0x382)]='',c++):e['style']['display']=aX(0x36f);});const d=document['getElementById']('no-results-message');d&&(c===0x0&&a!==''?d[aW(0x2b2)][aW(0x382)]=aW(0x280):d[aW(0x2b2)][aW(0x382)]='none');}function debounce(a,b){let c;return function(...d){clearTimeout(c),c=setTimeout(()=>a['apply'](this,d),b);};}async function loadEloHistory(a=0x1){const aY=a4O,b=document[aY(0x403)]('elo-history-table-body'),c=currentLadder[aY(0x15a)]();if(!b)return;b['innerHTML']=aY(0x3a0);try{const d=currentLadder==='D1'?'eloHistory':currentLadder==='D2'?aY(0x42f):'eloHistoryD3',e=collection(db,d);let f;if(a>eloHistoryPagination[c]['page']&&eloHistoryPagination[c][aY(0x1f9)])f=query(e,orderBy('timestamp',aY(0x2a9)),startAfter(eloHistoryPagination[c]['lastVisible']),limit(PAGE_SIZE));else a<eloHistoryPagination[c][aY(0x344)]&&eloHistoryPagination[c][aY(0x3f3)]?f=query(e,orderBy(aY(0x20e),'desc'),endBefore(eloHistoryPagination[c]['firstVisible']),limitToLast(PAGE_SIZE)):f=query(e,orderBy('timestamp','desc'),limit(PAGE_SIZE));const g=await getDocs(f);if(g[aY(0x3ff)]){b['innerHTML']='<tr><td\x20colspan=\x227\x22\x20class=\x22empty-state\x22>No\x20ELO\x20history\x20found</td></tr>',document['getElementById'](c+'-page-indicator')[aY(0x3a4)]=aY(0x170);return;}eloHistoryPagination[c][aY(0x344)]=a,eloHistoryPagination[c][aY(0x3f3)]=g['docs'][0x0],eloHistoryPagination[c][aY(0x1f9)]=g[aY(0x200)][g['docs'][aY(0x3eb)]-0x1];const h=new Map();b[aY(0x334)]='';const i=async n=>{const aZ=aY;if(typeof n!==aZ(0x449)||n['length']<0x14||/[^a-zA-Z0-9-_]/[aZ(0x165)](n))return n;if(h['has'](n))return h['get'](n);try{for(const o of['players','playersD2','playersD3',aZ(0x28a)]){const p=await getDoc(doc(db,o,n));if(p['exists']()&&p['data']()[aZ(0x2b4)]){const r=p[aZ(0x2b3)]()[aZ(0x2b4)];return h['set'](n,r),r;}}return n;}catch(s){return console[aZ(0x18b)]('Error\x20resolving\x20username\x20for\x20'+n+':',s),n;}};for(const n of g['docs']){const o=n[aY(0x2b3)](),p=document['createElement']('tr'),r=o['timestamp']?new Date(o[aY(0x20e)][aY(0x46c)]*0x3e8)['toLocaleString']():'N/A',s=o[aY(0x2cd)]-o['previousElo'],t=s>0x0?aY(0x462):s<0x0?aY(0x444):'',u=s>0x0?'+':'',v=o[aY(0x471)]||o['username']||o['userId']||'N/A',w=await i(v);p['innerHTML']=aY(0x264)+r+aY(0x417)+w+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22previous-elo\x22>'+(o['previousElo']||'N/A')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22new-elo\x22>'+(o[aY(0x2cd)]||'N/A')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22elo-change\x20'+t+'\x22>'+u+s+aY(0x265)+formatHistoryType(o[aY(0x38c)])+aY(0x320)+(o[aY(0x2b9)]||o[aY(0x247)]||o[aY(0x275)]||'System')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',b['appendChild'](p);}document['getElementById'](c+'-page-indicator')[aY(0x3a4)]=aY(0x223)+a;const j=document[aY(0x403)](c+aY(0x392)),k=document['getElementById'](c+'-next-page');if(j)j[aY(0x409)]=a<=0x1;const l=query(e,orderBy(aY(0x20e),'desc'),startAfter(eloHistoryPagination[c]['lastVisible']),limit(0x1)),m=await getDocs(l);if(k)k[aY(0x409)]=m[aY(0x3ff)];}catch(x){console['error'](aY(0x1e1),x),b[aY(0x334)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20colspan=\x227\x22\x20class=\x22error-state\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Error\x20loading\x20history:\x20'+x['message']+aY(0x18a);}}function formatHistoryType(a){const b0=a4O;switch(a){case'match_result':return'Match\x20Result';case'promotion':return b0(0x2be);case'demotion':return'Demotion';case'admin_modification':return'Admin\x20Adjustment';case'initial_placement':return'Initial\x20Placement';default:return a||b0(0x3ad);}}function setupEloHistorySection(){const b1=a4O;document[b1(0x403)]('d1-prev-page')['addEventListener']('click',()=>{loadEloHistory(eloHistoryPagination['d1']['page']-0x1);}),document[b1(0x403)](b1(0x1a9))[b1(0x295)]('click',()=>{loadEloHistory(eloHistoryPagination['d1']['page']+0x1);}),document['getElementById'](b1(0x478))[b1(0x295)](b1(0x446),()=>{const b2=b1;loadEloHistory(eloHistoryPagination['d2'][b2(0x344)]-0x1);}),document[b1(0x403)](b1(0x42c))['addEventListener']('click',()=>{const b3=b1;loadEloHistory(eloHistoryPagination['d2'][b3(0x344)]+0x1);});const a=document[b1(0x403)]('d3-prev-page'),b=document[b1(0x403)]('d3-next-page');a&&a['addEventListener']('click',()=>{const b4=b1;loadEloHistory(eloHistoryPagination['d3'][b4(0x344)]-0x1);});b&&b['addEventListener'](b1(0x446),()=>{loadEloHistory(eloHistoryPagination['d3']['page']+0x1);});const c=document['getElementById']('elo-history-search');c&&c['addEventListener'](b1(0x38a),debounce(filterEloHistoryTable,0x12c));const d=document[b1(0x403)]('history-type-filter');d&&d['addEventListener']('change',applyEloHistoryFilters);const e=document['getElementById'](b1(0x2f8));e&&e[b1(0x295)](b1(0x446),resetEloHistoryFilters);}function filterEloHistoryTable(){const b5=a4O,a=document[b5(0x403)]('elo-history-search')['value'][b5(0x15a)](),b=document['querySelectorAll'](b5(0x292));let c=0x0;b['forEach'](d=>{const b6=b5;if(d[b6(0x408)]['contains'](b6(0x3c3))||d[b6(0x408)][b6(0x211)](b6(0x3bb))||d['classList'][b6(0x211)]('error-state'))return;const e=d['querySelector']('.player')?.['textContent']['toLowerCase']()||'',f=d[b6(0x336)](b6(0x2f5))?.['textContent']['toLowerCase']()||'',g=d['querySelector']('.admin-action')?.[b6(0x3a4)][b6(0x15a)]()||'';e[b6(0x14b)](a)||f['includes'](a)||g['includes'](a)?(d[b6(0x2b2)]['display']='',c++):d['style']['display']='none';});}async function applyEloHistoryFilters(){const b7=a4O,a=document[b7(0x403)](b7(0x18e))[b7(0x2d8)],b=document['getElementById'](b7(0x286))['value'],c=document['getElementById'](b7(0x419))['value'],d=currentLadder['toLowerCase']();eloHistoryPagination[d]={'page':0x1,'lastVisible':null,'firstVisible':null};const e=document['getElementById'](b7(0x40c));e[b7(0x334)]='<tr><td\x20colspan=\x227\x22\x20class=\x22loading-cell\x22>Applying\x20filters...</td></tr>';try{const f=currentLadder==='D1'?b7(0x47e):'eloHistoryD2',g=collection(db,f);let h=[orderBy('timestamp','desc')];if(a){const k=new Date(a);k[b7(0x180)](0x0,0x0,0x0,0x0),h['push'](where(b7(0x20e),'>=',k));}if(b){const l=new Date(b);l['setHours'](0x17,0x3b,0x3b,0x3e7),h[b7(0x1c2)](where('timestamp','<=',l));}c&&c!=='all'&&h[b7(0x1c2)](where('type','==',c));h[b7(0x1c2)](limit(PAGE_SIZE));const i=query(g,...h),j=await getDocs(i);!j['empty']&&(eloHistoryPagination[d]['firstVisible']=j[b7(0x200)][0x0],eloHistoryPagination[d][b7(0x1f9)]=j['docs'][j[b7(0x200)]['length']-0x1]);e[b7(0x334)]='';if(j['empty']){e[b7(0x334)]=b7(0x3b4);return;}j['forEach'](m=>{const b8=b7,n=m[b8(0x2b3)](),o=document['createElement']('tr'),p=n[b8(0x20e)]?new Date(n['timestamp'][b8(0x46c)]*0x3e8)['toLocaleString']():b8(0x30a),r=n['newElo']-n['previousElo'],s=r>0x0?b8(0x462):r<0x0?b8(0x444):'',t=r>0x0?'+':'',u=n['player']||n['username']||n['userId']||'N/A';o[b8(0x334)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22timestamp\x22>'+p+b8(0x417)+u+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22previous-elo\x22>'+(n['previousElo']||b8(0x30a))+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22new-elo\x22>'+(n[b8(0x2cd)]||b8(0x30a))+b8(0x36e)+s+'\x22>'+t+r+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22type\x22>'+formatHistoryType(n[b8(0x38c)])+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22admin-action\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(n[b8(0x2b9)]||n['promotedBy']||n['demotedBy']||b8(0x3ae))+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',e[b8(0x23a)](o);}),document['getElementById'](d+b7(0x40f))['textContent']=b7(0x170);}catch(m){console['error']('Error\x20applying\x20filters:',m),e['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20colspan=\x227\x22\x20class=\x22error-state\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Error\x20applying\x20filters:\x20'+m['message']+b7(0x18a);}}function resetEloHistoryFilters(){const b9=a4O;document[b9(0x403)](b9(0x18e))[b9(0x2d8)]='',document['getElementById'](b9(0x286))['value']='',document[b9(0x403)]('history-type-filter')['value']=b9(0x18d),document[b9(0x403)]('elo-history-search')['value']='';const a=currentLadder['toLowerCase']();eloHistoryPagination[a]={'page':0x1,'lastVisible':null,'firstVisible':null},loadEloHistory(0x1);}function setupRankControls(){const ba=a4O,a=document[ba(0x403)](ba(0x440)),b=document['getElementById']('promote-modal'),c=document['getElementById']('promote-form');a&&b&&c&&(a[ba(0x295)](ba(0x446),()=>{const bb=ba;b[bb(0x408)]['add'](bb(0x41b));}),b['addEventListener'](ba(0x446),l=>{const bc=ba;l[bc(0x36b)]===b&&b[bc(0x408)]['remove']('active');}),c['addEventListener'](ba(0x3a3),async l=>{const bd=ba;l['preventDefault']();const m=document['getElementById']('promote-username'),n=document[bd(0x403)](bd(0x22f)),o=m['value']['trim'](),p=n[bd(0x2d8)];if(!o){showNotification('Please\x20enter\x20a\x20username','error');return;}try{await promotePlayer(o,p),b['classList']['remove'](bd(0x41b)),m[bd(0x2d8)]='';}catch(q){showNotification(q[bd(0x1b7)],bd(0x394));}}),document['getElementById']('cancel-promote-btn')['addEventListener']('click',()=>{b['classList']['remove']('active');}));const d=document['getElementById'](ba(0x331)),e=document['getElementById'](ba(0x19d)),f=document['getElementById'](ba(0x374));d&&e&&f&&(d[ba(0x295)](ba(0x446),()=>{const be=ba;e[be(0x408)]['add'](be(0x41b));}),e[ba(0x295)](ba(0x446),l=>{const bf=ba;l['target']===e&&e[bf(0x408)][bf(0x486)](bf(0x41b));}),f[ba(0x295)]('submit',async l=>{const bg=ba;l[bg(0x324)]();const m=document[bg(0x403)](bg(0x171)),n=document[bg(0x403)]('demote-ladder'),o=m[bg(0x2d8)]['trim'](),p=n[bg(0x2d8)];if(!o){alert(bg(0x3f5));return;}try{await demotePlayer(o,p),document['getElementById'](bg(0x19d))[bg(0x408)]['remove']('active'),document[bg(0x403)]('demote-username')[bg(0x2d8)]='';}catch(q){console['error'](bg(0x294),q);}}));const g=document['getElementById']('set-elo-btn'),h=document[ba(0x403)]('set-elo-modal'),i=document['getElementById'](ba(0x13b));g&&h&&i&&(g[ba(0x295)](ba(0x446),()=>{const bh=ba;h[bh(0x408)][bh(0x271)]('active');}),h['addEventListener']('click',l=>{const bi=ba;l[bi(0x36b)]===h&&h[bi(0x408)][bi(0x486)](bi(0x41b));}),i['addEventListener'](ba(0x3a3),async l=>{const bj=ba;l[bj(0x324)]();const m=document['getElementById']('set-elo-username'),n=document[bj(0x403)](bj(0x33e));let o;const p=document['getElementById'](bj(0x2cb)),q=document[bj(0x336)]('input[name=\x22set-elo-ladder\x22]:checked');if(p)o=p[bj(0x2d8)];else q?o=q[bj(0x2d8)]:o='D1';if(!m||!n){showNotification(bj(0x447),'error');return;}const r=m['value']['trim'](),s=parseInt(n['value']);if(!r||isNaN(s)){showNotification('Please\x20enter\x20valid\x20username\x20and\x20ELO',bj(0x394));return;}try{await setCustomElo(r,s,o),h['classList'][bj(0x486)](bj(0x41b)),m['value']='',n['value']='';}catch(t){showNotification(t['message'],'error');}}),document['getElementById']('cancel-set-elo-btn')['addEventListener']('click',()=>{const bk=ba;h['classList'][bk(0x486)]('active');}));const j=document[ba(0x403)](ba(0x40d)),k=document[ba(0x403)]('set-role-form');if(j&&k){j[ba(0x295)]('click',m=>{const bl=ba;m[bl(0x36b)]===j&&closeModalHandler();}),k['addEventListener']('submit',async m=>{const bm=ba;m[bm(0x324)]();const n=document['getElementById'](bm(0x44f)),o=document['getElementById']('role-name'),p=document['getElementById'](bm(0x230)),q=n['value'][bm(0x1e7)](),r=o['value']['trim'](),s=p[bm(0x2d8)];if(!q){showNotification(bm(0x1bd),'error');return;}try{await setUserRole(q,r,s),closeModalHandler(),loadUsersWithRoles();}catch(t){}});const l=document['getElementById'](ba(0x460));l&&(l[ba(0x26b)](ba(0x446),closeModalHandler),l[ba(0x295)](ba(0x446),closeModalHandler));}}async function promotePlayer(a,b){const bn=a4O;try{console['log'](bn(0x206)+a+bn(0x41a)+b+'\x20ladder');const c=auth['currentUser'];if(!c)throw new Error('You\x20must\x20be\x20logged\x20in\x20to\x20perform\x20this\x20action');const d=b==='D2'?'playersD2':bn(0x493),e=b==='D2'?bn(0x42f):bn(0x47e);console['log'](bn(0x369)+d);const f=collection(db,d),g=query(f,where('username','==',a)),h=await getDocs(g);if(h['empty']){alert(bn(0x1d7)+b+'\x20ladder');throw new Error(bn(0x1d7)+b+bn(0x339));}const i=h['docs'][0x0],j=i[bn(0x2b3)](),k=j['eloRating']||0x4b0,l=i['id'];console['log']('Found\x20player\x20with\x20current\x20ELO:\x20'+k);const m=[{'name':'Bronze','elo':0x578},{'name':bn(0x18c),'elo':0x640},{'name':bn(0x461),'elo':0x708},{'name':'Emerald','elo':0x7d0}];let n=m[bn(0x1de)](o=>o[bn(0x2a3)]>k);if(!n){alert('Player\x20is\x20already\x20at\x20maximum\x20rank\x20(Emerald)\x20in\x20'+b+'\x20ladder');throw new Error('Player\x20is\x20already\x20at\x20maximum\x20rank\x20(Emerald)\x20in\x20'+b+bn(0x339));}console['log'](bn(0x1b0)+n['name']+'\x20('+n[bn(0x2a3)]+')'),await updateDoc(doc(db,d,i['id']),{'eloRating':n['elo'],'lastPromotedAt':serverTimestamp(),'promotedBy':c['email']||'admin'}),await addDoc(collection(db,e),{'player':a,'previousElo':k,'newElo':n[bn(0x2a3)],'timestamp':serverTimestamp(),'type':bn(0x42e),'rankAchieved':n[bn(0x1cc)],'promotedBy':c['email']||'admin','gameMode':b});try{const {promotionManager:o}=await import(bn(0x400)),p=o['getRankName'](k),r=n['name'];await o['sendPromotionNotification'](l,a,k,n[bn(0x2a3)],p,r,bn(0x42e),{'displayName':a,'source':'admin','adminUser':c[bn(0x29a)],'ladder':b}),console['log'](bn(0x15d));}catch(s){console[bn(0x394)]('Failed\x20to\x20send\x20Discord\x20notification:',s);}return alert(bn(0x45b)+a+'\x20to\x20'+n['name']+'\x20('+n['elo']+')'),currentLadder===b&&(loadPlayersData(),loadEloHistory(0x1)),!![];}catch(t){console['error']('Error\x20promoting\x20player:',t),alert(bn(0x411)+t[bn(0x1b7)]);throw t;}}document[a4O(0x295)]('DOMContentLoaded',()=>{const a=document['getElementById']('promote-form');a&&a['addEventListener']('submit',async b=>{const bo=a4d;b[bo(0x324)]();const c=document['getElementById'](bo(0x3fe))['value'][bo(0x1e7)](),d=document[bo(0x336)]('input[name=\x22promote-ladder\x22]:checked')['value'];if(!c){alert('Please\x20enter\x20a\x20username');return;}try{await promotePlayer(c,d),document[bo(0x403)]('promote-modal')[bo(0x408)]['remove'](bo(0x41b)),document['getElementById']('promote-username')[bo(0x2d8)]='';}catch(f){console['error'](bo(0x48c),f);}});});async function demotePlayer(a,b){const bp=a4O;try{console[bp(0x1aa)]('Attempting\x20to\x20demote\x20'+a+'\x20in\x20'+b+bp(0x339));const c=auth[bp(0x3c9)];if(!c)throw new Error('You\x20must\x20be\x20logged\x20in\x20to\x20perform\x20this\x20action');const d=b==='D2'?bp(0x197):bp(0x493),e=b==='D2'?bp(0x42f):bp(0x47e);console['log']('Searching\x20for\x20player\x20in\x20'+d);const f=collection(db,d),g=query(f,where('username','==',a)),h=await getDocs(g);if(h['empty']){alert('Player\x20not\x20found\x20in\x20'+b+bp(0x339));throw new Error(bp(0x1d7)+b+bp(0x339));}const i=h['docs'][0x0],j=i['data'](),k=j[bp(0x1da)]||0x4b0;console['log']('Found\x20player\x20with\x20current\x20ELO:\x20'+k);const l=[{'name':bp(0x461),'elo':0x708},{'name':'Silver','elo':0x640},{'name':bp(0x43f),'elo':0x578},{'name':'Unranked','elo':0x4b0}];let m=l['find'](n=>n['elo']<k);if(!m){alert('Player\x20is\x20already\x20at\x20minimum\x20rank\x20(Unranked)\x20in\x20'+b+bp(0x339));throw new Error(bp(0x1d3)+b+'\x20ladder');}console[bp(0x1aa)]('Demoting\x20player\x20to\x20'+m[bp(0x1cc)]+'\x20('+m['elo']+')'),await updateDoc(doc(db,d,i['id']),{'eloRating':m['elo'],'lastDemotedAt':serverTimestamp(),'demotedBy':c['email']||'admin'}),await addDoc(collection(db,e),{'player':a,'previousElo':k,'newElo':m['elo'],'timestamp':serverTimestamp(),'type':bp(0x44a),'rankAchieved':m[bp(0x1cc)],'demotedBy':c[bp(0x29a)]||bp(0x243),'gameMode':b});try{const {promotionManager:n}=await import(bp(0x400)),o=n['getRankName'](k),p=m[bp(0x1cc)];await n[bp(0x3dd)](i['id'],a,k,m[bp(0x2a3)],o,p,'demotion',{'displayName':a,'source':bp(0x243),'adminUser':c['email'],'ladder':b}),console[bp(0x1aa)]('Demotion\x20notification\x20sent\x20to\x20Discord\x20bot');}catch(r){console[bp(0x394)]('Failed\x20to\x20send\x20Discord\x20notification:',r);}return alert(bp(0x424)+a+'\x20to\x20'+m[bp(0x1cc)]+'\x20('+m['elo']+')'),currentLadder===b&&(loadPlayersData(),loadEloHistory(0x1)),!![];}catch(s){console['error'](bp(0x33a),s),alert('Error\x20demoting\x20player:\x20'+s['message']);throw s;}}document['addEventListener']('DOMContentLoaded',()=>{const bq=a4O,a=document[bq(0x403)]('demote-form');a&&a['addEventListener'](bq(0x3a3),async b=>{const br=bq;b['preventDefault']();const c=document['getElementById'](br(0x171))[br(0x2d8)][br(0x1e7)](),d=document['querySelector'](br(0x23e))[br(0x2d8)];if(!c){alert(br(0x3f5));return;}try{await demotePlayer(c,d),document['getElementById'](br(0x19d))[br(0x408)][br(0x486)](br(0x41b)),document[br(0x403)]('demote-username')['value']='';}catch(f){console[br(0x394)]('Error\x20in\x20demotion:',f);}});});async function setCustomElo(a,b,c){const bs=a4O;try{const d=auth['currentUser'];if(!d||!isAdmin(d['email']))throw new Error(bs(0x1f3));const e=c==='D2'?'playersD2':'players',f=c==='D2'?bs(0x42f):'eloHistory',g=collection(db,e),h=query(g,where('username','==',a)),i=await getDocs(h);if(i['empty'])throw new Error(bs(0x1d7)+c+bs(0x339));const j=i['docs'][0x0],k=j['data'](),l=k[bs(0x1da)]||0x4b0,m=writeBatch(db);m[bs(0x33d)](doc(db,e,j['id']),{'eloRating':b,'lastModifiedAt':serverTimestamp(),'lastModifiedBy':d['email']});const n=doc(collection(db,f));return m[bs(0x372)](n,{'player':a,'previousElo':l,'newElo':b,'timestamp':serverTimestamp(),'type':'admin_modification','modifiedBy':d[bs(0x29a)],'gameMode':c}),await m['commit'](),showNotification(bs(0x151)+a+'\x20was\x20updated\x20from\x20'+l+bs(0x498)+b,'success'),currentLadder===c&&(loadDashboardOverview(),loadPlayersData(),loadEloHistory(0x1)),!![];}catch(o){console['error'](bs(0x3c2),o);throw o;}}async function setUserRole(a,b,c){const bt=a4O;try{const d=auth['currentUser'];if(!d||!isAdmin(d[bt(0x29a)]))throw new Error(bt(0x1f3));const e=b?b['trim']():null,f=e?c||bt(0x368):null,[g,h]=await Promise[bt(0x18d)]([getDocs(query(collection(db,'players'),where('username','==',a))),getDocs(query(collection(db,bt(0x197)),where('username','==',a)))]),i=[];if(!g[bt(0x3ff)])i[bt(0x1c2)]({'ref':g[bt(0x200)][0x0][bt(0x161)],'source':'D1'});if(!h[bt(0x3ff)])i[bt(0x1c2)]({'ref':h['docs'][0x0][bt(0x161)],'source':'D2'});if(i[bt(0x3eb)]===0x0){const [l,m]=await Promise['all']([getDocs(query(collection(db,bt(0x28a)),where('username','==',a))),getDocs(query(collection(db,bt(0x1b4)),where(bt(0x2b4),'==',a)))]);if(!l['empty'])i[bt(0x1c2)]({'ref':l['docs'][0x0]['ref'],'source':'NonParticipant'});if(!m[bt(0x3ff)])i['push']({'ref':m[bt(0x200)][0x0][bt(0x161)],'source':bt(0x2ed)});}if(i['length']===0x0)throw new Error(bt(0x3a8)+a+'\x22\x20not\x20found\x20in\x20any\x20collection');const j=writeBatch(db);i['forEach'](n=>{const bu=bt;console['log']('Updating\x20role\x20for\x20'+a+'\x20in\x20'+n['source']),!e?j['update'](n[bu(0x161)],{'roleName':deleteField(),'roleColor':deleteField(),'roleAssignedBy':deleteField(),'roleAssignedAt':deleteField()}):j[bu(0x33d)](n['ref'],{'roleName':e,'roleColor':f,'roleAssignedBy':d[bu(0x29a)],'roleAssignedAt':serverTimestamp()});}),await j[bt(0x293)]();const k=e?'Role\x20\x22'+e+'\x22\x20set':'Role\x20removed';return showNotification(k+bt(0x38b)+a+'\x22',bt(0x37c)),!![];}catch(n){console[bt(0x394)](bt(0x396),n),showNotification(bt(0x3a5)+n[bt(0x1b7)],'error');throw n;}}function showNotification(a,b=a4O(0x485)){const bv=a4O,c=document[bv(0x326)]('div');c[bv(0x468)]=bv(0x422)+b,c[bv(0x334)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22notification-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20'+getNotificationIcon(b)+bv(0x2aa)+a+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22close-notification\x22>×</button>\x0a\x20\x20\x20\x20',document['body']['appendChild'](c),setTimeout(()=>{c['classList']['add']('active');},0xa);const d=setTimeout(()=>{closeNotification(c);},0x1388);c[bv(0x336)](bv(0x241))['addEventListener']('click',()=>{clearTimeout(d),closeNotification(c);});}function getNotificationIcon(a){const bw=a4O;switch(a){case bw(0x37c):return'fa-check-circle';case bw(0x394):return'fa-exclamation-circle';case bw(0x402):return bw(0x413);case bw(0x485):default:return bw(0x47d);}}function closeNotification(a){const bx=a4O;a['classList']['remove'](bx(0x41b)),setTimeout(()=>{a['remove']();},0x12c);}function setupUserRolesSection(){const by=a4O,a=document[by(0x403)](by(0x1c1));a&&a[by(0x295)]('click',function(){const bz=by;this[bz(0x408)]['add'](bz(0x342)),this['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Loading...',loadUsersWithRoles()['then'](()=>{this['classList']['remove']('loading'),this['innerHTML']='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Users\x20Data';})['catch'](e=>{const bA=bz;console[bA(0x394)]('Error\x20loading\x20users:',e),this[bA(0x408)][bA(0x486)]('loading'),this['innerHTML']=bA(0x268),setTimeout(()=>{const bB=bA;this['innerHTML']=bB(0x2da);},0xbb8);});});const b=document['getElementById']('add-new-role-btn');b&&b[by(0x295)]('click',()=>{const bC=by,e=document[bC(0x403)](bC(0x40d));e&&e[bC(0x408)][bC(0x271)]('active');});const c=document[by(0x403)](by(0x1ec));c&&c['addEventListener'](by(0x38a),debounce(filterUsersTable,0x12c));const d=document[by(0x403)]('role-filter');d&&d['addEventListener'](by(0x146),filterUsersTable);}async function loadUsersWithRoles(){const bD=a4O,a=document[bD(0x403)](bD(0x2bf));if(!a)return;a[bD(0x334)]='<tr><td\x20colspan=\x225\x22\x20class=\x22loading-cell\x22>Loading\x20users...</td></tr>';try{const [b,c,d,e]=await Promise['all']([getDocs(collection(db,'players')),getDocs(collection(db,'playersD2')),getDocs(collection(db,bD(0x28a))),getDocs(collection(db,bD(0x1b4)))]),f=new Map();function g(i,j){i['forEach'](k=>{const bE=a4d,l=k['data']();if(!l[bE(0x2b4)])return;if(!f[bE(0x167)](l[bE(0x2b4)]))f[bE(0x372)](l['username'],{'username':l[bE(0x2b4)],'roleName':l[bE(0x25c)]||null,'roleColor':l['roleColor']||null,'roleAssignedBy':l['roleAssignedBy']||null,'roleAssignedAt':l['roleAssignedAt']||null,'sources':[j]});else{const m=f['get'](l[bE(0x2b4)]);l['roleName']&&(!m[bE(0x25c)]||j==='D1'||j==='D2')&&(m['roleName']=l[bE(0x25c)],m['roleColor']=l['roleColor'],m['roleAssignedBy']=l[bE(0x2a4)],m['roleAssignedAt']=l[bE(0x33b)]),!m['sources'][bE(0x14b)](j)&&m[bE(0x183)]['push'](j);}});}g(b,'D1'),g(c,'D2'),g(d,'Non-Participant'),g(e,bD(0x370));const h=Array['from'](f[bD(0x22a)]())['sort']((i,j)=>i['username']['localeCompare'](j['username']));if(h['length']===0x0){a[bD(0x334)]=bD(0x235);return;}a['innerHTML']='',h['forEach'](i=>{const bF=bD,j=document[bF(0x326)]('tr');j[bF(0x2a2)][bF(0x2b4)]=i['username'],j[bF(0x2a2)]['roleName']=i['roleName']||'',j[bF(0x2a2)]['roleColor']=i[bF(0x1ae)]||bF(0x368);const k=i[bF(0x33b)]?new Date(i[bF(0x33b)][bF(0x46c)]*0x3e8)['toLocaleDateString']():'N/A',l=i[bF(0x25c)]?bF(0x291)+i['roleColor']+';\x20color:\x20'+getContrastColor(i[bF(0x1ae)])+bF(0x390)+i[bF(0x25c)]+'</span>':bF(0x3d4);j[bF(0x334)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+i[bF(0x2b4)]+'\x20<span\x20class=\x22user-source\x22>('+i['sources'][bF(0x163)](',\x20')+bF(0x15b)+l+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(i[bF(0x2a4)]||bF(0x30a))+bF(0x166)+k+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22actions\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22edit-role-btn\x22\x20data-username=\x22'+i['username']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-edit\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(i[bF(0x25c)]?'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22remove-role-btn\x22\x20data-username=\x22'+i[bF(0x2b4)]+bF(0x2ae):'')+bF(0x2c8),a[bF(0x23a)](j);}),document['querySelectorAll']('.edit-role-btn')[bD(0x278)](i=>{const bG=bD;i[bG(0x295)](bG(0x446),()=>{const bH=bG,j=i[bH(0x2a2)][bH(0x2b4)];openRoleEditModal(j);});}),document['querySelectorAll'](bD(0x445))[bD(0x278)](i=>{const bI=bD;i[bI(0x295)]('click',()=>{const bJ=bI,j=i[bJ(0x2a2)]['username'];confirm(bJ(0x284)+j+'?')&&setUserRole(j,null,null)[bJ(0x17f)](()=>loadUsersWithRoles())['catch'](k=>console[bJ(0x394)]('Error\x20removing\x20role:',k));});});}catch(i){console['error']('Error\x20loading\x20users:',i),a[bD(0x334)]=bD(0x350);}}function openRoleEditModal(a){const bK=a4O;console[bK(0x1aa)](bK(0x1b5),a);const b=document['getElementById'](bK(0x40d)),c=document['getElementById']('role-username'),d=document[bK(0x403)]('user-role');if(!b){console[bK(0x394)](bK(0x39b)),alert(bK(0x3d2));return;}console['log'](bK(0x438),b);c?(c[bK(0x2d8)]=a,console['log'](bK(0x385)+a)):console['warn'](bK(0x149));const e=document[bK(0x336)](bK(0x205)+a+'\x22]');if(e&&d){const g=e['dataset']['role'];d[bK(0x2d8)]=g==='none'?'':g,console['log']('Role\x20select\x20set\x20to:\x20'+d['value']+'\x20(based\x20on\x20data-role:\x20'+g+')');}else{if(!e)console['warn']('Table\x20row\x20for\x20user\x20'+a+bK(0x2b1));if(!d)console['warn']('Role\x20select\x20field\x20(#user-role)\x20not\x20found\x20in\x20modal.');if(d)d[bK(0x2d8)]='';}console['log'](bK(0x2f9)),b['classList']['add'](bK(0x41b));const f=document[bK(0x403)]('cancel-role-btn');f?(console[bK(0x1aa)](bK(0x229)),f['removeEventListener']('click',closeModalHandler),f[bK(0x295)](bK(0x446),closeModalHandler)):console['warn'](bK(0x250)),console['log'](bK(0x3c6)),b[bK(0x26b)](bK(0x446),closeModalBackgroundHandler),b['addEventListener'](bK(0x446),closeModalBackgroundHandler);}function closeModalBackgroundHandler(a){a['target']===this&&closeModalHandler();}function closeModalHandler(){const bL=a4O,a=document[bL(0x403)](bL(0x40d));a&&(a[bL(0x408)][bL(0x486)](bL(0x41b)),a['removeEventListener'](bL(0x446),closeModalBackgroundHandler));}function filterUsersTable(){const bM=a4O,a=document['getElementById']('user-search')?.['value'][bM(0x15a)]()||'',b=document[bM(0x403)](bM(0x480))?.['value']||bM(0x18d),c=document['querySelectorAll'](bM(0x467));let d=0x0;c['forEach'](e=>{const bN=bM;if(e['querySelector']('.loading-cell')||e['querySelector'](bN(0x2a7))||e[bN(0x336)]('.error-state'))return;const f=e['dataset'][bN(0x2b4)]?.[bN(0x15a)]()||'',g=e[bN(0x2a2)][bN(0x1ba)]||bN(0x36f),h=f['includes'](a),i=b===bN(0x18d)||g===b;h&&i?(e['style']['display']='',d++):e[bN(0x2b2)][bN(0x382)]=bN(0x36f);});if(d===0x0&&c[bM(0x3eb)]>0x0){const e=document['getElementById'](bM(0x2bf));if(e){if(!e[bM(0x336)]('.no-results')){const f=document[bM(0x326)]('tr');f['classList']['add'](bM(0x1ad)),f['innerHTML']=bM(0x140),e['appendChild'](f);}}}else{const g=document['querySelector'](bM(0x45e));g&&g['remove']();}}function setupManageArticlesSection(){const bO=a4O,a=document['getElementById'](bO(0x26c));a&&a['addEventListener']('click',function(){const bP=bO;this[bP(0x408)]['add'](bP(0x342)),this[bP(0x334)]=bP(0x406),loadArticles()[bP(0x17f)](()=>{const bQ=bP;this[bQ(0x408)][bQ(0x486)]('loading'),this[bQ(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Articles';})[bP(0x3dc)](g=>{const bR=bP;console['error']('Error\x20loading\x20articles:',g),this[bR(0x408)][bR(0x486)]('loading'),this['innerHTML']=bR(0x268),setTimeout(()=>{const bS=bR;this[bS(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Articles';},0xbb8);});});const b=document[bO(0x403)](bO(0x459));b?(console[bO(0x1aa)](bO(0x178)),b['style']['display']='block',b[bO(0x295)](bO(0x446),()=>{openArticleModal();})):console['error']('Setup\x20Manage\x20Articles:\x20Create\x20Article\x20button\x20not\x20found!');const c=document['getElementById']('article-form');c&&c['addEventListener']('submit',g=>{const bT=bO;g[bT(0x324)](),saveArticle();});const d=document['getElementById'](bO(0x3c4));d&&d[bO(0x295)]('click',()=>{closeArticleModal();});const e=document[bO(0x336)](bO(0x30b));e&&e['addEventListener'](bO(0x446),()=>{closeArticleModal();});const f=document['getElementById']('article-modal');f&&f['addEventListener']('click',g=>{g['target']===f&&closeArticleModal();});}async function loadArticles(){const bU=a4O,a=document[bU(0x403)]('articles-table-body');if(!a)return;a['innerHTML']=bU(0x1fb);try{const b=collection(db,bU(0x453)),c=query(b,orderBy(bU(0x496),bU(0x2a9))),d=await getDocs(c);if(d['empty']){a[bU(0x334)]='<tr><td\x20colspan=\x224\x22\x20class=\x22empty-state\x22>No\x20articles\x20found</td></tr>';return;}a[bU(0x334)]='',d[bU(0x278)](e=>{const bV=bU,f=e[bV(0x2b3)](),g=document[bV(0x326)]('tr'),h=f[bV(0x496)]?new Date(f[bV(0x496)]['seconds']*0x3e8)['toLocaleString']():'N/A';g[bV(0x334)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f[bV(0x3f9)]||'Untitled')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f[bV(0x333)]||bV(0x3ad))+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+h+bV(0x348)+e['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-pencil-alt\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22delete-article-btn\x22\x20data-id=\x22'+e['id']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-trash-alt\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',a['appendChild'](g);}),setupArticleActionButtons();}catch(e){console[bU(0x394)]('Error\x20loading\x20articles:',e),a['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20colspan=\x224\x22\x20class=\x22error-state\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Error\x20loading\x20articles:\x20'+e['message']+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}}function setupArticleActionButtons(){const bW=a4O;document[bW(0x2e2)]('.edit-article-btn')[bW(0x278)](a=>{const bX=bW;a[bX(0x295)]('click',async b=>{const bY=bX,c=b['currentTarget'][bY(0x2a2)]['id'];openArticleModal(c);});}),document[bW(0x2e2)](bW(0x311))['forEach'](a=>{const bZ=bW;a[bZ(0x295)](bZ(0x446),async b=>{const c=b['currentTarget']['dataset']['id'];confirmDeleteArticle(c);});});}function openArticleModal(a=null){const c0=a4O,b=document[c0(0x403)]('article-modal'),c=document['getElementById']('article-modal-title'),d=document[c0(0x403)]('article-form'),e=document[c0(0x403)](c0(0x46d));d['reset'](),e['value']='';if(a)c['textContent']='Edit\x20Article',e[c0(0x2d8)]=a,loadArticleData(a);else{c['textContent']=c0(0x360);const f=auth[c0(0x3c9)];if(f){const g=document['getElementById']('article-author');if(g&&f[c0(0x32e)])g[c0(0x2d8)]=f[c0(0x32e)];else g&&(g[c0(0x2d8)]=f['email']);}}b[c0(0x408)]['add'](c0(0x41b));}async function loadArticleData(a){const c1=a4O;try{const b=doc(db,c1(0x453),a),c=await getDoc(b);if(!c[c1(0x3b0)]()){showNotification(c1(0x31b),'error');return;}const d=c['data']();document['getElementById'](c1(0x299))['value']=d[c1(0x3f9)]||'',document['getElementById']('article-author')['value']=d['author']||'',document[c1(0x403)](c1(0x248))['value']=d[c1(0x3e1)]||'',document['getElementById'](c1(0x290))['value']=d[c1(0x25f)]||'';}catch(e){console['error'](c1(0x29e),e),showNotification('Failed\x20to\x20load\x20article\x20data','error');}}async function saveArticle(){const c2=a4O;try{const a=document['getElementById']('article-id')['value'],b=document['getElementById'](c2(0x299))[c2(0x2d8)]['trim'](),c=document['getElementById'](c2(0x1dd))[c2(0x2d8)][c2(0x1e7)](),d=document['getElementById']('article-image-url')['value'][c2(0x1e7)](),e=document['getElementById'](c2(0x290))['value'][c2(0x1e7)]();if(!b||!e){showNotification(c2(0x187),'error');return;}const f=auth['currentUser'];if(!f){showNotification(c2(0x416),'error');return;}const g={'title':b,'author':c,'imageUrl':d||null,'content':e,'lastModifiedAt':serverTimestamp(),'lastModifiedBy':f['email']};!a?(g['createdAt']=serverTimestamp(),g['createdBy']=f[c2(0x29a)],await addDoc(collection(db,'articles'),g),showNotification('Article\x20created\x20successfully',c2(0x37c))):(await updateDoc(doc(db,c2(0x453),a),g),showNotification('Article\x20updated\x20successfully','success')),closeArticleModal(),loadArticles();}catch(h){console['error']('Error\x20saving\x20article:',h),showNotification('Failed\x20to\x20save\x20article:\x20'+h['message'],'error');}}function closeArticleModal(){const c3=a4O,a=document[c3(0x403)](c3(0x249));a&&a['classList']['remove']('active');}async function confirmDeleteArticle(a){const c4=a4O;if(confirm('Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20this\x20article?\x20This\x20action\x20cannot\x20be\x20undone.'))try{await deleteDoc(doc(db,'articles',a)),loadArticles(),showNotification(c4(0x46b),c4(0x37c));}catch(b){console[c4(0x394)]('Error\x20deleting\x20article:',b),showNotification('Failed\x20to\x20delete\x20article:\x20'+b['message'],c4(0x394));}}function setupTrophyManagementSection(){const c5=a4O,a=document['getElementById'](c5(0x323));a&&a[c5(0x295)]('click',function(){const c6=c5;this['classList'][c6(0x271)](c6(0x342)),this[c6(0x334)]=c6(0x406);const j=document['getElementById'](c6(0x3f4));j&&(j['onerror']=function(){this['src']=DEFAULT_TROPHY_IMAGE;}),loadTrophyDefinitions()['then'](()=>{const c7=c6;this[c7(0x408)][c7(0x486)](c7(0x342)),this[c7(0x334)]='<i\x20class=\x22fas\x20fa-sync-alt\x22></i>\x20Load\x20Trophies';})['catch'](k=>{const c8=c6;console['error']('Error\x20loading\x20trophies:',k),this['classList']['remove'](c8(0x342)),this['innerHTML']='<i\x20class=\x22fas\x20fa-exclamation-triangle\x22></i>\x20Error',setTimeout(()=>{const c9=c8;this[c9(0x334)]=c9(0x41e);},0xbb8);});});const b=document['getElementById']('create-new-trophy-btn');b&&b['addEventListener']('click',()=>{openTrophyModal();});const c=document['getElementById']('trophy-form');c&&c[c5(0x295)](c5(0x3a3),j=>{const ca=c5;j[ca(0x324)](),saveTrophyDefinition();});const d=document['getElementById'](c5(0x456));d&&d[c5(0x295)](c5(0x446),()=>{closeTrophyModal();});document[c5(0x2e2)](c5(0x29c))[c5(0x278)](j=>{j['addEventListener']('click',()=>{closeTrophyModal(),closeAssignTrophyModal();});});const e=document[c5(0x403)]('trophy-modal');e&&e[c5(0x295)]('click',j=>{j['target']===e&&closeTrophyModal();});const f=document[c5(0x403)](c5(0x1b2));f&&f['addEventListener']('click',j=>{j['target']===f&&closeAssignTrophyModal();});const g=document[c5(0x403)](c5(0x21b));g&&g['addEventListener'](c5(0x3a3),j=>{j['preventDefault'](),assignTrophyToPlayer();});const h=document['getElementById']('cancel-assign-btn');h&&h[c5(0x295)](c5(0x446),()=>{closeAssignTrophyModal();});const i=document[c5(0x403)](c5(0x1b9));i&&(i[c5(0x295)]('input',updateTrophyImagePreview),i['addEventListener']('paste',()=>{setTimeout(updateTrophyImagePreview,0xa);}));}function updateTrophyImagePreview(){const cb=a4O,a=document['getElementById']('trophy-image-url')['value'][cb(0x1e7)](),b=document[cb(0x403)](cb(0x16c));if(!b){const d=document[cb(0x403)](cb(0x1b9))['closest'](cb(0x3bc)),e=document[cb(0x326)](cb(0x431));e['id']=cb(0x16c),e['className']='trophy-preview-container',d['appendChild'](e);const f=document[cb(0x326)](cb(0x395));f['id']=cb(0x14f),f[cb(0x361)]=cb(0x391),f[cb(0x43d)]=function(){const cc=cb;this['src']=DEFAULT_TROPHY_IMAGE,this[cc(0x408)][cc(0x271)]('error');},e['appendChild'](f);}const c=document['getElementById'](cb(0x14f));a?(c['src']=a,c['style'][cb(0x382)]='block',c[cb(0x408)]['remove'](cb(0x394))):(c[cb(0x362)]=DEFAULT_TROPHY_IMAGE,c[cb(0x2b2)]['display']=cb(0x280));}async function loadTrophyDefinitions(){const cd=a4O,a=document['getElementById']('trophies-table-body');if(!a)return;a['innerHTML']='<tr><td\x20colspan=\x225\x22\x20class=\x22loading-cell\x22>Loading\x20trophies...</td></tr>';try{const b=collection(db,cd(0x43a)),c=query(b,orderBy(cd(0x496),'desc')),d=await getDocs(c);if(d[cd(0x3ff)]){a['innerHTML']=cd(0x317);return;}a['innerHTML']='',d[cd(0x278)](e=>{const ce=cd,f=e[ce(0x2b3)](),g=document[ce(0x326)]('tr'),h=f['createdAt']?new Date(f[ce(0x496)]['seconds']*0x3e8)['toLocaleString']():ce(0x30a);g[ce(0x334)]=ce(0x289)+(f['image']||DEFAULT_TROPHY_IMAGE)+ce(0x40e)+f[ce(0x1cc)]+ce(0x1a4)+DEFAULT_TROPHY_IMAGE+'\x27;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22trophy-name\x22>'+(f['name']||'Untitled\x20Trophy')+ce(0x302)+(f[ce(0x426)]||'common')+'\x22>'+(f[ce(0x426)]||'common')+ce(0x3fc)+h+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22actions\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22edit-trophy-btn\x22\x20data-id=\x22'+e['id']+ce(0x287)+e['id']+ce(0x285)+e['id']+ce(0x2a6),a['appendChild'](g);}),setupTrophyActionButtons();}catch(e){console['error']('Error\x20loading\x20trophy\x20definitions:',e),a['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20colspan=\x225\x22\x20class=\x22error-state\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Error\x20loading\x20trophies:\x20'+e[cd(0x1b7)]+cd(0x18a);}}function setupTrophyActionButtons(){const cf=a4O;document['querySelectorAll']('.edit-trophy-btn')[cf(0x278)](a=>{const cg=cf;a[cg(0x295)]('click',b=>{const ch=cg,c=b[ch(0x20b)][ch(0x2a2)]['id'];openTrophyModal(c);});}),document[cf(0x2e2)]('.assign-trophy-btn')['forEach'](a=>{const ci=cf;a['addEventListener'](ci(0x446),b=>{const cj=ci,c=b[cj(0x20b)]['dataset']['id'];openAssignTrophyModal(c);});}),document['querySelectorAll'](cf(0x393))['forEach'](a=>{const ck=cf;a[ck(0x295)](ck(0x446),b=>{const c=b['currentTarget']['dataset']['id'];confirmDeleteTrophy(c);});});}function openTrophyModal(a=null){const cl=a4O,b=document['getElementById'](cl(0x23b)),c=document[cl(0x403)]('trophy-modal-title'),d=document[cl(0x403)](cl(0x253)),e=document[cl(0x403)]('trophy-id');d[cl(0x17b)](),e['value']='';const f=document['getElementById'](cl(0x14f));f&&(f['src']=DEFAULT_TROPHY_IMAGE,f['classList'][cl(0x486)]('error')),a?(c[cl(0x3a4)]=cl(0x213),e[cl(0x2d8)]=a,loadTrophyData(a)):c[cl(0x3a4)]=cl(0x364),b[cl(0x408)][cl(0x271)](cl(0x41b));}async function loadTrophyData(a){const cm=a4O;try{const b=doc(db,'trophyDefinitions',a),c=await getDoc(b);if(!c[cm(0x3b0)]()){showNotification('Trophy\x20not\x20found',cm(0x394));return;}const d=c['data']();document['getElementById'](cm(0x204))[cm(0x2d8)]=d['name']||'',document['getElementById']('trophy-description')[cm(0x2d8)]=d[cm(0x2dc)]||'',document['getElementById'](cm(0x1b9))['value']=d['image']||'',document['getElementById'](cm(0x245))[cm(0x2d8)]=d[cm(0x426)]||cm(0x3da),updateTrophyImagePreview();}catch(e){console['error'](cm(0x181),e),showNotification(cm(0x189),cm(0x394));}}async function saveTrophyDefinition(){const cn=a4O;try{const a=document['getElementById'](cn(0x2e8))['value'],b=document[cn(0x403)](cn(0x204))[cn(0x2d8)][cn(0x1e7)](),c=document['getElementById'](cn(0x21a))['value'][cn(0x1e7)](),d=document[cn(0x403)]('trophy-image-url')[cn(0x2d8)]['trim'](),e=document[cn(0x403)]('trophy-rarity')[cn(0x2d8)];if(!b||!c||!d){showNotification(cn(0x27c),'error');return;}const f=auth[cn(0x3c9)];if(!f){showNotification(cn(0x38f),'error');return;}const g={'name':b,'description':c,'image':d,'rarity':e,'lastModifiedAt':serverTimestamp(),'lastModifiedBy':f['email']};!a?(g['createdAt']=serverTimestamp(),g[cn(0x308)]=f['email'],await addDoc(collection(db,cn(0x43a)),g),showNotification(cn(0x44d),'success')):(await updateDoc(doc(db,'trophyDefinitions',a),g),showNotification(cn(0x2af),'success')),closeTrophyModal(),loadTrophyDefinitions();}catch(h){console[cn(0x394)]('Error\x20saving\x20trophy:',h),showNotification(cn(0x2dd)+h[cn(0x1b7)],'error');}}function closeTrophyModal(){const co=a4O,a=document['getElementById']('trophy-modal');a&&a[co(0x408)][co(0x486)]('active');}async function confirmDeleteTrophy(a){const cp=a4O;if(!a){console[cp(0x394)](cp(0x48f));return;}if(confirm('Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20this\x20trophy\x20definition?\x20This\x20action\x20cannot\x20be\x20undone\x20and\x20might\x20affect\x20players\x20who\x20have\x20been\x20awarded\x20this\x20trophy.'))try{const b=auth[cp(0x3c9)];if(!b){showNotification(cp(0x1d4),'error');return;}console['log'](cp(0x16d)+a),await deleteDoc(doc(db,cp(0x43a),a)),showNotification('Trophy\x20definition\x20deleted\x20successfully','success'),loadTrophyDefinitions();}catch(c){console[cp(0x394)](cp(0x448),c),showNotification(cp(0x143)+c[cp(0x1b7)],'error');}}async function openAssignTrophyModal(a){const cq=a4O;try{const b=doc(db,cq(0x43a),a),c=await getDoc(b);if(!c['exists']()){showNotification('Trophy\x20not\x20found',cq(0x394));return;}const d=c['data']();document['getElementById'](cq(0x436))['value']=a,document['getElementById']('assign-trophy-name')[cq(0x2d8)]=d['name'],document[cq(0x403)]('assign-trophy-image')['src']=d['image']||DEFAULT_TROPHY_IMAGE,document['getElementById']('assign-trophy-title')['textContent']=d['name']||cq(0x34f),document[cq(0x403)](cq(0x1e0))[cq(0x3a4)]=d['description']||'No\x20description';const e=document[cq(0x403)](cq(0x2bb));e[cq(0x3a4)]=d[cq(0x426)]||cq(0x3da),e['className']='trophy-rarity\x20'+(d[cq(0x426)]||'common');const f=document[cq(0x403)](cq(0x1b2));f['classList']['add']('active');}catch(g){console[cq(0x394)](cq(0x15e),g),showNotification('Failed\x20to\x20load\x20trophy\x20data','error');}}function closeAssignTrophyModal(){const cr=a4O,a=document[cr(0x403)](cr(0x1b2));a&&a[cr(0x408)]['remove'](cr(0x41b));}function a4d(a,b){const c=a4c();return a4d=function(d,e){d=d-0x133;let f=c[d];if(a4d['lLsQNV']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a4d['xcFdsr']=g,a=arguments,a4d['lLsQNV']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a4d['xcFdsr'](f),a[i]=f):f=j,f;},a4d(a,b);}async function assignTrophyToPlayer(){const cs=a4O;try{const a=document[cs(0x403)](cs(0x436))[cs(0x2d8)],b=document['getElementById'](cs(0x1c6))[cs(0x2d8)],c=document[cs(0x403)]('assign-player-username')['value'][cs(0x1e7)](),d=document['querySelector']('input[name=\x22assign-ladder\x22]:checked')['value'];if(!a||!c){showNotification(cs(0x1d9),cs(0x394));return;}const e=auth['currentUser'];if(!e){showNotification('You\x20must\x20be\x20logged\x20in\x20to\x20assign\x20trophies',cs(0x394));return;}let f=null,g=null,h=null;if(d===cs(0x2db)){const l=collection(db,'nonParticipants'),m=query(l,where(cs(0x2b4),'==',c)),n=await getDocs(m);!n[cs(0x3ff)]&&(f=n[cs(0x200)][0x0],g=f['id'],h=f[cs(0x2b3)]());}else{const o=d==='D1'?cs(0x493):d==='D2'?cs(0x197):'playersD3',p=collection(db,o),r=query(p,where('username','==',c)),s=await getDocs(r);!s[cs(0x3ff)]&&(f=s[cs(0x200)][0x0],g=f['id'],h=f['data']());}if(!f){showNotification('Player\x20\x22'+c+'\x22\x20not\x20found\x20in\x20'+(d===cs(0x2db)?cs(0x2ec):d+'\x20ladder'),'error');return;}const i=collection(db,cs(0x251)),j=query(i,where(cs(0x345),'==',g),where(cs(0x2eb),'==',a)),k=await getDocs(j);if(!k['empty']){showNotification('Player\x20\x22'+c+'\x22\x20already\x20has\x20this\x20trophy',cs(0x402));return;}await addDoc(collection(db,cs(0x251)),{'userId':g,'playerUsername':c,'trophyId':a,'awardedAt':serverTimestamp(),'awardedBy':e['email'],'ladder':d}),showNotification('Trophy\x20\x22'+b+'\x22\x20awarded\x20to\x20'+c,cs(0x37c)),closeAssignTrophyModal();}catch(t){console['error']('Error\x20assigning\x20trophy:',t),showNotification('Failed\x20to\x20assign\x20trophy:\x20'+t[cs(0x1b7)],cs(0x394));}}function setupInactivePlayersSection(){const ct=a4O,a=document['getElementById']('inactive-days-filter');a&&a['addEventListener'](ct(0x146),function(){const cu=ct,e=document[cu(0x403)](cu(0x450));if(e)e[cu(0x446)]();});const b=document['querySelector'](ct(0x304)),c=document[ct(0x336)]('.ladder-switch\x20input[value=\x22D2\x22]');b&&c&&(b['addEventListener']('change',function(){const cv=ct;if(this['checked']){currentLadder='D1';if(document['getElementById'](cv(0x3ea))[cv(0x2b2)][cv(0x382)]!=='none'){const e=document[cv(0x403)](cv(0x450));if(e)e[cv(0x446)]();}}}),c[ct(0x295)](ct(0x146),function(){const cw=ct;if(this['checked']){currentLadder='D2';if(document[cw(0x403)](cw(0x3ea))['style']['display']!==cw(0x36f)){const e=document['getElementById']('load-inactive-players-data');if(e)e[cw(0x446)]();}}}));const d=document[ct(0x403)]('inactive-players-search');d&&d[ct(0x295)]('input',debounce(function(){const cx=ct,e=d[cx(0x2d8)][cx(0x15a)](),f=document[cx(0x2e2)](cx(0x388));f[cx(0x278)](g=>{const cy=cx;if(g['querySelector'](cy(0x3f2))||g['querySelector'](cy(0x2a7))||g[cy(0x336)]('.error-state'))return;const h=g['cells'][0x0]?.['textContent'][cy(0x15a)]()||'',i=g['cells'][0x5]?.['textContent'][cy(0x15a)]()||'';h['includes'](e)||i[cy(0x14b)](e)?g['style']['display']='':g[cy(0x2b2)][cy(0x382)]=cy(0x36f);});},0x12c)),document[ct(0x295)](ct(0x446),function(f){const cz=ct;if(f['target']['closest']('.view-player-btn')){const g=f['target']['closest'](cz(0x2f1)),h=g['dataset']['username'];h&&alert('View\x20player\x20details\x20for\x20'+h+'\x20-\x20Feature\x20coming\x20soon');}}),console['log'](ct(0x1e4));}async function loadInactivePlayersData(){const cA=a4O,a=document[cA(0x403)]('inactive-players-table-body');if(!a)return;a['innerHTML']='<tr><td\x20colspan=\x227\x22\x20class=\x22loading-cell\x22>Loading\x20inactive\x20players...</td></tr>';try{const b=document['getElementById']('inactive-days-filter'),c=b?parseInt(b[cA(0x2d8)])||0x0:0x0,d=collection(db,currentLadder==='D1'?cA(0x493):'playersD2'),e=await getDocs(d);if(e['empty']){a[cA(0x334)]='<tr><td\x20colspan=\x227\x22\x20class=\x22empty-state\x22>No\x20players\x20found\x20in\x20this\x20ladder</td></tr>';return;}const f=[];e['forEach'](j=>{const cB=cA,k=j[cB(0x2b3)]();f[cB(0x1c2)]({...k,'id':j['id'],'username':k['username']||'Unknown\x20Player'});}),console['log']('Found\x20'+f[cA(0x3eb)]+'\x20total\x20players\x20in\x20the\x20'+currentLadder+'\x20ladder');const g=currentLadder==='D1'?'approvedMatches':'approvedMatchesD2',h=f[cA(0x3f1)](async j=>{const cC=cA;try{const k=collection(db,g),l=query(k,or(where('winnerUsername','==',j[cC(0x2b4)]),where('loserUsername','==',j[cC(0x2b4)])),orderBy('approvedAt',cC(0x2a9)),limit(0x1)),m=await getDocs(l);if(!m['empty']){const n=m['docs'][0x0][cC(0x2b3)](),o=n['approvedAt']?new Date(n[cC(0x35d)]['seconds']*0x3e8):null,p=new Date(),r=o?Math[cC(0x3df)]((p-o)/(0x3e8*0x3c*0x3c*0x18)):null,s=n[cC(0x452)]===j['username']?n[cC(0x321)]:n[cC(0x452)],t=n[cC(0x452)]===j['username']?'Won':cC(0x2c7);return{...j,'lastMatch':{'date':o?o['toLocaleDateString']():cC(0x30a),'opponent':s||cC(0x3ad),'result':t,'timestamp':o||new Date(0x0),'daysSinceMatch':r||Number['MAX_SAFE_INTEGER']}};}else return{...j,'lastMatch':{'date':'Never\x20played','opponent':'N/A','result':'N/A','timestamp':new Date(0x0),'daysSinceMatch':Number[cC(0x1f1)]}};}catch(u){return console['error']('Error\x20fetching\x20matches\x20for\x20'+j[cC(0x2b4)]+':',u),{...j,'lastMatch':{'date':cC(0x242),'opponent':'Error','result':cC(0x242),'timestamp':new Date(0x0),'daysSinceMatch':0x0}};}});let i=await Promise['all'](h);i[cA(0x443)]((j,k)=>k['lastMatch'][cA(0x23f)]-j[cA(0x17e)][cA(0x23f)]);c>0x0&&(i=i['filter'](j=>j[cA(0x17e)]['daysSinceMatch']>=c));a['innerHTML']='';if(i[cA(0x3eb)]===0x0){a[cA(0x334)]='<tr><td\x20colspan=\x227\x22\x20class=\x22empty-state\x22>No\x20inactive\x20players\x20match\x20your\x20criteria</td></tr>';return;}i[cA(0x278)](j=>{const cD=cA,k=document[cD(0x326)]('tr'),l=j[cD(0x17e)][cD(0x23f)]>0x1e?cD(0x2e9):j['lastMatch']['daysSinceMatch']>0xe?cD(0x3a9):'';k[cD(0x468)]=l,k[cD(0x334)]=cD(0x2b7)+j['username']+cD(0x166)+(j[cD(0x1da)]||0x4b0)+cD(0x166)+j[cD(0x17e)]['date']+cD(0x166)+(j[cD(0x17e)]['daysSinceMatch']===Number[cD(0x1f1)]?cD(0x30a):j[cD(0x17e)]['daysSinceMatch'])+cD(0x166)+currentLadder+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(j['lastMatch']['date']==='Never\x20played'?cD(0x27e):j['lastMatch'][cD(0x22b)]+cD(0x2ca)+j[cD(0x17e)][cD(0x341)])+cD(0x3e0)+j['username']+cD(0x45d),a['appendChild'](k);}),console[cA(0x1aa)]('Displaying\x20'+i['length']+'\x20inactive\x20players');}catch(j){console['error']('Error\x20loading\x20inactive\x20players:',j),a['innerHTML']=cA(0x3d5)+j[cA(0x1b7)]+cA(0x441);}}function setupHighlightButtons(){const cE=a4O;console[cE(0x1aa)]('Setting\x20up\x20highlight\x20buttons');const a=document[cE(0x403)](cE(0x188));a&&a[cE(0x295)](cE(0x446),function(){const cF=cE;console['log']('Match\x20highlight\x20button\x20clicked'),openHighlightModal(cF(0x39e));});const b=document['getElementById'](cE(0x3c0));b&&b[cE(0x295)](cE(0x446),function(){const cG=cE;console['log'](cG(0x20d)),openHighlightModal('creator');});const c=document['getElementById']('create-achievement-highlight-btn');c&&c['addEventListener'](cE(0x446),function(){const cH=cE;console['log'](cH(0x279)),openHighlightModal(cH(0x1d2));});}function openHighlightModal(a='match'){const cI=a4O;console[cI(0x1aa)](cI(0x3a7)+a);const b=document['getElementById']('highlight-modal'),c=document['getElementById']('highlight-form'),d=document['getElementById']('highlight-modal-title'),e=document[cI(0x403)](cI(0x137));if(!b||!c||!d){console['error'](cI(0x176));return;}c['reset'](),e[cI(0x2d8)]='';const f=[cI(0x39e),cI(0x20c),'achievement'],g=!f[cI(0x14b)](a);if(g){const h=a;e['value']=h,d[cI(0x3a4)]='Loading...',loadHighlightDataAdmin(h);}else{const i=a;document[cI(0x403)]('highlight-type')[cI(0x2d8)]=i,d['textContent']=cI(0x488)+getHighlightTypeName(i),toggleHighlightFields(i);const j=auth[cI(0x3c9)];j&&document['getElementById']('highlight-submitted-by')&&(document['getElementById']('highlight-submitted-by')[cI(0x2d8)]=j['displayName']||j[cI(0x29a)]);}b[cI(0x408)]['add']('active');}function toggleHighlightFields(a){const cJ=a4O;console[cJ(0x1aa)]('Toggling\x20fields\x20for\x20highlight\x20type:\x20'+a);const b=document['getElementById']('highlight-form');if(!b)return;const c=b[cJ(0x2e2)](cJ(0x41d));c[cJ(0x278)](f=>f[cJ(0x2b2)]['display']=cJ(0x36f));const d=document[cJ(0x403)](cJ(0x281));if(d)d[cJ(0x2b2)][cJ(0x382)]='none';const e=['highlight-title-container',cJ(0x17d),'highlight-submitted-by-container'];e[cJ(0x278)](f=>{const cK=cJ,g=document[cK(0x403)](f);if(g)g['style'][cK(0x382)]=cK(0x280);});if(a==='match'){const f=['highlight-video-container',cJ(0x309),'highlight-map-container','highlight-match-date-container','highlight-players-container',cJ(0x16f)];f[cJ(0x278)](h=>{const cL=cJ,i=document['getElementById'](h);i&&(h===cL(0x237)?i[cL(0x2b2)]['display']='flex':i['style']['display']=cL(0x280));});const g=document[cJ(0x403)]('highlight-video-id');if(g){g['required']=!![];const h=g['previousElementSibling'];if(h)h['innerHTML']=cJ(0x193);}if(d)d['style']['display']='block';updateHighlightVideoPreview();}else{if(a==='creator'){const i=[cJ(0x212),'highlight-map-creator-container','highlight-map-version-container',cJ(0x1f4),'highlight-video-container'];i[cJ(0x278)](k=>{const cM=cJ,l=document['getElementById'](k);if(l)l[cM(0x2b2)]['display']=cM(0x280);});const j=document['getElementById'](cJ(0x495));if(j){j[cJ(0x136)]=![];const k=j['previousElementSibling'];if(k)k['innerHTML']='YouTube\x20Video\x20ID\x20(Optional)';}}else{if(a==='achievement'){const l=[cJ(0x2d3),cJ(0x207),cJ(0x28f),'highlight-player-profile-container','highlight-achievement-image-container',cJ(0x3cb)];l[cJ(0x278)](n=>{const cN=cJ,o=document['getElementById'](n);if(o)o[cN(0x2b2)][cN(0x382)]='block';});const m=document[cJ(0x403)]('highlight-video-id');if(m){m['required']=![];const n=m[cJ(0x2de)];if(n)n[cJ(0x334)]='YouTube\x20Video\x20ID\x20(Optional)';}}}}}async function loadHighlightDataAdmin(a){const cO=a4O;try{const b=doc(db,cO(0x17c),a),c=await getDoc(b);if(!c['exists']()){showNotification(cO(0x335),'error');return;}const d=c['data'](),e=d[cO(0x38c)]||cO(0x39e);document[cO(0x403)]('highlight-modal-title')[cO(0x3a4)]=cO(0x246)+getHighlightTypeName(e),document[cO(0x403)]('highlight-type')['value']=e,toggleHighlightFields(e),document[cO(0x403)]('highlight-title')['value']=d[cO(0x3f9)]||'',document['getElementById'](cO(0x327))[cO(0x2d8)]=d['description']||'',document['getElementById']('highlight-submitted-by')['value']=d['submittedBy']||'';d[cO(0x437)]&&(document['getElementById']('highlight-video-id')[cO(0x2d8)]=d[cO(0x437)],updateHighlightVideoPreview());if(e==='match'){document['getElementById']('highlight-match-info')[cO(0x2d8)]=d[cO(0x1a5)]||'',document['getElementById'](cO(0x451))[cO(0x2d8)]=d[cO(0x3f1)]||'';if(d[cO(0x44b)]){const f=new Date(d[cO(0x44b)]['seconds']*0x3e8);document['getElementById'](cO(0x3e3))['value']=f[cO(0x175)]()[cO(0x2ea)]('T')[0x0];}document[cO(0x403)]('highlight-winner-name')['value']=d[cO(0x3ce)]||'',document[cO(0x403)]('highlight-winner-score')[cO(0x2d8)]=d[cO(0x2ce)]||'',document['getElementById']('highlight-loser-name')['value']=d['loserName']||'',document['getElementById']('highlight-loser-score')[cO(0x2d8)]=d[cO(0x2a8)]||'',document['getElementById']('highlight-match-link')['value']=d[cO(0x2d2)]||'';}else{if(e===cO(0x20c))document[cO(0x403)](cO(0x451))[cO(0x2d8)]=d[cO(0x3f1)]||'',document[cO(0x403)](cO(0x150))['value']=d[cO(0x3ed)]||'',document[cO(0x403)]('highlight-map-version')['value']=d[cO(0x14c)]||'',document[cO(0x403)]('highlight-creator-image')[cO(0x2d8)]=d['creatorImageUrl']||'';else e===cO(0x1d2)&&(document['getElementById']('highlight-achievement-player')['value']=d['achievementPlayer']||'',document[cO(0x403)]('highlight-achievement-type')[cO(0x2d8)]=d['achievementType']||'',document[cO(0x403)](cO(0x222))[cO(0x2d8)]=d['achievementDetails']||'',document['getElementById']('highlight-player-profile')['value']=d[cO(0x2ad)]||'',document[cO(0x403)](cO(0x34e))['value']=d[cO(0x338)]||'');}}catch(g){console[cO(0x394)](cO(0x13f),g),showNotification(cO(0x1c4)+g[cO(0x1b7)],'error');}}async function saveHighlight(){const cP=a4O;try{const a=document['getElementById']('highlight-id')?.['value']||'',b=document[cP(0x403)]('highlight-type')?.[cP(0x2d8)]||'match',c={'title':document[cP(0x403)]('highlight-title')?.[cP(0x2d8)]?.[cP(0x1e7)]()||'','description':document['getElementById']('highlight-description')?.[cP(0x2d8)]?.[cP(0x1e7)]()||'','submittedBy':document[cP(0x403)](cP(0x1f2))?.['value']?.[cP(0x1e7)]()||'','videoId':document[cP(0x403)](cP(0x495))?.['value']?.['trim']()||null,'type':b};if(!c[cP(0x3f9)]){showNotification('Title\x20is\x20required','error');return;}if(b===cP(0x39e)){c['matchInfo']=document['getElementById'](cP(0x1e2))?.[cP(0x2d8)]?.[cP(0x1e7)]()||'',c['map']=document[cP(0x403)](cP(0x451))?.[cP(0x2d8)]?.['trim']()||'';const d=document[cP(0x403)](cP(0x3e3)),e=d?.[cP(0x2d8)]||'';c[cP(0x44b)]=e?Timestamp['fromDate'](new Date(e)):null,c['winnerName']=document['getElementById'](cP(0x218))?.['value']?.['trim']()||'',c['winnerScore']=document['getElementById']('highlight-winner-score')?.['value']?.['trim']()||'',c[cP(0x254)]=document['getElementById']('highlight-loser-name')?.[cP(0x2d8)]?.['trim']()||'',c[cP(0x2a8)]=document[cP(0x403)]('highlight-loser-score')?.['value']?.['trim']()||'',c['matchLink']=document['getElementById']('highlight-match-link')?.['value']?.[cP(0x1e7)]()||'';if(!c['videoId']){showNotification(cP(0x473),cP(0x394));return;}}else{if(b===cP(0x20c)){c[cP(0x3f1)]=document[cP(0x403)]('highlight-map')?.['value']?.[cP(0x1e7)]()||'',c['mapCreator']=document[cP(0x403)](cP(0x150))?.[cP(0x2d8)]?.[cP(0x1e7)]()||'',c['mapVersion']=document[cP(0x403)]('highlight-map-version')?.['value']?.['trim']()||'',c[cP(0x14e)]=document['getElementById']('highlight-creator-image')?.[cP(0x2d8)]?.['trim']()||'';if(!c['mapCreator']){showNotification(cP(0x24f),cP(0x394));return;}}else{if(b===cP(0x1d2)){c[cP(0x373)]=document['getElementById']('highlight-achievement-player')?.[cP(0x2d8)]?.[cP(0x1e7)]()||'',c[cP(0x13a)]=document['getElementById']('highlight-achievement-type')?.[cP(0x2d8)]?.[cP(0x1e7)]()||'',c['achievementDetails']=document[cP(0x403)]('highlight-achievement-details')?.['value']?.['trim']()||'',c[cP(0x2ad)]=document[cP(0x403)]('highlight-player-profile')?.['value']?.['trim']()||'',c[cP(0x338)]=document[cP(0x403)]('highlight-achievement-image')?.['value']?.['trim']()||'';if(!c['achievementPlayer']){showNotification(cP(0x2e0),cP(0x394));return;}}}}a?(c['updatedAt']=serverTimestamp(),await updateDoc(doc(db,cP(0x17c),a),c),showNotification('Highlight\x20updated\x20successfully!','success')):(c[cP(0x496)]=serverTimestamp(),await addDoc(collection(db,cP(0x17c)),c),showNotification(cP(0x2f4),cP(0x37c))),closeHighlightModal(),loadHighlightsAdmin();}catch(f){console['error'](cP(0x356),f),showNotification('Error\x20saving\x20highlight:\x20'+f['message'],'error');}}function closeHighlightModal(){const cQ=a4O,a=document['getElementById'](cQ(0x154));if(a)a[cQ(0x408)]['remove'](cQ(0x41b));}function getHighlightTypeName(a){const cR=a4O;switch(a){case'match':return cR(0x1fe);case'creator':return'Featured\x20Creator';case cR(0x1d2):return cR(0x3ab);default:return'Highlight';}}function updateHighlightVideoPreview(){const cS=a4O,a=document[cS(0x403)]('highlight-video-id'),b=document[cS(0x403)](cS(0x281)),c=document['getElementById'](cS(0x3cd));if(!a||!c||!b)return;const d=a['value']['trim']();d&&/^[a-zA-Z0-9_-]{11}$/['test'](d)?(c[cS(0x362)]=cS(0x3d0)+d,b[cS(0x2b2)][cS(0x382)]=cS(0x280)):(c['src']='',b[cS(0x2b2)][cS(0x382)]='none');}async function loadHighlightsAdmin(){const cT=a4O,a=document[cT(0x403)]('highlights-table-body');if(!a)return;a['innerHTML']=cT(0x269);try{const b=query(collection(db,'highlights'),orderBy('createdAt',cT(0x2a9))),c=await getDocs(b);if(c[cT(0x3ff)]){a[cT(0x334)]=cT(0x2b5);return;}a['innerHTML']='',c[cT(0x278)](d=>{const cU=cT,e=d['data'](),f=document['createElement']('tr'),g=e['createdAt']?new Date(e['createdAt'][cU(0x46c)]*0x3e8)['toLocaleDateString']():'N/A';let h=cU(0x3ad),i='';switch(e['type']){case cU(0x39e):h='Match',i='match-type';break;case'creator':h='Creator',i='creator-type';break;case cU(0x1d2):h='Achievement',i='achievement-type';break;}f['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(e[cU(0x3f9)]||cU(0x227))+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td><span\x20class=\x22highlight-type\x20'+i+'\x22>'+h+cU(0x256)+g+cU(0x166)+(e['submittedBy']||cU(0x3ad))+cU(0x166)+(e['videoId']?'<i\x20class=\x22fas\x20fa-video\x22></i>\x20Yes':'<i\x20class=\x22fas\x20fa-times\x22></i>\x20No')+cU(0x19a)+d['id']+'\x22\x20title=\x22Edit\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-edit\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22delete-highlight-btn\x22\x20data-id=\x22'+d['id']+'\x22\x20title=\x22Delete\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-trash\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',a['appendChild'](f);}),document['querySelectorAll'](cT(0x3e9))['forEach'](d=>{const cV=cT;d[cV(0x295)]('click',f=>{const cW=cV;openHighlightModal(f[cW(0x20b)]['dataset']['id']);});}),document[cT(0x2e2)]('.delete-highlight-btn')[cT(0x278)](d=>{d['addEventListener']('click',f=>{const cX=a4d;confirmDeleteHighlight(f[cX(0x20b)]['dataset']['id']);});});}catch(d){console[cT(0x394)]('Error\x20loading\x20highlights:',d),a['innerHTML']=cT(0x3be)+d['message']+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}}async function confirmDeleteHighlight(a){const cY=a4O;if(confirm('Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20this\x20highlight?\x20This\x20cannot\x20be\x20undone.'))try{await deleteDoc(doc(db,cY(0x17c),a)),showNotification(cY(0x1e8),'success'),loadHighlightsAdmin();}catch(b){console['error']('Error\x20deleting\x20highlight:',b),showNotification('Error\x20deleting\x20highlight:\x20'+b[cY(0x1b7)],'error');}}function setupCreateTestMatchModal(){const cZ=a4O;console[cZ(0x1aa)](cZ(0x244));const a=document['getElementById'](cZ(0x259)),b=document['getElementById'](cZ(0x475));if(!a){console['error'](cZ(0x203));return;}if(!b){console[cZ(0x394)](cZ(0x2fc));return;}const c=a[cZ(0x35a)](!![]);a[cZ(0x2ba)]['replaceChild'](c,a);const d=c['querySelector'](cZ(0x42d));c[cZ(0x295)](cZ(0x446),function(g){const d0=cZ;g[d0(0x36b)]===c&&(console[d0(0x1aa)]('Modal\x20background\x20clicked'),closeCreateTestMatchModal());});const e=c['querySelector'](cZ(0x3ef));e&&e['addEventListener']('click',function(g){g['preventDefault'](),g['stopPropagation'](),console['log']('Modal\x20close\x20button\x20clicked'),closeCreateTestMatchModal();});const f=c[cZ(0x336)]('#cancel-create-test-match-btn');f&&f['addEventListener']('click',function(g){const d1=cZ;g[d1(0x324)](),g[d1(0x28e)](),console['log'](d1(0x22e)),closeCreateTestMatchModal();});if(d){d[cZ(0x295)]('submit',function(h){const d2=cZ;h['preventDefault'](),h[d2(0x28e)](),console['log'](d2(0x3c1)),createTestMatch();});const g=d[cZ(0x336)](cZ(0x1ac));g&&g[cZ(0x295)](cZ(0x446),function(h){const d3=cZ;h['preventDefault'](),h['stopPropagation'](),console['log'](d3(0x273)),createTestMatch();});}console[cZ(0x1aa)]('Create\x20test\x20match\x20modal\x20setup\x20complete');}function setupManageHighlightsSection(){const d4=a4O;console['log']('Setting\x20up\x20Manage\x20Highlights\x20section'),setupHighlightButtons();const a=document['getElementById'](d4(0x42a));a&&a[d4(0x295)]('submit',f=>{f['preventDefault'](),saveHighlight();});const b=document[d4(0x403)](d4(0x1af));b&&b['addEventListener'](d4(0x446),closeHighlightModal);const c=document['querySelector']('#highlight-modal\x20.close-btn');c&&c['addEventListener']('click',closeHighlightModal);const d=document[d4(0x403)]('highlight-modal');d&&d[d4(0x295)]('click',f=>{f['target']===d&&closeHighlightModal();});const e=document['getElementById']('highlight-video-id');e&&e['addEventListener'](d4(0x38a),()=>{updateHighlightVideoPreview();}),console['log']('Manage\x20Highlights\x20section\x20initialized');}function setupManageMatchesSection(){const d5=a4O;console[d5(0x1aa)]('Setting\x20up\x20Manage\x20Matches\x20section');const a=document['getElementById'](d5(0x2ef)),b=document[d5(0x403)]('matches-next-page');a&&a['addEventListener'](d5(0x446),()=>{const d6=d5,h=currentLadder[d6(0x15a)]();loadMatchesData(matchesPagination[h][d6(0x344)]-0x1);});b&&b[d5(0x295)]('click',()=>{const d7=d5,h=currentLadder[d7(0x15a)]();loadMatchesData(matchesPagination[h][d7(0x344)]+0x1);});const c=document['getElementById']('apply-matches-filters'),d=document[d5(0x403)](d5(0x37a));c&&c[d5(0x295)]('click',applyMatchesFilters);d&&d['addEventListener']('click',resetMatchesFilters);const e=document['getElementById']('matches-search');e&&e['addEventListener']('input',debounce(filterMatchesTable,0x12c));const f=document[d5(0x403)]('resimulate-match-btn');f&&f[d5(0x295)]('click',openResimulateModal);const g=document['getElementById'](d5(0x231));if(g){const h=g['querySelector'](d5(0x355));h&&h['addEventListener'](d5(0x446),closeResimulateModal),g['addEventListener']('click',i=>{const d8=d5;i[d8(0x36b)]===g&&closeResimulateModal();});}setupCreateTestMatchButton(),setupCreateTestMatchModal(),console[d5(0x1aa)](d5(0x40a));}function openCreateTestMatchModal(){const d9=a4O;console['log']('Opening\x20create\x20test\x20match\x20modal');const a=document[d9(0x403)]('create-test-match-modal'),b=document['getElementById']('create-test-match-form');if(!a){console['error']('Create\x20test\x20match\x20modal\x20not\x20found'),showNotification(d9(0x28b),'error');return;}if(!b){console[d9(0x394)](d9(0x14d)),showNotification('Create\x20test\x20match\x20form\x20not\x20found','error');return;}b[d9(0x17b)]();const c=document[d9(0x2e2)](d9(0x307));let d=![];c[d9(0x278)](g=>{const da=d9;console['log'](da(0x221),g['value']),g['value']===currentLadder&&(g['checked']=!![],d=!![],console['log']('Set\x20default\x20ladder\x20to:',currentLadder));});if(!d){console[d9(0x18b)]('No\x20radio\x20button\x20found\x20for\x20current\x20ladder:',currentLadder);const g=document[d9(0x336)](d9(0x25b));g&&(g[d9(0x1ff)]=!![],console['log']('Defaulted\x20to\x20D1\x20ladder'));}const e=document[d9(0x403)](d9(0x199));if(e){const h=new Date()[d9(0x175)]()[d9(0x2ea)]('T')[0x0];e['value']=h;}a['style']['display']='flex',a['style'][d9(0x474)]=d9(0x1d1),a['style'][d9(0x34a)]='1',a['classList']['add']('active'),console[d9(0x1aa)](d9(0x3e6));const f=document[d9(0x403)](d9(0x30c));f&&setTimeout(()=>{f['focus']();},0x64);}function closeCreateTestMatchModal(){const dc=a4O;console['log'](dc(0x375));const a=document[dc(0x403)]('create-test-match-modal');if(!a){console['error'](dc(0x1c3));return;}a['classList']['remove'](dc(0x41b)),a[dc(0x2b2)][dc(0x34a)]='0',a['style']['visibility']='hidden',setTimeout(()=>{const dd=dc;!a['classList'][dd(0x211)](dd(0x41b))&&(a[dd(0x2b2)]['display']='none');},0x12c),console['log']('Modal\x20closed');}async function createTestMatch(){const de=a4O;console[de(0x1aa)]('Creating\x20test\x20match\x20without\x20player\x20validation...');try{const a=auth[de(0x3c9)];if(!a){showNotification(de(0x2f6),'error');return;}const b='D1',c='approvedMatches',d={'winnerUsername':de(0x24a),'winnerScore':0x14,'winnerSuicides':0x0,'winnerComment':'Test\x20match','winnerDemoLink':null,'loserUsername':'TestLoser','loserScore':0xf,'loserSuicides':0x0,'loserComment':'Test\x20match','loserDemoLink':null,'mapPlayed':de(0x144),'approvedAt':Timestamp['fromDate'](new Date()),'approvedBy':a[de(0x29a)],'createdAt':serverTimestamp(),'createdBy':a['email'],'isTestMatch':!![],'ladder':b,'testMatchCreatedAt':serverTimestamp(),'testMatchNote':de(0x39c)+a[de(0x29a)]};console['log'](de(0x1ed)),await addDoc(collection(db,c),d),showNotification(de(0x1f5),de(0x37c)),closeCreateTestMatchModal();}catch(e){console[de(0x394)](de(0x1f6),e),showNotification('Failed\x20to\x20create\x20simple\x20test\x20match:\x20'+e[de(0x1b7)],'error');}}window['testFirebaseConnection']=async function(){const df=a4O;try{console['log']('Testing\x20Firebase\x20connection...'),console['log']('Auth:',auth),console[df(0x1aa)](df(0x2ff),db),console['log'](df(0x352),auth['currentUser']);const a=collection(db,df(0x493));console[df(0x1aa)]('Collection\x20reference\x20created:',a);const b=query(a,where(df(0x2b4),'==',df(0x494)));console['log'](df(0x2d9),b);const c=await getDocs(b);console[df(0x1aa)](df(0x16e),c[df(0x3ff)]),console['log'](df(0x1d5));}catch(d){console['error'](df(0x3bf),d);}};function setupCreateTestMatchButton(){const dg=a4O,a=document['getElementById']('create-test-match-btn');if(!a){console[dg(0x394)](dg(0x20f));return;}console['log']('Setting\x20up\x20create\x20test\x20match\x20button');const b=a[dg(0x35a)](!![]);a['parentNode']['replaceChild'](b,a),b['addEventListener']('click',function(c){const dh=dg;c['preventDefault'](),c[dh(0x28e)](),console[dh(0x1aa)]('Create\x20test\x20match\x20button\x20clicked'),openCreateTestMatchModal();}),console['log'](dg(0x174));}async function loadMatchesData(a=0x1){const di=a4O,b=document['getElementById']('matches-table-body');if(!b)return;b['innerHTML']='<tr><td\x20colspan=\x227\x22\x20class=\x22loading-cell\x22>Loading\x20matches...</td></tr>';try{const c=currentLadder[di(0x15a)](),d=matchesPagination[c],e=currentLadder==='D1'?di(0x19e):currentLadder==='D2'?di(0x220):di(0x43c),f=collection(db,e);a<=0x1?(d['page']=0x1,d[di(0x3f3)]=null,d[di(0x1f9)]=null):d['page']=a;const g=getMatchesFilters();let h=f;if(g[di(0x16a)]||g['endDate']||g[di(0x2c9)]){let n=[];g[di(0x16a)]&&g[di(0x276)]?(n[di(0x1c2)](where('approvedAt','>=',g['startDate']),where('approvedAt','<=',g[di(0x276)])),h=query(f,...n)):h=query(f,orderBy(di(0x35d),di(0x2a9)));}else h=query(f,orderBy(di(0x35d),di(0x2a9)));a>0x1&&d[di(0x1f9)]?h=query(h,startAfter(d[di(0x1f9)]),limit(PAGE_SIZE)):h=query(h,limit(PAGE_SIZE));const i=await getDocs(h);!i[di(0x3ff)]&&(d[di(0x3f3)]=i['docs'][0x0],d['lastVisible']=i['docs'][i['docs'][di(0x3eb)]-0x1]);let j=![];if(!i[di(0x3ff)]){const o=query(h,startAfter(d[di(0x1f9)]),limit(0x1)),p=await getDocs(o);j=!p['empty'];}const k=document['getElementById']('matches-prev-page'),l=document['getElementById'](di(0x39a)),m=document['getElementById']('matches-page-indicator');if(k)k['disabled']=d[di(0x344)]<=0x1;if(l)l[di(0x409)]=!j;if(m)m[di(0x3a4)]='Page\x20'+d[di(0x344)];if(i['empty']){b[di(0x334)]='<tr><td\x20colspan=\x227\x22\x20class=\x22empty-state\x22>No\x20matches\x20found</td></tr>';return;}b['innerHTML']='',i[di(0x278)](r=>{const dj=di,s=r[dj(0x2b3)](),t=document[dj(0x326)]('tr'),u=s[dj(0x35d)]?new Date(s['approvedAt']['seconds']*0x3e8)['toLocaleDateString']():'N/A';t['setAttribute']('data-id',r['id']),t[dj(0x347)](dj(0x1e5),currentLadder),t[dj(0x408)]['add'](dj(0x410)),t['innerHTML']=dj(0x2b7)+u+dj(0x155)+(s['winnerUsername']||'Unknown')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22loser-cell\x22>'+(s['loserUsername']||'Unknown')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22score-cell\x22>'+(s[dj(0x2ce)]||0x0)+'\x20-\x20'+(s[dj(0x2a8)]||0x0)+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22map-cell\x22>'+(s['mapPlayed']||dj(0x30a))+dj(0x36c)+currentLadder+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22actions\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22edit-match-btn\x20btn-small\x22\x20data-id=\x22'+r['id']+'\x22\x20title=\x22Edit\x20Match\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-pencil-alt\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22delete-match-btn\x20btn-small\x20btn-danger\x22\x20data-id=\x22'+r['id']+'\x22\x20title=\x22Delete\x20Match\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-trash-alt\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',b[dj(0x23a)](t);}),setupMatchesActionButtons(),g[di(0x2c9)]&&filterMatchesTable(),console['log'](di(0x34b)+i[di(0x435)]+'\x20matches\x20for\x20'+currentLadder+di(0x3fa)+d['page']);}catch(r){console[di(0x394)](di(0x401),r),b[di(0x334)]=di(0x288)+r[di(0x1b7)]+di(0x18a);}}async function deleteMatch(a,b){const dk=a4O;try{console['log']('Deleting\x20match\x20'+a+dk(0x3b3)+b+'\x20ladder');const c=auth['currentUser'];if(!c){showNotification(dk(0x25a),'error');return;}const d=b==='D1'?'approvedMatches':b==='D2'?dk(0x220):dk(0x43c);console['log']('Using\x20collection:\x20'+d),showNotification('Deleting\x20match...',dk(0x485)),await deleteDoc(doc(db,d,a)),console['log']('Match\x20deleted\x20successfully'),showNotification(dk(0x41f),dk(0x37c));const e=b['toLowerCase']();loadMatchesData(matchesPagination[e]['page']);}catch(f){console[dk(0x394)]('Error\x20deleting\x20match:',f),showNotification(dk(0x425)+f[dk(0x1b7)],'error');}}function setupMatchesActionButtons(){const dl=a4O;console['log'](dl(0x428)),document[dl(0x2e2)]('.edit-match-btn')['forEach'](a=>{const dm=dl;a[dm(0x295)](dm(0x446),b=>{const dn=dm;b['preventDefault'](),b['stopPropagation']();const c=b[dn(0x20b)]['dataset']['id'],d=b['currentTarget']['closest']('tr'),f=d['dataset']['ladder'];console[dn(0x1aa)]('Edit\x20match\x20clicked:',c,f),openEditMatchModal(c,f);});}),document[dl(0x2e2)](dl(0x258))[dl(0x278)](a=>{a['addEventListener']('click',b=>{const dp=a4d;b[dp(0x324)](),b['stopPropagation']();const c=b['currentTarget'][dp(0x2a2)]['id'],d=b['currentTarget'][dp(0x21e)]('tr'),f=d[dp(0x2a2)]['ladder']||currentLadder;console[dp(0x1aa)](dp(0x2cc),c,f),confirm('Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20this\x20match?\x20This\x20action\x20cannot\x20be\x20undone.')&&deleteMatch(c,f);});}),console[dl(0x1aa)]('Matches\x20action\x20buttons\x20setup\x20complete');}function filterMatchesTable(){const dq=a4O,a=document['getElementById']('matches-search')['value']['toLowerCase'](),b=document[dq(0x2e2)](dq(0x134));let c=0x0;b['forEach'](d=>{const dr=dq;if(d[dr(0x408)]['contains'](dr(0x3c3))||d[dr(0x408)]['contains']('empty-state')||d['classList'][dr(0x211)](dr(0x159)))return;const e=d[dr(0x3d6)][0x1]['textContent'][dr(0x15a)](),f=d['cells'][0x2]['textContent']['toLowerCase'](),g=d['cells'][0x4][dr(0x3a4)]['toLowerCase']();e['includes'](a)||f['includes'](a)||g[dr(0x14b)](a)?(d['style'][dr(0x382)]='',c++):d[dr(0x2b2)][dr(0x382)]=dr(0x36f);});if(c===0x0&&b['length']>0x0){const d=document[dq(0x403)]('matches-table-body'),e=d['querySelector']('.no-results');if(!e){const f=document[dq(0x326)]('tr');f[dq(0x468)]='no-results',f['innerHTML']='<td\x20colspan=\x227\x22>No\x20matches\x20found\x20matching\x20\x27'+a+dq(0x232),d[dq(0x23a)](f);}}else{const g=document['querySelector'](dq(0x45e));g&&g['remove']();}}function getMatchesFilters(){const ds=a4O,a=document[ds(0x403)]('matches-search')[ds(0x2d8)]['toLowerCase'](),b=document['getElementById']('matches-start-date')[ds(0x2d8)],c=document[ds(0x403)]('matches-end-date')['value'];let d=null,e=null;return b&&(d=new Date(b),d[ds(0x180)](0x0,0x0,0x0,0x0),d=Timestamp['fromDate'](d)),c&&(e=new Date(c),e['setHours'](0x17,0x3b,0x3b,0x3e7),e=Timestamp[ds(0x39d)](e)),{'searchTerm':a,'startDate':d,'endDate':e};}async function applyMatchesFilters(){const a=currentLadder['toLowerCase']();matchesPagination[a]={'page':0x1,'lastVisible':null,'firstVisible':null},await loadMatchesData(0x1);}function resetMatchesFilters(){const dt=a4O;document['getElementById'](dt(0x1a7))['value']='',document['getElementById'](dt(0x3f8))[dt(0x2d8)]='',document[dt(0x403)](dt(0x46a))['value']='';const a=currentLadder[dt(0x15a)]();matchesPagination[a]={'page':0x1,'lastVisible':null,'firstVisible':null},loadMatchesData(0x1);}function a4c(){const ez=['u2vHCMnOAw5NigzVCIbWBgf5zxiGAw4G','Cg9PBNrZlxnVCNqTB3jKzxi','DgfYz2v0','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IBgfKzgvYlwnLBgWIpG','yMLUza','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IzwXVlwnOyw5Nzsa','BM9Uzq','uhjVzMLSzq','qwrKAw5NihbSyxLLCIa','C2v0','ywnOAwv2zw1LBNrqBgf5zxi','zgvTB3rLlwzVCM0','q2XVC2LUzYbJCMvHDguGDgvZDcbTyxrJAcbTB2rHBa','pc9ZDhjVBMC+cIaGicaGicaGicaGicaGica8C3bHBJ5mzxzLBdOG','tM8GDxnLCNmGzM91BMqGAw4GDxnLCLbYB2zPBgvZignVBgXLy3rPB24','Bg9Hzc1OAwDOBgLNAhrZlwrHDge','BwfWtMfTzq','CMvZzxqTBwf0y2HLCY1MAwX0zxjZ','vxnLCIbUB3qGzM91BMq','C3vJy2vZCW','uxvPy2SGzwrPDcbTB2rHBcbUB3qGzM91BMqGAw4GDgHLihbHz2u','uMLIyM9UCYbKyxrHigXVywrLzcbZDwnJzxnZzNvSBhK','CxvPy2STzwrPDc11C2vYlwLK','rxjYB3iGBg9HzgLUzYbWB2LUDhmGB3zLCNzPzxC6','CMfUA0rPC3rYAwj1DgLVBG','zgLZCgXHEq','CgXHEwvYlwnVDw50','pc9WpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzZ5dDxjYzw50ieXVC2vYievmtZO8l3n0CM9UzZ4G','vxnLCM5HBwuGAw5WDxqGC2v0ihrVoIa','CgXHEwvYuMLIyM9UCW','D2LUBMvYu3vPy2LKzxm','i2LUywn0AxzLlxbSyxLLCNmTDgfIBguTyM9KEsb0CG','CgXHEwvYlxnLyxjJAa','Aw5WDxq','igzVCIb1C2vYici','DhLWzq','twfUywDLifbVAw50CYbZzwn0Aw9UigLUAxrPywXPEMvK','rxjYB3iGy3jLyxrPBMCGywn0AxzPDhKGy2HHCNq6','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVihnHDMuGDhjVCgHPzxm','oYi+','vhjVCgH5ifbYzxzPzxC','lxbYzxyTCgfNzq','lMrLBgv0zs10CM9WAhKTyNrU','zxjYB3i','Aw1N','rxjYB3iGC2v0DgLUzYb1C2vYihjVBgu6','zwrPDc1TyxrJAc1Tyxa','CMvQzwn0zwqTy291BNq','zxHJzxb0Aw9U','Bwf0y2HLCY1UzxH0lxbHz2u','q1jjveLdquW6ifjVBguGBw9KywWGzwXLBwvUDcaOi3nLDc1YB2XLlw1VzgfSksbUB3qGzM91BMqGAw4GDgHLierptse','u2LTCgXLihrLC3qGBwf0y2GGy3jLyxrLzcbIEsbHzg1PBIa','zNjVBurHDgu','Bwf0y2G','ywXSvxnLCNnqB2LUDhm','phrYpJX0zcbJB2XZCgfUpsi3iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NigHPC3rVCNKUlI48l3rKpJWVDhi+','rxjYB3iGBg9HzgLUzYbOAxn0B3j5oG','uMvQzwn0zwremq','C3vIBwL0','Dgv4DenVBNrLBNq','rxjYB3i6ia','CgXHEwvYswq','t3bLBMLUzYbOAwDOBgLNAhqGBw9KywWGD2L0AcbWyxjHBwv0zxi6ia','vxnLCIaI','Bw9KzxjHDgvSEs1PBMfJDgL2zq','yxDHCMqTCMvHC29U','ugXHEwvYiefJAgLLDMvTzw50','BwfUywDLlwXLDMvSCY1YAwjIB25Z','vw5RBM93BG','u3LZDgvT','mJe4nZC0nhLqqwnSAa','zxHPC3rZ','rNjPzgf5','y29UzMLYBs1YzxnPBxvSyxrLlwj0BG','igzYB20G','phrYpJX0zcbJB2XZCgfUpsi3iIbJBgfZCZ0Izw1WDhKTC3rHDguIpK5Vig1HDgnOzxmGzM91BMqGzM9YihrOzsbZzwXLy3rLzcbMAwX0zxjZpc90zd48l3rYpG','twf0y2GGzM91BMqGlsbWBgvHC2uGCMv2Awv3igrLDgfPBhmGyw5KignVBMzPCM0GCMvZAw11Bgf0Aw9U','BwfWugXHEwvK','rwrPDcbnyxrJAdOG','v2LUBMvYigfUzcbSB3nLCIb1C2vYBMfTzxmGyxjLihjLCxvPCMvK','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKierHC2HIB2fYzcbeyxrH','zgvTB0XPBMS','zw1WDhKTC3rHDgu','lMzVCM0Tz3jVDxa','rxjYB3iGywrKAw5NihjPyMjVBJO','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi2iIbJBgfZCZ0IzxjYB3iTC3rHDguIpGOGicaGicaGicaGicaGicaGicaGievYCM9YigXVywrPBMCGAgLNAgXPz2H0CZOG','rMLYzwjHC2uGy29UBMvJDgLVBIb0zxn0igzHAwXLzdO','y3jLyxrLlwnYzwf0B3iTAgLNAgXPz2H0lwj0BG','q3jLyxrLihrLC3qGBwf0y2GGzM9YBsbZDwjTAxr0zwq','rxjYB3iGC2v0DgLUzYbJDxn0B20GruXpoG','Bg9HzgLUzY1JzwXS','y2fUy2vSlwfYDgLJBguTyNrU','ihzPzxCGAgLZDg9YEsbIDxr0B25Z','qxr0ywnOAw5NigjHy2TNCM91BMqGy2XPy2SGBgLZDgvUzxiU','zwrPDc1OAwDOBgLNAhqTBwfWq3jLyxrVCI1PBNb1Da','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKifrYB3bOAwvZierHDge','y3vYCMvUDfvZzxi','zwrPDc1TyxrJAc13Aw5UzxiTC2nVCMu','AgLNAgXPz2H0lxzPzgvVlwnVBNrHAw5LCG','mc42','AgLNAgXPz2H0lxzPzgvVlxbYzxzPzxC','D2LUBMvYtMfTzq','uxvPy2SGzwrPDcbTB2rHBcbUB3qGzM91BMqHie1HA2uGC3vYzsb0AguGsfrntcbLBgvTzw50igv4Axn0CY4','Ahr0Chm6lY93D3CUEw91DhvIzs5JB20Vzw1IzwqV','BwvKAxvTlxbVAw50CW','rxjYB3i6ienVDwXKig5VDcbMAw5KihrOzsbYB2XLigvKAxrPBMCGzgLHBg9NlG','rdeGugXHEwvYCW','phnWyw4Gy2XHC3m9iM5VlxjVBguIpK5VBMu8l3nWyw4+','phrYpJX0zcbJB2XZCgfUpsi3iIbJBgfZCZ0IzxjYB3iTC3rHDguIpKvYCM9YigXVywrPBMCGAw5Hy3rPDMuGCgXHEwvYCZOG','y2vSBhm','rMfPBgvKihrVihvWzgf0zsbWB2LUDhm6ia','BMv3lxbSyxLLCI1LBg8','igXHzgrLCI4Gq2XPy2SGiKXVywqGrgf0ysiGDg8GCMvMCMvZAc4','y29TBw9U','ihnLy3rPB24','y2f0y2G','C2vUzfbYB21VDgLVBK5VDgLMAwnHDgLVBG','zg91z2HUDxq','zMXVB3i','pc90zd4kicaGicaGicaGicaGicaGidX0zd4kicaGicaGicaGicaGicaGicaGica8yNv0Dg9UignSyxnZpsj2Awv3lxbSyxLLCI1IDg4IigrHDgeTDxnLCM5HBwu9iG','Aw1Hz2vvCMW','qwrKzwqG','AgLNAgXPz2H0lw1HDgnOlwrHDgu','i0mWqZbdma','zwrPDc1SB3nZzxm','tw9KywWGC2HVDwXKig5VDYbIzsb2AxnPyMXL','Dg9mB2nHBgvtDhjPBMC','rxjYB3iGBg9HzgLUzYbWB2LUDhmGzgf0ytO','lMvKAxqTAgLNAgXPz2H0lwj0BG','Aw5Hy3rPDMuTCgXHEwvYCW','BgvUz3rO','u2v0DgLUzYb1Ccbnyw5Hz2uGug9PBNrZihnLy3rPB24','BwfWq3jLyxrVCG','C2f2zs1WBgf5zxiTyNrU','lMnSB3nLlwj0BG','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','BwfW','lMXVywrPBMCTy2vSBa','zMLYC3rwAxnPyMXL','yxnZAwDUlxrYB3bOEs1PBwfNzq','ugXLyxnLigvUDgvYigeGDxnLCM5HBwu','rxjYB3iGBg9HzgLUzYb0CM9WAgLLCZO','mxb4ihnVBgLKihjNyMeOmJu1lcaXotmSidCSidaUmYK','Bwf0y2HLCY1LBMqTzgf0zq','DgL0Bgu','igXHzgrLCIWGCgfNzsa','rxjYB3iGB3bLBMLUzYbXDwLJAYbLzgL0ig1VzgfSoG','pc9ZCgfUpGOGicaGicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGicaGidX0zd4','Bg9ZC2vZ','ChjVBw90zs11C2vYBMfTzq','zw1WDhK','lI9WCM9TB3rPB25ZlMPZ','rxjYB3iGBg9HzgLUzYbTyxrJAgvZoG','D2fYBMLUzW','z2v0rwXLBwvUDej5swq','zgfZAgjVyxjK','rxjYB3iGBg9HzgLUzYbWBgf5zxjZoG','pgKGy2XHC3m9iMzHCYbMys1ZCgLUBMvYigzHlxnWAw4IpJWVAt4Gtg9HzgLUzY4UlG','zwrPDc1TyxrJAc13Aw5UzxiTy29TBwvUDa','y2XHC3nmAxn0','zgLZywjSzwq','twfUywDLie1HDgnOzxmGC2vJDgLVBIbPBML0AwfSAxPLzcb3AxrOihjLC2LTDwXHDguGzNvUy3rPB25HBgL0Eq','ywn0AxzPDhKTy2HHCNq','zwXVlwHPC3rVCNKTDgfIBguTyM9KEq','C2v0lxjVBguTBw9KywW','iIakicaGicaGicaGicaGicaGicaGicaGicaGigfSDd0I','lxbHz2uTAw5KAwnHDg9Y','Bwf0y2GTCM93','rxjYB3iGChjVBw90Aw5NihbSyxLLCJOG','pc9ZDhjVBMC+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IDxnLCI1LBwfPBci+','zMeTzxHJBgfTyxrPB24TDhjPyw5NBgu','zwrPDc1OAwDOBgLNAhqTBg9Zzxjoyw1LlwLUChv0','BwfUywDLlxbSyxLLCNm','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVihnHDMuGyxj0AwnSzxm','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0ICgXHEwvYiJ4','Cg9ZAxrPB24','AgLZDg9YEs10ExbLlwzPBhrLCG','igLUia','ywn0AxzL','rdiGugXHEwvYCW','lMzVCM0Tz3jVDxaSic5MB3jTlxjVDW','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKifrYB3bOAwvZ','twf0y2GGzgvSzxrLzcbZDwnJzxnZzNvSBhK','zgvSzxrLlw1HDgnOlwnVBMzPCM0TBw9KywW','iJ4kicaGicaGicaGicaGicaGicaGica','BM90AwzPy2f0Aw9Uia','rw1LCMfSza','u3vJy2vZC2z1BgX5igrLBw90zwqG','rMfPBgvKihrVigrLBgv0zsbTyxrJAdOG','CMfYAxr5','ywn0Aw9U','u2v0DgLUzYb1CcbTyxrJAgvZigfJDgLVBIbIDxr0B25ZlI4U','zwrPDc1OAwDOBgLNAhqTywnOAwv2zw1LBNrezxrHAwXZlwLUChv0','AgLNAgXPz2H0lwzVCM0','cIaGicaGicaGicaGicaGica8DgqGy2XHC3m9iNbVC2L0Aw9UiJ4','zdiTBMv4Dc1WywDL','i2nYzwf0zs10zxn0lw1HDgnOlwzVCM0','ChjVBw90Aw9U','zwXVsgLZDg9YEuqY','BwfUywDLlxrYB3bOAwvZ','zgL2','pc9WpGOGicaGicaGicaGicaGicaGpgHYpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzYbZDhLSzt0Iy29SB3i6icnMzJK4mda7iJ7IMQdVUi8GuKvtsu1vtefusu9oifDjteW6pc9ZDhjVBMC+pc9WpGOGicaGicaGicaGicaGicaGphvSpGOGicaGicaGicaGicaGicaGicaGidXSAt5szwnHBgn1Bgf0zsbfte8GCMf0Aw5NCYbIyxnLzcbVBIbWCMuTBwf0y2GGDMfSDwvZpc9SAt4kicaGicaGicaGicaGicaGicaGica8BgK+vxbKyxrLign1CNjLBNqGCgXHEwvYievmtYbYyxrPBMDZpc9SAt4kicaGicaGicaGicaGicaGicaGica8BgK+uMvJywXJDwXHDguGyw5KihvWzgf0zsbWBgf5zxiGCg9ZAxrPB25Zpc9SAt4kicaGicaGicaGicaGicaGicaGica8BgK+q3jLyxrLig1PC3nPBMCGruXpigHPC3rVCNKGzw50CMLLCZWVBgK+cIaGicaGicaGicaGicaGicaGicaGpgXPpKHHBMrSzsbWB3nPDgLVBIbZD2fWCYbPzIb3Aw5UzxiGD2fZigXVD2vYihjHBMTLzdWVBgK+cIaGicaGicaGicaGicaGica8l3vSpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGica','ywn0AxzPDhK','twf0y2GGCMvZAw11Bgf0zwqGC3vJy2vZC2z1BgX5isa','C2L6zq','yxnZAwDUlxrYB3bOEs1Pza','DMLKzw9jza','tw9KywWGzwXLBwvUDcbMB3vUzdO','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0ICMfUAYi+cIaGicaGicaGicaGicaGicaGicaGphnWyw4Gy2XHC3m9iNjHBMSTyMfKz2uIihn0EwXLpsjIywnRz3jVDw5KlwnVBg9YoIa','DhjVCgH5rgvMAw5PDgLVBNm','tw9KywWGC2v0DxaGy29TCgXLDgu','yxbWCM92zwrnyxrJAgvZrdm','B25LCNjVCG','D2LUCW','qNjVBNPL','ChjVBw90zs1WBgf5zxiTyNrU','pc90zd48l3rYpG','ntaYndy3nMnjv1DTsa','C29YDa','BMvNyxrPDMuTy2HHBMDL','lNjLBw92zs1YB2XLlwj0BG','y2XPy2S','rM9YBsbLBgvTzw50CYbHCMuGBwLZC2LUzW','rxjYB3iGzgvSzxrPBMCGDhjVCgH5igrLzMLUAxrPB246','C3rYAw5N','zgvTB3rPB24','Bwf0y2HeyxrL','rMfPBgvKihrVigXVywqGDxnLCIbOAxn0B3j5','vhjVCgH5ignYzwf0zwqGC3vJy2vZC2z1BgX5','Bwf0y2GTzgv0ywLSCY1JB250ywLUzxi','CM9Szs11C2vYBMfTzq','Bg9Hzc1PBMfJDgL2zs1WBgf5zxjZlwrHDge','AgLNAgXPz2H0lw1HCa','D2LUBMvYvxnLCM5HBwu','yxj0AwnSzxm','yxDHCMqTAxrLBs1MB3jT','pgKGy2XHC3m9iMzHCYbMys1JAgvJAYi+pc9PpIbdB21WBgv0zwq','y2fUy2vSlxrYB3bOEs1IDg4','igj5ifvjrdO','cIaGicaGicaGicaGicaGica8l3rKpGOGicaGicaGicaGicaGicaGphrKignSyxnZpsjLBg8IpG','y3jLyxrLlw5LDY1HCNrPy2XLlwj0BG','tw9KywWGy2XVC2uGyNv0Dg9UignSAwnRzwq','u3vJy2vZC2z1BgX5ihbYB21VDgvKia','rMfPBgvKihrVigf3yxjKigL0zw06ia','iIb0AxrSzt0IvMLLDYbqBgf5zxiGrgv0ywLSCYi+cIaGicaGicaGicaGicaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTzxLLiJ48l2K+cIaGicaGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGica8l3rKpGOGicaGicaGicaGica','lM5VlxjLC3vSDhm','vw5RBM93BIbvC2vY','y2fUy2vSlxjVBguTyNrU','r29Sza','Cg9ZAxrPDMuTy2HHBMDL','BMv3lxbSyxLLCI11C2vYBMfTzq','re9nq29UDgvUDeXVywrLza','zwrPDc1OAwDOBgLNAhqTDMLKzw9jzc1PBNb1Da','rxjYB3iGBg9HzgLUzYbOAwDOBgLNAhrZoG','i3vZzxjZlxrHyMXLlwjVzhKGDhi','y2XHC3noyw1L','rxjYB3iGAw5PDgLHBgL6Aw5NigfKBwLUigrHC2HIB2fYzdO','Bwf0y2HLCY1ZzwfYy2G','qxj0AwnSzsbKzwXLDgvKihn1y2nLC3nMDwXSEq','C2vJB25KCW','yxj0AwnSzs1Pza','BwLNCMf0zs1WB2LUDhmTyNrU','i2uWztbLma','uMvQzwn0zwremW','CgXHEwvY','BwfUywDLlw1HDgnOzxm','ww91vhvIzsbwAwrLBYbjrcbPCYbYzxf1AxjLzcbMB3iGBwf0y2GGAgLNAgXPz2H0CW','DMLZAwjPBgL0Eq','y3jLyxrLlxrLC3qTBwf0y2GTzM9YBq','lNf1AwnRlwvKAxqTyNrU','zwrPDc1OAwDOBgLNAhqTAwq','zdiTChjLDI1WywDL','ihbVAw50CW','rxjYB3iGBg9HzgLUzYb1C2vYCZO','zwXVlwHPC3rVCNK','CMLIyM9UlxrHCMDLDc1SywrKzxi','zMeTAw5MBY1JAxjJBgu','zwXVsgLZDg9YEq','vxnLCIbKyxrHigXVywrLzdO','CM9Szs1MAwX0zxi','CMvWBgfJzunOAwXK','rxjYB3iGz2v0DgLUzYbfte8GyxqGDgLTzsbMB3iGCgXHEwvYia','rxjYB3iGC2vHCMnOAw5NihvZzxi6','ug9PBNrZigzPzwXKigLUAxrPywXPEMvKigzVCIa','Aw5MBW','CMvTB3zL','lMvKAxqTyNrU','q3jLyxrLie5LDYa','y29UzMLYBvjLC2LTDwXHDgvnyxrJAa','BMfTzs1HC2m','CgXHEwvYC0qZ','rxjYB3iGAw4GChjVBw90Aw9UoG','twf0y2GGBM90igzVDw5K','nJe3mdC4y0DkvMnl','rgvSzxrLifrYB3bOEtOGtM8GDhjVCgH5ieLeihbYB3zPzgvKlG','zgf0ys1TyxrJAc1Pza','zwrPDc1TyxrJAc13Aw5UzxiTzgvTBW','tg9HzcbTyxrJAgvZigrHDgeGy2XPy2TLza','CgXHEwvYCW','BM9UzxHPC3rLBNq','AgLNAgXPz2H0lxzPzgvVlwLK','y3jLyxrLzef0','CxvPy2STzwrPDc1KAxnWBgf5lw5HBwu','ihrVia','ihvZzxjZihDPDgHVDxqGCg9PBNrZigzPzwXKic0GDgHLEsb3AwXSigrPC3bSyxKGyxmGmcbWB2LUDhm','i21HDgnOzxmTDgfIBguTyM9KEsb0CG','q29TBwL0DgLUzYbIyxrJAcb1CgrHDguGzM9Yia','CMvXDwLYzwq','AgLNAgXPz2H0lwLK','CMvKDwnL','D2LU','ywnOAwv2zw1LBNruExbL','C2v0lwvSBY1MB3jT','rxjYB3iGB3bLBMLUzYbLzgL0ig1VzgfSoG','Cg9PBNrZ','sw52ywXPzcbHy3rPB24','rxjYB3iGBg9HzgLUzYbOAwDOBgLNAhq6','phrKignVBhnWyw49iJuIignSyxnZpsjLBxb0Es1ZDgf0zsi+tM8GDxnLCNmGBwf0y2GGEw91CIbMAwX0zxjZpc90zd4','4P2mie1PC3nPBMC','pgrPDIbJBgfZCZ0Iy2HHCNqTzxjYB3iIpKvYCM9YigXVywrPBMCGy2HHCNqGzgf0ytWVzgL2pG','rMfPBgvKihrVigrLBgv0zsb0CM9WAhK6ia','vgvZDe1HCa','twf0y2GGDxbKyxrLzcbZDwnJzxnZzNvSBhK','y2HHBMDL','tg9Hzcb0CM9WAgLLCYbKyxrHignSAwnRzwq','iIb0AxrSzt0IuxvPy2SGrwrPDcbqB2LUDhmIpGOGicaGicaGicaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTzwrPDci+pc9PpGOGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGica8yNv0Dg9UignSyxnZpsj2Awv3lwHPC3rVCNKTyNrUiIbKyxrHlxvZzxiTAwq9iG','vxnLCM5HBwuGAw5WDxqGzMLLBgqGkcnYB2XLlxvZzxjUyw1LksbUB3qGzM91BMqGAw4GBw9KywWU','rMfPBgvKihrVigXVywqGBwf0y2GGzgf0yq','Aw5JBhvKzxm','BwfWvMvYC2LVBG','q3jLyxrLihrLC3qGBwf0y2GGzM9YBsbUB3qGzM91BMq','y3jLyxrVCKLTywDLvxjS','DhjVCgH5lxbYzxzPzxCTAw1N','AgLNAgXPz2H0lw1HCc1JCMvHDg9Y','ruXpihjHDgLUzYbMB3iG','yxDHCMrLzef0','tM8Gzw1HAwW','AgLNAgXPz2H0lw1VzgfS','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0ID2LUBMvYlwnLBgWIpG','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKie1HDgnOzxm','BwfYz2LUqM90Dg9T','D2LUBMvYrgvTB0XPBMS','zxjYB3iTC3rHDgu','Dg9mB3DLCKnHC2u','ktWVC3bHBJ48l3rKpGOGicaGicaGicaGicaGicaGphrKpG','yM9YzgvYuMfKAxvZ','uhjVBw90Aw9Uig5VDgLMAwnHDgLVBIbZzw50ihrVierPC2nVCMqGyM90','rxjYB3iGB3bLBMLUzYbHC3nPz24GDhjVCgH5ig1VzgfSoG','zwrPDc1WBgf5zxiTBw9KywW','Cg9PBNrZlw92zxj2Awv3lxrHyMXLlwjVzhK','CMvM','iokgKIa','AM9PBG','CgvUzgLUz01HDgnOzxnemW','DgvZDa','pc90zd4kicaGicaGicaGicaGicaGidX0zd4','AgfZ','rxjYB3iGywrKAw5NihbSyxLLCJO','rxjYB3iGBg9HzgLUzYbKyxnOyM9HCMq6','C3rHCNreyxrL','rxjYB3iGzMLUzgLUzYbTyxrJAdO','DhjVCgH5lwLTywDLlxbYzxzPzxC','qxr0zw1WDgLUzYb0BYbKzwXLDguGDhjVCgH5igrLzMLUAxrPB24GD2L0AcbjrdOG','uxvLCNKGzxHLy3v0zwqUievTChr5oG','AgLNAgXPz2H0lw1HDgnOlwXPBMSTy29UDgfPBMvY','ugfNzsaX','zgvTB3rLlxvZzxjUyw1L','vxnLCIa','A2v5','q3jLyxrLihrLC3qGBwf0y2GGyNv0Dg9UihnLDhvWignVBxbSzxrL','Dg9ju09tDhjPBMC','rxnZzw50AwfSigHPz2HSAwDODcbTB2rHBcbLBgvTzw50CYbUB3qGzM91BMqH','nZKYnxLmB2HrqW','u2v0DgLUzYb1Ccbnyw5Hz2uGqxj0AwnSzxmGC2vJDgLVBIaTiezVDw5KienYzwf0zsbbCNrPy2XLigj1DhrVBI4','tg9ZzxiG','zwrPDc1OAwDOBgLNAhqTBg9Zzxjty29Yzs1PBNb1Da','CMvZzxq','AgLNAgXPz2H0CW','AgLNAgXPz2H0lwrLC2nYAxb0Aw9UlwnVBNrHAw5LCG','BgfZDe1HDgnO','DgHLBG','C2v0sg91CNm','rxjYB3iGBg9HzgLUzYb0CM9WAhKGzgf0ytO','zwrPDc1OAwDOBgLNAhqTCgXHEwvYuhjVzMLSzvvYBc1PBNb1Da','C291CMnLCW','Bg9JyxrPB24','ihbVAw50CYbOAxn0B3j5igvUDhjPzxm','CgvUzgLUz01HDgnOzxnemG','vgL0BguGyw5KignVBNrLBNqGyxjLihjLCxvPCMvK','y3jLyxrLlw1HDgnOlwHPz2HSAwDODc1IDg4','rMfPBgvKihrVigXVywqGDhjVCgH5igrHDge','cIaGicaGicaGicaGicaGica8l3rKpGOGicaGicaGicaGica8l3rYpGOGicaGicaGia','D2fYBG','u2LSDMvY','ywXS','AgLZDg9YEs1ZDgfYDc1KyxrL','CxvPy2STzwrPDc1WB2LUDhmTzM9YBq','CxvPy2STCg9PBNrZlxjLyxnVBG','DMfSAwrHDgLVBI1Yzxn1BhrZlwnVBNrHAw5LCG','u3vIDhjHy3rLzca','ww91vhvIzsbwAwrLBYbjrcO','igfKzgvKihn1y2nLC3nMDwXSEsb0BYa','iZi4ytC0nq','CMfUAY1KAxn0CMLIDxrPB24Ty2HHCNq','CgXHEwvYC0qY','zwrPDc1TyxrJAc1SB3nLCG','DgvZDc1TyxrJAc1KyxrL','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0Iywn0Aw9UCYi+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0IzwrPDc1OAwDOBgLNAhqTyNrUiIbKyxrHlwLKpsi','ywz0zxjLBMq','Bwf0y2Hjza','zgvTB3rLlw1VzgfS','yxbWCM92zwrnyxrJAgvZ','A2v5ChjLC3m','q3jLyxrLzca','vhvLC2rHEq','odeXmZaXnhjOyvr1sa','CgvUzgLUz1jLC2LTDwXHDgveyxrH','iIakicaGicaGicaGicaGicaGicaGicaGicaGig9UzxjYB3i9iNrOAxmUC3jJpsC','Bwf0y2HjBMzV','tw9Uzgf5','Bwf0y2HLCY1ZDgfYDc1KyxrL','iZaWmdaWma','zdeTBMv4Dc1WywDL','Bg9N','zwrPDc1TyxrJAc1Pza','yNv0Dg9Uw3r5Cgu9iNn1yM1PDcjD','BM8TCMvZDwX0CW','CM9SzunVBg9Y','y2fUy2vSlwHPz2HSAwDODc1IDg4','uhjVBw90Aw5NihbSyxLLCIb0BYa','C2vSzwn0zwqTDxnLCI1Pza','yxnZAwDUlxrYB3bOEs1TB2rHBa','BwfUywDLlxjHBMTZ','DxnLCLbYB2zPBgvZ','qxr0zw1WDgLUzYb0BYbVCgvUihjVBguGzwrPDcbTB2rHBcbMB3i6','ywrKlxjPyMjVBI1MB3jT','BwvZC2fNzq','cIaGicaGicaGicaGidXWpJXZDhjVBMC+rgf0ztO8l3n0CM9UzZ4G','DhjVCgH5lwLTywDLlxvYBa','CM9Szq','vxnLCIbOyxmG','A2v5CW','vxnLCM5HBwuGAxmGBwLZC2LUzW','DhjHy2u','CMvHC29U','pc9ZCgfUpJWVDgq+cIaGicaGicaGicaGicaGicaGicaGphrKpG','Bg9Hzc11C2vYCY1KyxrH','ChvZAa','tw9KywWGBM90igzVDw5KihDOzw4GDhj5Aw5NihrVignSB3nL','rxjYB3iGBg9HzgLUzYbOAwDOBgLNAhq6ia','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IDxnLCM5HBwuIihn0EwXLpsjJB2XVCJOG','yxnZAwDUlxrYB3bOEs1Uyw1L','ihDPDgGGruXpia','ignVBgXLy3rPB24UlI4','Cg9PBNrZlxvZzxiTC2vHCMnO','DxnLCI1ZzwfYy2GTCMvZDwX0CW','icHMCM9Tia','BMfTzq','C3vIDhjHy3q','Dg9tDhjPBMC','yMfY','zwrPDc1TyxrJAc1SB3nLCI1Kzw1V','DMLZAwjSzq','ywnOAwv2zw1LBNq','ugXHEwvYigLZigfSCMvHzhKGyxqGBwLUAw11BsbYyw5RicHvBNjHBMTLzcKGAw4G','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVigrLBgv0zsb0CM9WAgLLCW','rMLYzwjHC2uGy29UBMvJDgLVBIb0zxn0ihn1y2nLC3nMDwWH','q291BgqGBM90igzPBMqGCgXHEwvYigrVy3vTzw50CW','ugXHEwvYig5VDcbMB3vUzcbPBIa','zwrPDc1LBg8','vhjVCgH5ieLeigfUzcb1C2vYBMfTzsbHCMuGCMvXDwLYzwq','zwXVuMf0Aw5N','uxvPy2SGzwrPDcbMB3jTihn1yM1PDhrLza','zwrPDc1TyxrJAc13Aw5Uzxi','yxj0AwnSzs1HDxrOB3i','zMLUza','pc9WpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzZ5mywrKzxi6pc9ZDhjVBMC+ia','yxnZAwDUlxrYB3bOEs1KzxnJCMLWDgLVBG','rxjYB3iGBg9HzgLUzYbfte8GAgLZDg9YEtO','AgLNAgXPz2H0lw1HDgnOlwLUzM8','zgvSzxrLlw1HDgnOlxn1Bw1HCNK','sw5Hy3rPDMuGCgXHEwvYCYbZzwn0Aw9UigLUAxrPywXPEMvK','zgf0ys1SywrKzxi','ihvZzxjZ','DhjPBq','sgLNAgXPz2H0igrLBgv0zwqGC3vJy2vZC2z1BgX5','y3vYCMvUDc1YAwjIB25ZlwXPC3q','Cg9PBNrZlwfZyW','u3rHCNrPBMCGCg9PBNrZigzPzwXKigLUAxrPywXPEMf0Aw9UigzVCIbHBgWGDxnLCNmUlI4','DxnLCI1ZzwfYy2G','qwrKAw5NihnPBxbSzsb0zxn0ig1HDgnOlI4U','BgfKzgvY','rxjYB3iGyxDHCMrPBMCGAxrLBtO','rxjYB3iGBg9HzgLUzYbTyxrJAcbKyxrHoG','tufyx1nbrKvFsu5uruDfuG','AgLNAgXPz2H0lxn1yM1PDhrLzc1IEq','vw5HDxrOB3jPEMvKoIbbzg1PBIbHy2nLC3mGCMvXDwLYzwq','AgLNAgXPz2H0lwnYzwf0B3iTAw1Hz2uTy29UDgfPBMvY','u2LTCgXLihrLC3qGBwf0y2GGy3jLyxrLzcbZDwnJzxnZzNvSBhK','rxjYB3iGy3jLyxrPBMCGC2LTCgXLihrLC3qGBwf0y2G6','rxjYB3iGBg9HzgLUzYbYAwjIB25ZoG','tg9HzcbOAxn0B3j5igrHDgeGy2XPy2TLza','BgfZDfzPC2LIBgu','zwXVsgLZDg9YEuqZ','phrYpJX0zcbJB2XZCgfUpsi0iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NigfYDgLJBgvZlI4Upc90zd48l3rYpG','twf0y2GGBM90igzVDw5KigLUigfWChjVDMvKig1HDgnOzxm','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NihvZzxiGCg9PBNrZlI4Upc90zd48l3rYpG','twf0y2GGsgLNAgXPz2H0','y2HLy2TLza','zg9JCW','zwrPDc1OAwDOBgLNAhqTBwf0y2HmAw5RlwLUChv0','CgXHEwvYCY1SywrKzxiTC2vSzwn0B3i','q3jLyxrLihrLC3qGBwf0y2GGBw9KywWGBM90igzVDw5KigLUierptq','DhjVCgH5lw5HBwu','i3vZzxjZlxrHyMXLlwjVzhKGDhjBzgf0ys11C2vYBMfTzt0I','qxr0zw1WDgLUzYb0BYbWCM9TB3rLia','AgLNAgXPz2H0lwfJAgLLDMvTzw50lxr5CguTy29UDgfPBMvY','BMfTzs1KzxnJ','CMLIyM9UlxrHCMDLDc11C2vY','Dg9eyxrL','y3vYCMvUDfrHCMDLDa','y3jLyxrVCG','q3jLyxrVCIbOAwDOBgLNAhqGyNv0Dg9UignSAwnRzwq','DgLTzxn0yw1W','q3jLyxrLihrLC3qGBwf0y2GGyNv0Dg9Uig5VDcbMB3vUzcbPBIbet00','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsj1C2vYlwLUzM8IpGOGicaGicaGicaGicaGicaGicaGidXZDhjVBMC+','y29UDgfPBNm','AgLNAgXPz2H0lw1HCc1JB250ywLUzxi','rwrPDcbuCM9WAhK','rMfPBgvKihrVig1VzgLMEsbWB2LUDhm6ia','ChjVDg90ExbL','BwfUywDLlwfYDgLJBgvZ','zgf0ys1Zzwn0Aw9U','AgLNAgXPz2H0lxDPBM5LCI1Uyw1L','rM91BMqGC3bLy2LMAwmGCM9SztOG','DhjVCgH5lwrLC2nYAxb0Aw9U','yxnZAwDUlxrYB3bOEs1MB3jT','rgf0ysbSB2fKigj1DhrVBNmGAw5PDgLHBgL6zwqGyMfZzwqGB24GCgvYBwLZC2LVBNm','tMv2zxi','y2XVC2vZDa','CgXHEwvYuMLIyM9UC0qY','yxbWCM92zwrnyxrJAgvZrdi','rM91BMqGCMfKAw8GD2L0Acb2ywX1ztO','AgLNAgXPz2H0lwfJAgLLDMvTzw50lwrLDgfPBhm','ugfNzsa','zwrPDc1OAwDOBgLNAhqTD2LUBMvYu2nVCMuTAw5WDxq','tw9KywWGB3bLBMvKihn1y2nLC3nMDwXSEq','BwfUywDLlxjPyMjVBNm','vw50AxrSzwq','u2v0ihrVia','qxr0ywnOAw5NignHBMnLBcbIDxr0B24GBgLZDgvUzxiU','DMfSDwvZ','CMvZDwX0','ug9PBNrZigrHDgeGBg9HzgvKihn1y2nLC3nMDwXSEq','pc9WpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzZ5mB3nLCIbfte8GsgLZDg9YEtO8l3n0CM9UzZ4G','tw9KywWGy2fUy2vSigj1DhrVBIbJBgLJA2vK','ChjVBw90zs1SywrKzxi','CM9Szs1JB2XVCG','CMvZAw11Bgf0zs1TB2rHBa','jZWVDgq+','odaYmZqYofD0Cufcwq','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVihjLC2LTDwXHDguGBwf0y2HLCW','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0Izw1WDhKTC3rHDguIpK5VihvZzxjZigzVDw5Kpc90zd48l3rYpG','rMfPBgvKihrVigXVywqGCg9PBNrZigrHDge6ia','AgLNAgXPz2H0lxbSyxLLCNmTy29UDgfPBMvY','zwrPDc1OAwDOBgLNAhqTBwf0y2HeyxrLlwLUChv0','CMLIyM9UlxvZzxiTC2vHCMnO','yxbWzw5Kq2HPBgq','DhjVCgH5lw1VzgfS','DwLK','sw5PDgLHBgL6Aw5NihbVAw50CYbMAwvSzcbMB3iGDxnLCIa','Aw5WDxrBBMfTzt0IzgvTB3rLlwXHzgrLCIjDoMnOzwnRzwq','zgf5C1nPBMnLtwf0y2G','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKieHPC3rVCNKGrgf0yq','lMnSB3nLlw5VDgLMAwnHDgLVBG','rxjYB3i','ywrTAw4','u2v0DgLUzYb1CcbJCMvHDguGDgvZDcbTyxrJAcbTB2rHBcbLDMvUDhm','DhjVCgH5lxjHCML0Eq','rwrPDca','ChjVBw90zwrcEq','yxj0AwnSzs1PBwfNzs11CMW','yxj0AwnSzs1TB2rHBa','vgvZDfDPBM5LCG','nxb4','ugXLyxnLigzPBgWGywXSigzPzwXKCW','lNnLy3rPB24TAgvHzgvY','rxjYB3iGC2vHCMnOAw5NihvZzxjZoG','twfWienYzwf0B3iGAxmGCMvXDwLYzwq','q2fUy2vSigj1DhrVBIaOi2nHBMnLBc1YB2XLlwj0BIKGBM90igzVDw5KigLUig1VzgfSlG','DxnLCLrYB3bOAwvZ','CMDIysGYntuSidi1nsWGmJu1lcaWlJeP','DhjVCgH5lwzVCM0','Bg9Zzxjoyw1L','ugXLyxnLigvUDgvYigeGDMfSAwqGDxnLCM5HBwu','pc9ZCgfUpJWVDgq+cIaGicaGicaGicaGicaGica8Dgq+','icGR','lMrLBgv0zs1TyxrJAc1IDg4','y3jLyxrLlxrLC3qTBwf0y2GTBw9KywW','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVigrLBgv0zsbTyxrJAgvZ','Aw5WDxrBBMfTzt0IDgvZDc1TyxrJAc1SywrKzxiIxvT2ywX1zt0IrdeIxq','CM9Szu5HBwu','C2vHCMnOlxjLC3vSDc1PDgvT','Cg9PBNrZlwrLC2m','y29UDgvUDa','BwLNCMf0Aw9UlxnLy3rPB24','u3vUzgf5','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0IzxjYB3iTC3rHDguIpKvYCM9YigXVywrPBMCGCMLIyM9UCZWVDgq+pc90CJ4','pc90zd4kicaGicaGicaGicaGicaGicaGica8Dgq+cIaGicaGicaGicaGicaGicaGicaGicaGidXIDxr0B24Gy2XHC3m9iMj0BIbIDg4TC20GzwrPDc1YAwjIB25Zlwj0BIiGzgf0ys11C2vYBMfTzt0I','cIaGicaGicaGicaGicaGica8DgqGy2XHC3m9iNrPBwvZDgfTCci+','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IDhLWzsi+','lMfKBwLUlxnLy3rPB24','igfSBg93zwqGDgfICZO','pgKGy2XHC3m9iMzHCYbMys1LEgnSyw1HDgLVBI10CMLHBMDSzsi+pc9PpIbfCNjVCG','phrYpJX0zcbJB2XZCgfUpsi2iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NigHPz2HSAwDODhmUlI48l3rKpJWVDhi+','C3vIC3rYAw5N','CMvTB3zLrxzLBNrmAxn0zw5LCG','Bg9Hzc1HCNrPy2XLCY1KyxrH','zwrPDc1TyxrJAc13Aw5UzxiTC3vPy2LKzxm','zgf0ytPPBwfNzs9WBMC7yMfZzty0lgLwqK9sDZblr2DVqufbqu5tvwHfvwDbqufdz0fbqufVq0fzqufbq00VCMH0qufbqunyqKLxwe1bqufZvefbquXfD0vbBxb3wufbqurivwXfuvzsng5pmLHtmgHvvvjQsgyZzKDUueDck2ncA3Pfquzsu2DSsdvTuuvPAxrjrM9zrvC2AuzYv0PVrtiWu1jLq1fvr2jyCLjXrvzgqJbtsuTlBNjOttn3vwXKBvfQyZvzAZq2tMPQChO3kZa2y081mhzuudnQCgXkmgzUrfLLnZv6Cg56l2u3mYTmnxPgzJrUk1GXu1vVqu02mJrhvw9bmeLbANCRsvm1qLD3z0njD0nIDufUmefJtvDpC1a0tKHfk0jSCuvQBxHewLfdCtrinvfdB1fZquXnv0PQtfDNtvr2tJHguefmDvDxCZm4twHUzKnVuw9cDKLcwtreDtrfvNDdEvbeAJDmk3b0qs9tl1Dynevxnefmuu1nmwCVAZHgBue1vufqDujAwunlotr3uNLyBvu2vgX3revgENDesgDSDe9iBLfly0jxD0zQz0W1AMDSt1ruzujjoej0DxDKvM13zuXNq3zbqxnJA3bXofH3rgfNELe3uwjVufPrqZfrn0PQqtDlz1GYquOWmNPRD21Qsu51qxPvEKHdEuDUquzTre1AnerXz0vsse5urxncrg12vdbLvLnztMD4mvbtBdi4Ce9SzgnhDNCVv0fpzuiRwtzWEKv3uevkvJf6t3zcugnbsNGWuM1mzZnzr3CWwxu4meC0tfjQrxjpALuWqNHkr0fsy0iXwtzkAKu3r2Drs0fenNC0rM1bttnbvxnJrtrWtxvVENfPz3jnytuYuLvlAuSRAxb4s0rsA1zsqvLtB2LeD0rmAuXls1u5AxfltwDPuvjimNDfBhnKEhDeugDmuefbt1O0rM8Vwvy1qK5RqvHysxzgz0XyqvmRmNDeBKfvmK1Arw1ZsK9jsZHoCuCVD0vwD0nSrw9srw1mzuTqntbOBJvgu3zNvdnbwtv2k0O1sg1ivLO0AvKRCe5hmeuXD0vZCYTgyMPyuZj2AMDLvuPfvhPztePfnsTNEJvHsfHtEMXrqM5rrLe5z0nqsdvgngXmotrcmKCZEwWWuuuRANDKD0jkz0G5rvnttwDYy3rLrZDitKPPAgSXqtnbtu9bz2vcvdLfn05fmeXbA0vUrwTzshffyte2mLfnBISWmI9msNn4CgCWwuXLEfvsvgWZy1nNBxfzrLrotwnJueOXDuLeuhH1wvnJrhLhmZfmCZeRrwjlnM11u0LbDwW4Dfe3sNjXnujVr1DOvKzduuO3A1fRAMXUsvfguJfus293tKDznKPVBw5nuwTtB0D2AvH2qvDxs0LVu2PNvNHqzeX0DNDlD1eXr1ven0vdDwDcrfvsvfbLsfvczKL3vLvotZbfv1b5v1qRBu5hqLeXm1DytJzdCuTVt0Dzwvq4zMO4k24YtKndwxLmAw9VqZHMnZveodz1A2DusLPtr2nbqufbquvSrLrRu3vrBund','DxnLCI1YB2XLCY1Zzwn0Aw9U','4PYfiev4Axn0CW','ywrK','pgKGy2XHC3m9iMzHCYbMys1LEgnSyw1HDgLVBI10CMLHBMDSzsi+pc9PpIbfCNjVCIaTifrYEsbbz2fPBG','u3vIBwL0igj1DhrVBIbJBgLJA2vKigrPCMvJDgX5','i2qZmMyYzG','zgvTB3rLzej5','zw5Krgf0zq','CxvPy2STzwrPDc1WB2LUDhmTBw9KywW','zM9YrwfJAa','qwnOAwv2zw1LBNqGAgLNAgXPz2H0igj1DhrVBIbJBgLJA2vK','CgvUzgLUzY1JB3vUDa','icHSB3nLCIK8l3a+cIaGicaGicaGicaGidXWpJXZDhjVBMC+u2nVCMu6pc9ZDhjVBMC+ia','qwXSigzPzwXKCYbHCMuGCMvXDwLYzwq','u2v0DgLUzYbWzxjTAxnZAw9UCYbIyxnLzcbVBIbYB2XLoIa','tM8GBwf0y2HLCYbMB3vUza','zwrPDc1OAwDOBgLNAhqTBwfWvMvYC2LVBI1PBNb1Da','yMXVy2S','AgLNAgXPz2H0lxzPzgvVlxbYzxzPzxCTy29UDgfPBMvY','ndy1nJjSD0zuqvi','BwfUywDLlwHPz2HSAwDODhm','qxjLihLVDsbZDxjLihLVDsb3yw50ihrVihjLBw92zsb0AguGCM9SzsbMCM9Tia','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys11C2vYlxbSDxmIihrPDgXLpsjbC3nPz24GDg8GCgXHEwvYiJ48l2K+cIaGicaGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0IzgvSzxrLlxrYB3bOEs1IDg4IigrHDgeTAwq9iG','AgLZDg9YEs1LBMqTzgf0zq','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys1Wzw5JAwWTywX0iJ48l2K+cIaGicaGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0IyxnZAwDUlxrYB3bOEs1IDg4IigrHDgeTAwq9iG','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi3iIbJBgfZCZ0IzxjYB3iTC3rHDguIpGOGicaGicaGicaGicaGicaGicaGievYCM9YigXVywrPBMCGBwf0y2HLCZOG','cIaGicaGicaGicaGicaGica8DgqGy2XHC3m9iNrYB3bOEs1PBwfNzs1JzwXSiJ4kicaGicaGicaGicaGicaGicaGica8Aw1NihnYyZ0I','BM9UugfYDgLJAxbHBNrZ','q3jLyxrLihrLC3qGBwf0y2GGBw9KywWGBM90igzVDw5K','vw5Yyw5Rzwq','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKieHPz2HSAwDODhm','C3rVCfbYB3bHz2f0Aw9U','AgLNAgXPz2H0lwfJAgLLDMvTzw50lwrLDgfPBhmTy29UDgfPBMvY','yxj0AwnSzs1JB250zw50','phnWyw4Gy2XHC3m9iNjVBguTyMfKz2uIihn0EwXLpsjIywnRz3jVDw5KlwnVBg9YoIa','i2vSBY1OAxn0B3j5lxrHyMXLlwjVzhKGDhi','y29TBwL0','rxjYB3iGAw4GzgvTB3rPB246','ywrKrxzLBNrmAxn0zw5LCG','cIaGicaGicaGicaGicaGicaGicaGpc9ZCgfUpGOGicaGicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGicaGidX0zd4','vxnLCIbqCM9MAwXLCW','lNnPzgvIyxiTBMf2ic5UyxyTAxrLBvTKyxrHlxnLy3rPB249iG','yxj0AwnSzs10AxrSzq','zw1HAwW','zMXLEa','i3rYB3bOEs1TB2rHBcaUy2XVC2uTyNrUlcaJyxnZAwDUlxrYB3bOEs1TB2rHBcaUy2XVC2uTyNrU','CMLIyM9UCY1VDMvYDMLLDY10ywjSzs1IB2r5','rxjYB3iGBg9HzgLUzYbHCNrPy2XLigrHDge6','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKifbSyxLLCNmGrgf0yq','oda0sMfysgnZ','CgvUzgLUz01HDgnOzxm','zgf0yxnLDa','zwXV','CM9SzufZC2LNBMvKqNK','Bg9Zzxjezw1VtgLUAW','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys10CMfZAc1HBhqIpJWVAt4kicaGicaGicaGicaGicaGicaGica8l2j1DhrVBJ4kicaGicaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGia','lMvTChr5lxn0yxrL','Bg9Zzxjty29Yzq','zgvZyW','iJ48l2K+cIaGicaGicaGicaGidXZCgfUpG','pc9WpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzZ5ty29YztO8l3n0CM9UzZ4G','Bwf4','CgXHEwvYuhjVzMLSzvvYBa','iIb0AxrSzt0IuMvTB3zLifjVBguIpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys10Aw1LCYi+pc9PpIa8is0TienOyw5NzwqGAwnVBIaTlt4kicaGicaGicaGicaGicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGicaGicaGicaG','vhjVCgH5ihvWzgf0zwqGC3vJy2vZC2z1BgX5','cIaGicaGicaGpgG0pJXPignSyxnZpsjMyxmGzMeTzgf0ywjHC2uIpJWVAt4Grgf0ywjHC2uGtwLNCMf0Aw9Upc9Ond4kicaGicaGica8Cd5jBML0AwfSAxPLihrOzsbWB2LUDhmGzMLLBgqGzM9YigfSBcb1C2vYCYb3Ag8Gzg9Uj3qGAgf2zsbPDcb5zxqUifrOAxmGAxmGC2fMzsb0BYbYDw4GBxvSDgLWBguGDgLTzxmUpc9WpGOGicaGicaGidXIDxr0B24GAwq9iM1Pz3jHDguTCg9PBNrZlwj0BIiGy2XHC3m9iMj0BIbIDg4TD2fYBMLUzYi+cIaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTBwfNAwmIpJWVAt4Gsw5PDgLHBgL6zsbqB2LUDhmGrMLLBgqGzM9YiefSBcbvC2vYCWOGicaGicaGidWVyNv0Dg9UpGOGicaG','ig5VDcbMB3vUzc4','C3r5Bgu','zgf0yq','DxnLCM5HBwu','phrYpJX0zcbJB2XZCgfUpsi2iIbJBgfZCZ0Izw1WDhKTC3rHDguIpK5VigHPz2HSAwDODhmGzM91BMq8l3rKpJWVDhi+','Cg9PBNrZlwfJDgLVBG','cIaGicaGicaGicaGicaGica8Dgq+','ihvZzxjZlIa','Bw9KAwzPzwrcEq','CgfYzw50tM9Kzq','yxnZAwDUlxrYB3bOEs1YyxjPDhK','iZe5nZzKmG','ievmtYbOAxn0B3j5igvUDhjPzxmUia','uhjVBw90Aw9U','DxnLCNmTDgfIBguTyM9KEq','qM90AcbWBgf5zxjZigfSCMvHzhKGAgf2zsbfte8GAgLZDg9YEsbMB3iGDgHPCYbTyxrJAc4GtM8GCMvZAw11Bgf0Aw9Uig5LzwrLzc4','i3bSyxLLCNmTDgfIBguTyM9KEsb0CG','iJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTzwrPDci+pc9PpIbfzgL0cIaGicaGicaGicaGicaGicaGicaGicaGidWVyNv0Dg9UpGOGicaGicaGicaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGicaGica','rMfPBgvKihrVigXVywqGDxnLCIbKyxrHoIa','qxjLihLVDsbZDxjLihLVDsb3yw50ihrVigrLBgv0zsb0AgLZihbSyxLLCJ8GvgHPCYbHy3rPB24Gy2fUBM90igjLihvUzg9Uzs4','iJ4kicaGicaGicaGicaGicaGicaGica8AsbJBgfZCZ0IzMfZigzHlwnVAw5ZiJ48l2K+ia','z2v0qxr0CMLIDxrL','tg9ZDa','cIaGicaGicaGicaGicaGica8l3rKpGOGicaGicaGicaGica','C2vHCMnOvgvYBq','ihzZia','C2v0lwvSBY1SywrKzxi','rgvSzxrLig1HDgnOignSAwnRzwq6','BMv3rwXV','D2LUBMvYu2nVCMu','q2fUy2vSigj1DhrVBIbUB3qGzM91BMq','CgXHEwvYuMLIyM9UC0qZ','rxjYB3iGAw5PDgLHBgL6Aw5NihbVAw50CYbMAwvSzdO','Bwf0y2HmAw5R','AgLNAgXPz2H0lwfJAgLLDMvTzw50lxbSyxLLCI1JB250ywLUzxi','ugXHEwvYihvWzgf0zwqGC3vJy2vZC2z1BgX5','qMf0y2GGBgLTAxqGCMvHy2HLzcaTihLVDsbTyxKGBMvLzcb0BYbYDw4GDgHPCYbMDw5JDgLVBIbTDwX0AxbSzsb0Aw1LCYbMB3iGBgfYz2uGzgf0yxnLDhm','tM8GDxnLCIbjrcbMB3vUzcbVBIbIDxr0B24','ug9ZAxrPB25ZihvWzgf0zwq6ifDPBM5LCIa','DMfSDwu','uxvLCNKGy3jLyxrLzdO','pgKGy2XHC3m9iMzHCYbMys1ZEw5JlwfSDci+pc9PpIbmB2fKifvZzxjZierHDge','BM9UlxbHCNrPy2LWyw50','zgvZy3jPChrPB24','rMfPBgvKihrVihnHDMuGDhjVCgH5oIa','ChjLDMLVDxnfBgvTzw50u2LIBgLUzW','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi2iIbJBgfZCZ0IzxjYB3iTC3rHDguIpGOGicaGicaGicaGicaGicaGicaGievYCM9YigXVywrPBMCGCgXHEwvYCZOG','ugXHEwvYie5HBwuGAxmGCMvXDwLYzwq','ks4G','CxvLCNLtzwXLy3rVCKfSBa','lNnPzgvIyxiTBMf2ic5UyxyTAxrLBq','iIbKyxrHlwXHzgrLCJ0I','ihvZzxjZigrVBID0igHHDMuGCg9PBNrZigzPzwXKihLLDc4GvxnLihrOzsbTAwDYyxrPB24GyNv0Dg9UihrVigLUAxrPywXPEMuU','CMvZAw11Bgf0zs1TyxrJAc1Pza','mteXvgfHvLz6','DhjVCgH5lwLK','AgLNAgX5lwLUywn0AxzL','C3bSAxq','DhjVCgH5swq','BM9UlxbHCNrPy2LWyw50CW','vxnLCLbYB2zPBgu','phrYpJX0zcbJB2XZCgfUpsi2iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5NihbSyxLLCNmUlI48l3rKpJWVDhi+','Bwf0y2HLCY1WCMv2lxbHz2u','ugXLyxnLihnLBgvJDcbHihvZzxiGyw5Kihn0B3jLigL0zw0','lNzPzxCTCgXHEwvYlwj0BG','u3rVCMuGAxrLBsbHD2fYzgvKihn1y2nLC3nMDwXSEq','BwfUywDLlxbVAw50CW','sgLNAgXPz2H0ignYzwf0zwqGC3vJy2vZC2z1BgX5iq','lNr5Cgu','ww91ig11C3qGyMuGBg9Nz2vKigLU','u2v0DgLUzYb1Ccbnyw5Hz2uGuMLIyM9UCYbZzwn0Aw9U','CMvZzxqTAgLZDg9YEs1MAwX0zxjZ','qwrKAw5NicjHy3rPDMuIignSyxnZihrVig1VzgfSlG','yMfJA2DYB3vUzenVBg9Y','Bg9Hzc1TyxrJAgvZlwrHDge','q3jLyxrLihrLC3qGBwf0y2GGzM9YBsbUB3qGzM91BMqGAw4Gre9n','uMvTB3zLia','uxvPy2SGzwrPDcbJBgLJA2vKigzVCIb1C2vYoG','rei6','zwrPDc13Aw5Z','zwrPDc1OAwDOBgLNAhqTzgvZy3jPChrPB24TAw5WDxq','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IDhjVCgH5lxjHCML0Es1JzwXSiJ4kicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IDhjVCgH5lxjHCML0Esa','rxjYB3iGC2f2Aw5Nig1HDgnOoG','lMXHzgrLCI1ZD2L0y2GGAw5WDxrBDMfSDwu9iKqXiL0','y3vYCMvUDc1YAwjIB24TDxnLCG','v2vKBMvZzgf5','Aw5WDxrBBMfTzt0IDgvZDc1TyxrJAc1SywrKzxiIxq','y3jLyxrLzej5','AgLNAgXPz2H0lw1HDgnOlwLUzM8Ty29UDgfPBMvY','tI9b','i2fYDgLJBguTBw9KywWGlMnSB3nLlwj0BG','DgvZDc1TyxrJAc13Aw5UzxiTDxnLCM5HBwu','C3rVCMuTAxrLBs1ZzwXLy3q','ww91igrVig5VDcbOyxzLihbLCM1PC3nPB24GDg8GywnJzxnZihrOAxmGC2vJDgLVBG','Dw5RBM93BG','zwrPDc1TyxrJAc1SywrKzxi','lMrLBgv0zs1HCNrPy2XLlwj0BG','Bgv2zwW','CMLIyM9UlwXLDMvS','BgfZDfbVAw50C01VzgLMAwvK','zwrPDc11C2vYBMfTzq','uMvZAw11Bgf0zwqGzw50CNKGlsbfte8Gyw5KihbVC2L0Aw9UCYbJywXJDwXHDgvKigzYB20Gywn0DwfSihbYzs1TyxrJAcbKyxrH','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0Izw1WDhKTC3rHDguIpK5VihrYB3bOEsbKzwzPBML0Aw9UCYbMB3vUzdWVDgq+pc90CJ4','rgfZAgjVyxjKigrHDgeGBg9HzgvKihn1y2nLC3nMDwXSEq','ywrTAw5FBw9KAwzPy2f0Aw9U','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IDxnLCI1WB2LUDhmIpG','qxj0AwnSzsbUB3qGzM91BMq','Bw9KAwz5lxbVAw50CY1MB3jT','Bg9Hzc1LBg8TAgLZDg9YEs1KyxrH','rM91BMqGDxnLCIbPBIa','ifjHBMSGrgLZDhjPyNv0Aw9U','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0IywrTAw4Tywn0Aw9UiJ4kicaGicaGicaGicaGicaGicaGica','Bg9ZzxjvC2vYBMfTzq','mJbWEa','Bg9Hzc10CM9WAgLLCY1KyxrH','ChjLDMvUDerLzMf1Bhq','z2v0rgf0zq','y3jLyxrLrwXLBwvUDa','AgLNAgXPz2H0lwrLC2nYAxb0Aw9U','ugXHEwvYia','pc9WpGOGicaGicaGicaGicaGicaGpha+phn0CM9UzZ5dDxjYzw50ifDPBM5LCIbfte86pc9ZDhjVBMC+ia','y29SB3i','AgLNAc1WB2LUDhm','uM9SzsaN','Aw5Zzxj0qwrQywnLBNrfBgvTzw50','zgLZCgXHEu5HBwu','CMv0DxjUicHMDw5JDgLVBIGPia','Dg9mB2nHBgveyxrLu3rYAw5N','zgvTB3rLlxbSyxLLCI1IDg4','Bwf0y2GTy291BNq','yxv0Ag9Y','Aw5Uzxjive1m','sgLNAgXPz2H0ig5VDcbMB3vUza','CxvLCNLtzwXLy3rVCG','rxjYB3iGzgvSzxrPBMCGCgXHEwvYoG','ywnOAwv2zw1LBNrjBwfNzvvYBa','igXHzgrLCG','rxjYB3iGzgvTB3rPBMCGCgXHEwvYoG','CM9SzufZC2LNBMvKqxq','ywrTAw5fBwfPBa','DxbKyxrL','C2v0lwvSBY12ywX1zq','C2v0DgLUz3m','u2f0DxjKyxK','B3bWB25LBNq','Bg9HzgLUzW','rxjYB3iGBg9HzgLUzYb1C2vYihbVAw50CYbOAxn0B3j5oG','CgfNzq','DxnLCKLK','pc9WpGOGicaGicaGicaGicaGicaGpgHYpGOGicaGicaGicaGicaGicaGpha+pgvTpLrOAxmGD2LSBcbJCMvHDguGywnJDxjHDguGruXpigHPC3rVCNKGzw50CMLLCYbIyxnLzcbVBIb0AguGCgXHEwvYCYCGruXpihjHDgLUz3mGyxqGDgHLihrPBwuGDgHPCYbTyxrJAcb3yxmGCgXHEwvKlJWVzw0+pc9WpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGica','C2v0qxr0CMLIDxrL','pc90zd4kicaGicaGicaGicaGicaGidX0zcbJBgfZCZ0Iywn0Aw9UCYi+cIaGicaGicaGicaGicaGicaGicaGpgj1DhrVBIbJBgfZCZ0IzwrPDc1HCNrPy2XLlwj0BIiGzgf0ys1Pzd0I','vxnLCM5HBwuG','B3bHy2L0Eq','tg9HzgvKia','u2LKzwjHCIbUyxzPz2f0Aw9UigLUAxrPywXPEMvKihDPDgGGCgvYBwLZC2LVBNm','CMLIyM9Ulxr5CguTC2vSzwn0','AgLNAgXPz2H0lwfJAgLLDMvTzw50lwLTywDL','vw5Uyw1LzcbuCM9WAhK','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0IzxjYB3iTC3rHDguIpKvYCM9YigXVywrPBMCGDxnLCNm8l3rKpJWVDhi+','zwrPDc1TyxrJAc1TB2rHBa','q3vYCMvUDcb1C2vYoG','phrYpJX0zcbJB2XZCgfUpsi1iIbJBgfZCZ0IzxjYB3iTC3rHDguIpKvYCM9YigXVywrPBMCGDxnLCNm6ia','uhjVy2vZC2LUzYbWB2LUDhmGzwrPDdO','lMnSB3nL','rxjYB3iGC2f2Aw5NigHPz2HSAwDODdO','tg9HzgLUzYbWB2LUDhmGzgf0ys4UlG','tM8GDxnLCNmGBMvLzgvKihbVAw50CYbMAwvSzcbPBML0AwfSAxPHDgLVBG','tM8GBwf0y2GGzgf0ysbMB3vUzcbMB3iGCMvZAw11Bgf0Aw9U','y2XVBMvoB2rL','rM91BMqG','pc9WpGOGicaGicaGia','yxbWCM92zwrbDa','zwrPDc1TyxrJAc1SB3nLCI1Zy29Yzq','zgvZDhjVEq','q3jLyxrLiefYDgLJBgu','ywX0','C3jJ','CMLIyM9UCW','q3jLyxrLie5LDYbuCM9WAhK','tM8GruXpigHPC3rVCNKGzM91BMqGzM9YihbSyxLLCIa','rxjYB3iGBg9HzgLUzYbYAwjIB25ZigrHDge','u3rHCNrPBMCGy29TCgXLDguGBwf0y2GGCMvZAw11Bgf0Aw9UlI4U','iZGWoda4ma'];a4c=function(){return ez;};return a4c();}async function openEditMatchModal(a,b){const du=a4O,c=document[du(0x403)](du(0x351));if(!c)return;try{const d=b==='D1'?du(0x19e):b==='D2'?'approvedMatchesD2':du(0x43c),e=doc(db,d,a),f=await getDoc(e);if(!f['exists']()){showNotification('Match\x20not\x20found','error');return;}const g=f[du(0x2b3)]();document['getElementById'](du(0x1ab))['value']=a,document['getElementById'](du(0x310))[du(0x2d8)]=b,document['getElementById'](du(0x1dc))[du(0x2d8)]=g['winnerUsername']||'',document[du(0x403)](du(0x3ca))[du(0x2d8)]=g[du(0x2ce)]||0x0,document['getElementById'](du(0x26d))[du(0x2d8)]=g[du(0x387)]||0x0,document[du(0x403)]('edit-match-winner-comment')[du(0x2d8)]=g['winnerComment']||'',document[du(0x403)](du(0x198))['value']=g[du(0x321)]||'',document[du(0x403)](du(0x35e))[du(0x2d8)]=g['loserScore']||0x0,document['getElementById']('edit-match-loser-suicides')['value']=g['loserSuicides']||0x0,document[du(0x403)]('edit-match-loser-comment')[du(0x2d8)]=g['loserComment']||'',document['getElementById']('edit-match-map')['value']=g['mapPlayed']||'',document['getElementById'](du(0x491))['value']=g[du(0x158)]||'',document['getElementById'](du(0x1d0))[du(0x2d8)]=g[du(0x2a5)]||g[du(0x3ba)]||'',document['getElementById']('edit-match-title')['textContent']=du(0x3b7)+g['winnerUsername']+du(0x2ca)+g['loserUsername'],c['classList'][du(0x271)]('active');}catch(h){console[du(0x394)](du(0x1f0),h),showNotification('Failed\x20to\x20load\x20match\x20data',du(0x394));}}function closeEditMatchModal(){const a=document['getElementById']('edit-match-modal');a&&a['classList']['remove']('active');}async function saveEditedMatch(){const dv=a4O;try{const a=document['getElementById'](dv(0x1ab))[dv(0x2d8)],b=document[dv(0x403)](dv(0x310))[dv(0x2d8)];if(!a||!b){showNotification('Match\x20ID\x20or\x20ladder\x20missing','error');return;}const c=b==='D1'?'approvedMatches':b==='D2'?dv(0x220):'approvedMatchesD3',d=document[dv(0x403)](dv(0x1dc))[dv(0x2d8)]['trim'](),e=parseInt(document['getElementById']('edit-match-winner-score')['value']),f=parseInt(document[dv(0x403)](dv(0x26d))[dv(0x2d8)]),g=document[dv(0x403)](dv(0x407))['value'][dv(0x1e7)](),h=document[dv(0x403)](dv(0x198))['value'][dv(0x1e7)](),i=parseInt(document['getElementById'](dv(0x35e))['value']),j=parseInt(document[dv(0x403)]('edit-match-loser-suicides')[dv(0x2d8)]),k=document[dv(0x403)]('edit-match-loser-comment')[dv(0x2d8)][dv(0x1e7)](),l=document[dv(0x403)](dv(0x397))[dv(0x2d8)]['trim'](),m=document['getElementById'](dv(0x491))[dv(0x2d8)]['trim'](),n=document[dv(0x403)](dv(0x1d0))[dv(0x2d8)][dv(0x1e7)]();if(!d||!h){showNotification(dv(0x3b8),dv(0x394));return;}await updateDoc(doc(db,c,a),{'winnerUsername':d,'winnerScore':e,'winnerSuicides':f,'winnerComment':g,'loserUsername':h,'loserScore':i,'loserSuicides':j,'loserComment':k,'mapPlayed':l,'winnerDemoLink':m||null,'loserDemoLink':n||null,'lastModifiedAt':serverTimestamp(),'lastModifiedBy':auth['currentUser']['email'],'isEdited':!![]}),showNotification(dv(0x145),'success'),closeEditMatchModal(),loadMatchesData(matchesPagination[b['toLowerCase']()][dv(0x344)]);}catch(o){console[dv(0x394)](dv(0x303),o),showNotification('Failed\x20to\x20save\x20match:\x20'+o['message'],dv(0x394));}}async function openDeleteMatchModal(a,b){const dw=a4O;try{const c=b==='D1'?dw(0x19e):b==='D2'?'approvedMatchesD2':dw(0x43c),d=doc(db,c,a),e=await getDoc(d);if(!e[dw(0x3b0)]()){showNotification(dw(0x48d),dw(0x394));return;}const f=e[dw(0x2b3)](),g=document[dw(0x403)](dw(0x420));g['dataset'][dw(0x19c)]=a,g[dw(0x2a2)]['ladder']=b;const h=f[dw(0x35d)]?new Date(f[dw(0x35d)][dw(0x46c)]*0x3e8)['toLocaleDateString']():'N/A',i=document['getElementById'](dw(0x1e3));i[dw(0x334)]=dw(0x1b8)+h+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Players:</strong>\x20'+f[dw(0x452)]+'\x20(winner)\x20vs\x20'+f['loserUsername']+dw(0x27b)+(f[dw(0x2ce)]||0x0)+'\x20-\x20'+(f[dw(0x2a8)]||0x0)+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Map:</strong>\x20'+(f[dw(0x3b6)]||'N/A')+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Ladder:</strong>\x20'+b+dw(0x35c),g[dw(0x408)]['add'](dw(0x41b));}catch(j){console[dw(0x394)]('Error\x20loading\x20match\x20for\x20deletion:',j),showNotification(dw(0x14a),'error');}}function closeDeleteMatchModal(){const dx=a4O,a=document['getElementById']('delete-match-confirm-modal');a&&(a[dx(0x408)]['remove'](dx(0x41b)),a['removeAttribute'](dx(0x490)),a['removeAttribute'](dx(0x1e5)));}async function confirmDeleteMatch(){const dy=a4O,a=document['getElementById']('delete-match-confirm-modal'),b=a['dataset']['matchId'],c=a['dataset'][dy(0x1ee)];if(!b||!c){showNotification('Match\x20ID\x20or\x20ladder\x20missing','error'),closeDeleteMatchModal();return;}try{const d=c==='D1'?'approvedMatches':c==='D2'?dy(0x220):'approvedMatchesD3';await deleteDoc(doc(db,d,b)),showNotification('Match\x20deleted\x20successfully',dy(0x37c)),closeDeleteMatchModal(),loadMatchesData(matchesPagination[c[dy(0x15a)]()]['page']);}catch(e){console['error']('Error\x20deleting\x20match:',e),showNotification('Failed\x20to\x20delete\x20match:\x20'+e['message'],dy(0x394));}}async function saveHighlightChanges(){const dz=a4O,a=document[dz(0x403)](dz(0x477))['value'],b=document[dz(0x403)]('edit-highlight-type-select')['value'];let c={'title':document[dz(0x403)]('edit-highlight-title-input')[dz(0x2d8)][dz(0x1e7)](),'type':b,'description':document['getElementById'](dz(0x301))[dz(0x2d8)]['trim'](),'videoId':document['getElementById'](dz(0x465))[dz(0x2d8)][dz(0x1e7)](),'submittedBy':auth[dz(0x3c9)][dz(0x29a)]};if(b===dz(0x39e)){c['matchInfo']=document[dz(0x403)]('edit-highlight-matchInfo-input')[dz(0x2d8)][dz(0x1e7)](),c['map']=document['getElementById']('edit-highlight-map-input')['value']['trim']();const d=document[dz(0x403)](dz(0x238))['value'];c['matchDate']=d?Timestamp['fromDate'](new Date(d)):null,c[dz(0x3ce)]=document[dz(0x403)]('edit-highlight-winnerName-input')['value']['trim'](),c['winnerScore']=document[dz(0x403)](dz(0x224))[dz(0x2d8)]['trim'](),c['loserName']=document[dz(0x403)](dz(0x414))['value']['trim'](),c['loserScore']=document[dz(0x403)](dz(0x17a))[dz(0x2d8)][dz(0x1e7)](),c['matchLink']=document[dz(0x403)](dz(0x201))['value'][dz(0x1e7)](),c['mapCreator']=null,c['mapVersion']=null,c['creatorImageUrl']=null,c['achievementPlayer']=null,c['achievementType']=null,c['achievementDetails']=null,c[dz(0x2ad)]=null;}else{if(b===dz(0x20c))c['map']=document['getElementById']('edit-highlight-map-input')['value'][dz(0x1e7)](),c['mapCreator']=document[dz(0x403)](dz(0x3c7))[dz(0x2d8)]['trim'](),c['mapVersion']=document[dz(0x403)](dz(0x27f))['value']['trim'](),c[dz(0x14e)]=document[dz(0x403)]('edit-highlight-creatorImageUrl-input')['value'][dz(0x1e7)](),c['matchInfo']=null,c[dz(0x44b)]=null,c['winnerName']=null,c[dz(0x2ce)]=null,c['loserName']=null,c[dz(0x2a8)]=null,c['matchLink']=null,c['achievementPlayer']=null,c['achievementType']=null,c['achievementDetails']=null,c[dz(0x2ad)]=null;else b==='achievement'&&(c['achievementPlayer']=document['getElementById']('edit-highlight-achievementPlayer-input')[dz(0x2d8)][dz(0x1e7)](),c['achievementType']=document[dz(0x403)]('edit-highlight-achievementType-input')[dz(0x2d8)][dz(0x1e7)](),c['achievementDetails']=document['getElementById'](dz(0x429))[dz(0x2d8)]['trim'](),c['playerProfileUrl']=document['getElementById'](dz(0x182))['value']['trim'](),c[dz(0x1a5)]=null,c['map']=null,c['matchDate']=null,c['winnerName']=null,c['winnerScore']=null,c['loserName']=null,c['loserScore']=null,c[dz(0x2d2)]=null,c['mapCreator']=null,c[dz(0x14c)]=null,c[dz(0x14e)]=null);}try{if(a){c['updatedAt']=serverTimestamp();const e=doc(db,'highlights',a);await updateDoc(e,c),showNotification('Highlight\x20updated\x20successfully!',dz(0x37c));}else c[dz(0x496)]=serverTimestamp(),await addDoc(collection(db,'highlights'),c),showNotification('Highlight\x20added\x20successfully!','success');closeEditHighlightModal(),loadHighlightsAdmin();}catch(f){console['error']('Error\x20saving\x20highlight:',f),showNotification('Error\x20saving\x20highlight:\x20'+f['message'],dz(0x394));}}async function resimulateMatch(){const dA=a4O;try{const a=document['getElementById'](dA(0x2e6))[dA(0x2d8)];if(!a){showNotification('Match\x20ID\x20is\x20required','error');return;}const b=auth['currentUser'];if(!b){showNotification(dA(0x234),dA(0x394));return;}const c=currentLadder==='D1'?dA(0x19e):currentLadder==='D2'?dA(0x220):dA(0x43c),d=doc(db,c,a),e=await getDoc(d);if(!e['exists']()){showNotification(dA(0x1fc),'error');return;}const f=e[dA(0x2b3)](),g=f[dA(0x35d)]?f['approvedAt'][dA(0x20a)]()['toLocaleString']():f[dA(0x44b)]?f['matchDate'][dA(0x20a)]?f['matchDate'][dA(0x20a)]()[dA(0x3e7)]():new Date(f['matchDate'])['toLocaleString']():'Unknown',h='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22match-details\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h4>Match\x20Details:</h4>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Winner:</strong>\x20'+f[dA(0x452)]+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Loser:</strong>\x20'+f['loserUsername']+dA(0x2ab)+f['winnerScore']+'-'+f[dA(0x2a8)]+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Map:</strong>\x20'+(f['mapPlayed']||f['mapName']||dA(0x3ad))+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Match\x20Date:</strong>\x20'+g+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Match\x20ID:</strong>\x20'+a+dA(0x1df)+currentLadder+dA(0x346);document['getElementById']('match-details-container')['innerHTML']=h,document[dA(0x403)](dA(0x44e))['style']['display']=dA(0x280),document[dA(0x403)]('confirm-resimulate-btn')[dA(0x2b2)][dA(0x382)]='block',window[dA(0x1a3)]={'matchId':a,'matchData':f,'ladder':currentLadder},showNotification(dA(0x3b5),dA(0x485));}catch(i){console[dA(0x394)](dA(0x16b),i),showNotification('Failed\x20to\x20find\x20match:\x20'+i['message'],dA(0x394));}}async function confirmResimulateMatch(){const dB=a4O;try{const {matchId:a,matchData:b,ladder:c}=window['pendingResimulateData'];if(!a||!b){showNotification(dB(0x359),'error');return;}const d=c==='D1'?dB(0x493):c==='D2'?dB(0x197):dB(0x48b),e=c==='D1'?'eloHistory':c==='D2'?dB(0x42f):dB(0x1fa),[f,g]=await Promise['all']([getDocs(query(collection(db,d),where(dB(0x2b4),'==',b[dB(0x452)]))),getDocs(query(collection(db,d),where(dB(0x2b4),'==',b[dB(0x321)])))]);if(f['empty']||g[dB(0x3ff)]){showNotification(dB(0x1d6),dB(0x394));return;}const h=f[dB(0x200)][0x0]['id'],i=g[dB(0x200)][0x0]['id'],j=f['docs'][0x0][dB(0x2b3)](),k=g['docs'][0x0]['data'](),[l,m]=await Promise[dB(0x18d)]([getDocs(query(collection(db,e),where(dB(0x3a6),'==',h),where('matchId','==',a))),getDocs(query(collection(db,e),where(dB(0x3a6),'==',i),where(dB(0x19c),'==',a)))]),n=!l[dB(0x3ff)],o=!m['empty'],p='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22validation-results\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h4>Validation\x20Results:</h4>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Winner\x20ELO\x20History:</strong>\x20'+(n?dB(0x270):dB(0x141))+dB(0x22d)+(o?dB(0x270):dB(0x141))+dB(0x329)+(j['eloRating']||dB(0x3ad))+dB(0x384)+(k[dB(0x1da)]||dB(0x3ad))+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Current\x20Winner\x20Position:</strong>\x20'+(j['position']||dB(0x3ad))+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p><strong>Current\x20Loser\x20Position:</strong>\x20'+(k[dB(0x418)]||'Unknown')+dB(0x432);document['getElementById'](dB(0x191))[dB(0x334)]=p,document['getElementById'](dB(0x191))[dB(0x2b2)][dB(0x382)]=dB(0x280);if(n&&o){showNotification(dB(0x2c0),'warning');return;}showNotification(dB(0x367),'info');const q=b['approvedAt']||b['matchDate']||serverTimestamp(),[r,s]=await Promise[dB(0x18d)]([getPlayerEloAtTime(h,q,e),getPlayerEloAtTime(i,q,e)]),{calculateElo:t}=await import('./ladderalgorithm.js'),{newWinnerRating:u,newLoserRating:v}=t(r,s),w=j[dB(0x418)]||Number[dB(0x1f1)],x=k[dB(0x418)]||Number['MAX_SAFE_INTEGER'];let y=w,z=x;w>x&&(y=x,z=x+0x1);const A=writeBatch(db),B=doc(db,d,h);A['update'](B,{'eloRating':u,'position':y,'lastUpdated':serverTimestamp(),'resimulated':!![],'resimulatedAt':serverTimestamp(),'resimulatedBy':auth['currentUser'][dB(0x23c)]});const C=doc(db,d,i);A[dB(0x33d)](C,{'eloRating':v,'position':z,'lastUpdated':serverTimestamp(),'resimulated':!![],'resimulatedAt':serverTimestamp(),'resimulatedBy':auth[dB(0x3c9)]['uid']});if(w>x){const H=await getDocs(query(collection(db,d),where('position','>',x),where('position','<',w)));H[dB(0x278)](I=>{const dC=dB,J=doc(db,d,I['id']),K=I['data']()[dC(0x418)];A[dC(0x33d)](J,{'position':K+0x1,'lastUpdated':serverTimestamp(),'positionAdjustedBy':'resimulation','positionAdjustedAt':serverTimestamp()});});}if(!n){const I=doc(collection(db,e));A[dB(0x372)](I,{'playerId':h,'player':b['winnerUsername'],'previousElo':r,'newElo':u,'eloChange':u-r,'opponentId':i,'opponent':b[dB(0x321)],'matchResult':dB(0x139),'previousPosition':w,'newPosition':y,'positionChange':y-w,'matchId':a,'timestamp':q,'resimulated':!![],'resimulatedAt':serverTimestamp(),'resimulatedBy':auth['currentUser']['uid'],'gameMode':c,'matchScore':b['winnerScore']+'-'+b['loserScore'],'mapPlayed':b[dB(0x3b6)]||b['mapName']||dB(0x3ad),'note':dB(0x316)});}if(!o){const J=doc(collection(db,e));A[dB(0x372)](J,{'playerId':i,'player':b[dB(0x321)],'previousElo':s,'newElo':v,'eloChange':v-s,'opponentId':h,'opponent':b['winnerUsername'],'matchResult':'loss','previousPosition':x,'newPosition':z,'positionChange':z-x,'matchId':a,'timestamp':q,'resimulated':!![],'resimulatedAt':serverTimestamp(),'resimulatedBy':auth[dB(0x3c9)][dB(0x23c)],'gameMode':c,'matchScore':b[dB(0x2ce)]+'-'+b['loserScore'],'mapPlayed':b['mapPlayed']||b[dB(0x379)]||'Unknown','note':dB(0x316)});}const D=c==='D1'?dB(0x19e):c==='D2'?'approvedMatchesD2':dB(0x43c),E=doc(db,D,a);A[dB(0x33d)](E,{'resimulated':!![],'resimulatedAt':serverTimestamp(),'resimulatedBy':auth['currentUser'][dB(0x23c)],'resimulatedReason':'Complete\x20resimulation\x20-\x20ELO\x20ratings\x20and\x20positions\x20recalculated','originalWinnerElo':j[dB(0x1da)],'originalLoserElo':k['eloRating'],'originalWinnerPosition':w,'originalLoserPosition':x,'resimulatedWinnerElo':u,'resimulatedLoserElo':v,'resimulatedWinnerPosition':y,'resimulatedLoserPosition':z}),await A[dB(0x293)]();const F=(!n?0x1:0x0)+(!o?0x1:0x0),G=w!==y||x!==z;showNotification(dB(0x434)+(dB(0x1a0)+F+dB(0x2bd))+('Updated\x20ELO\x20ratings:\x20Winner\x20'+r+'→'+u+dB(0x257)+(u-r)+'),\x20')+(dB(0x179)+s+'→'+v+'\x20('+(v-s)+dB(0x2e1))+(''+(G?dB(0x2d7)+w+'→'+y+',\x20Loser\x20'+x+'→'+z:'No\x20position\x20changes\x20needed.')),'success'),closeResimulateModal(),document[dB(0x336)]('#players.content-section.active')&&loadPlayersData();}catch(K){console[dB(0x394)]('Error\x20resimulating\x20match:',K),showNotification('Failed\x20to\x20resimulate\x20match:\x20'+K['message'],dB(0x394));}}async function getPlayerEloAtTime(a,b,c){const dD=a4O;try{const d=b[dD(0x20a)]?b[dD(0x20a)]():new Date(b),e=query(collection(db,c),where('playerId','==',a),where('timestamp','<',b),orderBy('timestamp',dD(0x2a9)),limit(0x1)),f=await getDocs(e);if(!f[dD(0x3ff)]){const g=f[dD(0x200)][0x0]['data']();return console[dD(0x1aa)]('Found\x20ELO\x20history\x20for\x20player\x20'+a+'\x20before\x20match:\x20'+g[dD(0x2cd)]),g['newElo'];}else return console['log'](dD(0x365)+a+'\x20before\x20match\x20-\x20using\x20starting\x20ELO\x201200'),0x4b0;}catch(h){return console['error'](dD(0x482)+a+':',h),0x4b0;}}function openResimulateModal(){const dE=a4O;console[dE(0x1aa)]('openResimulateModal\x20called!');const a=document[dE(0x403)](dE(0x231));console['log']('Modal\x20element\x20found:',a);if(!a){console[dE(0x394)]('Modal\x20element\x20not\x20found!');return;}a['style'][dE(0x382)]='block',a[dE(0x2b2)]['visibility']=dE(0x1d1),a[dE(0x2b2)]['opacity']='1',a['classList'][dE(0x271)]('active'),console[dE(0x1aa)]('Modal\x20should\x20now\x20be\x20visible'),console[dE(0x1aa)]('Modal\x20computed\x20styles:',window['getComputedStyle'](a)[dE(0x382)]);const b=document[dE(0x403)]('match-details-container'),c=document[dE(0x403)](dE(0x191)),d=document['getElementById'](dE(0x3b2)),e=document[dE(0x403)]('resimulate-match-id');if(b)b[dE(0x334)]='';if(c)c[dE(0x334)]='';if(d)d['style'][dE(0x382)]=dE(0x36f);if(e)e['value']='';console['log'](dE(0x43b));}function closeResimulateModal(){const dF=a4O;document['getElementById'](dF(0x231))[dF(0x2b2)]['display']=dF(0x36f),window[dF(0x1a3)]=null;}window['resimulateMatch']=resimulateMatch,window[a4O(0x489)]=confirmResimulateMatch,window['openResimulateModal']=openResimulateModal,window['closeResimulateModal']=closeResimulateModal;async function loadPointsData(){const dG=a4O;console[dG(0x1aa)](dG(0x357));try{await Promise[dG(0x18d)]([loadPointsOverview(),loadPointsHistory()]),showNotification(dG(0x22c),'success');}catch(a){console['error'](dG(0x3e8),a),showNotification(dG(0x236)+a['message'],'error');}}function renderPointsOverview(a){const dH=a4O,b=document['getElementById'](dH(0x160));if(!b)return;if(a['length']===0x0){b[dH(0x334)]='<tr><td\x20colspan=\x225\x22\x20class=\x22empty-state\x22>No\x20users\x20found</td></tr>';return;}b[dH(0x334)]='',a[dH(0x278)](c=>{const dI=dH,d=document['createElement']('tr'),e=c['displayName']||c[dI(0x2b4)]||dI(0x45f),f=c['email']||dI(0x153),g=c[dI(0x13d)]||0x0,h=c[dI(0x314)]?new Date(c['lastPointsModified']['seconds']*0x3e8)[dI(0x330)]():dI(0x21d);d['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22user-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-user\x20user-icon\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22user-name\x22>'+e+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+f+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22points-badge\x20'+(g>0x3e8?dI(0x32b):g>0x1f4?dI(0x3d1):'low-points')+dI(0x2c5)+g['toLocaleString']()+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+h+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20class=\x22actions\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22quick-edit-btn\x22\x20data-user-id=\x22'+c['id']+dI(0x148)+c['id']+'\x22\x20title=\x22View\x20Points\x20History\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-history\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',b[dI(0x23a)](d);}),setupPointsActionButtons();}function setupPointsActionButtons(){const dJ=a4O;console[dJ(0x1aa)]('Setting\x20up\x20points\x20action\x20buttons...');const a=document[dJ(0x2e2)]('.quick-edit-btn');console[dJ(0x1aa)]('Found\x20'+a['length']+'\x20quick\x20edit\x20buttons'),a['forEach'](c=>{const dK=dJ,d=c['cloneNode'](!![]);c['parentNode'][dK(0x481)](d,c);});const b=document[dJ(0x2e2)]('.view-history-btn');console[dJ(0x1aa)](dJ(0x35b)+b['length']+dJ(0x3c5)),b[dJ(0x278)](c=>{const dL=dJ,d=c[dL(0x35a)](!![]);c['parentNode'][dL(0x481)](d,c);}),document['querySelectorAll'](dJ(0x476))['forEach'](c=>{const dM=dJ;c['addEventListener'](dM(0x446),function(d){const dN=dM;d[dN(0x324)](),d['stopPropagation']();const f=this[dN(0x2a2)][dN(0x345)];console['log'](dN(0x2fe),f);if(!f){console[dN(0x394)](dN(0x2d6));return;}this[dN(0x2b2)]['opacity']=dN(0x3cc),setTimeout(()=>{this['style']['opacity']='1';},0xc8),openQuickEditModal(f);});}),document[dJ(0x2e2)]('.view-history-btn')['forEach'](c=>{const dO=dJ;c[dO(0x295)]('click',function(d){const dP=dO;d[dP(0x324)](),d[dP(0x28e)]();const f=this['dataset'][dP(0x345)];console['log']('View\x20history\x20clicked\x20for\x20user:',f);if(!f){console[dP(0x394)](dP(0x2d6));return;}this['style'][dP(0x34a)]=dP(0x3cc),setTimeout(()=>{const dQ=dP;this[dQ(0x2b2)][dQ(0x34a)]='1';},0xc8),loadUserPointsHistory(f);});}),console[dJ(0x1aa)]('Points\x20action\x20buttons\x20setup\x20complete');}async function openQuickEditModal(a){const dR=a4O;console[dR(0x1aa)]('Opening\x20quick\x20edit\x20modal\x20for\x20user\x20ID:',a);const b=document['getElementById']('quick-edit-points-modal');if(!b){console['error'](dR(0x3cf)),showNotification(dR(0x37d),'error');return;}try{showNotification('Loading\x20user\x20data...',dR(0x485));const c=doc(db,'userProfiles',a),d=await getDoc(c);if(!d['exists']()){showNotification('User\x20not\x20found','error');return;}const e=d[dR(0x2b3)]();console[dR(0x1aa)](dR(0x47f),e);const f=document['getElementById'](dR(0x37f)),g=document[dR(0x403)](dR(0x497)),h=document[dR(0x403)]('quick-edit-email'),i=document[dR(0x403)]('quick-edit-current-points'),j=document['getElementById'](dR(0x18f));if(!f||!g||!h||!i||!j){console[dR(0x394)]('Quick\x20edit\x20form\x20elements\x20missing\x20from\x20HTML'),showNotification('Quick\x20edit\x20form\x20is\x20incomplete.\x20Check\x20the\x20HTML\x20structure.','error');return;}f['value']=a,g['textContent']=e['displayName']||e[dR(0x2b4)]||'Unknown\x20User',h[dR(0x3a4)]=e[dR(0x29a)]||'No\x20email',i['textContent']=(e['points']||0x0)[dR(0x3e7)](),j[dR(0x17b)]();const k=document['getElementById']('quick-add');k&&(k[dR(0x1ff)]=!![]);b[dR(0x408)]['add'](dR(0x41b)),console['log'](dR(0x225));const l=document['getElementById']('quick-points-amount');l&&setTimeout(()=>l['focus'](),0x64);}catch(m){console['error'](dR(0x3fb),m),showNotification(dR(0x2c3)+m[dR(0x1b7)],'error');}}function closeQuickEditModal(){const dS=a4O,a=document[dS(0x403)]('quick-edit-points-modal');a&&a['classList']['remove'](dS(0x41b));}async function handleQuickEditPoints(a){const dT=a4O;a[dT(0x324)]();const b=document['getElementById']('quick-edit-user-id')['value'],c=document['querySelector']('input[name=\x22quick-action\x22]:checked')[dT(0x2d8)],d=parseInt(document['getElementById']('quick-points-amount')['value']),f=document[dT(0x403)](dT(0x190))[dT(0x2d8)]['trim']();console[dT(0x1aa)](dT(0x354),{'userId':b,'action':c,'amount':d,'reason':f});if(!b||!d||d<0x0){showNotification('Please\x20enter\x20valid\x20data','error');return;}try{await modifyUserPoints(b,c,d,f),closeQuickEditModal(),loadPointsOverview(),showNotification('Points\x20updated\x20successfully',dT(0x37c)),console['log']('Points\x20updated\x20successfully\x20for\x20user:',b);}catch(g){console['error']('Error\x20updating\x20points:',g),showNotification(dT(0x3d7)+g['message'],dT(0x394));}}async function searchUsersForPoints(){const dU=a4O,a=document[dU(0x403)]('points-user-search')['value'][dU(0x1e7)]()['toLowerCase'](),b=document['getElementById'](dU(0x1ca));if(!a||a['length']<0x2){b['innerHTML']='';return;}b[dU(0x334)]='<div\x20class=\x22loading\x22>Searching...</div>';try{const c=collection(db,'userProfiles'),d=await getDocs(c),e=[];d['forEach'](f=>{const dV=dU,g=f['data'](),h=(g['displayName']||g['username']||'')[dV(0x15a)](),i=(g[dV(0x29a)]||'')[dV(0x15a)]();(h['includes'](a)||i['includes'](a))&&e[dV(0x1c2)]({'id':f['id'],...g});});if(e['length']===0x0){b['innerHTML']='<div\x20class=\x22no-results\x22>No\x20users\x20found</div>';return;}b['innerHTML']='',e[dU(0x278)](f=>{const dW=dU,g=document['createElement']('div');g['className']=dW(0x25d),g['innerHTML']=dW(0x210)+(f[dW(0x32e)]||f[dW(0x2b4)]||'Unknown')+dW(0x412)+(f['email']||dW(0x153))+dW(0x31a)+(f['points']||0x0)['toLocaleString']()+'\x20points</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',g[dW(0x295)]('click',()=>selectUserForPoints(f)),b[dW(0x23a)](g);});}catch(f){console['error'](dU(0x24e),f),b[dU(0x334)]='<div\x20class=\x22error\x22>Error\x20searching\x20users</div>';}}function selectUserForPoints(a){const dX=a4O;document[dX(0x403)]('selected-user-name')[dX(0x3a4)]=a['displayName']||a[dX(0x2b4)]||'Unknown\x20User',document[dX(0x403)]('selected-user-points')[dX(0x3a4)]=(a[dX(0x13d)]||0x0)['toLocaleString'](),document[dX(0x403)]('selected-user-id')[dX(0x2d8)]=a['id'],document[dX(0x403)]('selected-user-info')['style'][dX(0x382)]='block',document['getElementById']('points-management-forms')['style'][dX(0x382)]='block',document[dX(0x403)](dX(0x1ca))[dX(0x334)]='',document[dX(0x403)]('points-user-search')['value']='';}async function handleModifyPoints(a){const dY=a4O;a[dY(0x324)]();const b=document['getElementById']('selected-user-id')[dY(0x2d8)],c=document[dY(0x403)](dY(0x2b6))['value'],d=parseInt(document['getElementById']('points-amount')[dY(0x2d8)]),f=document[dY(0x403)]('points-reason')['value'][dY(0x1e7)]();if(!b||!d||d<0x0){showNotification('Please\x20select\x20a\x20user\x20and\x20enter\x20a\x20valid\x20amount',dY(0x394));return;}try{await modifyUserPoints(b,c,d,f),document['getElementById'](dY(0x31c))[dY(0x17b)]();const g=doc(db,'userProfiles',b),h=await getDoc(g);if(h['exists']()){const i=h['data']();document['getElementById']('selected-user-points')['textContent']=(i['points']||0x0)['toLocaleString']();}showNotification('Points\x20modified\x20successfully','success'),loadPointsHistory();}catch(j){console[dY(0x394)]('Error\x20modifying\x20points:',j),showNotification(dY(0x214)+j[dY(0x1b7)],'error');}}async function loadPointsHistory(){const dZ=a4O,a=document['getElementById']('points-history-table-body');if(!a)return;a[dZ(0x334)]='<tr><td\x20colspan=\x226\x22\x20class=\x22loading-cell\x22>Loading\x20history...</td></tr>';try{const b=collection(db,'pointsHistory'),c=query(b,orderBy('timestamp','desc'),limit(0x32)),d=await getDocs(c);if(d['empty']){a['innerHTML']='<tr><td\x20colspan=\x226\x22\x20class=\x22empty-state\x22>No\x20history\x20found</td></tr>';return;}a['innerHTML']='',d['forEach'](e=>{const e0=dZ,f=e['data'](),g=document['createElement']('tr'),h=f[e0(0x20e)]?new Date(f[e0(0x20e)]['seconds']*0x3e8)['toLocaleString']():'Unknown';let i='';switch(f['action']){case'add':i=e0(0x3e2)+f['amount']+'\x20points';break;case'subtract':i=e0(0x192)+f['amount']+'\x20points';break;case'set':i=e0(0x228)+f['amount']+'\x20points';break;default:i=f[e0(0x427)]+'\x20'+f['amount']+e0(0x479);}g['innerHTML']=e0(0x2b7)+h+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f[e0(0x32e)]||'Unknown\x20User')+e0(0x166)+i+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22points-change\x20'+f['action']+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(f['previousPoints']||0x0)+e0(0x162)+(f['newPoints']||0x0)+e0(0x296)+(f[e0(0x1bf)]||'No\x20reason\x20provided')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(f[e0(0x33c)]||'Unknown\x20Admin')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',a[e0(0x23a)](g);});}catch(e){console[dZ(0x394)]('Error\x20loading\x20points\x20history:',e),a[dZ(0x334)]='<tr><td\x20colspan=\x226\x22\x20class=\x22error-state\x22>Error\x20loading\x20history:\x20'+e[dZ(0x1b7)]+'</td></tr>';}}function filterPointsOverview(){const e1=a4O,a=document[e1(0x403)]('points-overview-search')[e1(0x2d8)][e1(0x15a)]();if(!window[e1(0x39f)])return;const b=window[e1(0x39f)]['filter'](c=>{const e2=e1,d=(c[e2(0x32e)]||c[e2(0x2b4)]||'')[e2(0x15a)](),e=(c[e2(0x29a)]||'')[e2(0x15a)]();return d['includes'](a)||e['includes'](a);});renderPointsOverview(b);}function sortPointsOverview(){const e3=a4O,a=document[e3(0x403)]('points-sort-order')['value'];if(!window[e3(0x39f)])return;const b=[...window[e3(0x39f)]];switch(a){case e3(0x25e):b[e3(0x443)]((c,d)=>(d[e3(0x13d)]||0x0)-(c['points']||0x0));break;case e3(0x1ea):b['sort']((c,d)=>(c[e3(0x13d)]||0x0)-(d[e3(0x13d)]||0x0));break;case e3(0x48a):b['sort']((c,d)=>{const e4=e3,e=(c['displayName']||c[e4(0x2b4)]||'')['toLowerCase'](),f=(d[e4(0x32e)]||d['username']||'')[e4(0x15a)]();return e['localeCompare'](f);});break;case e3(0x208):b['sort']((c,d)=>{const e5=e3,e=(c['displayName']||c[e5(0x2b4)]||'')['toLowerCase'](),f=(d[e5(0x32e)]||d['username']||'')['toLowerCase']();return f['localeCompare'](e);});break;}renderPointsOverview(b);}async function handleAwardItem(a){const e6=a4O;a['preventDefault']();const b=document[e6(0x403)](e6(0x1b1))[e6(0x2d8)],c=document['getElementById'](e6(0x30d))[e6(0x2d8)],d=document['getElementById'](e6(0x3aa))['value'][e6(0x1e7)]();if(!b||!c){showNotification(e6(0x2f0),'error');return;}try{showNotification(e6(0x2f2),'success'),document[e6(0x403)]('award-item-form')[e6(0x17b)]();}catch(f){console[e6(0x394)](e6(0x1ef),f),showNotification(e6(0x45c)+f[e6(0x1b7)],e6(0x394));}}async function loadUserPointsHistory(a){const e7=a4O;try{const b=collection(db,'pointsHistory'),c=query(b,where('userId','==',a),orderBy(e7(0x20e),'desc')),d=await getDocs(c);console['log'](e7(0x35b)+d['size']+'\x20history\x20entries\x20for\x20user\x20'+a),showNotification(e7(0x1bb)+d['size']+e7(0x185),e7(0x485));}catch(e){console['error'](e7(0x343),e),showNotification(e7(0x44c),'error');}}async function initializeUserPointsField(){const e8=a4O;try{console['log'](e8(0x1eb));const a=collection(db,e8(0x1b4)),b=await getDocs(a);if(b[e8(0x3ff)]){console[e8(0x1aa)](e8(0x377));return;}let c=0x0,d=0x0;const e=writeBatch(db);let f=0x0;return console['log'](e8(0x35b)+b['size']+'\x20users\x20to\x20check...'),b[e8(0x278)](g=>{const e9=e8,h=g[e9(0x2b3)]();h[e9(0x13d)]===undefined||h[e9(0x13d)]===null?(e[e9(0x33d)](g['ref'],{'points':0x0,'pointsInitializedAt':serverTimestamp()}),c++,f++,console[e9(0x1aa)]('Queued\x20'+(h['displayName']||h['username']||h[e9(0x29a)]||e9(0x3ad))+'\x20for\x20points\x20initialization')):(d++,console[e9(0x1aa)]((h['displayName']||h['username']||h['email']||'Unknown')+'\x20already\x20has\x20points:\x20'+h['points'])),f>=0x1f4&&console[e9(0x18b)](e9(0x2d5));}),c>0x0?(console[e8(0x1aa)](e8(0x135)+c+'\x20users...'),await e['commit'](),console['log']('✅\x20Successfully\x20initialized\x20points\x20field\x20for\x20'+c+e8(0x1e6))):console[e8(0x1aa)](e8(0x358)),console[e8(0x1aa)]('Migration\x20Summary:\x0a\x20\x20\x20\x20\x20\x20\x20\x20-\x20Total\x20users\x20checked:\x20'+b[e8(0x435)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20-\x20Users\x20updated\x20with\x20points:\x20'+c+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20-\x20Users\x20who\x20already\x20had\x20points:\x20'+d),showNotification(e8(0x484)+c+e8(0x2b8)+d+'\x20users\x20already\x20had\x20points.',e8(0x37c)),window['allUsersPoints']&&loadPointsOverview(),{'totalUsers':b['size'],'usersUpdated':c,'usersAlreadyHadPoints':d};}catch(g){console['error'](e8(0x2d1),g),showNotification('Error\x20initializing\x20points:\x20'+g['message'],e8(0x394));throw g;}}function addPointsMigrationButton(){const ea=a4O,a=document[ea(0x403)]('manage-points');if(!a)return;if(document['getElementById']('migrate-points-btn'))return;const b=document[ea(0x326)]('div');b[ea(0x468)]=ea(0x260),b['style'][ea(0x157)]=ea(0x322),b[ea(0x2b2)]['padding']='15px',b['style'][ea(0x2fa)]='rgba(255,\x20193,\x207,\x200.1)',b[ea(0x2b2)]['border']=ea(0x3f7),b[ea(0x2b2)][ea(0x15c)]=ea(0x24b),b[ea(0x334)]=ea(0x2b0);const c=a['querySelector'](ea(0x24d));c&&c[ea(0x32d)](ea(0x19b),b),document['getElementById'](ea(0x46e))[ea(0x295)]('click',async function(){const eb=ea;if(confirm('This\x20will\x20add\x20a\x20points\x20field\x20(set\x20to\x200)\x20for\x20all\x20users\x20who\x20don\x27t\x20have\x20one\x20yet.\x20Continue?')){this[eb(0x409)]=!![],this[eb(0x334)]='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Initializing...';try{await initializeUserPointsField(),this['innerHTML']=eb(0x455),this['style'][eb(0x2fa)]=eb(0x195),setTimeout(()=>{const ec=eb;b['style'][ec(0x382)]='none';},0xbb8);}catch(d){this['innerHTML']=eb(0x272),this['disabled']=![];}}});}function setupManagePointsSection(){const ed=a4O;console[ed(0x1aa)](ed(0x3ec)),addPointsMigrationButton();const a=document['getElementById'](ed(0x1c9));a&&a['addEventListener']('input',debounce(searchUsersForPoints,0x12c));const b=document[ed(0x403)](ed(0x31c));b&&b['addEventListener'](ed(0x3a3),handleModifyPoints);const c=document['getElementById'](ed(0x454));c&&c[ed(0x295)]('submit',handleAwardItem);const d=document['getElementById']('points-overview-search');d&&d['addEventListener']('input',debounce(filterPointsOverview,0x12c));const e=document[ed(0x403)](ed(0x36a));e&&e['addEventListener']('change',sortPointsOverview);const f=document[ed(0x403)]('refresh-points-overview');f&&f[ed(0x295)](ed(0x446),loadPointsOverview);const g=document['getElementById'](ed(0x277));if(g){console[ed(0x1aa)]('Quick\x20edit\x20modal\x20found,\x20setting\x20up\x20events...');const h=g['querySelector']('.close-btn');h?h[ed(0x295)]('click',function(){const ee=ed;console[ee(0x1aa)](ee(0x45a)),closeQuickEditModal();}):console['warn']('Close\x20button\x20not\x20found\x20in\x20quick\x20edit\x20modal');const i=document['getElementById']('cancel-quick-edit');i?i['addEventListener'](ed(0x446),function(){const ef=ed;console[ef(0x1aa)](ef(0x22e)),closeQuickEditModal();}):console[ed(0x18b)](ed(0x2cf));const j=document[ed(0x403)]('quick-edit-points-form');j?j['addEventListener']('submit',function(k){const eg=ed;console['log'](eg(0x1db)),handleQuickEditPoints(k);}):console[ed(0x394)]('Quick\x20edit\x20form\x20not\x20found!'),g['addEventListener'](ed(0x446),function(k){k['target']===g&&(console['log']('Modal\x20background\x20clicked'),closeQuickEditModal());});}else console['error']('Quick\x20edit\x20modal\x20not\x20found\x20in\x20DOM!');console['log'](ed(0x38d));}function setupManageRibbonsSection(){const eh=a4O;console[eh(0x1aa)](eh(0x2f7));const a=document[eh(0x403)](eh(0x239));a&&a[eh(0x295)]('input',debounce(searchRibbonUser,0x12c));const b=document['getElementById']('search-ribbon-user-btn');b&&b[eh(0x295)]('click',searchRibbonUser);const c=document[eh(0x403)](eh(0x1b6));c&&c['addEventListener']('submit',addRibbon),a&&a['addEventListener'](eh(0x19f),function(d){const ei=eh;d[ei(0x173)]==='Enter'&&(d['preventDefault'](),searchRibbonUser());}),console['log']('Manage\x20Ribbons\x20section\x20initialized');}async function modifyUserPoints(a,b,c,d=''){const ej=a4O,e=doc(db,ej(0x1b4),a),f=await getDoc(e);if(!f['exists']())throw new Error(ej(0x37b));const g=f[ej(0x2b3)](),h=g['points']!==undefined?g['points']:0x0;g['points']===undefined&&(console[ej(0x1aa)](ej(0x23d)+(g[ej(0x32e)]||g['email']||ej(0x3ad))),await updateDoc(e,{'points':0x0,'pointsInitializedAt':serverTimestamp()}));let i=h;switch(b){case ej(0x271):i=h+c;break;case ej(0x1cd):i=Math[ej(0x2ac)](0x0,h-c);break;case'set':i=c;break;default:throw new Error(ej(0x13e));}await updateDoc(e,{'points':i,'lastPointsModified':serverTimestamp()}),await addDoc(collection(db,'pointsHistory'),{'userId':a,'userEmail':g[ej(0x29a)]||ej(0x30f),'displayName':g[ej(0x32e)]||g[ej(0x2b4)]||'Unknown\x20User','action':b,'amount':c,'previousPoints':h,'newPoints':i,'reason':d,'adminEmail':auth['currentUser'][ej(0x29a)],'timestamp':serverTimestamp()});}async function loadPointsOverview(){const ek=a4O,a=document[ek(0x403)](ek(0x160));if(!a)return;a[ek(0x334)]=ek(0x1fd);try{const b=collection(db,'userProfiles'),c=await getDocs(b);if(c['empty']){a['innerHTML']=ek(0x235);return;}const d=[];let e=0x0;c[ek(0x278)](f=>{const el=ek,g=f['data'](),h=g['points']!==undefined?g['points']:0x0;g['points']===undefined&&e++,d[el(0x1c2)]({'id':f['id'],...g,'points':h});}),e>0x0&&(console[ek(0x1aa)](ek(0x35b)+e+ek(0x133)),showNotification(e+ek(0x2e5),ek(0x485))),d['sort']((f,g)=>(g['points']||0x0)-(f[ek(0x13d)]||0x0)),window['allUsersPoints']=d,renderPointsOverview(d);}catch(f){console[ek(0x394)](ek(0x380),f),a['innerHTML']=ek(0x353)+f[ek(0x1b7)]+ek(0x441);}}async function loadRibbonsData(){const em=a4O,a=document[em(0x403)](em(0x29d));if(!a)return;a['innerHTML']='<tr><td\x20colspan=\x225\x22\x20class=\x22loading-cell\x22>Loading\x20ribbons\x20data...</td></tr>';try{const [b,c,d]=await Promise[em(0x18d)]([getDocs(collection(db,'playerRibbons')),getDocs(collection(db,em(0x21f))),getDocs(collection(db,'playerRibbonsD3'))]);a['innerHTML']='';const e=(f,g)=>{const en=em;f[en(0x278)](h=>{const eo=en,i=h[eo(0x2b3)](),j=i[eo(0x363)]||{},k=Object[eo(0x1bc)](j)['length'],l=document['createElement']('tr');l['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(i[eo(0x2b4)]||'Unknown')+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td><span\x20class=\x22ladder-badge\x20'+g['toLowerCase']()+'\x22>'+g+eo(0x1c0)+k+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+(i['lastUpdated']?new Date(i['lastUpdated']['seconds']*0x3e8)[eo(0x330)]():'Unknown')+eo(0x263)+i[eo(0x2b4)]+eo(0x2e4)+g+eo(0x2c2),a['appendChild'](l);});};e(b,'D1'),e(c,'D2'),e(d,'D3'),document[em(0x2e2)]('.edit-ribbons-btn')[em(0x278)](f=>{const ep=em;f['addEventListener'](ep(0x446),function(){const eq=ep,g=this[eq(0x2a2)][eq(0x2b4)],h=this['dataset'][eq(0x1ee)];editUserRibbons(g,h);});}),showNotification(em(0x37e),'success');}catch(f){console[em(0x394)](em(0x1f7),f),a[em(0x334)]=em(0x262),showNotification(em(0x366),'error');}}async function searchRibbonUser(){const er=a4O,a=document['getElementById']('ribbon-user-search')['value']['trim']();if(!a){showNotification(er(0x3f5),'error');return;}try{const [b,c,d]=await Promise[er(0x18d)]([getDoc(doc(db,er(0x386),a)),getDoc(doc(db,er(0x21f),a)),getDoc(doc(db,er(0x2d0),a))]);let e=null,f=null;if(b[er(0x3b0)]())e='D1',f=b['data']();else{if(c['exists']())e='D2',f=c[er(0x2b3)]();else d[er(0x3b0)]()&&(e='D3',f=d[er(0x2b3)]());}e?(document[er(0x403)](er(0x305))[er(0x3a4)]=a,document[er(0x403)]('ribbon-target-user')[er(0x2d8)]=a,document['getElementById'](er(0x47c))['value']=e,document[er(0x403)]('user-ribbon-management')['style']['display']=er(0x280),displayCurrentRibbons(f['ribbons']||{}),showNotification('Found\x20'+a+'\x20in\x20'+e+'\x20ladder','success')):showNotification(er(0x172)+a+'\x20not\x20found\x20in\x20any\x20ladder',er(0x394));}catch(g){console[er(0x394)](er(0x483),g),showNotification('Error\x20searching\x20for\x20user',er(0x394));}}function displayCurrentRibbons(a){const es=a4O,b=document[es(0x403)](es(0x1e9));if(!b)return;b[es(0x334)]='';if(Object[es(0x1bc)](a)[es(0x3eb)]===0x0){b[es(0x334)]='<p\x20class=\x22no-ribbons\x22>No\x20ribbons\x20found</p>';return;}Object['entries'](a)[es(0x278)](([c,d])=>{const et=es,e=document['createElement']('div');e['className']='ribbon-item',e['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ribbon-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<strong>'+c+et(0x376)+(d[et(0x312)]||0x1)+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<small>Awarded:\x20'+(d['awardedAt']?new Date(d[et(0x152)]['seconds']*0x3e8)['toLocaleDateString']():'Unknown')+'</small>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn\x20btn-danger\x20btn-sm\x20remove-ribbon-btn\x22\x20data-ribbon=\x22'+c+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-trash\x22></i>\x20Remove\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',b['appendChild'](e);}),document[es(0x2e2)]('.remove-ribbon-btn')[es(0x278)](c=>{const eu=es;c[eu(0x295)]('click',function(){const ev=eu,d=this[ev(0x2a2)]['ribbon'];removeRibbon(d);});});}async function addRibbon(a){const ew=a4O;a[ew(0x324)]();const b=document[ew(0x403)](ew(0x209))['value'],c=document['getElementById'](ew(0x47c))[ew(0x2d8)],d=document['getElementById'](ew(0x34d))[ew(0x2d8)],e=parseInt(document['getElementById']('ribbon-level')[ew(0x2d8)]);if(!b||!c||!d||!e){showNotification(ew(0x24c),'error');return;}try{const f=ew(0x386)+(c==='D1'?'':c),g=doc(db,f,b),h=await getDoc(g),i=h['exists']()?h['data']()['ribbons']||{}:{};i[d]={'level':e,'awardedAt':serverTimestamp()},await setDoc(g,{'username':b,'ladder':c,'ribbons':i,'lastUpdated':serverTimestamp()},{'merge':!![]}),showNotification('Added\x20'+d+'\x20Level\x20'+e+'\x20to\x20'+b,'success'),displayCurrentRibbons(i),document[ew(0x403)](ew(0x34d))[ew(0x2d8)]='',document[ew(0x403)](ew(0x313))[ew(0x2d8)]='1';}catch(j){console[ew(0x394)](ew(0x3bd),j),showNotification('Error\x20adding\x20ribbon',ew(0x394));}}async function removeRibbon(a){const ex=a4O,b=document['getElementById'](ex(0x209))[ex(0x2d8)],c=document[ex(0x403)]('ribbon-target-ladder')[ex(0x2d8)];if(!confirm(ex(0x2fd)+a+ex(0x3b3)+b+'?'))return;try{const d=ex(0x386)+(c==='D1'?'':c),e=doc(db,d,b),f=await getDoc(e),g=f['exists']()?f['data']()['ribbons']||{}:{};delete g[a],await setDoc(e,{'username':b,'ladder':c,'ribbons':g,'lastUpdated':serverTimestamp()},{'merge':!![]}),showNotification('Removed\x20'+a+'\x20from\x20'+b,'success'),displayCurrentRibbons(g);}catch(h){console['error']('Error\x20removing\x20ribbon:',h),showNotification('Error\x20removing\x20ribbon','error');}}function editUserRibbons(a,b){const ey=a4O;document['getElementById']('ribbon-user-search')[ey(0x2d8)]=a,searchRibbonUser();}
+import { 
+    collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
+    serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
+    limitToLast, onSnapshot, deleteField, or, Timestamp
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { auth, db } from './firebase-config.js';
+import { getRankStyle } from './ranks.js';
+import { isAdmin } from './admin-check.js';
+
+// At the top of adminbackend.js with other global variables
+let matchesPagination = { 
+    d1: { page: 1, lastVisible: null, firstVisible: null }, 
+    d2: { page: 1, lastVisible: null, firstVisible: null },
+    d3: { page: 1, lastVisible: null, firstVisible: null }
+};
+
+// Helper function to determine text color based on background
+function getContrastColor(hexColor) {
+    if (!hexColor) return '#ffffff'; // Default to white
+    hexColor = hexColor.replace('#', '');
+    if (hexColor.length === 3) {
+        hexColor = hexColor.split('').map(char => char + char).join('');
+    }
+    if (hexColor.length !== 6) return '#ffffff'; // Invalid format
+
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff'; // Return black for light colors, white for dark
+}
+
+// This is the base64 encoded string for a simple trophy icon
+const DEFAULT_TROPHY_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAADHUlEQVR4nO2XS0hUURjHf3fGnPGB+cBkzEAFRSglH5mQEiitIFoYEW6iFrWJoE20SReCQUGbXrRqEVFB0SIKKnrhM3wUldmQjc5Yk46Njjpz7+06cO50vTP3jplJ0fnDYe75zpnz/e73+L5zFf4n+X1SUoAM624GUoA0IAjw+IS5BWwgCIwCbuAn0AcMWOsP4NHE+BlqEjmxDZQCq4H5QCoQsALMWJjLWgMTvN8FPALuWWs38MhnfCoQoBvIBY4Du4EVwCyPDj7L+ptA/S/WX4EW4ALQMM1g/k8FmA5UAPuBZYCK94wRyXmU6TlwDEFzwDHgltOHnQKcBWwFjgL5jglOTTeBI8BtuwdVmweLgCvAAsckpq8XwDagzQ7QboPZQC1Q7JjA7KgX2AJ02zkwmjINuAzUzHCyGnAFmDMZ4DqgERHNTEsBDmvT0eVSYNgx1PSl28pOldcGvw/WAOeB+Y6pzEwPEJV1zOvBPcAJx0RmLg3YGw0Yu80G4LRjErOjU0BxJGARcB1Y6JjE7GgQKAD6w4FmAM3AUscE4pMuozqigrMa52RUKiK+ipxKDRkVRAYSoiDwDLiLKKU9iqKMgiQRH2wElsdxwDPgLPAAOZ4Fo/YV5BNkAXXIvFgLXAS+2wDnAU2MZEmsJOIK8NqG/wEVwClEoREmLeKP50hn5FSvgT3AY5v+J5HmHVZ4iY+pNG0E1wEss+FbjXS2vjgeUJETzYLJE5+gz5aHXSzlQBnQFQ9gCPH5F4lL94B2G3yl0QE+jwdwBJgH9ESSMgrcteG7HNJihk1A3AMOAgeBT9E7NE0LAkEnEkYHqEa162QMn+02/LJsxpg0YLexURTl3cSgmqYFTNMccPJ1uIDPxuYScDyG31Ls1+EbK6muSIAul8tQ7Jrq5BoGWhVFCQJ7kQkjlnIQFR1TKowNGY6JomnMQkSoGviXvAWWKIoSjgVxPdLtvwKwQ1GUD7ECugBDURTPeHUBfIwVUNO0EWPyWT+mNGBQ13WXN6CqKoOGYYT8fj8+n2NCCYyLiooC8f75D86ukgTJZSGcAAAAAElFTkSuQmCC";
+
+// Initialize charts container
+const charts = {};
+let currentLadder = 'D1'; // Default ladder mode
+let eloHistoryPagination = { 
+    d1: { page: 1, lastVisible: null, firstVisible: null }, 
+    d2: { page: 1, lastVisible: null, firstVisible: null },
+    d3: { page: 1, lastVisible: null, firstVisible: null } // Add D3 pagination
+};
+const PAGE_SIZE = 15; // Items per page for history tables
+
+// In your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        try {
+            // Just initialize the dashboard - permissions will be checked inside
+            await initializeAdminDashboard();
+        } catch (error) {
+            console.error('Error initializing dashboard:', error);
+            showNotification('Error setting up admin dashboard', 'error');
+        }
+    });
+});
+
+// Add this function after the initialization code
+
+async function getUserTabPermissions(userEmail) {
+    if (!userEmail) return ['dashboard']; // Default minimum access
+    
+    console.log(`Looking for user role information for ${userEmail} in all collections...`);
+    
+    // Define collections to check in priority order
+    const collectionsToCheck = [
+        { name: 'userProfiles', displayName: 'User Profiles' },
+        { name: 'players', displayName: 'D1 Players' },
+        { name: 'playersD2', displayName: 'D2 Players' },
+        { name: 'playersD3', displayName: 'D3 Players' },
+        { name: 'nonParticipants', displayName: 'Non-Participants' }
+    ];
+    
+    // First try to find by UID if user is authenticated
+    const user = auth.currentUser;
+    
+    let role = null;
+    let roleSource = null;
+    
+    // Check all collections before deciding on permissions
+    for (const collectionInfo of collectionsToCheck) {
+        try {
+            // If authenticated, try direct user ID lookup first
+            if (user) {
+                const docRef = doc(db, collectionInfo.name, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    // Log what we found for debugging
+                    console.log(`Found user in ${collectionInfo.displayName} by UID:`, userData);
+                    
+                    // Use roleName if available, otherwise fall back to role
+                    // Make sure to normalize by converting to lowercase
+                    const foundRole = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (foundRole && foundRole !== 'none') {
+                        role = foundRole;
+                        roleSource = collectionInfo.displayName;
+                        console.log(`Found specific role: ${role} in ${roleSource}`);
+                        break; // Exit the loop once we find a role
+                    }
+                }
+            }
+            
+            // If no role found by UID (or no authenticated user), try email lookup
+            if (!role) {
+                const collRef = collection(db, collectionInfo.name);
+                const q = query(collRef, where('email', '==', userEmail));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const userData = querySnapshot.docs[0].data();
+                    console.log(`Found user in ${collectionInfo.displayName} with email ${userEmail}:`, userData);
+                    
+                    // Use roleName if available, otherwise fall back to role
+                    const foundRole = (userData.roleName || userData.role || '').toLowerCase();
+                    
+                    if (foundRole && foundRole !== 'none') {
+                        role = foundRole;
+                        roleSource = collectionInfo.displayName;
+                        console.log(`Found specific role: ${role} in ${roleSource}`);
+                        break; // Exit once we found a role
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error checking ${collectionInfo.displayName}:`, error);
+        }
+    }
+    
+    // If we found a role in any collection, use it to set permissions
+    if (role) {
+        console.log(`Setting permissions based on role: ${role} (from ${roleSource})`);
+        
+        // Define role-based permissions
+        // Make sure all role names are lowercase for consistency
+        const rolePermissions = {
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
+            'council': ['dashboard', 'manage-players', 'manage-matches'],
+            'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights']
+        };
+        
+        // Look up permissions for this role (case insensitive)
+        if (rolePermissions[role]) {
+            console.log(`Role '${role}' has permissions:`, rolePermissions[role]);
+            return rolePermissions[role];
+        }
+    }
+    
+    // No role information found or no defined permissions, return default access
+    console.log(`No specific permissions for user ${userEmail}, giving default access`);
+    return ['dashboard'];
+}
+// Update the setupSidebarNavigation function
+
+// Fix setupSidebarNavigation function
+function setupSidebarNavigation(allowedTabs = []) {
+    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    const sections = document.querySelectorAll('.admin-section');
+    
+    // Default to showing dashboard only if no permissions provided
+    if (!allowedTabs || allowedTabs.length === 0) {
+        allowedTabs = ['dashboard'];
+    }
+    
+    // Hide or show navigation items based on permissions
+    navItems.forEach(item => {
+        const sectionId = item.getAttribute('data-section');
+        
+        // Show or hide based on permissions
+        if (allowedTabs.includes(sectionId)) {
+            item.style.display = 'flex'; // Show this nav item
+        } else {
+            item.style.display = 'none'; // Hide this nav item
+        }
+        
+        // Setup click events for visible items
+        item.addEventListener('click', () => {
+            // Get the section ID from data attribute
+            const sectionId = item.getAttribute('data-section');
+            
+            // Verify user has permission to access this section
+            if (!allowedTabs.includes(sectionId)) {
+                showNotification('You do not have permission to access this section', 'error');
+                return;
+            }
+            
+            // Update active state in navigation
+            navItems.forEach(navItem => navItem.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Hide all sections and show the selected one
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                console.log(`Switched to ${sectionId} section`);
+            }
+        });
+    });
+    
+    // Activate the first allowed tab
+    const firstAllowedTab = document.querySelector(`.sidebar-nav .nav-item[data-section="${allowedTabs[0]}"]`);
+    if (firstAllowedTab) {
+        firstAllowedTab.click();
+    }
+    
+    // Log initialization
+    console.log('Sidebar navigation initialized with permissions');
+}
+
+// Add lazy loading for tab data
+function setupTabNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    let currentSection = null;
+    let loadedSections = new Set(); // Track which sections have been loaded
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const targetSection = this.getAttribute('data-section');
+            
+            // Don't do anything if clicking current section
+            if (targetSection === currentSection) return;
+            
+            // Hide current section if exists
+            if (currentSection) {
+                document.getElementById(currentSection).style.display = 'none';
+                navItems.forEach(i => i.classList.remove('active'));
+            }
+            
+            // Show target section
+            document.getElementById(targetSection).style.display = 'block';
+            this.classList.add('active');
+            currentSection = targetSection;
+            
+            // No automatic data loading - user must click the load button
+            // You can remove this block entirely if you want
+        });
+    });
+}
+
+// Remove automatic data loading from section changes
+function loadSectionData(sectionId) {
+    // This now does nothing - data loading is triggered by buttons only
+    return;
+}
+
+// Modify initializeAdminDashboard to include the trophy management section
+async function initializeAdminDashboard() {
+    try {
+        // Get current user and their permissions
+        const user = auth.currentUser;
+        const allowedTabs = await getUserTabPermissions(user.email);
+        console.log(`User ${user.email} allowed tabs:`, allowedTabs);
+        
+        // Store permissions globally for reference in other functions
+        window.userAllowedTabs = allowedTabs;
+        
+        // Initialize sidebar navigation WITH permissions
+        setupSidebarNavigation(allowedTabs);
+        
+        // Initialize ladder selector
+        setupLadderSelector();
+        
+        // Initialize sections conditionally based on permissions
+        setupDashboardSection();
+        
+        if (allowedTabs.includes('manage-players')) {
+            setupManagePlayersSection();
+        }
+        
+        if (allowedTabs.includes('elo-history')) {
+            setupEloHistorySection();
+        }
+        
+        if (allowedTabs.includes('manage-ranks')) {
+            setupRankControls();
+        }
+        
+        if (allowedTabs.includes('manage-articles')) {
+            setupManageArticlesSection();
+        }
+        
+        if (allowedTabs.includes('user-roles-section')) {
+            setupUserRolesSection();
+        }
+        
+        // Add trophy management section initialization
+        if (allowedTabs.includes('manage-trophies')) {
+            setupTrophyManagementSection();
+        }
+
+        // Add highlights management section initialization
+        if (allowedTabs.includes('manage-highlights')) {
+            setupManageHighlightsSection();
+        }
+
+        if (allowedTabs.includes('inactive-players')) {
+            setupInactivePlayersSection();
+        }
+
+        if (allowedTabs.includes('manage-matches')) {
+            setupManageMatchesSection();
+        }
+
+        if (allowedTabs.includes('manage-points')) {
+            setupManagePointsSection();
+        }
+
+        // Add ribbon management section initialization
+        if (allowedTabs.includes('manage-ribbons')) {
+            setupManageRibbonsSection();
+        }
+
+        setupDataLoadButtons(allowedTabs);
+
+    } catch (error) {
+        console.error("Error initializing admin dashboard:", error);
+    }
+}
+
+// Fix setupDataLoadButtons function to include trophies
+function setupDataLoadButtons(allowedTabs = []) {
+    // Default to showing dashboard only if no permissions provided
+    if (!allowedTabs || allowedTabs.length === 0) {
+        allowedTabs = ['dashboard'];
+    }
+    
+    // Dashboard load button - always available since dashboard is the minimum
+    const loadDashboardBtn = document.getElementById('load-dashboard-data');
+    if (loadDashboardBtn) {
+        loadDashboardBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadDashboardOverview()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Trophy management load button
+    if (allowedTabs.includes('manage-trophies')) {
+        const loadTrophiesBtn = document.getElementById('load-trophies-data');
+        if (loadTrophiesBtn) {
+            loadTrophiesBtn.addEventListener('click', function() {
+                console.log('Load trophies data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadTrophyDefinitions()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading trophies:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    // Players load button
+    if (allowedTabs.includes('manage-players')) {
+        const loadPlayersBtn = document.getElementById('load-players-data');
+        if (loadPlayersBtn) {
+            loadPlayersBtn.addEventListener('click', function() {
+                console.log('Load players data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadPlayersData()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading players:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    // ELO history load button
+    if (allowedTabs.includes('elo-history')) {
+        const loadHistoryBtn = document.getElementById('load-elo-history-data');
+        if (loadHistoryBtn) {
+            loadHistoryBtn.addEventListener('click', function() {
+                console.log('Load history data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadEloHistory(1)
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading history:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    // Articles load button
+    if (allowedTabs.includes('manage-articles')) {
+        const loadArticlesBtn = document.getElementById('load-articles-data');
+        if (loadArticlesBtn) {
+            loadArticlesBtn.addEventListener('click', function() {
+                console.log('Load articles data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadArticles()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading articles:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+    
+    // Users load button
+    if (allowedTabs.includes('user-roles-section')) {
+        const loadUsersBtn = document.getElementById('load-users-data');
+        if (loadUsersBtn) {
+            loadUsersBtn.addEventListener('click', function() {
+                console.log('Load users data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadUsersWithRoles()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+        // Add inside setupDataLoadButtons function
+    if (allowedTabs.includes('inactive-players')) {
+        const loadInactiveBtn = document.getElementById('load-inactive-players-data');
+        if (loadInactiveBtn) {
+            loadInactiveBtn.addEventListener('click', function() {
+                console.log('Load inactive players data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadInactivePlayersData()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
+                    })
+                    .catch(error => {
+                        console.error('Error loading inactive players:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+    // Add highlights load button
+    if (allowedTabs.includes('manage-highlights')) {
+        const loadHighlightsBtn = document.getElementById('load-highlights-data');
+        if (loadHighlightsBtn) {
+            loadHighlightsBtn.addEventListener('click', function() {
+                console.log('Load highlights data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadHighlightsAdmin()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                    })
+                    .catch(error => {
+                        console.error('Error loading highlights:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+     // Matches load button and create test match button
+    if (allowedTabs.includes('manage-matches')) {
+        const loadMatchesBtn = document.getElementById('load-matches-data');
+        if (loadMatchesBtn) {
+            loadMatchesBtn.addEventListener('click', function() {
+                console.log('Load matches data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadMatchesData(1)
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
+                    })
+                    .catch(error => {
+                        console.error('Error loading matches:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
+                        }, 3000);
+                    });
+            });
+        }
+        
+        // IMPORTANT: Set up the create test match button here too
+        setupCreateTestMatchButton();
+        setupCreateTestMatchModal();
+    }
+
+    // Ribbons management load button
+    if (allowedTabs.includes('manage-ribbons')) {
+        const loadRibbonsBtn = document.getElementById('load-ribbons-data');
+        if (loadRibbonsBtn) {
+            loadRibbonsBtn.addEventListener('click', function() {
+                console.log('Load ribbons data clicked');
+                this.classList.add('loading');
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                loadRibbonsData()
+                    .then(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
+                    })
+                    .catch(error => {
+                        console.error('Error loading ribbons:', error);
+                        this.classList.remove('loading');
+                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
+                        }, 3000);
+                    });
+            });
+        }
+    }
+
+    
+    console.log('Data load buttons initialized based on permissions');
+}
+
+
+// Add new setupDashboardSection function 
+function setupDashboardSection() {
+    // Just set up the UI without loading data
+    document.getElementById('player-count').textContent = '-';
+    document.getElementById('match-count').textContent = '-';
+    document.getElementById('pending-count').textContent = '-';
+    document.getElementById('rejected-count').textContent = '-';
+}
+
+// Modify setupLadderSelector function to not auto-load data
+function setupLadderSelector() {
+    const ladderSwitches = document.querySelectorAll('.ladder-switch input');
+    
+    ladderSwitches.forEach(switchInput => {
+        switchInput.addEventListener('change', () => {
+            currentLadder = switchInput.value;
+            document.body.setAttribute('data-ladder', currentLadder);
+            
+            // Update the current ladder display for adding players
+            const currentLadderDisplay = document.getElementById('current-ladder-display');
+            if (currentLadderDisplay) {
+                currentLadderDisplay.textContent = currentLadder;
+            }
+            
+            // Reset dashboard stats without loading
+            document.getElementById('player-count').textContent = '-';
+            document.getElementById('match-count').textContent = '-';
+            document.getElementById('pending-count').textContent = '-';
+            document.getElementById('rejected-count').textContent = '-';
+            
+            // Reset charts
+            if (charts.rankDistribution) {
+                charts.rankDistribution.destroy();
+                charts.rankDistribution = null;
+            }
+            
+            if (charts.activity) {
+                charts.activity.destroy();
+                charts.activity = null;
+            }
+            
+            // No automatic data loading
+            showNotification(`Switched to ${currentLadder} ladder. Click "Load Data" to refresh.`, 'info');
+        });
+    });
+    
+    // Initialize the display with the current ladder
+    const currentLadderDisplay = document.getElementById('current-ladder-display');
+    if (currentLadderDisplay) {
+        currentLadderDisplay.textContent = currentLadder;
+    }
+}
+
+// Update loadDashboardOverview function
+async function loadDashboardOverview() {
+    try {
+        console.log('Loading dashboard overview data...');
+        
+        // Show loading placeholders
+        document.getElementById('player-count').textContent = '-';
+        document.getElementById('match-count').textContent = '-';
+        document.getElementById('pending-count').textContent = '-';
+        document.getElementById('rejected-count').textContent = '-';
+
+        // Get collection names based on current ladder
+        const playerCollection = 
+            currentLadder === 'D1' ? 'players' : 
+            currentLadder === 'D2' ? 'playersD2' : 'playersD3';
+            
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+            
+        const pendingCollection = 
+            currentLadder === 'D1' ? 'pendingMatches' : 
+            currentLadder === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+            
+        const rejectedCollection = 
+            currentLadder === 'D1' ? 'RejectedD1' : 
+            currentLadder === 'D2' ? 'RejectedD2' : 'RejectedD3';
+        
+        console.log(`Using collections for ${currentLadder}: ${playerCollection}, ${matchesCollection}`);
+        
+        // Get player count
+        const playersSnapshot = await getDocs(collection(db, playerCollection));
+        const playerCount = playersSnapshot.size;
+        
+        // Get match count
+        const matchesSnapshot = await getDocs(collection(db, matchesCollection));
+        const matchCount = matchesSnapshot.size;
+        
+        // Get pending matches count
+        const pendingSnapshot = await getDocs(collection(db, pendingCollection));
+        const pendingCount = pendingSnapshot.size;
+        
+        // Get rejected matches count
+        const rejectedSnapshot = await getDocs(collection(db, rejectedCollection));
+        const rejectedCount = rejectedSnapshot.size;
+        
+        // Update stat cards
+        document.getElementById('player-count').textContent = playerCount;
+        document.getElementById('match-count').textContent = matchCount;
+        document.getElementById('pending-count').textContent = pendingCount;
+        document.getElementById('rejected-count').textContent = rejectedCount;
+        
+        // Create dashboard charts
+        await createRankDistributionChart();
+        await createActivityChart();
+        
+        console.log('Dashboard data loaded successfully');
+        return true;
+        
+    } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        throw error;
+    }
+}
+
+async function createRankDistributionChart() {
+    try {
+        // Determine collection based on ladder selection
+        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
+        const querySnapshot = await getDocs(playersRef);
+
+        // Count players in each rank
+        const rankCounts = {
+            'Unranked': 0,
+            'Bronze': 0,
+            'Silver': 0,
+            'Gold': 0,
+            'Emerald': 0
+        };
+        
+        querySnapshot.forEach(doc => {
+            const player = doc.data();
+            const elo = player.eloRating || 1200;
+            
+            if (elo >= 2000) rankCounts['Emerald']++;
+            else if (elo >= 1800) rankCounts['Gold']++;
+            else if (elo >= 1600) rankCounts['Silver']++;
+            else if (elo >= 1400) rankCounts['Bronze']++;
+            else rankCounts['Unranked']++;
+        });
+        
+        const chartContainer = document.getElementById('rank-distribution-chart');
+        
+        // Destroy existing chart if it exists
+        if (charts.rankDistribution) {
+            charts.rankDistribution.destroy();
+        }
+        
+        // Create chart
+        charts.rankDistribution = new Chart(chartContainer, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(rankCounts),
+                datasets: [{
+                    data: Object.values(rankCounts),
+                    backgroundColor: [
+                        '#808080', // Unranked - Gray
+                        '#CD7F32', // Bronze
+                        '#C0C0C0', // Silver
+                        '#FFD700', // Gold
+                        '#50C878'  // Emerald
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `${currentLadder} Rank Distribution`,
+                        color: '#e0e0e0',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error creating rank distribution chart:", error);
+        document.getElementById('rank-distribution-chart').innerHTML = 
+            '<div class="chart-error">Error loading chart data</div>';
+    }
+}
+
+async function createActivityChart() {
+    try {
+        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        const matchesRef = collection(db, matchesCollection);
+        
+        // Get last 7 days of data
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const q = query(
+            matchesRef,
+            where('approvedAt', '>=', sevenDaysAgo),
+            orderBy('approvedAt', 'asc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Organize data by day of week
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const activityByDay = dayNames.reduce((acc, day) => ({...acc, [day]: 0}), {});
+        
+        querySnapshot.forEach(doc => {
+            const match = doc.data();
+            if (match.approvedAt) {
+                const dayOfWeek = dayNames[new Date(match.approvedAt.seconds * 1000).getDay()];
+                activityByDay[dayOfWeek]++;
+            }
+        });
+        
+        // Create chart
+        const chartContainer = document.getElementById('activity-chart');
+        
+        // Destroy existing chart if it exists
+        if (charts.activity) {
+            charts.activity.destroy();
+        }
+        
+        charts.activity = new Chart(chartContainer, {
+            type: 'bar',
+            data: {
+                labels: dayNames,
+                datasets: [{
+                    label: 'Matches Played',
+                    data: dayNames.map(day => activityByDay[day]),
+                    backgroundColor: currentLadder === 'D1' ? 'rgba(211, 47, 47, 0.7)' : 'rgba(25, 118, 210, 0.7)',
+                    borderColor: currentLadder === 'D1' ? '#d32f2f' : '#1976d2',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `${currentLadder} Weekly Activity`,
+                        color: '#e0e0e0',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error creating activity chart:", error);
+        document.getElementById('activity-chart').innerHTML = 
+            '<div class="chart-error">Error loading chart data</div>';
+    }
+}
+
+async function loadPlayersData() {
+    const playerTable = document.getElementById('players-table-body');
+    if (!playerTable) return;
+    
+    playerTable.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading players...</td></tr>';
+    
+    try {
+        // Modified to handle D3 correctly
+        let playerCollection = 'players'; // Default to D1
+        
+        if (currentLadder === 'D2') {
+            playerCollection = 'playersD2';
+        } else if (currentLadder === 'D3') {
+            playerCollection = 'playersD3';
+        }
+        
+        console.log(`Loading players from ${playerCollection} collection...`);
+        const playersRef = collection(db, playerCollection);
+        const q = query(playersRef, orderBy('eloRating', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            playerTable.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>';
+            return;
+        }
+        
+        playerTable.innerHTML = '';
+        let position = 1;
+        
+        querySnapshot.forEach(doc => {
+            const player = doc.data();
+            const rank = getRankFromElo(player.eloRating || 1200);
+            const rankStyle = getRankStyle(player.eloRating || 1200);
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="position">${position}</td>
+                <td class="username" style="color: ${rankStyle.color}">
+                    ${player.username || 'Unknown'}
+                </td>
+                <td class="elo">${player.eloRating || 1200}</td>
+                <td class="rank">
+                    <span class="rank-badge" style="background-color: ${rankStyle.color}">
+                        ${rank}
+                    </span>
+                </td>
+                <td class="stats">
+                    ${player.wins || 0}W / ${player.losses || 0}L
+                </td>
+                <td class="actions">
+                    <button class="edit-btn" data-id="${doc.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-btn" data-id="${doc.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            playerTable.appendChild(row);
+            position++;
+        });
+        
+        // Add event listeners to edit and delete buttons
+        setupPlayerActionButtons();
+        
+    } catch (error) {
+        console.error("Error loading players:", error);
+        playerTable.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-state">
+                    Error loading players: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function getRankFromElo(elo) {
+    if (elo >= 2000) return 'Emerald';
+    if (elo >= 1800) return 'Gold';
+    if (elo >= 1600) return 'Silver';
+    if (elo >= 1400) return 'Bronze';
+    return 'Unranked';
+}
+
+function setupPlayerActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const playerId = e.currentTarget.dataset.id;
+            openEditPlayerModal(playerId);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const playerId = e.currentTarget.dataset.id;
+            confirmDeletePlayer(playerId);
+        });
+    });
+}
+
+async function openEditPlayerModal(playerId) {
+    try {
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const playerRef = doc(db, playerCollection, playerId);
+        const playerSnap = await getDoc(playerRef);
+        
+        if (!playerSnap.exists()) {
+            showNotification('Player not found', 'error');
+            return;
+        }
+        
+        const player = playerSnap.data();
+        
+        // Populate the edit modal
+        const modal = document.getElementById('edit-player-modal');
+        const usernameInput = document.getElementById('edit-username');
+        const eloInput = document.getElementById('edit-elo');
+        const winsInput = document.getElementById('edit-wins');
+        const lossesInput = document.getElementById('edit-losses');
+        
+        usernameInput.value = player.username || '';
+        eloInput.value = player.eloRating || 1200;
+        winsInput.value = player.wins || 0;
+        lossesInput.value = player.losses || 0;
+        
+        // Store player ID for the save function
+        modal.dataset.playerId = playerId;
+        
+        // Show the modal
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error("Error opening edit modal:", error);
+        showNotification('Failed to load player data', 'error');
+    }
+}
+
+async function saveEditedPlayer() {
+    try {
+        const modal = document.getElementById('edit-player-modal');
+        const playerId = modal.dataset.playerId;
+        
+        if (!playerId) {
+            showNotification('No player selected', 'error');
+            return;
+        }
+        
+        const usernameInput = document.getElementById('edit-username');
+        const eloInput = document.getElementById('edit-elo');
+        const winsInput = document.getElementById('edit-wins');
+        const lossesInput = document.getElementById('edit-losses');
+        
+        const username = usernameInput.value.trim();
+        const elo = parseInt(eloInput.value);
+        const wins = parseInt(winsInput.value);
+        const losses = parseInt(lossesInput.value);
+        
+        if (!username || isNaN(elo)) {
+            showNotification('Please enter valid username and ELO', 'error');
+            return;
+        }
+        
+        // Update player data
+        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const playerRef = doc(db, playerCollection, playerId);
+        
+        // Get current player data for ELO history tracking
+        const currentPlayerSnap = await getDoc(playerRef);
+        const currentPlayer = currentPlayerSnap.exists() ? currentPlayerSnap.data() : {};
+        const currentElo = currentPlayer.eloRating || 1200;
+        
+        // Update player document
+        await updateDoc(playerRef, {
+            username,
+            eloRating: elo,
+            wins: wins || 0,
+            losses: losses || 0,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: auth.currentUser.email
+        });
+        
+        // If ELO changed, record in history
+        if (elo !== currentElo) {
+            const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+            await addDoc(collection(db, historyCollection), {
+                player: username,
+                previousElo: currentElo,
+                newElo: elo,
+                timestamp: serverTimestamp(),
+                type: 'admin_modification',
+                modifiedBy: auth.currentUser.email,
+                gameMode: currentLadder
+            });
+        }
+        
+        // Close modal
+        closeEditPlayerModal();
+        
+        // Refresh player data
+        loadPlayersData();
+        
+        showNotification('Player updated successfully', 'success');
+        
+    } catch (error) {
+        console.error("Error updating player:", error);
+        showNotification('Failed to update player: ' + error.message, 'error');
+    }
+}
+
+function closeEditPlayerModal() {
+    const modal = document.getElementById('edit-player-modal');
+    modal.classList.remove('active');
+    modal.dataset.playerId = '';
+}
+
+async function confirmDeletePlayer(playerId) {
+    if (confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
+        try {
+            const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+            await deleteDoc(doc(db, playerCollection, playerId));
+            
+            // Refresh player data
+            loadPlayersData();
+            
+            showNotification('Player deleted successfully', 'success');
+            
+        } catch (error) {
+            console.error("Error deleting player:", error);
+            showNotification('Failed to delete player: ' + error.message, 'error');
+        }
+    }
+}
+
+async function setupManagePlayersSection() {
+    // Add player form
+    const addPlayerForm = document.getElementById('add-player-form');
+    if (addPlayerForm) {
+        addPlayerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addNewPlayer();
+        });
+    }
+    
+    // Search functionality
+    const searchInput = document.getElementById('player-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterPlayerTable, 300));
+    }
+    
+    // Edit player modal buttons
+    const savePlayerBtn = document.getElementById('save-player-btn');
+    if (savePlayerBtn) {
+        savePlayerBtn.addEventListener('click', saveEditedPlayer);
+    }
+    
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', closeEditPlayerModal);
+    }
+    
+    // Modal background click to close
+    const editModal = document.getElementById('edit-player-modal');
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                closeEditPlayerModal();
+            }
+        });
+    }
+    
+    // Ladder selector for players section
+    const ladderSelector = document.getElementById('players-ladder-selector');
+    if (ladderSelector) {
+        ladderSelector.addEventListener('change', () => {
+            currentLadder = ladderSelector.value;
+            loadPlayersData();
+        });
+    }
+}
+
+async function addNewPlayer() {
+    try {
+        const usernameInput = document.getElementById('new-player-username');
+        const eloInput = document.getElementById('new-player-elo');
+        
+        const username = usernameInput.value.trim();
+        const elo = parseInt(eloInput.value) || 1200;
+        
+        if (!username) {
+            alert('Please enter a valid username');
+            return;
+        }
+        
+        console.log(`Adding player ${username} with ELO ${elo} to ${currentLadder} ladder`);
+        
+        // Determine which collection to use based on currentLadder
+        let playerCollection = 'players'; // Default to D1
+        let historyCollection = 'eloHistory';
+        
+        if (currentLadder === 'D2') {
+            playerCollection = 'playersD2';
+            historyCollection = 'eloHistoryD2';
+        } else if (currentLadder === 'D3') {
+            playerCollection = 'playersD3';
+            historyCollection = 'eloHistoryD3';
+        }
+        
+        // Check if username exists in the collection
+        const playerQuery = query(collection(db, playerCollection), where('username', '==', username));
+        const playerSnap = await getDocs(playerQuery);
+        if (!playerSnap.empty) {
+            alert(`Username ${username} already exists in ${currentLadder} ladder`);
+            return;
+        }
+        
+        // Add the player to the selected ladder
+        const user = auth.currentUser;
+        
+        const playerData = {
+            username,
+            eloRating: elo,
+            wins: 0,
+            losses: 0,
+            createdAt: serverTimestamp(),
+            createdBy: user ? user.email : 'admin',
+            gameMode: currentLadder
+        };
+        
+        // Add player to collection
+        await addDoc(collection(db, playerCollection), playerData);
+        
+        // Record initial ELO in history
+        await addDoc(collection(db, historyCollection), {
+            player: username,
+            previousElo: 1200,
+            newElo: elo,
+            timestamp: serverTimestamp(),
+            type: 'initial_placement',
+            placedBy: user ? user.email : 'admin',
+            gameMode: currentLadder
+        });
+        
+        // Reset form and refresh display
+        usernameInput.value = '';
+        eloInput.value = '1200';
+        
+        // Show success message
+        alert(`Player ${username} added successfully to ${currentLadder} ladder!`);
+        
+        // Refresh player list
+        loadPlayersData();
+        
+    } catch (error) {
+        console.error("Error adding player:", error);
+        alert(`Error adding player: ${error.message}`);
+    }
+}
+
+// Make sure the event listener is connected properly
+document.addEventListener('DOMContentLoaded', () => {
+    const addPlayerForm = document.getElementById('add-player-form');
+    if (addPlayerForm) {
+        addPlayerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addNewPlayer();
+        });
+    }
+});
+
+function filterPlayerTable() {
+    const searchTerm = document.getElementById('player-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#players-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const username = row.querySelector('.username')?.textContent.toLowerCase() || '';
+        
+        if (username.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    const noResults = document.getElementById('no-results-message');
+    if (noResults) {
+        if (visibleCount === 0 && searchTerm !== '') {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+async function loadEloHistory(page = 1) {
+    const historyTable = document.getElementById('elo-history-table-body');
+    const ladderPrefix = currentLadder.toLowerCase(); // d1 or d2 or d3
+    
+    if (!historyTable) return;
+    
+    historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading history...</td></tr>';
+    
+    try {
+        // Update this line to handle D3
+        const historyCollection = 
+            currentLadder === 'D1' ? 'eloHistory' : 
+            currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        
+        const historyRef = collection(db, historyCollection);
+        
+        let q;
+        
+        if (page > eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].lastVisible) {
+            // Next page
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                startAfter(eloHistoryPagination[ladderPrefix].lastVisible),
+                limit(PAGE_SIZE)
+            );
+        } else if (page < eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].firstVisible) {
+            // Previous page
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                endBefore(eloHistoryPagination[ladderPrefix].firstVisible),
+                limitToLast(PAGE_SIZE)
+            );
+        } else {
+            // First page or reset
+            q = query(
+                historyRef,
+                orderBy('timestamp', 'desc'),
+                limit(PAGE_SIZE)
+            );
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No ELO history found</td></tr>';
+            document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
+            return;
+        }   
+        
+        // Update pagination controls
+        eloHistoryPagination[ladderPrefix].page = page;
+        
+        // Store first and last documents for pagination
+        eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
+        eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+        // Create a cache for userId-to-username lookups to avoid repeated queries
+        const usernameCache = new Map();
+        
+        // Render table
+        historyTable.innerHTML = '';
+        
+        // Function to convert userIds to usernames if needed
+        const resolveUsername = async (playerField) => {
+            // If it's already clearly a username (contains non-alphanumeric chars or is short)
+            if (typeof playerField !== 'string' || 
+                playerField.length < 20 || // Most userIds are longer than typical usernames
+                /[^a-zA-Z0-9-_]/.test(playerField)) { // Contains special chars
+                return playerField;
+            }
+            
+            // Check if we've already resolved this ID
+            if (usernameCache.has(playerField)) {
+                return usernameCache.get(playerField);
+            }
+            
+            // Try to find the username in multiple collections
+            try {
+                // Try all player collections 
+                for (const collection of ['players', 'playersD2', 'playersD3', 'nonParticipants']) {
+                    const userDoc = await getDoc(doc(db, collection, playerField));
+                    if (userDoc.exists() && userDoc.data().username) {
+                        const username = userDoc.data().username;
+                        usernameCache.set(playerField, username);
+                        return username;
+                    }
+                }
+                
+                // If we get here, we couldn't resolve the username
+                return playerField;
+            } catch (error) {
+                console.warn(`Error resolving username for ${playerField}:`, error);
+                return playerField;
+            }
+        };
+        
+        // Process entries and render rows with proper username resolution
+        for (const doc of querySnapshot.docs) {
+            const history = doc.data();
+            const row = document.createElement('tr');
+            
+            const timestamp = history.timestamp 
+                ? new Date(history.timestamp.seconds * 1000).toLocaleString() 
+                : 'N/A';
+            
+            const eloChange = history.newElo - history.previousElo;
+            const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
+            const changeSign = eloChange > 0 ? '+' : '';
+            
+            // Try to resolve the player name if it might be a userId
+            const playerNameField = history.player || history.username || history.userId || 'N/A';
+            const playerName = await resolveUsername(playerNameField);
+            
+            row.innerHTML = `
+                <td class="timestamp">${timestamp}</td>
+                <td class="player">${playerName}</td>
+                <td class="previous-elo">${history.previousElo || 'N/A'}</td>
+                <td class="new-elo">${history.newElo || 'N/A'}</td>
+                <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
+                <td class="type">${formatHistoryType(history.type)}</td>
+                <td class="admin-action">
+                    ${history.modifiedBy || history.promotedBy || history.demotedBy || 'System'}
+                </td>
+            `;
+            
+            historyTable.appendChild(row);
+        }
+        
+        // Update page indicator
+        document.getElementById(`${ladderPrefix}-page-indicator`).textContent = `Page ${page}`;
+        
+        // Enable/disable pagination buttons
+        const prevButton = document.getElementById(`${ladderPrefix}-prev-page`);
+        const nextButton = document.getElementById(`${ladderPrefix}-next-page`);
+        
+        if (prevButton) prevButton.disabled = page <= 1;
+        
+        // Check if there are more records
+        const nextPageCheck = query(
+            historyRef, 
+            orderBy('timestamp', 'desc'),
+            startAfter(eloHistoryPagination[ladderPrefix].lastVisible),
+            limit(1)
+        );
+        const nextPageSnapshot = await getDocs(nextPageCheck);
+        
+        if (nextButton) nextButton.disabled = nextPageSnapshot.empty;
+        
+    } catch (error) {
+        console.error("Error loading ELO history:", error);
+        historyTable.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error loading history: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function formatHistoryType(type) {
+    switch(type) {
+        case 'match_result':
+            return 'Match Result';
+        case 'promotion':
+            return 'Promotion';
+        case 'demotion':
+            return 'Demotion';
+        case 'admin_modification':
+            return 'Admin Adjustment';
+        case 'initial_placement':
+            return 'Initial Placement';
+        default:
+            return type || 'Unknown';
+    }
+}
+
+function setupEloHistorySection() {
+    // Existing D1 and D2 pagination buttons
+    document.getElementById('d1-prev-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d1.page - 1);
+    });
+    
+    document.getElementById('d1-next-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d1.page + 1);
+    });
+    
+    document.getElementById('d2-prev-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d2.page - 1);
+    });
+    
+    document.getElementById('d2-next-page').addEventListener('click', () => {
+        loadEloHistory(eloHistoryPagination.d2.page + 1);
+    });
+    
+    // Add D3 pagination buttons if they exist in your HTML
+    const d3PrevPage = document.getElementById('d3-prev-page');
+    const d3NextPage = document.getElementById('d3-next-page');
+    
+    if (d3PrevPage) {
+        d3PrevPage.addEventListener('click', () => {
+            loadEloHistory(eloHistoryPagination.d3.page - 1);
+        });
+    }
+    
+    if (d3NextPage) {
+        d3NextPage.addEventListener('click', () => {
+            loadEloHistory(eloHistoryPagination.d3.page + 1);
+        });
+    }
+    
+    // Search functionality
+    const historySearch = document.getElementById('elo-history-search');
+    if (historySearch) {
+        historySearch.addEventListener('input', debounce(filterEloHistoryTable, 300));
+    }
+    
+    // Type filter functionality
+    const typeFilter = document.getElementById('history-type-filter');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', applyEloHistoryFilters);
+    }
+    
+    // Reset filters
+    const resetFiltersBtn = document.getElementById('reset-history-filters');
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetEloHistoryFilters);
+    }
+}
+
+function filterEloHistoryTable() {
+    const searchTerm = document.getElementById('elo-history-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#elo-history-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.classList.contains('loading-cell') || 
+            row.classList.contains('empty-state') || 
+            row.classList.contains('error-state')) {
+            return;
+        }
+        
+        const player = row.querySelector('.player')?.textContent.toLowerCase() || '';
+        const type = row.querySelector('.type')?.textContent.toLowerCase() || '';
+        const admin = row.querySelector('.admin-action')?.textContent.toLowerCase() || '';
+        
+        if (player.includes(searchTerm) || type.includes(searchTerm) || admin.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+async function applyEloHistoryFilters() {
+    const startDate = document.getElementById('history-start-date').value;
+    const endDate = document.getElementById('history-end-date').value;
+    const typeFilter = document.getElementById('history-type-filter').value;
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    eloHistoryPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    const historyTable = document.getElementById('elo-history-table-body');
+    historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Applying filters...</td></tr>';
+    
+    try {
+        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        const historyRef = collection(db, historyCollection);
+        
+        // Build query constraints
+        let constraints = [orderBy('timestamp', 'desc')];
+        
+        if (startDate) {
+            const startDateTime = new Date(startDate);
+            startDateTime.setHours(0, 0, 0, 0);
+            constraints.push(where('timestamp', '>=', startDateTime));
+        }
+        
+        if (endDate) {
+            const endDateTime = new Date(endDate);
+            endDateTime.setHours(23, 59, 59, 999);
+            constraints.push(where('timestamp', '<=', endDateTime));
+        }
+        
+        if (typeFilter && typeFilter !== 'all') {
+            constraints.push(where('type', '==', typeFilter));
+        }
+        
+        // Add pagination limit
+        constraints.push(limit(PAGE_SIZE));
+        
+        const q = query(historyRef, ...constraints);
+        const querySnapshot = await getDocs(q);
+        
+        // Update pagination
+        if (!querySnapshot.empty) {
+            eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
+            eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Render results
+        historyTable.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found for the selected filters</td></tr>';
+            return;
+        }
+        
+        querySnapshot.forEach(doc => {
+            const history = doc.data();
+            const row = document.createElement('tr');
+            
+            const timestamp = history.timestamp 
+                ? new Date(history.timestamp.seconds * 1000).toLocaleString() 
+                : 'N/A';
+            
+            const eloChange = history.newElo - history.previousElo;
+            const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
+            const changeSign = eloChange > 0 ? '+' : '';
+            
+            // Make sure we're using player, not userId or email
+            const playerName = history.player || history.username || history.userId || 'N/A';
+            
+            row.innerHTML = `
+                <td class="timestamp">${timestamp}</td>
+                <td class="player">${playerName}</td>
+                <td class="previous-elo">${history.previousElo || 'N/A'}</td>
+                <td class="new-elo">${history.newElo || 'N/A'}</td>
+                <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
+                <td class="type">${formatHistoryType(history.type)}</td>
+                <td class="admin-action">
+                    ${history.modifiedBy || history.promotedBy || history.demotedBy || 'System'}
+                </td>
+            `;
+            
+            historyTable.appendChild(row);
+        });
+        
+        // Update page indicator
+        document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
+        
+    } catch (error) {
+        console.error("Error applying filters:", error);
+        historyTable.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error applying filters: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function resetEloHistoryFilters() {
+    document.getElementById('history-start-date').value = '';
+    document.getElementById('history-end-date').value = '';
+    document.getElementById('history-type-filter').value = 'all';
+    document.getElementById('elo-history-search').value = '';
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    eloHistoryPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload history
+    loadEloHistory(1);
+}
+
+function setupRankControls() {
+    // Promote player modal
+    const promoteBtn = document.getElementById('promote-player-btn');
+    const promoteModal = document.getElementById('promote-modal');
+    const promoteForm = document.getElementById('promote-form');
+    
+    if (promoteBtn && promoteModal && promoteForm) {
+        promoteBtn.addEventListener('click', () => {
+            promoteModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        promoteModal.addEventListener('click', (e) => {
+            if (e.target === promoteModal) {
+                promoteModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+        promoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('promote-username');
+            const ladderSelect = document.getElementById('promote-ladder');
+            
+            const username = usernameInput.value.trim();
+            const ladder = ladderSelect.value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+            
+            try {
+                await promotePlayer(username, ladder);
+                promoteModal.classList.remove('active');
+                usernameInput.value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+        
+        // Cancel button
+        document.getElementById('cancel-promote-btn').addEventListener('click', () => {
+            promoteModal.classList.remove('active');
+        });
+    }
+    
+    // Demote player modal
+    const demoteBtn = document.getElementById('demote-player-btn');
+    const demoteModal = document.getElementById('demote-modal');
+    const demoteForm = document.getElementById('demote-form');
+    
+    if (demoteBtn && demoteModal && demoteForm) {
+        demoteBtn.addEventListener('click', () => {
+            demoteModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        demoteModal.addEventListener('click', (e) => {
+            if (e.target === demoteModal) {
+                demoteModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+        demoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('demote-username');
+            const ladderSelect = document.getElementById('demote-ladder');
+            
+            const username = usernameInput.value.trim();
+            const ladder = ladderSelect.value;
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await demotePlayer(username, ladder);
+                document.getElementById('demote-modal').classList.remove('active');
+                document.getElementById('demote-username').value = '';
+            } catch (error) {
+                console.error('Error in demotion:', error);
+            }
+        });
+    }
+    
+    // Set custom ELO modal
+    const setEloBtn = document.getElementById('set-elo-btn');
+    const setEloModal = document.getElementById('set-elo-modal');
+    const setEloForm = document.getElementById('set-elo-form');
+    
+    if (setEloBtn && setEloModal && setEloForm) {
+        setEloBtn.addEventListener('click', () => {
+            setEloModal.classList.add('active');
+        });
+        
+        // Close when clicking outside
+        setEloModal.addEventListener('click', (e) => {
+            if (e.target === setEloModal) {
+                setEloModal.classList.remove('active');
+            }
+        });
+        
+        // Handle form submit
+setEloForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const usernameInput = document.getElementById('set-elo-username');
+    const eloInput = document.getElementById('set-elo-value');
+    
+    // Fix: Check if it's a radio button group instead of a select element
+    let ladder;
+    const ladderSelect = document.getElementById('set-elo-ladder');
+    const ladderRadio = document.querySelector('input[name="set-elo-ladder"]:checked');
+    
+    if (ladderSelect) {
+        ladder = ladderSelect.value;
+    } else if (ladderRadio) {
+        ladder = ladderRadio.value;
+    } else {
+        ladder = 'D1'; // Default to D1 if no selection found
+    }
+    
+    if (!usernameInput || !eloInput) {
+        showNotification('Form elements are missing', 'error');
+        return;
+    }
+    
+    const username = usernameInput.value.trim();
+    const elo = parseInt(eloInput.value);
+    
+    if (!username || isNaN(elo)) {
+        showNotification('Please enter valid username and ELO', 'error');
+        return;
+    }
+    
+    try {
+        await setCustomElo(username, elo, ladder);
+        setEloModal.classList.remove('active');
+        usernameInput.value = '';
+        eloInput.value = '';
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+});
+        
+        // Cancel button
+        document.getElementById('cancel-set-elo-btn').addEventListener('click', () => {
+            setEloModal.classList.remove('active');
+        });
+    }
+    
+    // Role assignment modal (Update this part)
+    const setRoleModal = document.getElementById('set-role-modal');
+    const setRoleForm = document.getElementById('set-role-form');
+
+    if (setRoleModal && setRoleForm) {
+        // Close when clicking outside
+        setRoleModal.addEventListener('click', (e) => {
+            if (e.target === setRoleModal) {
+                closeModalHandler();
+            }
+        });
+
+        // Handle form submit
+        setRoleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('role-username');
+            const roleNameInput = document.getElementById('role-name'); // New input
+            const roleColorInput = document.getElementById('role-color'); // New input
+
+            const username = usernameInput.value.trim();
+            const roleName = roleNameInput.value.trim(); // Get custom name
+            const roleColor = roleColorInput.value; // Get custom color
+
+            if (!username) { // Only username is strictly required to identify the user
+                showNotification('Username is missing', 'error');
+                return;
+            }
+
+            try {
+                // Call updated function
+                await setUserRole(username, roleName, roleColor);
+                closeModalHandler();
+                loadUsersWithRoles(); // Refresh the table
+            } catch (error) {
+                // Error is already handled in setUserRole
+            }
+        });
+
+        // Cancel button (ensure closeModalHandler is used)
+        const cancelBtn = document.getElementById('cancel-role-btn');
+        if (cancelBtn) {
+            cancelBtn.removeEventListener('click', closeModalHandler);
+            cancelBtn.addEventListener('click', closeModalHandler);
+        }
+    }
+}
+
+// Replace the promotePlayer function with this implementation
+async function promotePlayer(username, ladder) {
+    try {
+        console.log(`Attempting to promote ${username} in ${ladder} ladder`);
+        
+        // Check if current user is admin
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in to perform this action');
+        }
+        
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+        
+        // Get player data
+        console.log(`Searching for player in ${collectionName}`);
+        const playersRef = collection(db, collectionName);
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            alert(`Player not found in ${ladder} ladder`);
+            throw new Error(`Player not found in ${ladder} ladder`);
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+        const playerId = playerDoc.id;
+        
+        console.log(`Found player with current ELO: ${currentElo}`);
+
+        // Define ELO thresholds
+        const thresholds = [
+            { name: 'Bronze', elo: 1400 },
+            { name: 'Silver', elo: 1600 },
+            { name: 'Gold', elo: 1800 },
+            { name: 'Emerald', elo: 2000 }
+        ];
+
+        // Find next threshold
+        let nextThreshold = thresholds.find(t => t.elo > currentElo);
+        
+        if (!nextThreshold) {
+            alert(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
+            throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
+        }
+        
+        console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo})`);
+        
+        // Update player document
+        await updateDoc(doc(db, collectionName, playerDoc.id), {
+            eloRating: nextThreshold.elo,
+            lastPromotedAt: serverTimestamp(),
+            promotedBy: user.email || 'admin'
+        });
+
+        // Add history entry
+        await addDoc(collection(db, historyCollection), {
+            player: username,
+            previousElo: currentElo,
+            newElo: nextThreshold.elo,
+            timestamp: serverTimestamp(),
+            type: 'promotion',
+            rankAchieved: nextThreshold.name,
+            promotedBy: user.email || 'admin',
+            gameMode: ladder
+        });
+
+        // Add new code to send Discord notification for promotions
+        try {
+            // Import the promotion manager
+            const { promotionManager } = await import('./promotions.js');
+            
+            // Get old and new rank names
+            const oldRank = promotionManager.getRankName(currentElo);
+            const newRank = nextThreshold.name;
+            
+            // Send notification to Discord bot
+            await promotionManager.sendPromotionNotification(
+                playerId,
+                username,
+                currentElo,
+                nextThreshold.elo,
+                oldRank,
+                newRank,
+                'promotion',
+                {
+                    displayName: username,
+                    source: 'admin',
+                    adminUser: user.email,
+                    ladder: ladder
+                }
+            );
+            console.log('Promotion notification sent to Discord bot');
+        } catch (notificationError) {
+            console.error('Failed to send Discord notification:', notificationError);
+            // Continue execution even if notification fails
+        }
+
+        // Show success message
+        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo})`);
+        
+        // Refresh relevant data
+        if (currentLadder === ladder) {
+            loadPlayersData();
+            loadEloHistory(1);
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error promoting player:', error);
+        alert(`Error promoting player: ${error.message}`);
+        throw error;
+    }
+}
+
+// Ensure the promote form is properly connected
+document.addEventListener('DOMContentLoaded', () => {
+    const promoteForm = document.getElementById('promote-form');
+    if (promoteForm) {
+        promoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('promote-username').value.trim();
+            const ladder = document.querySelector('input[name="promote-ladder"]:checked').value;
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await promotePlayer(username, ladder);
+                document.getElementById('promote-modal').classList.remove('active');
+                document.getElementById('promote-username').value = '';
+            } catch (error) {
+                console.error('Error in promotion:', error);
+            }
+        });
+    }
+});
+
+// Replace the demotePlayer function with this implementation
+async function demotePlayer(username, ladder) {
+    try {
+        console.log(`Attempting to demote ${username} in ${ladder} ladder`);
+        
+        // Check if current user is admin
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in to perform this action');
+        }
+        
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+        
+        // Get player data
+        console.log(`Searching for player in ${collectionName}`);
+        const playersRef = collection(db, collectionName);
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            alert(`Player not found in ${ladder} ladder`);
+            throw new Error(`Player not found in ${ladder} ladder`);
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+        
+        console.log(`Found player with current ELO: ${currentElo}`);
+
+        // Define ELO thresholds (in reverse order for demotion)
+        const thresholds = [
+            { name: 'Gold', elo: 1800 },
+            { name: 'Silver', elo: 1600 },
+            { name: 'Bronze', elo: 1400 },
+            { name: 'Unranked', elo: 1200 }
+        ];
+
+        // Find previous threshold
+        let prevThreshold = thresholds.find(t => t.elo < currentElo);
+        
+        if (!prevThreshold) {
+            alert(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
+            throw new Error(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
+        }
+
+        console.log(`Demoting player to ${prevThreshold.name} (${prevThreshold.elo})`);
+        
+        // Update player document
+        await updateDoc(doc(db, collectionName, playerDoc.id), {
+            eloRating: prevThreshold.elo,
+            lastDemotedAt: serverTimestamp(),
+            demotedBy: user.email || 'admin'
+        });
+
+        // Add history entry
+        await addDoc(collection(db, historyCollection), {
+            player: username,
+            previousElo: currentElo,
+            newElo: prevThreshold.elo,
+            timestamp: serverTimestamp(),
+            type: 'demotion',
+            rankAchieved: prevThreshold.name,
+            demotedBy: user.email || 'admin',
+            gameMode: ladder
+        });
+
+        // Add new code to send Discord notification for demotions
+        try {
+            // Import the promotion manager
+            const { promotionManager } = await import('./promotions.js');
+            
+            // Get old and new rank names
+            const oldRank = promotionManager.getRankName(currentElo);
+            const newRank = prevThreshold.name;
+            
+            // Send notification to Discord bot
+            await promotionManager.sendPromotionNotification(
+                playerDoc.id,
+                username,
+                currentElo,
+                prevThreshold.elo,
+                oldRank,
+                newRank,
+                'demotion',
+                {
+                    displayName: username,
+                    source: 'admin',
+                    adminUser: user.email,
+                    ladder: ladder
+                }
+            );
+            console.log('Demotion notification sent to Discord bot');
+        } catch (notificationError) {
+            console.error('Failed to send Discord notification:', notificationError);
+            // Continue execution even if notification fails
+        }
+
+        // Show success message
+        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo})`);
+        
+        // Refresh relevant data
+        if (currentLadder === ladder) {
+            loadPlayersData();
+            loadEloHistory(1);
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error demoting player:', error);
+        alert(`Error demoting player: ${error.message}`);
+        throw error;
+    }
+}
+
+// Ensure the demote form is properly connected
+document.addEventListener('DOMContentLoaded', () => {
+    const demoteForm = document.getElementById('demote-form');
+    if (demoteForm) {
+        demoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('demote-username').value.trim();
+            const ladder = document.querySelector('input[name="demote-ladder"]:checked').value;
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            try {
+                await demotePlayer(username, ladder);
+                document.getElementById('demote-modal').classList.remove('active');
+                document.getElementById('demote-username').value = '';
+            } catch (error) {
+                console.error('Error in demotion:', error);
+            }
+        });
+    }
+});
+
+async function setCustomElo(username, elo, ladder) {
+    try {
+        // Check if current user is admin
+        const user = auth.currentUser;
+        if (!user || !isAdmin(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Determine which collection to use
+        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
+        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+
+        // Get player data
+        const playersRef = collection(db, collectionName)        
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            throw new Error(`Player not found in ${ladder} ladder`);
+        }
+
+        const playerDoc = querySnapshot.docs[0];
+        const playerData = playerDoc.data();
+        const currentElo = playerData.eloRating || 1200;
+
+        // Begin transaction
+        const batch = writeBatch(db);
+        
+        // Update player document
+        batch.update(doc(db, collectionName, playerDoc.id), {
+            eloRating: elo,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: user.email
+        });
+
+        // Add history entry
+        const historyRef = doc(collection(db, historyCollection));
+        batch.set(historyRef, {
+            player: username,
+            previousElo: currentElo,
+            newElo: elo,
+            timestamp: serverTimestamp(),
+            type: 'admin_modification',
+            modifiedBy: user.email,
+            gameMode: ladder
+        });
+
+        await batch.commit();
+
+        showNotification(`ELO rating for ${username} was updated from ${currentElo} to ${elo}`, 'success');
+        
+        // Refresh relevant data if same ladder is active
+        if (currentLadder === ladder) {
+            loadDashboardOverview();
+            loadPlayersData();
+            loadEloHistory(1);
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error setting custom ELO:', error);
+        throw error;
+    }
+}
+
+// Update setUserRole function to focus on players collections
+
+async function setUserRole(username, roleName, roleColor) {
+    try {
+        const user = auth.currentUser;
+        if (!user || !isAdmin(user.email)) {
+            throw new Error('Unauthorized: Admin access required');
+        }
+
+        // Normalize inputs
+        const finalRoleName = roleName ? roleName.trim() : null;
+        const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null;
+
+        // UPDATED: Prioritize looking in player collections
+        const [d1Query, d2Query] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('username', '==', username))),
+            getDocs(query(collection(db, 'playersD2'), where('username', '==', username)))
+        ]);
+
+        const userDocs = [];
+        
+        // Store player doc references if found
+        if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref, source: 'D1'});
+        if (!d2Query.empty) userDocs.push({ref: d2Query.docs[0].ref, source: 'D2'});
+        
+        // If no player docs found, check other collections as backup
+        if (userDocs.length === 0) {
+            const [nonParticipantQuery, userProfilesQuery] = await Promise.all([
+                getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
+                getDocs(query(collection(db, 'userProfiles'), where('username', '==', username)))
+            ]);
+            
+            if (!nonParticipantQuery.empty) userDocs.push({ref: nonParticipantQuery.docs[0].ref, source: 'NonParticipant'});
+            if (!userProfilesQuery.empty) userDocs.push({ref: userProfilesQuery.docs[0].ref, source: 'UserProfile'});
+        }
+
+        if (userDocs.length === 0) {
+            throw new Error(`User "${username}" not found in any collection`);
+        }
+
+        const batch = writeBatch(db);
+
+        userDocs.forEach(docInfo => {
+            console.log(`Updating role for ${username} in ${docInfo.source}`);
+            
+            if (!finalRoleName) {
+                batch.update(docInfo.ref, {
+                    roleName: deleteField(),
+                    roleColor: deleteField(),
+                    roleAssignedBy: deleteField(),
+                    roleAssignedAt: deleteField()
+                });
+            } else {
+                batch.update(docInfo.ref, {
+                    roleName: finalRoleName,
+                    roleColor: finalRoleColor,
+                    roleAssignedBy: user.email,
+                    roleAssignedAt: serverTimestamp()
+                });
+            }
+        });
+
+        await batch.commit();
+
+        const actionMessage = finalRoleName ? `Role "${finalRoleName}" set` : "Role removed";
+        showNotification(`${actionMessage} for user "${username}"`, 'success');
+        return true;
+
+    } catch (error) {
+        console.error('Error setting user role:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="close-notification">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Display animation
+    setTimeout(() => {
+        notification.classList.add('active');
+    }, 10);
+    
+    // Auto-remove after delay
+    const timeout = setTimeout(() => {
+        closeNotification(notification);
+    }, 5000);
+    
+    // Close button
+    notification.querySelector('.close-notification').addEventListener('click', () => {
+        clearTimeout(timeout);
+        closeNotification(notification);
+    });
+}
+
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success': return 'fa-check-circle';
+        case 'error': return 'fa-exclamation-circle';
+        case 'warning': return 'fa-exclamation-triangle';
+        case 'info':
+        default: return 'fa-info-circle';
+    }
+}
+
+function closeNotification(notification) {
+    notification.classList.remove('active');
+    setTimeout(() => {
+        notification.remove();
+    }, 300);
+}
+
+// Add this new function
+function setupUserRolesSection() {
+    // Set up the load button
+    const loadUsersBtn = document.getElementById('load-users-data');
+    if (loadUsersBtn) {
+        loadUsersBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadUsersWithRoles()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Add new role button
+    const addRoleBtn = document.getElementById('add-new-role-btn');
+    if (addRoleBtn) {
+        addRoleBtn.addEventListener('click', () => {
+            const modal = document.getElementById('set-role-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        });
+    }
+    
+    // Set up search filter
+    const userSearch = document.getElementById('user-search');
+    if (userSearch) {
+        userSearch.addEventListener('input', debounce(filterUsersTable, 300));
+    }
+    
+    // Set up role filter
+    const roleFilter = document.getElementById('role-filter');
+    if (roleFilter) {
+        roleFilter.addEventListener('change', filterUsersTable);
+    }
+}
+
+// Function to load users with roles
+async function loadUsersWithRoles() {
+    const tableBody = document.getElementById('users-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading users...</td></tr>';
+    
+    try {
+        // Get all users from various collections
+        const [d1Players, d2Players, nonParticipants, userProfiles] = await Promise.all([
+            getDocs(collection(db, 'players')),
+            getDocs(collection(db, 'playersD2')),
+            getDocs(collection(db, 'nonParticipants')),
+            getDocs(collection(db, 'userProfiles'))
+        ]);
+        
+        // Consolidate users into a map with username as key
+        const usersMap = new Map();
+        
+        // Function to process documents and add to map
+        function processDocuments(snapshot, source) {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (!data.username) return;
+
+                if (!usersMap.has(data.username)) {
+                    usersMap.set(data.username, {
+                        username: data.username,
+                        roleName: data.roleName || null,
+                        roleColor: data.roleColor || null,
+                        roleAssignedBy: data.roleAssignedBy || null,
+                        roleAssignedAt: data.roleAssignedAt || null,
+                        sources: [source]
+                    });
+                } else {
+                    const user = usersMap.get(data.username);
+                    
+                    // UPDATED: Prioritize roles from players collections over other sources
+                    // This ensures D1/D2 player roles take precedence
+                    if (data.roleName && (
+                        !user.roleName || 
+                        source === 'D1' || 
+                        source === 'D2'
+                    )) {
+                        user.roleName = data.roleName;
+                        user.roleColor = data.roleColor;
+                        user.roleAssignedBy = data.roleAssignedBy;
+                        user.roleAssignedAt = data.roleAssignedAt;
+                    }
+                    
+                    if (!user.sources.includes(source)) {
+                        user.sources.push(source);
+                    }
+                }
+            });
+        }
+
+        // Process all collections
+        processDocuments(d1Players, 'D1');
+        processDocuments(d2Players, 'D2');
+        processDocuments(nonParticipants, 'Non-Participant');
+        processDocuments(userProfiles, 'Profile');
+        
+        // Convert map to array and sort by username
+        const usersArray = Array.from(usersMap.values()).sort((a, b) => 
+            a.username.localeCompare(b.username)
+        );
+        
+        if (usersArray.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+            return;
+        }
+        
+        // Render user table
+        tableBody.innerHTML = '';
+        
+        usersArray.forEach(user => {
+            const row = document.createElement('tr');
+            row.dataset.username = user.username;
+            // Store custom role data in dataset for the modal
+            row.dataset.roleName = user.roleName || '';
+            row.dataset.roleColor = user.roleColor || '#808080';
+
+            const formattedDate = user.roleAssignedAt ?
+                new Date(user.roleAssignedAt.seconds * 1000).toLocaleDateString() :
+                'N/A';
+
+            // Generate badge with custom name and color
+            const roleBadge = user.roleName ?
+                `<span class="role-badge" style="background-color: ${user.roleColor}; color: ${getContrastColor(user.roleColor)};">${user.roleName}</span>` :
+                '<span class="no-role">None</span>';
+
+            row.innerHTML = `
+                <td>${user.username} <span class="user-source">(${user.sources.join(', ')})</span></td>
+                <td>${roleBadge}</td>
+                <td>${user.roleAssignedBy || 'N/A'}</td>
+                <td>${formattedDate}</td>
+                <td class="actions">
+                    <button class="edit-role-btn" data-username="${user.username}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${user.roleName ? `
+                        <button class="remove-role-btn" data-username="${user.username}" title="Remove Role">
+                            <i class="fas fa-times"></i> <!-- Changed icon -->
+                        </button>
+                    ` : ''}
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Add event listeners to action buttons
+        document.querySelectorAll('.edit-role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const username = btn.dataset.username;
+                openRoleEditModal(username);
+            });
+        });
+
+        // Update event listeners for remove button
+        document.querySelectorAll('.remove-role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const username = btn.dataset.username;
+                if (confirm(`Are you sure you want to remove the role from ${username}?`)) {
+                    // Call setUserRole with nulls to remove
+                    setUserRole(username, null, null)
+                        .then(() => loadUsersWithRoles()) // Refresh table on success
+                        .catch(error => console.error('Error removing role:', error));
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error loading users:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading users</td></tr>';
+    }
+}
+
+// Modify openRoleEditModal
+function openRoleEditModal(username) {
+    console.log('Attempting to open role edit modal for:', username); // Log start
+    const modal = document.getElementById('set-role-modal');
+    const usernameInput = document.getElementById('role-username');
+    const roleSelect = document.getElementById('user-role');
+
+    if (!modal) {
+        console.error('CRITICAL: Role modal element (#set-role-modal) not found in the DOM!');
+        alert('Error: Could not find the role editing dialog.'); // User feedback
+        return;
+    }
+    console.log('Modal element found:', modal); // Log success
+
+    // Pre-fill the username
+    if (usernameInput) {
+        usernameInput.value = username;
+        console.log(`Username input set to: ${username}`);
+    } else {
+        console.warn('Username input field (#role-username) not found in modal.');
+    }
+
+    // Find current role from table row data attribute
+    const userRow = document.querySelector(`#users-table-body tr[data-username="${username}"]`);
+    if (userRow && roleSelect) {
+        const currentRole = userRow.dataset.role;
+        roleSelect.value = currentRole === 'none' ? '' : currentRole;
+        console.log(`Role select set to: ${roleSelect.value} (based on data-role: ${currentRole})`);
+    } else {
+        if (!userRow) console.warn(`Table row for user ${username} not found.`);
+        if (!roleSelect) console.warn('Role select field (#user-role) not found in modal.');
+        if (roleSelect) roleSelect.value = ''; // Default to empty if row not found
+    }
+
+    // Show the modal using only the active class
+    console.log('Adding "active" class to modal.');
+    modal.classList.add('active');
+
+    // Add the cancel button event listener
+    const cancelBtn = document.getElementById('cancel-role-btn');
+    if (cancelBtn) {
+        console.log('Attaching cancel button listener.');
+        // Remove previous listener to prevent duplicates
+        cancelBtn.removeEventListener('click', closeModalHandler);
+        cancelBtn.addEventListener('click', closeModalHandler);
+    } else {
+        console.warn('Cancel button (#cancel-role-btn) not found in modal.');
+    }
+
+    // Add listener to close modal on background click
+    console.log('Attaching background click listener.');
+    modal.removeEventListener('click', closeModalBackgroundHandler); // Prevent duplicates
+    modal.addEventListener('click', closeModalBackgroundHandler);
+}
+
+// Define the handler for background click
+function closeModalBackgroundHandler(event) {
+    // Only close if the click is directly on the modal background
+    if (event.target === this) {
+        closeModalHandler();
+    }
+}
+
+// Modify closeModalHandler
+function closeModalHandler() {
+    const modal = document.getElementById('set-role-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Remove the background click listener when closed
+        modal.removeEventListener('click', closeModalBackgroundHandler);
+    }
+}
+
+// Function to filter user table
+function filterUsersTable() {
+    const searchTerm = document.getElementById('user-search')?.value.toLowerCase() || '';
+    const roleFilter = document.getElementById('role-filter')?.value || 'all';
+    const rows = document.querySelectorAll('#users-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        // Skip special rows
+        if (row.querySelector('.loading-cell') || 
+            row.querySelector('.empty-state') || 
+            row.querySelector('.error-state')) {
+            return;
+        }
+        
+        const username = row.dataset.username?.toLowerCase() || '';
+        const role = row.dataset.role || 'none';
+        
+        // Check if row matches filters
+        const matchesSearch = username.includes(searchTerm);
+        const matchesRole = roleFilter === 'all' || role === roleFilter;
+        
+        if (matchesSearch && matchesRole) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && rows.length > 0) {
+        const tableBody = document.getElementById('users-table-body');
+        if (tableBody) {
+            // Only add if there's no existing message
+            if (!tableBody.querySelector('.no-results')) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.classList.add('no-results');
+                noResultsRow.innerHTML = '<td colspan="5" class="empty-state">No users match your filters</td>';
+                tableBody.appendChild(noResultsRow);
+            }
+        }
+    } else {
+        // Remove no results message if it exists
+        const noResultsRow = document.querySelector('.no-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+}
+
+// Add this function to setup the article management section
+function setupManageArticlesSection() {
+    // Load Articles button
+    const loadArticlesBtn = document.getElementById('load-articles-data');
+    if (loadArticlesBtn) {
+        loadArticlesBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            loadArticles()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles';
+                })
+                .catch(error => {
+                    console.error('Error loading articles:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Create New Article button - Directly show it since this setup function implies permission
+    const createArticleBtn = document.getElementById('create-new-article-btn');
+    if (createArticleBtn) {
+        console.log("Setting up Manage Articles section - Found Create Article button."); // Add this log
+        // Show the button because if this function runs, the user has access to the section
+        createArticleBtn.style.display = 'block';
+
+        createArticleBtn.addEventListener('click', () => {
+            openArticleModal();
+        });
+    } else {
+        console.error("Setup Manage Articles: Create Article button not found!"); // Add this error log
+    }
+    
+    // Article form submit (changed from Trophy form submit comment)
+    const articleForm = document.getElementById('article-form');
+    if (articleForm) {
+        articleForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveArticle();
+        });
+    }
+    
+    // Cancel button
+    const cancelArticleBtn = document.getElementById('cancel-article-btn');
+    if (cancelArticleBtn) {
+        cancelArticleBtn.addEventListener('click', () => {
+            closeArticleModal();
+        });
+    }
+    
+    // Modal close button
+    const closeBtn = document.querySelector('#article-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeArticleModal();
+        });
+    }
+    
+    // Modal background click
+    const articleModal = document.getElementById('article-modal');
+    if (articleModal) {
+        articleModal.addEventListener('click', (e) => {
+            if (e.target === articleModal) {
+                closeArticleModal();
+            }
+        });
+    }
+}
+
+// Load articles from Firestore
+async function loadArticles() {
+    const articlesTable = document.getElementById('articles-table-body');
+    if (!articlesTable) return;
+    
+    articlesTable.innerHTML = '<tr><td colspan="4" class="loading-cell">Loading articles...</td></tr>';
+    
+    try {
+        const articlesRef = collection(db, 'articles');
+        const q = query(articlesRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            articlesTable.innerHTML = '<tr><td colspan="4" class="empty-state">No articles found</td></tr>';
+            return;
+        }
+        
+        articlesTable.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const article = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format the timestamp
+            const timestamp = article.createdAt 
+                ? new Date(article.createdAt.seconds * 1000).toLocaleString() 
+                : 'N/A';
+                
+            row.innerHTML = `
+                <td>${article.title || 'Untitled'}</td>
+                <td>${article.author || 'Unknown'}</td>
+                <td>${timestamp}</td>
+                <td class="actions">
+                    <button class="edit-article-btn" data-id="${doc.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-article-btn" data-id="${doc.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            articlesTable.appendChild(row);
+        });
+        
+        // Add event listeners to buttons
+        setupArticleActionButtons();
+        
+    } catch (error) {
+        console.error("Error loading articles:", error);
+        articlesTable.innerHTML = `
+            <tr>
+                <td colspan="4" class="error-state">
+                    Error loading articles: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Setup action buttons for article rows
+function setupArticleActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-article-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const articleId = e.currentTarget.dataset.id;
+            openArticleModal(articleId);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-article-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const articleId = e.currentTarget.dataset.id;
+            confirmDeleteArticle(articleId);
+        });
+    });
+}
+
+// Open the article modal for creating or editing
+function openArticleModal(articleId = null) {
+    const modal = document.getElementById('article-modal');
+    const titleElement = document.getElementById('article-modal-title');
+    const form = document.getElementById('article-form');
+    const idInput = document.getElementById('article-id');
+    
+    // Clear form
+    form.reset();
+    idInput.value = '';
+    
+    if (articleId) {
+        // Edit existing article
+        titleElement.textContent = 'Edit Article';
+        idInput.value = articleId;
+        
+        // Load article data
+        loadArticleData(articleId);
+    } else {
+        // Create new article
+        titleElement.textContent = 'Create Article';
+        
+        // Pre-fill author with current user if available
+        const user = auth.currentUser;
+        if (user) {
+            const authorInput = document.getElementById('article-author');
+            if (authorInput && user.displayName) {
+                authorInput.value = user.displayName;
+            } else if (authorInput) {
+                authorInput.value = user.email;
+            }
+        }
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+}
+
+// Load article data for editing
+async function loadArticleData(articleId) {
+    try {
+        const articleRef = doc(db, 'articles', articleId);
+        const articleSnap = await getDoc(articleRef);
+        
+        if (!articleSnap.exists()) {
+            showNotification('Article not found', 'error');
+            return;
+        }
+        
+        const article = articleSnap.data();
+        
+        // Populate form fields
+        document.getElementById('article-title').value = article.title || '';
+        document.getElementById('article-author').value = article.author || '';
+        document.getElementById('article-image-url').value = article.imageUrl || '';
+        document.getElementById('article-content').value = article.content || '';
+        
+    } catch (error) {
+        console.error("Error loading article data:", error);
+        showNotification('Failed to load article data', 'error');
+    }
+}
+
+// Save article to Firestore
+async function saveArticle() {
+    try {
+        const articleId = document.getElementById('article-id').value;
+        const title = document.getElementById('article-title').value.trim();
+        const author = document.getElementById('article-author').value.trim();
+        const imageUrl = document.getElementById('article-image-url').value.trim();
+        const content = document.getElementById('article-content').value.trim();
+        
+        if (!title || !content) {
+            showNotification('Title and content are required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to save articles', 'error');
+            return;
+        }
+        
+        const articleData = {
+            title,
+            author,
+            imageUrl: imageUrl || null,
+            content,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: user.email
+        };
+        
+        if (!articleId) {
+            // Create new article
+            articleData.createdAt = serverTimestamp();
+            articleData.createdBy = user.email;
+            
+            await addDoc(collection(db, 'articles'), articleData);
+            showNotification('Article created successfully', 'success');
+        } else {
+            // Update existing article
+            await updateDoc(doc(db, 'articles', articleId), articleData);
+            showNotification('Article updated successfully', 'success');
+        }
+        
+        // Close modal and refresh list
+        closeArticleModal();
+        loadArticles();
+        
+    } catch (error) {
+        console.error("Error saving article:", error);
+        showNotification(`Failed to save article: ${error.message}`, 'error');
+    }
+}
+
+// Close the article modal
+function closeArticleModal() {
+    const modal = document.getElementById('article-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Confirm and delete an article
+async function confirmDeleteArticle(articleId) {
+    if (confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+        try {
+            await deleteDoc(doc(db, 'articles', articleId));
+            
+            // Refresh article list
+            loadArticles();
+            
+            showNotification('Article deleted successfully', 'success');
+            
+        } catch (error) {
+            console.error("Error deleting article:", error);
+            showNotification('Failed to delete article: ' + error.message, 'error');
+        }
+    }
+}
+
+// Add this function to setup the trophy management section
+function setupTrophyManagementSection() {
+    // Load Trophies button
+    const loadTrophiesBtn = document.getElementById('load-trophies-data');
+    if (loadTrophiesBtn) {
+        loadTrophiesBtn.addEventListener('click', function() {
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                // Add error handler to trophy image in assign modal
+                const assignTrophyImage = document.getElementById('assign-trophy-image');
+                if (assignTrophyImage) {
+                    assignTrophyImage.onerror = function() {
+                        this.src = DEFAULT_TROPHY_IMAGE;
+                    };
+                }
+            
+            loadTrophyDefinitions()
+                .then(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies';
+                })
+                .catch(error => {
+                    console.error('Error loading trophies:', error);
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Create New Trophy button
+    const createTrophyBtn = document.getElementById('create-new-trophy-btn');
+    if (createTrophyBtn) {
+        createTrophyBtn.addEventListener('click', () => {
+            openTrophyModal();
+        });
+    }
+    
+    // Trophy form submit
+    const trophyForm = document.getElementById('trophy-form');
+    if (trophyForm) {
+        trophyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveTrophyDefinition();
+        });
+    }
+    
+    // Cancel button
+    const cancelTrophyBtn = document.getElementById('cancel-trophy-btn');
+    if (cancelTrophyBtn) {
+        cancelTrophyBtn.addEventListener('click', () => {
+            closeTrophyModal();
+        });
+    }
+    
+    // Modal close buttons
+    document.querySelectorAll('#trophy-modal .close-btn, #assign-trophy-modal .close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            closeTrophyModal();
+            closeAssignTrophyModal();
+        });
+    });
+    
+    // Modal background click
+    const trophyModal = document.getElementById('trophy-modal');
+    if (trophyModal) {
+        trophyModal.addEventListener('click', (e) => {
+            if (e.target === trophyModal) {
+                closeTrophyModal();
+            }
+        });
+    }
+    
+    // Assign trophy modal
+    const assignTrophyModal = document.getElementById('assign-trophy-modal');
+    if (assignTrophyModal) {
+        assignTrophyModal.addEventListener('click', (e) => {
+            if (e.target === assignTrophyModal) {
+                closeAssignTrophyModal();
+            }
+        });
+    }
+    
+    // Assign trophy form submit
+    const assignTrophyForm = document.getElementById('assign-trophy-form');
+    if (assignTrophyForm) {
+        assignTrophyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            assignTrophyToPlayer();
+        });
+    }
+    
+    // Cancel assign button
+    const cancelAssignBtn = document.getElementById('cancel-assign-btn');
+    if (cancelAssignBtn) {
+        cancelAssignBtn.addEventListener('click', () => {
+            closeAssignTrophyModal();
+        });
+    }
+
+    // Add image preview functionality for trophy creation/editing
+    const trophyImageUrlInput = document.getElementById('trophy-image-url');
+    if (trophyImageUrlInput) {
+        trophyImageUrlInput.addEventListener('input', updateTrophyImagePreview);
+        trophyImageUrlInput.addEventListener('paste', () => {
+            setTimeout(updateTrophyImagePreview, 10); // Small delay to ensure paste completes
+        });
+    }
+}
+
+// Add this new function to handle trophy image preview
+function updateTrophyImagePreview() {
+    const imageUrl = document.getElementById('trophy-image-url').value.trim();
+    const previewContainer = document.getElementById('trophy-image-preview');
+    
+    // Create preview container if it doesn't exist
+    if (!previewContainer) {
+        const formGroup = document.getElementById('trophy-image-url').closest('.form-group');
+        const newPreviewContainer = document.createElement('div');
+        newPreviewContainer.id = 'trophy-image-preview';
+        newPreviewContainer.className = 'trophy-preview-container';
+        formGroup.appendChild(newPreviewContainer);
+        
+        // Add image element
+        const previewImg = document.createElement('img');
+        previewImg.id = 'trophy-preview-img';
+        previewImg.alt = 'Trophy Preview';
+        previewImg.onerror = function() {
+            this.src = DEFAULT_TROPHY_IMAGE;
+            this.classList.add('error');
+        };
+        newPreviewContainer.appendChild(previewImg);
+    }
+    
+    // Update the preview image
+    const previewImg = document.getElementById('trophy-preview-img');
+    if (imageUrl) {
+        previewImg.src = imageUrl;
+        previewImg.style.display = 'block';
+        previewImg.classList.remove('error');
+    } else {
+        previewImg.src = DEFAULT_TROPHY_IMAGE;
+        previewImg.style.display = 'block';
+    }
+}
+
+// Load trophy definitions from Firestore
+async function loadTrophyDefinitions() {
+    const trophiesTable = document.getElementById('trophies-table-body');
+    if (!trophiesTable) return;
+    
+    trophiesTable.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading trophies...</td></tr>';
+    
+    try {
+        const trophiesRef = collection(db, 'trophyDefinitions');
+        const q = query(trophiesRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            trophiesTable.innerHTML = '<tr><td colspan="5" class="empty-state">No trophy definitions found</td></tr>';
+            return;
+        }
+        
+        trophiesTable.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const trophy = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format the timestamp
+            const timestamp = trophy.createdAt 
+                ? new Date(trophy.createdAt.seconds * 1000).toLocaleString() 
+                : 'N/A';
+                
+            row.innerHTML = `
+                <td class="trophy-image-cell">
+                    <img src="${trophy.image || DEFAULT_TROPHY_IMAGE}" 
+                         alt="${trophy.name}" 
+                         onerror="this.src='${DEFAULT_TROPHY_IMAGE}';">
+                </td>
+                <td class="trophy-name">${trophy.name || 'Untitled Trophy'}</td>
+                <td class="trophy-rarity-cell">
+                    <span class="trophy-rarity ${trophy.rarity || 'common'}">${trophy.rarity || 'common'}</span>
+                </td>
+                <td>${timestamp}</td>
+                <td class="actions">
+                    <button class="edit-trophy-btn" data-id="${doc.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="assign-trophy-btn" data-id="${doc.id}">
+                        <i class="fas fa-user-plus" title="Assign to player"></i>
+                    </button>
+                    <button class="delete-trophy-btn" data-id="${doc.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            trophiesTable.appendChild(row);
+        });
+        
+        // Add event listeners to buttons
+        setupTrophyActionButtons();
+        
+    } catch (error) {
+        console.error("Error loading trophy definitions:", error);
+        trophiesTable.innerHTML = `
+            <tr>
+                <td colspan="5" class="error-state">
+                    Error loading trophies: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Setup action buttons for trophy rows
+function setupTrophyActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-trophy-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const trophyId = e.currentTarget.dataset.id;
+            openTrophyModal(trophyId);
+        });
+    });
+    
+    // Assign buttons
+    document.querySelectorAll('.assign-trophy-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const trophyId = e.currentTarget.dataset.id;
+            openAssignTrophyModal(trophyId);
+        });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-trophy-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const trophyId = e.currentTarget.dataset.id;
+            confirmDeleteTrophy(trophyId);
+        });
+    });
+}
+
+// Open the trophy modal for creating or editing
+function openTrophyModal(trophyId = null) {
+    const modal = document.getElementById('trophy-modal');
+    const titleElement = document.getElementById('trophy-modal-title');
+    const form = document.getElementById('trophy-form');
+    const idInput = document.getElementById('trophy-id');
+    
+    // Clear form
+    form.reset();
+    idInput.value = '';
+    
+    // Clear image preview if it exists
+    const previewImg = document.getElementById('trophy-preview-img');
+    if (previewImg) {
+        previewImg.src = DEFAULT_TROPHY_IMAGE;
+        previewImg.classList.remove('error');
+    }
+    
+    if (trophyId) {
+        // Edit existing trophy
+        titleElement.textContent = 'Edit Trophy';
+        idInput.value = trophyId;
+        
+        // Load trophy data
+        loadTrophyData(trophyId);
+    } else {
+        // Create new trophy
+        titleElement.textContent = 'Create New Trophy';
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+}
+
+// Load trophy data for editing
+async function loadTrophyData(trophyId) {
+    try {
+        const trophyRef = doc(db, 'trophyDefinitions', trophyId);
+        const trophySnap = await getDoc(trophyRef);
+        
+        if (!trophySnap.exists()) {
+            showNotification('Trophy not found', 'error');
+            return;
+        }
+        
+        const trophy = trophySnap.data();
+        
+        // Populate form fields
+        document.getElementById('trophy-name').value = trophy.name || '';
+        document.getElementById('trophy-description').value = trophy.description || '';
+        document.getElementById('trophy-image-url').value = trophy.image || '';
+        document.getElementById('trophy-rarity').value = trophy.rarity || 'common';
+        
+        // Trigger image preview update
+        updateTrophyImagePreview();
+        
+    } catch (error) {
+        console.error("Error loading trophy data:", error);
+        showNotification('Failed to load trophy data', 'error');
+    }
+}
+
+// Save trophy definition to Firestore
+async function saveTrophyDefinition() {
+    try {
+        const trophyId = document.getElementById('trophy-id').value;
+        const name = document.getElementById('trophy-name').value.trim();
+        const description = document.getElementById('trophy-description').value.trim();
+        const imageUrl = document.getElementById('trophy-image-url').value.trim();
+        const rarity = document.getElementById('trophy-rarity').value;
+        
+        if (!name || !description || !imageUrl) {
+            showNotification('All fields are required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to save trophies', 'error');
+            return;
+        }
+        
+        const trophyData = {
+            name,
+            description,
+            image: imageUrl,
+            rarity,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: user.email
+        };
+        
+        if (!trophyId) {
+            // Create new trophy
+            trophyData.createdAt = serverTimestamp();
+            trophyData.createdBy = user.email;
+            
+            await addDoc(collection(db, 'trophyDefinitions'), trophyData);
+            showNotification('Trophy created successfully', 'success');
+        } else {
+            // Update existing trophy
+            await updateDoc(doc(db, 'trophyDefinitions', trophyId), trophyData);
+            showNotification('Trophy updated successfully', 'success');
+        }
+        
+        // Close modal and refresh list
+        closeTrophyModal();
+        loadTrophyDefinitions();
+        
+    } catch (error) {
+        console.error("Error saving trophy:", error);
+        showNotification(`Failed to save trophy: ${error.message}`, 'error');
+    }
+}
+
+// Close the trophy modal
+function closeTrophyModal() {
+    const modal = document.getElementById('trophy-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Add this function to handle trophy deletion
+async function confirmDeleteTrophy(trophyId) {
+    if (!trophyId) {
+        console.error("Delete Trophy: No trophy ID provided.");
+        return;
+    }
+
+    if (confirm('Are you sure you want to delete this trophy definition? This action cannot be undone and might affect players who have been awarded this trophy.')) {
+        try {
+            // Check authorization (ensure user is logged in and has permission)
+            const user = auth.currentUser;
+            if (!user) {
+                showNotification('You must be logged in to delete trophies', 'error');
+                return;
+            }
+            // Optional: Add a server-side check or rely on security rules
+
+            console.log(`Attempting to delete trophy definition with ID: ${trophyId}`);
+            await deleteDoc(doc(db, 'trophyDefinitions', trophyId));
+
+            showNotification('Trophy definition deleted successfully', 'success');
+
+            // Refresh the trophy list in the admin panel
+            loadTrophyDefinitions();
+
+        } catch (error) {
+            console.error("Error deleting trophy definition:", error);
+            showNotification(`Failed to delete trophy: ${error.message}`, 'error');
+        }
+    }
+}
+
+// Open the assign trophy modal
+async function openAssignTrophyModal(trophyId) {
+    try {
+        const trophyRef = doc(db, 'trophyDefinitions', trophyId);
+        const trophySnap = await getDoc(trophyRef);
+        
+        if (!trophySnap.exists()) {
+            showNotification('Trophy not found', 'error');
+            return;
+        }
+        
+        const trophy = trophySnap.data();
+        
+        // Populate form fields
+        document.getElementById('assign-trophy-id').value = trophyId;
+        document.getElementById('assign-trophy-name').value = trophy.name;
+        document.getElementById('assign-trophy-image').src = trophy.image || DEFAULT_TROPHY_IMAGE;
+        document.getElementById('assign-trophy-title').textContent = trophy.name || 'Unnamed Trophy';
+        document.getElementById('assign-trophy-description').textContent = trophy.description || 'No description';
+        
+        const rarityElement = document.getElementById('assign-trophy-rarity');
+        rarityElement.textContent = trophy.rarity || 'common';
+        rarityElement.className = `trophy-rarity ${trophy.rarity || 'common'}`;
+        
+        // Show modal
+        const modal = document.getElementById('assign-trophy-modal');
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error("Error opening assign trophy modal:", error);
+        showNotification('Failed to load trophy data', 'error');
+    }
+}
+
+// Close the assign trophy modal
+function closeAssignTrophyModal() {
+    const modal = document.getElementById('assign-trophy-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Assign trophy to player
+// Assign trophy to player
+async function assignTrophyToPlayer() {
+    try {
+        const trophyId = document.getElementById('assign-trophy-id').value;
+        const trophyName = document.getElementById('assign-trophy-name').value;
+        const username = document.getElementById('assign-player-username').value.trim();
+        const ladder = document.querySelector('input[name="assign-ladder"]:checked').value;
+        
+        if (!trophyId || !username) {
+            showNotification('Trophy ID and username are required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to assign trophies', 'error');
+            return;
+        }
+        
+        // Search for player across all collections
+        let playerDoc = null;
+        let userId = null;
+        let playerData = null;
+        
+        if (ladder === 'non-participant') {
+            // Search in non-participants collection
+            const nonParticipantsRef = collection(db, 'nonParticipants');
+            const q = query(nonParticipantsRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
+        } else {
+            // Search in ladder collections
+            const collectionName = ladder === 'D1' ? 'players' : 
+                                 ladder === 'D2' ? 'playersD2' : 'playersD3';
+            const playersRef = collection(db, collectionName);
+            const q = query(playersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                playerDoc = querySnapshot.docs[0];
+                userId = playerDoc.id;
+                playerData = playerDoc.data();
+            }
+        }
+        
+        if (!playerDoc) {
+            showNotification(`Player "${username}" not found in ${ladder === 'non-participant' ? 'non-participants' : ladder + ' ladder'}`, 'error');
+            return;
+        }
+        
+        // Check if player already has this trophy
+        const userTrophiesRef = collection(db, 'userTrophies');
+        const existingTrophyQuery = query(
+            userTrophiesRef, 
+            where('userId', '==', userId),
+            where('trophyId', '==', trophyId)
+        );
+        
+        const existingTrophySnapshot = await getDocs(existingTrophyQuery);
+        
+        if (!existingTrophySnapshot.empty) {
+            showNotification(`Player "${username}" already has this trophy`, 'warning');
+            return;
+        }
+        
+        // Add trophy to user
+        await addDoc(collection(db, 'userTrophies'), {
+            userId: userId,
+            playerUsername: username,
+            trophyId: trophyId,
+            awardedAt: serverTimestamp(),
+            awardedBy: user.email,
+            ladder: ladder
+        });
+        
+        showNotification(`Trophy "${trophyName}" awarded to ${username}`, 'success');
+        closeAssignTrophyModal();
+        
+    } catch (error) {
+        console.error("Error assigning trophy:", error);
+        showNotification(`Failed to assign trophy: ${error.message}`, 'error');
+    }
+}
+
+// Add this function to setup the inactive players section
+function setupInactivePlayersSection() {
+    // Load button is already handled in setupDataLoadButtons
+    
+    // Add filter event handlers
+    const daysFilter = document.getElementById('inactive-days-filter');
+    if (daysFilter) {
+        daysFilter.addEventListener('change', function() {
+            // Get the current button to preserve loading state
+            const loadBtn = document.getElementById('load-inactive-players-data');
+            if (loadBtn) loadBtn.click();
+        });
+    }
+    
+    // Handle ladder selection for inactive players
+    const ladderSelector = document.querySelector('.ladder-switch input[value="D1"]');
+    const ladderSelector2 = document.querySelector('.ladder-switch input[value="D2"]');
+    
+    if (ladderSelector && ladderSelector2) {
+        ladderSelector.addEventListener('change', function() {
+            if (this.checked) {
+                currentLadder = 'D1';
+                // Reload inactive players if we're on that tab
+                if (document.getElementById('inactive-players').style.display !== 'none') {
+                    const loadBtn = document.getElementById('load-inactive-players-data');
+                    if (loadBtn) loadBtn.click();
+                }
+            }
+        });
+        
+        ladderSelector2.addEventListener('change', function() {
+            if (this.checked) {
+                currentLadder = 'D2';
+                // Reload inactive players if we're on that tab
+                if (document.getElementById('inactive-players').style.display !== 'none') {
+                    const loadBtn = document.getElementById('load-inactive-players-data');
+                    if (loadBtn) loadBtn.click();
+                }
+            }
+        });
+    }
+    
+    // Setup players search functionality
+    const searchInput = document.getElementById('inactive-players-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const rows = document.querySelectorAll('#inactive-players-table-body tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.loading-cell') || 
+                    row.querySelector('.empty-state') || 
+                    row.querySelector('.error-state')) {
+                    return;
+                }
+                
+                const username = row.cells[0]?.textContent.toLowerCase() || '';
+                const lastMatch = row.cells[5]?.textContent.toLowerCase() || '';
+                
+                if (username.includes(searchTerm) || lastMatch.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }, 300));
+    }
+    
+    // Setup view player buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-player-btn')) {
+            const button = e.target.closest('.view-player-btn');
+            const username = button.dataset.username;
+            if (username) {
+                alert(`View player details for ${username} - Feature coming soon`);
+                // Here you could implement a modal to show player details
+            }
+        }
+    });
+    
+    console.log('Inactive players section initialized');
+}
+
+// Load inactive players and show their last match
+async function loadInactivePlayersData() {
+    const tableBody = document.getElementById('inactive-players-table-body');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading inactive players...</td></tr>';
+
+    try {
+        // Get minimum days threshold from filter if it exists
+        const daysFilter = document.getElementById('inactive-days-filter');
+        const minInactiveDays = daysFilter ? parseInt(daysFilter.value) || 0 : 0;
+        
+        // Fetch all players from the current ladder
+        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
+        const playersSnapshot = await getDocs(playersRef);
+
+        if (playersSnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No players found in this ladder</td></tr>';
+            return;
+        }
+
+        // Prepare array of player data
+        const players = [];
+        playersSnapshot.forEach(doc => {
+            const player = doc.data();
+            players.push({ 
+                ...player, 
+                id: doc.id,
+                username: player.username || 'Unknown Player'
+            });
+        });
+
+        console.log(`Found ${players.length} total players in the ${currentLadder} ladder`);
+
+        // Fetch last match for each player
+        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        const lastMatchPromises = players.map(async player => {
+            try {
+                const matchesRef = collection(db, matchesCollection);
+                const q = query(
+                    matchesRef,
+                    or(
+                        where('winnerUsername', '==', player.username),
+                        where('loserUsername', '==', player.username)
+                    ),
+                    orderBy('approvedAt', 'desc'),
+                    limit(1)
+                );
+                
+                const matchSnap = await getDocs(q);
+                
+                if (!matchSnap.empty) {
+                    const match = matchSnap.docs[0].data();
+                    const matchDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : null;
+                    const now = new Date();
+                    const daysSinceMatch = matchDate ? 
+                        Math.floor((now - matchDate) / (1000 * 60 * 60 * 24)) : null;
+                    
+                    const opponent = match.winnerUsername === player.username ? 
+                        match.loserUsername : match.winnerUsername;
+                    
+                    const result = match.winnerUsername === player.username ? 'Won' : 'Lost';
+                    
+                    return { 
+                        ...player, 
+                        lastMatch: { 
+                            date: matchDate ? matchDate.toLocaleDateString() : 'N/A',
+                            opponent: opponent || 'Unknown',
+                            result,
+                            timestamp: matchDate || new Date(0),
+                            daysSinceMatch: daysSinceMatch || Number.MAX_SAFE_INTEGER
+                        } 
+                    };
+                } else {
+                    // No matches found for this player
+                    return { 
+                        ...player, 
+                        lastMatch: { 
+                            date: 'Never played',
+                            opponent: 'N/A',
+                            result: 'N/A',
+                            timestamp: new Date(0),
+                            daysSinceMatch: Number.MAX_SAFE_INTEGER
+                        } 
+                    };
+                }
+            } catch (error) {
+                console.error(`Error fetching matches for ${player.username}:`, error);
+                return { 
+                    ...player, 
+                    lastMatch: { 
+                        date: 'Error',
+                        opponent: 'Error',
+                        result: 'Error',
+                        timestamp: new Date(0),
+                        daysSinceMatch: 0
+                    } 
+                };
+            }
+        });
+
+        let playersWithLastMatch = await Promise.all(lastMatchPromises);
+        
+        // Sort by days since last match (most inactive first)
+        playersWithLastMatch.sort((a, b) => b.lastMatch.daysSinceMatch - a.lastMatch.daysSinceMatch);
+        
+        // Filter based on minimum days inactive if specified
+        if (minInactiveDays > 0) {
+            playersWithLastMatch = playersWithLastMatch.filter(
+                player => player.lastMatch.daysSinceMatch >= minInactiveDays
+            );
+        }
+
+        // Render table
+        tableBody.innerHTML = '';
+        
+        if (playersWithLastMatch.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No inactive players match your criteria</td></tr>';
+            return;
+        }
+        
+        playersWithLastMatch.forEach(player => {
+            const row = document.createElement('tr');
+            
+            // Style for very inactive players (>30 days)
+            const inactiveClass = player.lastMatch.daysSinceMatch > 30 ? 'highly-inactive' : 
+                                player.lastMatch.daysSinceMatch > 14 ? 'moderately-inactive' : '';
+            
+            row.className = inactiveClass;
+            row.innerHTML = `
+                <td>${player.username}</td>
+                <td>${player.eloRating || 1200}</td>
+                <td>${player.lastMatch.date}</td>
+                <td>${player.lastMatch.daysSinceMatch === Number.MAX_SAFE_INTEGER ? 'N/A' : player.lastMatch.daysSinceMatch}</td>
+                <td>${currentLadder}</td>
+                <td>${player.lastMatch.date === 'Never played' ? 'No matches found' : 
+                    `${player.lastMatch.result} vs ${player.lastMatch.opponent}`}</td>
+                <td>
+                    <button class="view-player-btn" data-username="${player.username}" title="View Player Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        console.log(`Displaying ${playersWithLastMatch.length} inactive players`);
+
+    } catch (error) {
+        console.error('Error loading inactive players:', error);
+        tableBody.innerHTML = `<tr><td colspan="7" class="error-state">Error loading inactive players: ${error.message}</td></tr>`;
+    }
+}
+
+// --- HIGHLIGHTS MANAGEMENT SECTION ---
+
+function setupHighlightButtons() {
+    console.log("Setting up highlight buttons");
+    
+    // Match highlight button
+    const matchHighlightBtn = document.getElementById('create-match-highlight-btn');
+    if (matchHighlightBtn) {
+        matchHighlightBtn.addEventListener('click', function() {
+            console.log("Match highlight button clicked");
+            openHighlightModal('match');
+        });
+    }
+    
+    // Featured creator button
+    const creatorHighlightBtn = document.getElementById('create-creator-highlight-btn');
+    if (creatorHighlightBtn) {
+        creatorHighlightBtn.addEventListener('click', function() {
+            console.log("Creator highlight button clicked");
+            openHighlightModal('creator');
+        });
+    }
+    
+    // Player achievement button
+    const achievementHighlightBtn = document.getElementById('create-achievement-highlight-btn');
+    if (achievementHighlightBtn) {
+        achievementHighlightBtn.addEventListener('click', function() {
+            console.log("Achievement highlight button clicked");
+            openHighlightModal('achievement');
+        });
+    }
+}
+
+function openHighlightModal(typeOrId = 'match') {
+    console.log(`Opening highlight modal with parameter: ${typeOrId}`);
+    const modal = document.getElementById('highlight-modal');
+    const form = document.getElementById('highlight-form');
+    const titleElement = document.getElementById('highlight-modal-title');
+    const idField = document.getElementById('highlight-id');
+
+    if (!modal || !form || !titleElement) {
+        console.error("Essential highlight modal elements not found!");
+        return;
+    }
+
+    // Clear previous form data
+    form.reset();
+    idField.value = '';
+
+    const knownTypes = ['match', 'creator', 'achievement'];
+    const isEditing = !knownTypes.includes(typeOrId);
+
+    if (isEditing) {
+        // We're editing an existing highlight
+        const highlightId = typeOrId;
+        idField.value = highlightId;
+        titleElement.textContent = 'Loading...';
+
+        // Load the highlight data
+        loadHighlightDataAdmin(highlightId);
+    } else {
+        // Creating a new highlight
+        const type = typeOrId;
+        document.getElementById('highlight-type').value = type;
+        titleElement.textContent = `Create New ${getHighlightTypeName(type)}`;
+        
+        // Initialize the form for this type
+        toggleHighlightFields(type);
+        
+        // Set current user as submitter
+        const user = auth.currentUser;
+        if (user && document.getElementById('highlight-submitted-by')) {
+            document.getElementById('highlight-submitted-by').value = user.displayName || user.email;
+        }
+    }
+
+    // Show the modal
+    modal.classList.add('active');
+}
+
+function toggleHighlightFields(type) {
+    console.log(`Toggling fields for highlight type: ${type}`);
+    const form = document.getElementById('highlight-form');
+    
+    if (!form) return;
+    
+    // First hide ALL form fields
+    const allFields = form.querySelectorAll('.form-group, .form-row');
+    allFields.forEach(field => field.style.display = 'none');
+    
+    // Hide video preview by default
+    const videoPreview = document.getElementById('highlight-video-preview-container');
+    if (videoPreview) videoPreview.style.display = 'none';
+    
+    // Always show common fields (present in all highlight types)
+    const commonFields = [
+        'highlight-title-container',
+        'highlight-description-container',
+        'highlight-submitted-by-container'
+    ];
+    
+    commonFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+    });
+    
+    // Type-specific fields
+    if (type === 'match') {
+        // Show match highlight fields
+        const matchFields = [
+            'highlight-video-container',
+            'highlight-match-info-container',
+            'highlight-map-container',
+            'highlight-match-date-container',
+            'highlight-players-container', // Container for winner/loser rows
+            'highlight-match-link-container'
+        ];
+        
+        matchFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === 'highlight-players-container') {
+                    el.style.display = 'flex'; // Use flex for the players row
+                } else {
+                    el.style.display = 'block';
+                }
+            }
+        });
+        
+        // Make video required for match highlights
+        const videoIdInput = document.getElementById('highlight-video-id');
+        if (videoIdInput) {
+            videoIdInput.required = true;
+            const label = videoIdInput.previousElementSibling;
+            if (label) label.innerHTML = 'YouTube Video ID*';
+        }
+        
+        // Show video preview
+        if (videoPreview) videoPreview.style.display = 'block';
+        updateHighlightVideoPreview();
+        
+    } else if (type === 'creator') {
+        // Show creator highlight fields
+        const creatorFields = [
+            'highlight-map-container',
+            'highlight-map-creator-container',
+            'highlight-map-version-container',
+            'highlight-creator-image-container',
+            'highlight-video-container' // Video is optional
+        ];
+        
+        creatorFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+        });
+        
+        // Make video optional
+        const videoIdInput = document.getElementById('highlight-video-id');
+        if (videoIdInput) {
+            videoIdInput.required = false;
+            const label = videoIdInput.previousElementSibling;
+            if (label) label.innerHTML = 'YouTube Video ID (Optional)';
+        }
+        
+    } else if (type === 'achievement') {
+                // Show achievement highlight fields
+            const achievementFields = [
+                'highlight-achievement-player-container',
+                'highlight-achievement-type-container',
+                'highlight-achievement-details-container',
+                'highlight-player-profile-container',
+                'highlight-achievement-image-container', // Add this line
+                'highlight-video-container' // Video is optional for achievements
+            ];
+            
+            achievementFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'block';
+            });
+            
+            // Make video optional
+            const videoIdInput = document.getElementById('highlight-video-id');
+            if (videoIdInput) {
+                videoIdInput.required = false;
+                const label = videoIdInput.previousElementSibling;
+                if (label) label.innerHTML = 'YouTube Video ID (Optional)';
+            }
+        }
+}
+
+async function loadHighlightDataAdmin(highlightId) {
+    try {
+        const highlightRef = doc(db, 'highlights', highlightId);
+        const highlightDoc = await getDoc(highlightRef);
+
+        if (!highlightDoc.exists()) {
+            showNotification('Highlight not found', 'error');
+            return;
+        }
+        
+        const data = highlightDoc.data();
+        const type = data.type || 'match';
+        
+        // Update the title
+        document.getElementById('highlight-modal-title').textContent = `Edit ${getHighlightTypeName(type)}`;
+        
+        // Set the highlight type and toggle fields
+        document.getElementById('highlight-type').value = type;
+        toggleHighlightFields(type);
+        
+        // Fill common fields
+        document.getElementById('highlight-title').value = data.title || '';
+        document.getElementById('highlight-description').value = data.description || '';
+        document.getElementById('highlight-submitted-by').value = data.submittedBy || '';
+        
+        if (data.videoId) {
+            document.getElementById('highlight-video-id').value = data.videoId;
+            updateHighlightVideoPreview();
+        }
+        
+        // Fill type-specific fields
+        if (type === 'match') {
+            document.getElementById('highlight-match-info').value = data.matchInfo || '';
+            document.getElementById('highlight-map').value = data.map || '';
+            
+            // Format date for input if exists
+            if (data.matchDate) {
+                const date = new Date(data.matchDate.seconds * 1000);
+                document.getElementById('highlight-match-date').value = 
+                    date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            }
+            
+            document.getElementById('highlight-winner-name').value = data.winnerName || '';
+            document.getElementById('highlight-winner-score').value = data.winnerScore || '';
+            document.getElementById('highlight-loser-name').value = data.loserName || '';
+            document.getElementById('highlight-loser-score').value = data.loserScore || '';
+            document.getElementById('highlight-match-link').value = data.matchLink || '';
+            
+        } else if (type === 'creator') {
+            document.getElementById('highlight-map').value = data.map || '';
+            document.getElementById('highlight-map-creator').value = data.mapCreator || '';
+            document.getElementById('highlight-map-version').value = data.mapVersion || '';
+            document.getElementById('highlight-creator-image').value = data.creatorImageUrl || '';
+            
+        } else if (type === 'achievement') {
+            document.getElementById('highlight-achievement-player').value = data.achievementPlayer || '';
+            document.getElementById('highlight-achievement-type').value = data.achievementType || '';
+            document.getElementById('highlight-achievement-details').value = data.achievementDetails || '';
+            document.getElementById('highlight-player-profile').value = data.playerProfileUrl || '';
+            document.getElementById('highlight-achievement-image').value = data.achievementImageUrl || ''; // Add this line
+        }
+        
+    } catch (error) {
+        console.error("Error loading highlight:", error);
+        showNotification(`Error loading highlight: ${error.message}`, 'error');
+    }
+}
+
+async function saveHighlight() {
+    try {
+        const highlightId = document.getElementById('highlight-id')?.value || '';
+        const highlightType = document.getElementById('highlight-type')?.value || 'match';
+        
+        // Get common fields
+        const data = {
+            title: document.getElementById('highlight-title')?.value?.trim() || '',
+            description: document.getElementById('highlight-description')?.value?.trim() || '',
+            submittedBy: document.getElementById('highlight-submitted-by')?.value?.trim() || '',
+            videoId: document.getElementById('highlight-video-id')?.value?.trim() || null,
+            type: highlightType
+        };
+        
+        // Validate required fields
+        if (!data.title) {
+            showNotification('Title is required', 'error');
+            return;
+        }
+        
+        // Add type-specific fields
+        if (highlightType === 'match') {
+            // For match highlights
+            data.matchInfo = document.getElementById('highlight-match-info')?.value?.trim() || '';
+            data.map = document.getElementById('highlight-map')?.value?.trim() || '';
+            
+            const matchDateInput = document.getElementById('highlight-match-date');
+            const matchDateValue = matchDateInput?.value || '';
+            data.matchDate = matchDateValue ? Timestamp.fromDate(new Date(matchDateValue)) : null;
+            
+            data.winnerName = document.getElementById('highlight-winner-name')?.value?.trim() || '';
+            data.winnerScore = document.getElementById('highlight-winner-score')?.value?.trim() || '';
+            data.loserName = document.getElementById('highlight-loser-name')?.value?.trim() || '';
+            data.loserScore = document.getElementById('highlight-loser-score')?.value?.trim() || '';
+            data.matchLink = document.getElementById('highlight-match-link')?.value?.trim() || '';
+            
+            // Validate required match fields
+            if (!data.videoId) {
+                showNotification('YouTube Video ID is required for match highlights', 'error');
+                return;
+            }
+            
+        } else if (highlightType === 'creator') {
+            // For creator highlights
+            data.map = document.getElementById('highlight-map')?.value?.trim() || '';
+            data.mapCreator = document.getElementById('highlight-map-creator')?.value?.trim() || '';
+            data.mapVersion = document.getElementById('highlight-map-version')?.value?.trim() || '';
+            data.creatorImageUrl = document.getElementById('highlight-creator-image')?.value?.trim() || '';
+            
+            // Validate required creator fields
+            if (!data.mapCreator) {
+                showNotification('Map Creator is required', 'error');
+                return;
+            }
+            
+        } else if (highlightType === 'achievement') {
+            // For achievement highlights
+            data.achievementPlayer = document.getElementById('highlight-achievement-player')?.value?.trim() || '';
+            data.achievementType = document.getElementById('highlight-achievement-type')?.value?.trim() || '';
+            data.achievementDetails = document.getElementById('highlight-achievement-details')?.value?.trim() || '';
+            data.playerProfileUrl = document.getElementById('highlight-player-profile')?.value?.trim() || '';
+            data.achievementImageUrl = document.getElementById('highlight-achievement-image')?.value?.trim() || ''; 
+            
+            // Validate required achievement fields
+            if (!data.achievementPlayer) {
+                showNotification('Player Name is required', 'error');
+                return;
+            }
+        }
+        
+        // Add timestamps
+        if (highlightId) {
+            // Updating existing highlight
+            data.updatedAt = serverTimestamp();
+            await updateDoc(doc(db, 'highlights', highlightId), data);
+            showNotification('Highlight updated successfully!', 'success');
+        } else {
+            // Creating new highlight
+            data.createdAt = serverTimestamp();
+            await addDoc(collection(db, 'highlights'), data);
+            showNotification('Highlight created successfully!', 'success');
+        }
+        
+        // Close modal and refresh data
+        closeHighlightModal();
+        loadHighlightsAdmin();
+        
+    } catch (error) {
+        console.error("Error saving highlight:", error);
+        showNotification(`Error saving highlight: ${error.message}`, 'error');
+    }
+}
+
+function closeHighlightModal() {
+    const modal = document.getElementById('highlight-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function getHighlightTypeName(type) {
+    switch(type) {
+        case 'match': return 'Match Highlight';
+        case 'creator': return 'Featured Creator';
+        case 'achievement': return 'Player Achievement';
+        default: return 'Highlight';
+    }
+}
+
+function updateHighlightVideoPreview() {
+    const videoIdInput = document.getElementById('highlight-video-id');
+    const previewContainer = document.getElementById('highlight-video-preview-container');
+    const previewFrame = document.getElementById('highlight-video-preview');
+    
+    if (!videoIdInput || !previewFrame || !previewContainer) return;
+    
+    const videoId = videoIdInput.value.trim();
+    
+    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+        previewFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        previewContainer.style.display = 'block';
+    } else {
+        previewFrame.src = '';
+        previewContainer.style.display = 'none';
+    }
+}
+
+// Load highlights into the admin table
+async function loadHighlightsAdmin() {
+    const tableBody = document.getElementById('highlights-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading highlights...</td></tr>';
+    
+    try {
+        const q = query(collection(db, 'highlights'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No highlights found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            
+            const createdDate = data.createdAt ? 
+                new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                
+            // Format type for display
+            let typeDisplay = 'Unknown';
+            let typeClass = '';
+            
+            switch(data.type) {
+                case 'match':
+                    typeDisplay = 'Match';
+                    typeClass = 'match-type';
+                    break;
+                case 'creator':
+                    typeDisplay = 'Creator';
+                    typeClass = 'creator-type';
+                    break;
+                case 'achievement':
+                    typeDisplay = 'Achievement';
+                    typeClass = 'achievement-type';
+                    break;
+            }
+            
+            row.innerHTML = `
+                <td>${data.title || 'Untitled'}</td>
+                <td><span class="highlight-type ${typeClass}">${typeDisplay}</span></td>
+                <td>${createdDate}</td>
+                <td>${data.submittedBy || 'Unknown'}</td>
+                <td>${data.videoId ? '<i class="fas fa-video"></i> Yes' : '<i class="fas fa-times"></i> No'}</td>
+                <td class="actions">
+                    <button class="edit-highlight-btn" data-id="${doc.id}" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-highlight-btn" data-id="${doc.id}" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // Add event listeners to buttons
+        document.querySelectorAll('.edit-highlight-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                openHighlightModal(e.currentTarget.dataset.id);
+            });
+        });
+        
+        document.querySelectorAll('.delete-highlight-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                confirmDeleteHighlight(e.currentTarget.dataset.id);
+            });
+        });
+        
+    } catch (error) {
+        console.error("Error loading highlights:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="error-state">
+                    Error loading highlights: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function confirmDeleteHighlight(highlightId) {
+    if (confirm('Are you sure you want to delete this highlight? This cannot be undone.')) {
+        try {
+            await deleteDoc(doc(db, 'highlights', highlightId));
+            showNotification('Highlight deleted successfully', 'success');
+            loadHighlightsAdmin();
+        } catch (error) {
+            console.error("Error deleting highlight:", error);
+            showNotification(`Error deleting highlight: ${error.message}`, 'error');
+        }
+    }
+}
+
+function setupCreateTestMatchModal() {
+    console.log('Setting up create test match modal events');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    const form = document.getElementById('create-test-match-form');
+    
+    if (!modal) {
+        console.error('Create test match modal not found in DOM');
+        return;
+    }
+    
+    if (!form) {
+        console.error('Create test match form not found in DOM');
+        return;
+    }
+    
+    // Remove any existing event listeners by cloning elements
+    const newModal = modal.cloneNode(true);
+    modal.parentNode.replaceChild(newModal, modal);
+    
+    const newForm = newModal.querySelector('#create-test-match-form');
+    
+    // Modal background click to close
+    newModal.addEventListener('click', function(e) {
+        if (e.target === newModal) {
+            console.log('Modal background clicked');
+            closeCreateTestMatchModal();
+        }
+    });
+    
+    // Close button
+    const closeBtn = newModal.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Modal close button clicked');
+            closeCreateTestMatchModal();
+        });
+    }
+    
+    // Cancel button
+    const cancelBtn = newModal.querySelector('#cancel-create-test-match-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Modal cancel button clicked');
+            closeCreateTestMatchModal();
+        });
+    }
+    
+    // Form submission
+    if (newForm) {
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Create test match form submitted');
+            createTestMatch();
+        });
+        
+        // Also handle button click directly if form submit doesn't work
+        const submitBtn = newForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Submit button clicked directly');
+                createTestMatch();
+            });
+        }
+    }
+    
+    console.log('Create test match modal setup complete');
+}
+
+function setupManageHighlightsSection() {
+    console.log('Setting up Manage Highlights section');
+    
+    // Load highlights button is already set up in setupDataLoadButtons
+    
+    // Create highlight buttons for each type
+    setupHighlightButtons();
+    
+    // Set up the highlight modal form submission
+    const highlightForm = document.getElementById('highlight-form');
+    if (highlightForm) {
+        highlightForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveHighlight();
+        });
+    }
+    
+    // Close button for highlight modal
+    const closeHighlightBtn = document.getElementById('cancel-highlight-btn');
+    if (closeHighlightBtn) {
+        closeHighlightBtn.addEventListener('click', closeHighlightModal);
+    }
+    
+    // Modal close button (X)
+    const closeBtn = document.querySelector('#highlight-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeHighlightModal);
+    }
+    
+    // Modal background click
+    const highlightModal = document.getElementById('highlight-modal');
+    if (highlightModal) {
+        highlightModal.addEventListener('click', (e) => {
+            if (e.target === highlightModal) {
+                closeHighlightModal();
+            }
+        });
+    }
+    
+    // Video ID input for preview update
+    const videoIdInput = document.getElementById('highlight-video-id');
+    if (videoIdInput) {
+        videoIdInput.addEventListener('input', () => {
+            updateHighlightVideoPreview();
+        });
+    }
+    
+    console.log('Manage Highlights section initialized');
+}
+
+// Update setupManageMatchesSection to include resimulate functionality
+// Add this to your existing setupManageMatchesSection function:
+function setupManageMatchesSection() {
+    console.log('Setting up Manage Matches section');
+    
+    // Existing pagination buttons
+    const prevBtn = document.getElementById('matches-prev-page');
+    const nextBtn = document.getElementById('matches-next-page');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const ladderPrefix = currentLadder.toLowerCase();
+            loadMatchesData(matchesPagination[ladderPrefix].page - 1);
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const ladderPrefix = currentLadder.toLowerCase();
+            loadMatchesData(matchesPagination[ladderPrefix].page + 1);
+        });
+    }
+    
+    // Existing filter buttons
+    const applyFiltersBtn = document.getElementById('apply-matches-filters');
+    const resetFiltersBtn = document.getElementById('reset-matches-filters');
+    
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', applyMatchesFilters);
+    }
+    
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', resetMatchesFilters);
+    }
+    
+    // Existing search functionality
+    const matchesSearch = document.getElementById('matches-search');
+    if (matchesSearch) {
+        matchesSearch.addEventListener('input', debounce(filterMatchesTable, 300));
+    }
+    
+    // ADD NEW: Resimulate match button
+    const resimulateBtn = document.getElementById('resimulate-match-btn');
+    if (resimulateBtn) {
+        resimulateBtn.addEventListener('click', openResimulateModal);
+    }
+    
+    // ADD NEW: Resimulate modal event handlers
+    const resimulateModal = document.getElementById('resimulate-modal');
+    if (resimulateModal) {
+        // Close button
+        const closeBtn = resimulateModal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeResimulateModal);
+        }
+        
+        // Background click to close
+        resimulateModal.addEventListener('click', (e) => {
+            if (e.target === resimulateModal) {
+                closeResimulateModal();
+            }
+        });
+    }
+    
+    // Existing create test match setup
+    setupCreateTestMatchButton();
+    setupCreateTestMatchModal();
+    
+    console.log('Manage Matches section initialized with resimulate functionality');
+}
+
+
+// Open create test match modal
+function openCreateTestMatchModal() {
+    console.log('Opening create test match modal');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    const form = document.getElementById('create-test-match-form');
+    
+    if (!modal) {
+        console.error('Create test match modal not found');
+        showNotification('Create test match modal not found', 'error');
+        return;
+    }
+    
+    if (!form) {
+        console.error('Create test match form not found');
+        showNotification('Create test match form not found', 'error');
+        return;
+    }
+    
+    // Reset form
+    form.reset();
+    
+    // Set default ladder to current ladder
+    const ladderRadios = document.querySelectorAll('input[name="test-match-ladder"]');
+    let radioFound = false;
+    
+    ladderRadios.forEach(radio => {
+        console.log('Found radio with value:', radio.value);
+        if (radio.value === currentLadder) {
+            radio.checked = true;
+            radioFound = true;
+            console.log('Set default ladder to:', currentLadder);
+        }
+    });
+    
+    if (!radioFound) {
+        console.warn('No radio button found for current ladder:', currentLadder);
+        // Default to D1 if no match found
+        const defaultRadio = document.querySelector('input[name="test-match-ladder"][value="D1"]');
+        if (defaultRadio) {
+            defaultRadio.checked = true;
+            console.log('Defaulted to D1 ladder');
+        }
+    }
+    
+    // Set default date to today
+    const dateInput = document.getElementById('test-match-date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+    
+    // Show modal with proper display and visibility
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active');
+    
+    console.log('Modal should now be visible');
+    
+    // Focus on first input
+    const firstInput = document.getElementById('test-match-winner-username');
+    if (firstInput) {
+        setTimeout(() => {
+            firstInput.focus();
+        }, 100);
+    }
+}
+
+function closeCreateTestMatchModal() {
+    console.log('Closing create test match modal');
+    
+    const modal = document.getElementById('create-test-match-modal');
+    if (!modal) {
+        console.error('Modal not found when trying to close');
+        return;
+    }
+    
+    // Remove active class and hide modal
+    modal.classList.remove('active');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    
+    // Use CSS transition, then hide completely
+    setTimeout(() => {
+        if (!modal.classList.contains('active')) {
+            modal.style.display = 'none';
+        }
+    }, 300);
+    
+    console.log('Modal closed');
+}
+
+// Create test match
+async function createTestMatch() {
+    console.log('Creating test match without player validation...');
+    
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in', 'error');
+            return;
+        }
+        
+        const selectedLadder = 'D1'; // Default for testing
+        const matchesCollection = 'approvedMatches';
+        
+        const matchData = {
+            winnerUsername: 'TestWinner',
+            winnerScore: 20,
+            winnerSuicides: 0,
+            winnerComment: 'Test match',
+            winnerDemoLink: null,
+            loserUsername: 'TestLoser',
+            loserScore: 15,
+            loserSuicides: 0,
+            loserComment: 'Test match',
+            loserDemoLink: null,
+            mapPlayed: 'TestMap',
+            approvedAt: Timestamp.fromDate(new Date()),
+            approvedBy: user.email,
+            createdAt: serverTimestamp(),
+            createdBy: user.email,
+            isTestMatch: true,
+            ladder: selectedLadder,
+            testMatchCreatedAt: serverTimestamp(),
+            testMatchNote: `Simple test match created by admin ${user.email}`
+        };
+        
+        console.log('Adding simple test match...');
+        await addDoc(collection(db, matchesCollection), matchData);
+        
+        showNotification('Simple test match created successfully', 'success');
+        closeCreateTestMatchModal();
+        
+    } catch (error) {
+        console.error('Error creating simple test match:', error);
+        showNotification(`Failed to create simple test match: ${error.message}`, 'error');
+    }
+}
+
+// Add this to your browser console to test Firebase connection
+window.testFirebaseConnection = async function() {
+    try {
+        console.log('Testing Firebase connection...');
+        console.log('Auth:', auth);
+        console.log('DB:', db);
+        console.log('Current user:', auth.currentUser);
+        
+        // Try a simple query
+        const testRef = collection(db, 'players');
+        console.log('Collection reference created:', testRef);
+        
+        const testQuery = query(testRef, where('username', '==', 'nonexistent'));
+        console.log('Query created:', testQuery);
+        
+        const snapshot = await getDocs(testQuery);
+        console.log('Query executed. Empty:', snapshot.empty);
+        console.log('Firebase connection test successful!');
+        
+    } catch (error) {
+        console.error('Firebase connection test failed:', error);
+    }
+};
+
+function setupCreateTestMatchButton() {
+    const createTestMatchBtn = document.getElementById('create-test-match-btn');
+    if (!createTestMatchBtn) {
+        console.error('Create test match button not found in DOM');
+        return;
+    }
+    
+    console.log('Setting up create test match button');
+    
+    // Remove any existing event listeners by cloning the element
+    const newBtn = createTestMatchBtn.cloneNode(true);
+    createTestMatchBtn.parentNode.replaceChild(newBtn, createTestMatchBtn);
+    
+    // Add fresh event listener
+    newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Create test match button clicked');
+        openCreateTestMatchModal();
+    });
+    
+    console.log('Create test match button setup complete');
+}
+
+
+
+// Load matches data with pagination
+async function loadMatchesData(page = 1) {
+    const tableBody = document.getElementById('matches-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading matches...</td></tr>';
+    
+    try {
+        const ladderPrefix = currentLadder.toLowerCase();
+        const pagination = matchesPagination[ladderPrefix];
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        const matchesRef = collection(db, matchesCollection);
+        
+        // Reset pagination if going back to page 1
+        if (page <= 1) {
+            pagination.page = 1;
+            pagination.firstVisible = null;
+            pagination.lastVisible = null;
+        } else {
+            pagination.page = page;
+        }
+        
+        // Apply filters if any
+        const filters = getMatchesFilters();
+        let q = matchesRef;
+        
+        if (filters.startDate || filters.endDate || filters.searchTerm) {
+            // Create query with filters
+            let queryConstraints = [];
+            
+            if (filters.startDate && filters.endDate) {
+                queryConstraints.push(
+                    where('approvedAt', '>=', filters.startDate),
+                    where('approvedAt', '<=', filters.endDate)
+                );
+                q = query(matchesRef, ...queryConstraints);
+            } else {
+                q = query(matchesRef, orderBy('approvedAt', 'desc'));
+            }
+        } else {
+            // Default ordering
+            q = query(matchesRef, orderBy('approvedAt', 'desc'));
+        }
+        
+        // Add pagination
+        if (page > 1 && pagination.lastVisible) {
+            q = query(q, startAfter(pagination.lastVisible), limit(PAGE_SIZE));
+        } else {
+            q = query(q, limit(PAGE_SIZE));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        // Update pagination state
+        if (!querySnapshot.empty) {
+            pagination.firstVisible = querySnapshot.docs[0];
+            pagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Check if there are more records for next page
+        let hasNextPage = false;
+        if (!querySnapshot.empty) {
+            const nextPageQuery = query(q, startAfter(pagination.lastVisible), limit(1));
+            const nextPageSnapshot = await getDocs(nextPageQuery);
+            hasNextPage = !nextPageSnapshot.empty;
+        }
+        
+        // Enable/disable pagination buttons
+        const prevBtn = document.getElementById('matches-prev-page');
+        const nextBtn = document.getElementById('matches-next-page');
+        const pageIndicator = document.getElementById('matches-page-indicator');
+        
+        if (prevBtn) prevBtn.disabled = pagination.page <= 1;
+        if (nextBtn) nextBtn.disabled = !hasNextPage;
+        if (pageIndicator) pageIndicator.textContent = `Page ${pagination.page}`;
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const match = doc.data();
+            const row = document.createElement('tr');
+            
+            // Format date
+            const dateStr = match.approvedAt ? 
+                new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+            
+            // IMPORTANT: Set data attributes for the action buttons
+            row.setAttribute('data-id', doc.id);
+            row.setAttribute('data-ladder', currentLadder);
+            
+            // Add a class to identify match rows
+            row.classList.add('match-row');
+            
+            row.innerHTML = `
+                <td>${dateStr}</td>
+                <td class="winner-cell">${match.winnerUsername || 'Unknown'}</td>
+                <td class="loser-cell">${match.loserUsername || 'Unknown'}</td>
+                <td class="score-cell">${match.winnerScore || 0} - ${match.loserScore || 0}</td>
+                <td class="map-cell">${match.mapPlayed || 'N/A'}</td>
+                <td class="ladder-cell">${currentLadder}</td>
+                <td class="actions">
+                    <button class="edit-match-btn btn-small" data-id="${doc.id}" title="Edit Match">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-match-btn btn-small btn-danger" data-id="${doc.id}" title="Delete Match">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+        // IMPORTANT: Set up action buttons AFTER adding all rows
+        setupMatchesActionButtons();
+        
+        // Apply search filter if there's a term
+        if (filters.searchTerm) {
+            filterMatchesTable();
+        }
+        
+        console.log(`Loaded ${querySnapshot.size} matches for ${currentLadder} ladder, page ${pagination.page}`);
+        
+    } catch (error) {
+        console.error('Error loading matches:', error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="error-state">
+                    Error loading matches: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function deleteMatch(matchId, ladder) {
+    try {
+        console.log(`Deleting match ${matchId} from ${ladder} ladder`);
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to delete matches', 'error');
+            return;
+        }
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        console.log(`Using collection: ${matchesCollection}`);
+        
+        // Show loading notification
+        showNotification('Deleting match...', 'info');
+        
+        // Delete the match
+        await deleteDoc(doc(db, matchesCollection, matchId));
+        
+        console.log('Match deleted successfully');
+        showNotification('Match deleted successfully', 'success');
+        
+        // Reload matches table
+        const ladderPrefix = ladder.toLowerCase();
+        loadMatchesData(matchesPagination[ladderPrefix].page);
+        
+    } catch (error) {
+        console.error('Error deleting match:', error);
+        showNotification(`Failed to delete match: ${error.message}`, 'error');
+    }
+}
+
+// Setup action buttons for matches table
+function setupMatchesActionButtons() {
+    console.log('Setting up matches action buttons...');
+    
+    // Edit buttons
+    document.querySelectorAll('.edit-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder;
+            console.log('Edit match clicked:', matchId, ladder);
+            openEditMatchModal(matchId, ladder);
+        });
+    });
+    
+    // Delete buttons - FIXED
+    document.querySelectorAll('.delete-match-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const matchId = e.currentTarget.dataset.id;
+            const row = e.currentTarget.closest('tr');
+            const ladder = row.dataset.ladder || currentLadder; // Fallback to currentLadder
+            console.log('Delete match clicked:', matchId, ladder);
+            
+            // For now, use a simple confirm dialog instead of modal
+            if (confirm('Are you sure you want to delete this match? This action cannot be undone.')) {
+                deleteMatch(matchId, ladder);
+            }
+        });
+    });
+    
+    console.log('Matches action buttons setup complete');
+}
+
+// Filter matches table based on search term
+function filterMatchesTable() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#matches-table-body tr');
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        if (row.classList.contains('loading-cell') || 
+            row.classList.contains('empty-state') || 
+            row.classList.contains('error-state')) {
+            return;
+        }
+        
+        const winner = row.cells[1].textContent.toLowerCase();
+        const loser = row.cells[2].textContent.toLowerCase();
+        const map = row.cells[4].textContent.toLowerCase();
+        
+        if (winner.includes(searchTerm) || loser.includes(searchTerm) || map.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && rows.length > 0) {
+        const tableBody = document.getElementById('matches-table-body');
+        const hasNoResultsRow = tableBody.querySelector('.no-results');
+        
+        if (!hasNoResultsRow) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results';
+            noResultsRow.innerHTML = `<td colspan="7">No matches found matching '${searchTerm}'</td>`;
+            tableBody.appendChild(noResultsRow);
+        }
+    } else {
+        const noResultsRow = document.querySelector('.no-results');
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+}
+
+// Get filters for matches query
+function getMatchesFilters() {
+    const searchTerm = document.getElementById('matches-search').value.toLowerCase();
+    const startDateStr = document.getElementById('matches-start-date').value;
+    const endDateStr = document.getElementById('matches-end-date').value;
+    
+    let startDate = null;
+    let endDate = null;
+    
+    if (startDateStr) {
+        startDate = new Date(startDateStr);
+        startDate.setHours(0, 0, 0, 0);
+        startDate = Timestamp.fromDate(startDate);
+    }
+    
+    if (endDateStr) {
+        endDate = new Date(endDateStr);
+        endDate.setHours(23, 59, 59, 999);
+        endDate = Timestamp.fromDate(endDate);
+    }
+    
+    return { searchTerm, startDate, endDate };
+}
+
+// Apply filters to matches
+async function applyMatchesFilters() {
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload with filters applied
+    await loadMatchesData(1);
+}
+
+// Reset match filters
+function resetMatchesFilters() {
+    document.getElementById('matches-start-date').value = '';
+    document.getElementById('matches-end-date').value = '';
+    document.getElementById('matches-search').value = '';
+    
+    // Reset pagination
+    const ladderPrefix = currentLadder.toLowerCase();
+    matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
+    
+    // Reload matches
+    loadMatchesData(1);
+}
+
+// Open edit match modal
+async function openEditMatchModal(matchId, ladder) {
+    const modal = document.getElementById('edit-match-modal');
+    if (!modal) return;
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Set form fields
+        document.getElementById('edit-match-id').value = matchId;
+        document.getElementById('edit-match-ladder').value = ladder;
+        document.getElementById('edit-match-winner').value = match.winnerUsername || '';
+        document.getElementById('edit-match-winner-score').value = match.winnerScore || 0;
+        document.getElementById('edit-match-winner-suicides').value = match.winnerSuicides || 0;
+        document.getElementById('edit-match-winner-comment').value = match.winnerComment || '';
+        document.getElementById('edit-match-loser').value = match.loserUsername || '';
+        document.getElementById('edit-match-loser-score').value = match.loserScore || 0;
+        document.getElementById('edit-match-loser-suicides').value = match.loserSuicides || 0;
+        document.getElementById('edit-match-loser-comment').value = match.loserComment || '';
+        document.getElementById('edit-match-map').value = match.mapPlayed || '';
+        document.getElementById('edit-match-winner-demo').value = match.winnerDemoLink || '';
+        document.getElementById('edit-match-loser-demo').value = match.loserDemoLink || match.demoLink || '';
+        
+        // Update title
+        document.getElementById('edit-match-title').textContent = `Edit Match: ${match.winnerUsername} vs ${match.loserUsername}`;
+        
+        // Show the modal
+        modal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match data:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close edit match modal
+function closeEditMatchModal() {
+    const modal = document.getElementById('edit-match-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Save edited match
+async function saveEditedMatch() {
+    try {
+        const matchId = document.getElementById('edit-match-id').value;
+        const ladder = document.getElementById('edit-match-ladder').value;
+        
+        if (!matchId || !ladder) {
+            showNotification('Match ID or ladder missing', 'error');
+            return;
+        }
+        
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get form values
+        const winnerUsername = document.getElementById('edit-match-winner').value.trim();
+        const winnerScore = parseInt(document.getElementById('edit-match-winner-score').value);
+        const winnerSuicides = parseInt(document.getElementById('edit-match-winner-suicides').value);
+        const winnerComment = document.getElementById('edit-match-winner-comment').value.trim();
+        const loserUsername = document.getElementById('edit-match-loser').value.trim();
+        const loserScore = parseInt(document.getElementById('edit-match-loser-score').value);
+        const loserSuicides = parseInt(document.getElementById('edit-match-loser-suicides').value);
+        const loserComment = document.getElementById('edit-match-loser-comment').value.trim();
+        const mapPlayed = document.getElementById('edit-match-map').value.trim();
+        const winnerDemoLink = document.getElementById('edit-match-winner-demo').value.trim();
+        const loserDemoLink = document.getElementById('edit-match-loser-demo').value.trim();
+        
+        if (!winnerUsername || !loserUsername) {
+            showNotification('Winner and loser usernames are required', 'error');
+            return;
+        }
+        
+        // Update the match document
+        await updateDoc(doc(db, matchesCollection, matchId), {
+            winnerUsername,
+            winnerScore,
+            winnerSuicides,
+            winnerComment,
+            loserUsername,
+            loserScore,
+            loserSuicides,
+            loserComment,
+            mapPlayed,
+            winnerDemoLink: winnerDemoLink || null,
+            loserDemoLink: loserDemoLink || null,
+            lastModifiedAt: serverTimestamp(),
+            lastModifiedBy: auth.currentUser.email,
+            isEdited: true
+        });
+        
+        showNotification('Match updated successfully', 'success');
+        closeEditMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error saving match:', error);
+        showNotification('Failed to save match: ' + error.message, 'error');
+    }
+}
+
+// Open delete match confirmation modal
+async function openDeleteMatchModal(matchId, ladder) {
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Get match data
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchSnap = await getDoc(matchRef);
+        
+        if (!matchSnap.exists()) {
+            showNotification('Match not found', 'error');
+            return;
+        }
+        
+        const match = matchSnap.data();
+        
+        // Store match ID and ladder for deletion
+        const deleteModal = document.getElementById('delete-match-confirm-modal');
+        deleteModal.dataset.matchId = matchId;
+        deleteModal.dataset.ladder = ladder;
+        
+        // Format date
+        const dateStr = match.approvedAt ? 
+            new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
+        
+        // Create match summary
+        const summary = document.getElementById('delete-match-summary');
+        summary.innerHTML = `
+            <p><strong>Date:</strong> ${dateStr}</p>
+            <p><strong>Players:</strong> ${match.winnerUsername} (winner) vs ${match.loserUsername} (loser)</p>
+            <p><strong>Score:</strong> ${match.winnerScore || 0} - ${match.loserScore || 0}</p>
+            <p><strong>Map:</strong> ${match.mapPlayed || 'N/A'}</p>
+            <p><strong>Ladder:</strong> ${ladder}</p>
+        `;
+        
+        // Show the modal
+        deleteModal.classList.add('active');
+        
+    } catch (error) {
+        console.error('Error loading match for deletion:', error);
+        showNotification('Failed to load match data', 'error');
+    }
+}
+
+// Close delete match modal
+function closeDeleteMatchModal() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Clear data attributes
+        modal.removeAttribute('data-match-id');
+        modal.removeAttribute('data-ladder');
+    }
+}
+
+// Confirm and delete match
+async function confirmDeleteMatch() {
+    const modal = document.getElementById('delete-match-confirm-modal');
+    const matchId = modal.dataset.matchId;
+    const ladder = modal.dataset.ladder;
+    
+    if (!matchId || !ladder) {
+        showNotification('Match ID or ladder missing', 'error');
+        closeDeleteMatchModal();
+        return;
+    }
+    
+    try {
+        // Collection name based on ladder
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Delete the match
+        await deleteDoc(doc(db, matchesCollection, matchId));
+        
+        showNotification('Match deleted successfully', 'success');
+        closeDeleteMatchModal();
+        
+        // Reload matches table
+        loadMatchesData(matchesPagination[ladder.toLowerCase()].page);
+        
+    } catch (error) {
+        console.error('Error deleting match:', error);
+        showNotification('Failed to delete match: ' + error.message, 'error');
+    }
+}
+
+async function saveHighlightChanges() {
+    const highlightId = document.getElementById('edit-highlight-id').value;
+    const type = document.getElementById('edit-highlight-type-select').value;
+
+    // Base data object with common fields
+    let highlightData = {
+        title: document.getElementById('edit-highlight-title-input').value.trim(),
+        type: type,
+        description: document.getElementById('edit-highlight-description-input').value.trim(),
+        videoId: document.getElementById('edit-highlight-videoId-input').value.trim(),
+        submittedBy: auth.currentUser.email,
+        // Timestamps will be handled below (createdAt for new, updatedAt for existing)
+    };
+
+    // Populate fields based on type and nullify irrelevant ones
+    if (type === 'match') {
+        highlightData.matchInfo = document.getElementById('edit-highlight-matchInfo-input').value.trim();
+        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim();
+        const matchDateValue = document.getElementById('edit-highlight-matchDate-input').value;
+        highlightData.matchDate = matchDateValue ? Timestamp.fromDate(new Date(matchDateValue)) : null;
+        highlightData.winnerName = document.getElementById('edit-highlight-winnerName-input').value.trim();
+        highlightData.winnerScore = document.getElementById('edit-highlight-winnerScore-input').value.trim();
+        highlightData.loserName = document.getElementById('edit-highlight-loserName-input').value.trim();
+        highlightData.loserScore = document.getElementById('edit-highlight-loserScore-input').value.trim();
+        highlightData.matchLink = document.getElementById('edit-highlight-matchLink-input').value.trim();
+
+        // Nullify creator/achievement specific fields
+        highlightData.mapCreator = null;
+        highlightData.mapVersion = null;
+        highlightData.creatorImageUrl = null;
+        highlightData.achievementPlayer = null;
+        highlightData.achievementType = null;
+        highlightData.achievementDetails = null;
+        highlightData.playerProfileUrl = null;
+
+    } else if (type === 'creator') {
+        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim(); // Map name is relevant for creator
+        highlightData.mapCreator = document.getElementById('edit-highlight-mapCreator-input').value.trim();
+        highlightData.mapVersion = document.getElementById('edit-highlight-mapVersion-input').value.trim();
+        highlightData.creatorImageUrl = document.getElementById('edit-highlight-creatorImageUrl-input').value.trim();
+
+        // Nullify match/achievement specific fields
+        highlightData.matchInfo = null;
+        highlightData.matchDate = null;
+        highlightData.winnerName = null;
+        highlightData.winnerScore = null;
+        highlightData.loserName = null;
+        highlightData.loserScore = null;
+        highlightData.matchLink = null;
+        highlightData.achievementPlayer = null;
+        highlightData.achievementType = null;
+        highlightData.achievementDetails = null;
+        highlightData.playerProfileUrl = null;
+
+    } else if (type === 'achievement') {
+        highlightData.achievementPlayer = document.getElementById('edit-highlight-achievementPlayer-input').value.trim();
+        highlightData.achievementType = document.getElementById('edit-highlight-achievementType-input').value.trim();
+        highlightData.achievementDetails = document.getElementById('edit-highlight-achievementDetails-input').value.trim();
+        highlightData.playerProfileUrl = document.getElementById('edit-highlight-playerProfileUrl-input').value.trim();
+
+        // Nullify match/creator specific fields
+        highlightData.matchInfo = null;
+        highlightData.map = null; // Map name might not be relevant here, nullifying
+        highlightData.matchDate = null;
+        highlightData.winnerName = null;
+        highlightData.winnerScore = null;
+        highlightData.loserName = null;
+        highlightData.loserScore = null;
+        highlightData.matchLink = null;
+        highlightData.mapCreator = null;
+        highlightData.mapVersion = null;
+        highlightData.creatorImageUrl = null;
+    }
+
+    try {
+        if (highlightId) {
+            highlightData.updatedAt = serverTimestamp();
+            // To preserve createdAt on update, ensure it's not overwritten if not changed.
+            // If your form doesn't allow editing createdAt, this is fine.
+            // Otherwise, you might need to fetch the original doc to keep original createdAt.
+            const highlightRef = doc(db, 'highlights', highlightId);
+            await updateDoc(highlightRef, highlightData);
+            showNotification('Highlight updated successfully!', 'success');
+        } else {
+            highlightData.createdAt = serverTimestamp();
+            // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
+            // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
+            await addDoc(collection(db, 'highlights'), highlightData);
+            showNotification('Highlight added successfully!', 'success');
+        }
+        closeEditHighlightModal();
+        loadHighlightsAdmin(); // Refresh the admin list of highlights
+    } catch (error) {
+        console.error('Error saving highlight:', error);
+        showNotification(`Error saving highlight: ${error.message}`, 'error');
+    }
+}
+
+// Add this after your existing match management functions
+
+async function resimulateMatch() {
+    try {
+        const matchId = document.getElementById('resimulate-match-id').value;
+        
+        if (!matchId) {
+            showNotification('Match ID is required', 'error');
+            return;
+        }
+        
+        // Check authorization
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('You must be logged in to resimulate matches', 'error');
+            return;
+        }
+        
+        // Determine collection based on current ladder
+        const matchesCollection = 
+            currentLadder === 'D1' ? 'approvedMatches' : 
+            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        
+        // Validate match exists in approved matches
+        const matchRef = doc(db, matchesCollection, matchId);
+        const matchDoc = await getDoc(matchRef);
+        
+        if (!matchDoc.exists()) {
+            showNotification('Match not found in approved matches', 'error');
+            return;
+        }
+        
+        const matchData = matchDoc.data();
+        
+        // Show match details for confirmation
+        const matchDate = matchData.approvedAt ? 
+            matchData.approvedAt.toDate().toLocaleString() : 
+            matchData.matchDate ? 
+                (matchData.matchDate.toDate ? matchData.matchDate.toDate().toLocaleString() : new Date(matchData.matchDate).toLocaleString()) : 
+                'Unknown';
+        
+        const confirmationDetails = `
+            <div class="match-details">
+                <h4>Match Details:</h4>
+                <p><strong>Winner:</strong> ${matchData.winnerUsername}</p>
+                <p><strong>Loser:</strong> ${matchData.loserUsername}</p>
+                <p><strong>Score:</strong> ${matchData.winnerScore}-${matchData.loserScore}</p>
+                <p><strong>Map:</strong> ${matchData.mapPlayed || matchData.mapName || 'Unknown'}</p>
+                <p><strong>Match Date:</strong> ${matchDate}</p>
+                <p><strong>Match ID:</strong> ${matchId}</p>
+                <p><strong>Ladder:</strong> ${currentLadder}</p>
+                <hr>
+                <p><em>This will create accurate ELO history entries based on the players' ELO ratings at the time this match was played.</em></p>
+            </div>
+        `;
+        
+        document.getElementById('match-details-container').innerHTML = confirmationDetails;
+        document.getElementById('match-details-container').style.display = 'block';
+        document.getElementById('confirm-resimulate-btn').style.display = 'block';
+        
+        // Store match data for confirmation
+        window.pendingResimulateData = { matchId, matchData, ladder: currentLadder };
+        
+        showNotification('Match found - please review details and confirm resimulation', 'info');
+        
+    } catch (error) {
+        console.error("Error finding match:", error);
+        showNotification(`Failed to find match: ${error.message}`, 'error');
+    }
+}
+
+
+// Replace the confirmResimulateMatch function with this accurate version:
+
+// Replace the confirmResimulateMatch function with this complete version:
+
+async function confirmResimulateMatch() {
+    try {
+        const { matchId, matchData, ladder } = window.pendingResimulateData;
+        
+        if (!matchId || !matchData) {
+            showNotification('No match data found for resimulation', 'error');
+            return;
+        }
+        
+        // Determine collections based on ladder
+        const playersCollection = 
+            ladder === 'D1' ? 'players' : 
+            ladder === 'D2' ? 'playersD2' : 'playersD3';
+            
+        const eloHistoryCollection = 
+            ladder === 'D1' ? 'eloHistory' : 
+            ladder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        
+        // Find player documents
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, playersCollection), where('username', '==', matchData.winnerUsername))),
+            getDocs(query(collection(db, playersCollection), where('username', '==', matchData.loserUsername)))
+        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            showNotification('Could not find player documents', 'error');
+            return;
+        }
+
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
+        const winnerData = winnerDocs.docs[0].data();
+        const loserData = loserDocs.docs[0].data();
+        
+        // Check if ELO history entries already exist
+        const [winnerHistoryQuery, loserHistoryQuery] = await Promise.all([
+            getDocs(query(
+                collection(db, eloHistoryCollection),
+                where('playerId', '==', winnerId),
+                where('matchId', '==', matchId)
+            )),
+            getDocs(query(
+                collection(db, eloHistoryCollection),
+                where('playerId', '==', loserId),
+                where('matchId', '==', matchId)
+            ))
+        ]);
+        
+        const winnerHasHistory = !winnerHistoryQuery.empty;
+        const loserHasHistory = !loserHistoryQuery.empty;
+        
+        // Show validation results
+        const validationResults = `
+            <div class="validation-results">
+                <h4>Validation Results:</h4>
+                <p><strong>Winner ELO History:</strong> ${winnerHasHistory ? '✅ Exists' : '❌ Missing'}</p>
+                <p><strong>Loser ELO History:</strong> ${loserHasHistory ? '✅ Exists' : '❌ Missing'}</p>
+                <p><strong>Current Winner ELO:</strong> ${winnerData.eloRating || 'Unknown'}</p>
+                <p><strong>Current Loser ELO:</strong> ${loserData.eloRating || 'Unknown'}</p>
+                <p><strong>Current Winner Position:</strong> ${winnerData.position || 'Unknown'}</p>
+                <p><strong>Current Loser Position:</strong> ${loserData.position || 'Unknown'}</p>
+                <hr>
+                <p><strong style="color: #ff9800;">⚠️ RESIMULATION WILL:</strong></p>
+                <ul>
+                    <li>Recalculate ELO ratings based on pre-match values</li>
+                    <li>Update current player ELO ratings</li>
+                    <li>Recalculate and update player positions</li>
+                    <li>Create missing ELO history entries</li>
+                    <li>Handle position swaps if winner was lower ranked</li>
+                </ul>
+            </div>
+        `;
+        
+        document.getElementById('validation-results-container').innerHTML = validationResults;
+        document.getElementById('validation-results-container').style.display = 'block';
+        
+        if (winnerHasHistory && loserHasHistory) {
+            showNotification('Both players already have ELO history for this match. No resimulation needed.', 'warning');
+            return;
+        }
+        
+        // Proceed with COMPLETE resimulation
+        showNotification('Starting complete match resimulation...', 'info');
+        
+        // Get the exact match timestamp from the approved match
+        const matchTimestamp = matchData.approvedAt || matchData.matchDate || serverTimestamp();
+        
+        // Find ELO ratings at the time of this match by looking at ELO history BEFORE this match
+        const [winnerPreMatchElo, loserPreMatchElo] = await Promise.all([
+            getPlayerEloAtTime(winnerId, matchTimestamp, eloHistoryCollection),
+            getPlayerEloAtTime(loserId, matchTimestamp, eloHistoryCollection)
+        ]);
+        
+        // Import the calculateElo function
+        const { calculateElo } = await import('./ladderalgorithm.js');
+        
+        // Calculate what the ELOs should be after this specific match
+        const { newWinnerRating, newLoserRating } = calculateElo(
+            winnerPreMatchElo, 
+            loserPreMatchElo
+        );
+        
+        // Get current positions for position swap logic
+        const currentWinnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
+        const currentLoserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
+        
+        // Calculate what positions should be after this match
+        let newWinnerPosition = currentWinnerPosition;
+        let newLoserPosition = currentLoserPosition;
+        
+        // If winner was lower ranked (higher position number), they should move up
+        if (currentWinnerPosition > currentLoserPosition) {
+            newWinnerPosition = currentLoserPosition;
+            newLoserPosition = currentLoserPosition + 1;
+        }
+        
+        // Start batch operations
+        const batch = writeBatch(db);
+        
+        // Update winner's ELO and position
+        const winnerRef = doc(db, playersCollection, winnerId);
+        batch.update(winnerRef, {
+            eloRating: newWinnerRating,
+            position: newWinnerPosition,
+            lastUpdated: serverTimestamp(),
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid
+        });
+        
+        // Update loser's ELO and position
+        const loserRef = doc(db, playersCollection, loserId);
+        batch.update(loserRef, {
+            eloRating: newLoserRating,
+            position: newLoserPosition,
+            lastUpdated: serverTimestamp(),
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid
+        });
+        
+        // If positions changed, update other players' positions
+        if (currentWinnerPosition > currentLoserPosition) {
+            // Get all players between the old positions and move them down
+            const playersToUpdate = await getDocs(query(
+                collection(db, playersCollection),
+                where('position', '>', currentLoserPosition),
+                where('position', '<', currentWinnerPosition)
+            ));
+            
+            playersToUpdate.forEach(playerDoc => {
+                const playerRef = doc(db, playersCollection, playerDoc.id);
+                const currentPos = playerDoc.data().position;
+                batch.update(playerRef, {
+                    position: currentPos + 1,
+                    lastUpdated: serverTimestamp(),
+                    positionAdjustedBy: 'resimulation',
+                    positionAdjustedAt: serverTimestamp()
+                });
+            });
+        }
+        
+        // Create missing ELO history entries
+        if (!winnerHasHistory) {
+            const winnerHistoryRef = doc(collection(db, eloHistoryCollection));
+            batch.set(winnerHistoryRef, {
+                playerId: winnerId,
+                player: matchData.winnerUsername,
+                previousElo: winnerPreMatchElo,
+                newElo: newWinnerRating,
+                eloChange: newWinnerRating - winnerPreMatchElo,
+                opponentId: loserId,
+                opponent: matchData.loserUsername,
+                matchResult: 'win',
+                previousPosition: currentWinnerPosition,
+                newPosition: newWinnerPosition,
+                positionChange: newWinnerPosition - currentWinnerPosition,
+                matchId: matchId,
+                timestamp: matchTimestamp,
+                resimulated: true,
+                resimulatedAt: serverTimestamp(),
+                resimulatedBy: auth.currentUser.uid,
+                gameMode: ladder,
+                matchScore: `${matchData.winnerScore}-${matchData.loserScore}`,
+                mapPlayed: matchData.mapPlayed || matchData.mapName || 'Unknown',
+                note: 'Resimulated entry - ELO and positions calculated from actual pre-match data'
+            });
+        }
+        
+        if (!loserHasHistory) {
+            const loserHistoryRef = doc(collection(db, eloHistoryCollection));
+            batch.set(loserHistoryRef, {
+                playerId: loserId,
+                player: matchData.loserUsername,
+                previousElo: loserPreMatchElo,
+                newElo: newLoserRating,
+                eloChange: newLoserRating - loserPreMatchElo,
+                opponentId: winnerId,
+                opponent: matchData.winnerUsername,
+                matchResult: 'loss',
+                previousPosition: currentLoserPosition,
+                newPosition: newLoserPosition,
+                positionChange: newLoserPosition - currentLoserPosition,
+                matchId: matchId,
+                timestamp: matchTimestamp,
+                resimulated: true,
+                resimulatedAt: serverTimestamp(),
+                resimulatedBy: auth.currentUser.uid,
+                gameMode: ladder,
+                matchScore: `${matchData.winnerScore}-${matchData.loserScore}`,
+                mapPlayed: matchData.mapPlayed || matchData.mapName || 'Unknown',
+                note: 'Resimulated entry - ELO and positions calculated from actual pre-match data'
+            });
+        }
+        
+        // Update match record to indicate resimulation
+        const matchesCollection = 
+            ladder === 'D1' ? 'approvedMatches' : 
+            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+            
+        const matchRef = doc(db, matchesCollection, matchId);
+        batch.update(matchRef, {
+            resimulated: true,
+            resimulatedAt: serverTimestamp(),
+            resimulatedBy: auth.currentUser.uid,
+            resimulatedReason: 'Complete resimulation - ELO ratings and positions recalculated',
+            originalWinnerElo: winnerData.eloRating,
+            originalLoserElo: loserData.eloRating,
+            originalWinnerPosition: currentWinnerPosition,
+            originalLoserPosition: currentLoserPosition,
+            resimulatedWinnerElo: newWinnerRating,
+            resimulatedLoserElo: newLoserRating,
+            resimulatedWinnerPosition: newWinnerPosition,
+            resimulatedLoserPosition: newLoserPosition
+        });
+        
+        // Execute all batch operations
+        await batch.commit();
+        
+        const historyEntriesCreated = (!winnerHasHistory ? 1 : 0) + (!loserHasHistory ? 1 : 0);
+        const positionChanges = currentWinnerPosition !== newWinnerPosition || currentLoserPosition !== newLoserPosition;
+        
+        showNotification(
+            `Match resimulated successfully! ` +
+            `Created ${historyEntriesCreated} ELO history entries. ` +
+            `Updated ELO ratings: Winner ${winnerPreMatchElo}→${newWinnerRating} (+${newWinnerRating - winnerPreMatchElo}), ` +
+            `Loser ${loserPreMatchElo}→${newLoserRating} (${newLoserRating - loserPreMatchElo}). ` +
+            `${positionChanges ? `Positions updated: Winner ${currentWinnerPosition}→${newWinnerPosition}, Loser ${currentLoserPosition}→${newLoserPosition}` : 'No position changes needed.'}`,
+            'success'
+        );
+        
+        // Clear the form
+        closeResimulateModal();
+        
+        // Optionally refresh the current view if we're on the manage players page
+        if (document.querySelector('#players.content-section.active')) {
+            loadPlayersData();
+        }
+        
+    } catch (error) {
+        console.error("Error resimulating match:", error);
+        showNotification(`Failed to resimulate match: ${error.message}`, 'error');
+    }
+}
+
+// Add this new function to get a player's ELO at a specific point in time
+async function getPlayerEloAtTime(playerId, targetTimestamp, eloHistoryCollection) {
+    try {
+        // Convert timestamp to Date if needed
+        const targetDate = targetTimestamp.toDate ? targetTimestamp.toDate() : new Date(targetTimestamp);
+        
+        // Query for all ELO history entries for this player BEFORE the target time
+        const historyQuery = query(
+            collection(db, eloHistoryCollection),
+            where('playerId', '==', playerId),
+            where('timestamp', '<', targetTimestamp),
+            orderBy('timestamp', 'desc'),
+            limit(1)
+        );
+        
+        const historySnapshot = await getDocs(historyQuery);
+        
+        if (!historySnapshot.empty) {
+            // Found the most recent ELO entry before this match
+            const lastEntry = historySnapshot.docs[0].data();
+            console.log(`Found ELO history for player ${playerId} before match: ${lastEntry.newElo}`);
+            return lastEntry.newElo;
+        } else {
+            // No history found before this match - player was at starting ELO
+            console.log(`No ELO history found for player ${playerId} before match - using starting ELO 1200`);
+            return 1200; // Starting ELO
+        }
+        
+    } catch (error) {
+        console.error(`Error getting ELO at time for player ${playerId}:`, error);
+        // Fallback to starting ELO if there's an error
+        return 1200;
+    }
+}
+
+// Replace your openResimulateModal function with this debugging version:
+function openResimulateModal() {
+    console.log('openResimulateModal called!'); // Add this debug line
+    
+    const modal = document.getElementById('resimulate-modal');
+    console.log('Modal element found:', modal); // Debug line
+    
+    if (!modal) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    // Try multiple approaches to show the modal
+    modal.style.display = 'block';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active');
+    
+    console.log('Modal should now be visible'); // Debug line
+    console.log('Modal computed styles:', window.getComputedStyle(modal).display); // Debug line
+    
+    // Clear previous data
+    const matchDetailsContainer = document.getElementById('match-details-container');
+    const validationContainer = document.getElementById('validation-results-container');
+    const confirmBtn = document.getElementById('confirm-resimulate-btn');
+    const matchIdInput = document.getElementById('resimulate-match-id');
+    
+    if (matchDetailsContainer) matchDetailsContainer.innerHTML = '';
+    if (validationContainer) validationContainer.innerHTML = '';
+    if (confirmBtn) confirmBtn.style.display = 'none';
+    if (matchIdInput) matchIdInput.value = '';
+    
+    console.log('Modal setup complete');
+}
+
+function closeResimulateModal() {
+    document.getElementById('resimulate-modal').style.display = 'none';
+    window.pendingResimulateData = null;
+}
+
+// Make functions globally available
+window.resimulateMatch = resimulateMatch;
+window.confirmResimulateMatch = confirmResimulateMatch;
+window.openResimulateModal = openResimulateModal;
+window.closeResimulateModal = closeResimulateModal;
+
+//points section 
+
+// Load points data (overview and history)
+async function loadPointsData() {
+    console.log('Loading points data...');
+    try {
+        await Promise.all([
+            loadPointsOverview(),
+            loadPointsHistory()
+        ]);
+        showNotification('Points data loaded successfully', 'success');
+    } catch (error) {
+        console.error('Error loading points data:', error);
+        showNotification('Failed to load points data: ' + error.message, 'error');
+    }
+}
+
+// Render points overview table
+function renderPointsOverview(users) {
+    const tableBody = document.getElementById('points-overview-table-body');
+    if (!tableBody) return;
+    
+    if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        const displayName = user.displayName || user.username || 'Unknown User';
+        const email = user.email || 'No email';
+        const points = user.points || 0;
+        const lastModified = user.lastPointsModified ? 
+            new Date(user.lastPointsModified.seconds * 1000).toLocaleDateString() : 'Never';
+        
+        row.innerHTML = `
+            <td>
+                <div class="user-info">
+                    <i class="fas fa-user user-icon"></i>
+                    <span class="user-name">${displayName}</span>
+                </div>
+            </td>
+            <td>${email}</td>
+            <td>
+                <span class="points-badge ${points > 1000 ? 'high-points' : points > 500 ? 'medium-points' : 'low-points'}">
+                    <i class="fas fa-coins"></i> ${points.toLocaleString()}
+                </span>
+            </td>
+            <td>${lastModified}</td>
+            <td class="actions">
+                <button class="quick-edit-btn" data-user-id="${user.id}" title="Quick Edit Points">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="view-history-btn" data-user-id="${user.id}" title="View Points History">
+                    <i class="fas fa-history"></i>
+                </button>
+            </td>
+        `;
+        
+        // Add the row to the table body - THIS WAS MISSING!
+        tableBody.appendChild(row);
+    });
+    
+    // Add event listeners to action buttons AFTER all rows are added
+    setupPointsActionButtons();
+}
+
+
+// Setup action buttons for points overview - FIXED VERSION
+function setupPointsActionButtons() {
+    console.log('Setting up points action buttons...');
+    
+    // Quick edit buttons
+    const quickEditButtons = document.querySelectorAll('.quick-edit-btn');
+    console.log(`Found ${quickEditButtons.length} quick edit buttons`);
+    
+    quickEditButtons.forEach(button => {
+        // Remove any existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // View history buttons
+    const viewHistoryButtons = document.querySelectorAll('.view-history-btn');
+    console.log(`Found ${viewHistoryButtons.length} view history buttons`);
+    
+    viewHistoryButtons.forEach(button => {
+        // Remove any existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // Add fresh event listeners to the new buttons
+    document.querySelectorAll('.quick-edit-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const userId = this.dataset.userId;
+            console.log('Quick edit clicked for user:', userId);
+            
+            if (!userId) {
+                console.error('No user ID found on button');
+                return;
+            }
+            
+            // Add visual feedback
+            this.style.opacity = '0.6';
+            setTimeout(() => { this.style.opacity = '1'; }, 200);
+            
+            openQuickEditModal(userId);
+        });
+    });
+    
+    document.querySelectorAll('.view-history-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const userId = this.dataset.userId;
+            console.log('View history clicked for user:', userId);
+            
+            if (!userId) {
+                console.error('No user ID found on button');
+                return;
+            }
+            
+            // Add visual feedback
+            this.style.opacity = '0.6';
+            setTimeout(() => { this.style.opacity = '1'; }, 200);
+            
+            loadUserPointsHistory(userId);
+        });
+    });
+    
+    console.log('Points action buttons setup complete');
+}
+
+// Make sure the quick edit modal elements exist and work
+async function openQuickEditModal(userId) {
+    console.log('Opening quick edit modal for user ID:', userId);
+    
+    const modal = document.getElementById('quick-edit-points-modal');
+    if (!modal) {
+        console.error('Quick edit modal not found! Make sure the HTML element exists.');
+        showNotification('Quick edit modal not found in the page', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        showNotification('Loading user data...', 'info');
+        
+        // Get user data
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            showNotification('User not found', 'error');
+            return;
+        }
+        
+        const userData = userDoc.data();
+        console.log('User data loaded:', userData);
+        
+        // Check if form elements exist
+        const userIdField = document.getElementById('quick-edit-user-id');
+        const displayNameField = document.getElementById('quick-edit-display-name');
+        const emailField = document.getElementById('quick-edit-email');
+        const currentPointsField = document.getElementById('quick-edit-current-points');
+        const form = document.getElementById('quick-edit-points-form');
+        
+        if (!userIdField || !displayNameField || !emailField || !currentPointsField || !form) {
+            console.error('Quick edit form elements missing from HTML');
+            showNotification('Quick edit form is incomplete. Check the HTML structure.', 'error');
+            return;
+        }
+        
+        // Populate modal with user info
+        userIdField.value = userId;
+        displayNameField.textContent = userData.displayName || userData.username || 'Unknown User';
+        emailField.textContent = userData.email || 'No email';
+        currentPointsField.textContent = (userData.points || 0).toLocaleString();
+        
+        // Reset form
+        form.reset();
+        
+        // Set default action to add
+        const addRadio = document.getElementById('quick-add');
+        if (addRadio) {
+            addRadio.checked = true;
+        }
+        
+        // Show modal
+        modal.classList.add('active');
+        console.log('Modal opened successfully');
+        
+        // Focus on points amount input
+        const amountInput = document.getElementById('quick-points-amount');
+        if (amountInput) {
+            setTimeout(() => amountInput.focus(), 100);
+        }
+        
+    } catch (error) {
+        console.error('Error opening quick edit modal:', error);
+        showNotification('Failed to load user data: ' + error.message, 'error');
+    }
+}
+
+// Close quick edit modal
+function closeQuickEditModal() {
+    const modal = document.getElementById('quick-edit-points-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Update the handleQuickEditPoints function to add more debugging
+async function handleQuickEditPoints(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('quick-edit-user-id').value;
+    const action = document.querySelector('input[name="quick-action"]:checked').value;
+    const amount = parseInt(document.getElementById('quick-points-amount').value);
+    const reason = document.getElementById('quick-points-reason').value.trim();
+    
+    console.log('Processing points edit:', { userId, action, amount, reason });
+    
+    if (!userId || !amount || amount < 0) {
+        showNotification('Please enter valid data', 'error');
+        return;
+    }
+    
+    try {
+        await modifyUserPoints(userId, action, amount, reason);
+        closeQuickEditModal();
+        loadPointsOverview(); // Refresh the table
+        showNotification('Points updated successfully', 'success');
+        console.log('Points updated successfully for user:', userId);
+    } catch (error) {
+        console.error('Error updating points:', error);
+        showNotification('Failed to update points: ' + error.message, 'error');
+    }
+}
+
+// Search users for points management
+async function searchUsersForPoints() {
+    const searchTerm = document.getElementById('points-user-search').value.trim().toLowerCase();
+    const resultsContainer = document.getElementById('user-search-results');
+    
+    if (!searchTerm || searchTerm.length < 2) {
+        resultsContainer.innerHTML = '';
+        return;
+    }
+    
+    resultsContainer.innerHTML = '<div class="loading">Searching...</div>';
+    
+    try {
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        const matchingUsers = [];
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const displayName = (userData.displayName || userData.username || '').toLowerCase();
+            const email = (userData.email || '').toLowerCase();
+            
+            if (displayName.includes(searchTerm) || email.includes(searchTerm)) {
+                matchingUsers.push({
+                    id: doc.id,
+                    ...userData
+                });
+            }
+        });
+        
+        if (matchingUsers.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results">No users found</div>';
+            return;
+        }
+        
+        // Render search results
+        resultsContainer.innerHTML = '';
+        matchingUsers.forEach(user => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'search-result-item';
+            resultItem.innerHTML = `
+                <div class="user-info">
+                    <strong>${user.displayName || user.username || 'Unknown'}</strong>
+                    <div class="user-email">${user.email || 'No email'}</div>
+                    <div class="user-points">${(user.points || 0).toLocaleString()} points</div>
+                </div>
+            `;
+            
+            resultItem.addEventListener('click', () => selectUserForPoints(user));
+            resultsContainer.appendChild(resultItem);
+        });
+        
+    } catch (error) {
+        console.error('Error searching users:', error);
+        resultsContainer.innerHTML = '<div class="error">Error searching users</div>';
+    }
+}
+
+// Select user for points management
+function selectUserForPoints(user) {
+    // Update selected user info
+    document.getElementById('selected-user-name').textContent = user.displayName || user.username || 'Unknown User';
+    document.getElementById('selected-user-points').textContent = (user.points || 0).toLocaleString();
+    document.getElementById('selected-user-id').value = user.id;
+    
+    // Show user info and management forms
+    document.getElementById('selected-user-info').style.display = 'block';
+    document.getElementById('points-management-forms').style.display = 'block';
+    
+    // Clear search results
+    document.getElementById('user-search-results').innerHTML = '';
+    document.getElementById('points-user-search').value = '';
+}
+
+// Handle modify points form submission
+async function handleModifyPoints(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selected-user-id').value;
+    const action = document.getElementById('points-action').value;
+    const amount = parseInt(document.getElementById('points-amount').value);
+    const reason = document.getElementById('points-reason').value.trim();
+    
+    if (!userId || !amount || amount < 0) {
+        showNotification('Please select a user and enter a valid amount', 'error');
+        return;
+    }
+    
+    try {
+        await modifyUserPoints(userId, action, amount, reason);
+        
+        // Reset form
+        document.getElementById('modify-points-form').reset();
+        
+        // Refresh user info
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            document.getElementById('selected-user-points').textContent = (userData.points || 0).toLocaleString();
+        }
+        
+        showNotification('Points modified successfully', 'success');
+        loadPointsHistory(); // Refresh history
+        
+    } catch (error) {
+        console.error('Error modifying points:', error);
+        showNotification('Failed to modify points: ' + error.message, 'error');
+    }
+}
+
+// Modify user points (common function)
+
+// Load points history
+async function loadPointsHistory() {
+    const tableBody = document.getElementById('points-history-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading history...</td></tr>';
+    
+    try {
+        const historyRef = collection(db, 'pointsHistory');
+        const q = query(historyRef, orderBy('timestamp', 'desc'), limit(50));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No history found</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = '';
+        
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            
+            const date = data.timestamp ? 
+                new Date(data.timestamp.seconds * 1000).toLocaleString() : 'Unknown';
+            
+            let actionText = '';
+            switch (data.action) {
+                case 'add':
+                    actionText = `Added ${data.amount} points`;
+                    break;
+                case 'subtract':
+                    actionText = `Subtracted ${data.amount} points`;
+                    break;
+                case 'set':
+                    actionText = `Set to ${data.amount} points`;
+                    break;
+                default:
+                    actionText = `${data.action} ${data.amount} points`;
+            }
+            
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${data.displayName || 'Unknown User'}</td>
+                <td>${actionText}</td>
+                <td>
+                    <span class="points-change ${data.action}">
+                        ${data.previousPoints || 0} → ${data.newPoints || 0}
+                    </span>
+                </td>
+                <td>${data.reason || 'No reason provided'}</td>
+                <td>${data.adminEmail || 'Unknown Admin'}</td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('Error loading points history:', error);
+        tableBody.innerHTML = '<tr><td colspan="6" class="error-state">Error loading history: ' + error.message + '</td></tr>';
+    }
+}
+
+// Filter points overview
+function filterPointsOverview() {
+    const searchTerm = document.getElementById('points-overview-search').value.toLowerCase();
+    
+    if (!window.allUsersPoints) return;
+    
+    const filteredUsers = window.allUsersPoints.filter(user => {
+        const displayName = (user.displayName || user.username || '').toLowerCase();
+        const email = (user.email || '').toLowerCase();
+        return displayName.includes(searchTerm) || email.includes(searchTerm);
+    });
+    
+    renderPointsOverview(filteredUsers);
+}
+
+// Sort points overview
+function sortPointsOverview() {
+    const sortOrder = document.getElementById('points-sort-order').value;
+    
+    if (!window.allUsersPoints) return;
+    
+    const sortedUsers = [...window.allUsersPoints];
+    
+    switch (sortOrder) {
+        case 'points-desc':
+            sortedUsers.sort((a, b) => (b.points || 0) - (a.points || 0));
+            break;
+        case 'points-asc':
+            sortedUsers.sort((a, b) => (a.points || 0) - (b.points || 0));
+            break;
+        case 'name-asc':
+            sortedUsers.sort((a, b) => {
+                const nameA = (a.displayName || a.username || '').toLowerCase();
+                const nameB = (b.displayName || b.username || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            break;
+        case 'name-desc':
+            sortedUsers.sort((a, b) => {
+                const nameA = (a.displayName || a.username || '').toLowerCase();
+                const nameB = (b.displayName || b.username || '').toLowerCase();
+                return nameB.localeCompare(nameA);
+            });
+            break;
+    }
+    
+    renderPointsOverview(sortedUsers);
+}
+
+// Handle award item form submission
+async function handleAwardItem(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selected-user-id').value;
+    const itemId = document.getElementById('store-item-select').value;
+    const reason = document.getElementById('award-reason').value.trim();
+    
+    if (!userId || !itemId) {
+        showNotification('Please select a user and store item', 'error');
+        return;
+    }
+    
+    try {
+        // This would integrate with your store system
+        // For now, just show a success message
+        showNotification('Store item awarded successfully', 'success');
+        
+        // Reset form
+        document.getElementById('award-item-form').reset();
+        
+    } catch (error) {
+        console.error('Error awarding item:', error);
+        showNotification('Failed to award item: ' + error.message, 'error');
+    }
+}
+
+// Load user points history (for specific user)
+async function loadUserPointsHistory(userId) {
+    try {
+        const historyRef = collection(db, 'pointsHistory');
+        const q = query(historyRef, where('userId', '==', userId), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        console.log(`Found ${querySnapshot.size} history entries for user ${userId}`);
+        
+        // You could show this in a modal or separate section
+        showNotification(`User has ${querySnapshot.size} points history entries`, 'info');
+        
+    } catch (error) {
+        console.error('Error loading user points history:', error);
+        showNotification('Failed to load user history', 'error');
+    }
+}
+
+async function initializeUserPointsField() {
+    try {
+        console.log('Starting points field initialization for all users...');
+        
+        // Get all users from userProfiles collection
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        if (querySnapshot.empty) {
+            console.log('No users found in userProfiles collection');
+            return;
+        }
+        
+        let updatedCount = 0;
+        let alreadyHadPoints = 0;
+        const batch = writeBatch(db);
+        let batchCount = 0;
+        
+        console.log(`Found ${querySnapshot.size} users to check...`);
+        
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            
+            // Only update if the user doesn't already have a points field
+            if (userData.points === undefined || userData.points === null) {
+                batch.update(doc.ref, {
+                    points: 0,
+                    pointsInitializedAt: serverTimestamp()
+                });
+                updatedCount++;
+                batchCount++;
+                
+                console.log(`Queued ${userData.displayName || userData.username || userData.email || 'Unknown'} for points initialization`);
+            } else {
+                alreadyHadPoints++;
+                console.log(`${userData.displayName || userData.username || userData.email || 'Unknown'} already has points: ${userData.points}`);
+            }
+            
+            // Firestore batch limit is 500 operations
+            if (batchCount >= 500) {
+                console.warn('Batch limit reached - you may need to run this function multiple times for large datasets');
+            }
+        });
+        
+        if (updatedCount > 0) {
+            console.log(`Committing batch update for ${updatedCount} users...`);
+            await batch.commit();
+            console.log(`✅ Successfully initialized points field for ${updatedCount} users`);
+        } else {
+            console.log('No users needed points field initialization');
+        }
+        
+        // Log summary
+        console.log(`Migration Summary:
+        - Total users checked: ${querySnapshot.size}
+        - Users updated with points: ${updatedCount}
+        - Users who already had points: ${alreadyHadPoints}`);
+        
+        showNotification(`Points field initialized for ${updatedCount} users. ${alreadyHadPoints} users already had points.`, 'success');
+        
+        // Refresh the points overview if it's currently loaded
+        if (window.allUsersPoints) {
+            loadPointsOverview();
+        }
+        
+        return {
+            totalUsers: querySnapshot.size,
+            usersUpdated: updatedCount,
+            usersAlreadyHadPoints: alreadyHadPoints
+        };
+        
+    } catch (error) {
+        console.error('Error initializing points field:', error);
+        showNotification(`Error initializing points: ${error.message}`, 'error');
+        throw error;
+    }
+}
+
+// Add this function to create a manual migration button (optional)
+function addPointsMigrationButton() {
+    // Only add this button for admins
+    const pointsSection = document.getElementById('manage-points');
+    if (!pointsSection) return;
+    
+    // Check if button already exists
+    if (document.getElementById('migrate-points-btn')) return;
+    
+    // Create migration button
+    const migrationContainer = document.createElement('div');
+    migrationContainer.className = 'migration-section';
+    migrationContainer.style.marginBottom = '20px';
+    migrationContainer.style.padding = '15px';
+    migrationContainer.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+    migrationContainer.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+    migrationContainer.style.borderRadius = '5px';
+    
+    migrationContainer.innerHTML = `
+        <h4><i class="fas fa-database"></i> Database Migration</h4>
+        <p>Initialize the points field for all users who don't have it yet. This is safe to run multiple times.</p>
+        <button id="migrate-points-btn" class="btn btn-warning">
+            <i class="fas fa-magic"></i> Initialize Points Field for All Users
+        </button>
+    `;
+    
+    // Insert at the top of the points section
+    const sectionHeader = pointsSection.querySelector('.section-header');
+    if (sectionHeader) {
+        sectionHeader.insertAdjacentElement('afterend', migrationContainer);
+    }
+    
+    // Add event listener
+    document.getElementById('migrate-points-btn').addEventListener('click', async function() {
+        if (confirm('This will add a points field (set to 0) for all users who don\'t have one yet. Continue?')) {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
+            
+            try {
+                await initializeUserPointsField();
+                this.innerHTML = '<i class="fas fa-check"></i> Completed';
+                this.style.backgroundColor = '#28a745';
+                
+                // Hide the migration section after successful completion
+                setTimeout(() => {
+                    migrationContainer.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error - Try Again';
+                this.disabled = false;
+            }
+        }
+    });
+}
+
+// Also make sure the setupManagePointsSection properly sets up the modal form
+function setupManagePointsSection() {
+    console.log('Setting up Manage Points section');
+    
+    // Add migration button for initializing points field
+    addPointsMigrationButton();
+    
+    // User search functionality
+    const userSearchInput = document.getElementById('points-user-search');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('input', debounce(searchUsersForPoints, 300));
+    }
+    
+    // Modify points form
+    const modifyPointsForm = document.getElementById('modify-points-form');
+    if (modifyPointsForm) {
+        modifyPointsForm.addEventListener('submit', handleModifyPoints);
+    }
+    
+    // Award item form
+    const awardItemForm = document.getElementById('award-item-form');
+    if (awardItemForm) {
+        awardItemForm.addEventListener('submit', handleAwardItem);
+    }
+    
+    // Points overview controls
+    const pointsOverviewSearch = document.getElementById('points-overview-search');
+    if (pointsOverviewSearch) {
+        pointsOverviewSearch.addEventListener('input', debounce(filterPointsOverview, 300));
+    }
+    
+    const pointsSortOrder = document.getElementById('points-sort-order');
+    if (pointsSortOrder) {
+        pointsSortOrder.addEventListener('change', sortPointsOverview);
+    }
+    
+    const refreshPointsBtn = document.getElementById('refresh-points-overview');
+    if (refreshPointsBtn) {
+        refreshPointsBtn.addEventListener('click', loadPointsOverview);
+    }
+    
+    // Quick edit modal events - MAKE SURE THESE WORK
+    const quickEditModal = document.getElementById('quick-edit-points-modal');
+    if (quickEditModal) {
+        console.log('Quick edit modal found, setting up events...');
+        
+        // Close button
+        const closeBtn = quickEditModal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                console.log('Modal close button clicked');
+                closeQuickEditModal();
+            });
+        } else {
+            console.warn('Close button not found in quick edit modal');
+        }
+        
+        // Cancel button
+        const cancelBtn = document.getElementById('cancel-quick-edit');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                console.log('Modal cancel button clicked');
+                closeQuickEditModal();
+            });
+        } else {
+            console.warn('Cancel button not found');
+        }
+        
+        // Form submission
+        const quickEditForm = document.getElementById('quick-edit-points-form');
+        if (quickEditForm) {
+            quickEditForm.addEventListener('submit', function(e) {
+                console.log('Quick edit form submitted');
+                handleQuickEditPoints(e);
+            });
+        } else {
+            console.error('Quick edit form not found!');
+        }
+        
+        // Modal background click to close
+        quickEditModal.addEventListener('click', function(e) {
+            if (e.target === quickEditModal) {
+                console.log('Modal background clicked');
+                closeQuickEditModal();
+            }
+        });
+        
+    } else {
+        console.error('Quick edit modal not found in DOM!');
+    }
+    
+    console.log('Manage Points section initialized');
+}
+
+// Setup manage ribbons section
+function setupManageRibbonsSection() {
+    console.log('Setting up Manage Ribbons section');
+    
+    // User search functionality
+    const userSearchInput = document.getElementById('ribbon-user-search');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('input', debounce(searchRibbonUser, 300));
+    }
+    
+    // Search button
+    const searchBtn = document.getElementById('search-ribbon-user-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchRibbonUser);
+    }
+    
+    // Add ribbon form
+    const addRibbonForm = document.getElementById('add-ribbon-form');
+    if (addRibbonForm) {
+        addRibbonForm.addEventListener('submit', addRibbon);
+    }
+    
+    // Search input enter key
+    if (userSearchInput) {
+        userSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchRibbonUser();
+            }
+        });
+    }
+    
+    console.log('Manage Ribbons section initialized');
+}
+
+// Update the modifyUserPoints function to ensure user has points field
+async function modifyUserPoints(userId, action, amount, reason = '') {
+    const userRef = doc(db, 'userProfiles', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+        throw new Error('User not found');
+    }
+    
+    const userData = userDoc.data();
+    
+    // Initialize points to 0 if it doesn't exist
+    const currentPoints = userData.points !== undefined ? userData.points : 0;
+    
+    // If user didn't have points field, initialize it first
+    if (userData.points === undefined) {
+        console.log(`Initializing points field for user ${userData.displayName || userData.email || 'Unknown'}`);
+        await updateDoc(userRef, {
+            points: 0,
+            pointsInitializedAt: serverTimestamp()
+        });
+    }
+    
+    let newPoints = currentPoints;
+    
+    switch (action) {
+        case 'add':
+            newPoints = currentPoints + amount;
+            break;
+        case 'subtract':
+            newPoints = Math.max(0, currentPoints - amount);
+            break;
+        case 'set':
+            newPoints = amount;
+            break;
+        default:
+            throw new Error('Invalid action');
+    }
+    
+    // Update user points
+    await updateDoc(userRef, {
+        points: newPoints,
+        lastPointsModified: serverTimestamp()
+    });
+    
+    // Log the points change
+    await addDoc(collection(db, 'pointsHistory'), {
+        userId: userId,
+        userEmail: userData.email || 'unknown',
+        displayName: userData.displayName || userData.username || 'Unknown User',
+        action: action,
+        amount: amount,
+        previousPoints: currentPoints,
+        newPoints: newPoints,
+        reason: reason,
+        adminEmail: auth.currentUser.email,
+        timestamp: serverTimestamp()
+    });
+}
+
+// Also update loadPointsOverview to handle users without points field gracefully
+async function loadPointsOverview() {
+    const tableBody = document.getElementById('points-overview-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading user points...</td></tr>';
+    
+    try {
+        const usersRef = collection(db, 'userProfiles');
+        const querySnapshot = await getDocs(usersRef);
+        
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+            return;
+        }
+        
+        const users = [];
+        let usersWithoutPoints = 0;
+        
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const points = userData.points !== undefined ? userData.points : 0;
+            
+            // Count users without points field for info
+            if (userData.points === undefined) {
+                usersWithoutPoints++;
+            }
+            
+            users.push({
+                id: doc.id,
+                ...userData,
+                points: points
+            });
+        });
+        
+        // Show info if some users don't have points field
+        if (usersWithoutPoints > 0) {
+            console.log(`Found ${usersWithoutPoints} users without points field - they will display as 0 points`);
+            showNotification(`${usersWithoutPoints} users don't have points field yet. Use the migration button to initialize.`, 'info');
+        }
+        
+        // Sort users by points (highest first) by default
+        users.sort((a, b) => (b.points || 0) - (a.points || 0));
+        
+        // Store for filtering/sorting
+        window.allUsersPoints = users;
+        
+        renderPointsOverview(users);
+        
+    } catch (error) {
+        console.error('Error loading points overview:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading users: ' + error.message + '</td></tr>';
+    }
+}
+
+// Add these functions to your JS/adminbackend.js
+
+// Load all ribbon data
+async function loadRibbonsData() {
+    const tableBody = document.getElementById('ribbons-overview-table-body');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading ribbons data...</td></tr>';
+    
+    try {
+        // Load from all ribbon collections
+        const [d1Ribbons, d2Ribbons, d3Ribbons] = await Promise.all([
+            getDocs(collection(db, 'playerRibbons')),
+            getDocs(collection(db, 'playerRibbonsD2')),  
+            getDocs(collection(db, 'playerRibbonsD3'))
+        ]);
+        
+        tableBody.innerHTML = '';
+        
+        const addRibbonRows = (snapshot, ladder) => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const ribbons = data.ribbons || {};
+                const ribbonCount = Object.keys(ribbons).length;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.username || 'Unknown'}</td>
+                    <td><span class="ladder-badge ${ladder.toLowerCase()}">${ladder}</span></td>
+                    <td>${ribbonCount}</td>
+                    <td>${data.lastUpdated ? new Date(data.lastUpdated.seconds * 1000).toLocaleDateString() : 'Unknown'}</td>
+                    <td>
+                        <button class="btn btn-sm edit-ribbons-btn" data-username="${data.username}" data-ladder="${ladder}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        };
+        
+        addRibbonRows(d1Ribbons, 'D1');
+        addRibbonRows(d2Ribbons, 'D2'); 
+        addRibbonRows(d3Ribbons, 'D3');
+        
+        // Setup edit buttons
+        document.querySelectorAll('.edit-ribbons-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const username = this.dataset.username;
+                const ladder = this.dataset.ladder;
+                editUserRibbons(username, ladder);
+            });
+        });
+        
+        showNotification('Ribbons data loaded successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error loading ribbons:', error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="error-state">Error loading ribbons</td></tr>';
+        showNotification('Error loading ribbons data', 'error');
+    }
+}
+// Search for user ribbons
+async function searchRibbonUser() {
+    const username = document.getElementById('ribbon-user-search').value.trim();
+    if (!username) {
+        showNotification('Please enter a username', 'error');
+        return;
+    }
+    
+    try {
+        // Search in all ladders
+        const [d1Doc, d2Doc, d3Doc] = await Promise.all([
+            getDoc(doc(db, 'playerRibbons', username)),
+            getDoc(doc(db, 'playerRibbonsD2', username)),
+            getDoc(doc(db, 'playerRibbonsD3', username))
+        ]);
+        
+        let foundLadder = null;
+        let userData = null;
+        
+        if (d1Doc.exists()) {
+            foundLadder = 'D1';
+            userData = d1Doc.data();
+        } else if (d2Doc.exists()) {
+            foundLadder = 'D2'; 
+            userData = d2Doc.data();
+        } else if (d3Doc.exists()) {
+            foundLadder = 'D3';
+            userData = d3Doc.data();
+        }
+        
+        if (foundLadder) {
+            document.getElementById('current-ribbon-user').textContent = username;
+            document.getElementById('ribbon-target-user').value = username;
+            document.getElementById('ribbon-target-ladder').value = foundLadder;
+            document.getElementById('user-ribbon-management').style.display = 'block';
+            
+            displayCurrentRibbons(userData.ribbons || {});
+            showNotification(`Found ${username} in ${foundLadder} ladder`, 'success');
+        } else {
+            showNotification(`User ${username} not found in any ladder`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error searching user:', error);
+        showNotification('Error searching for user', 'error');
+    }
+}
+// Display current ribbons
+// Display current ribbons
+function displayCurrentRibbons(ribbons) {
+    const container = document.getElementById('current-ribbons-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (Object.keys(ribbons).length === 0) {
+        container.innerHTML = '<p class="no-ribbons">No ribbons found</p>';
+        return;
+    }
+    
+    Object.entries(ribbons).forEach(([ribbonName, ribbonData]) => {
+        const ribbonDiv = document.createElement('div');
+        ribbonDiv.className = 'ribbon-item';
+        ribbonDiv.innerHTML = `
+            <div class="ribbon-info">
+                <strong>${ribbonName}</strong>
+                <span>Level: ${ribbonData.level || 1}</span>
+                <small>Awarded: ${ribbonData.awardedAt ? new Date(ribbonData.awardedAt.seconds * 1000).toLocaleDateString() : 'Unknown'}</small>
+            </div>
+            <button class="btn btn-danger btn-sm remove-ribbon-btn" data-ribbon="${ribbonName}">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        `;
+        container.appendChild(ribbonDiv);
+    });
+    
+    // Setup remove buttons
+    document.querySelectorAll('.remove-ribbon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ribbonName = this.dataset.ribbon;
+            removeRibbon(ribbonName);
+        });
+    });
+}
+
+// Add or update ribbon
+async function addRibbon(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('ribbon-target-user').value;
+    const ladder = document.getElementById('ribbon-target-ladder').value;
+    const ribbonType = document.getElementById('ribbon-type-select').value;
+    const level = parseInt(document.getElementById('ribbon-level').value);
+    
+    if (!username || !ladder || !ribbonType || !level) {
+        showNotification('Please fill all fields', 'error');
+        return;
+    }
+    
+    try {
+        const collectionName = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+        const ribbonRef = doc(db, collectionName, username);
+        
+        // Get current ribbons
+        const ribbonDoc = await getDoc(ribbonRef);
+        const currentRibbons = ribbonDoc.exists() ? ribbonDoc.data().ribbons || {} : {};
+        
+        // Add/update ribbon
+        currentRibbons[ribbonType] = {
+            level: level,
+            awardedAt: serverTimestamp()
+        };
+        
+        // Save updated ribbons
+        await setDoc(ribbonRef, {
+            username: username,
+            ladder: ladder,
+            ribbons: currentRibbons,
+            lastUpdated: serverTimestamp()
+        }, { merge: true });
+        
+        showNotification(`Added ${ribbonType} Level ${level} to ${username}`, 'success');
+        displayCurrentRibbons(currentRibbons);
+        
+        // Clear form
+        document.getElementById('ribbon-type-select').value = '';
+        document.getElementById('ribbon-level').value = '1';
+        
+    } catch (error) {
+        console.error('Error adding ribbon:', error);
+        showNotification('Error adding ribbon', 'error');
+    }
+}
+
+// Remove ribbon
+async function removeRibbon(ribbonName) {
+    const username = document.getElementById('ribbon-target-user').value;
+    const ladder = document.getElementById('ribbon-target-ladder').value;
+    
+    if (!confirm(`Remove ${ribbonName} from ${username}?`)) return;
+    
+    try {
+        const collectionName = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+        const ribbonRef = doc(db, collectionName, username);
+        
+        // Get current ribbons
+        const ribbonDoc = await getDoc(ribbonRef);
+        const currentRibbons = ribbonDoc.exists() ? ribbonDoc.data().ribbons || {} : {};
+        
+        // Remove ribbon
+        delete currentRibbons[ribbonName];
+        
+        // Save updated ribbons
+        await setDoc(ribbonRef, {
+            username: username,
+            ladder: ladder,
+            ribbons: currentRibbons,
+            lastUpdated: serverTimestamp()
+        }, { merge: true });
+        
+        showNotification(`Removed ${ribbonName} from ${username}`, 'success');
+        displayCurrentRibbons(currentRibbons);
+        
+    } catch (error) {
+        console.error('Error removing ribbon:', error);
+        showNotification('Error removing ribbon', 'error');
+    }
+}
+
+// Edit user ribbons (called from table)
+function editUserRibbons(username, ladder) {
+    document.getElementById('ribbon-user-search').value = username;
+    searchRibbonUser();
+}

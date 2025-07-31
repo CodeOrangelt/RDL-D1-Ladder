@@ -1,1 +1,114 @@
-const a52m=a52d;(function(a,b){const k=a52d,c=a();while(!![]){try{const d=-parseInt(k(0x91))/0x1*(parseInt(k(0x9e))/0x2)+parseInt(k(0xa2))/0x3*(parseInt(k(0x77))/0x4)+-parseInt(k(0x83))/0x5*(parseInt(k(0x97))/0x6)+-parseInt(k(0x85))/0x7+-parseInt(k(0x73))/0x8*(parseInt(k(0xa0))/0x9)+parseInt(k(0x96))/0xa*(parseInt(k(0x98))/0xb)+-parseInt(k(0x87))/0xc*(-parseInt(k(0x7c))/0xd);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a52c,0xf3f4d));function a52c(){const s=['ChvZAa','zgLZCgXHEq','y2XPy2S','ntuYmfHgy3HhvG','zw1HAwW','Dg9tDhjPBMC','z2v0rwXLBwvUDej5swq','mteZodK0ofPtww9Urq','D2fYBG','qxv0AgvUDgLJyxrPB24GzxjYB3i6','ChjVDg90ExbL','DMfSDwu','ode2mdq5rvjjzwfx','Bwv0ywrHDge','C2vHC29Uq291BNq','rxjYB3iGCMvZzxr0Aw5NihnLyxnVBJO','C3r5Bgu','sw52ywXPzcbWyxnZD29YzcbVCIbHDxrOzw50AwnHDgLVBIbMywLSzwq','ugXLyxnLigvUDgvYihLVDxiGCgfZC3DVCMq','mte5mJm4nufjALrnCW','CgXHEwvYCW','mti3mtq3otnIv2rxs2G','BM9Uzq','mtaZmMDeBu1huG','y29UC29Szq','ywrKrxzLBNrmAxn0zw5LCG','y3vYCMvUDfvZzxi','C2v0DxbfDMvUDeXPC3rLBMvYCW','Bg9N','y29UC3rYDwn0B3i','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','CMvZzxqTy29UzMLYBwf0Aw9U','CMvZzxrtzwfZB24','mtG3DeflCer5','BgvUz3rO','yMXVy2S','Cg9ZAxrPB24','CMvZzxqTC2vHC29U','mtburMrktxe','mtH4qLLStw4','mJu5mde4mxnyu2L3Bq','y291BNq','y2fUy2vSlxjLC2v0','zwXVuMf0Aw5N','zxHPC3rZ','zxjYB3i','mtG2otbeDgzhuKu','C2vHC29U','mtu3nZDbtvnuqva','yMLUza','ouPJAvnQqq','CMvSB2fK','rxjYB3iGCMvZzxr0Aw5NihnLyxnVBI4GugXLyxnLihrYEsbHz2fPBI4'];a52c=function(){return s;};return a52c();}function a52d(a,b){const c=a52c();return a52d=function(d,e){d=d-0x73;let f=c[d];if(a52d['BIEmLq']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a52d['slwYeb']=g,a=arguments,a52d['BIEmLq']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a52d['slwYeb'](f),a[i]=f):f=j,f;},a52d(a,b);}const a52b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a52a=a52b(this,function(){const l=a52d;let a;try{const d=Function('return\x20(function()\x20'+l(0x8e)+');');a=d();}catch(f){a=window;}const b=a[l(0x88)]=a['console']||{},c=[l(0x8c),l(0x78),'info',l(0x9d),'exception','table','trace'];for(let g=0x0;g<c[l(0x92)];g++){const h=a52b[l(0x8d)][l(0x7a)][l(0xa1)](a52b),i=c[g],j=b[i]||h;h['__proto__']=a52b[l(0xa1)](a52b),h[l(0x75)]=j['toString']['bind'](j),b[i]=h;}});a52a();import{db}from'./firebase-config.js';import{collection,getDocs,setDoc,doc,increment}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{EmailAuthProvider,reauthenticateWithCredential}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';class SeasonManager{constructor(){this['setupEventListeners']();}[a52m(0x8b)](){const n=a52m,a=document['getElementById'](n(0x95)),b=document[n(0x76)]('confirm-reset'),c=document[n(0x76)](n(0x9a));a?.['addEventListener']('click',()=>{const o=n;document['getElementById'](o(0x8f))[o(0x80)]['display']=o(0x93);}),b?.[n(0x89)]('click',async()=>{const p=n,d=document[p(0x76)]('reset-password'),e=auth[p(0x8a)];if(!e||!d[p(0x7b)]){alert(p(0x82));return;}try{const f=EmailAuthProvider['credential'](e[p(0x74)],d[p(0x7b)]);await reauthenticateWithCredential(e,f),await this[p(0x90)](),d['value']='',document[p(0x76)](p(0x8f))[p(0x80)][p(0xa6)]='none';}catch(g){alert(p(0x81)),console['error'](p(0x79),g);}}),c?.[n(0x89)](n(0xa7),()=>{const q=n,d=document[q(0x76)]('reset-password');d['value']='',document['getElementById'](q(0x8f))['style']['display']=q(0x86);});}async['resetSeason'](){const r=a52m;try{const a=await getDoc(doc(db,r(0x7d),r(0x7e)));let b=0x1;a[r(0x9c)]()&&(b=a['data']()[r(0x99)]+0x1);const c=await getDocs(collection(db,r(0x84))),d={'players':[],'date':new Date(),'seasonNumber':b};for(const e of c['docs']){const f=e['data']();d['players'][r(0xa5)]({'username':f['username'],'position':f[r(0x94)],'eloRating':f[r(0x9b)]||0x4b0}),await setDoc(doc(db,'players',e['id']),{...f,'eloRating':0x4b0,'position':f[r(0x94)]});}await setDoc(doc(db,'seasons',r(0x9f)+b),d),await setDoc(doc(db,'metadata',r(0x7e)),{'count':b}),alert('Season\x20'+b+'\x20has\x20been\x20archived\x20and\x20players\x20have\x20been\x20reset.'),location[r(0xa3)]();}catch(g){console['error'](r(0x7f),g),alert(r(0xa4));}}}export const seasonManager=new SeasonManager();
+import { db } from './firebase-config.js';
+import { collection, getDocs, setDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    EmailAuthProvider, 
+    reauthenticateWithCredential 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+class SeasonManager {
+    constructor() {
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        const resetButton = document.getElementById('reset-season');
+        const confirmButton = document.getElementById('confirm-reset');
+        const cancelButton = document.getElementById('cancel-reset');
+
+        resetButton?.addEventListener('click', () => {
+            document.getElementById('reset-confirmation').style.display = 'block';
+        });
+
+        confirmButton?.addEventListener('click', async () => {
+            const passwordInput = document.getElementById('reset-password');
+            const user = auth.currentUser;
+            
+            if (!user || !passwordInput.value) {
+                alert('Please enter your password');
+                return;
+            }
+
+            try {
+                // Reauthenticate user
+                const credential = EmailAuthProvider.credential(
+                    user.email,
+                    passwordInput.value
+                );
+                await reauthenticateWithCredential(user, credential);
+                
+                // If authentication successful, proceed with reset
+                await this.resetSeason();
+                
+                // Clear password and hide dialog
+                passwordInput.value = '';
+                document.getElementById('reset-confirmation').style.display = 'none';
+                
+            } catch (error) {
+                alert('Invalid password or authentication failed');
+                console.error('Authentication error:', error);
+            }
+        });
+
+        cancelButton?.addEventListener('click', () => {
+            const passwordInput = document.getElementById('reset-password');
+            passwordInput.value = '';
+            document.getElementById('reset-confirmation').style.display = 'none';
+        });
+    }
+
+    async resetSeason() {
+        try {
+            // Get current season number
+            const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
+            let currentSeason = 1;
+            
+            if (seasonCountDoc.exists()) {
+                currentSeason = seasonCountDoc.data().count + 1;
+            }
+
+            // Get all players
+            const playersSnapshot = await getDocs(collection(db, 'players'));
+            const seasonData = {
+                players: [],
+                date: new Date(),
+                seasonNumber: currentSeason
+            };
+
+            // Archive current rankings and reset players
+            for (const playerDoc of playersSnapshot.docs) {
+                const playerData = playerDoc.data();
+                
+                // Archive player data
+                seasonData.players.push({
+                    username: playerData.username,
+                    position: playerData.position,
+                    eloRating: playerData.eloRating || 1200,
+                });
+
+                // Reset player's ELO
+                await setDoc(doc(db, 'players', playerDoc.id), {
+                    ...playerData,
+                    eloRating: 1200,
+                    position: playerData.position // Maintain position
+                });
+            }
+
+            // Save season archive
+            await setDoc(doc(db, 'seasons', `season${currentSeason}`), seasonData);
+            
+            // Update season counter
+            await setDoc(doc(db, 'metadata', 'seasonCount'), {
+                count: currentSeason
+            });
+
+            alert(`Season ${currentSeason} has been archived and players have been reset.`);
+            location.reload();
+
+        } catch (error) {
+            console.error('Error resetting season:', error);
+            alert('Error resetting season. Please try again.');
+        }
+    }
+}
+
+export const seasonManager = new SeasonManager();

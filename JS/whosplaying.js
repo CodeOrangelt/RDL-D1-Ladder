@@ -1,1 +1,535 @@
-const a54n=a54d;(function(a,b){const k=a54d,c=a();while(!![]){try{const d=-parseInt(k(0x113))/0x1+parseInt(k(0x10d))/0x2+-parseInt(k(0xe2))/0x3*(-parseInt(k(0x120))/0x4)+parseInt(k(0x109))/0x5*(-parseInt(k(0xdb))/0x6)+parseInt(k(0xef))/0x7*(parseInt(k(0xf3))/0x8)+parseInt(k(0x149))/0x9+-parseInt(k(0x128))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a54c,0xe4bda));const a54b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a54a=a54b(this,function(){const l=a54d;let a;try{const d=Function('return\x20(function()\x20'+l(0x144)+');');a=d();}catch(f){a=window;}const b=a['console']=a['console']||{},c=['log',l(0xdf),l(0x12c),'error',l(0x121),l(0x102),'trace'];for(let g=0x0;g<c[l(0x14c)];g++){const h=a54b[l(0x12d)][l(0x108)][l(0xfe)](a54b),i=c[g],j=b[i]||h;h['__proto__']=a54b[l(0xfe)](a54b),h[l(0x13f)]=j[l(0x13f)]['bind'](j),b[i]=h;}});a54a();import{initializeApp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';import{getFirestore,collection,addDoc,onSnapshot}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{firebaseConfig}from'./firebase-config.js';function a54c(){const L=['cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBM8Tz2fTzxmIpGOGicaGicaGicaGicaGicaGicaGicaGica8Cd5oBYbHy3rPDMuGz2fTzxmGzM91BMq8l3a+cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGica','BwfPBG','Aw5PDgLHBgL6zq','yMLUza','ksbYzwfJAgvKlIbeAxnHyMXPBMCGzNvYDgHLCIbHDhrLBxb0CY4','phnWyw4Gy2XHC3m9iNbSyxLLCI1Zy29Yzsi+u2nVCMu6ia','i2DHBwu','DgfIBgu','CMv0CM9uCMfJA2vY','cIaGicaGicaGicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IAg9ZDci+sg9ZDdOG','teLwrsbhqu1foIaO','Aw5JBhvKzxm','vw5RBM93BIbwzxjZAw9U','ChjVDg90ExbL','mJC3mgLtufLKAa','yMXVy2S','C3rVCMvhyw1Lrgf0yq','Aw5PDgLHBgL6zujHBM5LCK9UBhK','mZqYmZu4mKH3zNb2zG','tM8Gz2fTzxmGzM91BMq','CMv0CM8TDhjHy2TLCI1JB250ywLUzxi','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNbSyxLLCNmTBgLZDci+cIaGicaGicaGicaGicaGicaGicaGicaGia','DxbKyxrLqMfUBMvY','C2v0','nZy2mZqZExryz0PN','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0ICgXHEwvYlxn0yxrZiJ4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaG','l3DOB3nWBgf5Aw5NlMH0BwW','ktWVC3bHBJ4','zMv0y2Hhyw1Lrgf0yq','twLZC2LVBJO','C3r5Bgu','Dgv4DenVBNrLBNq','C3rHCNrnB25PDg9YAw5N','C2nVCMu','Bg9JyxrPB24','zMLUzerLDgfPBfrLEhq','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IDgLTzxn0yw1WiJ5vCgrHDgvKoIa','nJq0mdC3nMz3wLbRuG','zxHJzxb0Aw9U','y2XVC2vZDa','zxjYB3i','DhjPBq','C3rHCNruAw1L','AgvHza','z2fTzu5HBwu','mtu2mtCXmdbxtePjreG','Dg9ju09tDhjPBMC','tM8Gz2fTzxmGzgf0ysbYzwnLAxzLza','ywn0AxzLr2fTzxm','Aw5MBW','y29UC3rYDwn0B3i','CxvLCNLtzwXLy3rVCKfSBa','CxvLCNLtzwXLy3rVCG','y3jLyxrLrwXLBwvUDa','zMv0y2HbDhrLBxb0CW','z2fTzs1Iyw5Uzxi','y29SB3i6iZC4nZHcoa','lNnJB3jLyM9HCMrFz2fTzq','ksaTia','zNjVBq','zMv0y2HPBMDeAxnHyMXLza','z2v0qxr0CMLIDxrL','vw5RBM93BG','Ag9ZDa','AM9PBG','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaG','ywrKrxzLBNrmAxn0zw5LCG','z2v0vMvYC2LVBKLUzM8','Dg9tDhjPBMC','zMLSDgvY','z2fTzxmTBgLZDa','Bg9N','D2LUCW','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','z2fTzvzLCNnPB24','lMXHC3qTDxbKyxrL','r2fTzsboyw1LoG','phnWyw4Gy2XHC3m9iNbSyxLLCI1JAgfYywn0zxiIpG','mZy1mdG5nwXtBgrLua','Ahr0Chm6lY9YzxrYBY10CMfJA2vYlMDHBwuTC2vYDMvYlMnJlW','CgXHEwvYCW','BgvUz3rO','DxbKyxrLrgLZCgXHEq','rgv0ywLSzwqGu2nVCMuGqM9HCMq','zgLZCgXHEq','DgrByMDJB2XVCJ0Ii0qWrdbemcjD','mti4mJHNEwP6veK','y2XLyxi','z2fTzs1IB3G','zgL2','D2fYBG','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica','yM9KEq','m2PRD0f2qG','Dg9mB2nHBgvuAw1Lu3rYAw5N','re9nq29UDgvUDeXVywrLza','C3bSAxq','CgfYC2vgCM9Tu3rYAw5N','tgv2zwWGtNvTyMvYoG','Aw5Hy3rPDMu','zMLUzfnJB3jLCW','vw5HyMXLihrVigzLDgnOigDHBwuGzgf0ysbHzNrLCIbTDwX0AxbSzsbHDhrLBxb0CY4','u3rHDhvZoG','Bwf0y2G','zMLUzfbSyxLLCNm','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaG','ndu5mZe5ywT6u011','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iMfJDgL2zs1Nyw1LCY1IB3GIpGOGicaGicaGicaGicaGicaGpgGYpKfJDgL2zsbszxrYB1rYywnRzxiGr2fTzxm8l2GYpGOGicaGicaGicaGicaGicaGpgrPDIbPzd0Iz2fTzxmTBgLZDci+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBg9HzgLUzYi+rMv0y2HPBMCGywn0AxzLigDHBwvZlI4Upc9KAxy+cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMXHC3qTDxbKyxrLiJ48l2rPDJ4kicaGicaGicaGicaGpc9KAxy+cIaGicaGicaG','C3rHDhvZ','cIaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGia','odH0uu5WvgK','AxnnywLUugfNzq','BwfW','ugXHEwvYCZO','Bwf4rMv0y2HbDhrLBxb0CW','zM9YrwfJAa','cIaGicaJCMv0CM8TDhjHy2TLCI1JB250ywLUzxiGEWOGicaGicaGig1HEc13Awr0AdOGodaWChG7cIaGicaGicaGBwfYz2LUoIaYmhb4igf1Dg8GndbWEdSkicaGicaGicbMB250lwzHBwLSEtOGqxjPywWSihnHBNmTC2vYAwy7cIaGicb9cGOGicaGlMfJDgL2zs1Nyw1LCY1IB3GGEWOGicaGicaGigjHy2TNCM91BMq6ihjNyMeOmJu1lcaYntuSidi1nsWGmc45ktSkicaGicaGicbIB3jKzxiTCMfKAxvZoIa4ChG7cIaGicaGicaGCgfKzgLUzZOGmJbWEdSkicaGicaGicbIB3GTC2HHzg93oIaWidjWEcaXmhb4ihjNyMeOmcWGmcWGmcWGmc4XktSkicaGih0kcIaGicaUywn0AxzLlwDHBwvZlwjVEcbOmIb7cIaGicaGicaGy29SB3i6icm4odfLogu7cIaGicaGicaGDgv4Dc1HBgLNBJOGy2vUDgvYoWOGicaGicaGig1HCMDPBI1IB3r0B206idiWChG7cIaGicb9cGOGicaGlMDHBwuTyM94ihSkicaGicaGicbIywnRz3jVDw5KoIbYz2jHkdi0mcWGmJqWlcaYndaSidaUosK7cIaGicaGicaGyM9YzgvYlxjHzgL1CZOGnhb4oWOGicaGicaGihbHzgrPBMC6ide1ChG7cIaGicaGicaGBwfYz2LUoIaXmhb4ida7cIaGicaGicaGyM9YzgvYoIaXChGGC29SAwqGCMDIysGXmZySidmWlcaXndiSidaUmIK7cIaGicb9cGOGicaGlMDHBwuTAgvHzgvYihSkicaGicaGicbKAxnWBgf5oIbMBgv4oWOGicaGicaGigP1C3rPzNKTy29UDgvUDdOGC3bHy2uTyMv0D2vLBJSkicaGicaGicbHBgLNBI1PDgvTCZOGy2vUDgvYoWOGicaGicaGihbHzgrPBMCTyM90Dg9ToIaXmhb4oWOGicaGicaGigjVCMrLCI1IB3r0B206idfWEcbZB2XPzcbYz2jHkdeZnIWGmZaSide0mIWGmc4XktSkicaGih0kcIaGicaUz2fTzs10AxrSzsb7cIaGicaGicaGzM9UDc1ZAxPLoIaXlJjLBtSkicaGicaGicbJB2XVCJOGiZG4mwu4ztSkicaGih0kcIaGicaUz2fTzs12zxjZAw9UihSkicaGicaGicbMB250lxnPEMu6idaUogvToWOGicaGicaGignVBg9YoIaJnJy2oWOGicaGicaGig1HCMDPBI1Szwz0oIa4ChG7cIaGicb9cGOGicaGlMDHBwuTAw5MBYb7cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbNyxa6ide1ChG7cIaGicaGicaGBwfYz2LUoIaXmhb4ida7cIaGicaGicaGzM9UDc1ZAxPLoIaWlJLLBtSkicaGicaGicbJB2XVCJOGiZq0ndSkicaGih0kcIaGicaUCgXHEwvYCY1SAxn0ihSkicaGicaGicbKAxnWBgf5oIbNCMLKoWOGicaGicaGigDHCdOGohb4oWOGicaGicaGig1HCMDPBJOGmtvWEcaWoWOGicaGFqOkicaGic5WBgf5zxiGEWOGicaGicaGigrPC3bSyxK6igzSzxG7cIaGicaGicaGANvZDgLMEs1JB250zw50oIbZCgfJzs1Izxr3zwvUoWOGicaGicaGigfSAwDUlwL0zw1ZoIbJzw50zxi7cIaGicaGicaGCgfKzgLUzZOGohb4ideYChG7cIaGicaGicaGyMfJA2DYB3vUzdOGCMDIysGYntuSidi1nsWGmJu1lcaWlJCPoWOGicaGicaGigjVCMrLCI1YywrPDxm6idrWEdSkicaGicaGicb0CMfUC2L0Aw9UoIbIywnRz3jVDw5KlwnVBg9YidaUmNm7cIaGicb9cGOGicaGlNbSyxLLCJPOB3zLCIb7cIaGicaGicaGyMfJA2DYB3vUzdOGCMDIysGYntuSidi1nsWGmJu1lcaWlJKPoWOGicaGFqOkicaGic5WBgf5zxiTAw5MBYb7cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbNyxa6ideWChG7cIaGicaGicaGywXPz24TAxrLBxm6ignLBNrLCJSkicaGih0kcIaGicaUCgXHEwvYlwnOyxjHy3rLCIb7cIaGicaGicaGy29SB3i6icm2nJy7cIaGicaGicaGzM9UDc1ZAxPLoIaWlJLLBtSkicaGih0kcIaGicaUCgXHEwvYlxn0yxrZihSkicaGicaGicbKAxnWBgf5oIbMBgv4oWOGicaGicaGigDHCdOGmtvWEdSkicaGih0kcIaGicaUCgXHEwvYlxnJB3jLlcaUCgXHEwvYlxDPBNmGEWOGicaGicaGigzVBNqTD2vPz2H0oIbIB2XKoWOGicaGicaGignVBg9YoIaJodGXztHLoWOGicaGFqOkicaGic5Nyw1LlwzVB3rLCIb7cIaGicaGicaGBwfYz2LUlxrVCdOGmtvWEdSkicaGicaGicbWywrKAw5NlxrVCdOGmtbWEdSkicaGicaGicbIB3jKzxiTDg9WoIaXChGGC29SAwqGCMDIysGXmZySidmWlcaXndiSidaUmsK7cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbQDxn0Awz5lwnVBNrLBNq6ihnWywnLlwjLDhDLzw47cIaGicaGicaGzM9UDc1ZAxPLoIaWlJHLBtSkicaGicaGicbJB2XVCJOGiZy2nJSkicaGih0kcIaGicaUBg9HzgLUzYWGlM5VlwDHBwvZihSkicaGicaGicb0zxH0lwfSAwDUoIbJzw50zxi7cIaGicaGicaGCgfKzgLUzZOGmJbWEdSkicaGicaGicbJB2XVCJOGiZy2nJSkicaGih0kcIaGicaUzxjYB3iTBwvZC2fNzsb7cIaGicaGicaGDgv4Dc1HBgLNBJOGy2vUDgvYoWOGicaGicaGignVBg9YoIaJzMyWmdaWoWOGicaGicaGihbHzgrPBMC6idiWChG7cIaGicaGicaGyMfJA2DYB3vUzdOGCMDIysGYntuSidaSidaSidaUmsK7cIaGicaGicaGyM9YzgvYlxjHzgL1CZOGnhb4oWOGicaGicaGig1HCMDPBJOGmtbWEcaWoWOGicaGFqO','Aw5Uzxjive1m'];a54c=function(){return L;};return a54c();}const app=initializeApp(firebaseConfig),db=getFirestore(app);export class RetroTrackerMonitor{constructor(){const m=a54d;this['lastUpdate']=null,this[m(0x12b)]=new Map(),this['updateInterval']=0x493e0,this['isMainPage']=window[m(0x11d)]['pathname']['endsWith'](m(0x115)),this['fetchAttempts']=0x0,this[m(0xf7)]=0x3,this[m(0x137)]=![];}async[a54n(0xfd)](){const o=a54n;this['isMainPage']&&this['createGameDisplay'](),this[o(0x11b)]();}[a54n(0x10c)](){const p=a54n;this['activeGames']=new Map(),this['updateInterval']=0x7530,this[p(0x11b)]();}['createGameDisplay'](){const q=a54n;if(!this[q(0xf4)])return;const a=document['createElement']('div');a['id']=q(0x10f),a['innerHTML']=q(0xf0);const b=document[q(0x12f)](q(0xfc));b&&b['appendChild'](a);const c=document[q(0x130)](q(0xde));c['className']=q(0x132),c[q(0xfa)]='<div\x20class=\x22game-banner-content\x22><span\x20class=\x22game-banner-text\x22></span></div>',document[q(0xe1)]['appendChild'](c);}async['fetchGameData'](){const r=a54n;if(this['fetchingDisabled'])return console[r(0x142)]('Fetching\x20disabled\x20after\x20max\x20attempts\x20reached'),null;if(this[r(0x131)]>=this['maxFetchAttempts'])return console[r(0x142)]('Maximum\x20fetch\x20attempts\x20('+this[r(0xf7)]+r(0xff)),this['fetchingDisabled']=!![],this['displayError'](r(0xea)),null;try{this['fetchAttempts']++,console['log']('Fetch\x20attempt\x20'+this['fetchAttempts']+'/'+this['maxFetchAttempts']);const a='https://api.allorigins.win/get?url=',b=encodeURIComponent(r(0x14a)),c=await fetch(''+a+b);if(!c['ok'])throw new Error('Network\x20response\x20was\x20not\x20ok');const d=new DOMParser()[r(0xe6)]((await c['json']())['contents'],'text/html'),e=d[r(0x12e)](r(0x134));if(!e[r(0x14c)])throw new Error(r(0x10e));this['fetchAttempts']=0x0;const f=Array['from'](e)[r(0xf5)](g=>{const s=r,h=g[s(0x138)]('onclick')?.[s(0xec)](/\d+/)?.[0x0];if(!h)return null;const i=d['querySelector'](s(0x101)+h);if(!i)return null;return{'gameVersion':this[s(0x13e)](i),'host':g['querySelector']('td')?.['textContent']?.['trim']()||'Unknown','gameName':this['findDetailText'](i,s(0x147)),'map':this[s(0x11e)](i,s(0x118)),'players':this['findPlayers'](i),'scores':this['findScores'](i),'startTime':this['findDetailText'](i,'Start\x20time:'),'status':this[s(0x11e)](i,s(0xeb))?.[s(0x106)]('Playing')?'active':s(0xe8),'playerCount':this[s(0x11e)](i,s(0xf6)),'gameMode':this[s(0x11e)](i,'Mode:'),'timestamp':new Date()[s(0x129)]()};})[r(0x140)](Boolean);return this['processGameData'](f);}catch(g){return console[r(0x123)]('Error\x20fetching\x20game\x20data\x20(attempt\x20'+this['fetchAttempts']+'/'+this['maxFetchAttempts']+'):',g),this['fetchAttempts']>=this[r(0xf7)]&&(this['fetchingDisabled']=!![],this['displayError']('Unable\x20to\x20fetch\x20game\x20data\x20after\x20multiple\x20attempts.')),null;}}['getVersionInfo'](a){const t=a54n,b=a[t(0x12f)](t(0x150));return b?.[t(0x11a)]?.['split']('-')[0x0]?.['trim']()||t(0x107);}[a54n(0xed)](a){const u=a54n;if(!a)return[];const b=Array['from'](a[u(0x12e)](u(0x150)))['find'](d=>d['textContent']['includes']('Score\x20Board'));if(!b)return[];const c=b[u(0x122)]('tr')['nextElementSibling']?.['querySelector'](u(0x102));if(!c)return[];return Array['from'](c['querySelectorAll']('tr'))['slice'](0x1)['filter'](d=>d[u(0x138)](u(0x119))?.[u(0x106)](u(0x133)))[u(0xf5)](d=>{const v=u,e=d['querySelectorAll']('td');if(e[v(0x14c)]<0x6)return null;return{'name':e[0x0]?.[v(0x11a)]?.['trim']()||'','kills':parseInt(e[0x1]?.[v(0x11a)]?.[v(0x124)]()||'0',0xa),'deaths':parseInt(e[0x2]?.['textContent']?.['trim']()||'0',0xa),'suicides':parseInt(e[0x3]?.['textContent']?.[v(0x124)]()||'0',0xa),'kdr':parseFloat(e[0x4]?.['textContent']?.['trim']()||'0'),'timeInGame':e[0x5]?.[v(0x11a)]?.['trim']()||''};})['filter'](Boolean);}[a54n(0xe9)](a){const w=a54n,b=Array[w(0x136)](a[w(0x12e)]('table'))['find'](c=>c['previousElementSibling']?.[w(0x11a)]?.[w(0x106)](w(0x14e)));if(!b)return{};return Object['fromEntries'](Array['from'](b[w(0x12e)]('tr'))[w(0x140)](c=>c[w(0x138)]('style')?.[w(0x106)]('color:#7878B8'))['map'](c=>{const x=w,d=c[x(0x12e)]('td');return[d[0x0]?.[x(0x11a)]?.[x(0x124)]()||x(0x139),d[0x1]?.[x(0x11a)]?.['trim']()||'0'];}));}['processGameData'](a){const y=a54n;if(!a?.[y(0x14c)]){console['log'](y(0x12a));return;}this[y(0x12b)][y(0xdc)]();const b=a['filter'](c=>c[y(0xf1)]==='active'&&c[y(0x14b)]?.['length']>0x0);b[y(0xf8)](c=>{const z=y,d=c[z(0x127)]+'-'+c[z(0x125)];this['activeGames']['set'](d,c);}),this[y(0x14d)]();}['findDetailText'](a,b){const A=a54n;if(!a)return'';const c=a[A(0x12e)]('td');for(const d of c){if(d[A(0x11a)]['includes'](b)){const e=d['textContent']['split'](b);if(e[A(0x14c)]>0x1){let f=e[0x1][A(0x124)]();switch(b){case'Game\x20Name:':return f['split']('Mission:')[0x0][A(0x124)]();case'Mission:':return f['split'](A(0xe7))[0x0][A(0x124)]();case A(0xf6):return f[A(0xe5)]('Mode:')[0x0][A(0x124)]();case'Mode:':return f[A(0xe5)]('\x0a')[0x0][A(0x124)]();default:return f;}}}}return'';}[a54n(0x10b)](a){const B=a54n;if(!a[B(0x13a)]||!a[B(0x14b)]){console['error']('Invalid\x20game\x20data:',a);return;}this['activeGames'][B(0x112)](a[B(0x13a)],a),addDoc(collection(db,B(0x103)),a)['catch'](b=>{const C=B;console[C(0x123)]('Error\x20storing\x20game\x20data:',b);}),this['updateDisplay']();}['updateDisplay'](){const D=a54n;if(this['isMainPage']){const a=document['getElementById']('games-list');if(!a)return;if(this[D(0x12b)]['size']===0x0){a['innerHTML']=D(0xfb);return;}a[D(0xfa)]='',this[D(0x12b)][D(0xf8)]((b,c)=>{const E=D,d=document['createElement'](E(0xde));d['className']=E(0xdd),d['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-title\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22game-name\x22>'+b['gameName']+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(b[E(0x145)]?'<span\x20class=\x22game-version\x22>(v'+b['gameVersion']+E(0x116):'')+E(0x104)+b[E(0x13a)]+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22game-type\x22>'+b['gameType']+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22game-status\x22>'+b[E(0xf1)]+E(0x110)+b['players'][E(0xf5)](e=>'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22player\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22player-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-name\x22>'+e['name']+E(0xe0)+(e['character']?E(0x148)+e['character']+'</span>':'')+E(0x114)+(e[E(0x11c)]?E(0x100)+e['score']+'</span>':'')+E(0xf2)+(e['wins']?'<span\x20class=\x22player-wins\x22>Wins:\x20'+e[E(0x143)]+'</span>':'')+E(0xee))[E(0x13b)]('')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22game-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22start-time\x22>Started:\x20'+new Date(b[E(0x125)])[E(0xe3)]()+E(0x11f)+new Date(b['timestamp'])['toLocaleTimeString']()+E(0x13c),a['appendChild'](d);}),document[D(0x12f)](D(0x146))['textContent']='Last\x20updated:\x20'+new Date()[D(0xe3)]();}this[D(0x111)]();}['startMonitoring'](){const G=a54n;!this['fetchingDisabled']&&(setInterval(()=>{const F=a54d;!this['fetchingDisabled']&&this[F(0x117)]();},this['updateInterval']),this[G(0x117)]());}['displayError'](a){const H=a54n,b=document['getElementById'](H(0x141));b&&(b['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22error-message\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>'+a+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20');}[a54n(0x111)](){const I=a54n,a=document['querySelector']('.game-banner'),b=document['querySelector']('.game-banner-text');if(!a||!b)return;if(this['activeGames']['size']===0x0){a['style'][I(0x14f)]='none';return;}a['style']['display']=I(0x10a);const c=Array['from'](this[I(0x12b)]['values']());let d=0x0;this['gameRotationInterval']&&clearInterval(this['gameRotationInterval']);const e=()=>{const J=I,f=c[d];if(f){const g=f['players']?.['length']>0x2?'FFA':'1v1',h=f['players']?.[J(0x14c)]||0x0,i=J(0x105)+f[J(0x145)]+J(0x135)+f[J(0x127)]+'\x20-\x20'+g+'\x20-\x20Map:\x20'+f[J(0xf5)];b[J(0x11a)]=i,d=(d+0x1)%c['length'];}};e(),c['length']>0x1&&(this['gameRotationInterval']=setInterval(e,0x2710));}}function a54d(a,b){const c=a54c();return a54d=function(d,e){d=d-0xdb;let f=c[d];if(a54d['cUlsnA']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a54d['tJEPWH']=g,a=arguments,a54d['cUlsnA']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a54d['tJEPWH'](f),a[i]=f):f=j,f;},a54d(a,b);}const styles=a54n(0xf9),styleSheet=document[a54n(0x130)](a54n(0x119));styleSheet['textContent']=styles,document[a54n(0x126)]['appendChild'](styleSheet),document[a54n(0x13d)](a54n(0xe4),()=>{const K=a54n,a=new RetroTrackerMonitor();window[K(0x11d)]['pathname']['endsWith']('whosplaying.html')?a[K(0xfd)]():a[K(0x10c)]();});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export class RetroTrackerMonitor {
+    constructor() {
+        this.lastUpdate = null;
+        this.activeGames = new Map();
+        this.updateInterval = 300000; // 30 seconds
+        this.isMainPage = window.location.pathname.endsWith('/whosplaying.html');
+        this.fetchAttempts = 0; // Add fetch attempt counter
+        this.maxFetchAttempts = 3; // Maximum number of fetch attempts
+        this.fetchingDisabled = false; // Flag to disable fetching after max attempts
+    }
+
+    async initialize() {
+        if (this.isMainPage) {
+            this.createGameDisplay();
+        }
+        this.startMonitoring();
+    }
+
+    initializeBannerOnly() {
+        this.activeGames = new Map();
+        this.updateInterval = 30000; // 30 seconds
+        
+        // Don't create the game container
+        this.startMonitoring();
+    }
+
+    createGameDisplay() {
+        if (!this.isMainPage) return;
+        const container = document.createElement('div');
+        container.id = 'retro-tracker-container';
+        container.innerHTML = `
+            <div class="active-games-box">
+                <h2>Active RetroTracker Games</h2>
+                <div id="games-list">
+                    <div class="loading">Fetching active games...</div>
+                </div>
+                <div class="last-update"></div>
+            </div>
+        `;
+        
+        // Insert before footer
+        const main = document.querySelector('main');
+        if (main) {
+            main.appendChild(container);
+        }
+
+        // Add banner
+        const banner = document.createElement('div');
+        banner.className = 'game-banner';
+        banner.innerHTML = '<div class="game-banner-content"><span class="game-banner-text"></span></div>';
+        document.body.appendChild(banner);
+    }
+
+    // Optimize game data extraction
+    async fetchGameData() {
+        // Check if fetching is disabled due to max attempts reached
+        if (this.fetchingDisabled) {
+            console.log('Fetching disabled after max attempts reached');
+            return null;
+        }
+
+        // Check if we've reached max attempts
+        if (this.fetchAttempts >= this.maxFetchAttempts) {
+            console.log(`Maximum fetch attempts (${this.maxFetchAttempts}) reached. Disabling further attempts.`);
+            this.fetchingDisabled = true;
+            this.displayError('Unable to fetch game data after multiple attempts.');
+            return null;
+        }
+
+        try {
+            this.fetchAttempts++; // Increment attempt counter
+            console.log(`Fetch attempt ${this.fetchAttempts}/${this.maxFetchAttempts}`);
+
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
+            
+            const response = await fetch(`${proxyUrl}${targetUrl}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const doc = new DOMParser().parseFromString((await response.json()).contents, 'text/html');
+            const gamesList = doc.querySelectorAll('.scoreboard_game');
+            
+            if (!gamesList.length) {
+                throw new Error('No games found');
+            }
+
+            // Reset attempts on successful fetch
+            this.fetchAttempts = 0;
+
+            const games = Array.from(gamesList)
+                .map(game => {
+                    const gameId = game.getAttribute('onclick')?.match(/\d+/)?.[0];
+                    if (!gameId) return null;
+
+                    const detailsTable = doc.querySelector(`#game${gameId}`);
+                    if (!detailsTable) return null;
+
+                    return {
+                        gameVersion: this.getVersionInfo(detailsTable),
+                        host: game.querySelector('td')?.textContent?.trim() || 'Unknown',
+                        gameName: this.findDetailText(detailsTable, 'Game Name:'),
+                        map: this.findDetailText(detailsTable, 'Mission:'),
+                        players: this.findPlayers(detailsTable),
+                        scores: this.findScores(detailsTable),
+                        startTime: this.findDetailText(detailsTable, 'Start time:'),
+                        status: this.findDetailText(detailsTable, 'Status:')?.includes('Playing') ? 'active' : 'inactive',
+                        playerCount: this.findDetailText(detailsTable, 'Players:'),
+                        gameMode: this.findDetailText(detailsTable, 'Mode:'),
+                        timestamp: new Date().toISOString()
+                    };
+                })
+                .filter(Boolean); // Remove null entries
+
+            return this.processGameData(games);
+        } catch (error) {
+            console.error(`Error fetching game data (attempt ${this.fetchAttempts}/${this.maxFetchAttempts}):`, error);
+            
+            // Only show error message after all attempts are exhausted
+            if (this.fetchAttempts >= this.maxFetchAttempts) {
+                this.fetchingDisabled = true;
+                this.displayError('Unable to fetch game data after multiple attempts.');
+            }
+            return null;
+        }
+    }
+
+    // New helper method to get version info
+    getVersionInfo(detailsTable) {
+        const versionCell = detailsTable.querySelector('td[bgcolor="#D0D0D0"]');
+        return versionCell?.textContent?.split('-')[0]?.trim() || 'Unknown Version';
+    }
+
+    // Optimize player finding
+    findPlayers(detailsTable) {
+        if (!detailsTable) return [];
+        
+        // Find Score Board section using standard selectors
+        const scoreBoardHeaders = Array.from(detailsTable.querySelectorAll('td[bgcolor="#D0D0D0"]'))
+            .find(td => td.textContent.includes('Score Board'));
+        
+        if (!scoreBoardHeaders) return [];
+
+        // Get the score board table that follows the header
+        const scoreBoardTable = scoreBoardHeaders.closest('tr').nextElementSibling?.querySelector('table');
+        if (!scoreBoardTable) return [];
+
+        // Process player rows
+        return Array.from(scoreBoardTable.querySelectorAll('tr'))
+            .slice(1) // Skip header row
+            .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
+            .map(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 6) return null;
+
+                return {
+                    name: cells[0]?.textContent?.trim() || '',
+                    kills: parseInt(cells[1]?.textContent?.trim() || '0', 10),
+                    deaths: parseInt(cells[2]?.textContent?.trim() || '0', 10),
+                    suicides: parseInt(cells[3]?.textContent?.trim() || '0', 10),
+                    kdr: parseFloat(cells[4]?.textContent?.trim() || '0'),
+                    timeInGame: cells[5]?.textContent?.trim() || ''
+                };
+            })
+            .filter(Boolean); // Remove any null entries
+    }
+
+    // Optimize score finding
+    findScores(detailsTable) {
+        const detailedScoreTable = Array.from(detailsTable.querySelectorAll('table'))
+            .find(table => 
+                table.previousElementSibling?.textContent?.includes('Detailed Score Board')
+            );
+
+        if (!detailedScoreTable) return {};
+
+        return Object.fromEntries(
+            Array.from(detailedScoreTable.querySelectorAll('tr'))
+                .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
+                .map(row => {
+                    const cells = row.querySelectorAll('td');
+                    return [
+                        cells[0]?.textContent?.trim() || 'Unknown',
+                        cells[1]?.textContent?.trim() || '0'
+                    ];
+                })
+        );
+    }
+
+    // Optimize game data processing
+    processGameData(data) {
+        if (!data?.length) {
+            console.log('No games data received');
+            return;
+        }
+
+        this.activeGames.clear();
+        
+        const activeGames = data.filter(game => 
+            game.status === 'active' && game.players?.length > 0
+        );
+        
+        activeGames.forEach(game => {
+            const gameId = `${game.gameName}-${game.startTime}`;
+            this.activeGames.set(gameId, game);
+        });
+
+        this.updateDisplay();
+    }
+
+    findDetailText(element, label) {
+        if (!element) return '';
+        const nodes = element.querySelectorAll('td');
+        for (const node of nodes) {
+            if (node.textContent.includes(label)) {
+                const parts = node.textContent.split(label);
+                if (parts.length > 1) {
+                    let value = parts[1].trim();
+                    
+                    // Handle specific fields
+                    switch(label) {
+                        case 'Game Name:':
+                            return value.split('Mission:')[0].trim();
+                        case 'Mission:':
+                            return value.split('Level Number:')[0].trim();
+                        case 'Players:':
+                            return value.split('Mode:')[0].trim();
+                        case 'Mode:':
+                            return value.split('\n')[0].trim();
+                        default:
+                            return value;
+                    }
+                }
+            }
+        }
+        return '';
+    }
+
+    storeGameData(game) {
+        if (!game.host || !game.players) {
+            console.error('Invalid game data:', game);
+            return;
+        }
+
+        // Add directly to local tracking first
+        this.activeGames.set(game.host, game);
+        
+        // Then store in Firebase
+        addDoc(collection(db, 'retroTracker'), game)
+            .catch(error => {
+                console.error('Error storing game data:', error);
+                // Don't display error to user, just log it
+            });
+            
+        this.updateDisplay();
+    }
+
+    updateDisplay() {
+        if (this.isMainPage) {
+            const gamesList = document.getElementById('games-list');
+            if (!gamesList) return;
+
+            if (this.activeGames.size === 0) {
+                gamesList.innerHTML = `
+                    <div class="no-games">
+                        <p>No active games found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gamesList.innerHTML = '';
+            this.activeGames.forEach((game, id) => {
+                const gameElement = document.createElement('div');
+                gameElement.className = 'game-box';
+                gameElement.innerHTML = `
+                    <div class="game-header">
+                        <div class="game-title">
+                            <span class="game-name">${game.gameName}</span>
+                            ${game.gameVersion ? `<span class="game-version">(v${game.gameVersion})</span>` : ''}
+                        </div>
+                        <span class="host">Host: ${game.host}</span>
+                    </div>
+                    <div class="game-info">
+                        <span class="game-type">${game.gameType}</span>
+                        <span class="game-status">${game.status}</span>
+                    </div>
+                    <div class="players-list">
+                        ${game.players.map(player => `
+                            <div class="player">
+                                <div class="player-info">
+                                    <span class="player-name">${player.name}</span>
+                                    ${player.character ? 
+                                        `<span class="player-character">${player.character}</span>` : ''}
+                                </div>
+                                <div class="player-stats">
+                                    ${player.score ? 
+                                        `<span class="player-score">Score: ${player.score}</span>` : ''}
+                                    ${player.wins ? 
+                                        `<span class="player-wins">Wins: ${player.wins}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="game-footer">
+                        <span class="start-time">Started: ${new Date(game.startTime).toLocaleTimeString()}</span>
+                        <span class="timestamp">Updated: ${new Date(game.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                `;
+                gamesList.appendChild(gameElement);
+            });
+
+            document.querySelector('.last-update').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        // Update the banner at the end
+        this.updateBanner();
+    }
+
+    startMonitoring() {
+        // Only start monitoring if fetching is not disabled
+        if (!this.fetchingDisabled) {
+            setInterval(() => {
+                if (!this.fetchingDisabled) {
+                    this.fetchGameData();
+                }
+            }, this.updateInterval);
+            this.fetchGameData(); // Initial fetch
+        }
+    }
+
+    // Add error display method
+    displayError(message) {
+        const gamesList = document.getElementById('games-list');
+        if (gamesList) {
+            gamesList.innerHTML = `
+                <div class="error-message">
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Add new method to update banner
+    updateBanner() {
+        const banner = document.querySelector('.game-banner');
+        const bannerText = document.querySelector('.game-banner-text');
+        
+        if (!banner || !bannerText) return;
+
+        // Hide banner if no games
+        if (this.activeGames.size === 0) {
+            banner.style.display = 'none';
+            return;
+        }
+
+        // Show banner and start cycling through games
+        banner.style.display = 'block';
+        
+        const games = Array.from(this.activeGames.values());
+        let currentGameIndex = 0;
+
+        // Clear any existing game rotation interval
+        if (this.gameRotationInterval) {
+            clearInterval(this.gameRotationInterval);
+        }
+
+        // Function to update the banner text
+        const updateBannerText = () => {
+            const game = games[currentGameIndex];
+            if (game) {
+                const gameType = game.players?.length > 2 ? 'FFA' : '1v1';
+                const playerCount = game.players?.length || 0;
+                const text = `LIVE GAME: (${game.gameVersion}) - ${game.gameName} - ${gameType} - Map: ${game.map}`;
+                
+                bannerText.textContent = text;
+                
+                // Move to next game
+                currentGameIndex = (currentGameIndex + 1) % games.length;
+            }
+        };
+
+        // Set initial text
+        updateBannerText();
+
+        // If multiple games, rotate every 10 seconds
+        if (games.length > 1) {
+            this.gameRotationInterval = setInterval(updateBannerText, 10000);
+        }
+    }
+}
+
+// Add the CSS styles
+const styles = `
+    #retro-tracker-container {
+        max-width: 800px;
+        margin: 20px auto 40px;
+        font-family: Arial, sans-serif;
+    }
+
+    .active-games-box {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .active-games-box h2 {
+        color: #881e8e;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .game-box {
+        background: rgba(240, 240, 240, 0.9);
+        border-radius: 4px;
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid rgba(136, 30, 142, 0.2);
+    }
+
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(136, 30, 142, 0.1);
+    }
+
+    .game-title {
+        font-size: 1.2em;
+        color: #881e8e;
+    }
+
+    .game-version {
+        font-size: 0.8em;
+        color: #666;
+        margin-left: 8px;
+    }
+
+    .game-info {
+        display: flex;
+        gap: 15px;
+        margin: 10px 0;
+        font-size: 0.9em;
+        color: #444;
+    }
+
+    .players-list {
+        display: grid;
+        gap: 8px;
+        margin: 15px 0;
+    }
+
+    .player {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .player:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .player-info {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .player-character {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .player-stats {
+        display: flex;
+        gap: 15px;
+    }
+
+    .player-score, .player-wins {
+        font-weight: bold;
+        color: #881e8e;
+    }
+
+    .game-footer {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(136, 30, 142, 0.1);
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    .loading, .no-games {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+
+    .error-message {
+        text-align: center;
+        color: #ff0000;
+        padding: 20px;
+        background: rgba(255, 0, 0, 0.1);
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
+// Initialize the monitor
+document.addEventListener('DOMContentLoaded', () => {
+    const monitor = new RetroTrackerMonitor();
+    if (window.location.pathname.endsWith('whosplaying.html')) {
+        monitor.initialize();
+    } else {
+        monitor.initializeBannerOnly();
+    }
+});

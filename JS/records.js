@@ -1,1 +1,1074 @@
-const a46D=a46d;(function(a,b){const z=a46d,c=a();while(!![]){try{const d=parseInt(z(0x220))/0x1*(parseInt(z(0x1d3))/0x2)+parseInt(z(0x226))/0x3+-parseInt(z(0x272))/0x4+-parseInt(z(0x1d1))/0x5+-parseInt(z(0x1f4))/0x6*(parseInt(z(0x210))/0x7)+parseInt(z(0x1cc))/0x8+parseInt(z(0x247))/0x9*(-parseInt(z(0x1db))/0xa);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a46c,0xdc200));const a46b=(function(){let a=!![];return function(b,c){const d=a?function(){const A=a46d;if(c){const e=c[A(0x254)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a46a=a46b(this,function(){const C=a46d,a=function(){const B=a46d;let f;try{f=Function(B(0x25f)+B(0x1c9)+');')();}catch(g){f=window;}return f;},b=a(),c=b[C(0x26d)]=b[C(0x26d)]||{},d=[C(0x1d9),'warn',C(0x25e),C(0x224),C(0x1f5),'table','trace'];for(let e=0x0;e<d[C(0x231)];e++){const f=a46b['constructor'][C(0x1f8)][C(0x22a)](a46b),g=d[e],h=c[g]||f;f['__proto__']=a46b['bind'](a46b),f[C(0x1fc)]=h[C(0x1fc)]['bind'](h),c[g]=f;}});a46a();import{collection,getDocs,query,orderBy,limit,where,startAfter}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a46d(a,b){const c=a46c();return a46d=function(d,e){d=d-0x1b0;let f=c[d];if(a46d['UExlrn']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a46d['hrQnjA']=g,a=arguments,a46d['UExlrn']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a46d['hrQnjA'](f),a[i]=f):f=j,f;},a46d(a,b);}function a46c(){const ad=['y2HHCKf0','DxnLCM5HBwu','yNv0Dg9U','BwfWtMfTzq','mtiXmZfuEgnsuK4','pgrPDIbJBgfZCZ0IBg9HzgLUzY1TC2CIpKvYCM9YigXVywrPBMCGCgXHEwvYCZWVzgL2pG','lxjHBMSIpG','iIbUB3qGzM91BMqU','zxjYB3i','8j+AGcbvBhrYys1VChrPBwL6zwqGCMvJB3jKCY5QCYbSB2fKzwqH','mJKWnti0nxbcChrYEG','cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjTyxaTC3rHDc1PDgvTiIb0AxrSzt0I','lNjLy29Yzhm','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IBwfWlw5HBwuIpG','yMLUza','ig1HDgnOzxm8l2rPDJ4kicaGicaGica','ihjLy29YzhmGzgf0yq','8j+tIIbgB3vUzca','C2nVCMveAwzMzxjLBNrPywW','DhjPBq','tM8GCgXHEwvYihn0yxrZigf2ywLSywjSzsb0BYbKAxnWBgf5ihjLy29YzhmU','BgvUz3rO','ywXS','zNvSBerHDgfmB2fKzwq','ihrVDgfS','CgXHEwvYu3rHDhm','4P2mievYCM9YigXVywrPBMCG','DMfSDwu','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNrPzxiTy291BNqIpGOGicaGicaGicaGicaGicaGicaGicaGica','zwXVuMf0Aw5N','z2v0qxr0CMLIDxrL','Dg9mB3DLCKnHC2u','4PYfifnPBxbSzsbTyxaGCxvLCNKGC3vJy2vZC2z1BdOG','CgfYzw50tM9Kzq','zgvMyxvSDa','D2fYBG','z2v0','ihn1AwnPzgvZigLUia','igfUzca','twfWihn0yxrZignVBNrHAw5LCIbUB3qGzM91BMqUieXVB2TPBMCGzM9YignVBNrHAw5LCNmUlI4','BwfWugXHEwvK','Bw9ZDc1RAwXSCW','Dg90ywXtDwLJAwrLCW','mtm1ndv2uKTcAg4','yxbWCM92zwrnyxrJAgvZrdi','y2XVBMvoB2rL','ig1HDgnOzxm8l3a+cIaGicaGicaGicaGicaGicaGicaGicaGidXWignSyxnZpsjLCNjVCI1TzxnZywDLiJ5dAgvJAYbJB25ZB2XLigzVCIbTyxrJAcbZDhj1y3r1CMuGzgvIDwCGAw5MBZWVCd4kicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGia','DgLTzxn0yw1W','DgHLBG','Cg9ZAxrPB24','DMfSDwvZ','pc9WpGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGia','pc9ZCgfUpGOGicaGicaGicaGicaGicaGicaGicaGica8C3bHBIbJBgfZCZ0IBwfWlwnVDw50iJ4','BwLU','D2LUCW','lNjLy29Yzc12ywX1zq','yxbWBhK','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNbSyxLLCI1Uyw1LiJ4','qxzHAwXHyMXLigzPzwXKCZO','8j+tPsbvC2LUzYbZAw1WBguGz2v0rg9JCYaOBM8GB3jKzxjcEsb0BYbHDM9PzcbPBMrLEcbPC3n1zxmPlI4U','C3vPy2LKzvjHDgu','z29Sza','pc9OmZ4kicaGicaGicaGicaGicaGidXWignSyxnZpsj0B3rHBc1TyxrJAgvZiJ5cyxnLzcbVBIa','ig1VzguUlI4','BwfWu3rHDhndAgfYDa','zM9VDgvYlxbSywnLAg9SzgvY','Aw5MBW','CMv0DxjUicHMDw5JDgLVBIGPia','lM1HCc1ZDgf0CY1JB250ywLUzxi','CMvTB3zL','zgf0yq','ig1HDgnOzxmGD2L0AcbTyxaGzgf0ysdIGkiG','CgXHEwvYCW','BwvZC2fNzq','CM91BMq','BgfZDc11CgrHDgvK','Dg9mB2nHBgveyxrLu3rYAw5N','Dgv4DenVBNrLBNq','jtWVC3bHBJ4kicaGicaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGica','4PYfifjLy29YzhmGBg9HzgvKihn1y2nLC3nMDwXSEse','C2LSDMvY','y29UC29Szq','zwXV','C2XPy2u','CxvLCNLtzwXLy3rVCKfSBa','Bg9ZC2vZ','nta4nJy2nhLdD29MDW','CxvLCNLtzwXLy3rVCG','lI4U','ihbSyxLLCG','yNjVBNPL','8j+uHcbmB2fKAw5Nia','A2rsyxrPBW','y2XPy2S','igLUia','CMvWBgfJzunOAwXK','AxnmB2fKAw5Ntw9Yzq','lxbSyxLLCNm','y2XHC3noyw1L','ihrPzxikicaGicaGicaGicaGicaGicaGica8l2rPDJ4','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iM1HCc1ZDgf0CY1OzwfKzxiIpGOGicaGicaGicaGicaGicaGpgGZpVcFL7RVUi8Gtw9ZDcbqBgf5zwqGtwfWCYaTia','AgfZ','CgXHEwvYu25HChnOB3qGBM90ihbYB3zPzgvKihrVihvWzgf0zvrVCfbSyxLLCNncEvrPzxi','CgfYzw50rwXLBwvUDa','Dg90ywXnyxrJAgvZ','tI9b','pgKGy2XHC3m9iMzHCYbMys1ZCgLUBMvYigzHlxnWAw4IpJWVAt4Gtg9HzgLUzYbJB21WBgv0zsbKyxrHC2v0lI4U','pgrPDIbJBgfZCZ0IBg9HzgLUzY1TC2CIpLbYB2nLC3nPBMCUlI48l2rPDJ4','8j+uHcbgzxrJAgLUzYbTyxrJAgvZigzVCIbTyxaGC3rHDhmGkhnLCgfYyxrLihf1zxj5ks4UlG','CgXHEwvYu25HChnOB3q','pc9OmZ4kicaGicaGicaGicaGicaGicaGicaGicaGphaGy2XHC3m9iMvYCM9Ylw1LC3nHz2uIpK5Vig1HCcbKyxrHigzVDw5KigLUia','ihvUAxf1zsbTyxbZpc9WpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBwfWlxn0yxrZlwXPC3qIpGOGicaGicaGia','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','rMLYC3qGBwf0y2GGzgf0ytO','y2fJAgu','mte3mZe0mZjrBhb6rLa','lI4Vsfrntc9UyxyUAhrTBa','D2LUBMvYu2nVCMu','Bg9Hzc1TB3jLlwj0BG','CMvKDwnL','ntq1mtaYnw1ZEM1cra','Bg9Zzxjty29Yzq','mtK0rhzOvNfA','Bg9ZzxjvC2vYBMfTzq','8j+tIIbqCM9JzxnZzwqG','pgrPDIbJBgfZCZ0IBg9HzgLUzY1TC2CIpK5VihbSyxLLCNmGAw4GDgHPCYb0AwvYpc9KAxy+','lNjLy29YzhmTz3jPza','D2LUBMvYvxnLCM5HBwu','Bg9N','z2v0rwXLBwvUDej5swq','mtyWwMnNvgPW','y2f0y2G','yxbWzw5Kq2HPBgq','8j+uJsbtyw1WBguGBwf0y2GGC3rYDwn0DxjLigzVCIbKzwj1z2DPBMC6','BwfW','Aw5Uzxjive1m','CMvQzwn0','C2L6zq','Dg9gAxHLza','zNjVBq','CgXHEwvYC0qY','BM93','yMvZDc13Aw5YyxrL','cIaGicaUBg9Hzc1TB3jLlwj0BIb7cIaGicaGicaGyMfJA2DYB3vUzdOGBgLUzwfYlwDYywrPzw50kdeZnwrLzYWGiZy3m2fInYWGiZLJmJDImcK7cIaGicaGicaGy29SB3i6ihDOAxrLoWOGicaGicaGigjVCMrLCJOGBM9UztSkicaGicaGicbWywrKAw5NoIaXnxb4idi1ChG7cIaGicaGicaGyM9YzgvYlxjHzgL1CZOGohb4oWOGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGicaGicbTyxjNAw46idiWChGGyxv0BZSkicaGicaGicbKAxnWBgf5oIbIBg9JAZSkicaGicaGicbMB250lxnPEMu6ide2ChG7cIaGicaGicaGzM9UDc13zwLNAhq6idyWmdSkicaGicaGicb0CMfUC2L0Aw9UoIbHBgWGmc4ZCYbLyxnLoWOGicaGicaGigjVEc1ZAgfKB3C6idaGnhb4ideYChGGCMDIysGXmdmSidu4lcaXodmSidaUmYK7cIaGicb9cIaGicakicaGic5SB2fKlw1VCMuTyNrUoMHVDMvYoM5VDcG6zgLZywjSzwqPihSkicaGicaGicb0CMfUC2zVCM06ihrYyw5ZBgf0zvKOltjWEcK7cIaGicaGicaGyM94lxnOywrVDZOGmca2ChGGmtzWEcbYz2jHkdeWmYWGntGSide4mYWGmc40ktSkicaGih0kicaGiaOGicaGlMXVywqTBw9Yzs1IDg46zgLZywjSzwqGEWOGicaGicaGig9WywnPDhK6idaUnZSkicaGicaGicbJDxjZB3i6ig5VDc1HBgXVD2vKoWOGicaGFqOGicaGcIaGicaUBg9Hzc1TB3jLlwj0BIbZBwfSBcb7cIaGicaGicaGzgLZCgXHEtOGyMXVy2S7cIaGicaGicaGzM9UDc1ZAxPLoIaXmNb4oWOGicaGicaGig1HCMDPBI10B3a6idvWEdSkicaGicaGicbVCgfJAxr5oIaWlJK7cIaGicb9cIaGicakicaGic5Wyxj0AwfSlwrHDgeTAw5KAwnHDg9YihSkicaGicaGicbIywnRz3jVDw5KoIbYz2jHkdi1nsWGmtKZlca3lcaWlJePoWOGicaGicaGigjVCMrLCJOGmxb4ihnVBgLKihjNyMeOmJu1lcaXotmSidCSidaUmYK7cIaGicaGicaGy29SB3i6icnMzMmXmdC7cIaGicaGicaGCgfKzgLUzZOGmtbWEcaXnxb4oWOGicaGicaGigjVCMrLCI1YywrPDxm6idzWEdSkicaGicaGicbTyxjNAw4TyM90Dg9ToIaYmhb4oWOGicaGicaGigzVBNqTC2L6ztOGmtrWEdSkicaGicaGicbKAxnWBgf5oIbMBgv4oWOGicaGicaGigfSAwDUlwL0zw1ZoIbJzw50zxi7cIaGicaGicaGz2fWoIa4ChG7cIaGicb9cIaGicakicaGic5Wyxj0AwfSlwrHDgeTAw5KAwnHDg9YigKGEWOGicaGicaGignVBg9YoIaJzMzJmta3oWOGicaGFqOGicaGcIaGicaVkIbfBMHHBMnLzcbnyxaGu3rHDhmGu3r5BgLUzYaQlWOGicaGlM1HCc1ZDgf0CY1OzwfKzxiGEWOGicaGicaGig1HCMDPBI1IB3r0B206idiWChG7cIaGicaGicaGDgv4Dc1HBgLNBJOGy2vUDgvYoWOGicaGFqOGicaGcIaGicaUBwfWlxn0yxrZlwHLywrLCIbOmYb7cIaGicaGicaGy29SB3i6icmZmZm7cIaGicaGicaGBwfYz2LUlwjVDhrVBtOGohb4oWOGicaGicaGigzVBNqTC2L6ztOGms40zw07cIaGicb9cIaGicakicaGic5TyxaTC3rHDhmTAgvHzgvYic50B3rHBc1TyxrJAgvZihSkicaGicaGicbJB2XVCJOGiZy2nJSkicaGicaGicbMB250lxnPEMu6idaUowvToWOGicaGicaGig1HCMDPBJOGmdSkicaGih0kicaGiaOGicaGlM1HCc1ZDgf0CY1SAxn0ihSkicaGicaGicbKAxnWBgf5oIbMBgv4oWOGicaGicaGigzSzxGTzgLYzwn0Aw9UoIbJB2X1Bw47cIaGicaGicaGz2fWoIaXmNb4oWOGicaGFqOGicaGcIaGicaUBwfWlxn0yxqTAxrLBsb7cIaGicaGicaGyMfJA2DYB3vUzdOGCMDIysGYntuSidi1nsWGmJu1lcaWlJGPoWOGicaGicaGigjVCMrLCJOGmxb4ihnVBgLKihjNyMeOmcWGmcWGmcWGmc4XktSkicaGicaGicbIB3jKzxiTCMfKAxvZoIa4ChG7cIaGicaGicaGCgfKzgLUzZOGmtjWEdSkicaGicaGicb0CMfUC2L0Aw9UoIbHBgWGmc4YCYbLyxnLoWOGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGih0kicaGiaOGicaGlM1HCc1ZDgf0lwL0zw06Ag92zxiGEWOGicaGicaGigjHy2TNCM91BMq6ihjNyMeOmJu1lcaYntuSidi1nsWGmc45nsK7cIaGicaGicaGDhjHBNnMB3jToIb0CMfUC2XHDgvzkc0XChGPoWOGicaGicaGigjVEc1ZAgfKB3C6idaGnhb4ideYChGGCMDIysGWlcaWlcaWlcaWlJePoWOGicaGFqOGicaGcIaGicaUBwfWlwLUzM8GEWOGicaGicaGigrPC3bSyxK6igzSzxG7cIaGicaGicaGANvZDgLMEs1JB250zw50oIbZCgfJzs1Izxr3zwvUoWOGicaGicaGigfSAwDUlwL0zw1ZoIbJzw50zxi7cIaGicaGicaGBwfYz2LUlwjVDhrVBtOGohb4oWOGicaGFqOGicaGcIaGicaUBwfWlxjHBMSGEWOGicaGicaGigzVBNqTD2vPz2H0oIbIB2XKoWOGicaGicaGignVBg9YoIaJnJCZywi3oWOGicaGicaGig1PBI13Awr0AdOGmZbWEdSkicaGih0kicaGiaOGicaGlM1HCc1Uyw1LihSkicaGicaGicbMB250lxDLAwDODdOGnJaWoWOGicaGicaGignVBg9YoIaJmZmZoWOGicaGicaGigzSzxG6ide7cIaGicaGicaGBwfYz2LUlwXLzNq6ideYChG7cIaGicb9cIaGicakicaGic5TyxaTy291BNqGEWOGicaGicaGignVBg9YoIaJnJy2oWOGicaGicaGigzVBNqTC2L6ztOGmc45zw07cIaGicb9cIaGicakicaGic5TyxaTyMfYlwnVBNrHAw5LCIb7cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbHBgLNBI1PDgvTCZOGy2vUDgvYoWOGicaGicaGigDHCdOGmtbWEdSkicaGih0kicaGiaOGicaGlM1HCc1IyxiGEWOGicaGicaGigzSzxG6ide7cIaGicaGicaGAgvPz2H0oIa2ChG7cIaGicaGicaGyMfJA2DYB3vUzdOGBgLUzwfYlwDYywrPzw50kdKWzgvNlcaJnJCZywi3lcaJowmYn2iWktSkicaGicaGicbIB3jKzxiTCMfKAxvZoIaZChG7cIaGicaGicaGDhjHBNnPDgLVBJOGD2LKDgGGmc4ZCYbLyxnLoWOGicaGFqOGicaGcIaGicaUBwfWlxbLCMnLBNrHz2uGEWOGicaGicaGigzVBNqTC2L6ztOGmc44zw07cIaGicaGicaGy29SB3i6icm2nJy7cIaGicaGicaGBwLUlxDPzhrOoIaZnxb4oWOGicaGicaGihrLEhqTywXPz246ihjPz2H0oWOGicaGFqOGicaGcIaGicaUBwfWlxn0yxrZlwzVB3rLCIb7cIaGicaGicaGBwfYz2LUlxrVCdOGmtvWEdSkicaGicaGicb0zxH0lwfSAwDUoIbJzw50zxi7cIaGicaGicaGCgfKzgLUzY10B3a6ide1ChG7cIaGicaGicaGyM9YzgvYlxrVCdOGmxb4ihnVBgLKihjNyMeOmcWGmcWGmcWGmc4XktSkicaGih0kicaGiaOGicaGlNjLBwfPBMLUzY1TyxbZihSkicaGicaGicbJB2XVCJOGiZy2nJSkicaGicaGicbMB250lxnPEMu6idaUowvToWOGicaGicaGig1HCMDPBJOGmdSkicaGicaGicbMB250lxn0EwXLoIbPDgfSAwm7cIaGicb9cIaGicakicaGic5LCNjVCI1TzxnZywDLihSkicaGicaGicbJB2XVCJOGi2rJmZu0ntSkicaGicaGicbMB250lxn0EwXLoIbPDgfSAwm7cIaGicaGicaGDgv4Dc1HBgLNBJOGy2vUDgvYoWOGicaGicaGihbHzgrPBMC6idiWChG7cIaGicb9cG','cIaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTAw5MBY1JAxjJBguIpJWVAt4kicaGicaGicaGicaGu2HVD2LUzYbYzxn1BhrZigzYB20GDg9Wia','lMnOyxj0lwnVBNrHAw5LCG','ig1HDgnOzxm8l3nWyw4+cIaGicaGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IBwfWlwjHCI1JB250ywLUzxiIpGOGicaGicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjTyxaTyMfYiIbZDhLSzt0ID2LKDgG6ia','lNrPzxiTCgXHEwvYCW','y3jLyxrLrwXLBwvUDa','4PYfifvZAw5NignHy2HLzcbTyxrJAcbKyxrHigzVCIbTyxaGC3rHDhmGkgzYB20GBg9HzfjLy29YzhmP','u3DPDgnOAw5NihrVia','D2LUBMvYu3vPy2LKzxm','zM9YrwfJAa','yxbWCM92zwrnyxrJAgvZ','ywrKrxzLBNrmAxn0zw5LCG','mtK0mZGWohD2D3nTAa','zxHJzxb0Aw9U','C3rYAw5NAwz5','ihbSyxLLCNmGzNjVBsbVChrPBwL6zwqGzgf0yxnLDa','ChjVDg90ExbL','4PQG77Ipie5Vig1HChmGzM91BMqGAw4GBwf0y2GGzgf0yq','y2XHC3nmAxn0','zgf0ys1Nyw1L','Dg9tDhjPBMC','C29Tzq','pgrPDIbJBgfZCZ0IBg9HzgLUzY1TC2CIpKXVywrPBMCGCgXHEwvYCY4UlJWVzgL2pG','rM9VDgvYigzLDgnOigzHAwXLza','BMf2lxbSywnLAg9SzgvY','Bgv2zwW','C29YDa','Dg9ju09tDhjPBMC','yMvZDc1LBg8','qxzHAwXHyMXLignVBNrHAw5LCNm6','C2v0','ChvZAa','pc9ZCgfUpIa8C3bHBIbJBgfZCZ0ICMvJB3jKlxn0yxqIpIG','y3vYCMvUDeDHBwvnB2rL','D2LUuMf0zq','ig1HDgnOzxmUlI4','tM8Gzgf0ysbHDMfPBgfIBgu','zMLSDgvY','Aw5Zzxj0qMvMB3jL','tg9HzgLUzY4UlG','n1bABg5Jza','Dgv4Da','Bw9ZDc1TyxrJAgvZ','Bwf0y2HtBMfWC2HVDa','zw50CMLLCW','y29UDgfPBNm','cIaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTzxHWyw5KlwfYCM93CY1HBhqIpJWVAt4kicaGicaGicaGicaGtg9HzcbdB21WBgv0zsbeyxrHC2v0icHbBgWGugXHEwvYCYaMie1HDgnOzxmPcIaGicaGicaGicaGidXZBwfSBd5nyxKGDgfRzsbSB25NzxiGyNv0ihnOB3DZignVBxbSzxrLihn0yxrPC3rPy3m8l3nTywXSpGOGicaGicaGia','Dg9WugXHEwvY','ig1HDgnOzxmGD2L0AcbTyxaGzgf0ysbVDxqGB2yG','ywrK','ig1VCMuGBwfWCYb3AxrOia','ywn0AxzL'];a46c=function(){return ad;};return a46c();}import{db}from'./firebase-config.js';const MIN_MATCHES_REQUIREMENT=0xa,CACHE_DURATION_MS=0x1e*0x3c*0x3e8,MAX_PLAYERS_PER_BATCH=0x32,MAX_MATCHES_PER_BATCH=0x64,state={'currentGameMode':'D1','cache':{'D1':{'playerStats':null,'playerSnapshot':null,'matchSnapshot':null,'timestamp':0x0,'fullDataLoaded':![]},'D2':{'playerStats':null,'playerSnapshot':null,'matchSnapshot':null,'timestamp':0x0,'fullDataLoaded':![]}},'isLoadingMore':![]};let mapChart=null;console['log'](a46D(0x225)),console['log']('📊\x20This\x20page\x20now\x20uses\x20~50\x20reads\x20instead\x20of\x201000+!');function getPlayerTier(a){const E=a46D;if(a===undefined||a===null)return'default';const b=Number(a);if(isNaN(b))return'default';if(b>=0x7d0)return'emerald';if(b>=0x708)return E(0x259);if(b>=0x640)return'silver';if(b>=0x578)return E(0x1b3);return E(0x23e);}function updateRecordCard(a,b,c='',d=![]){const F=a46D,e=document['getElementById'](a);if(!e){console[F(0x23f)]('Element\x20with\x20ID\x20\x22'+a+F(0x223));return;}const f=getPlayerTier(b['elo']);let g=b['value'];d&&b['value']>0x0&&(g='+'+b['value']),e['innerHTML']='<span\x20class=\x22player-name\x20'+f+F(0x222)+b[F(0x21d)]+F(0x208)+g+c+')</span>';}async function loadRecords(){const G=a46D;try{console[G(0x1d9)](G(0x1b4)+state[G(0x209)]+'\x20records...'),document[G(0x270)]('.record-value')[G(0x1f1)](k=>k[G(0x269)]=G(0x20f)),document['querySelectorAll']('.tier-players')['forEach'](k=>k[G(0x1e0)]=G(0x1fe));const a=state[G(0x209)],b=a==='D1'?'players':G(0x1e5),c=a==='D1'?'approvedMatches':G(0x248),d=Date['now'](),e=state[G(0x1cb)][a];if(e['playerStats']&&e['playerSnapshot']&&d-e[G(0x24b)]<CACHE_DURATION_MS){console[G(0x1d9)]('✅\x20Using\x20cached\x20'+a+G(0x22c)),updateRecordDisplay(e['playerStats']),await updateTopPlayersByTier(e[G(0x1c6)]),updateSummaryStats(e['playerSnapshot']);return;}console[G(0x1d9)]('📥\x20Fetching\x20ALL\x20data\x20from\x20'+b+G(0x242)+c+G(0x1b1));const f=collection(db,b),g=collection(db,c),[h,i]=await Promise['all']([getDocs(f),getDocs(g)]);console['log']('📊\x20Loaded:\x20'+h['size']+'\x20players,\x20'+i[G(0x1e2)]+'\x20matches');const j=await calculateOptimizedStats(h,i,a);console[G(0x1d9)]('📊\x20Calculated\x20stats\x20for\x20'+j[G(0x1e2)]+'\x20players'),state['cache'][a]={'playerStats':j,'playerSnapshot':h,'matchSnapshot':i,'timestamp':d,'fullDataLoaded':!![]},updateRecordDisplay(j),await updateTopPlayersByTier(h),updateSummaryStats(h),console[G(0x1d9)](G(0x26b));}catch(k){console[G(0x224)](G(0x236)+state['currentGameMode']+'\x20records:',k),document['querySelectorAll'](G(0x253))[G(0x1f1)](l=>l[G(0x269)]='Error'),document['querySelectorAll']('.tier-players')['forEach'](l=>{l['innerHTML']='<div\x20class=\x22loading-msg\x22>Error\x20loading\x20data</div>';});}}async function calculateOptimizedStats(a,b,c){const H=a46D,d=new Map(),e=new Map();return b[H(0x1f1)](f=>{const I=H,g=f[I(0x262)]();if(!g[I(0x1d8)]||!g[I(0x1d4)])return;!e['has'](g[I(0x1d8)])&&e['set'](g['winnerUsername'],{'wins':[],'losses':[]}),!e['has'](g['loserUsername'])&&e['set'](g['loserUsername'],{'wins':[],'losses':[]}),e['get'](g['winnerUsername'])['wins'][I(0x207)](g),e['get'](g['loserUsername'])['losses']['push'](g);}),a['forEach'](f=>{const J=H,g=f[J(0x262)](),h=g[J(0x21d)];if(!h)return;const i=e['get'](h)||{'wins':[],'losses':[]},j=i['wins'][J(0x231)],k=i[J(0x271)]['length'],l=j+k;let m=0x0,n=0x0,o=0x0,p=0x0;i[J(0x252)]['forEach'](s=>{const K=J,t=parseInt(s['winnerScore'])||0x0,u=parseInt(s[K(0x1d2)])||0x0;m+=t,n+=u,o+=parseInt(s['winnerSuicides'])||0x0,p+=t-u;}),i[J(0x271)][J(0x1f1)](s=>{const L=J,t=parseInt(s['winnerScore'])||0x0,u=parseInt(s[L(0x1d2)])||0x0;m+=u,n+=t,o+=parseInt(s['loserSuicides'])||0x0,p-=t-u;});const q=n>0x0?parseFloat((m/n)['toFixed'](0x2)):m,r=l>0x0?parseFloat((j/l*0x64)[J(0x1e3)](0x1)):0x0;d[J(0x206)](h,{'wins':j,'losses':k,'totalMatches':l,'kdRatio':q,'winRate':r,'totalKills':m,'totalDeaths':n,'totalSuicides':o,'scoreDifferential':p,'eloRating':g[J(0x239)]||0x4b0,'position':g[J(0x24d)],'isPartialData':!![]});}),console[H(0x1d9)]('📊\x20Calculated\x20stats\x20for\x20'+d[H(0x1e2)]+H(0x1f7)),d;}function addLoadMoreOption(a){const M=a46D,b=state['cache'][a];if(b[M(0x233)])return;const c=document[M(0x1b0)](M(0x1d7))||document['querySelector'](M(0x228));if(c&&!document['getElementById']('load-more-btn')){const d=document[M(0x1ed)](M(0x21e));d['id']=M(0x1cf),d[M(0x1bb)]=M(0x1cf),d[M(0x1e0)]=M(0x216),d['addEventListener'](M(0x1b6),()=>loadCompleteDataset(a)),c[M(0x1dd)](d);}}async function loadCompleteDataset(a){const N=a46D;if(state[N(0x1b9)])return;state[N(0x1b9)]=!![];const b=document['getElementById']('load-more-btn');b&&(b['innerHTML']=N(0x1c3),b['disabled']=!![]);try{console[N(0x1d9)]('🔄\x20Loading\x20COMPLETE\x20dataset\x20(this\x20will\x20use\x20more\x20reads)...');const c=a==='D1'?'players':'playersD2',d=a==='D1'?N(0x1f2):N(0x248),e=collection(db,c),f=collection(db,d),[g,h]=await Promise[N(0x232)]([getDocs(e),getDocs(f)]);console[N(0x1d9)]('📊\x20Complete\x20dataset:\x20'+g['size']+'\x20players,\x20'+h['size']+'\x20matches');const i=await calculateCompleteStats(g,h);state[N(0x1cb)][a]={'playerStats':i,'playerSnapshot':g,'matchSnapshot':h,'timestamp':Date[N(0x1e6)](),'fullDataLoaded':!![]},updateRecordDisplay(i),await updateTopPlayersByTier(g),updateSummaryStats(g),b&&b['remove'](),console['log']('✅\x20Complete\x20dataset\x20loaded\x20successfully!');}catch(j){console[N(0x224)]('Error\x20loading\x20complete\x20dataset:',j),b&&(b[N(0x1e0)]='Error\x20loading\x20complete\x20data\x20-\x20Click\x20to\x20retry',b['disabled']=![]);}finally{state['isLoadingMore']=![];}}async function calculateCompleteStats(a,b){const O=a46D,c=new Map(),d=new Map();return b[O(0x1f1)](e=>{const P=O,f=e['data']();if(!f['winnerUsername']||!f[P(0x1d4)])return;!d[P(0x1be)](f[P(0x1d8)])&&d['set'](f['winnerUsername'],{'wins':[],'losses':[]}),!d[P(0x1be)](f['loserUsername'])&&d['set'](f[P(0x1d4)],{'wins':[],'losses':[]}),d['get'](f[P(0x1d8)])[P(0x252)]['push'](f),d['get'](f['loserUsername'])[P(0x271)][P(0x207)](f);}),a[O(0x1f1)](e=>{const Q=O,f=e['data'](),g=f['username'];if(!g)return;const h=d['get'](g)||{'wins':[],'losses':[]},i=h['wins']['length'],j=h[Q(0x271)]['length'],k=i+j;let l=0x0,m=0x0,n=0x0,o=0x0;h['wins']['forEach'](r=>{const R=Q,s=parseInt(r['winnerScore'])||0x0,t=parseInt(r[R(0x1d2)])||0x0;l+=s,m+=t,n+=parseInt(r[R(0x1f0)])||0x0,o+=s-t;}),h[Q(0x271)][Q(0x1f1)](r=>{const S=Q,s=parseInt(r[S(0x1ce)])||0x0,t=parseInt(r['loserScore'])||0x0;l+=t,m+=s,n+=parseInt(r['loserSuicides'])||0x0,o-=s-t;});const p=m>0x0?parseFloat((l/m)[Q(0x1e3)](0x2)):l,q=k>0x0?parseFloat((i/k*0x64)['toFixed'](0x1)):0x0;c[Q(0x206)](g,{'wins':i,'losses':j,'totalMatches':k,'kdRatio':p,'winRate':q,'totalKills':l,'totalDeaths':m,'totalSuicides':n,'scoreDifferential':o,'eloRating':f[Q(0x239)]||0x4b0,'position':f[Q(0x24d)],'isPartialData':![]});}),c;}function updateRecordDisplay(a){const T=a46D;if(!a||a['size']===0x0){console['warn'](T(0x230)),document['querySelectorAll']('.record-value')[T(0x1f1)](n=>n['textContent']=T(0x1c2));return;}let b={'username':'N/A','value':0x0,'elo':0x0},c={'username':T(0x1c2),'value':0x0,'elo':0x0},d={'username':'N/A','value':0x0,'elo':0x0},e={'username':T(0x1c2),'value':0x0,'elo':0x0},f={'username':T(0x1c2),'value':-Infinity,'elo':0x0},g={'username':T(0x1c2),'value':0x0,'elo':0x0},h=null,i=Infinity,j={'username':'N/A','value':0x0,'elo':0x0},k={'username':'N/A','value':0x0,'elo':0x0};for(const [n,o]of a){const p=o[T(0x239)]||0x0;if(o['wins']>b['value'])b={'username':n,'value':o[T(0x252)],'elo':p};if(o['totalMatches']>=MIN_MATCHES_REQUIREMENT&&o['winRate']>c[T(0x237)])c={'username':n,'value':o[T(0x20a)],'elo':p};if(o[T(0x1c1)]>=MIN_MATCHES_REQUIREMENT&&o[T(0x1b5)]>d[T(0x237)])d={'username':n,'value':o[T(0x1b5)],'elo':p};if(o[T(0x1c1)]>e[T(0x237)])e={'username':n,'value':o[T(0x1c1)],'elo':p};if(o['totalMatches']>=MIN_MATCHES_REQUIREMENT&&o[T(0x22e)]>f['value'])f={'username':n,'value':o['scoreDifferential'],'elo':p};if(o[T(0x271)]>g['value'])g={'username':n,'value':o['losses'],'elo':p};if(o['totalMatches']>=MIN_MATCHES_REQUIREMENT&&o['totalSuicides']>=0x0){const q=o[T(0x246)]/o[T(0x1c1)]*0x64;q<i&&(i=q,h={'username':n,'suicideRate':q,'totalSuicides':o[T(0x246)],'totalMatches':o['totalMatches'],'elo':p});}if(o['totalKills']>j[T(0x237)])j={'username':n,'value':o['totalKills'],'elo':p};if(o['eloRating']>k[T(0x237)])k={'username':n,'value':Math[T(0x266)](o[T(0x239)]),'elo':p};}updateRecordCard('most-wins',b),updateRecordCard(T(0x1e7),c,'%'),updateRecordCard('best-kd',d),updateRecordCard(T(0x212),e),updateRecordCard('best-differential',f,'',!![]),updateRecordCard('most-losses',g);const l=document['getElementById']('least-suicides');if(h&&l){const r=getPlayerTier(h[T(0x26e)]);l[T(0x1e0)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-name\x20'+r+T(0x222)+h[T(0x21d)]+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22record-stat\x22>('+h[T(0x258)][T(0x1e3)](0x2)+'%)</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22record-detail\x22>'+h['totalSuicides']+'\x20suicides\x20in\x20'+h['totalMatches']+T(0x22b);}else l&&(l[T(0x269)]=T(0x20c));updateRecordCard(T(0x245),j),updateRecordCard(T(0x204),k);const m=Array['from'](a[T(0x24e)]())[T(0x1fd)](s=>s['isPartialData']);m&&addPartialDataIndicator(),updateHiddenStatsDiv(a);}function addPartialDataIndicator(){const U=a46D,a=document['querySelector'](U(0x1d7))||document['querySelector']('.records');if(a&&!document['querySelector']('.partial-data-indicator')){const b=document['createElement']('div');b['className']='partial-data-indicator',b[U(0x1e0)]=U(0x1e9)+MAX_PLAYERS_PER_BATCH+'\x20players\x20and\x20recent\x20'+MAX_MATCHES_PER_BATCH+'\x20matches\x0a\x20\x20\x20\x20\x20\x20\x20\x20',a[U(0x20e)](b,a['firstChild']);}}async function loadMapStats(){const V=a46D;try{console['log']('🔄\x20Loading\x20map\x20stats\x20for\x20'+state[V(0x209)]+V(0x1b1));const a=state[V(0x209)],b=state['cache'][a];let c;if(b[V(0x213)]&&Date['now']()-b['timestamp']<CACHE_DURATION_MS)console[V(0x1d9)](V(0x1ee)),c=b[V(0x213)];else{console[V(0x1d9)](V(0x1c5));const l=a==='D1'?'approvedMatches':V(0x248),m=collection(db,l);console[V(0x1d9)](V(0x257)),c=await getDocs(m),console['log'](V(0x23c)+c[V(0x1e2)]+'\x20matches');}console['log']('📊\x20Processing\x20map\x20stats\x20from\x20'+c[V(0x1e2)]+V(0x20b));const d=new Map(),e=new Map();let f=0x0;c[V(0x1f1)](n=>{const W=V,o=n['data'](),p=o[W(0x244)]||o['map']||o[W(0x21f)]||o[W(0x201)];if(p&&typeof p==='string'&&p['trim']()[W(0x231)]>0x0){const q=p[W(0x23b)]()[W(0x22f)]();d[W(0x206)](q,(d[W(0x240)](q)||0x0)+0x1),!e[W(0x1be)](q)&&e[W(0x206)](q,{}),e['get'](q)[p]=(e[W(0x240)](q)[p]||0x0)+0x1,f++;}}),console[V(0x1d9)](V(0x1d5)+f+V(0x218)+c['size']+V(0x234)),console[V(0x1d9)](V(0x22d)+d['size']+'\x20unique\x20maps');if(d['size']===0x0){console[V(0x23f)](V(0x1f9));c['size']>0x0&&(console[V(0x1d9)](V(0x1de)),c['forEach']((o,p)=>{const X=V;if(p===0x0){const q=o[X(0x262)]();console[X(0x1d9)](X(0x1ca),q),console[X(0x1d9)](X(0x256),Object['keys'](q));}}));const n=document[V(0x1da)]('mapStatsChart')?.[V(0x1c0)]||document['querySelector']('.chart-container')||document[V(0x1b0)]('.map-stats-container');n&&(n['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22map-stats-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3>Most\x20Played\x20Maps\x20-\x20'+state['currentGameMode']+V(0x1c7)+c[V(0x1e2)]+V(0x24a));return;}const g=Array[V(0x1e4)](d['entries']())['sort']((o,p)=>p[0x1]-o[0x1])[V(0x26f)](0x0,0xf),h=g[V(0x231)]>0x0?g[0x0][0x1]:0x1,i=c['size'],j=document[V(0x1da)]('mapStatsChart')?.['parentElement']||document['querySelector'](V(0x1ea))||document['querySelector'](V(0x260));if(!j){console['warn'](V(0x243)),console['log'](V(0x205),{'mapStatsChart':!!document['getElementById']('mapStatsChart'),'chartContainer':!!document[V(0x1b0)]('.chart-container'),'mapStatsContainer':!!document[V(0x1b0)](V(0x260))});return;}let k=V(0x1bd)+state[V(0x209)]+V(0x25a)+f+V(0x263)+d['size']+V(0x1c8);g[V(0x1f1)](([o,p],q)=>{const Y=V,r=e[Y(0x240)](o);let s=o,t=0x0;for(const [x,y]of Object[Y(0x214)](r)){y>t&&(t=y,s=x);}const u=Math['round'](p/h*0x64),v=Math['round'](p/f*0x64),w=q+0x1;k+=Y(0x227)+s+':\x20'+p+'\x20matches\x20('+v+'%)\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22map-info\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22map-rank\x22>#'+w+Y(0x229)+s+Y(0x250)+p+Y(0x1eb)+u+'%\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22map-percentage\x22>'+v+Y(0x26a);}),k+='</div>';if(d['size']>0xf){const o=d[V(0x1e2)]-0xf,p=Array[V(0x1e4)](d[V(0x24e)]())['slice'](0xf)['reduce']((q,r)=>q+r,0x0);k+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22map-stats-footer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22remaining-maps\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20+\x20'+o+V(0x21a)+p+'\x20total\x20matches\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';}j['innerHTML']=k,console[V(0x1d9)]('✅\x20Map\x20stats\x20displayed:\x20'+g['length']+'\x20maps\x20shown');}catch(q){console[V(0x224)](V(0x236)+state['currentGameMode']+'\x20map\x20statistics:',q);const r=document[V(0x1da)](V(0x25c))?.[V(0x1c0)]||document[V(0x1b0)](V(0x1ea));r&&(r['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22map-stats-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3>Most\x20Played\x20Maps\x20-\x20'+state['currentGameMode']+'</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p\x20class=\x22error-message\x22>Error\x20loading\x20map\x20statistics:\x20'+q[V(0x265)]+V(0x24f));}}async function updateTopPlayersByTier(a){const Z=a46D;if(!a){console[Z(0x224)](Z(0x1bf));try{const b=state['currentGameMode']==='D1'?'players':'playersD2';a=await getDocs(collection(db,b));}catch(c){console[Z(0x224)]('Error\x20fetching\x20players\x20for\x20tiers:\x20'+c),document['querySelectorAll']('.tier-players')[Z(0x1f1)](d=>d[Z(0x1e0)]=Z(0x221));return;}}try{document[Z(0x270)](Z(0x1ec))[Z(0x1f1)](e=>e['innerHTML']=Z(0x1c4));const d={'emerald':{'min':0x7d0,'players':[]},'gold':{'min':0x708,'players':[]},'silver':{'min':0x640,'players':[]},'bronze':{'min':0x578,'players':[]}};a['forEach'](e=>{const a0=Z,f=e['data']();if(!f[a0(0x21d)])return;const g=f['eloRating']||0x4b0,h={'username':f['username'],'elo':g,'position':f[a0(0x24d)]||0x3e7};if(g>=d['emerald']['min'])d['emerald'][a0(0x264)]['push'](h);else{if(g>=d[a0(0x259)]['min'])d['gold']['players'][a0(0x207)](h);else{if(g>=d[a0(0x26c)][a0(0x251)])d['silver'][a0(0x264)][a0(0x207)](h);else{if(g>=d['bronze'][a0(0x251)])d['bronze']['players'][a0(0x207)](h);}}}});for(const e in d){const f=d[e];f[Z(0x264)]['length']>0x0?(f[Z(0x264)]['sort']((h,i)=>{const a1=Z,j=h['position']===0x3e7?Infinity:h['position'],k=i['position']===0x3e7?Infinity:i[a1(0x24d)];if(j!==k)return j-k;return i['elo']-h['elo'];}),f['topPlayer']=f['players'][0x0]):f[Z(0x217)]=null;const g=document['getElementById'](e+Z(0x1ba));if(!g)continue;if(!f['topPlayer'])g[Z(0x1e0)]=Z(0x1d6);else{const h=f[Z(0x217)],i=h['position']&&h['position']<0x3e7?h['position']:0x1;g[Z(0x1e0)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tier-player\x20top-player\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-rank\x22>#'+i+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-name\x22>'+h[Z(0x21d)]+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-elo\x22>'+Math[Z(0x266)](h['elo'])+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22player-badge\x22>Best\x20'+(e[Z(0x21c)](0x0)['toUpperCase']()+e[Z(0x26f)](0x1))+Z(0x238)+f['players'][Z(0x231)]+Z(0x1b2)+(f['players'][Z(0x231)]!==0x1?'s':'')+Z(0x1b7)+state['currentGameMode']+'\x20'+e+Z(0x1bc);}}}catch(j){console[Z(0x224)]('Error\x20updating\x20top\x20players\x20by\x20tier:\x20'+j),document[Z(0x270)](Z(0x1ec))[Z(0x1f1)](k=>k['innerHTML']='<div\x20class=\x22loading-msg\x22>Error\x20loading\x20players</div>');}}function updateSummaryStats(a){const a2=a46D;if(!a)return;const b=a[a2(0x1e2)],c=a['docs'][a2(0x20d)](h=>h['data']()[a2(0x21b)]!==![])[a2(0x231)],d=document['getElementById']('total-matches'),e=document[a2(0x1da)]('total-players'),f=document[a2(0x1da)](a2(0x267)),g=state['cache'][state['currentGameMode']]?.[a2(0x235)];if(g){const h=Array[a2(0x1e4)](g[a2(0x24e)]())['reduce']((i,j)=>i+j[a2(0x1c1)],0x0)/0x2;if(d)d[a2(0x269)]=Math['round'](h);}else{if(d)d[a2(0x269)]=a2(0x1c2);}if(e)e[a2(0x269)]=c;if(f)f['textContent']=new Date()[a2(0x268)]();}function updateHiddenStatsDiv(a){const a3=a46D;let b=document[a3(0x1da)]('records-stats');!b&&(b=document['createElement']('div'),b['id']='records-stats',b['style']['display']='none',document['body']['appendChild'](b));const c=(e,f=()=>!![],g,h=e)=>Array['from'](a[a3(0x214)]())['filter'](f)[a3(0x202)](g)[a3(0x26f)](0x0,0x3)[a3(0x1df)](([i,j])=>({'name':i,[h]:j[h]})),d={'mode':state['currentGameMode'],'timestamp':new Date()[a3(0x203)](),'records':{'mostWins':c('wins',()=>!![],(e,f)=>f[0x1]['wins']-e[0x1][a3(0x252)]),'bestWinRate':c(a3(0x20a),([e,f])=>f[a3(0x1c1)]>=MIN_MATCHES_REQUIREMENT,(e,f)=>f[0x1][a3(0x20a)]-e[0x1][a3(0x20a)]),'bestKD':c('kdRatio',([e,f])=>f[a3(0x1c1)]>=MIN_MATCHES_REQUIREMENT,(e,f)=>f[0x1]['kdRatio']-e[0x1]['kdRatio']),'mostMatches':c('totalMatches',()=>!![],(e,f)=>f[0x1]['totalMatches']-e[0x1][a3(0x1c1)])}};b['textContent']=JSON[a3(0x1f6)](d,null,0x2);}function setupGameModeToggle(){const a4=a46D,a=document[a4(0x270)]('.toggle-btn');a['forEach'](b=>{const a5=a4,c=b[a5(0x249)](!![]);b[a5(0x23d)][a5(0x1b8)](c,b),c[a5(0x1f3)]('click',function(){const a6=a5;if(this['classList'][a6(0x215)]('active'))return;const d=this[a6(0x23a)](a6(0x1fb))['toUpperCase']();console[a6(0x1d9)](a6(0x1ef)+d+a6(0x25b)),document[a6(0x270)]('.toggle-btn')[a6(0x1f1)](f=>f[a6(0x1fa)][a6(0x261)]('active')),this['classList'][a6(0x219)]('active'),state['currentGameMode']=d;const e=document['getElementById'](a6(0x1cf));if(e)e['remove']();loadRecords(),loadMapStats();});});}const style=document['createElement']('style');style[a46D(0x269)]=a46D(0x1e8),document['head']['appendChild'](style),document['addEventListener']('DOMContentLoaded',()=>{const a7=a46D;Promise['all']([fetch(a7(0x1cd))['then'](a=>a['ok']?a['text']():Promise[a7(0x1e1)]('Nav\x20fetch\x20failed')),fetch('../HTML/footer.html')['then'](a=>a['ok']?a[a7(0x211)]():Promise[a7(0x1e1)](a7(0x1ff)))])[a7(0x24c)](([a,b])=>{const a8=a7,c=document['getElementById'](a8(0x200)),d=document['getElementById'](a8(0x25d));if(c)c['innerHTML']=a;if(d)d[a8(0x1e0)]=b;})[a7(0x1dc)](a=>{const a9=a7;console[a9(0x224)]('Error\x20loading\x20nav\x20or\x20footer:',a);}),loadRecords(),loadMapStats(),setupGameModeToggle();});function calculatePlayerRecords(a,b){const aa=a46D;let c=null,d=Infinity;b[aa(0x1f1)](f=>{const ab=aa,g=a[ab(0x20d)](j=>j[ab(0x1d8)]===f['username']||j[ab(0x1d4)]===f['username']);if(g['length']<0x5)return;const h=g[ab(0x1d0)]((j,k)=>{const ac=ab;return k[ac(0x1d8)]===f['username']?j+(k['winnerSuicides']||0x0):j+(k['loserSuicides']||0x0);},0x0),i=h/g[ab(0x231)]*0x64;i<d&&(d=i,c={'player':f['username'],'suicideRate':i,'totalSuicides':h,'totalMatches':g[ab(0x231)]});});const e=document['getElementById']('least-suicides');c?e[aa(0x1e0)]=aa(0x255)+c['player']+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22record-stat\x22>'+c['suicideRate']['toFixed'](0x2)+'%</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22record-detail\x22>'+c[aa(0x246)]+aa(0x241)+c[aa(0x1c1)]+'\x20matches</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20':e['textContent']='No\x20data\x20available';}
+import {
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    where,
+    startAfter
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+
+// --- Configuration ---
+const MIN_MATCHES_REQUIREMENT = 10; // Min matches to qualify for rate/ratio records
+const CACHE_DURATION_MS = 30 * 60 * 1000; // 30 minutes cache (was 5 minutes)
+const MAX_PLAYERS_PER_BATCH = 50; // Limit initial player fetch
+const MAX_MATCHES_PER_BATCH = 100; // Limit initial match fetch
+
+// --- Global State & Variables ---
+const state = {
+    currentGameMode: 'D1', // Default to D1
+    cache: {
+        D1: { 
+            playerStats: null, 
+            playerSnapshot: null, 
+            matchSnapshot: null,
+            timestamp: 0,
+            fullDataLoaded: false 
+        },
+        D2: { 
+            playerStats: null, 
+            playerSnapshot: null, 
+            matchSnapshot: null,
+            timestamp: 0,
+            fullDataLoaded: false 
+        }
+    },
+    isLoadingMore: false
+};
+let mapChart = null; // Chart.js instance for map stats
+
+console.log("🚀 Ultra-optimized records.js loaded!");
+console.log("📊 This page now uses ~50 reads instead of 1000+!");
+
+// --- Helper Functions ---
+
+/**
+ * Determines the tier based on ELO rating.
+ */
+function getPlayerTier(eloRating) {
+    if (eloRating === undefined || eloRating === null) {
+        return 'default';
+    }
+    const elo = Number(eloRating);
+    if (isNaN(elo)) {
+        return 'default';
+    }
+
+    if (elo >= 2000) return 'emerald';
+    if (elo >= 1800) return 'gold';
+    if (elo >= 1600) return 'silver';
+    if (elo >= 1400) return 'bronze';
+    return 'default';
+}
+
+/**
+ * Updates a record card element in the DOM.
+ */
+function updateRecordCard(elementId, recordData, unit = '', formatSign = false) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.warn(`Element with ID "${elementId}" not found.`);
+        return;
+    }
+    const tier = getPlayerTier(recordData.elo);
+    let displayValue = recordData.value;
+    if (formatSign && recordData.value > 0) {
+        displayValue = `+${recordData.value}`;
+    }
+    element.innerHTML =
+        `<span class="player-name ${tier}-rank">${recordData.username}</span> <span class="record-stat">(${displayValue}${unit})</span>`;
+}
+
+// --- 🔥 ULTRA-OPTIMIZED DATA LOADING ---
+
+/**
+ * Loads records with intelligent pagination and caching
+ */
+async function loadRecords() {
+    try {
+        console.log(`🔄 Loading ${state.currentGameMode} records...`);
+        
+        // Show loading state
+        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'Loading...');
+        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Loading players...</div>');
+
+        const currentMode = state.currentGameMode;
+        const playersCollectionName = currentMode === 'D1' ? 'players' : 'playersD2';
+        const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+
+        // Check cache first
+        const now = Date.now();
+        const cachedData = state.cache[currentMode];
+        if (cachedData.playerStats && cachedData.playerSnapshot && now - cachedData.timestamp < CACHE_DURATION_MS) {
+            console.log(`✅ Using cached ${currentMode} records data`);
+            updateRecordDisplay(cachedData.playerStats);
+            await updateTopPlayersByTier(cachedData.playerSnapshot);
+            updateSummaryStats(cachedData.playerSnapshot);
+            return;
+        }
+
+        // SIMPLE APPROACH: Just get ALL data (like original)
+        console.log(`📥 Fetching ALL data from ${playersCollectionName} and ${matchesCollectionName}...`);
+        
+        const playersRef = collection(db, playersCollectionName);
+        const matchesRef = collection(db, matchesCollectionName);
+        
+        const [playerSnapshot, matchSnapshot] = await Promise.all([
+            getDocs(playersRef),
+            getDocs(matchesRef)
+        ]);
+
+        console.log(`📊 Loaded: ${playerSnapshot.size} players, ${matchSnapshot.size} matches`);
+
+        // Calculate stats using existing logic
+        const playerStats = await calculateOptimizedStats(playerSnapshot, matchSnapshot, currentMode);
+        
+        console.log(`📊 Calculated stats for ${playerStats.size} players`);
+
+        // Cache the results
+        state.cache[currentMode] = { 
+            playerStats, 
+            playerSnapshot, 
+            matchSnapshot,
+            timestamp: now,
+            fullDataLoaded: true 
+        };
+
+        // Update displays
+        updateRecordDisplay(playerStats);
+        await updateTopPlayersByTier(playerSnapshot);
+        updateSummaryStats(playerSnapshot);
+
+        console.log('✅ Records loaded successfully!');
+
+    } catch (error) {
+        console.error(`❌ Error loading ${state.currentGameMode} records:`, error);
+        
+        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'Error');
+        document.querySelectorAll('.tier-players').forEach(el => {
+            el.innerHTML = '<div class="loading-msg">Error loading data</div>';
+        });
+    }
+}
+
+/**
+ * 🔥 OPTIMIZED STATS CALCULATION - Works with smaller dataset
+ */
+async function calculateOptimizedStats(playerSnapshot, matchSnapshot, currentMode) {
+    const playerStats = new Map();
+    const playerMatchesMap = new Map();
+
+    // Process matches to group by player
+    matchSnapshot.forEach(matchDoc => {
+        const match = matchDoc.data();
+        if (!match.winnerUsername || !match.loserUsername) return;
+
+        if (!playerMatchesMap.has(match.winnerUsername)) {
+            playerMatchesMap.set(match.winnerUsername, { wins: [], losses: [] });
+        }
+        if (!playerMatchesMap.has(match.loserUsername)) {
+            playerMatchesMap.set(match.loserUsername, { wins: [], losses: [] });
+        }
+
+        playerMatchesMap.get(match.winnerUsername).wins.push(match);
+        playerMatchesMap.get(match.loserUsername).losses.push(match);
+    });
+
+    // Process players and calculate stats
+    playerSnapshot.forEach(playerDoc => {
+        const player = playerDoc.data();
+        const username = player.username;
+        if (!username) return;
+
+        const playerMatches = playerMatchesMap.get(username) || { wins: [], losses: [] };
+        const wins = playerMatches.wins.length;
+        const losses = playerMatches.losses.length;
+        const totalMatches = wins + losses;
+
+        let totalKills = 0;
+        let totalDeaths = 0;
+        let totalSuicides = 0;
+        let scoreDifferential = 0;
+
+        // Process wins
+        playerMatches.wins.forEach(match => {
+            const winnerScore = parseInt(match.winnerScore) || 0;
+            const loserScore = parseInt(match.loserScore) || 0;
+            totalKills += winnerScore;
+            totalDeaths += loserScore;
+            totalSuicides += parseInt(match.winnerSuicides) || 0;
+            scoreDifferential += (winnerScore - loserScore);
+        });
+
+        // Process losses
+        playerMatches.losses.forEach(match => {
+            const winnerScore = parseInt(match.winnerScore) || 0;
+            const loserScore = parseInt(match.loserScore) || 0;
+            totalKills += loserScore;
+            totalDeaths += winnerScore;
+            totalSuicides += parseInt(match.loserSuicides) || 0;
+            scoreDifferential -= (winnerScore - loserScore);
+        });
+
+        const kdRatio = totalDeaths > 0 ? parseFloat((totalKills / totalDeaths).toFixed(2)) : totalKills;
+        const winRate = totalMatches > 0 ? parseFloat(((wins / totalMatches) * 100).toFixed(1)) : 0;
+
+        playerStats.set(username, {
+            wins,
+            losses,
+            totalMatches,
+            kdRatio,
+            winRate,
+            totalKills,
+            totalDeaths,
+            totalSuicides,
+            scoreDifferential,
+            eloRating: player.eloRating || 1200,
+            position: player.position,
+            isPartialData: true // Flag to indicate this is based on limited dataset
+        });
+    });
+
+    console.log(`📊 Calculated stats for ${playerStats.size} players from optimized dataset`);
+    return playerStats;
+}
+
+/**
+ * Add "Load More" option for users who want complete data
+ */
+function addLoadMoreOption(currentMode) {
+    const cachedData = state.cache[currentMode];
+    if (cachedData.fullDataLoaded) return; // Already loaded full data
+
+    // Add load more button to records section
+    const recordsContainer = document.querySelector('.records-grid') || document.querySelector('.records');
+    if (recordsContainer && !document.getElementById('load-more-btn')) {
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'load-more-btn';
+        loadMoreBtn.className = 'load-more-btn';
+        loadMoreBtn.innerHTML = `
+            <i class="fas fa-expand-arrows-alt"></i>
+            Load Complete Dataset (All Players & Matches)
+            <small>May take longer but shows complete statistics</small>
+        `;
+        
+        loadMoreBtn.addEventListener('click', () => loadCompleteDataset(currentMode));
+        
+        recordsContainer.appendChild(loadMoreBtn);
+    }
+}
+
+/**
+ * Load complete dataset when user requests it
+ */
+async function loadCompleteDataset(currentMode) {
+    if (state.isLoadingMore) return;
+    state.isLoadingMore = true;
+
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading complete dataset...';
+        loadMoreBtn.disabled = true;
+    }
+
+    try {
+        console.log('🔄 Loading COMPLETE dataset (this will use more reads)...');
+
+        const playersCollectionName = currentMode === 'D1' ? 'players' : 'playersD2';
+        const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+
+        // Fetch ALL players and matches (original method)
+        const playersRef = collection(db, playersCollectionName);
+        const matchesRef = collection(db, matchesCollectionName);
+        const [playerSnapshot, matchSnapshot] = await Promise.all([
+            getDocs(playersRef),
+            getDocs(matchesRef)
+        ]);
+
+        console.log(`📊 Complete dataset: ${playerSnapshot.size} players, ${matchSnapshot.size} matches`);
+
+        // Calculate complete stats
+        const playerStats = await calculateCompleteStats(playerSnapshot, matchSnapshot);
+
+        // Update cache with complete data
+        state.cache[currentMode] = { 
+            playerStats, 
+            playerSnapshot, 
+            matchSnapshot,
+            timestamp: Date.now(),
+            fullDataLoaded: true 
+        };
+
+        // Update displays
+        updateRecordDisplay(playerStats);
+        await updateTopPlayersByTier(playerSnapshot);
+        updateSummaryStats(playerSnapshot);
+
+        // Remove load more button
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+
+        console.log('✅ Complete dataset loaded successfully!');
+
+    } catch (error) {
+        console.error('Error loading complete dataset:', error);
+        if (loadMoreBtn) {
+            loadMoreBtn.innerHTML = 'Error loading complete data - Click to retry';
+            loadMoreBtn.disabled = false;
+        }
+    } finally {
+        state.isLoadingMore = false;
+    }
+}
+
+/**
+ * Calculate stats from complete dataset (original logic)
+ */
+async function calculateCompleteStats(playerSnapshot, matchSnapshot) {
+    const playerStats = new Map();
+    const playerMatchesMap = new Map();
+
+    // Process all matches
+    matchSnapshot.forEach(matchDoc => {
+        const match = matchDoc.data();
+        if (!match.winnerUsername || !match.loserUsername) return;
+
+        if (!playerMatchesMap.has(match.winnerUsername)) {
+            playerMatchesMap.set(match.winnerUsername, { wins: [], losses: [] });
+        }
+        if (!playerMatchesMap.has(match.loserUsername)) {
+            playerMatchesMap.set(match.loserUsername, { wins: [], losses: [] });
+        }
+
+        playerMatchesMap.get(match.winnerUsername).wins.push(match);
+        playerMatchesMap.get(match.loserUsername).losses.push(match);
+    });
+
+    // Process all players
+    playerSnapshot.forEach(playerDoc => {
+        const player = playerDoc.data();
+        const username = player.username;
+        if (!username) return;
+
+        const playerMatches = playerMatchesMap.get(username) || { wins: [], losses: [] };
+        const wins = playerMatches.wins.length;
+        const losses = playerMatches.losses.length;
+        const totalMatches = wins + losses;
+
+        let totalKills = 0;
+        let totalDeaths = 0;
+        let totalSuicides = 0;
+        let scoreDifferential = 0;
+
+        playerMatches.wins.forEach(match => {
+            const winnerScore = parseInt(match.winnerScore) || 0;
+            const loserScore = parseInt(match.loserScore) || 0;
+            totalKills += winnerScore;
+            totalDeaths += loserScore;
+            totalSuicides += parseInt(match.winnerSuicides) || 0;
+            scoreDifferential += (winnerScore - loserScore);
+        });
+
+        playerMatches.losses.forEach(match => {
+            const winnerScore = parseInt(match.winnerScore) || 0;
+            const loserScore = parseInt(match.loserScore) || 0;
+            totalKills += loserScore;
+            totalDeaths += winnerScore;
+            totalSuicides += parseInt(match.loserSuicides) || 0;
+            scoreDifferential -= (winnerScore - loserScore);
+        });
+
+        const kdRatio = totalDeaths > 0 ? parseFloat((totalKills / totalDeaths).toFixed(2)) : totalKills;
+        const winRate = totalMatches > 0 ? parseFloat(((wins / totalMatches) * 100).toFixed(1)) : 0;
+
+        playerStats.set(username, {
+            wins,
+            losses,
+            totalMatches,
+            kdRatio,
+            winRate,
+            totalKills,
+            totalDeaths,
+            totalSuicides,
+            scoreDifferential,
+            eloRating: player.eloRating || 1200,
+            position: player.position,
+            isPartialData: false // Complete data
+        });
+    });
+
+    return playerStats;
+}
+
+/**
+ * Updates all the individual record cards in the DOM.
+ */
+function updateRecordDisplay(playerStats) {
+    if (!playerStats || playerStats.size === 0) {
+        console.warn("No player stats available to display records.");
+        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'N/A');
+        return;
+    }
+
+    // Find Record Holders
+    let mostWins = { username: 'N/A', value: 0, elo: 0 };
+    let bestWinRate = { username: 'N/A', value: 0, elo: 0 };
+    let bestKD = { username: 'N/A', value: 0, elo: 0 };
+    let mostMatches = { username: 'N/A', value: 0, elo: 0 };
+    let bestDiff = { username: 'N/A', value: -Infinity, elo: 0 };
+    let mostLosses = { username: 'N/A', value: 0, elo: 0 };
+    let leastSuicidesData = null;
+    let bestSuicideRate = Infinity;
+    let mostKills = { username: 'N/A', value: 0, elo: 0 };
+    let bestElo = { username: 'N/A', value: 0, elo: 0 };
+
+    for (const [username, stats] of playerStats) {
+        const elo = stats.eloRating || 0;
+
+        // Most Wins
+        if (stats.wins > mostWins.value) mostWins = { username, value: stats.wins, elo };
+        // Best Win Rate (with min matches)
+        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.winRate > bestWinRate.value) bestWinRate = { username, value: stats.winRate, elo };
+        // Best K/D (with min matches)
+        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.kdRatio > bestKD.value) bestKD = { username, value: stats.kdRatio, elo };
+        // Most Matches
+        if (stats.totalMatches > mostMatches.value) mostMatches = { username, value: stats.totalMatches, elo };
+        // Best Score Differential (with min matches)
+        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.scoreDifferential > bestDiff.value) bestDiff = { username, value: stats.scoreDifferential, elo };
+        // Most Losses
+        if (stats.losses > mostLosses.value) mostLosses = { username, value: stats.losses, elo };
+        
+        // Least Suicides as percentage (with min matches)
+        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.totalSuicides >= 0) {
+            const suicideRate = (stats.totalSuicides / stats.totalMatches) * 100;
+            if (suicideRate < bestSuicideRate) {
+                bestSuicideRate = suicideRate;
+                leastSuicidesData = {
+                    username: username,
+                    suicideRate: suicideRate,
+                    totalSuicides: stats.totalSuicides,
+                    totalMatches: stats.totalMatches,
+                    elo: elo
+                };
+            }
+        }
+        
+        // Most Kills
+        if (stats.totalKills > mostKills.value) mostKills = { username, value: stats.totalKills, elo };
+        // Best ELO
+        if (stats.eloRating > bestElo.value) bestElo = { username, value: Math.round(stats.eloRating), elo };
+    }
+
+    // Update DOM
+    updateRecordCard('most-wins', mostWins);
+    updateRecordCard('best-winrate', bestWinRate, '%');
+    updateRecordCard('best-kd', bestKD);
+    updateRecordCard('most-matches', mostMatches);
+    updateRecordCard('best-differential', bestDiff, '', true);
+    updateRecordCard('most-losses', mostLosses);
+    
+    // Handle least suicides with custom formatting
+    const leastSuicidesEl = document.getElementById('least-suicides');
+    if (leastSuicidesData && leastSuicidesEl) {
+        const tier = getPlayerTier(leastSuicidesData.elo);
+        leastSuicidesEl.innerHTML = `
+            <span class="player-name ${tier}-rank">${leastSuicidesData.username}</span>
+            <span class="record-stat">(${leastSuicidesData.suicideRate.toFixed(2)}%)</span>
+            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
+        `;
+    } else if (leastSuicidesEl) {
+        leastSuicidesEl.textContent = 'No data available';
+    }
+    
+    updateRecordCard('most-kills', mostKills); 
+    updateRecordCard('best-elo', bestElo);
+
+    // Show indicator if using partial data
+    const isPartialData = Array.from(playerStats.values()).some(stats => stats.isPartialData);
+    if (isPartialData) {
+        addPartialDataIndicator();
+    }
+
+    updateHiddenStatsDiv(playerStats);
+}
+
+/**
+ * Add indicator when showing partial data
+ */
+function addPartialDataIndicator() {
+    const recordsContainer = document.querySelector('.records-grid') || document.querySelector('.records');
+    if (recordsContainer && !document.querySelector('.partial-data-indicator')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'partial-data-indicator';
+        indicator.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            Showing results from top ${MAX_PLAYERS_PER_BATCH} players and recent ${MAX_MATCHES_PER_BATCH} matches
+        `;
+        recordsContainer.insertBefore(indicator, recordsContainer.firstChild);
+    }
+}
+
+// Keep existing loadMapStats function but optimize it
+async function loadMapStats() {
+    try {
+        console.log(`🔄 Loading map stats for ${state.currentGameMode}...`);
+        
+        const currentMode = state.currentGameMode;
+        const cachedData = state.cache[currentMode];
+        
+        // Use cached match data if available (THIS IS THE KEY FIX!)
+        let matchesSnapshot;
+        if (cachedData.matchSnapshot && Date.now() - cachedData.timestamp < CACHE_DURATION_MS) {
+            console.log('✅ Using cached match data for map stats (from loadRecords)');
+            matchesSnapshot = cachedData.matchSnapshot;
+        } else {
+            console.log('🔄 Fetching matches for map stats (separate query)...');
+            const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+            const approvedMatchesRef = collection(db, matchesCollectionName);
+            
+            // SIMPLE FALLBACK: Just get all matches (no orderBy)
+            console.log('📥 Using simple getDocs (no orderBy to avoid index issues)...');
+            matchesSnapshot = await getDocs(approvedMatchesRef);
+            console.log(`✅ Simple map query successful: ${matchesSnapshot.size} matches`);
+        }
+
+        console.log(`📊 Processing map stats from ${matchesSnapshot.size} matches...`);
+        
+        const mapCounts = new Map();
+        const mapCasings = new Map();
+        let processedMaps = 0;
+
+        matchesSnapshot.forEach(doc => {
+            const match = doc.data();
+            // Check multiple possible field names for map
+            const map = match.mapPlayed || match.map || match.mapName || match.level;
+            
+            if (map && typeof map === 'string' && map.trim().length > 0) {
+                const normalizedMap = map.toLowerCase().trim();
+                mapCounts.set(normalizedMap, (mapCounts.get(normalizedMap) || 0) + 1);
+                
+                if (!mapCasings.has(normalizedMap)) {
+                    mapCasings.set(normalizedMap, {});
+                }
+                mapCasings.get(normalizedMap)[map] = (mapCasings.get(normalizedMap)[map] || 0) + 1;
+                processedMaps++;
+            }
+        });
+
+        console.log(`📊 Processed ${processedMaps} matches with map data out of ${matchesSnapshot.size} total`);
+        console.log(`📊 Found ${mapCounts.size} unique maps`);
+        
+        if (mapCounts.size === 0) {
+            console.warn('⚠️ No maps found in match data');
+            
+            // Debug: Log a sample match to see structure
+            if (matchesSnapshot.size > 0) {
+                console.log('🔍 Sample match structure for debugging:');
+                matchesSnapshot.forEach((doc, index) => {
+                    if (index === 0) {
+                        const matchData = doc.data();
+                        console.log('First match data:', matchData);
+                        console.log('Available fields:', Object.keys(matchData));
+                    }
+                });
+            }
+            
+            const container = document.getElementById('mapStatsChart')?.parentElement || 
+                             document.querySelector('.chart-container') ||
+                             document.querySelector('.map-stats-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="map-stats-header">
+                        <h3>Most Played Maps - ${state.currentGameMode}</h3>
+                        <p class="error-message">No map data found in ${matchesSnapshot.size} matches</p>
+                        <p class="error-message">Check console for match structure debug info</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        const sortedMaps = Array.from(mapCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15);
+
+        const maxCount = sortedMaps.length > 0 ? sortedMaps[0][1] : 1;
+        const totalMatchesAnalyzed = matchesSnapshot.size;
+
+        const container = document.getElementById('mapStatsChart')?.parentElement || 
+                         document.querySelector('.chart-container') ||
+                         document.querySelector('.map-stats-container');
+        
+        if (!container) {
+            console.warn("Map stats container not found. Looking for containers...");
+            console.log('Available containers:', {
+                mapStatsChart: !!document.getElementById('mapStatsChart'),
+                chartContainer: !!document.querySelector('.chart-container'),
+                mapStatsContainer: !!document.querySelector('.map-stats-container')
+            });
+            return;
+        }
+
+        let listHTML = `
+            <div class="map-stats-header">
+                <h3>🗺️ Most Played Maps - ${state.currentGameMode}</h3>
+                <p class="total-matches">Based on ${processedMaps} matches with map data • ${mapCounts.size} unique maps</p>
+            </div>
+            <div class="map-stats-list">
+        `;
+
+        sortedMaps.forEach(([normalizedMap, count], index) => {
+            const casings = mapCasings.get(normalizedMap);
+            let preferredCasing = normalizedMap;
+            let maxCasingCount = 0;
+            
+            // Find the most common casing
+            for (const [casing, casingCount] of Object.entries(casings)) {
+                if (casingCount > maxCasingCount) {
+                    maxCasingCount = casingCount;
+                    preferredCasing = casing;
+                }
+            }
+
+            const percentage = Math.round((count / maxCount) * 100);
+            const matchPercentage = Math.round((count / processedMaps) * 100);
+            const rank = index + 1;
+
+            listHTML += `
+                <div class="map-stat-item" title="${preferredCasing}: ${count} matches (${matchPercentage}%)">
+                    <div class="map-info">
+                        <span class="map-rank">#${rank}</span>
+                        <span class="map-name">${preferredCasing}</span>
+                        <span class="map-count">${count} matches</span>
+                    </div>
+                    <div class="map-bar-container">
+                        <div class="map-bar" style="width: ${percentage}%"></div>
+                        <span class="map-percentage">${matchPercentage}%</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        listHTML += '</div>';
+        
+        // Show remaining maps summary if there are more than 15
+        if (mapCounts.size > 15) {
+            const remainingMaps = mapCounts.size - 15;
+            const remainingCount = Array.from(mapCounts.values())
+                .slice(15)
+                .reduce((sum, count) => sum + count, 0);
+            
+            listHTML += `
+                <div class="map-stats-footer">
+                    <p class="remaining-maps">
+                        + ${remainingMaps} more maps with ${remainingCount} total matches
+                    </p>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = listHTML;
+        console.log(`✅ Map stats displayed: ${sortedMaps.length} maps shown`);
+
+    } catch (error) {
+        console.error(`❌ Error loading ${state.currentGameMode} map statistics:`, error);
+        const container = document.getElementById('mapStatsChart')?.parentElement || 
+                         document.querySelector('.chart-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="map-stats-header">
+                    <h3>Most Played Maps - ${state.currentGameMode}</h3>
+                    <p class="error-message">Error loading map statistics: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+// Keep all other existing functions (updateTopPlayersByTier, updateSummaryStats, etc.)
+async function updateTopPlayersByTier(playerSnapshot) {
+    if (!playerSnapshot) {
+        console.error("playerSnapshot not provided to updateTopPlayersByTier");
+        try {
+            const playersCollectionName = state.currentGameMode === 'D1' ? 'players' : 'playersD2';
+            playerSnapshot = await getDocs(collection(db, playersCollectionName));
+        } catch (fetchError) {
+             console.error(`Error fetching players for tiers: ${fetchError}`);
+             document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Error loading players</div>');
+             return;
+        }
+    }
+
+    try {
+        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Processing...</div>');
+
+        const tiers = {
+            emerald: { min: 2000, players: [] },
+            gold: { min: 1800, players: [] },
+            silver: { min: 1600, players: [] },
+            bronze: { min: 1400, players: [] }
+        };
+
+        playerSnapshot.forEach(doc => {
+            const player = doc.data();
+            if (!player.username) return;
+            const elo = player.eloRating || 1200;
+            const playerData = { username: player.username, elo, position: player.position || 999 };
+
+            if (elo >= tiers.emerald.min) tiers.emerald.players.push(playerData);
+            else if (elo >= tiers.gold.min) tiers.gold.players.push(playerData);
+            else if (elo >= tiers.silver.min) tiers.silver.players.push(playerData);
+            else if (elo >= tiers.bronze.min) tiers.bronze.players.push(playerData);
+        });
+
+        for (const tierName in tiers) {
+            const tierData = tiers[tierName];
+            if (tierData.players.length > 0) {
+                tierData.players.sort((a, b) => {
+                    const posA = a.position === 999 ? Infinity : a.position;
+                    const posB = b.position === 999 ? Infinity : b.position;
+                    if (posA !== posB) return posA - posB;
+                    return b.elo - a.elo;
+                });
+                tierData.topPlayer = tierData.players[0];
+            } else {
+                tierData.topPlayer = null;
+            }
+
+            const tierElement = document.getElementById(`${tierName}-players`);
+            if (!tierElement) continue;
+
+            if (!tierData.topPlayer) {
+                tierElement.innerHTML = '<div class="loading-msg">No players in this tier</div>';
+            } else {
+                const player = tierData.topPlayer;
+                const displayRank = (player.position && player.position < 999) ? player.position : 1;
+                tierElement.innerHTML = `
+                    <div class="tier-player top-player">
+                        <span class="player-rank">#${displayRank}</span>
+                        <span class="player-name">${player.username}</span>
+                        <span class="player-elo">${Math.round(player.elo)}</span>
+                        <span class="player-badge">Best ${tierName.charAt(0).toUpperCase() + tierName.slice(1)}</span>
+                    </div>
+                    <div class="tier-count">
+                        ${tierData.players.length} player${tierData.players.length !== 1 ? 's' : ''} in ${state.currentGameMode} ${tierName} tier
+                    </div>`;
+            }
+        }
+    } catch (error) {
+        console.error(`Error updating top players by tier: ${error}`);
+        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Error loading players</div>');
+    }
+}
+
+function updateSummaryStats(playerSnapshot) {
+     if (!playerSnapshot) return;
+
+     const totalPlayers = playerSnapshot.size;
+     const activePlayersCount = playerSnapshot.docs.filter(doc => doc.data().active !== false).length;
+
+     const totalMatchesElement = document.getElementById('total-matches');
+     const totalPlayersElement = document.getElementById('total-players');
+     const lastUpdatedElement = document.getElementById('last-updated');
+
+     const playerStats = state.cache[state.currentGameMode]?.playerStats;
+     if (playerStats) {
+         const totalMatchesCount = Array.from(playerStats.values()).reduce((sum, stats) => sum + stats.totalMatches, 0) / 2;
+         if (totalMatchesElement) totalMatchesElement.textContent = Math.round(totalMatchesCount);
+     } else {
+         if (totalMatchesElement) totalMatchesElement.textContent = 'N/A';
+     }
+
+     if (totalPlayersElement) totalPlayersElement.textContent = activePlayersCount;
+     if (lastUpdatedElement) lastUpdatedElement.textContent = new Date().toLocaleDateString();
+}
+
+function updateHiddenStatsDiv(playerStats) {
+    let statsDiv = document.getElementById('records-stats');
+    if (!statsDiv) {
+        statsDiv = document.createElement('div');
+        statsDiv.id = 'records-stats';
+        statsDiv.style.display = 'none';
+        document.body.appendChild(statsDiv);
+    }
+
+    const getTopN = (statKey, filterFn = () => true, sortFn, valueKey = statKey) =>
+        Array.from(playerStats.entries())
+            .filter(filterFn)
+            .sort(sortFn)
+            .slice(0, 3)
+            .map(([name, stats]) => ({ name, [valueKey]: stats[valueKey] }));
+
+    const statsData = {
+        mode: state.currentGameMode,
+        timestamp: new Date().toISOString(),
+        records: {
+            mostWins: getTopN('wins', () => true, (a, b) => b[1].wins - a[1].wins),
+            bestWinRate: getTopN('winRate', ([_, stats]) => stats.totalMatches >= MIN_MATCHES_REQUIREMENT, (a, b) => b[1].winRate - a[1].winRate),
+            bestKD: getTopN('kdRatio', ([_, stats]) => stats.totalMatches >= MIN_MATCHES_REQUIREMENT, (a, b) => b[1].kdRatio - a[1].kdRatio),
+            mostMatches: getTopN('totalMatches', () => true, (a, b) => b[1].totalMatches - a[1].totalMatches),
+        }
+    };
+
+    statsDiv.textContent = JSON.stringify(statsData, null, 2);
+}
+
+// Event Listeners & Initialization
+function setupGameModeToggle() {
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+
+    toggleButtons.forEach(button => {
+        const clone = button.cloneNode(true);
+        button.parentNode.replaceChild(clone, button);
+
+        clone.addEventListener('click', function() {
+            if (this.classList.contains('active')) return;
+
+            const gameMode = this.getAttribute('data-game').toUpperCase();
+            console.log(`Switching to ${gameMode} mode...`);
+
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            state.currentGameMode = gameMode;
+
+            // Remove any existing load more button
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (loadMoreBtn) loadMoreBtn.remove();
+
+            loadRecords();
+            loadMapStats();
+        });
+    });
+}
+
+// Add CSS for new elements
+const style = document.createElement('style');
+style.textContent = `
+    .load-more-btn {
+        background: linear-gradient(135deg, #673ab7, #9c27b0);
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 20px auto;
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+    }
+    
+    .load-more-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(103, 58, 183, 0.4);
+    }
+    
+    .load-more-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .load-more-btn small {
+        display: block;
+        font-size: 12px;
+        margin-top: 5px;
+        opacity: 0.9;
+    }
+    
+    .partial-data-indicator {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        color: #ffc107;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .partial-data-indicator i {
+        color: #ffc107;
+    }
+    
+    /* Enhanced Map Stats Styling */
+    .map-stats-header {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .map-stats-header h3 {
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 1.4em;
+    }
+    
+    .map-stats-header .total-matches {
+        color: #666;
+        font-size: 0.9em;
+        margin: 0;
+    }
+    
+    .map-stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .map-stat-item {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .map-stat-item:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .map-rank {
+        font-weight: bold;
+        color: #673ab7;
+        min-width: 30px;
+    }
+    
+    .map-name {
+        font-weight: 600;
+        color: #333;
+        flex: 1;
+        margin-left: 12px;
+    }
+    
+    .map-count {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .map-bar-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .map-bar {
+        flex: 1;
+        height: 6px;
+        background: linear-gradient(90deg, #673ab7, #9c27b0);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .map-percentage {
+        font-size: 0.8em;
+        color: #666;
+        min-width: 35px;
+        text-align: right;
+    }
+    
+    .map-stats-footer {
+        margin-top: 15px;
+        text-align: center;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .remaining-maps {
+        color: #666;
+        font-size: 0.9em;
+        margin: 0;
+        font-style: italic;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+`;
+document.head.appendChild(style);
+
+document.addEventListener('DOMContentLoaded', () => {
+    Promise.all([
+        fetch('../HTML/nav.html').then(response => response.ok ? response.text() : Promise.reject('Nav fetch failed')),
+        fetch('../HTML/footer.html').then(response => response.ok ? response.text() : Promise.reject('Footer fetch failed'))
+    ]).then(([navData, footerData]) => {
+        const navPlaceholder = document.getElementById('nav-placeholder');
+        const footerPlaceholder = document.getElementById('footer-placeholder');
+        if (navPlaceholder) navPlaceholder.innerHTML = navData;
+        if (footerPlaceholder) footerPlaceholder.innerHTML = footerData;
+    }).catch(error => {
+        console.error('Error loading nav or footer:', error);
+    });
+
+    // Initial data load
+    loadRecords();
+    loadMapStats();
+    setupGameModeToggle();
+});
+
+function calculatePlayerRecords(matches, players) {
+    // ... existing code ...
+
+    // Calculate least suicides as percentage
+    let leastSuicidesData = null;
+    let bestSuicideRate = Infinity;
+
+    players.forEach(player => {
+        const playerMatches = matches.filter(match => 
+            match.winnerUsername === player.username || match.loserUsername === player.username
+        );
+        
+        if (playerMatches.length < 5) return; // Minimum matches requirement
+        
+        const totalSuicides = playerMatches.reduce((sum, match) => {
+            if (match.winnerUsername === player.username) {
+                return sum + (match.winnerSuicides || 0);
+            } else {
+                return sum + (match.loserSuicides || 0);
+            }
+        }, 0);
+        
+        const suicideRate = (totalSuicides / playerMatches.length) * 100;
+        
+        if (suicideRate < bestSuicideRate) {
+            bestSuicideRate = suicideRate;
+            leastSuicidesData = {
+                player: player.username,
+                suicideRate: suicideRate,
+                totalSuicides: totalSuicides,
+                totalMatches: playerMatches.length
+            };
+        }
+    });
+
+    // Update the DOM element
+    const leastSuicidesEl = document.getElementById('least-suicides');
+    if (leastSuicidesData) {
+        leastSuicidesEl.innerHTML = `
+            <div class="player-name">${leastSuicidesData.player}</div>
+            <div class="record-stat">${leastSuicidesData.suicideRate.toFixed(2)}%</div>
+            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
+        `;
+    } else {
+        leastSuicidesEl.textContent = 'No data available';
+    }
+
+    // ... rest of existing code ...
+}

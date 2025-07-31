@@ -1,1 +1,87 @@
-function a51c(){const t=['AgLKzgvU','n05ywNnKqW','ywrKrxzLBNrmAxn0zw5LCG','CxvLCNLtzwXLy3rVCG','y2XVC2vtzxr0Aw5NCW','lNjLz3vSyxiTy29UDgvUDa','ywjZB2X1Dgu','y2XPzw50sgvPz2H0','yxv0BW','ndv3DNPdAgq','CxvLCNLtzwXLy3rVCKfSBa','DMLZAwjPBgL0Eq','z2v0qxr0CMLIDxrL','y29UC29Szq','i25HDI1WBgfJzwHVBgrLCG','otK1nZK2tvbSsuvn','D2fYBG','Dg9Nz2XL','DMLZAwjSzq','otK0nJu1sMDAALjd','y2XPy2S','BgvUz3rO','yMLUza','ndG1mgzwEMT3Eq','mti1nZbVz2v4Be0','lNj1BguTyNv0Dg9U','C3r5Bgu','lMnVBNrLBNq','CMv0DxjUicHMDw5JDgLVBIGPia','zxHJzxb0Aw9U','mtjYs2XUA2S','mJeZnJC2B29gB0Db','CMvSyxrPDMu','Bg9Hza','CMvTB3zL','y29UDgfPBNm','ywn0AxzL','nZiYn3ngqwzpAG','lI4Vsfrntc9UyxyUAhrTBa','B3bHy2L0Eq','ywrK','DhjHy2u','Dg9tDhjPBMC','y2XHC3nmAxn0','mZu4nJe2sw5HAvjd','Bg9N','Bwf4sgvPz2H0','z2v0rwXLBwvUDej5swq','mtu5nvzxCMHTvG','lMnVBgXHChnPyMXL','x19WCM90B19F'];a51c=function(){return t;};return a51c();}const a51r=a51d;function a51d(a,b){const c=a51c();return a51d=function(d,e){d=d-0x1f0;let f=c[d];if(a51d['AGpCuh']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a51d['cwoLIP']=g,a=arguments,a51d['AGpCuh']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a51d['cwoLIP'](f),a[i]=f):f=j,f;},a51d(a,b);}(function(a,b){const j=a51d,c=a();while(!![]){try{const d=parseInt(j(0x216))/0x1+parseInt(j(0x209))/0x2*(-parseInt(j(0x20f))/0x3)+-parseInt(j(0x210))/0x4+parseInt(j(0x204))/0x5+-parseInt(j(0x200))/0x6*(parseInt(j(0x1f2))/0x7)+parseInt(j(0x21d))/0x8*(parseInt(j(0x1fa))/0x9)+-parseInt(j(0x208))/0xa*(parseInt(j(0x221))/0xb);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a51c,0x1c2f3));const a51b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a51a=a51b(this,function(){const l=a51d,a=function(){const k=a51d;let f;try{f=Function(k(0x20d)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b[l(0x1fe)]=b[l(0x1fe)]||{},d=[l(0x21e),l(0x201),'info','error',l(0x20e),'table',l(0x21a)];for(let e=0x0;e<d[l(0x206)];e++){const f=a51b['constructor']['prototype']['bind'](a51b),g=d[e],h=c[g]||f;f[l(0x1f0)]=a51b[l(0x207)](a51b),f[l(0x21b)]=h['toString']['bind'](h),c[g]=f;}});a51a(),document['addEventListener']('DOMContentLoaded',function(){const m=a51d;$(m(0x1ff))[m(0x212)](m(0x217)),$('#footer-placeholder')['load']('../HTML/footer.html');const a=document[m(0x1f4)]('.collapsible'),b=document['querySelector']('.content'),c=document['querySelector']('.regular-content'),d=document[m(0x1fb)](m(0x20a)),e=document['querySelectorAll']('.rule-content'),f=document['querySelector']('.outer-container');d['forEach'](g=>{const n=m;g[n(0x1f3)](n(0x205),()=>{const o=n;d['forEach'](i=>i[o(0x21c)][o(0x213)](o(0x215))),e['forEach'](i=>i[o(0x21c)]['remove'](o(0x215))),g[o(0x21c)][o(0x219)](o(0x215));const h=g[o(0x1fd)]('data-content');document[o(0x220)](h)['classList']['add'](o(0x215));});}),a&&b&&(a['addEventListener'](m(0x205),function(g){const p=m;g['preventDefault'](),g['stopPropagation'](),this[p(0x21c)]['toggle'](p(0x215)),b[p(0x21c)][p(0x202)](p(0x215)),c&&(b['classList']['contains']('active')?(b['style']['position']=p(0x211),b['style']['opacity']='1',b[p(0x20b)][p(0x1fc)]=p(0x203),b['style'][p(0x21f)]=f[p(0x1f8)]-0x28+'px',b[p(0x20b)]['overflow']=p(0x1f9),c[p(0x20b)]['position']=p(0x1f7),c['style'][p(0x218)]='0',c[p(0x20b)][p(0x1fc)]='hidden'):(b[p(0x20b)]['position']='absolute',b[p(0x20b)]['opacity']='0',b[p(0x20b)]['visibility']='hidden',c['style']['position']=p(0x211),c['style']['opacity']='1',c['style'][p(0x1fc)]=p(0x203)));}),b[m(0x1f3)](m(0x205),function(g){g['stopPropagation']();}),window[m(0x1f3)]('resize',function(){const q=m;b[q(0x21c)][q(0x214)]('active')&&(b[q(0x20b)][q(0x21f)]=f[q(0x1f8)]-0x28+'px');}));}),window[a51r(0x1f5)]=function(){const s=a51r,a=document[s(0x1f4)](s(0x20c)),b=document[s(0x1f4)](s(0x222)),c=document['querySelector'](s(0x1f6));b&&a&&c&&(b['classList'][s(0x213)]('active'),a[s(0x20b)]['position']=s(0x1f7),a[s(0x20b)][s(0x218)]='0',a['style']['visibility']=s(0x1f1),c[s(0x20b)]['position']='relative',c[s(0x20b)]['opacity']='1',c['style']['visibility']='visible');};
+document.addEventListener('DOMContentLoaded', function() {
+    // Load placeholders
+    $("#nav-placeholder").load("../HTML/nav.html");
+    $("#footer-placeholder").load("../HTML/footer.html");
+
+    // Get DOM elements
+    const collapsible = document.querySelector('.collapsible');
+    const content = document.querySelector('.content');
+    const regularContent = document.querySelector('.regular-content');
+    const ruleButtons = document.querySelectorAll('.rule-button');
+    const ruleContents = document.querySelectorAll('.rule-content');
+    const outerContainer = document.querySelector('.outer-container');
+
+    // Rule button click handler
+    ruleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            ruleButtons.forEach(btn => btn.classList.remove('active'));
+            ruleContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding content
+            button.classList.add('active');
+            const contentId = button.getAttribute('data-content');
+            document.getElementById(contentId).classList.add('active');
+        });
+    });
+
+    // Settings toggle handler
+    if (collapsible && content) {
+        collapsible.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.toggle('active');
+            content.classList.toggle('active');
+
+            // Toggle regular content visibility and adjust positioning
+            if (regularContent) {
+                if (content.classList.contains('active')) {
+                    content.style.position = 'relative';
+                    content.style.opacity = '1';
+                    content.style.visibility = 'visible';
+                    content.style.maxHeight = `${outerContainer.clientHeight - 40}px`; // Account for padding
+                    content.style.overflow = 'auto';
+                    regularContent.style.position = 'absolute';
+                    regularContent.style.opacity = '0';
+                    regularContent.style.visibility = 'hidden';
+                } else {
+                    content.style.position = 'absolute';
+                    content.style.opacity = '0';
+                    content.style.visibility = 'hidden';
+                    regularContent.style.position = 'relative';
+                    regularContent.style.opacity = '1';
+                    regularContent.style.visibility = 'visible';
+                }
+            }
+        });
+
+        // Prevent closing when clicking inside content
+        content.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Adjust content height on window resize
+        window.addEventListener('resize', function() {
+            if (content.classList.contains('active')) {
+                content.style.maxHeight = `${outerContainer.clientHeight - 40}px`;
+            }
+        });
+    }
+});
+
+// Close settings function
+window.closeSettings = function() {
+    const content = document.querySelector('.content');
+    const collapsible = document.querySelector('.collapsible');
+    const regularContent = document.querySelector('.regular-content');
+    
+    if (collapsible && content && regularContent) {
+        collapsible.classList.remove('active');
+        content.style.position = 'absolute';
+        content.style.opacity = '0';
+        content.style.visibility = 'hidden';
+        regularContent.style.position = 'relative';
+        regularContent.style.opacity = '1';
+        regularContent.style.visibility = 'visible';
+    }
+};

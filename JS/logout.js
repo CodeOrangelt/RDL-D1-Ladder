@@ -1,1 +1,25 @@
-const a37l=a37d;function a37c(){const m=['lI4Vsfrntc9PBMrLEc5ODg1S','DgfYz2v0','DgfIBgu','mMPJtMrnAG','DhjHy2u','ChjLDMvUDerLzMf1Bhq','mJy1mJK1v2jvsgzR','Aw5MBW','Dg9tDhjPBMC','nffWAg1Qta','D2fYBG','yMLUza','odyWntHrwwvey24','Bg9N','mJCWnZyYEMXdDxf6','y29UC29Szq','ndKZnZyWuenoveDH','mJu5mgTRuLvKBq','re9nq29UDgvUDeXVywrLza','ywrKrxzLBNrmAxn0zw5LCG','AhjLzG','mJm1mZy0EfPJsNr1','ChjVDg90ExbL','x19WCM90B19F','zxjYB3i','nJiZnJGYtuDStvnm'];a37c=function(){return m;};return a37c();}(function(a,b){const i=a37d,c=a();while(!![]){try{const d=parseInt(i(0x9e))/0x1*(parseInt(i(0xa6))/0x2)+parseInt(i(0x95))/0x3+-parseInt(i(0xac))/0x4*(-parseInt(i(0xa9))/0x5)+-parseInt(i(0x97))/0x6+parseInt(i(0x9a))/0x7+-parseInt(i(0x99))/0x8+-parseInt(i(0xa2))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a37c,0x22816));const a37b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a37a=a37b(this,function(){const j=a37d,a=function(){let f;try{f=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[j(0x98)]||{},d=['log',j(0xad),j(0xaa),'error','exception',j(0xa5),j(0xa7)];for(let e=0x0;e<d['length'];e++){const f=a37b['constructor'][j(0x9f)][j(0xae)](a37b),g=d[e],h=c[g]||f;f[j(0xa0)]=a37b[j(0xae)](a37b),f[j(0xab)]=h['toString']['bind'](h),c[g]=f;}});a37a();import{getAuth,signOut}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';function a37d(a,b){const c=a37c();return a37d=function(d,e){d=d-0x95;let f=c[d];if(a37d['CrDfGq']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a37d['LfCltz']=g,a=arguments,a37d['CrDfGq']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a37d['LfCltz'](f),a[i]=f):f=j,f;},a37d(a,b);}function initializeLogout(){document['addEventListener']('click',async a=>{const k=a37d;if(a['target']&&a[k(0xa4)]['id']==='sign-out-link'){a[k(0xa8)]();try{const b=getAuth();await signOut(b),console[k(0x96)]('User\x20signed\x20out\x20successfully'),window['location'][k(0x9d)]=k(0xa3);}catch(c){console[k(0xa1)]('Error\x20signing\x20out:',c);}}});}document[a37l(0x9c)](a37l(0x9b),initializeLogout);export{initializeLogout};
+// logout.js
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+function initializeLogout() {
+    // Use event delegation since the sign-out link is dynamically added
+    document.addEventListener('click', async (e) => {
+        if (e.target && e.target.id === 'sign-out-link') {
+            e.preventDefault();
+            try {
+                const auth = getAuth();
+                await signOut(auth);
+                console.log('User signed out successfully');
+                window.location.href = '../HTML/index.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        }
+    });
+}
+
+// Initialize logout functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeLogout);
+
+export { initializeLogout };
+

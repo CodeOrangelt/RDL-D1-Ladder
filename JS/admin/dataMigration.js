@@ -1,1 +1,136 @@
-(function(a,b){const q=a0d,c=a();while(!![]){try{const d=parseInt(q(0x94))/0x1+parseInt(q(0x9b))/0x2+-parseInt(q(0x95))/0x3*(-parseInt(q(0x8f))/0x4)+parseInt(q(0xad))/0x5*(parseInt(q(0x97))/0x6)+-parseInt(q(0x8a))/0x7*(-parseInt(q(0xaf))/0x8)+-parseInt(q(0xa0))/0x9+parseInt(q(0xa7))/0xa*(-parseInt(q(0x91))/0xb);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a0c,0x7e20e));const a0b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a0a=a0b(this,function(){const r=a0d;let a;try{const d=Function(r(0x9d)+r(0x9f)+');');a=d();}catch(f){a=window;}const b=a['console']=a[r(0xa5)]||{},c=['log','warn','info',r(0x93),r(0x9c),'table','trace'];for(let g=0x0;g<c['length'];g++){const h=a0b[r(0xab)][r(0x90)]['bind'](a0b),i=c[g],j=b[i]||h;h['__proto__']=a0b[r(0x8b)](a0b),h[r(0x8e)]=j[r(0x8e)][r(0x8b)](j),b[i]=h;}});a0a();function a0c(){const w=['nKLjzMneBq','zw50CMLLCW','zgLZy29Yza','Bwf0y2HLC0qY','ntG4ntH3y0LUqxG','zxHJzxb0Aw9U','CMv0DxjUicHMDw5JDgLVBIGPia','zgL2AxnPB25Z','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','mtG0odK5nNrRywfqta','C2L6zq','z2v0','CgXHEwvYCW','Bwf0y2HLC0qZ','y29UC29Szq','ywn0AxzL','mZeWnJaWmfr1rKnXyq','CgXHEwvYC0qY','DxnLCLbYB2zPBgvZ','DxnLCM5HBwu','y29UC3rYDwn0B3i','Dg9ju09tDhjPBMC','ntGYmJC1vhnMsvP5','zgf0yq','mZjgvLfwzKy','y29TBwL0','DxbKyxrL','C2v0','AgfZ','ChvZAa','CgXHEwvYC0qZ','mti1mtiWofvMt0jmzG','yMLUza','zwXV','Bwf0y2HLCW','Dg9tDhjPBMC','ntqYmJi0tunuwNPy','ChjVDg90ExbL','ndrMEg9oExK','C3vJy2vZCW','zxjYB3i','ndi1odi2qxHRz2P3','mtvOrMrkCLC','zw1HAwW'];a0c=function(){return w;};return a0c();}import{db}from'../firebase-config.js';import{collection,doc,getDoc,getDocs,writeBatch,setDoc}from'firebase/firestore';function a0d(a,b){const c=a0c();return a0d=function(d,e){d=d-0x88;let f=c[d];if(a0d['aBIaaW']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a0d['ZUhdvV']=g,a=arguments,a0d['aBIaaW']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a0d['ZUhdvV'](f),a[i]=f):f=j,f;},a0d(a,b);}export async function migrateUserData(){const s=a0d,a=['players',s(0xa8),'playersD3','nonParticipants','userProfiles'],b=[];let c=writeBatch(db),d=0x0;const e=collection(db,s(0xa9)),f=new Map(),g=(i,j)=>{const t=s;d>=0x1f4&&(b['push'](c),c=writeBatch(db),d=0x0);const k=doc(e,i);c[t(0xb2)](k,j),d++;};for(const i of a){const j=collection(db,i),k=await getDocs(j);k['docs']['forEach'](l=>{const u=s,m=l['id'],n=l[u(0xae)]();!f[u(0xb3)](m)&&f['set'](m,{'username':n[u(0xaa)]||n['name']||m,'email':n[u(0x96)]||null,'discord':n[u(0x99)]||null,'createdAt':n['createdAt']||new Date()['toISOString'](),'divisions':[]});const o=f[u(0xa2)](m);if(i===u(0xa3))o['divisions'][u(0x88)]({'id':0x1,'elo':n[u(0x8c)]||0x5dc,'isActive':n['active']!==![]});else{if(i==='playersD2')o['divisions']['push']({'id':0x2,'elo':n[u(0x8c)]||0x5dc,'isActive':n[u(0xa6)]!==![]});else i===u(0x89)&&o[u(0x9e)]['push']({'id':0x3,'elo':n['elo']||0x5dc,'isActive':n[u(0xa6)]!==![]});}});}for(const [l,m]of f[s(0x98)]()){g(l,m);}d>0x0&&b['push'](c);const h=[];for(const n of b){try{await n[s(0xb0)](),h['push']({'success':!![]});}catch(o){h[s(0x88)]({'success':![],'error':o});}}return{'usersProcessed':f[s(0xa1)],'batchesExecuted':h['length'],'success':h['every'](p=>p[s(0x92)])};}export async function updateMatchReferences(){const v=a0d,a=[v(0x8d),v(0x9a),v(0xa4)];let b=0x0;for(const c of a){const d=collection(db,c),e=await getDocs(d),f=0x1f4;let g=writeBatch(db),h=0x0;for(const i of e['docs']){const j=i['data'](),k=doc(db,c,i['id']);g[v(0xb1)](k,{'isMigrated':!![],'lastModified':new Date()[v(0xac)]()}),h++,b++,h>=f&&(await g['commit'](),g=writeBatch(db),h=0x0);}h>0x0&&await g[v(0xb0)]();}return{'updatedCount':b};}
+import { db } from '../firebase-config.js';
+import { collection, doc, getDoc, getDocs, writeBatch, setDoc } from 'firebase/firestore';
+
+// This utility consolidates user data from multiple collections into the unified userProfiles collection
+export async function migrateUserData() {
+  const collections = ['players', 'playersD2', 'playersD3', 'nonParticipants', 'userProfiles'];
+  const batches = [];
+  let currentBatch = writeBatch(db);
+  let operationCount = 0;
+  const userProfilesRef = collection(db, 'userProfiles');
+  const processedUsers = new Map();
+  
+  // Function to update profiles in batches of max 500 operations
+  const addToBatch = (userId, userData) => {
+    if (operationCount >= 500) {
+      batches.push(currentBatch);
+      currentBatch = writeBatch(db);
+      operationCount = 0;
+    }
+    
+    const userRef = doc(userProfilesRef, userId);
+    currentBatch.set(userRef, userData);
+    operationCount++;
+  };
+  
+  // Process each collection
+  for (const collectionName of collections) {
+    const collectionRef = collection(db, collectionName);
+    const snapshot = await getDocs(collectionRef);
+    
+    snapshot.docs.forEach(userDoc => {
+      const userId = userDoc.id;
+      const userData = userDoc.data();
+      
+      if (!processedUsers.has(userId)) {
+        processedUsers.set(userId, {
+          username: userData.username || userData.name || userId,
+          email: userData.email || null,
+          discord: userData.discord || null,
+          createdAt: userData.createdAt || new Date().toISOString(),
+          divisions: []
+        });
+      }
+      
+      // Add division participation data
+      const profile = processedUsers.get(userId);
+      if (collectionName === 'players') {
+        profile.divisions.push({
+          id: 1,
+          elo: userData.elo || 1500,
+          isActive: userData.active !== false
+        });
+      } else if (collectionName === 'playersD2') {
+        profile.divisions.push({
+          id: 2,
+          elo: userData.elo || 1500,
+          isActive: userData.active !== false
+        });
+      } else if (collectionName === 'playersD3') {
+        profile.divisions.push({
+          id: 3,
+          elo: userData.elo || 1500,
+          isActive: userData.active !== false
+        });
+      }
+    });
+  }
+  
+  // Convert map to batch operations
+  for (const [userId, userData] of processedUsers.entries()) {
+    addToBatch(userId, userData);
+  }
+  
+  // Add the last batch if it has operations
+  if (operationCount > 0) {
+    batches.push(currentBatch);
+  }
+  
+  // Execute all batches
+  const results = [];
+  for (const batch of batches) {
+    try {
+      await batch.commit();
+      results.push({ success: true });
+    } catch (error) {
+      results.push({ success: false, error });
+    }
+  }
+  
+  return {
+    usersProcessed: processedUsers.size,
+    batchesExecuted: results.length,
+    success: results.every(r => r.success)
+  };
+}
+
+// Update all match documents to use the new structure
+export async function updateMatchReferences() {
+  const matchesCollections = ['matches', 'matchesD2', 'matchesD3'];
+  let updatedCount = 0;
+  
+  for (const collectionName of matchesCollections) {
+    const matchesRef = collection(db, collectionName);
+    const snapshot = await getDocs(matchesRef);
+    
+    const batchSize = 500;
+    let batch = writeBatch(db);
+    let batchCount = 0;
+    
+    for (const matchDoc of snapshot.docs) {
+      const matchData = matchDoc.data();
+      const matchRef = doc(db, collectionName, matchDoc.id);
+      
+      // Update the document to reference userProfiles instead of the old collections
+      batch.update(matchRef, {
+        isMigrated: true,
+        lastModified: new Date().toISOString()
+      });
+      
+      batchCount++;
+      updatedCount++;
+      
+      if (batchCount >= batchSize) {
+        await batch.commit();
+        batch = writeBatch(db);
+        batchCount = 0;
+      }
+    }
+    
+    if (batchCount > 0) {
+      await batch.commit();
+    }
+  }
+  
+  return { updatedCount };
+}

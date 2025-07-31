@@ -1,1 +1,836 @@
-const a43G=a43d;function a43d(a,b){const c=a43c();return a43d=function(d,e){d=d-0x1ec;let f=c[d];if(a43d['UWvkNe']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a43d['vHkLWt']=g,a=arguments,a43d['UWvkNe']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a43d['vHkLWt'](f),a[i]=f):f=j,f;},a43d(a,b);}(function(a,b){const C=a43d,c=a();while(!![]){try{const d=-parseInt(C(0x258))/0x1+-parseInt(C(0x238))/0x2+-parseInt(C(0x228))/0x3*(parseInt(C(0x271))/0x4)+-parseInt(C(0x1fd))/0x5+parseInt(C(0x242))/0x6+-parseInt(C(0x229))/0x7*(parseInt(C(0x234))/0x8)+parseInt(C(0x21d))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a43c,0xef237));const a43b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a43a=a43b(this,function(){const E=a43d,a=function(){const D=a43d;let f;try{f=Function('return\x20(function()\x20'+D(0x21f)+');')();}catch(g){f=window;}return f;},b=a(),c=b[E(0x24b)]=b['console']||{},d=[E(0x279),E(0x277),'info','error',E(0x226),'table','trace'];for(let e=0x0;e<d[E(0x214)];e++){const f=a43b['constructor'][E(0x232)]['bind'](a43b),g=d[e],h=c[g]||f;f['__proto__']=a43b[E(0x1f9)](a43b),f[E(0x269)]=h['toString'][E(0x1f9)](h),c[g]=f;}});a43a();import{collection,doc,query,where,orderBy,limit,getDocs,addDoc,getDoc,serverTimestamp,writeBatch}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{auth,db}from'./firebase-config.js';class PromotionManager{constructor(){const F=a43d;this[F(0x24a)]=0x18,this[F(0x21c)]=[{'threshold':0x578,'name':'Bronze','color':'#CD7F32'},{'threshold':0x640,'name':'Silver','color':'#C0C0C0'},{'threshold':0x708,'name':'Gold','color':F(0x1f6)},{'threshold':0x834,'name':F(0x272),'color':'#50C878'}],this[F(0x221)]=null,this[F(0x231)]=0x0,this['fetchInterval']=0xea60,this['pollingInterval']=null,this[F(0x21b)]={};}[a43G(0x1f2)](){const H=a43G;this[H(0x221)]=document['getElementById'](H(0x1ef));if(!this[H(0x221)]){console['error'](H(0x256));return;}this[H(0x267)]();const a=H(0x1f8)+new Date()[H(0x278)](),b=sessionStorage[H(0x270)](a);!b&&(this['fetchRecentPromotions'](),sessionStorage[H(0x1ed)](a,H(0x265))),document['addEventListener'](H(0x1f1),()=>{const I=H;document['visibilityState']===I(0x1f0)&&!sessionStorage[I(0x270)](a)&&(this['fetchRecentPromotions'](),sessionStorage[I(0x1ed)](a,'true'));}),window['addEventListener'](H(0x220),()=>{const J=H;this[J(0x248)]&&clearInterval(this[J(0x248)]);});}[a43G(0x267)](){const K=a43G;this['bannerContainer'][K(0x257)]='',this['bannerContainer']['style']['display']='none';}async[a43G(0x20f)](){const L=a43G;try{const a=Date['now']();if(a-this[L(0x231)]<this['fetchInterval'])return;this[L(0x231)]=a;const b=collection(db,'eloHistory'),c=query(b,where('type','in',[L(0x1ff),'demotion']),orderBy('timestamp',L(0x213)),limit(0x14)),d=await getDocs(c),e=[];d[L(0x210)](f=>{const M=L,g={'id':f['id'],...f['data']()};this[M(0x20a)](f['id'])&&this[M(0x23c)](g)&&e['push'](g);}),e[L(0x214)]>0x0&&await this[L(0x24d)](e);}catch(f){console[L(0x200)]('Error\x20fetching\x20promotions:',f);}}async[a43G(0x24d)](a){const O=a43G;if(a['length']===0x0)return;a['sort']((e,f)=>{const N=a43d,g=e[N(0x208)]?.[N(0x27b)]?.()||e[N(0x208)]?.['seconds']*0x3e8||0x0,h=f['timestamp']?.[N(0x27b)]?.()||f[N(0x208)]?.[N(0x204)]*0x3e8||0x0;return h-g;});const b=this[O(0x221)][O(0x26e)][O(0x214)],c=0x3-b;if(c<=0x0)return;const d=a['slice'](0x0,c);for(let e=0x0;e<d['length'];e++){const f=d[e],g=auth[O(0x26d)];try{setTimeout(()=>{this['showRankChangeBanner'](f);},e*0x3e8),g&&f['player']===g[O(0x1ee)]&&this['showRankChangeLightbox'](f[O(0x22b)],f['rankAchieved']);}catch(h){console['error'](O(0x1f4),h);}}}[a43G(0x20a)](a){const P=a43G;try{const b='promotion_'+a,c=localStorage[P(0x270)](b);if(c){let d;try{d=JSON[P(0x20b)](c);}catch(g){return console[P(0x277)]('Invalid\x20storage\x20format\x20for\x20'+b+',\x20treating\x20as\x20new'),!![];}if(d[P(0x23f)]===!![])return console[P(0x279)](P(0x20c)+a+'\x20is\x20permanently\x20ignored'),![];const f=Date['now']();if(d[P(0x252)]&&f-d['timestamp']<this['DISPLAY_HOURS']*0x3c*0x3c*0x3e8)return console[P(0x279)]('Promotion\x20'+a+P(0x26b)+this[P(0x24a)]+'\x20hours'),![];if(d['systemDismissed']&&f-d['timestamp']<0x4*0x3c*0x3c*0x3e8)return console['log']('Promotion\x20'+a+P(0x21e)),![];}return!![];}catch(h){return console['error'](P(0x261),h),![];}}[a43G(0x268)](a){const Q=a43G;try{const b='promotion_'+a;localStorage['setItem'](b,JSON[Q(0x225)]({'timestamp':Date[Q(0x240)](),'ignored':!![]}));}catch(c){console[Q(0x200)](Q(0x237),c);}}[a43G(0x230)](a){this['resolveUserId'](a)['then'](b=>{const R=a43d,c='promotion_'+a['id'],d=localStorage[R(0x270)](c);if(d)try{const m=JSON['parse'](d);if(m[R(0x23f)]===!![]){console['log']('Skipping\x20ignored\x20promotion:\x20'+a['id']);return;}}catch(n){}localStorage['setItem'](c,JSON['stringify']({'timestamp':Date[R(0x240)](),'ignored':![],'userDismissed':![],'systemDismissed':![],'seenAt':Date['now']()})),this[R(0x221)][R(0x1fc)][R(0x274)]='block';while(this[R(0x221)][R(0x26e)]['length']>=0x3){this[R(0x221)]['removeChild'](this['bannerContainer'][R(0x263)]);}const f=document['createElement']('div');f[R(0x27a)]='promotion-banner',f['setAttribute']('data-rank',b['rankAchieved']),f[R(0x233)](R(0x1f3),b['id']);const g=document[R(0x262)](R(0x209));g['className']=R(0x23b);const h=b['resolvedName']||b[R(0x223)]||b['username']||b[R(0x25c)]||b[R(0x1ee)]||R(0x23d),i=b['type']===R(0x1ff)?h+'\x20was\x20promoted\x20to':h+'\x20was\x20demoted\x20to';g[R(0x257)]=i+R(0x222)+b['rankAchieved']+R(0x253);const j=document['createElement']('div');j['className']=R(0x24f);const k=document[R(0x262)](R(0x25f));k['className']=R(0x206),k[R(0x257)]=R(0x20d),k['title']='Dismiss';const l=document[R(0x262)]('button');l['className']=R(0x212),l[R(0x22f)]='Don\x27t\x20show\x20again',l[R(0x227)]=R(0x254),j[R(0x207)](l),j['appendChild'](k),f['appendChild'](g),f['appendChild'](j),this['bannerContainer'][R(0x207)](f),void f['offsetWidth'],setTimeout(()=>{const S=R;f['classList'][S(0x243)]('new-rank-change');},0x32),k[R(0x1fe)]('click',()=>{const T=R;localStorage['setItem'](c,JSON[T(0x225)]({'timestamp':Date['now'](),'ignored':![],'userDismissed':!![],'systemDismissed':![]})),f['classList'][T(0x255)]('new-rank-change'),f['classList']['add'](T(0x22c)),setTimeout(()=>{const U=T;f[U(0x235)]&&(f['remove'](),this[U(0x221)][U(0x26e)]['length']===0x0&&(this[U(0x221)][U(0x1fc)]['display']=U(0x20e)));},0x1f4);}),l[R(0x1fe)](R(0x247),()=>{const V=R;localStorage[V(0x1ed)](c,JSON['stringify']({'timestamp':Date[V(0x240)](),'ignored':!![],'userDismissed':!![],'systemDismissed':![]})),f[V(0x22a)]['remove']('new-rank-change'),f[V(0x22a)]['add'](V(0x22c)),setTimeout(()=>{const W=V;f[W(0x235)]&&(f[W(0x255)](),this[W(0x221)]['children'][W(0x214)]===0x0&&(this['bannerContainer']['style']['display']=W(0x20e)));},0x1f4);}),setTimeout(()=>{const X=R;f['parentNode']&&(f['classList']['remove'](X(0x266)),f[X(0x22a)][X(0x243)](X(0x22c)),localStorage['setItem'](c,JSON['stringify']({'timestamp':Date['now'](),'ignored':![],'userDismissed':![],'systemDismissed':!![]})),setTimeout(()=>{const Y=X;f['parentNode']&&(f[Y(0x255)](),this['bannerContainer'][Y(0x26e)][Y(0x214)]===0x0&&(this['bannerContainer'][Y(0x1fc)][Y(0x274)]='none'));},0x1f4));},0x3a98);});}async[a43G(0x202)](a){const Z=a43G,b={...a},c=[a['player'],a[Z(0x241)],a['playerUsername'],a[Z(0x1ee)]],d=c['some'](f=>f&&typeof f==='string'&&!f[Z(0x24c)](Z(0x203))&&!/^[a-zA-Z0-9]{20,}$/['test'](f));if(d)return b;let e=null;if(a[Z(0x24e)])e=a[Z(0x24e)];else a[Z(0x223)]&&/^[A-Za-z0-9]{20,}$/['test'](a['player'])&&(e=a[Z(0x223)]);if(!e)return b;try{const f=await getDoc(doc(db,'players',e));if(f[Z(0x1f5)]()){const i=f[Z(0x27c)]();if(i['username'])return b[Z(0x239)]=i['username'],b;}const g=await getDocs(query(collection(db,'approvedMatches'),where('winnerId','==',e),orderBy('date','desc'),limit(0x1)));if(!g[Z(0x1fa)]){const j=g[Z(0x1ec)][0x0]['data']();if(j['winnerUsername'])return b['resolvedName']=j['winnerUsername'],b;}const h=await getDocs(query(collection(db,'approvedMatches'),where('loserId','==',e),orderBy('date',Z(0x213)),limit(0x1)));if(!h[Z(0x1fa)]){const k=h[Z(0x1ec)][0x0]['data']();if(k['loserUsername'])return b[Z(0x239)]=k[Z(0x216)],console['log']('Resolved\x20'+e+Z(0x205)+k['loserUsername']+'\x20(loser)'),b;}}catch(l){console[Z(0x200)]('Error\x20resolving\x20user\x20ID:',l);}return console[Z(0x277)]('Failed\x20to\x20resolve\x20user\x20ID:\x20'+e),b;}[a43G(0x273)](a,b){const a0=a43G;let c=document['getElementById']('rankChangeModal');!c&&(c=document[a0(0x262)](a0(0x209)),c['id']='rankChangeModal',c['className']='rank-change-modal\x20'+a,document['body']['appendChild'](c));const d=a==='promotion'?a0(0x22e):'Rank\x20Update',e=a==='promotion'?a0(0x215):'You\x27ve\x20been\x20demoted\x20to';c[a0(0x257)]=a0(0x25e)+d+'</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>'+e+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3\x20class=\x22rank-name\x22>'+b+'</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22rank-change-button\x22\x20id=\x22rank-change-ok-btn\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Got\x20it!\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',c[a0(0x1fc)][a0(0x274)]='flex',document[a0(0x244)](a0(0x23a))['addEventListener']('click',()=>{const a1=a0;c[a1(0x1fc)][a1(0x274)]=a1(0x20e);}),c['addEventListener']('click',f=>{const a2=a0;f[a2(0x250)]===c&&(c['style']['display']='none');});}async[a43G(0x245)](a,b,c,d={}){const a3=a43G;try{if(b===c||!a)return null;const e=d['source']||a3(0x26c),f=d['matchId']||null,g=d[a3(0x246)]||null;console[a3(0x279)](a3(0x264)+c+a3(0x25b)+b+a3(0x249)+e+')');let h=null,i=null;try{const l=await getDoc(doc(db,'players',a));if(l['exists']()){const m=l['data']();h=m['username']||m[a3(0x1ee)]||null,i=m['displayName']||m[a3(0x241)]||null;}!h&&d['username']&&(h=d[a3(0x241)],i=d['username']);!h&&auth['currentUser']&&(h=auth['currentUser']['displayName']||auth[a3(0x26d)]['email']['split']('@')[0x0],i=auth[a3(0x26d)][a3(0x1ee)]||null);if(!h){const n=query(collection(db,'approvedMatches'),where('winnerId','==',a),limit(0x1)),o=await getDocs(n);if(!o[a3(0x1fa)])h=o['docs'][0x0][a3(0x27c)]()[a3(0x276)]||a3(0x201),i=h;else{const p=query(collection(db,'approvedMatches'),where('loserId','==',a),limit(0x1)),q=await getDocs(p);!q[a3(0x1fa)]&&(h=q[0x0]['data']()['loserUsername']||'Unknown\x20Player',i=h);}}}catch(r){console[a3(0x200)]('Error\x20resolving\x20username:',r);}!h&&(console[a3(0x277)](a3(0x26f),a),h='A\x20player',i='Unknown\x20Player');const j=this['getRankName'](c),k=this['getRankName'](b);if(j!==k){const s=b>c,t=s?a3(0x1ff):'demotion',u=k;console[a3(0x279)](a3(0x1fb)+t+'\x20for\x20'+h+':\x20'+c+'\x20('+j+')\x20→\x20'+b+'\x20('+k+')');try{const v={'player':h,'playerUsername':h,'username':h,'displayName':i,'userId':a,'type':t,'rankAchieved':u,'timestamp':serverTimestamp(),'previousElo':c,'newElo':b,'change':b-c,'previousRank':j,'newRank':k,'source':e};if(e===a3(0x1f7)&&f)v[a3(0x211)]=f;else e==='admin'&&g?(v['modifiedBy']=g,v['isAutomatic']=![]):v['isAutomatic']=!![];const w=writeBatch(db),x=doc(collection(db,'eloHistory')),y=doc(collection(db,a3(0x22d)));return w[a3(0x217)](x,v),w[a3(0x217)](y,v),await w[a3(0x25d)](),await this[a3(0x236)](a,h,c,b,j,k,t,{'displayName':i,'source':e,'matchId':f,'ladder':d['ladder']||'D1'}),console['log'](a3(0x260)+t+a3(0x26a)+h+a3(0x205)+u),u;}catch(z){console[a3(0x200)](a3(0x251),z);try{return await addDoc(collection(db,'eloHistory'),{'player':h,'playerUsername':h,'username':h,'displayName':i,'userId':a,'type':t,'rankAchieved':u,'timestamp':serverTimestamp(),'previousElo':c,'newElo':b,'change':b-c,'previousRank':j,'source':e,'isAutomatic':e!==a3(0x219)}),await this[a3(0x236)](a,h,c,b,j,k,t,{'displayName':i,'source':e,'matchId':f,'ladder':d[a3(0x23e)]||'D1'}),u;}catch(A){return console['error']('Fallback\x20write\x20failed:',A),null;}}}return null;}catch(B){return console['error'](a3(0x218),B),null;}}[a43G(0x275)](a){const a4=a43G;for(let b=this[a4(0x21c)][a4(0x214)]-0x1;b>=0x0;b--){if(a>=this[a4(0x21c)][b][a4(0x25a)])return this['RANKS'][b][a4(0x21a)];}return'Unranked';}['cleanup'](){this['pollingInterval']&&clearInterval(this['pollingInterval']);}['isNewRankChange'](a){const a5=a43G;if(a[a5(0x208)]){const b=a[a5(0x208)][a5(0x204)]*0x3e8,c=Date['now'](),d=(c-b)/(0x3e8*0x3c*0x3c);if(d>0x18)return![];}if(a['previousRank']&&a['newRank']&&a['previousRank']!==a['newRank'])return!![];return![];}async['sendPromotionNotification'](a,b,c,d,e,f,g,h={}){const a6=a43G;try{console[a6(0x279)]('STARTING\x20notification\x20for\x20'+b+'\x27s\x20'+g);const i={'userId':a,'username':b,'displayName':h[a6(0x1ee)]||b,'oldElo':parseInt(c),'newElo':parseInt(d),'eloDifference':parseInt(d)-parseInt(c),'oldRank':e,'newRank':f,'type':g,'timestamp':serverTimestamp(),'processed':![],'source':h['source']||a6(0x26c),'matchId':h[a6(0x211)]||null,'ladder':h[a6(0x23e)]||'D1','adminUser':h['adminUser']||null};console[a6(0x279)](a6(0x224),i);const j=await addDoc(collection(db,a6(0x259)),i);return console[a6(0x279)]('Discord\x20notification\x20sent\x20successfully\x20with\x20ID:\x20'+j['id']),!![];}catch(k){return console['error']('Error\x20sending\x20Discord\x20notification:',k),![];}}}export const promotionManager=new PromotionManager();document['addEventListener']('DOMContentLoaded',()=>{const a7=a43G;promotionManager[a7(0x1f2)]();});function a43c(){const a8=['ywrK','z2v0rwXLBwvUDej5swq','y2HLy2TbBMrszwnVCMrqCM9TB3rPB24','ywrTAw5vC2vY','y2XPy2S','Cg9SBgLUz0LUDgvYDMfS','icHZB3vYy2u6ia','reLtueXbwv9it1vsuW','y29UC29Szq','Aw5JBhvKzxm','ChjVy2vZC1jHBMTdAgfUz2vZ','DxnLCKLK','yMfUBMvYlwfJDgLVBNm','DgfYz2v0','rxjYB3iGD3jPDgLUzYbWCM9TB3rPB24GCMvJB3jKCZO','DxnLCKrPC21PC3nLza','pc9ZCgfUpG','tMv2zxiGC2HVDYb0AgLZihbYB21VDgLVBIbHz2fPBG','CMvTB3zL','uhjVBw90Aw9UigjHBM5LCIbJB250ywLUzxiGBM90igzVDw5K','Aw5Uzxjive1m','mte5nZq0oxD3B0TisG','ChjVBw90Aw9UtM90AwzPy2f0Aw9UCW','DgHYzxnOB2XK','iokgKIa','CgXHEwvYvxnLCM5HBwu','y29TBwL0','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNjHBMSTy2HHBMDLlwnVBNrLBNqIpGOGicaGicaGicaGicaGicaGpgGYignSyxnZpsjYyw5RlwnOyw5Nzs10AxrSzsi+','yNv0Dg9U','u3vJy2vZC2z1BgX5ihjLy29YzgvKia','rxjYB3iGy2HLy2TPBMCGChjVBw90Aw9UihzPC2LIAwXPDhK6','y3jLyxrLrwXLBwvUDa','zMLYC3rdAgLSza','uhjVy2vZC2LUzYbWB3rLBNrPywWGCMfUAYbJAgfUz2u6ia','Dhj1zq','BMv3lxjHBMSTy2HHBMDL','C2v0Dxbcyw5UzxjdB250ywLUzxi','AwDUB3jLuhjVBw90Aw9U','Dg9tDhjPBMC','igzVCIa','ihDHCYbKAxnTAxnZzwqGyNKGDxnLCIb3AxrOAw4GBgfZDca','yxv0B21HDgLJ','y3vYCMvUDfvZzxi','y2HPBgrYzw4','q291BgqGBM90ihjLC29SDMuGDxnLCM5HBwuGzM9YihvZzxjjzdO','z2v0sxrLBq','ndK0nZa4wMnrDvze','rw1LCMfSza','C2HVD1jHBMTdAgfUz2vmAwDODgjVEa','zgLZCgXHEq','z2v0uMfUA05HBwu','D2LUBMvYvxnLCM5HBwu','D2fYBG','Dg9eyxrLu3rYAw5N','Bg9N','y2XHC3noyw1L','Dg9nAwXSAxm','zgf0yq','zg9JCW','C2v0sxrLBq','zgLZCgXHEu5HBwu','ChjVBw90Aw9UlwjHBM5LCI1JB250ywLUzxi','DMLZAwjSzq','DMLZAwjPBgL0EwnOyw5Nzq','Aw5PDgLHBgL6zq','zgf0ys1Pza','rxjYB3iGChjVy2vZC2LUzYbYyw5RignOyw5NztO','zxHPC3rZ','i0zgrdCWma','Bwf0y2G','ChjVBw90Aw9UC19JAgvJA2vKxW','yMLUza','zw1WDhK','uMvJB3jKAw5Nia','C3r5Bgu','ndqXndaWnwz6DNrIqG','ywrKrxzLBNrmAxn0zw5LCG','ChjVBw90Aw9U','zxjYB3i','vw5RBM93BIbqBgf5zxi','CMvZB2X2zvvZzxjjza','suq6','C2vJB25KCW','ihrVia','zgLZBwLZCY1IDg4','yxbWzw5Kq2HPBgq','DgLTzxn0yw1W','zgL2','C2HVDwXKu2HVD1bYB21VDgLVBG','CgfYC2u','uhjVBw90Aw9Uia','jNrPBwvZoW','BM9Uzq','zMv0y2HszwnLBNrqCM9TB3rPB25Z','zM9YrwfJAa','Bwf0y2Hjza','AwDUB3jLlwj0BG','zgvZyW','BgvUz3rO','ww91j3zLigjLzw4GChjVBw90zwqGDg8','Bg9ZzxjvC2vYBMfTzq','C2v0','rxjYB3iGAw4GChjVBw90Aw9Ul2rLBw90Aw9UihjLy29YzgLUzZO','ywrTAw4','BMfTzq','DxnLCM5HBwvdywnOzq','uKfos1m','nde3ndCWntHbv1rquMq','ihDHCYbHDxrVlwrPC21PC3nLzcb3AxrOAw4GBgfZDca0igHVDxjZ','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','yMvMB3jLDw5SB2fK','yMfUBMvYq29UDgfPBMvY','idXZCgfUignSyxnZpsjYyw5RlxrLEhqIpG','CgXHEwvY','q3jLyxrPBMCGrgLZy29YzcbUB3rPzMLJyxrPB246','C3rYAw5NAwz5','zxHJzxb0Aw9U','DgL0Bgu','m0HmD3nHtq','nty5odq5sKzbtMnA','y2XHC3nmAxn0','DhLWzq','zgLZBwLZC2LUzW','ChjVBw90Aw9UsgLZDg9YEq','q29Uz3jHDhvSyxrPB25Ziq','Dgv4DenVBNrLBNq','C2HVD1jHBMTdAgfUz2vcyw5Uzxi','BgfZDezLDgnOvgLTzq','ChjVDg90ExbL','C2v0qxr0CMLIDxrL','mtC2rhbtzLvz','CgfYzw50tM9Kzq','C2vUzfbYB21VDgLVBK5VDgLMAwnHDgLVBG','rxjYB3iGC2f2Aw5NihbYB21VDgLVBIbWCMvMzxjLBMnLoG','mJC1nZuZmgTmv1zewq','CMvZB2X2zwroyw1L','CMfUAY1JAgfUz2uTB2STyNrU','ChjVBw90Aw9UlwrLDgfPBhm','AxnozxDsyw5Rq2HHBMDL','qsbWBgf5zxi','BgfKzgvY','AwDUB3jLza','BM93','DxnLCM5HBwu','mtaYodC1nZbmDKnOteC'];a43c=function(){return a8;};return a43c();}export const initializePromotionTracker=()=>promotionManager['initialize']();export const checkAndRecordPromotion=(a,b,c,d)=>promotionManager[a43G(0x245)](a,b,c,d);export const getRankName=a=>promotionManager['getRankName'](a);
+import { 
+    collection, 
+    doc,
+    query, 
+    where, 
+    orderBy, 
+    limit, 
+    getDocs,
+    addDoc,
+    getDoc,
+    serverTimestamp,
+    writeBatch
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+
+/**
+ * PromotionManager - Handles all promotion-related functionality with reduced Firebase load
+ */
+class PromotionManager {
+    constructor() {
+        // Configuration
+        this.DISPLAY_HOURS = 24; // Hours to wait before showing the same promotion again
+        this.RANKS = [
+            { threshold: 1400, name: 'Bronze', color: '#CD7F32' },
+            { threshold: 1600, name: 'Silver', color: '#C0C0C0' },
+            { threshold: 1800, name: 'Gold', color: '#FFD700' },
+            { threshold: 2100, name: 'Emerald', color: '#50C878' }
+        ];
+        
+        // State
+        this.bannerContainer = null;
+        this.lastFetchTime = 0;
+        this.fetchInterval = 60000; // 1 minute between fetches
+        this.pollingInterval = null;
+        
+        // Cache for username resolution
+        this.usernameCache = {};
+    }
+    
+    /**
+     * Initialize the promotion system
+     */
+    initialize() {
+        this.bannerContainer = document.getElementById('promotion-banner-container');
+        if (!this.bannerContainer) {
+            console.error('Promotion banner container not found');
+            return;
+        }
+                this.setupBannerContainer();
+        
+        // Check if we've already fetched promotions in this session
+        const sessionKey = 'promotions_checked_' + new Date().toDateString();
+        const alreadyChecked = sessionStorage.getItem(sessionKey);
+        
+        if (!alreadyChecked) {
+            // Only fetch once per session
+            this.fetchRecentPromotions();
+            // Mark as checked for this session
+            sessionStorage.setItem(sessionKey, 'true');
+        } 
+        
+        // Remove the polling mechanism entirely - we only want to check once per session
+        // Optional: You can still use the visibility API to check when the page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !sessionStorage.getItem(sessionKey)) {
+                this.fetchRecentPromotions();
+                sessionStorage.setItem(sessionKey, 'true');
+            }
+        });
+        
+        // Clean up event listener on unload
+        window.addEventListener('beforeunload', () => {
+            if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+            }
+        });
+    }
+    
+    /**
+     * Setup the banner container
+     */
+    setupBannerContainer() {
+        this.bannerContainer.innerHTML = '';
+        this.bannerContainer.style.display = 'none';
+    }
+    
+    /**
+     * Fetch recent promotions - replaces the real-time listener
+     */
+    async fetchRecentPromotions() {
+        try {
+            const now = Date.now();
+            
+            // Don't fetch too often
+            if (now - this.lastFetchTime < this.fetchInterval) {
+                return;
+            }
+            
+            this.lastFetchTime = now;
+            
+            const historyRef = collection(db, 'eloHistory');
+            
+            // Increase the limit to fetch more, so we have a better chance of finding new ones
+            const q = query(
+                historyRef, 
+                where('type', 'in', ['promotion', 'demotion']),
+                orderBy('timestamp', 'desc'), 
+                limit(20)  // Increased from 5 to 20
+            );
+            
+            const snapshot = await getDocs(q);
+            
+            // Pre-filter promotions that should not be shown
+            const eligibleChanges = [];
+            
+            snapshot.forEach(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                if (this.shouldShowPromotion(doc.id) && this.isNewRankChange(data)) {
+                    eligibleChanges.push(data);
+                }
+            });
+                        
+            if (eligibleChanges.length > 0) {
+                await this.processRankChanges(eligibleChanges);
+            }
+        } catch (error) {
+            console.error('Error fetching promotions:', error);
+        }
+    }
+    
+    /**
+     * Process snapshot of rank changes
+     */
+    async processRankChanges(rankChanges) {
+        // No need to parse the snapshot since we're passing pre-filtered changes
+        if (rankChanges.length === 0) {
+            return;
+        }
+        
+        // Sort by timestamp (newest first) - in case they're not already
+        rankChanges.sort((a, b) => {
+            // Handle missing timestamps
+            const aTime = a.timestamp?.toMillis?.() || a.timestamp?.seconds * 1000 || 0;
+            const bTime = b.timestamp?.toMillis?.() || b.timestamp?.seconds * 1000 || 0;
+            return bTime - aTime;
+        });
+        
+        // Determine how many slots are available
+        const currentBannerCount = this.bannerContainer.children.length;
+        const availableSlots = 3 - currentBannerCount;
+        
+        if (availableSlots <= 0) {
+            return;
+        }
+        
+        // Process only the newest changes that fit within available slots
+        const changesToShow = rankChanges.slice(0, availableSlots);
+        
+        for (let i = 0; i < changesToShow.length; i++) {
+            const rankChange = changesToShow[i];
+            const currentUser = auth.currentUser;
+            
+            try {
+                // Stagger banners by 1 second each
+                setTimeout(() => {
+                    this.showRankChangeBanner(rankChange);
+                }, i * 1000);
+                
+                // Show lightbox for current user's promotions
+                if (currentUser && rankChange.player === currentUser.displayName) {
+                    this.showRankChangeLightbox(rankChange.type, rankChange.rankAchieved);
+                }
+            } catch (error) {
+                console.error('Error processing rank change:', error);
+            }
+        }
+    }
+    
+    /**
+     * Check if promotion should be shown (based on localStorage)
+     */
+    shouldShowPromotion(promotionId) {
+        try {
+            const storageKey = `promotion_${promotionId}`;
+            const storedData = localStorage.getItem(storageKey);
+            
+            if (storedData) {
+                let data;
+                try {
+                    data = JSON.parse(storedData);
+                } catch (e) {
+                    console.warn(`Invalid storage format for ${storageKey}, treating as new`);
+                    return true;
+                }
+                
+                // ALWAYS respect ignored flag
+                if (data.ignored === true) {
+                    console.log(`Promotion ${promotionId} is permanently ignored`);
+                    return false;
+                }
+                
+                // Check if user dismissed within time window (24 hours)
+                const now = Date.now();
+                if (data.userDismissed && (now - data.timestamp < this.DISPLAY_HOURS * 60 * 60 * 1000)) {
+                    console.log(`Promotion ${promotionId} was dismissed by user within last ${this.DISPLAY_HOURS} hours`);
+                    return false;
+                }
+                
+                // Check if system dismissed within a shorter window (4 hours instead of 1)
+                if (data.systemDismissed && (now - data.timestamp < 4 * 60 * 60 * 1000)) {
+                    console.log(`Promotion ${promotionId} was auto-dismissed within last 4 hours`);
+                    return false;
+                }
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error checking promotion visibility:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Mark a promotion as permanently ignored
+     */
+    ignorePromotion(promotionId) {
+        try {
+            const storageKey = `promotion_${promotionId}`;
+            localStorage.setItem(storageKey, JSON.stringify({
+                timestamp: Date.now(),
+                ignored: true
+            }));
+        } catch (error) {
+            console.error('Error saving promotion preference:', error);
+        }
+    }
+    
+    /**
+     * Display rank change banner
+     */
+    showRankChangeBanner(data) {
+        // Resolve user ID to username if needed
+        this.resolveUserId(data)
+            .then(resolvedData => {
+                const storageKey = `promotion_${data.id}`;
+                
+                // Double-check not ignored (safety check)
+                const existingData = localStorage.getItem(storageKey);
+                if (existingData) {
+                    try {
+                        const parsed = JSON.parse(existingData);
+                        if (parsed.ignored === true) {
+                            console.log(`Skipping ignored promotion: ${data.id}`);
+                            return;
+                        }
+                    } catch (e) {}
+                }
+                
+                // Mark as seen
+                localStorage.setItem(storageKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    ignored: false,
+                    userDismissed: false,
+                    systemDismissed: false,
+                    seenAt: Date.now()  // Add this to track when it was shown
+                }));
+                
+                // Ensure container is visible before adding banner
+                this.bannerContainer.style.display = 'block';
+                
+                // Ensure we never exceed 3 banners
+                while (this.bannerContainer.children.length >= 3) {
+                    this.bannerContainer.removeChild(this.bannerContainer.firstChild);
+                }
+                
+                // Create banner DOM element
+                const bannerDiv = document.createElement('div');
+                bannerDiv.className = 'promotion-banner'; // Start without animation class
+                bannerDiv.setAttribute('data-rank', resolvedData.rankAchieved);
+                bannerDiv.setAttribute('data-id', resolvedData.id);
+                
+                // Create banner content
+                const details = document.createElement('div');
+                details.className = 'promotion-details';
+                
+                // Use the resolved player name
+                const playerName = resolvedData.resolvedName || resolvedData.player || resolvedData.username || 
+                                  resolvedData.playerUsername || resolvedData.displayName || 'A player';
+                
+                // Format based on promotion type
+                const message = resolvedData.type === 'promotion' 
+                    ? `${playerName} was promoted to` 
+                    : `${playerName} was demoted to`;
+                    
+                details.innerHTML = `${message} <span class="rank-text">${resolvedData.rankAchieved}</span>`;
+                
+                // Close button only - no ignore option
+                const actions = document.createElement('div');
+                actions.className = 'banner-actions';
+                
+                const dismissBtn = document.createElement('button');
+                dismissBtn.className = 'dismiss-btn';
+                dismissBtn.innerHTML = '&times;';
+                dismissBtn.title = 'Dismiss';
+                
+                // Add another button to dismiss forever
+                const ignoreBtn = document.createElement('button');
+                ignoreBtn.className = 'ignore-btn';
+                ignoreBtn.textContent = 'Don\'t show again';
+                ignoreBtn.title = 'Never show this promotion again';
+                
+                actions.appendChild(ignoreBtn);
+                actions.appendChild(dismissBtn);
+                
+                bannerDiv.appendChild(details);
+                bannerDiv.appendChild(actions);
+                
+                // Add to DOM first without animation class
+                this.bannerContainer.appendChild(bannerDiv);
+                
+                // Force a reflow before adding the animation class
+                void bannerDiv.offsetWidth; 
+                
+                // Now add the animation class
+                setTimeout(() => {
+                    bannerDiv.classList.add('new-rank-change');
+                }, 50);
+                
+                // Dismiss button - user dismissed for 24 hours
+                dismissBtn.addEventListener('click', () => {
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        timestamp: Date.now(),
+                        ignored: false,
+                        userDismissed: true,
+                        systemDismissed: false
+                    }));
+                    
+                    bannerDiv.classList.remove('new-rank-change');
+                    bannerDiv.classList.add('dismissing');
+                    
+                    // Wait for animation to complete before removing
+                    setTimeout(() => {
+                        if (bannerDiv.parentNode) {
+                            bannerDiv.remove();
+                            
+                            // Only hide container if all banners are gone
+                            if (this.bannerContainer.children.length === 0) {
+                                this.bannerContainer.style.display = 'none';
+                            }
+                        }
+                    }, 500); // Match this to your CSS transition time
+                });
+                
+                // Ignore button - user dismissed permanently (MUST SET IGNORED TO TRUE)
+                ignoreBtn.addEventListener('click', () => {
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        timestamp: Date.now(),
+                        ignored: true,  // Ensure this is true!
+                        userDismissed: true,
+                        systemDismissed: false
+                    }));
+                    
+                    bannerDiv.classList.remove('new-rank-change');
+                    bannerDiv.classList.add('dismissing');
+                    
+                    setTimeout(() => {
+                        if (bannerDiv.parentNode) {
+                            bannerDiv.remove();
+                            if (this.bannerContainer.children.length === 0) {
+                                this.bannerContainer.style.display = 'none';
+                            }
+                        }
+                    }, 500);
+                });
+                
+                // Auto-dismiss after 15 seconds
+                setTimeout(() => {
+                    if (bannerDiv.parentNode) {
+                        bannerDiv.classList.remove('new-rank-change');
+                        bannerDiv.classList.add('dismissing');
+                        
+                        // Update storage with system dismiss
+                        localStorage.setItem(storageKey, JSON.stringify({
+                            timestamp: Date.now(),
+                            ignored: false,
+                            userDismissed: false,
+                            systemDismissed: true
+                        }));
+                        
+                        // Remove from DOM after animation
+                        setTimeout(() => {
+                            if (bannerDiv.parentNode) {
+                                bannerDiv.remove();
+                                if (this.bannerContainer.children.length === 0) {
+                                    this.bannerContainer.style.display = 'none';
+                                }
+                            }
+                        }, 500);
+                    }
+                }, 15000); // 15 seconds total display time
+            });
+    }
+
+    /**
+     * Helper method to resolve user IDs to usernames
+     * This is a critical fix for the promotions system
+     */
+    async resolveUserId(data) {
+        // Clone data to avoid modifying original
+        const resolvedData = {...data};
+        
+        // If we already have a non-ID username, return immediately
+        const possibleUsernames = [data.player, data.username, data.playerUsername, data.displayName];
+        const hasValidUsername = possibleUsernames.some(name => 
+            name && typeof name === 'string' && 
+            !name.includes('ID:') && 
+            !(/^[a-zA-Z0-9]{20,}$/.test(name)) // Not likely a Firebase ID
+        );
+        
+        if (hasValidUsername) {
+            return resolvedData;
+        }
+        
+        // Extract possible user ID
+        let userId = null;
+        
+        // Check all possible ID fields
+        if (data.userId) {
+            userId = data.userId;
+        } else if (data.player && /^[A-Za-z0-9]{20,}$/.test(data.player)) {
+            userId = data.player;
+        }
+        
+        if (!userId) {
+            return resolvedData;
+        }
+                
+        try {
+            // Step 1: Check players collection first (most reliable)
+            const userDoc = await getDoc(doc(db, 'players', userId));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData.username) {
+                    resolvedData.resolvedName = userData.username;
+                    return resolvedData;
+                }
+            }
+            
+            // Step 2: Check recent matches for this user ID
+            const winnerMatches = await getDocs(
+                query(collection(db, 'approvedMatches'), 
+                      where('winnerId', '==', userId),
+                      orderBy('date', 'desc'),
+                      limit(1))
+            );
+            
+            if (!winnerMatches.empty) {
+                const winnerData = winnerMatches.docs[0].data();
+                if (winnerData.winnerUsername) {
+                    resolvedData.resolvedName = winnerData.winnerUsername;
+                    return resolvedData;
+                }
+            }
+            
+            // Step 3: Check as loser
+            const loserMatches = await getDocs(
+                query(collection(db, 'approvedMatches'), 
+                      where('loserId', '==', userId),
+                      orderBy('date', 'desc'),
+                      limit(1))
+            );
+            
+            if (!loserMatches.empty) {
+                const loserData = loserMatches.docs[0].data();
+                if (loserData.loserUsername) {
+                    resolvedData.resolvedName = loserData.loserUsername;
+                    console.log(`Resolved ${userId} to ${loserData.loserUsername} (loser)`);
+                    return resolvedData;
+                }
+            }
+        } catch (error) {
+            console.error('Error resolving user ID:', error);
+        }
+        
+        console.warn(`Failed to resolve user ID: ${userId}`);
+        return resolvedData;
+    }
+    
+    /**
+     * Display rank change lightbox for personal promotions
+     */
+    showRankChangeLightbox(type, rankName) {
+        let modal = document.getElementById('rankChangeModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'rankChangeModal';
+            modal.className = `rank-change-modal ${type}`;
+            document.body.appendChild(modal);
+        }
+        
+        const title = type === 'promotion' ? 'Congratulations!' : 'Rank Update';
+        const message = type === 'promotion' ? "You've been promoted to" : "You've been demoted to";
+        
+        modal.innerHTML = `
+            <div class="rank-change-content">
+                <h2 class="rank-change-title">${title}</h2>
+                <p>${message}</p>
+                <h3 class="rank-name">${rankName}</h3>
+                <button class="rank-change-button" id="rank-change-ok-btn">
+                    Got it!
+                </button>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+        
+        // Add close button handler
+        document.getElementById('rank-change-ok-btn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Close when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    /**
+     * Check if a player has been promoted or demoted based on ELO change
+     * This should be called after any ELO changes
+     */
+    async checkAndRecordPromotion(userId, newElo, oldElo, options = {}) {
+        try {
+            // Don't process if ELO hasn't changed or user ID is missing
+            if (newElo === oldElo || !userId) {
+                return null;
+            }
+
+            // Default options
+            const source = options.source || 'automatic';
+            const matchId = options.matchId || null;
+            const adminUser = options.adminUser || null;
+            
+            console.log(`Processing potential rank change: ${oldElo} → ${newElo} (source: ${source})`);
+
+            // Enhanced username resolution - CRITICAL FOR DISPLAYING CORRECT NAME
+            let username = null;
+            let displayName = null;
+            
+            try {
+                // First try: Get from players collection (most accurate)
+                const userDoc = await getDoc(doc(db, 'players', userId));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    username = userData.username || userData.displayName || null;
+                    displayName = userData.displayName || userData.username || null;
+                }
+                
+                // Second try: Check if username was provided in options
+                if (!username && options.username) {
+                    username = options.username;
+                    displayName = options.username;
+                }
+                
+                // Third try: Use auth.currentUser as fallback
+                if (!username && auth.currentUser) {
+                    username = auth.currentUser.displayName || auth.currentUser.email.split('@')[0];
+                    displayName = auth.currentUser.displayName || null;
+                }
+                
+                // Last resort: Try to find in match history
+                if (!username) {
+                    // Try checking matches for this userId
+                    const matchesQuery = query(
+                        collection(db, 'approvedMatches'),
+                        where('winnerId', '==', userId),
+                        limit(1)
+                    );
+                    
+                    const matchDocs = await getDocs(matchesQuery);
+                    if (!matchDocs.empty) {
+                        username = matchDocs.docs[0].data().winnerUsername || 'Unknown Player';
+                        displayName = username;
+                    } else {
+                        // Try as loser
+                        const loserQuery = query(
+                            collection(db, 'approvedMatches'),
+                            where('loserId', '==', userId),
+                            limit(1)
+                        );
+                        
+                        const loserDocs = await getDocs(loserQuery);
+                        if (!loserDocs.empty) {
+                            username = loserDocs[0].data().loserUsername || 'Unknown Player';
+                            displayName = username;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error resolving username:', error);
+            }
+
+            // If we still don't have a username, use a placeholder
+            if (!username) {
+                console.warn('Could not resolve username for userId:', userId);
+                username = 'A player';
+                displayName = 'Unknown Player';
+            }
+            
+            // Get old and new ranks
+            const oldRank = this.getRankName(oldElo);
+            const newRank = this.getRankName(newElo);
+            
+            // Only create promotion/demotion if the rank changed
+            if (oldRank !== newRank) {
+                const isPromotion = newElo > oldElo;
+                const type = isPromotion ? 'promotion' : 'demotion';
+                const rankAchieved = newRank;
+                
+                console.log(`Recording ${type} for ${username}: ${oldElo} (${oldRank}) → ${newElo} (${newRank})`);
+                
+                try {
+                    // Common fields using CONSISTENT NAMING for player identity
+                    const commonFields = {
+                        // Use ALL possible fields to ensure compatibility
+                        player: username,           // Primary field for display
+                        playerUsername: username,    // For compatibility
+                        username: username,          // For compatibility
+                        displayName: displayName,    // For auth integration
+                        userId: userId,              // Keep userId for reference
+                        type: type,
+                        rankAchieved: rankAchieved,
+                        timestamp: serverTimestamp(),
+                        previousElo: oldElo,
+                        newElo: newElo,
+                        change: newElo - oldElo,
+                        previousRank: oldRank,
+                        newRank: newRank,
+                        source: source
+                    };
+                    
+                    // Add match-specific or admin-specific fields
+                    if (source === 'match' && matchId) {
+                        commonFields.matchId = matchId;
+                    } else if (source === 'admin' && adminUser) {
+                        commonFields.modifiedBy = adminUser;
+                        commonFields.isAutomatic = false;
+                    } else {
+                        commonFields.isAutomatic = true;
+                    }
+                    
+                    // Use batch write
+                    const batch = writeBatch(db);
+                    
+                    // Create records in both collections
+                    const eloHistoryRef = doc(collection(db, 'eloHistory'));
+                    const promotionHistoryRef = doc(collection(db, 'promotionHistory'));
+                    
+                    batch.set(eloHistoryRef, commonFields);
+                    batch.set(promotionHistoryRef, commonFields);
+                    
+                    await batch.commit();
+
+                    // Send notification for Discord bot
+                    await this.sendPromotionNotification(
+                        userId,
+                        username,
+                        oldElo,
+                        newElo,
+                        oldRank,
+                        newRank,
+                        type,
+                        {
+                            displayName: displayName,
+                            source: source,
+                            matchId: matchId,
+                            ladder: options.ladder || 'D1'
+                        }
+                    );
+                    
+                    console.log(`Successfully recorded ${type} for ${username} to ${rankAchieved}`);
+                    return rankAchieved;
+                } catch (error) {
+                    console.error('Error writing promotion records:', error);
+                    
+                    // Fallback to individual write if batch fails
+                    try {
+                        await addDoc(collection(db, 'eloHistory'), {
+                            player: username,
+                            playerUsername: username,
+                            username: username,
+                            displayName: displayName,
+                            userId: userId,
+                            type: type,
+                            rankAchieved: rankAchieved,
+                            timestamp: serverTimestamp(),
+                            previousElo: oldElo,
+                            newElo: newElo,
+                            change: newElo - oldElo,
+                            previousRank: oldRank,
+                            source: source,
+                            isAutomatic: source !== 'admin'
+                        });
+                        
+                        // Send notification for Discord bot (fallback path)
+                        await this.sendPromotionNotification(
+                            userId,
+                            username,
+                            oldElo,
+                            newElo,
+                            oldRank,
+                            newRank,
+                            type,
+                            {
+                                displayName: displayName,
+                                source: source,
+                                matchId: matchId,
+                                ladder: options.ladder || 'D1'
+                            }
+                        );
+
+                        return rankAchieved;
+                    } catch (fallbackError) {
+                        console.error('Fallback write failed:', fallbackError);
+                        return null;
+                    }
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Error in promotion/demotion recording:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Get rank name from ELO rating
+     */
+    getRankName(elo) {
+        for (let i = this.RANKS.length - 1; i >= 0; i--) {
+            if (elo >= this.RANKS[i].threshold) {
+                return this.RANKS[i].name;
+            }
+        }
+        return 'Unranked';
+    }
+    
+    /**
+     * Clean up resources
+     */
+    cleanup() {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+    }
+    
+    /**
+     * Check if a rank change is actually new/valid
+     */
+    isNewRankChange(change) {
+        // Only consider recent changes (within last 24 hours)
+        if (change.timestamp) {
+            const changeTime = change.timestamp.seconds * 1000;  // Convert to milliseconds
+            const now = Date.now();
+            const ageInHours = (now - changeTime) / (1000 * 60 * 60);
+            
+            // Skip if older than 24 hours
+            if (ageInHours > 24) {
+                return false;
+            }
+        }
+        
+        // Ensure this is actually a change in rank (not just an ELO change)
+        if (change.previousRank && change.newRank && change.previousRank !== change.newRank) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Send promotion notification to the promotionNotifications collection for Discord bot
+     */
+    async sendPromotionNotification(userId, username, oldElo, newElo, oldRank, newRank, type, options = {}) {
+        try {
+            console.log(`STARTING notification for ${username}'s ${type}`);
+            
+            // Create notification document with all details needed for Discord
+            const notificationData = {
+                userId,
+                username,
+                displayName: options.displayName || username,
+                oldElo: parseInt(oldElo),
+                newElo: parseInt(newElo),
+                eloDifference: parseInt(newElo) - parseInt(oldElo),
+                oldRank,
+                newRank,
+                type, // 'promotion' or 'demotion'
+                timestamp: serverTimestamp(),
+                processed: false, // Flag for the bot to mark when processed
+                source: options.source || 'automatic',
+                matchId: options.matchId || null,
+                ladder: options.ladder || 'D1', // Default to D1 if not specified
+                adminUser: options.adminUser || null
+            };
+            
+            console.log(`Creating Discord notification:`, notificationData);
+            
+            // Add to promotionNotifications collection - THIS IS THE IMPORTANT PART
+            const docRef = await addDoc(collection(db, 'promotionNotifications'), notificationData);
+            console.log(`Discord notification sent successfully with ID: ${docRef.id}`);
+            return true;
+        } catch (error) {
+            console.error('Error sending Discord notification:', error);
+            // Don't throw, to prevent promotion from failing if notification fails
+            return false;
+        }
+    }
+}
+
+// Create and export a singleton instance
+export const promotionManager = new PromotionManager();
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    promotionManager.initialize();
+});
+
+// For backwards compatibility
+export const initializePromotionTracker = () => promotionManager.initialize();
+export const checkAndRecordPromotion = (userId, newElo, oldElo, options) => 
+    promotionManager.checkAndRecordPromotion(userId, newElo, oldElo, options);
+export const getRankName = (elo) => promotionManager.getRankName(elo);

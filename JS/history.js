@@ -1,1 +1,65 @@
-const a21m=a21d;(function(a,b){const k=a21d,c=a();while(!![]){try{const d=parseInt(k(0x180))/0x1*(parseInt(k(0x172))/0x2)+-parseInt(k(0x174))/0x3+-parseInt(k(0x187))/0x4*(parseInt(k(0x186))/0x5)+-parseInt(k(0x193))/0x6*(-parseInt(k(0x188))/0x7)+parseInt(k(0x185))/0x8*(-parseInt(k(0x18f))/0x9)+parseInt(k(0x176))/0xa+parseInt(k(0x173))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a21c,0x2e193));const a21b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a21a=a21b(this,function(){const l=a21d;let a;try{const d=Function('return\x20(function()\x20'+l(0x170)+');');a=d();}catch(f){a=window;}const b=a[l(0x18a)]=a['console']||{},c=[l(0x17e),'warn','info','error',l(0x192),l(0x171),'trace'];for(let g=0x0;g<c['length'];g++){const h=a21b['constructor'][l(0x183)]['bind'](a21b),i=c[g],j=b[i]||h;h[l(0x182)]=a21b['bind'](a21b),h[l(0x17d)]=j['toString']['bind'](j),b[i]=h;}});a21a();function a21d(a,b){const c=a21c();return a21d=function(d,e){d=d-0x170;let f=c[d];if(a21d['RkKIcu']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a21d['XUsoQA']=g,a=arguments,a21d['RkKIcu']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a21d['XUsoQA'](f),a[i]=f):f=j,f;},a21d(a,b);}import{db}from'./firebase-config.js';import{collection,getDocs,query,orderBy}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a21c(){const q=['zxjYB3i','odi3nZqWAMnTzwjb','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGphrKpG','BwfW','CgXHEwvYCW','yxbWzw5Kq2HPBgq','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNnLyxnVBI1OzwfKzxiIig9Uy2XPy2S9iNrOAxmUBMv4DevSzw1LBNrtAwjSAw5NlMnSyxnZtgLZDc50B2DNBguOj2fJDgL2zsCPoYb0AgLZlNf1zxj5u2vSzwn0B3iOjY50B2DNBguTAwnVBICPlMnSyxnZtgLZDc50B2DNBguOj2fJDgL2zsCPiJ4kicaGicaGicaGicaGicaGidXOmJ5tzwfZB24G','Aw5PDa','Dg9tDhjPBMC','Bg9N','C2vHC29UtNvTyMvY','otDfCgzxzMq','DxnLCM5HBwu','x19WCM90B19F','ChjVDg90ExbL','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGicaGicaGica8l3rYpGOGicaGicaGicaGicaGicaGicaGicaGicaGicaG','mtzQt0XJtK4','mJe1ALj3s2jJ','mtC2mJr6AKLQy3G','mJHAv2jbBxC','AM9PBG','y29UC29Szq','Dg9eyxrL','y3jLyxrLrwXLBwvUDa','y3jLyxrLu2vHC29UrwXLBwvUDa','zwXVuMf0Aw5N','mtaXntKZogrgD3zjwq','y2XHC3noyw1L','C2vHC29UCW','zxHJzxb0Aw9U','mZmXota4s1rrBMv1','rxjYB3iGBg9HzgLUzYbZzwfZB25ZoG','zgf0zq','Cg9ZAxrPB24','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','DgfIBgu','nda4mK1ntM5vuW','mJG1odeWoe1XBNDetq','ndCZndmWC0DOC1L5'];a21c=function(){return q;};return a21c();}class HistoryViewer{async[a21m(0x17c)](){const n=a21m;try{const a=collection(db,n(0x191)),b=query(a,orderBy(n(0x17f),'desc')),c=await getDocs(b),d=document['getElementById']('seasons-container');c['forEach'](e=>{const o=n,f=e['data'](),g=this[o(0x18d)](f);d[o(0x17a)](g);});}catch(e){console[n(0x175)](n(0x194),e);}}['createSeasonElement'](a){const p=a21m,b=document[p(0x18c)]('div');b[p(0x190)]='season-container';const c=a[p(0x195)][p(0x18b)]()['toLocaleDateString']();return b['innerHTML']=p(0x17b)+a['seasonNumber']+'</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22toggle-icon\x22>▼</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22season-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<p>Archived:\x20'+c+'</p>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<table\x20class=\x22season-table\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Position</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Player</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<th>Final\x20ELO</th>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</thead>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tbody>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+a[p(0x179)]['sort']((d,e)=>d['position']-e[p(0x196)])[p(0x178)](d=>'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+d[p(0x196)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+d[p(0x181)]+p(0x177)+d[p(0x18e)]+p(0x184))[p(0x189)]('')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tbody>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</table>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',b;}}const viewer=new HistoryViewer();viewer[a21m(0x17c)]();
+import { db } from './firebase-config.js';
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+class HistoryViewer {
+    async init() {
+        try {
+            const seasonsRef = collection(db, 'seasons');
+            const seasonsQuery = query(seasonsRef, orderBy('seasonNumber', 'desc'));
+            const seasonsSnapshot = await getDocs(seasonsQuery);
+            
+            const container = document.getElementById('seasons-container');
+            
+            seasonsSnapshot.forEach(doc => {
+                const seasonData = doc.data();
+                const seasonElement = this.createSeasonElement(seasonData);
+                container.appendChild(seasonElement);
+            });
+
+        } catch (error) {
+            console.error('Error loading seasons:', error);
+        }
+    }
+
+    createSeasonElement(seasonData) {
+        const div = document.createElement('div');
+        div.className = 'season-container';
+        
+        const date = seasonData.date.toDate().toLocaleDateString();
+        
+        div.innerHTML = `
+            <div class="season-header" onclick="this.nextElementSibling.classList.toggle('active'); this.querySelector('.toggle-icon').classList.toggle('active')">
+                <h2>Season ${seasonData.seasonNumber}</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="season-content">
+                <p>Archived: ${date}</p>
+                <table class="season-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Player</th>
+                            <th>Final ELO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${seasonData.players
+                            .sort((a, b) => a.position - b.position)
+                            .map(player => `
+                                <tr>
+                                    <td>${player.position}</td>
+                                    <td>${player.username}</td>
+                                    <td>${player.eloRating}</td>
+                                </tr>
+                            `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        return div;
+    }
+}
+
+const viewer = new HistoryViewer();
+viewer.init();

@@ -1,1 +1,1471 @@
-const a50x=a50d;(function(a,b){const v=a50d,c=a();while(!![]){try{const d=parseInt(v(0x1d3))/0x1*(parseInt(v(0x1ef))/0x2)+parseInt(v(0x209))/0x3*(-parseInt(v(0x1db))/0x4)+-parseInt(v(0x22b))/0x5*(-parseInt(v(0x205))/0x6)+parseInt(v(0x21c))/0x7+parseInt(v(0x23b))/0x8*(-parseInt(v(0x1b2))/0x9)+-parseInt(v(0x218))/0xa*(parseInt(v(0x1ee))/0xb)+-parseInt(v(0x240))/0xc*(-parseInt(v(0x246))/0xd);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a50c,0x3fa91));const a50b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a50a=a50b(this,function(){const w=a50d;let a;try{const d=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[w(0x1ae)]=a['console']||{},c=['log','warn','info','error',w(0x21e),'table','trace'];for(let g=0x0;g<c[w(0x19a)];g++){const h=a50b[w(0x1a2)][w(0x18d)]['bind'](a50b),i=c[g],j=b[i]||h;h['__proto__']=a50b['bind'](a50b),h['toString']=j[w(0x233)][w(0x20e)](j),b[i]=h;}});a50a();import{auth,db}from'./firebase-config.js';function a50d(a,b){const c=a50c();return a50d=function(d,e){d=d-0x18d;let f=c[d];if(a50d['SMpMXm']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a50d['JcIbZu']=g,a=arguments,a50d['SMpMXm']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a50d['JcIbZu'](f),a[i]=f):f=j,f;},a50d(a,b);}import{doc,getDoc,setDoc,collection,query,where,getDocs,limit}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a50c(){const am=['mMvluMrVBq','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNjPyMjVBI1Uyw1LiJ4','ig1HDgnOzxm','rxjYB3iGy2HLy2TPBMCGDg9WihjHBMSGC3rHDhvZoG','DxnLCM5HBwu','yxbWCM92zwrnyxrJAgvZrdm','ugXHEsbVDMvYiduWihn1yMDHBwuGBwf0y2HLCW','DgLTzxn0yw1W','8j+rKsborvCGvg9WifjHBMSGqwnOAwv2zw1LBNq6ia','C3vIz2fTzvr5Cgu','D2LUCW','igjLyxqG','Bgv2zwWTna','q29SBgvJDg9YifjPyMjVBG','Dw5PCxvLt3bWB25LBNrZ','zxzHBhvHDgveB21PBMf0Aw9UuMLIyM9UrNjVBvjHBMTZ','zM9YrwfJAa','q2XHAw1Lzcb0AguGAgLNAgvZDcbZCg90ig9UihrOzsbSywrKzxiGzM9YieDVBgqGCMfUAW','8j+rKsbeB21PBMf0Aw9UifjPyMjVBIbHD2fYzgvKoIbmzxzLBca','vw5KzxjKB2CGuMLIyM9U','zw5KC1DPDgG','C3vIz2fTzu1HDgnOzxm','ntm0ndHVAg55uva','lI4VAw1Hz2vZl3jPyMjVBNmVvw5KzxjKB2CUCg5N','u2LSDMvY','yNvSA0XVywrqBgf5zxjeyxrH','m1ryEgDfyq','Bg9N','8j+rKsbeB21PBMf0zwqG','uMvTyxrJAcbsAwjIB24','8j+oRYbvtKrfuKrprZOG','yMLUza','sg9SzcbTB3jLihrOyw4GnsbYAwjIB25Zigf0igeGDgLTzq','pgKGy2XHC3m9iMzHCYbMys1ZDgfYihjPyMjVBI1KzxzPy2uGyNjVBNPLlxn0yxiIpJWVAt4','4PYfiezVDw5KihbSyxLLCIbKyxrHigzVCIa','rxjYB3iGz2v0DgLUzYbWBgf5zxiGCMLIyM9UCZO','8j+gLsbozxCGDg9WihjHBMSGywnOAwv2zw1LBNrZigzVDw5KigzVCIbJywnOzwqGCgXHEwvYia','8j+tIIa','zMLUzeLUzgv4','Bgv2zwW','C2v0q2fJAgvKrgf0yq','mtKWEvz2EMLs','C2L6zq','C2v0q2fJAgvKtwf0y2HLCW','BwfWugXHEwvK','mJm5odC4muj3q3fJua','zxjYB3i','zxHJzxb0Aw9U','rg9TAw5HDgLVBIbsAwjIB24','4P2mie5VihbSyxLLCIbKyxrHigzVDw5KigzVCIa','q0fdsevFrfvsqvrjt04','iZu1qtngrG','8j+AGcbdywnOzsbOAxqGkg1LBw9YEsKGzM9Yia','BwLU','u3rHBMrHCMq','pgrPDIbJBgfZCZ0ICMLIyM9UlwrLDMLJzxmIpG','z2v0uMLIyM9Uq2fJAgvtDgf0CW','Dw5KzxjKB2DxAw5Z','i0yWotmYqG','q2XHAw1Lzcb0AguGAgLNAgvZDcbZCg90ig9UihrOzsbSywrKzxiGzM9YifnPBhzLCIbYyw5R','mtG1qvDhCKDI','CgXHEwvYuMLIyM9UCW','qNjVBNPL','4PQG77IpiejYAwnRifDHBgWGCMLIyM9UihjLCxvPCMvZiduWkYbTyxrJAgvZicHWBgf5zxiGAgfZia','y2XLyxjpBgrdywnOzq','D2LUBMvYuMf0Aw5N','ihvUzgvYzg9NihDPBNmP','iZzdnunfnW','Dg9tDhjPBMC','Bgv2zwXZ','zwXVuMf0Aw5N','zxzHBhvHDgvfEhbSB3jLCLjPyMjVBKzYB21dB3vUDa','Dg9mB2nHBgvuAw1Lu3rYAw5N','zg9TAw5HDgvKuMfUA3m','rxjYB3iGz2v0DgLUzYbWBgf5zxiGzgf0ysbMB3iG','yMf0y2HuAw1LCG','mtzXBxfsyxa','ywXS','Bg9ZzxjvC2vYBMfTzq','t3zLCMfJAgLLDMvYifjPyMjVBG','iokgKIa','mtjvBMj5Ewm','qMvHDcbHihbPBg90ihDPDgGGDgHLicjszw1HDgnOiIbZDwjNyw1LihnLBgvJDgvK','4PYfifbYzxnLCNzPBMCGzxHPC3rPBMCG','8j+tIIbcDwXRigXVywrLzca','ksbIzwf0ia','z2v0sxrLBq','ndq5mZuXnwTntNbiqW','ktOG','pc9KAxy+','4PQG77Ipie5Vign1CNjLBNqGCgXHEwvYigrHDgeGzM91BMqGzM9Yia','jsb3Aw4GCMf0zsbVDMvYia','8j+uJsbdAgvJA2LUzYb1BMrLCMrVzZOGv2LUBMvYka','ChjVDg90ExbL','igvHCM5Lzca','zgvZy3jPChrPB24','i0zgotuWma','C2v0','q0fdsevFs0vzx1bsruzjwa','iZK2q0vcna','lI4VAw1Hz2vZl3jPyMjVBNmVqNjPy2TxywXSlNbUzW','CMLIyM9UCW','qNjPy2SGv2fSBa','C2v0sxrLBq','Bwf0y2HLC1bSyxLLza','ievmtYKSia','BgvUz3rO','ChvZAa','q0Xfqu5vuf9jtLrfuLzbta','lI4VAw1Hz2vZl3jPyMjVBNmVrxHWBg9YzxiUCg5N','zxzHBhvHDgvbBgXsAwjIB25ZrNjVBurHDge','cIaGicaGicaGpc9KAxy+cIaGica','Bwf0y2HdywnOzq','z2v0ugXHEwvYrgf0yunHy2HLza','y29UC3rYDwn0B3i','4PQG77Ipie1PC3nPBMCGCgXHEwvYigrHDgeGzM9Yia','z2v0','D2LUBMvYvxnLCM5HBwu','ig5LDY91CgrHDgvKihjPyMjVBNmGzM9Yia','Bgv2zwWTns1WBhvZ','CgfYC2u','BwvTB3j5q2fJAgu','zgvSzxrL','8j+pHIbcCMLJAYbxywXSihjPyMjVBIbHD2fYzgvKoIa','zxHPC3rZ','rw1LCMfSza','y29UC29Szq','zxzHBhvHDgvcCMLJA1DHBgXsAwjIB25gCM9Tv2LUuMf0zq','BwfW','CgXHEwvYrgf0yunHy2HL','mtC4ntG0m1PwEg1ota','CgXHEwvYC0qY','lI4VAw1Hz2vZl3jPyMjVBNmVuMvTyxrJAc5WBMC','i0nen0yZmG','AxnvBMrLCMrVz1zPy3rVCNK','Aw52ywXPzgf0zvbSyxLLCKnHy2HL','u29JAwfSAxrLifjPyMjVBG','BgfZDenSzwfUDxa','vw5Yyw5Rzwq','CMvTB3zLsxrLBq','Dg90ywXnyxrJAgvZ','yxv0B0nSzwfUDxa','C3rHCNrZv2L0Aa','Bwf0y2HLCW','ksaTig5LDYbTyxrJAcbKzxrLy3rLza','CgXHEwvYCW','zxzHBhvHDgvvBMrLCMrVz1jPyMjVBKzYB21dB3vUDa','8j+sVIbtyxzPBMCG','iIakicaGicaGicaGicaGicaGicaGicaGy2XHC3m9iNjPyMjVBI1PBwfNzsikicaGicaGicaGicaGicaGicaGicaGB25LCNjVCJ0IDgHPCY5ZDhLSzs5KAxnWBgf5psDUB25LjZSGDgHPCY5UzxH0rwXLBwvUDfnPyMXPBMCUC3r5BguUzgLZCgXHEt0NyMXVy2SNoYi+cIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjYAwjIB24TzMfSBgjHy2SIihn0EwXLpsjKAxnWBgf5oIbUB25LoYbIywnRz3jVDw5KoIa','BM93','CMvWBgfJzq','rxHWBg9YzxiGuMLIyM9U','zg9JCW','yxnZAwDU','8j+oRYbgB3vUzca','z2v0q2fJAgvlzxK','zgf0yq','Bg9ZzxjsyxrPBMC','8j+oRYbvtKrfuKrprYbwsunut1jzoIa','Bwf0y2HdB3vUDa','y29SB3i','ievmtYaO','z2v0q2fJAgvKrgf0yq','odC0mtjsDMnQwMO','ihvUzgvYzg9NihzPy3rVCMLLCYbMB3iG','C2HVDwXKuMvMCMvZAenHy2HL','z2v0q2fJAgvKtwf0y2HLCW','Cg9ZAxrPB24','A2v5CW','pgKGy2XHC3m9iMzHCYbMys1ZDgfYihjPyMjVBI1KzxzPy2uGz29Szc1ZDgfYiJ48l2K+','ugXHEwvKig92zxiGmtaWig1HDgnOzxm','mtCZmtq0ofjpALLTta','zxzHBhvHDgvszw1HDgnOuMLIyM9UrNjVBunVDw50','r29Sza','zxzHBhvHDgvtDwjhyw1LCLjPyMjVBKzYB21dB3vUDa','CgXHEwvYC0qZ','zxzHBhvHDgvdB2XSzwn0B3jsAwjIB25gCM9Tq291BNq','lI4VAw1Hz2vZl3jPyMjVBNmVu29JAwfSAxrLlNbUzW','Dg9gAxHLza','CMvTyxrJAfDPBNm','8j+AGcbcDwXRigXVywrPBMCG','C3vIC3rYAw5N','lI4VAw1Hz2vZl3jPyMjVBNmVDg9WCMfUAY5WBMC','i0zgnZy3nq','Dw5KzwzPBMvK','ywrK','ifrPzxi6ia','8j+oRYbdywnOzsbOAxqGkg1HDgnOzxmPigzVCIa','C3rYAw5NAwz5','AgfZ','odyXm3zJEu9ftq'];a50c=function(){return am;};return a50c();}const RIBBON_DEFINITIONS={'Rematch\x20Ribbon':{'description':a50x(0x241),'image':a50x(0x1b4),'color':'#FF6B6B'},'Overachiever\x20Ribbon':{'description':a50x(0x1da),'image':'../images/ribbons/Overachiever.png','color':a50x(0x193),'levels':[0x64,0xc8,0x12c,0x190,0x1f4,0x258,0x2bc,0x320,0x384,0x3e8]},'Brick\x20Wall':{'description':'Amass\x20at\x20least\x2080%\x20overall\x20win\x20rate\x20percentage\x20(minimum\x2050\x20matches)','image':a50x(0x194),'color':a50x(0x229),'levels':[0x50,0x55,0x5a,0x5f,0x64]},'Collector\x20Ribbon':{'description':a50x(0x20f),'image':'../images/ribbons/Collector.png','color':a50x(0x232),'levels':[0x5,0xa,0xf,0x14,0x19,0x1e,0x23,0x28,0x2d,0x32]},'Sub-Gamer\x20Ribbon':{'description':a50x(0x1f5),'image':'../images/ribbons/Subgamer.png','color':'#A29BFE','levels':[0x32,0x64,0x96,0xc8,0xfa,0x12c,0x15e,0x190,0x1c2,0x1f4]},'Explorer\x20Ribbon':{'description':'Played\x20at\x20least\x2020\x20unique\x20maps','image':a50x(0x19d),'color':a50x(0x222),'levels':[0x14,0x28,0x3c,0x50,0x64,0x78,0x8c,0xa0,0xb4,0xc8]},'Socialite\x20Ribbon':{'description':'Played\x20at\x20least\x2010\x20unique\x20pilots','image':a50x(0x1e1),'color':a50x(0x1e7),'levels':[0xa,0xf,0x14,0x19,0x1e,0x23,0x28,0x2d,0x32,0x37]},'Underdog\x20Ribbon':{'description':'Beat\x20a\x20pilot\x20ranked\x20higher\x20than\x20you','image':a50x(0x206),'color':a50x(0x190),'levels':[0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xa]},'Domination\x20Ribbon':{'description':'Beat\x205\x20unique\x20pilots\x20in\x20a\x20rank\x20(including\x20your\x20own)','image':'../images/ribbons/Domination.png','color':'#8E44AD','levels':[0x1,0x2,0x3,0x4,0x5]},'Top\x20Bronze\x20Pilot':{'description':'Claimed\x20the\x20highest\x20spot\x20on\x20the\x20ladder\x20for\x20Bronze\x20rank','image':a50x(0x1e6),'color':a50x(0x1b5)},'Top\x20Silver\x20Pilot':{'description':a50x(0x22a),'image':a50x(0x1e6),'color':'#C0C0C0'},'Top\x20Gold\x20Pilot':{'description':a50x(0x200),'image':'../images/ribbons/toprank.png','color':'#FFD700'},'Top\x20Emerald\x20Pilot':{'description':'Claimed\x20the\x20highest\x20spot\x20on\x20the\x20ladder\x20for\x20Emerald\x20rank','image':'../images/ribbons/toprank.png','color':'#50C878'}};export const RIBBON_CSS='\x0a/*\x20Stats\x20integration\x20styles\x20*/\x0a.ribbon-section\x20{\x0a\x20\x20\x20\x20grid-column:\x201\x20/\x20-1;\x0a\x20\x20\x20\x20margin-top:\x201rem;\x0a}\x0a\x0a.ribbon-stat-item.full-width\x20{\x0a\x20\x20\x20\x20grid-column:\x201\x20/\x20-1;\x0a\x20\x20\x20\x20margin-bottom:\x200;\x0a}\x0a\x0a/*\x20Military\x20Ribbon\x20Rack\x20Styling\x20-\x20NO\x20OUTER\x20CONTAINER\x20*/\x0a.ribbon-rack-inline\x20{\x0a\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20flex-direction:\x20column;\x0a\x20\x20\x20\x20gap:\x208px;\x0a\x20\x20\x20\x20padding:\x200;\x0a\x20\x20\x20\x20background:\x20transparent;\x0a\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20box-shadow:\x20none;\x0a\x20\x20\x20\x20margin-top:\x2020px;\x0a\x20\x20\x20\x20max-width:\x20100%;\x0a\x20\x20\x20\x20align-items:\x20flex-start;\x0a}\x0a\x0a.ribbon-rack-empty-inline\x20{\x0a\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20padding:\x2060px\x2040px;\x0a\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.3);\x0a\x20\x20\x20\x20border-radius:\x2012px;\x0a\x20\x20\x20\x20border:\x202px\x20solid\x20rgba(255,\x20255,\x20255,\x200.1);\x0a\x20\x20\x20\x20margin-top:\x2020px;\x0a}\x0a\x0a.empty-rack-text\x20{\x0a\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20font-style:\x20italic;\x0a\x20\x20\x20\x20font-size:\x201.2rem;\x0a}\x0a\x0a/*\x20Ribbon\x20Rows\x20*/\x0a.ribbon-row\x20{\x0a\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20gap:\x206px;\x0a\x20\x20\x20\x20margin-bottom:\x206px;\x0a\x20\x20\x20\x20justify-content:\x20flex-start;\x0a}\x0a\x0a.ribbon-row:nth-child(even)\x20{\x0a\x20\x20\x20\x20margin-left:\x2060px;\x0a}\x0a\x0a/*\x20Individual\x20Military\x20Ribbon\x20Styling\x20-\x20FIXED\x20OVERFLOW\x20FOR\x20LEVEL\x20INDICATOR\x20*/\x0a.military-ribbon\x20{\x0a\x20\x20\x20\x20position:\x20relative;\x0a\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20transition:\x20transform\x200.3s\x20ease;\x0a\x20\x20\x20\x20flex-shrink:\x200;\x0a\x20\x20\x20\x20width:\x20190px;\x0a\x20\x20\x20\x20height:\x2060px;\x0a\x20\x20\x20\x20border:\x203px\x20solid\x20#333;\x0a\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20overflow:\x20visible;\x20/*\x20Changed\x20from\x20hidden\x20to\x20visible\x20*/\x0a\x20\x20\x20\x20box-shadow:\x200\x204px\x2012px\x20rgba(0,0,0,0.8);\x0a\x20\x20\x20\x20margin:\x2012px\x2012px\x2012px\x200;\x20/*\x20Added\x20margin\x20to\x20prevent\x20clipping\x20*/\x0a}\x0a\x0a.military-ribbon:hover\x20{\x0a\x20\x20\x20\x20transform:\x20translateY(-4px);\x0a\x20\x20\x20\x20z-index:\x2010;\x0a}\x0a\x0a/*\x20Ribbon\x20image\x20container\x20to\x20handle\x20the\x20actual\x20overflow\x20*/\x0a.ribbon-image-container\x20{\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20height:\x20100%;\x0a\x20\x20\x20\x20overflow:\x20hidden;\x0a\x20\x20\x20\x20border-radius:\x201px;\x0a}\x0a\x0a.ribbon-image\x20{\x0a\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20height:\x20100%;\x0a\x20\x20\x20\x20object-fit:\x20cover;\x0a\x20\x20\x20\x20display:\x20block;\x0a\x20\x20\x20\x20image-rendering:\x20crisp-edges;\x0a}\x0a\x0a.ribbon-fallback\x20{\x0a\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20height:\x20100%;\x0a\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20font-size:\x2016px;\x0a\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20text-shadow:\x200\x202px\x204px\x20rgba(0,0,0,0.8);\x0a\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20line-height:\x201;\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20left:\x200;\x0a}\x0a\x0a.ribbon-name\x20{\x0a\x20\x20\x20\x20font-size:\x2014px;\x0a\x20\x20\x20\x20color:\x20rgba(255,\x20255,\x20255,\x200.9);\x0a\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20line-height:\x201.2;\x0a\x20\x20\x20\x20margin-top:\x206px;\x0a\x20\x20\x20\x20max-width:\x20120px;\x0a\x20\x20\x20\x20overflow:\x20hidden;\x0a\x20\x20\x20\x20text-overflow:\x20ellipsis;\x0a\x20\x20\x20\x20white-space:\x20nowrap;\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20bottom:\x20-24px;\x0a\x20\x20\x20\x20left:\x2050%;\x0a\x20\x20\x20\x20transform:\x20translateX(-50%);\x0a\x20\x20\x20\x20display:\x20none;\x0a\x20\x20\x20\x20font-weight:\x20500;\x0a}\x0a\x0a.military-ribbon:hover\x20.ribbon-name\x20{\x0a\x20\x20\x20\x20display:\x20block;\x0a}\x0a\x0a.ribbon-devices\x20{\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20top:\x2050%;\x0a\x20\x20\x20\x20right:\x206px;\x0a\x20\x20\x20\x20transform:\x20translateY(-50%);\x0a\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20gap:\x203px;\x0a\x20\x20\x20\x20z-index:\x205;\x0a}\x0a\x0a.ribbon-device\x20{\x0a\x20\x20\x20\x20font-size:\x2014px;\x0a\x20\x20\x20\x20text-shadow:\x200\x200\x204px\x20rgba(0,0,0,0.9);\x0a\x20\x20\x20\x20filter:\x20drop-shadow(0\x202px\x204px\x20rgba(0,0,0,0.8));\x0a}\x0a\x0a.bronze-star\x20{\x0a\x20\x20\x20\x20color:\x20#CD7F32;\x0a}\x0a\x0a.silver-star\x20{\x0a\x20\x20\x20\x20color:\x20#C0C0C0;\x0a}\x0a\x0a.gold-star\x20{\x0a\x20\x20\x20\x20color:\x20#FFD700;\x0a}\x0a\x0a/*\x20Level\x20indicator\x20-\x20NOW\x20FULLY\x20VISIBLE\x20*/\x0a.ribbon-level-indicator\x20{\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20top:\x20-8px;\x0a\x20\x20\x20\x20right:\x20-8px;\x0a\x20\x20\x20\x20background:\x20#FFD700;\x0a\x20\x20\x20\x20color:\x20#000;\x0a\x20\x20\x20\x20border-radius:\x2050%;\x0a\x20\x20\x20\x20width:\x2024px;\x0a\x20\x20\x20\x20height:\x2024px;\x0a\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20font-size:\x2012px;\x0a\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20border:\x203px\x20solid\x20#FFF;\x0a\x20\x20\x20\x20box-shadow:\x200\x204px\x208px\x20rgba(0,0,0,0.7);\x0a\x20\x20\x20\x20z-index:\x206;\x0a}\x0a\x0a/*\x20Custom\x20tooltip\x20-\x20only\x20this\x20one\x20will\x20show\x20*/\x0a.military-ribbon::before\x20{\x0a\x20\x20\x20\x20content:\x20attr(data-tooltip);\x0a\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20bottom:\x20100%;\x0a\x20\x20\x20\x20left:\x2050%;\x0a\x20\x20\x20\x20transform:\x20translateX(-50%);\x0a\x20\x20\x20\x20background:\x20rgba(0,0,0,0.95);\x0a\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20padding:\x208px\x2012px;\x0a\x20\x20\x20\x20border-radius:\x206px;\x0a\x20\x20\x20\x20font-size:\x2012px;\x0a\x20\x20\x20\x20white-space:\x20nowrap;\x0a\x20\x20\x20\x20opacity:\x200;\x0a\x20\x20\x20\x20pointer-events:\x20none;\x0a\x20\x20\x20\x20transition:\x20opacity\x200.3s;\x0a\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20margin-bottom:\x208px;\x0a\x20\x20\x20\x20border:\x201px\x20solid\x20rgba(255,\x20255,\x20255,\x200.2);\x0a}\x0a\x0a.military-ribbon:hover::before\x20{\x0a\x20\x20\x20\x20opacity:\x201;\x0a}\x0a\x0a/*\x20Responsive\x20adjustments\x20*/\x0a@media\x20(max-width:\x201024px)\x20{\x0a\x20\x20\x20\x20.military-ribbon\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2034px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin:\x208px\x208px\x208px\x200;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-device\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2012px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-level-indicator\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x20-6px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20right:\x20-6px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-row:nth-child(even)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x2052px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-name\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2012px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x20-20px;\x0a\x20\x20\x20\x20}\x0a}\x0a\x0a@media\x20(max-width:\x20768px)\x20{\x0a\x20\x20\x20\x20.military-ribbon\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x2080px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2028px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin:\x206px\x206px\x206px\x200;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-device\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2010px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-level-indicator\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x2018px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2018px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x209px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x20-5px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20right:\x20-5px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-row:nth-child(even)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x2042px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-name\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2011px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x20-18px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-rack-inline\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20gap:\x205px;\x0a\x20\x20\x20\x20}\x0a}\x0a\x0a@media\x20(max-width:\x20480px)\x20{\x0a\x20\x20\x20\x20.military-ribbon\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x2070px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2024px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin:\x205px\x205px\x205px\x200;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-row:nth-child(even)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x2036px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-rack-inline\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20gap:\x204px;\x0a\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20.ribbon-level-indicator\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x2016px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20height:\x2016px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x20-4px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20right:\x20-4px;\x0a\x20\x20\x20\x20}\x0a}\x0a\x0a.stats-grid\x20.ribbon-section\x20{\x0a\x20\x20\x20\x20background:\x20transparent;\x0a\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20padding:\x200;\x0a}\x0a\x0a.stats-grid\x20.ribbon-stat-item\x20{\x0a\x20\x20\x20\x20background-color:\x20rgba(0,\x200,\x200,\x200.3);\x0a\x20\x20\x20\x20padding:\x2025px;\x0a\x20\x20\x20\x20border-radius:\x2010px;\x0a\x20\x20\x20\x20text-align:\x20center;\x0a}\x0a\x0a.stats-grid\x20.ribbon-stat-item\x20.stat-label\x20{\x0a\x20\x20\x20\x20font-size:\x2016px;\x0a\x20\x20\x20\x20text-transform:\x20uppercase;\x0a\x20\x20\x20\x20opacity:\x200.9;\x0a\x20\x20\x20\x20margin-bottom:\x2020px;\x0a\x20\x20\x20\x20color:\x20rgba(255,\x20255,\x20255,\x200.95);\x0a\x20\x20\x20\x20font-weight:\x20bold;\x0a}\x0a\x0a.ribbon-level-indicator.level-1\x20{\x20background:\x20#808080;\x20}\x0a.ribbon-level-indicator.level-2\x20{\x20background:\x20#CD7F32;\x20}\x0a.ribbon-level-indicator.level-3\x20{\x20background:\x20#b9f1fc;\x20}\x0a.ribbon-level-indicator.level-4\x20{\x20background:\x20#FFD700;\x20}\x0a.ribbon-level-indicator.level-5-plus\x20{\x20background:\x20#50C878;\x20}\x0a';class RibbonCacheManager{constructor(){const y=a50x;this[y(0x1a9)]=new Map(),this['CACHE_DURATION']=0x3c*0x3c*0x3e8,this[y(0x192)]='ribbon_cache_',this['lastCleanup']=Date[y(0x1c5)](),this[y(0x19c)]=0x1e*0x3c*0x3e8;}[a50x(0x1cb)](a,b){const z=a50x;return''+this[z(0x192)]+a+'_'+b;}[a50x(0x1d2)](a,b){const A=a50x;this['autoCleanup']();const c=this['getCacheKey'](a,b);if(this['memoryCache']['has'](c)){const f=this['memoryCache']['get'](c);if(Date[A(0x1c5)]()-f[A(0x1f6)]<this[A(0x221)])return console['log'](A(0x223)+a),f[A(0x1cc)];this['memoryCache']['delete'](c);}const d=localStorage[A(0x245)](c);if(d)try{const g=JSON['parse'](d);if(Date[A(0x1c5)]()-g['timestamp']<this[A(0x221)])return this[A(0x1a9)][A(0x191)](c,{'data':g['ribbons'],'timestamp':g['timestamp'],'matchCount':g[A(0x1cf)]}),console['log']('💾\x20Cache\x20hit\x20(localStorage)\x20for\x20'+a),g[A(0x195)];localStorage['removeItem'](c);}catch(h){localStorage['removeItem'](c);}return null;}['setCachedData'](a,b,c,d){const B=a50x,f=this['getCacheKey'](a,b),g=Date['now']();this[B(0x1a9)]['set'](f,{'data':c,'timestamp':g,'matchCount':d});try{const h={'ribbons':c,'matchCount':d,'timestamp':g,'version':0x3};localStorage['setItem'](f,JSON[B(0x1ec)](h));}catch(i){this[B(0x22f)]();try{localStorage[B(0x197)](f,JSON['stringify'](data));}catch(j){}}}[a50x(0x1d5)](a,b,c){const C=a50x,d=this[C(0x1cb)](a,b);if(this[C(0x1a9)]['has'](d)){const g=this['memoryCache']['get'](d);return g[C(0x1cf)]!==c;}const f=localStorage[C(0x245)](d);if(f)try{const h=JSON['parse'](f);return h['matchCount']!==c;}catch(i){return!![];}return!![];}[a50x(0x1b7)](a,b){const D=a50x,c=this['getCacheKey'](a,b);this['memoryCache'][D(0x1aa)](c),localStorage[D(0x1bb)](c),console['log']('🗑️\x20Invalidated\x20cache\x20for\x20'+a+'\x20('+b+D(0x1c0));}['autoCleanup'](){const E=a50x,a=Date[E(0x1c5)]();a-this[E(0x1b9)]>this[E(0x19c)]&&(this['cleanup'](),this['lastCleanup']=a);}['cleanup'](){const F=a50x,a=Date[F(0x1c5)]();let b=0x0,c=0x0;for(const [d,f]of this[F(0x1a9)]['entries']()){a-f['timestamp']>this[F(0x221)]&&(this[F(0x1a9)]['delete'](d),b++);}for(let g=localStorage[F(0x19a)]-0x1;g>=0x0;g--){const h=localStorage['key'](g);if(h&&h[F(0x1be)](this[F(0x192)]))try{const j=JSON['parse'](localStorage[F(0x245)](h));a-j['timestamp']>this[F(0x221)]&&(localStorage[F(0x1bb)](h),c++);}catch(k){localStorage[F(0x1bb)](h),c++;}}}['clearOldCache'](){const G=a50x,a=[];for(let c=0x0;c<localStorage[G(0x19a)];c++){const d=localStorage['key'](c);if(d&&d['startsWith'](this['CACHE_KEY_PREFIX']))try{const f=JSON[G(0x1a8)](localStorage['getItem'](d));a[G(0x19b)]({'key':d,'timestamp':f[G(0x1f6)]});}catch(g){localStorage['removeItem'](d);}}a['sort']((h,j)=>h['timestamp']-j['timestamp']);const b=Math['floor'](a[G(0x19a)]/0x2);for(let h=0x0;h<b;h++){localStorage['removeItem'](a[h]['key']);}}['getCacheStats'](){const H=a50x;return{'memoryEntries':this[H(0x1a9)]['size'],'lastCleanup':new Date(this['lastCleanup'])[H(0x237)]()};}}class MatchCacheManager{constructor(){const I=a50x;this[I(0x1a0)]=new Map(),this[I(0x221)]=0xf*0x3c*0x3e8,this['lastCleanup']=Date[I(0x1c5)]();}[a50x(0x1d6)](a,b){const J=a50x;this[J(0x1bd)]();const c=a+'_'+b,d=this[J(0x1a0)][J(0x1a4)](c);if(d&&Date['now']()-d[J(0x1f6)]<this['CACHE_DURATION'])return console[J(0x20a)](J(0x1eb)+a),d[J(0x1bf)];return d&&this['matchCache'][J(0x1aa)](c),null;}[a50x(0x21a)](a,b,c){const K=a50x,d=a+'_'+b;this[K(0x1a0)]['set'](d,{'matches':c,'timestamp':Date['now']()});}['autoCleanup'](){const L=a50x,a=Date['now']();if(a-this['lastCleanup']>0x5*0x3c*0x3e8){let b=0x0;for(const [c,d]of this['matchCache']['entries']()){a-d[L(0x1f6)]>this['CACHE_DURATION']&&(this['matchCache']['delete'](c),b++);}this[L(0x1b9)]=a;}}['getCacheStats'](){const M=a50x;return{'entries':this[M(0x1a0)]['size'],'lastCleanup':new Date(this['lastCleanup'])['toLocaleTimeString']()};}}class RibbonSystem{constructor(){const N=a50x;this['pendingEvaluations']=new Map(),this[N(0x23a)]=null,this['BATCH_DELAY']=0x32,this[N(0x1b1)]=new Map();}async[a50x(0x208)](a,b){const O=a50x,c=b==='D1'?O(0x1c1):b==='D2'?O(0x1b3):O(0x1df),d=collection(db,c),e=await getDocs(d),f=new Map();return e['forEach'](g=>{const P=O,h=g[P(0x1cc)]();h['username']&&(h[P(0x235)]!==undefined&&(h['rating']=h['eloRating']),f[P(0x191)](h['username'],h));}),console[O(0x20a)](O(0x243)+f[O(0x219)]+'\x20players\x20from\x20'+c),f;}async[a50x(0x19e)](a,b,c,d){const Q=a50x,e={},f=b['username'],g={'totalMatches':a['length'],'wins':0x0,'rematchWins':0x0,'subgameMatches':0x0,'uniqueMaps':new Set(),'uniqueOpponents':new Set(),'underdogWins':0x0,'dominatedRanks':new Set()},h=new Set();a[Q(0x1ff)](p=>{const R=Q,q=p[R(0x1a5)]===f,r=q?p['loserUsername']:p[R(0x1a5)];if(r)h['add'](r);}),console['log'](Q(0x1e4)+h['size']+'\x20player\x20records\x20for\x20underdog\x20calculations...');const i=await this[Q(0x208)]([...h,f],d),j=i[Q(0x1a4)](f);!j&&console[Q(0x20a)](Q(0x249)+f);const k={0x0:new Set(),0x1:new Set(),0x2:new Set(),0x3:new Set(),0x4:new Set()};a['forEach'](p=>{const S=Q,q=p['winnerUsername']===f,r=q?p[S(0x23d)]:p[S(0x1a5)];if(q){g['wins']++;p[S(0x1f8)]==='Rematch'&&g['rematchWins']++;this['isUnderdogVictoryFast'](p,f,j,i)&&g[S(0x228)]++;const s=i['get'](r);if(s){const t=s['eloRating']||0x0,u=getPlayerRankTier(t);k[u][S(0x1e9)](r);}}p['subgameType']&&p[S(0x1f8)]!==S(0x225)&&g[S(0x204)]++,p[S(0x21b)]&&g['uniqueMaps'][S(0x1e9)](p['mapPlayed']),r&&g[S(0x1fd)][S(0x1e9)](r);}),Object[Q(0x1d8)](k)[Q(0x1ff)](p=>{const T=Q;k[p]['size']>=0x5&&g['dominatedRanks'][T(0x1e9)](parseInt(p));}),console['log'](Q(0x1ca)+g['underdogWins']+Q(0x1d4)+f),console['log'](Q(0x20b)+g[Q(0x238)][Q(0x219)]+'\x20ranks:\x20['+Array['from'](g[Q(0x238)])[Q(0x1b0)](p=>getRankTierName(p))['join'](',\x20')+']');const l=g['totalMatches']>0x0?g['wins']/g[Q(0x1bc)]*0x64:0x0,m=[[Q(0x23e),this['evaluateOverachieverRibbonFromCount'](g[Q(0x1bc)],c)],['Rematch\x20Ribbon',this['evaluateRematchRibbonFromCount'](g[Q(0x1e3)],c)],['Sub-Gamer\x20Ribbon',this[Q(0x1de)](g['subgameMatches'],c)],['Explorer\x20Ribbon',this[Q(0x236)](g['uniqueMaps']['size'],c)],['Socialite\x20Ribbon',this['evaluateSocialiteRibbonFromCount'](g['uniqueOpponents']['size'],c)],[Q(0x196),this[Q(0x1af)](l,c,g[Q(0x1bc)])],[Q(0x202),this['evaluateUnderdogRibbonFromCount'](g[Q(0x228)],c)],[Q(0x21f),this[Q(0x1fe)](g['dominatedRanks']['size'],c)]];m[Q(0x1ff)](([p,q])=>{q&&(e[p]=q);});const n=Object['keys'](c)['length']+Object[Q(0x1d8)](e)[Q(0x19a)],o=this[Q(0x1e0)](n,c);return o&&(e[Q(0x1fc)]=o),e;}[a50x(0x1fe)](a,b){const U=a50x;if(a===0x0)return null;const c=b['Domination\x20Ribbon']||{'level':0x0};if(a>c[U(0x216)]){const d=[];for(let e=0x0;e<a;e++){d['push'](getRankTierName(e));}return console[U(0x20a)](U(0x201)+c['level']+U(0x23f)+a+'\x20(Dominated:\x20'+d['join'](',\x20')+')'),{'level':a,'awardedAt':new Date(),'dominatedRanks':d};}return null;}async['checkTopRankStatus'](a,b){const V=a50x;try{const c=b==='D1'?V(0x1c1):b==='D2'?'playersD2':V(0x1df),d=await this[V(0x1a1)](a,b);if(!d||d['eloRating']===undefined)return console[V(0x20a)]('❌\x20No\x20ELO\x20rating\x20data\x20for\x20'+a),null;const e=d['eloRating'],f=getPlayerRankTier(e),g=getRankTierName(f);if(g===V(0x1ba))return console[V(0x20a)]('❌\x20'+a+'\x20is\x20Unranked\x20('+e+'\x20ELO)'),null;console[V(0x20a)]('🔍\x20Checking\x20Top\x20'+g+'\x20status\x20for\x20'+a+'\x20('+e+'\x20ELO)');const h=collection(db,c),i=await getDocs(h);let j=null,k=-0x1,l=0x0;i[V(0x1ff)](n=>{const W=V,o=n['data'](),p=o[W(0x235)]||0x0,q=getPlayerRankTier(p);q===f&&(l++,p>k&&(k=p,j=o[W(0x1f3)]));});const m=j===a;return console['log'](V(0x214)+g+V(0x1ea)+l+'\x20players,\x20Top:\x20'+j+'\x20('+k+V(0x199)+a+'\x20is\x20#1:\x20'+m),m?g:null;}catch(n){return console[V(0x21d)](V(0x1f2),n),null;}}async['evaluateTopRankRibbon'](a,b,c){const X=a50x,d=await this['checkTopRankStatus'](a,b),e={};if(d){const f='Top\x20'+d+'\x20Pilot';if(RIBBON_DEFINITIONS[f]){const g=c[f];!g?(console[X(0x20a)](X(0x1f7)+a+X(0x18e)+f+'!'),e[f]={'level':0x1,'awardedAt':new Date(),'rank':d,'achievedAt':new Date()}):console['log']('✅\x20'+a+'\x20already\x20has\x20'+f+'\x20-\x20No\x20changes\x20needed');}}return Object['keys'](c)['forEach'](h=>{const Y=X;h[Y(0x1be)]('Top\x20')&&h[Y(0x203)]('\x20Pilot')&&(!e[h]&&console[Y(0x20a)](Y(0x242)+h));}),e;}async['evaluateAllRibbonsForPlayerOptimized'](a,b='D1'){const Z=a50x;try{const c=ribbonCache['getCachedData'](a,b);if(c){const k=await this['evaluateTopRankRibbon'](a,b,c);if(Object['keys'](k)[Z(0x19a)]>0x0){console[Z(0x20a)](Z(0x213)+a),await this['savePlayerRibbonsOptimized'](a,k,b);const l={...c,...k};return ribbonCache[Z(0x217)](a,b,l,0x0),l;}return c;}const [d,e]=await Promise[Z(0x23c)]([this[Z(0x1a1)](a,b),this['getPlayerRibbonsCached'](a,b)]);if(!d)return{};const f=d[Z(0x198)]||0x0,g=await this['evaluateTopRankRibbon'](a,b,e);if(!ribbonCache[Z(0x1d5)](a,b,f)){if(Object['keys'](g)[Z(0x19a)]>0x0){await this['savePlayerRibbonsOptimized'](a,g,b);const m={...e,...g};return ribbonCache['setCachedData'](a,b,m,f),m;}return ribbonCache['setCachedData'](a,b,e,f),e;}const h=await this['getPlayerMatchesOptimized'](a,b),i=await this[Z(0x19e)](h,d,e,b);Object[Z(0x1c9)](i,g);Object['keys'](i)['length']>0x0&&(console['log'](Z(0x1c3)+Object['keys'](i)[Z(0x19a)]+Z(0x1a6)+a),await this['savePlayerRibbonsOptimized'](a,i,b));const j={...e,...i};return ribbonCache['setCachedData'](a,b,j,h['length']),j;}catch(n){return console['error']('❌\x20Error\x20in\x20ribbon\x20evaluation:',n),{};}}async[a50x(0x1b6)](a,b,c){const a0=a50x,d=a[a0(0x1a5)]===b;if(!d)return![];const e=a['loserUsername'],[f,g]=await Promise[a0(0x23c)]([this['getPlayerDataCached'](b,c),this['getPlayerDataCached'](e,c)]);if(!f||!g)return console['log'](a0(0x1a3)+b+'\x20or\x20'+e),![];const h=f['eloRating']||0x0,i=g['eloRating']||0x0,j=getPlayerRankTier(h),k=getPlayerRankTier(i);console[a0(0x20a)](a0(0x24b)+b+a0(0x247)+h+a0(0x1d1)+getRankTierName(j)+')\x20vs\x20Loser('+e+'):\x20'+i+a0(0x1d1)+getRankTierName(k)+')');if(k>j)return console[a0(0x20a)](a0(0x1ce)+getRankTierName(j)+a0(0x1fa)+getRankTierName(k)+'!'),!![];return console[a0(0x20a)]('❌\x20Not\x20underdog:\x20'+getRankTierName(j)+'\x20vs\x20'+getRankTierName(k)),![];}['isUnderdogVictoryFast'](a,b,c,d){const a1=a50x,e=a['winnerUsername']===b;if(!e)return![];const f=a['loserUsername'],g=d['get'](f);if(!c||!g)return![];const h=c[a1(0x235)]||0x0,i=g['eloRating']||0x0,j=getPlayerRankTier(h),k=getPlayerRankTier(i);if(k>j)return console[a1(0x20a)](a1(0x20d)+getRankTierName(j)+'('+h+a1(0x244)+getRankTierName(k)+'('+i+')'),!![];return![];}async[a50x(0x19e)](a,b,c,d){const a2=a50x,e={},f=b[a2(0x1f3)],g={'totalMatches':a[a2(0x19a)],'wins':0x0,'rematchWins':0x0,'subgameMatches':0x0,'uniqueMaps':new Set(),'uniqueOpponents':new Set(),'underdogWins':0x0},h=new Set();a['forEach'](o=>{const a3=a2,p=o['winnerUsername']===f,q=p?o[a3(0x23d)]:o['winnerUsername'];if(q)h['add'](q);}),console['log'](a2(0x1e4)+h[a2(0x219)]+'\x20player\x20records\x20for\x20underdog\x20calculations...');const i=await this['bulkLoadPlayerData']([...h,f],d),j=i[a2(0x1a4)](f);!j&&console['log'](a2(0x249)+f);a[a2(0x1ff)](o=>{const a4=a2,p=o['winnerUsername']===f,q=p?o['loserUsername']:o['winnerUsername'];p&&(g['wins']++,o[a4(0x1f8)]==='Rematch'&&g['rematchWins']++,this['isUnderdogVictoryFast'](o,f,j,i)&&g[a4(0x228)]++),o[a4(0x1f8)]&&o[a4(0x1f8)]!==a4(0x225)&&g['subgameMatches']++,o['mapPlayed']&&g['uniqueMaps']['add'](o['mapPlayed']),q&&g[a4(0x1fd)][a4(0x1e9)](q);}),console[a2(0x20a)]('🎯\x20Found\x20'+g[a2(0x228)]+a2(0x1d4)+f);const k=g['totalMatches']>0x0?g[a2(0x1f9)]/g[a2(0x1bc)]*0x64:0x0,l=[['Overachiever\x20Ribbon',this['evaluateOverachieverRibbonFromCount'](g[a2(0x1bc)],c)],[a2(0x20c),this['evaluateRematchRibbonFromCount'](g['rematchWins'],c)],['Sub-Gamer\x20Ribbon',this['evaluateSubGamerRibbonFromCount'](g[a2(0x204)],c)],['Explorer\x20Ribbon',this['evaluateExplorerRibbonFromCount'](g['uniqueMaps']['size'],c)],[a2(0x1b8),this['evaluateSocialiteRibbonFromCount'](g[a2(0x1fd)][a2(0x219)],c)],[a2(0x196),this['evaluateBrickWallRibbonFromWinRate'](k,c,g['totalMatches'])],['Underdog\x20Ribbon',this[a2(0x1c2)](g[a2(0x228)],c)]];l['forEach'](([o,p])=>{p&&(e[o]=p);});const m=Object[a2(0x1d8)](c)[a2(0x19a)]+Object[a2(0x1d8)](e)[a2(0x19a)],n=this['evaluateCollectorRibbonFromCount'](m,c);return n&&(e[a2(0x1fc)]=n),e;}async['getPlayerMatchesOptimized'](a,b){const a5=a50x,c=matchCache[a5(0x1d6)](a,b);if(c)return c;try{const d=b==='D1'?'approvedMatches':b==='D2'?'approvedMatchesD2':a5(0x1f4),e=collection(db,d),[f,g]=await Promise['all']([getDocs(query(e,where('winnerUsername','==',a))),getDocs(query(e,where(a5(0x23d),'==',a)))]),h=new Set(),i=[];return f['forEach'](j=>{const a6=a5;if(!h['has'](j['id'])){h['add'](j['id']);const k={'id':j['id'],...j[a6(0x1cc)]()};if(!k[a6(0x230)])k[a6(0x230)]=0x0;if(!k[a6(0x1cd)])k['loserRating']=0x0;i['push'](k);}}),g[a5(0x1ff)](j=>{const a7=a5;if(!h[a7(0x1ed)](j['id'])){h['add'](j['id']);const k={'id':j['id'],...j['data']()};if(!k['winnerRating'])k[a7(0x230)]=0x0;if(!k[a7(0x1cd)])k[a7(0x1cd)]=0x0;i[a7(0x19b)](k);}}),matchCache['setCachedMatches'](a,b,i),i;}catch(j){return console[a5(0x21d)]('❌\x20Error\x20fetching\x20matches:',j),[];}}async['getPlayerDataCached'](a,b){const a8=a50x;try{const c=b==='D1'?a8(0x1c1):b==='D2'?'playersD2':a8(0x1df),d=collection(db,c),e=query(d,where('username','==',a),limit(0x1)),f=await getDocs(e);if(f['empty'])return console['log'](a8(0x220)+a+'\x20in\x20'+c),null;const g=f[a8(0x1c8)][0x0]['data']();return g['eloRating']!==undefined&&(g['rating']=g['eloRating']),console['log'](a8(0x211)+a+':\x20ELO\x20'+g['eloRating']+',\x20Position\x20'+g[a8(0x1d7)]),g;}catch(h){return console[a8(0x21d)](a8(0x239)+a+':',h),null;}}async['getPlayerRibbonsCached'](a,b){const a9=a50x;try{const c=a9(0x22c)+(b==='D1'?'':b),d=doc(db,c,a),e=await getDoc(d);return e[a9(0x1ac)]()?e[a9(0x1cc)]()['ribbons']||{}:{};}catch(f){return console[a9(0x21d)](a9(0x212),f),{};}}async['savePlayerRibbonsOptimized'](a,b,c){const aa=a50x;try{const d=aa(0x22c)+(c==='D1'?'':c),e=doc(db,d,a),f=await this['getPlayerRibbonsCached'](a,c),g={...f,...b};await setDoc(e,{'username':a,'ladder':c,'ribbons':g,'lastUpdated':new Date()},{'merge':!![]});}catch(h){console[aa(0x21d)]('Error\x20saving\x20ribbons:',h);}}['evaluateOverachieverRibbonFromCount'](a,b){const ab=a50x,c=b['Overachiever\x20Ribbon']||{'level':0x0},d=RIBBON_DEFINITIONS[ab(0x23e)]['levels'],e=d['findIndex'](g=>a<g),f=e===-0x1?d[ab(0x19a)]:e;if(f>c['level'])return{'level':f,'awardedAt':new Date()};return null;}[a50x(0x1dc)](a,b){if(a===0x0)return null;const c=b['Rematch\x20Ribbon']||{'level':0x0};if(a>c['level'])return{'level':a,'awardedAt':new Date()};return null;}[a50x(0x1de)](a,b){const ac=a50x,c=b['Sub-Gamer\x20Ribbon']||{'level':0x0},d=RIBBON_DEFINITIONS['Sub-Gamer\x20Ribbon'][ac(0x234)],e=d[ac(0x215)](g=>a<g),f=e===-0x1?d[ac(0x19a)]:e;if(f>c[ac(0x216)])return{'level':f,'awardedAt':new Date()};return null;}['evaluateExplorerRibbonFromCount'](a,b){const ad=a50x,c=b[ad(0x1c7)]||{'level':0x0},d=RIBBON_DEFINITIONS[ad(0x1c7)]['levels'],e=d[ad(0x215)](g=>a<g),f=e===-0x1?d[ad(0x19a)]:e;if(f>c['level'])return{'level':f,'awardedAt':new Date()};return null;}['evaluateSocialiteRibbonFromCount'](a,b){const ae=a50x,c=b['Socialite\x20Ribbon']||{'level':0x0},d=RIBBON_DEFINITIONS['Socialite\x20Ribbon'][ae(0x234)],e=d['findIndex'](g=>a<g),f=e===-0x1?d['length']:e;if(f>c['level'])return{'level':f,'awardedAt':new Date()};return null;}['evaluateBrickWallRibbonFromWinRate'](a,b,c){const af=a50x;if(c<0x32)return console['log'](af(0x22e)+c+')'),null;const d=b[af(0x196)]||{'level':0x0},e=RIBBON_DEFINITIONS[af(0x196)]['levels'],f=e[af(0x215)](h=>a<h),g=f===-0x1?e[af(0x19a)]:f;if(g>d[af(0x216)])return console[af(0x20a)](af(0x1ab)+a[af(0x1e2)](0x1)+af(0x24a)+c+af(0x1f1)),{'level':g,'awardedAt':new Date(),'winRate':a,'matchesPlayed':c};return null;}[a50x(0x1e0)](a,b){const ag=a50x,c=b[ag(0x1fc)]||{'level':0x0},d=RIBBON_DEFINITIONS[ag(0x1fc)]['levels'],e=d[ag(0x215)](g=>a<g),f=e===-0x1?d[ag(0x19a)]:e;if(f>c[ag(0x216)])return{'level':f,'awardedAt':new Date()};return null;}[a50x(0x1c2)](a,b){const ah=a50x;if(a===0x0)return null;const c=b[ah(0x202)]||{'level':0x0},d=RIBBON_DEFINITIONS[ah(0x202)]['levels'];let e=0x0;for(let f=0x0;f<d['length'];f++){if(a>=d[f])e=f+0x1;else break;}if(e>c['level'])return console['log']('🏆\x20Underdog\x20Ribbon\x20upgrade:\x20Level\x20'+c['level']+ah(0x23f)+e+'\x20('+a+ah(0x231)),{'level':e,'awardedAt':new Date()};return null;}}function getPlayerRankTier(a){if(a===undefined||a===null)return 0x0;const b=Number(a);if(isNaN(b))return 0x0;if(b>=0x7d0)return 0x4;if(b>=0x708)return 0x3;if(b>=0x640)return 0x2;if(b>=0x578)return 0x1;return 0x0;}function getRankTierName(a){const ai=a50x,b=[ai(0x1ba),ai(0x22d),ai(0x207),ai(0x1dd),ai(0x1ad)];return b[a]||'Unranked';}const ribbonSystem=new RibbonSystem(),ribbonCache=new RibbonCacheManager(),matchCache=new MatchCacheManager();typeof window!==a50x(0x1e8)&&(window[a50x(0x227)]=()=>{return{'ribbon':ribbonCache['getCacheStats'](),'match':matchCache['getCacheStats']()};});export async function evaluatePlayerRibbons(a,b='D1'){return await ribbonSystem['evaluateAllRibbonsForPlayerOptimized'](a,b);}export function getRibbonHTML(a,b){const aj=a50x,c=RIBBON_DEFINITIONS[a];if(!c)return'';const d=b[aj(0x216)]||0x1,e=a['replace']('\x20Ribbon','')[aj(0x1c6)]('\x20Badge',''),f=i=>{const ak=aj;if(i<=0x1)return'level-1';if(i<=0x2)return'level-2';if(i<=0x3)return'level-3';if(i<=0x4)return ak(0x1fb);return ak(0x1a7);},g=j=>{const al=aj;if(j<=0x1)return'';const k=[];if(j>=0x2&&j<=0x4){const l=Math[al(0x224)](j-0x1,0x3);for(let m=0x0;m<l;m++){k['push']('<i\x20class=\x22fas\x20fa-star\x20ribbon-device\x20bronze-star\x22></i>');}}if(j>=0x5&&j<=0x7){k[al(0x19b)]('<i\x20class=\x22fas\x20fa-star\x20ribbon-device\x20silver-star\x22></i>');const n=Math[al(0x224)](j-0x5,0x2);for(let o=0x0;o<n;o++){k['push'](al(0x210));}}return j>=0x8&&k[al(0x19b)](al(0x1d9)),k['length']>0x0?al(0x226)+k['join']('')+'</div>':'';},h=c[aj(0x18f)]+'\x20-\x20Level\x20'+d;return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22military-ribbon\x22\x20data-tooltip=\x22'+h+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ribbon-image-container\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22'+c['image']+'\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20alt=\x22'+a+aj(0x1c4)+c[aj(0x1d0)]+';\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+e[aj(0x1e5)](0x0,0x6)+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+g(d)+aj(0x1f0)+e+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(d>0x1?'<div\x20class=\x22ribbon-level-indicator\x20'+f(d)+'\x22>'+d+aj(0x248):'')+aj(0x19f);}
+// Add the missing imports at the top
+import { auth, db } from './firebase-config.js';
+import { 
+    doc, 
+    getDoc, 
+    setDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs,
+    limit
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+// Updated ribbon definitions - Remove levels from Top Rank ribbons
+const RIBBON_DEFINITIONS = {
+    'Rematch Ribbon': {
+        description: 'Beat a pilot with the "Rematch" subgame selected',
+        image: '../images/ribbons/Rematch.png',
+        color: '#FF6B6B'
+    },
+    'Overachiever Ribbon': {
+        description: 'Played over 100 matches',
+        image: '../images/ribbons/Overachiever.png',
+        color: '#96CEB4',
+        levels: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    },
+    'Brick Wall': {
+        description: 'Amass at least 80% overall win rate percentage (minimum 50 matches)',
+        image: '../images/ribbons/BrickWall.png',
+        color: '#F0932B',
+        levels: [80, 85, 90, 95, 100]
+    },
+    'Collector Ribbon': {
+        description: 'Hold more than 5 ribbons at a time',
+        image: '../images/ribbons/Collector.png',
+        color: '#6C5CE7',
+        levels: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    },
+    'Sub-Gamer Ribbon': {
+        description: 'Play over 50 subgame matches',
+        image: '../images/ribbons/Subgamer.png',
+        color: '#A29BFE',
+        levels: [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    },
+    'Explorer Ribbon': {
+        description: 'Played at least 20 unique maps',
+        image: '../images/ribbons/Explorer.png',
+        color: '#55A3FF',
+        levels: [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    },
+    'Socialite Ribbon': {
+        description: 'Played at least 10 unique pilots',
+        image: '../images/ribbons/Socialite.png',
+        color: '#FF7675',
+        levels: [10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+    },
+    'Underdog Ribbon': {
+        description: 'Beat a pilot ranked higher than you',
+        image: '../images/ribbons/Underdog.png',
+        color: '#FF9500',
+        levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    },
+    'Domination Ribbon': {
+        description: 'Beat 5 unique pilots in a rank (including your own)',
+        image: '../images/ribbons/Domination.png',
+        color: '#8E44AD',
+        levels: [1, 2, 3, 4, 5] // Level = number of ranks dominated
+    },
+    'Top Bronze Pilot': {
+        description: 'Claimed the highest spot on the ladder for Bronze rank',
+        image: '../images/ribbons/toprank.png',
+        color: '#CD7F32'
+        // No levels array - single achievement
+    },
+    'Top Silver Pilot': {
+        description: 'Claimed the highest spot on the ladder for Silver rank',
+        image: '../images/ribbons/toprank.png',
+        color: '#C0C0C0'
+        // No levels array - single achievement
+    },
+    'Top Gold Pilot': {
+        description: 'Claimed the highest spot on the ladder for Gold rank',
+        image: '../images/ribbons/toprank.png',
+        color: '#FFD700'
+        // No levels array - single achievement
+    },
+    'Top Emerald Pilot': {
+        description: 'Claimed the highest spot on the ladder for Emerald rank',
+        image: '../images/ribbons/toprank.png',
+        color: '#50C878'
+        // No levels array - single achievement
+    }
+};
+
+export const RIBBON_CSS = `
+/* Stats integration styles */
+.ribbon-section {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+}
+
+.ribbon-stat-item.full-width {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+/* Military Ribbon Rack Styling - NO OUTER CONTAINER */
+.ribbon-rack-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin-top: 20px;
+    max-width: 100%;
+    align-items: flex-start;
+}
+
+.ribbon-rack-empty-inline {
+    text-align: center;
+    padding: 60px 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    margin-top: 20px;
+}
+
+.empty-rack-text {
+    color: #888;
+    font-style: italic;
+    font-size: 1.2rem;
+}
+
+/* Ribbon Rows */
+.ribbon-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    justify-content: flex-start;
+}
+
+.ribbon-row:nth-child(even) {
+    margin-left: 60px;
+}
+
+/* Individual Military Ribbon Styling - FIXED OVERFLOW FOR LEVEL INDICATOR */
+.military-ribbon {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    width: 190px;
+    height: 60px;
+    border: 3px solid #333;
+    border-radius: 4px;
+    overflow: visible; /* Changed from hidden to visible */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    margin: 12px 12px 12px 0; /* Added margin to prevent clipping */
+}
+
+.military-ribbon:hover {
+    transform: translateY(-4px);
+    z-index: 10;
+}
+
+/* Ribbon image container to handle the actual overflow */
+.ribbon-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 1px;
+}
+
+.ribbon-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    image-rendering: crisp-edges;
+}
+
+.ribbon-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    text-align: center;
+    line-height: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.ribbon-name {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 6px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    font-weight: 500;
+}
+
+.military-ribbon:hover .ribbon-name {
+    display: block;
+}
+
+.ribbon-devices {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 3px;
+    z-index: 5;
+}
+
+.ribbon-device {
+    font-size: 14px;
+    text-shadow: 0 0 4px rgba(0,0,0,0.9);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+.bronze-star {
+    color: #CD7F32;
+}
+
+.silver-star {
+    color: #C0C0C0;
+}
+
+.gold-star {
+    color: #FFD700;
+}
+
+/* Level indicator - NOW FULLY VISIBLE */
+.ribbon-level-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #FFD700;
+    color: #000;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border: 3px solid #FFF;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+    z-index: 6;
+}
+
+/* Custom tooltip - only this one will show */
+.military-ribbon::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.95);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    text-align: center;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.military-ribbon:hover::before {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .military-ribbon {
+        width: 100px;
+        height: 34px;
+        margin: 8px 8px 8px 0;
+    }
+    
+    .ribbon-device {
+        font-size: 12px;
+    }
+    
+    .ribbon-level-indicator {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: -6px;
+        right: -6px;
+    }
+    
+    .ribbon-row:nth-child(even) {
+        margin-left: 52px;
+    }
+    
+    .ribbon-name {
+        font-size: 12px;
+        bottom: -20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .military-ribbon {
+        width: 80px;
+        height: 28px;
+        margin: 6px 6px 6px 0;
+    }
+    
+    .ribbon-device {
+        font-size: 10px;
+    }
+    
+    .ribbon-level-indicator {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .ribbon-row:nth-child(even) {
+        margin-left: 42px;
+    }
+    
+    .ribbon-name {
+        font-size: 11px;
+        bottom: -18px;
+    }
+    
+    .ribbon-rack-inline {
+        gap: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .military-ribbon {
+        width: 70px;
+        height: 24px;
+        margin: 5px 5px 5px 0;
+    }
+    
+    .ribbon-row:nth-child(even) {
+        margin-left: 36px;
+    }
+    
+    .ribbon-rack-inline {
+        gap: 4px;
+    }
+    
+    .ribbon-level-indicator {
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
+        top: -4px;
+        right: -4px;
+    }
+}
+
+.stats-grid .ribbon-section {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.stats-grid .ribbon-stat-item {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stats-grid .ribbon-stat-item .stat-label {
+    font-size: 16px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: bold;
+}
+
+.ribbon-level-indicator.level-1 { background: #808080; }
+.ribbon-level-indicator.level-2 { background: #CD7F32; }
+.ribbon-level-indicator.level-3 { background: #b9f1fc; }
+.ribbon-level-indicator.level-4 { background: #FFD700; }
+.ribbon-level-indicator.level-5-plus { background: #50C878; }
+`;
+
+// Enhanced caching system with additional optimizations
+class RibbonCacheManager {
+    constructor() {
+        this.memoryCache = new Map();
+        this.CACHE_DURATION = 60 * 60 * 1000; // 1 hour (longer)
+        this.CACHE_KEY_PREFIX = 'ribbon_cache_';
+        this.lastCleanup = Date.now();
+        this.CLEANUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
+    }
+
+    getCacheKey(username, ladder) {
+        return `${this.CACHE_KEY_PREFIX}${username}_${ladder}`;
+    }
+
+    getCachedData(username, ladder) {
+        this.autoCleanup();
+        
+        const cacheKey = this.getCacheKey(username, ladder);
+        
+        if (this.memoryCache.has(cacheKey)) {
+            const cached = this.memoryCache.get(cacheKey);
+            if (Date.now() - cached.timestamp < this.CACHE_DURATION) {
+                console.log(`🚀 Cache hit (memory) for ${username}`);
+                return cached.data;
+            }
+            this.memoryCache.delete(cacheKey);
+        }
+        
+        const localCached = localStorage.getItem(cacheKey);
+        if (localCached) {
+            try {
+                const data = JSON.parse(localCached);
+                if (Date.now() - data.timestamp < this.CACHE_DURATION) {
+                    this.memoryCache.set(cacheKey, {
+                        data: data.ribbons,
+                        timestamp: data.timestamp,
+                        matchCount: data.matchCount
+                    });
+                    console.log(`💾 Cache hit (localStorage) for ${username}`);
+                    return data.ribbons;
+                }
+                localStorage.removeItem(cacheKey);
+            } catch (e) {
+                localStorage.removeItem(cacheKey);
+            }
+        }
+        return null;
+    }
+
+    setCachedData(username, ladder, ribbons, matchCount) {
+        const cacheKey = this.getCacheKey(username, ladder);
+        const timestamp = Date.now();
+        
+        this.memoryCache.set(cacheKey, {
+            data: ribbons,
+            timestamp,
+            matchCount
+        });
+        
+        try {
+            const data = {
+                ribbons,
+                matchCount,
+                timestamp,
+                version: 3
+            };
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch (e) {
+            this.clearOldCache();
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(data));
+            } catch (e2) {
+                // Continue without localStorage cache
+            }
+        }
+    }
+
+    // Smart invalidation based on match count changes
+    shouldRefreshCache(username, ladder, currentMatchCount) {
+        const cacheKey = this.getCacheKey(username, ladder);
+        
+        // Check memory cache first
+        if (this.memoryCache.has(cacheKey)) {
+            const cached = this.memoryCache.get(cacheKey);
+            return cached.matchCount !== currentMatchCount;
+        }
+        
+        // Check localStorage
+        const localCached = localStorage.getItem(cacheKey);
+        if (localCached) {
+            try {
+                const data = JSON.parse(localCached);
+                return data.matchCount !== currentMatchCount;
+            } catch (e) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    // Only clear cache when player gets new matches
+    invalidatePlayerCache(username, ladder) {
+        const cacheKey = this.getCacheKey(username, ladder);
+        this.memoryCache.delete(cacheKey);
+        localStorage.removeItem(cacheKey);
+        console.log(`🗑️ Invalidated cache for ${username} (${ladder}) - new match detected`);
+    }
+
+    autoCleanup() {
+        const now = Date.now();
+        if (now - this.lastCleanup > this.CLEANUP_INTERVAL) {
+            this.cleanup();
+            this.lastCleanup = now;
+        }
+    }
+
+    cleanup() {
+        const now = Date.now();
+        let cleanedMemory = 0;
+        let cleanedStorage = 0;
+        
+        for (const [key, value] of this.memoryCache.entries()) {
+            if (now - value.timestamp > this.CACHE_DURATION) {
+                this.memoryCache.delete(key);
+                cleanedMemory++;
+            }
+        }
+        
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (now - data.timestamp > this.CACHE_DURATION) {
+                        localStorage.removeItem(key);
+                        cleanedStorage++;
+                    }
+                } catch (e) {
+                    localStorage.removeItem(key);
+                    cleanedStorage++;
+                }
+            }
+        }
+    }
+
+    clearOldCache() {
+        const entries = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(this.CACHE_KEY_PREFIX)) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    entries.push({ key, timestamp: data.timestamp });
+                } catch (e) {
+                    localStorage.removeItem(key);
+                }
+            }
+        }
+        
+        entries.sort((a, b) => a.timestamp - b.timestamp);
+        const toRemove = Math.floor(entries.length / 2);
+        for (let i = 0; i < toRemove; i++) {
+            localStorage.removeItem(entries[i].key);
+        }
+    }
+
+    getCacheStats() {
+        return {
+            memoryEntries: this.memoryCache.size,
+            lastCleanup: new Date(this.lastCleanup).toLocaleTimeString()
+        };
+    }
+}
+
+class MatchCacheManager {
+    constructor() {
+        this.matchCache = new Map();
+        this.CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+        this.lastCleanup = Date.now();
+    }
+
+    getCachedMatches(username, ladder) {
+        this.autoCleanup();
+        
+        const key = `${username}_${ladder}`;
+        const cached = this.matchCache.get(key);
+        
+        if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+            console.log(`🎯 Cache hit (matches) for ${username}`);
+            return cached.matches;
+        }
+        
+        if (cached) {
+            this.matchCache.delete(key);
+        }
+        return null;
+    }
+
+    setCachedMatches(username, ladder, matches) {
+        const key = `${username}_${ladder}`;
+        this.matchCache.set(key, {
+            matches,
+            timestamp: Date.now()
+        });
+    }
+
+    autoCleanup() {
+        const now = Date.now();
+        if (now - this.lastCleanup > 5 * 60 * 1000) {
+            let cleaned = 0;
+            for (const [key, value] of this.matchCache.entries()) {
+                if (now - value.timestamp > this.CACHE_DURATION) {
+                    this.matchCache.delete(key);
+                    cleaned++;
+                }
+            }
+            this.lastCleanup = now;
+        }
+    }
+
+    getCacheStats() {
+        return {
+            entries: this.matchCache.size,
+            lastCleanup: new Date(this.lastCleanup).toLocaleTimeString()
+        };
+    }
+}
+
+class RibbonSystem {
+    constructor() {
+        this.pendingEvaluations = new Map();
+        this.batchTimer = null;
+        this.BATCH_DELAY = 50;
+        this.playerDataCache = new Map(); // Cache player data for underdog calculations
+    }
+
+    // Optimized: Bulk load all player data for underdog calculations
+    async bulkLoadPlayerData(usernames, ladder) {
+        const playersCollection = ladder === 'D1' ? 'players' : 
+                                 ladder === 'D2' ? 'playersD2' : 'playersD3';
+        
+        const playersRef = collection(db, playersCollection);
+        const snapshot = await getDocs(playersRef);
+        
+        const playerMap = new Map();
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.username) {
+                // Map eloRating to rating for consistency
+                if (data.eloRating !== undefined) {
+                    data.rating = data.eloRating;
+                }
+                playerMap.set(data.username, data);
+            }
+        });
+        
+        console.log(`📊 Bulk loaded ${playerMap.size} players from ${playersCollection}`);
+        return playerMap;
+    }
+
+    // MUCH faster underdog calculation - bulk loads all player data once
+    async evaluateAllRibbonsFromData(matches, playerData, currentRibbons, ladder) {
+        const newRibbons = {};
+        const playerUsername = playerData.username;
+        
+        const stats = {
+            totalMatches: matches.length,
+            wins: 0,
+            rematchWins: 0,
+            subgameMatches: 0,
+            uniqueMaps: new Set(),
+            uniqueOpponents: new Set(),
+            underdogWins: 0,
+            dominatedRanks: new Set() // Track which ranks have been dominated
+        };
+        
+        // Get all unique opponent usernames for bulk loading
+        const opponents = new Set();
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            if (opponent) opponents.add(opponent);
+        });
+        
+        // Bulk load ALL player data once instead of individual lookups
+        console.log(`🚀 Bulk loading ${opponents.size} player records for underdog calculations...`);
+        const allPlayerData = await this.bulkLoadPlayerData([...opponents, playerUsername], ladder);
+        const currentPlayerData = allPlayerData.get(playerUsername);
+        
+        if (!currentPlayerData) {
+            console.log(`⚠️ No current player data found for ${playerUsername}`);
+        }
+        
+        // Track victories by rank tier for domination calculation
+        const victoriesByRank = {
+            0: new Set(), // Unranked
+            1: new Set(), // Bronze
+            2: new Set(), // Silver
+            3: new Set(), // Gold
+            4: new Set()  // Emerald
+        };
+        
+        // Now process all matches with cached data (MUCH faster)
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            
+            if (isWinner) {
+                stats.wins++;
+                if (match.subgameType === 'Rematch') {
+                    stats.rematchWins++;
+                }
+                
+                // Fast underdog check using cached data
+                if (this.isUnderdogVictoryFast(match, playerUsername, currentPlayerData, allPlayerData)) {
+                    stats.underdogWins++;
+                }
+                
+                // Track victories by opponent's rank for domination
+                const opponentData = allPlayerData.get(opponent);
+                if (opponentData) {
+                    const opponentRating = opponentData.eloRating || 0;
+                    const opponentTier = getPlayerRankTier(opponentRating);
+                    victoriesByRank[opponentTier].add(opponent);
+                }
+            }
+            
+            if (match.subgameType && match.subgameType !== 'Standard') {
+                stats.subgameMatches++;
+            }
+            
+            if (match.mapPlayed) {
+                stats.uniqueMaps.add(match.mapPlayed);
+            }
+            
+            if (opponent) {
+                stats.uniqueOpponents.add(opponent);
+            }
+        });
+
+        // Calculate domination: count ranks where player beat 5+ unique opponents
+        Object.keys(victoriesByRank).forEach(rankTier => {
+            if (victoriesByRank[rankTier].size >= 5) {
+                stats.dominatedRanks.add(parseInt(rankTier));
+            }
+        });
+
+        console.log(`🎯 Found ${stats.underdogWins} underdog victories for ${playerUsername}`);
+        console.log(`👑 Dominated ${stats.dominatedRanks.size} ranks: [${Array.from(stats.dominatedRanks).map(tier => getRankTierName(tier)).join(', ')}]`);
+
+        const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
+
+        const evaluations = [
+            ['Overachiever Ribbon', this.evaluateOverachieverRibbonFromCount(stats.totalMatches, currentRibbons)],
+            ['Rematch Ribbon', this.evaluateRematchRibbonFromCount(stats.rematchWins, currentRibbons)],
+            ['Sub-Gamer Ribbon', this.evaluateSubGamerRibbonFromCount(stats.subgameMatches, currentRibbons)],
+            ['Explorer Ribbon', this.evaluateExplorerRibbonFromCount(stats.uniqueMaps.size, currentRibbons)],
+            ['Socialite Ribbon', this.evaluateSocialiteRibbonFromCount(stats.uniqueOpponents.size, currentRibbons)],
+            ['Brick Wall', this.evaluateBrickWallRibbonFromWinRate(winRate, currentRibbons, stats.totalMatches)],
+            ['Underdog Ribbon', this.evaluateUnderdogRibbonFromCount(stats.underdogWins, currentRibbons)],
+            ['Domination Ribbon', this.evaluateDominationRibbonFromRanks(stats.dominatedRanks.size, currentRibbons)]
+        ];
+        
+        evaluations.forEach(([ribbonName, result]) => {
+            if (result) {
+                newRibbons[ribbonName] = result;
+            }
+        });
+        
+        const totalRibbonsAfter = Object.keys(currentRibbons).length + Object.keys(newRibbons).length;
+        const collectorResult = this.evaluateCollectorRibbonFromCount(totalRibbonsAfter, currentRibbons);
+        if (collectorResult) {
+            newRibbons['Collector Ribbon'] = collectorResult;
+        }
+        
+        return newRibbons;
+    }
+
+    // New method: Evaluate Domination Ribbon based on number of ranks dominated
+    evaluateDominationRibbonFromRanks(dominatedRankCount, currentRibbons) {
+        if (dominatedRankCount === 0) return null;
+        
+        const current = currentRibbons['Domination Ribbon'] || { level: 0 };
+        
+        // Level = number of ranks dominated (1-5: Unranked, Bronze, Silver, Gold, Emerald)
+        if (dominatedRankCount > current.level) {
+            const rankNames = [];
+            for (let i = 0; i < dominatedRankCount; i++) {
+                rankNames.push(getRankTierName(i));
+            }
+            
+            console.log(`👑 Domination Ribbon awarded: Level ${current.level} → ${dominatedRankCount} (Dominated: ${rankNames.join(', ')})`);
+            return { 
+                level: dominatedRankCount, 
+                awardedAt: new Date(),
+                dominatedRanks: rankNames
+            };
+        }
+        return null;
+    }
+
+    // Check if player currently holds top position for their rank
+    async checkTopRankStatus(playerUsername, ladder) {
+        try {
+            const playersCollection = ladder === 'D1' ? 'players' : 
+                                     ladder === 'D2' ? 'playersD2' : 'playersD3';
+            
+            // Get player's current data
+            const playerData = await this.getPlayerDataCached(playerUsername, ladder);
+            if (!playerData || playerData.eloRating === undefined) {
+                console.log(`❌ No ELO rating data for ${playerUsername}`);
+                return null;
+            }
+            
+            const playerRating = playerData.eloRating; // Use eloRating directly
+            const playerTier = getPlayerRankTier(playerRating);
+            const playerTierName = getRankTierName(playerTier);
+            
+            if (playerTierName === 'Unranked') {
+                console.log(`❌ ${playerUsername} is Unranked (${playerRating} ELO)`);
+                return null;
+            }
+            
+            console.log(`🔍 Checking Top ${playerTierName} status for ${playerUsername} (${playerRating} ELO)`);
+            
+            // Get all players in the same rank tier
+            const playersRef = collection(db, playersCollection);
+            const allPlayersSnapshot = await getDocs(playersRef);
+            
+            let topPlayer = null;
+            let highestRating = -1;
+            let playersInTier = 0;
+            
+            allPlayersSnapshot.forEach(doc => {
+                const data = doc.data();
+                const rating = data.eloRating || 0; // Use eloRating consistently
+                const tier = getPlayerRankTier(rating);
+                
+                // Only consider players in the same rank tier
+                if (tier === playerTier) {
+                    playersInTier++;
+                    if (rating > highestRating) {
+                        highestRating = rating;
+                        topPlayer = data.username;
+                    }
+                }
+            });
+            
+            const isTopPlayer = topPlayer === playerUsername;
+            console.log(`📊 ${playerTierName} Tier: ${playersInTier} players, Top: ${topPlayer} (${highestRating} ELO), ${playerUsername} is #1: ${isTopPlayer}`);
+            
+            return isTopPlayer ? playerTierName : null;
+            
+        } catch (error) {
+            console.error('Error checking top rank status:', error);
+            return null;
+        }
+    }
+
+    // Fixed Top Rank evaluation - Only award once per achievement period
+    async evaluateTopRankRibbon(playerUsername, ladder, currentRibbons) {
+        const topRank = await this.checkTopRankStatus(playerUsername, ladder);
+        const updates = {};
+        
+        // If player currently holds #1 in their rank
+        if (topRank) {
+            const ribbonName = `Top ${topRank} Pilot`;
+            if (RIBBON_DEFINITIONS[ribbonName]) {
+                // Check if player already has this ribbon
+                const current = currentRibbons[ribbonName];
+                
+                if (!current) {
+                    // First time achieving #1 in this rank - award the ribbon
+                    console.log(`👑 NEW Top Rank Achievement: ${playerUsername} earned ${ribbonName}!`);
+                    
+                    updates[ribbonName] = {
+                        level: 1, // Always level 1 for display consistency
+                        awardedAt: new Date(),
+                        rank: topRank,
+                        achievedAt: new Date()
+                    };
+                } else {
+                    console.log(`✅ ${playerUsername} already has ${ribbonName} - No changes needed`);
+                }
+            }
+        }
+        
+        // Preserve all existing Top Rank ribbons (they never get removed)
+        Object.keys(currentRibbons).forEach(ribbonName => {
+            if (ribbonName.startsWith('Top ') && ribbonName.endsWith(' Pilot')) {
+                if (!updates[ribbonName]) {
+                    console.log(`✅ Preserving existing ${ribbonName}`);
+                }
+            }
+        });
+        
+        return updates;
+    }
+
+    // Update main evaluation to always check for top rank (but only award if currently #1)
+    async evaluateAllRibbonsForPlayerOptimized(playerUsername, ladder = 'D1') {
+        try {
+            const cachedRibbons = ribbonCache.getCachedData(playerUsername, ladder);
+            if (cachedRibbons) {
+                // Always check for new top rank achievements, even with cache
+                const topRankRibbons = await this.evaluateTopRankRibbon(playerUsername, ladder, cachedRibbons);
+                if (Object.keys(topRankRibbons).length > 0) {
+                    console.log(`🆕 New top rank achievements found for cached player ${playerUsername}`);
+                    await this.savePlayerRibbonsOptimized(playerUsername, topRankRibbons, ladder);
+                    const updatedRibbons = { ...cachedRibbons, ...topRankRibbons };
+                    ribbonCache.setCachedData(playerUsername, ladder, updatedRibbons, 0);
+                    return updatedRibbons;
+                }
+                return cachedRibbons;
+            }
+
+            const [playerData, currentRibbons] = await Promise.all([
+                this.getPlayerDataCached(playerUsername, ladder),
+                this.getPlayerRibbonsCached(playerUsername, ladder)
+            ]);
+
+            if (!playerData) {
+                return {};
+            }
+
+            const playerMatchCount = playerData.matchesPlayed || 0;
+            
+            // Always check for top rank ribbons regardless of cache status
+            const topRankRibbons = await this.evaluateTopRankRibbon(playerUsername, ladder, currentRibbons);
+            
+            if (!ribbonCache.shouldRefreshCache(playerUsername, ladder, playerMatchCount)) {
+                // Even if not refreshing, save any new top rank achievements
+                if (Object.keys(topRankRibbons).length > 0) {
+                    await this.savePlayerRibbonsOptimized(playerUsername, topRankRibbons, ladder);
+                    const updatedRibbons = { ...currentRibbons, ...topRankRibbons };
+                    ribbonCache.setCachedData(playerUsername, ladder, updatedRibbons, playerMatchCount);
+                    return updatedRibbons;
+                }
+                ribbonCache.setCachedData(playerUsername, ladder, currentRibbons, playerMatchCount);
+                return currentRibbons;
+            }
+
+            // Full evaluation including match-based ribbons
+            const matches = await this.getPlayerMatchesOptimized(playerUsername, ladder);
+            const newRibbons = await this.evaluateAllRibbonsFromData(matches, playerData, currentRibbons, ladder);
+            
+            // Merge top rank ribbons with other new ribbons
+            Object.assign(newRibbons, topRankRibbons);
+
+            if (Object.keys(newRibbons).length > 0) {
+                console.log(`💾 Saving ${Object.keys(newRibbons).length} new/updated ribbons for ${playerUsername}`);
+                await this.savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder);
+            }
+
+            const finalRibbons = { ...currentRibbons, ...newRibbons };
+            ribbonCache.setCachedData(playerUsername, ladder, finalRibbons, matches.length);
+
+            return finalRibbons;
+
+        } catch (error) {
+            console.error('❌ Error in ribbon evaluation:', error);
+            return {};
+        }
+    }
+
+    // Check if a victory qualifies as an underdog win based on current player ranks
+    async isUnderdogVictory(match, playerUsername, ladder) {
+        const isWinner = match.winnerUsername === playerUsername;
+        if (!isWinner) return false;
+
+        const opponent = match.loserUsername;
+        
+        // Get current rank data for both players
+        const [playerData, opponentData] = await Promise.all([
+            this.getPlayerDataCached(playerUsername, ladder),
+            this.getPlayerDataCached(opponent, ladder)
+        ]);
+
+        if (!playerData || !opponentData) {
+            console.log(`⚠️ Missing player data for ${playerUsername} or ${opponent}`);
+            return false;
+        }
+
+        // Use eloRating consistently
+        const playerRating = playerData.eloRating || 0;
+        const opponentRating = opponentData.eloRating || 0;
+        
+        const playerTier = getPlayerRankTier(playerRating);
+        const opponentTier = getPlayerRankTier(opponentRating);
+        
+        console.log(`🔍 Checking underdog: Winner(${playerUsername}): ${playerRating} ELO (${getRankTierName(playerTier)}) vs Loser(${opponent}): ${opponentRating} ELO (${getRankTierName(opponentTier)})`);
+        
+        // For underdog victory, winner must be from a lower rank tier than loser
+        if (opponentTier > playerTier) {
+            console.log(`🎯 UNDERDOG VICTORY: ${getRankTierName(playerTier)} beat ${getRankTierName(opponentTier)}!`);
+            return true;
+        }
+        
+        console.log(`❌ Not underdog: ${getRankTierName(playerTier)} vs ${getRankTierName(opponentTier)}`);
+        return false;
+    }
+
+    // Fast underdog check using pre-loaded data (no async calls)
+    isUnderdogVictoryFast(match, playerUsername, currentPlayerData, allPlayerData) {
+        const isWinner = match.winnerUsername === playerUsername;
+        if (!isWinner) return false;
+
+        const opponent = match.loserUsername;
+        const opponentData = allPlayerData.get(opponent);
+        
+        if (!currentPlayerData || !opponentData) {
+            return false;
+        }
+
+        // Get current ratings and rank tiers
+        const playerRating = currentPlayerData.eloRating || 0;
+        const opponentRating = opponentData.eloRating || 0;
+        
+        const playerTier = getPlayerRankTier(playerRating);
+        const opponentTier = getPlayerRankTier(opponentRating);
+        
+        // For underdog victory, winner must be from a lower rank tier than loser
+        if (opponentTier > playerTier) {
+            console.log(`🎯 UNDERDOG: ${getRankTierName(playerTier)}(${playerRating}) beat ${getRankTierName(opponentTier)}(${opponentRating})`);
+            return true;
+        }
+        
+        return false;
+    }
+
+    // Update evaluateAllRibbonsFromData to handle async isUnderdogVictory
+    async evaluateAllRibbonsFromData(matches, playerData, currentRibbons, ladder) {
+        const newRibbons = {};
+        const playerUsername = playerData.username;
+        
+        const stats = {
+            totalMatches: matches.length,
+            wins: 0,
+            rematchWins: 0,
+            subgameMatches: 0,
+            uniqueMaps: new Set(),
+            uniqueOpponents: new Set(),
+            underdogWins: 0
+        };
+        
+        // Get all unique opponent usernames for bulk loading
+        const opponents = new Set();
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            if (opponent) opponents.add(opponent);
+        });
+        
+        // Bulk load ALL player data once instead of individual lookups
+        console.log(`🚀 Bulk loading ${opponents.size} player records for underdog calculations...`);
+        const allPlayerData = await this.bulkLoadPlayerData([...opponents, playerUsername], ladder);
+        const currentPlayerData = allPlayerData.get(playerUsername);
+        
+        if (!currentPlayerData) {
+            console.log(`⚠️ No current player data found for ${playerUsername}`);
+        }
+        
+        // Now process all matches with cached data (MUCH faster)
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            
+            if (isWinner) {
+                stats.wins++;
+                if (match.subgameType === 'Rematch') {
+                    stats.rematchWins++;
+                }
+                
+                // Fast underdog check using cached data
+                if (this.isUnderdogVictoryFast(match, playerUsername, currentPlayerData, allPlayerData)) {
+                    stats.underdogWins++;
+                }
+            }
+            
+            if (match.subgameType && match.subgameType !== 'Standard') {
+                stats.subgameMatches++;
+            }
+            
+            if (match.mapPlayed) {
+                stats.uniqueMaps.add(match.mapPlayed);
+            }
+            
+            if (opponent) {
+                stats.uniqueOpponents.add(opponent);
+            }
+        });
+
+        console.log(`🎯 Found ${stats.underdogWins} underdog victories for ${playerUsername}`);
+
+        const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
+
+        const evaluations = [
+            ['Overachiever Ribbon', this.evaluateOverachieverRibbonFromCount(stats.totalMatches, currentRibbons)],
+            ['Rematch Ribbon', this.evaluateRematchRibbonFromCount(stats.rematchWins, currentRibbons)],
+            ['Sub-Gamer Ribbon', this.evaluateSubGamerRibbonFromCount(stats.subgameMatches, currentRibbons)],
+            ['Explorer Ribbon', this.evaluateExplorerRibbonFromCount(stats.uniqueMaps.size, currentRibbons)],
+            ['Socialite Ribbon', this.evaluateSocialiteRibbonFromCount(stats.uniqueOpponents.size, currentRibbons)],
+            ['Brick Wall', this.evaluateBrickWallRibbonFromWinRate(winRate, currentRibbons, stats.totalMatches)],
+            ['Underdog Ribbon', this.evaluateUnderdogRibbonFromCount(stats.underdogWins, currentRibbons)]
+        ];
+        
+        evaluations.forEach(([ribbonName, result]) => {
+            if (result) {
+                newRibbons[ribbonName] = result;
+            }
+        });
+        
+        const totalRibbonsAfter = Object.keys(currentRibbons).length + Object.keys(newRibbons).length;
+        const collectorResult = this.evaluateCollectorRibbonFromCount(totalRibbonsAfter, currentRibbons);
+        if (collectorResult) {
+            newRibbons['Collector Ribbon'] = collectorResult;
+        }
+        
+        return newRibbons;
+    }
+
+    async getPlayerMatchesOptimized(username, ladder) {
+        const cachedMatches = matchCache.getCachedMatches(username, ladder);
+        if (cachedMatches) {
+            return cachedMatches;
+        }
+
+        try {
+            const matchesCollection = ladder === 'D1' ? 'approvedMatches' : 
+                                     ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+            
+            const approvedMatchesRef = collection(db, matchesCollection);
+            
+            const [winnerSnapshot, loserSnapshot] = await Promise.all([
+                getDocs(query(approvedMatchesRef, where('winnerUsername', '==', username))),
+                getDocs(query(approvedMatchesRef, where('loserUsername', '==', username)))
+            ]);
+            
+            const matchIds = new Set();
+            const matches = [];
+            
+            winnerSnapshot.forEach(doc => {
+                if (!matchIds.has(doc.id)) {
+                    matchIds.add(doc.id);
+                    const matchData = { id: doc.id, ...doc.data() };
+                    
+                    // Ensure we have rating data for underdog calculations
+                    if (!matchData.winnerRating) matchData.winnerRating = 0;
+                    if (!matchData.loserRating) matchData.loserRating = 0;
+                    
+                    matches.push(matchData);
+                }
+            });
+            
+            loserSnapshot.forEach(doc => {
+                if (!matchIds.has(doc.id)) {
+                    matchIds.add(doc.id);
+                    const matchData = { id: doc.id, ...doc.data() };
+                    
+                    // Ensure we have rating data for underdog calculations
+                    if (!matchData.winnerRating) matchData.winnerRating = 0;
+                    if (!matchData.loserRating) matchData.loserRating = 0;
+                    
+                    matches.push(matchData);
+                }
+            });
+            
+            matchCache.setCachedMatches(username, ladder, matches);
+            return matches;
+        } catch (error) {
+            console.error('❌ Error fetching matches:', error);
+            return [];
+        }
+    }
+
+    async getPlayerDataCached(playerUsername, ladder) {
+        try {
+            const playersCollection = ladder === 'D1' ? 'players' : 
+                                     ladder === 'D2' ? 'playersD2' : 'playersD3';
+            
+            const playersRef = collection(db, playersCollection);
+            const q = query(playersRef, where('username', '==', playerUsername), limit(1));
+            const snapshot = await getDocs(q);
+            
+            if (snapshot.empty) {
+                console.log(`❌ No player data found for ${playerUsername} in ${playersCollection}`);
+                return null;
+            }
+            
+            const playerData = snapshot.docs[0].data();
+            
+            // Map eloRating to rating for consistency with ribbon system
+            if (playerData.eloRating !== undefined) {
+                playerData.rating = playerData.eloRating;
+            }
+            
+            console.log(`✅ Found player data for ${playerUsername}: ELO ${playerData.eloRating}, Position ${playerData.position}`);
+            return playerData;
+        } catch (error) {
+            console.error(`Error getting player data for ${playerUsername}:`, error);
+            return null;
+        }
+    }
+
+    async getPlayerRibbonsCached(playerUsername, ladder) {
+        try {
+            const ribbonsCollection = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+            const ribbonsRef = doc(db, ribbonsCollection, playerUsername);
+            const ribbonsDoc = await getDoc(ribbonsRef);
+            
+            return ribbonsDoc.exists() ? ribbonsDoc.data().ribbons || {} : {};
+        } catch (error) {
+            console.error('Error getting player ribbons:', error);
+            return {};
+        }
+    }
+
+    async savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder) {
+        try {
+            const ribbonsCollection = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+            const ribbonsRef = doc(db, ribbonsCollection, playerUsername);
+            
+            const currentRibbons = await this.getPlayerRibbonsCached(playerUsername, ladder);
+            const updatedRibbons = { ...currentRibbons, ...newRibbons };
+            
+            await setDoc(ribbonsRef, {
+                username: playerUsername,
+                ladder: ladder,
+                ribbons: updatedRibbons,
+                lastUpdated: new Date()
+            }, { merge: true });
+            
+        } catch (error) {
+            console.error('Error saving ribbons:', error);
+        }
+    }
+
+    evaluateOverachieverRibbonFromCount(totalMatches, currentRibbons) {
+        const current = currentRibbons['Overachiever Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Overachiever Ribbon'].levels;
+        const newLevel = levels.findIndex(threshold => totalMatches < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateRematchRibbonFromCount(rematchWins, currentRibbons) {
+        if (rematchWins === 0) return null;
+        const current = currentRibbons['Rematch Ribbon'] || { level: 0 };
+        if (rematchWins > current.level) {
+            return { level: rematchWins, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateSubGamerRibbonFromCount(subgameMatches, currentRibbons) {
+        const current = currentRibbons['Sub-Gamer Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Sub-Gamer Ribbon'].levels;
+        const newLevel = levels.findIndex(threshold => subgameMatches < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateExplorerRibbonFromCount(uniqueMapCount, currentRibbons) {
+        const current = currentRibbons['Explorer Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Explorer Ribbon'].levels;
+        const newLevel = levels.findIndex(threshold => uniqueMapCount < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateSocialiteRibbonFromCount(uniqueOpponentCount, currentRibbons) {
+        const current = currentRibbons['Socialite Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Socialite Ribbon'].levels;
+        const newLevel = levels.findIndex(threshold => uniqueOpponentCount < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateBrickWallRibbonFromWinRate(winRate, currentRibbons, totalMatches) {
+        // Require at least 50 matches before awarding Brick Wall ribbon
+        if (totalMatches < 50) {
+            console.log(`⚠️ Brick Wall ribbon requires 50+ matches (player has ${totalMatches})`);
+            return null;
+        }
+
+        const current = currentRibbons['Brick Wall'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Brick Wall'].levels;
+        const newLevel = levels.findIndex(threshold => winRate < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            console.log(`🏆 Brick Wall ribbon awarded: ${winRate.toFixed(1)}% win rate over ${totalMatches} matches`);
+            return { 
+                level: targetLevel, 
+                awardedAt: new Date(),
+                winRate: winRate,
+                matchesPlayed: totalMatches
+            };
+        }
+        return null;
+    }
+
+    evaluateCollectorRibbonFromCount(totalRibbons, currentRibbons) {
+        const current = currentRibbons['Collector Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Collector Ribbon'].levels;
+        const newLevel = levels.findIndex(threshold => totalRibbons < threshold);
+        const targetLevel = newLevel === -1 ? levels.length : newLevel;
+
+        if (targetLevel > current.level) {
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+
+    evaluateUnderdogRibbonFromCount(underdogWins, currentRibbons) {
+        if (underdogWins === 0) return null;
+        
+        const current = currentRibbons['Underdog Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Underdog Ribbon'].levels;
+        
+        // Find the highest level achieved
+        let targetLevel = 0;
+        for (let i = 0; i < levels.length; i++) {
+            if (underdogWins >= levels[i]) {
+                targetLevel = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        if (targetLevel > current.level) {
+            console.log(`🏆 Underdog Ribbon upgrade: Level ${current.level} → ${targetLevel} (${underdogWins} underdog wins)`);
+            return { level: targetLevel, awardedAt: new Date() };
+        }
+        return null;
+    }
+}
+
+// Helper functions for rank tiers
+function getPlayerRankTier(eloRating) {
+    if (eloRating === undefined || eloRating === null) {
+        return 0; // Unranked
+    }
+    const elo = Number(eloRating);
+    if (isNaN(elo)) {
+        return 0;
+    }
+
+    if (elo >= 2000) return 4; // Emerald
+    if (elo >= 1800) return 3; // Gold  
+    if (elo >= 1600) return 2; // Silver
+    if (elo >= 1400) return 1; // Bronze
+    return 0; // Unranked/Default
+}
+
+function getRankTierName(tier) {
+    const names = ['Unranked', 'Bronze', 'Silver', 'Gold', 'Emerald'];
+    return names[tier] || 'Unranked';
+}
+
+const ribbonSystem = new RibbonSystem();
+const ribbonCache = new RibbonCacheManager();
+const matchCache = new MatchCacheManager();
+
+if (typeof window !== 'undefined') {
+    window.getRibbonCacheStats = () => {
+        return {
+            ribbon: ribbonCache.getCacheStats(),
+            match: matchCache.getCacheStats()
+        };
+    };
+}
+
+export async function evaluatePlayerRibbons(playerUsername, ladder = 'D1') {
+    return await ribbonSystem.evaluateAllRibbonsForPlayerOptimized(playerUsername, ladder);
+}
+
+export function getRibbonHTML(ribbonName, ribbonData) {
+    const definition = RIBBON_DEFINITIONS[ribbonName];
+    if (!definition) {
+        return '';
+    }
+    
+    const level = ribbonData.level || 1;
+    const shortName = ribbonName.replace(' Ribbon', '').replace(' Badge', '');
+    
+    const getLevelClass = (level) => {
+        if (level <= 1) return 'level-1';
+        if (level <= 2) return 'level-2';
+        if (level <= 3) return 'level-3';
+        if (level <= 4) return 'level-4';
+        return 'level-5-plus';
+    };
+    
+    const generateDevices = (level) => {
+        if (level <= 1) return '';
+        
+        const devices = [];
+        
+        if (level >= 2 && level <= 4) {
+            const bronzeStars = Math.min(level - 1, 3);
+            for (let i = 0; i < bronzeStars; i++) {
+                devices.push('<i class="fas fa-star ribbon-device bronze-star"></i>');
+            }
+        }
+        
+        if (level >= 5 && level <= 7) {
+            devices.push('<i class="fas fa-star ribbon-device silver-star"></i>');
+            const additionalBronze = Math.min(level - 5, 2);
+            for (let i = 0; i < additionalBronze; i++) {
+                devices.push('<i class="fas fa-star ribbon-device bronze-star"></i>');
+            }
+        }
+        
+        if (level >= 8) {
+            devices.push('<i class="fas fa-star ribbon-device gold-star"></i>');
+        }
+        
+        return devices.length > 0 ? `<div class="ribbon-devices">${devices.join('')}</div>` : '';
+    };
+    
+    const tooltipText = `${definition.description} - Level ${level}`;
+    
+    return `
+        <div class="military-ribbon" data-tooltip="${tooltipText}">
+            <div class="ribbon-image-container">
+                <img src="${definition.image}" 
+                     alt="${ribbonName}" 
+                     class="ribbon-image"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="ribbon-fallback" style="display: none; background: ${definition.color};">
+                    ${shortName.substring(0, 6)}
+                </div>
+            </div>
+            ${generateDevices(level)}
+            <div class="ribbon-name">${shortName}</div>
+            ${level > 1 ? `<div class="ribbon-level-indicator ${getLevelClass(level)}">${level}</div>` : ''}
+        </div>
+    `;
+}

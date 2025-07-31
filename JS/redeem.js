@@ -1,1 +1,1688 @@
-const a47w=a47d;(function(a,b){const t=a47d,c=a();while(!![]){try{const d=parseInt(t(0x15c))/0x1*(parseInt(t(0x198))/0x2)+-parseInt(t(0x13f))/0x3+-parseInt(t(0x123))/0x4+-parseInt(t(0x149))/0x5*(-parseInt(t(0x116))/0x6)+-parseInt(t(0x15f))/0x7*(-parseInt(t(0x141))/0x8)+-parseInt(t(0x133))/0x9*(parseInt(t(0x134))/0xa)+-parseInt(t(0x1e2))/0xb*(parseInt(t(0x1ba))/0xc);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a47c,0x451e2));const a47b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a47a=a47b(this,function(){const v=a47d,a=function(){const u=a47d;let f;try{f=Function(u(0x1a6)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b[v(0x1d1)]=b[v(0x1d1)]||{},d=[v(0x135),'warn',v(0x1a7),'error',v(0x1c6),v(0x1b6),v(0x1c0)];for(let e=0x0;e<d['length'];e++){const f=a47b[v(0x1ec)]['prototype']['bind'](a47b),g=d[e],h=c[g]||f;f['__proto__']=a47b['bind'](a47b),f[v(0x1c1)]=h['toString'][v(0x1bf)](h),c[g]=f;}});a47a();function a47d(a,b){const c=a47c();return a47d=function(d,e){d=d-0x116;let f=c[d];if(a47d['QsaGpk']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a47d['kYnGLI']=g,a=arguments,a47d['QsaGpk']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a47d['kYnGLI'](f),a[i]=f):f=j,f;},a47d(a,b);}import{auth,db}from'./firebase-config.js';import{onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{collection,getDocs,doc,updateDoc,getDoc,setDoc,query,where}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';let authWarning,storeContent,userPointsElement,userInventory=JSON['parse'](localStorage['getItem'](a47w(0x132))||'{}'),enabledFeatures=JSON['parse'](localStorage[a47w(0x169)]('enabledFeatures')||'{}'),adminUIVisible=!![];function initializeElements(){const x=a47w;return authWarning=document[x(0x1e5)]('auth-warning'),storeContent=document[x(0x1e5)](x(0x197)),userPointsElement=document['getElementById']('user-points'),console[x(0x135)](x(0x14b),{'authWarning':!!authWarning,'storeContent':!!storeContent,'userPointsElement':!!userPointsElement}),authWarning&&storeContent;}document['addEventListener']('DOMContentLoaded',()=>{const y=a47w;console[y(0x135)](y(0x1d7)),setTimeout(()=>{const z=y,a=initializeElements();!a?(console['error'](z(0x175)),setTimeout(()=>{const A=z,b=initializeElements();if(!b){console['error'](A(0x14f)),showContentFallback();return;}setupPage();},0x3e8)):setupPage();},0x1f4);});function showContentFallback(){const B=a47w;console[B(0x135)](B(0x15d));const a=document[B(0x1e5)]('store-content'),b=document[B(0x1e5)](B(0x1ee));a&&(a[B(0x1c7)][B(0x18e)]='block',console[B(0x135)]('✅\x20Store\x20content\x20shown\x20via\x20fallback'));b&&(b['style']['display']='none');setupPurchaseButtons(),loadUserInventory();const c=document[B(0x1e5)](B(0x15a));c&&(c['textContent']=B(0x195));}function setupPage(){const C=a47w;console[C(0x135)](C(0x1df)),initializeStoreItems()['then'](()=>{const E=C;onAuthStateChanged(auth,async a=>{const D=a47d;if(a){console[D(0x135)](D(0x1d2),a[D(0x12a)]);if(authWarning&&storeContent){authWarning['style'][D(0x18e)]='none',storeContent[D(0x1c7)]['display']='block',loadUserPoints(a),loadUserInventory();const b=await isUserAdmin(a);b&&(showAdminControls(),console['log']('👑\x20Admin\x20controls\x20enabled'));}}else console['log'](D(0x130)),authWarning&&storeContent&&(authWarning[D(0x1c7)][D(0x18e)]=D(0x1c8),storeContent['style'][D(0x18e)]=D(0x1f7));}),setupPurchaseButtons(),loadUserInventory(),storeContent&&(storeContent[E(0x1c7)]['display']=E(0x1c8),console[E(0x135)](E(0x162)));});}function loadUserInventory(){const F=a47w;console['log'](F(0x18a),userInventory),console['log']('⚙️\x20Enabled\x20features:',enabledFeatures);const a=document['querySelectorAll']('.store-item');a['forEach'](b=>{const G=F,c=b[G(0x172)]('.item-title')?.['textContent'],d=b['querySelector'](G(0x1d4));c&&userInventory[c]&&updateItemAsOwned(b,d,c);});}function updateItemAsOwned(a,b,c){const H=a47w;if(!a[H(0x172)]('.owned-badge')){const e=document[H(0x177)](H(0x1e9));e[H(0x17f)]='owned-badge',e['textContent']=H(0x125),a[H(0x1fa)](e);}const d=enabledFeatures[c]||![];b['innerHTML']=d?'<i\x20class=\x22fas\x20fa-toggle-on\x22></i>\x20Disable':H(0x168),b['style']['background']=d?H(0x1c4):'linear-gradient(135deg,\x20#4caf50,\x20#388e3c)',b['disabled']=![],b[H(0x153)]=f=>{f['preventDefault'](),toggleFeature(c,b,a);},updateFeatureStatusIndicator(a,c,d);}async function toggleFeature(a,b,c){const I=a47w,d=enabledFeatures[a]||![],e=!d;console[I(0x135)](I(0x1f4)+a+':\x20'+(d?'ON':I(0x1b8))+I(0x146)+(e?'ON':'OFF'));const f=b['innerHTML'];b['disabled']=!![],b['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Updating...';try{const g=auth['currentUser'];if(g){const h=doc(db,'userProfiles',g[I(0x1d8)]),i=await getDoc(h);if(i['exists']()){const j=i['data'](),k=j[I(0x1f8)]||{};k[a]&&(k[a]['active']=e,await updateDoc(h,{'purchasedItems':k}),console['log'](I(0x18f)+a+I(0x1ab)+e));}}enabledFeatures[a]=e,localStorage[I(0x1f1)]('enabledFeatures',JSON[I(0x1fb)](enabledFeatures)),e?(applyFeatureEffect(a),showTempMessage('✅\x20'+a+I(0x118),'success')):(removeFeatureEffect(a),showTempMessage('⚪\x20'+a+'\x20disabled',I(0x1a7))),b['innerHTML']=e?'<i\x20class=\x22fas\x20fa-toggle-on\x22></i>\x20Disable':I(0x168),b[I(0x1c7)]['background']=e?I(0x1c4):'linear-gradient(135deg,\x20#4caf50,\x20#388e3c)',b[I(0x1d6)]=![],updateFeatureStatusIndicator(c,a,e);}catch(l){console[I(0x1ac)]('❌\x20Toggle\x20failed:',l),b['innerHTML']=f,b['disabled']=![],showTempMessage(I(0x122)+a,'error');}}function updateFeatureStatusIndicator(a,b,c){const J=a47w,d=a[J(0x172)]('.feature-status');d&&d['remove']();const e=document['createElement']('div');e[J(0x17f)]=J(0x12e),e['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20left:\x20'+(a['querySelector']('.limited-badge')?'90px':J(0x145))+J(0x192)+(c?J(0x154):'background:\x20#666;\x20color:\x20#ccc;')+'\x0a\x20\x20\x20\x20',e['textContent']=c?'ACTIVE':'INACTIVE',a['appendChild'](e);}function applyFeatureEffect(a){const K=a47w;console['log']('🎨\x20Applying\x20effect\x20for:\x20'+a);switch(a){case K(0x188):document['body']['style'][K(0x117)]=K(0x164);break;case K(0x179):addGlowEffects();break;case K(0x1fc):addAnimatedBackground();break;case K(0x1f3):addGoldenTheme();break;case'Hot\x20Streak':addHotStreakEffect();break;case'Destroyer':addDestroyerEffect();break;default:console[K(0x135)](K(0x121)+a);}}function removeFeatureEffect(a){const L=a47w;console['log']('🗑️\x20Removing\x20effect\x20for:\x20'+a);switch(a){case'Dark\x20Purple\x20Theme':document[L(0x17e)][L(0x1c7)]['filter']='';break;case'Glow\x20Effects':removeGlowEffects();break;case L(0x1fc):removeAnimatedBackground();break;case L(0x1f3):removeGoldenTheme();break;case'Hot\x20Streak':removeHotStreakEffect();break;case'Destroyer':removeDestroyerEffect();break;}}function addGlowEffects(){const M=a47w,a=document['createElement']('style');a['id']='glow-effects',a[M(0x182)]=M(0x184),document['head']['appendChild'](a);}function a47c(){const az=['Aw5JBhvKzxm','mtq3nJi3ywXYvLHo','Bwf4','mty4sw11u2PR','CMvTB3zL','ywrTAw4TDgv4Dc1LzgL0B3i','y2XPy2S','mtbWEa','iokgKIa','zgvZy3jPChrPB24','lMfKBwLUlxbYAwnLlwvKAxrVCIbPBNb1Da','mZv1sxLVwLK','CxvLCNLtzwXLy3rVCKfSBa','re9nievSzw1LBNrZigzVDw5KoG','DgL0Bgu','ywrTAw4TzwrPDc1PBMrPy2f0B3i','B3jPz2LUywXuzxH0','re9nigvSzw1LBNrZihn0AwXSig5VDcbMB3vUzcbHzNrLCIbYzxrYEq','ywrTAw5vsvzPC2LIBgu','oWOGicaGicaGignVBg9YoIa','lcbIDxqGEw91igHHDMuG','B25JBgLJAW','yMfJA2DYB3vUzdOGiZrdquy1mdSGy29SB3i6ihDOAxrLoYbHBMLTyxrPB246ihb1BhnLlwDYzwvUidjZigLUzMLUAxrLoW','C3rVCMvjDgvTCW','qNv0Dg9UigHVDMvYigDSB3DZ','cIaGicaGicaGlMfKBwLUlwjHzgDLihSkicaGicaGicaGicaGyw5PBwf0Aw9UoIbWDwXZzs1Hzg1PBIaYCYbPBMzPBML0zsbHBhrLCM5HDgu7cIaGicaGicaGFqOGicaGicaGiaOGicaGicaGic5Hzg1PBI1WCMLJzs1LzgL0B3iGEWOGicaGicaGicaGicbTyxjNAw4TDg9WoIaXnxb4oWOGicaGicaGicaGicbWywrKAw5NlxrVCdOGmtbWEdSkicaGicaGicaGicaGyM9YzgvYlxrVCdOGmxb4igrHC2HLzcbYz2jHkdi1nsWGmJu1lcaYntuSidaUmIK7cIaGicaGicaGFqOGicaGicaGiaOGicaGicaGic5Hzg1PBI1ZyxzLlwj0BJPOB3zLCIb7cIaGicaGicaGicaGigjHy2TNCM91BMq6icmYztDKmZiGiwLTCg9YDgfUDdSkicaGicaGicaGicaGDhjHBNnMB3jToIbZy2fSzsGXlJa1ktSkicaGicaGicb9cIaGicaGicaGcIaGicaGicaGlNbVAw50CY1Hy3rPB24TyNv0Dg9UlMfJDgL2zsb7cIaGicaGicaGicaGigjVEc1ZAgfKB3C6idaGmcaWidjWEcb3AgL0ztSkicaGicaGicb9cIaGicaGicaGcIaGicaGicaGqgTLEwzYyw1LCYbWDwXZzs1Hzg1PBIb7cIaGicaGicaGicaGidaLihSGB3bHy2L0EtOGmc44oYb9cIaGicaGicaGicaGideWmcuGEYbVCgfJAxr5oIaXoYb9cIaGicaGicaGFqOGicaG','lMfKBwLUlxbYAwnLlwvKAxrVCIWGlMfKBwLUlxrLEhqTzwrPDg9Y','4PYfifn1y2nLC3nMDwXSEsbWDxjJAgfZzwqG','DxnLCI1WB2LUDhm','cIaGicaGicaGlNbHz2uTDgL0BguGEWOGicaGicaGicaGicbJB2XVCJOGi2zMmtC0ncaHAw1WB3j0yw50oWOGicaGicaGicaGicb0zxH0lxnOywrVDZOGmcaWideWChGGCMDIysGYntuSidiZlca2ocWGmc41ksaHAw1WB3j0yw50oWOGicaGicaGih0kicaGicaGicaUC3rVCMuTAxrLBtPOB3zLCIb7cIaGicaGicaGicaGigjVCMrLCI1JB2XVCJOGi2zMmtC0ncaHAw1WB3j0yw50oWOGicaGicaGih0kicaGia','mJK0mZCWA3ftq2z0','vxnPBMCGzMfSBgjHy2SGDg8GC2HVDYbJB250zw50lI4U','Ag90u3rYzwfR','mtCWnJq2sef4EgPu','pgKGy2XHC3m9iMzHCYbMys10Aw1LCYi+pc9PpIbdyw5JzwW','ChjLDMvUDerLzMf1Bhq','8j+uPYberujvrZOGu2HVD2LUzYbZDg9YzsbJB250zw50igzVCIb0zxn0Aw5N','zMvHDhvYzxm','AhvLlxjVDgf0zsGYmgrLzYKGC2f0DxjHDguOms4Ykq','lNn0B3jLlwL0zw0','C2v0ihrV','ywrKzwq','pgKGy2XHC3m9iMzHCYbMys10B2DNBguTB2zMiJ48l2K+ievUywjSzq','z2v0sxrLBq','zgLZCgXHEtPMBgv4o2fSAwDUlwL0zw1ZoMnLBNrLCJTTyxjNAw46mtbWEcaWoW','Cg9PBNrZ','lNvZzxiTCg9PBNrZ','ihbVAw50CYa','cIaGicaGicaGyM9KEtO6yMvMB3jLihSkicaGicaGicaGicaGy29UDgvUDdOGjYC7cIaGicaGicaGicaGihbVC2L0Aw9UoIbMAxHLzdSkicaGicaGicaGicaGDg9WoIaWoWOGicaGicaGicaGicbSzwz0oIaWoWOGicaGicaGicaGicb3Awr0AdOGmtaWjtSkicaGicaGicaGicaGAgvPz2H0oIaXmdaLoWOGicaGicaGicaGicbIywnRz3jVDw5KoIakicaGicaGicaGicaGicaGihjHzgLHBc1NCMfKAwvUDcHJAxjJBguGyxqGmJaLiduWjsWGCMDIysGXntySidm5lcaXnZySidaUmsKGmcuSihrYyw5ZCgfYzw50iduWjsKScIaGicaGicaGicaGicaGicbYywrPywWTz3jHzgLLBNqOy2LYy2XLigf0idGWjsaYmcuSihjNyMeOmtaZlca1ocWGmtGZlcaWlJePidaLlcb0CMfUC3bHCMvUDca1mcuPlaOGicaGicaGicaGicaGicaGCMfKAwfSlwDYywrPzw50kgnPCMnSzsbHDca0mcuGodaLlcbYz2jHkde1nIWGmZKSide3nIWGmc4XksaWjsWGDhjHBNnWyxjLBNqGntaLktSkicaGicaGicaGicaGyw5PBwf0Aw9UoIbMBg9HDca2CYbLyxnLlwLUlw91DcbPBMzPBML0ztSkicaGicaGicaGicaGEI1PBMrLEdOGlte7cIaGicaGicaGicaGihbVAw50zxiTzxzLBNrZoIbUB25LoWOGicaGicaGih0kicaGicaGicakicaGicaGicbaA2v5zNjHBwvZigzSB2f0ihSkicaGicaGicaGicaGmcuSideWmcuGEYb0CMfUC2zVCM06ihrYyw5ZBgf0zsGWChGSidbWEcKGC2nHBguOmsK7ih0kicaGicaGicaGicaGmZmLihSGDhjHBNnMB3jToIb0CMfUC2XHDguOmZbWEcWGltmWChGPihnJywXLkdeUmsK7ih0kicaGicaGicaGicaGnJyLihSGDhjHBNnMB3jToIb0CMfUC2XHDguOltiWChGSidiWChGPihnJywXLkdaUosK7ih0kicaGicaGicb9cIaGica','Bg9VA3vWlxvZzxiTyNrU','4P2mievYCM9YoIa','Aw5SAw5LlwjSB2nR','CxvLCNLtzwXLy3rVCG','CMvWBgfJzq','AgvPz2H0','rMfPBgvKihrVigLUAxrPywXPEMuGre9nigvSzw1LBNrZlcbYzxrYEwLUzY4UlG','CMvM','y3jLyxrLrwXLBwvUDa','CMvSyxrPDMu','r2XVDYbfzMzLy3rZ','mcbqB2LUDhm','q3vZDg9TAxPHyMXLigLUDgvUC2L0Eq','u2v0ihbYAwnLoIa','oWOGicaGicaGigjVCMrLCJOGmNb4ihnVBgLKia','yM9KEq','y2XHC3noyw1L','y3vYCMvUDfvZzxi','DgHLBG','Dgv4DenVBNrLBNq','zgf0yq','cIaGicaGicaGlNb1CMnOyxnLlwj0BJPOB3zLCJPUB3qOoMrPC2fIBgvKksb7cIaGicaGicaGicaGigjVEc1ZAgfKB3C6idaGmcaYmhb4ihjNyMeOmtu2lcaZosWGmtC2lcaWlJGPicfPBxbVCNrHBNq7cIaGicaGicaGFqOGicaGicaGic5ZDg9Yzs1PDgvToMHVDMvYihSkicaGicaGicaGicaGyM94lxnOywrVDZOGmca4ChGGmJvWEcbYz2jHkde1nIWGmZKSide3nIWGmc40ksaHAw1WB3j0yw50oWOGicaGicaGih0kicaGicaGicaUAxrLBs10AxrSzsb7cIaGicaGicaGicaGihrLEhqTC2HHzg93oIaWidaGmtbWEcbYz2jHkde1nIWGmZKSide3nIWGmc41ksaHAw1WB3j0yw50oWOGicaGicaGih0kicaGia','zw1HAwW','cIaGicaGicaGCg9ZAxrPB246igzPEgvKoWOGicaGicaGihrVCdOGmJbWEdSkicaGicaGicbSzwz0oIa1mcu7cIaGicaGicaGDhjHBNnMB3jToIb0CMfUC2XHDgvykc01mcuPoWOGicaGicaGihbHzgrPBMC6ideYChGGmJrWEdSkicaGicaGicbIB3jKzxiTCMfKAxvZoIa4ChG7cIaGicaGicaGzM9UDc1ZAxPLoIaXnNb4oWOGicaGicaGigzVBNqTD2vPz2H0oIa1mda7cIaGicaGicaGEI1PBMrLEdOGotK5otSkicaGicaGicbIB3GTC2HHzg93oIaWidrWEcaXmNb4ihjNyMeOmcWGmcWGmcWGmc4YktSkicaGicaGicbHBMLTyxrPB246igzHzgvjBK91Dca0CYbMB3j3yxjKCZSkicaGicaGicbIywnRz3jVDw5KlwnVBg9YoIa','ywn0AxzL','rgfYAYbqDxjWBguGvgHLBwu','q3vZDg9Tihb1CNbSzsbHy2nLBNrZ','8j+tPIbmB2fKAw5NihvZzxiGAw52zw50B3j5oG','BNvTyMvY','CMvTB3zLq2HPBgq','ywrKrxzLBNrmAxn0zw5LCG','zgLZCgXHEq','4PYfifvWzgf0zwqG','sg90ifn0CMvHAW','DhLWzq','oWOGicaGicaGihbHzgrPBMC6idvWEcaXmhb4oWOGicaGicaGigjVCMrLCI1YywrPDxm6ide1ChG7cIaGicaGicaGzM9UDc1ZAxPLoIaXmxb4oWOGicaGicaGigzVBNqTD2vPz2H0oIbIB2XKoWOGicaGicaGihrLEhqTDhjHBNnMB3jToIb1ChbLCMnHC2u7cIaGicaGicaG','ywrK','u2f2zsbWCMLJzq','msWYnta','rxjYB3iGBg9VA2LUzYb1Ccb1C2vYoG','C3rVCMuTy29UDgvUDa','mLPlqKfqDW','ifbVAw50CW','y3jLyxrLvgv4De5Vzgu','DxnLCLbYB2zPBgvZ','DMfSDwu','q3jLyxrPBMCGzgvMyxvSDcbZDg9YzsbPDgvTCY4UlG','z29SzgvUrwXPDgvuAgvTzq','Aw5Uzxjive1m','y29UDgfPBNm','zxHPC3rZ','BwvZC2fNzq','y3nZvgv4Da','pgKGy2XHC3m9iMzHCYbMys1LEwuIpJWVAt4Gu2HVDYbbzg1PBIbvsq','vgv4DcbZAgfKB3CGzwzMzwn0CW','CMv0DxjUicHMDw5JDgLVBIGPia','Aw5MBW','C3vJy2vZCW','Bw91C2vSzwf2zq','Cg9PBNrZlxn1yNrYywn0','igfJDgL2zsbZDgf0zsbPBIbgAxjLC3rVCMu6ia','zxjYB3i','CgfKzgLUzZO1ChGGmtbWEdTIB3jKzxiTCMfKAxvZoJrWEdTIywnRz3jVDw5KoIm0q0fgnta7yM9YzgvYoM5VBMu7y29SB3i6D2HPDgu7y3vYC29YoNbVAw50zxi7','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVig1HA2uGChvYy2HHC2vZ','odbWEa','BwvZC2fNzs1HBMLTyxrPB25Z','igzVCIa','cIaGicaGicaGCg9ZAxrPB246igfIC29SDxrLoWOGicaGicaGihrVCdOGmdSkicaGicaGicbSzwz0oIaWoWOGicaGicaGihjPz2H0oIaWoWOGicaGicaGigjVDhrVBtOGmdSkicaGicaGicbIywnRz3jVDw5KoIbYz2jHkdaSidaSidaSidaUocK7cIaGicaGicaGEI1PBMrLEdOGmta7cIaGicaGicaGCgfKzgLUzZOGmtbWEdSkicaGicaGicbIB3jKzxiTCMfKAxvZoIa1ChG7cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbMBgv4lwrPCMvJDgLVBJOGy29SDw1UoWOGicaG','y2fUy2vSlwj0BG','cIaGicaGicaGzgLZCgXHEtOGzMXLEdSkicaGicaGicbQDxn0Awz5lwnVBNrLBNq6ihnWywnLlwjLDhDLzw47cIaGica','vxnLCIbWCM9MAwXLig5VDcbMB3vUza','DgfIBgu','rxjYB3iGC2f2Aw5NigL0zw0GChjPy2u6','t0zg','lMfKBwLUlwjHzgDL','oti3mZzjwvbJsxa','z2XVDY1LzMzLy3rZ','iZjLn2qZmG','mc43','pgKGy2XHC3m9iMzHCYbMys1ZyxzLiJ48l2K+','yMLUza','DhjHy2u','Dg9tDhjPBMC','CMDIysGYndqSidy3lca1ncWGmc45kq','rxjYB3iGBg9HzgLUzYb1C2vYihbVAw50CZO','BgLUzwfYlwDYywrPzw50kdeZnwrLzYWGi2zMntCYmIWGi2u2ngeXosK','cIaGicaGicaGpgGZihn0EwXLpsjTyxjNAw4TDg9WoJa7y29SB3i6iZLJmJDImdT0zxH0lwfSAwDUoMnLBNrLCIi+cIaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTy29PBNmIpJWVAt4Gtw9KAwz5ifvZzxiGug9PBNrZcIaGicaGicaGpc9OmZ4kicaGicaGica8zgL2ihn0EwXLpsjTyxjNAw4TyM90Dg9ToJe1ChGIpGOGicaGicaGicaGica8BgfIzwWGC3r5Bgu9iMrPC3bSyxK6yMXVy2S7BwfYz2LUlwjVDhrVBtO1ChG7y29SB3i6i2nJyYi+vxnLCIbjrcbVCIbfBwfPBdO8l2XHyMvSpGOGicaGicaGicaGica8Aw5WDxqGAwq9iNvZzxiTBg9VA3vWiIb0ExbLpsj0zxH0iIbZDhLSzt0ID2LKDgG6mtaWjtTWywrKAw5NoJHWEdTIB3jKzxiTCMfKAxvZoJvWEdTIywnRz3jVDw5KoImZmZm7y29SB3i6D2HPDgu7yM9YzgvYoJfWEcbZB2XPzcaJntu1iIbWBgfJzwHVBgrLCJ0IvxnLCIbjrcbVCIbLBwfPBcbHzgrYzxnZiJ4kicaGicaGica8l2rPDJ4kicaGicaGica8zgL2ihn0EwXLpsjTyxjNAw4TyM90Dg9ToJe1ChGIigLKpsjWB2LUDhmTy29UDhjVBhmIihn0EwXLpsjKAxnWBgf5oM5VBMuIpGOGicaGicaGicaGica8BgfIzwWGC3r5Bgu9iMrPC3bSyxK6yMXVy2S7BwfYz2LUlwjVDhrVBtO1ChG7y29SB3i6i2nJyYi+ug9PBNrZiefJDgLVBJO8l2XHyMvSpGOGicaGicaGicaGica8zgL2ihn0EwXLpsjKAxnWBgf5oMzSzxG7z2fWoJeWChG7BwfYz2LUlwjVDhrVBtOXmhb4iJ4kicaGicaGicaGicaGicaGidXIDxr0B24GAwq9iNbVAw50CY1HzgqIihn0EwXLpsjMBgv4oJe7CgfKzgLUzZO4ChG7yM9YzgvYlxjHzgL1CZO1ChG7yMfJA2DYB3vUzdOJnenbrJuWo2jVCMrLCJPUB25Lo2nVBg9YoNDOAxrLo2n1CNnVCJPWB2LUDgvYiJ4kicaGicaGicaGicaGicaGicaGica8AsbJBgfZCZ0IzMfZigzHlxbSDxmIpJWVAt4GqwrKcIaGicaGicaGicaGicaGica8l2j1DhrVBJ4kicaGicaGicaGicaGicaGidXIDxr0B24GAwq9iNbVAw50CY1ZzxqIihn0EwXLpsjMBgv4oJe7CgfKzgLUzZO4ChG7yM9YzgvYlxjHzgL1CZO1ChG7yMfJA2DYB3vUzdOJmJe5nKyZo2jVCMrLCJPUB25Lo2nVBg9YoNDOAxrLo2n1CNnVCJPWB2LUDgvYiJ4kicaGicaGicaGicaGicaGicaGica8AsbJBgfZCZ0IzMfZigzHlwvKAxqIpJWVAt4Gu2v0cIaGicaGicaGicaGicaGica8l2j1DhrVBJ4kicaGicaGicaGicaGicaGidXIDxr0B24GAwq9iNbVAw50CY1ZDwj0CMfJDciGC3r5Bgu9iMzSzxG6mtTWywrKAw5NoJHWEdTIB3jKzxiTCMfKAxvZoJvWEdTIywnRz3jVDw5KoIngrJu3mJi7yM9YzgvYoM5VBMu7y29SB3i6D2HPDgu7y3vYC29YoNbVAw50zxiIpGOGicaGicaGicaGicaGicaGicaGidXPignSyxnZpsjMyxmGzMeTBwLUDxmIpJWVAt4Gu3vIDhjHy3qkicaGicaGicaGicaGicaGidWVyNv0Dg9UpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpgrPDJ4kicaGicaGicaGicaGicaGidXSywjLBcbZDhLSzt0IzgLZCgXHEtPIBg9JAZTTyxjNAw4TyM90Dg9ToJvWEdTJB2XVCJOJy2nJiJ5bBw91BNq6pc9SywjLBd4kicaGicaGicaGicaGicaGidXPBNb1DcbPzd0ICg9PBNrZlwfTB3vUDciGDhLWzt0IBNvTyMvYiIbTAw49iJaIihzHBhvLpsiXmdaIihn0EwXLpsj3Awr0AdOXmdaLo3bHzgrPBMC6ohb4o2jVCMrLCI1YywrPDxm6nxb4o2jHy2TNCM91BMq6iZmZmZTJB2XVCJP3AgL0ztTIB3jKzxi6mxb4ihnVBgLKicm1ntuIpGOGicaGicaGicaGica8l2rPDJ4kicaGicaGica8l2rPDJ4kicaGicaGica8zgL2igLKpsj1C2vYlwLUzM8Iihn0EwXLpsjTyxjNAw4TyM90Dg9ToJe1ChG7CgfKzgLUzZOXmhb4o2jVCMrLCI1YywrPDxm6nxb4o2jHy2TNCM91BMq6iZmZmZTKAxnWBgf5oM5VBMuIpGOGicaGicaGicaGica8CcbPzd0IDxnLCI1Uyw1LiIbZDhLSzt0IBwfYz2LUoJaGmca1ChGGmdTJB2XVCJOJzMzMiJ48l3a+cIaGicaGicaGicaGidXWigLKpsj1C2vYlwn1CNjLBNqTCg9PBNrZiIbZDhLSzt0IBwfYz2LUoJa7y29SB3i6i2fHysi+pc9WpGOGicaGicaGidWVzgL2pGOGicaGicaGidXKAxyGC3r5Bgu9iMrPC3bSyxK6zMXLEdTQDxn0Awz5lwnVBNrLBNq6C3bHy2uTyMv0D2vLBJTTyxjNAw4TDg9WoJiWChGIpGOGicaGicaGicaGica8yNv0Dg9UigLKpsjSB29RDxaTDxnLCI1IDg4Iihn0EwXLpsjWywrKAw5NoJHWEcaXnxb4o2jVCMrLCI1YywrPDxm6nxb4o2jHy2TNCM91BMq6iZLJmJDImdTIB3jKzxi6BM9UztTJB2XVCJP3AgL0ztTJDxjZB3i6Cg9PBNrLCIi+cIaGicaGicaGicaGicaGica8AsbJBgfZCZ0IzMfZigzHlxnLyxjJAci+pc9PpIbmB29RifvWifvZzxikicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGidXIDxr0B24GAwq9iMnHBMnLBc1IDg4Iihn0EwXLpsjWywrKAw5NoJHWEcaXnxb4o2jVCMrLCI1YywrPDxm6nxb4o2jHy2TNCM91BMq6iZy2nJTIB3jKzxi6BM9UztTJB2XVCJP3AgL0ztTJDxjZB3i6Cg9PBNrLCIi+cIaGicaGicaGicaGicaGicbdyw5JzwWkicaGicaGicaGicaGpc9IDxr0B24+cIaGicaGicaGicaGidXIDxr0B24GAwq9iMfWCgX5lxbVAw50CY1IDg4Iihn0EwXLpsjWywrKAw5NoJHWEcaXnxb4o2jVCMrLCI1YywrPDxm6nxb4o2jHy2TNCM91BMq6iZrdquy1mdTIB3jKzxi6BM9UztTJB2XVCJP3AgL0ztTJDxjZB3i6Cg9PBNrLCJTKAxnWBgf5oM5VBMuIpGOGicaGicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys1JAgvJAYi+pc9PpIbbChbSEqOGicaGicaGicaGica8l2j1DhrVBJ4kicaGicaGica8l2rPDJ4kicaGia','zxHJzxb0Aw9U','C3r5Bgu','yMXVy2S','4P2miefKBwLUihbYAxzPBgvNzxmGCMvXDwLYzwq','Dg9ju09tDhjPBMC','C3vIDhjHy3rLza','zM9JDxm','ywrTAw4TC2f2zs1IDg4','DMv0zxjHBLbSyxLLCG','ChjPy2u','DhjPBq','y29UC29Szq','4PYfifvZzxiGyxv0AgvUDgLJyxrLzdO','BgvUz3rO','lNb1CMnOyxnLlwj0BG','zw1WDhK','zgLZywjSzwq','uMvKzwvTihbHz2uGre9nigXVywrLzcWGAw5PDgLHBgL6Aw5NlI4U','DwLK','i2m2mJGYoa','pgKGy2XHC3m9iMzHCYbMys1JAgvJAYi+pc9PpIbtyxzL','cIaGicaGicaGicaGicaGicb3Awr0AdOGmtaWjtSkicaGicaGicaGicaGicaGihbHzgrPBMC6idvWEdSkicaGicaGicaGicaGicaGig1HCMDPBI1IB3r0B206idvWEdSkicaGicaGicaGicaGicaGigjHy2TNCM91BMq6icmZmZm7cIaGicaGicaGicaGicaGicbJB2XVCJOGD2HPDgu7cIaGicaGicaGicaGicaGicbIB3jKzxi6idfWEcbZB2XPzcaJnJCZywi3oWOGicaGicaGicaGicaGicaGyM9YzgvYlxjHzgL1CZOGm3b4oWOGicaGicaGicaGica','yxbWBhKTCg9PBNrZlwj0BG','cIaGicaGicaGCgfKzgLUzZOGm3b4idHWEdSkicaGicaGicbIywnRz3jVDw5KoIaJrJq0mZm2oWOGicaGicaGignVBg9YoIb3AgL0ztSkicaGicaGicbIB3jKzxi6ig5VBMu7cIaGicaGicaGyM9YzgvYlxjHzgL1CZOGm3b4oWOGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGicaGicbTyxjNAw4TBgvMDdOGnxb4oWOGicaG','zMXLEa','u2v0DgLUzYb1CcbYzwrLzw0GCgfNzsbMDw5JDgLVBMfSAxr5lI4U','4P2mifLVDsbTDxn0igjLigXVz2DLzcbPBIb0BYbTywTLignOyw5Nzxm','rxjYB3iGC2f2Aw5NigL0zw0GDgv4DdO','ntvzzuj3q2e','lML0zw0TDgL0Bgu','zM9YrwfJAa','z2v0rwXLBwvUDej5swq','idXZCgfUihn0EwXLpsjIywnRz3jVDw5KoInMzJu3mJi7y29SB3i6D2HPDgu7CgfKzgLUzZO1ChGGmtbWEdTIB3jKzxiTCMfKAxvZoJe1ChG7zM9UDc1ZAxPLoJe0ChG7BwfYz2LUlwXLzNq6mtbWEdSIpKfKBwLUie1Vzgu8l3nWyw4+','lML0zw0TChjPy2u','Dhj1zq','zgL2','Axnbzg1PBG','8j+zIcbbzg1PBIbvssbLBgvTzw50CYbHCMuGBM93igHPzgrLBG','y29UC3rYDwn0B3i','yNv0Dg9U','yxv0Ac13yxjUAw5N','zgf0yxnLDa','Bw91C2vLBNrLCG','C2v0sxrLBq','cIaGicaGicaGicaGihbVC2L0Aw9UoIbHyNnVBhv0ztSkicaGicaGicaGicaGDg9WoIaTohb4oWOGicaGicaGicaGicbYAwDODdOGltHWEdSkicaGicaGicaGicaGyMfJA2DYB3vUzdOGiZy3m2fInZSkicaGicaGicaGicaGy29SB3i6ihDOAxrLoWOGicaGicaGicaGicb3Awr0AdOGmtHWEdSkicaGicaGicaGicaGAgvPz2H0oIaXohb4oWOGicaGicaGicaGicbIB3jKzxiTCMfKAxvZoIa1mcu7cIaGicaGicaGicaGigrPC3bSyxK6igzSzxG7cIaGicaGicaGicaGigfSAwDUlwL0zw1ZoIbJzw50zxi7cIaGicaGicaGicaGigP1C3rPzNKTy29UDgvUDdOGy2vUDgvYoWOGicaGicaGicaGicbMB250lxnPEMu6ideWChG7cIaGicaGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGicaGicaGicaGB3bHy2L0EtOGmc43oWOGicaGicaGicaGicb0CMfUC2L0Aw9UoIbVCgfJAxr5idaUmNm7cIaGicaGicaG','r29SzgvUievSAxrLifrOzw1L','8j+uHcbuB2DNBgLUzYa','cIaGicaGicaGicaGicaGicbWywrKAw5NoIaZChGGohb4oWOGicaGicaGicaGicaGicaGyMfJA2DYB3vUzdOGiZrdquy1mdSkicaGicaGicaGicaGicaGignVBg9YoIb3AgL0ztSkicaGicaGicaGicaGicaGigjVCMrLCJOGBM9UztSkicaGicaGicaGicaGicaGigjVCMrLCI1YywrPDxm6idnWEdSkicaGicaGicaGicaGicaGign1CNnVCJOGCg9PBNrLCJSkicaGicaGicaGicaG','zw5HyMXLzezLyxr1CMvZ','BM9Uzq','ChvYy2HHC2vKsxrLBxm','Cg9ZAxrPB24','yxbWzw5Kq2HPBgq','C3rYAw5NAwz5','qw5PBwf0zwqGqMfJA2DYB3vUzcbqywnR','mZu0otKWqvzfAKDh','zMLSDgvY','igvUywjSzwqH','yw5PBwf0zwqTyMC','4P2miezHAwXLzcb0BYbZyxzLihbYAwnLoIa','Cg9PBNrZlwfKza','Dg9Nz2XLlwfKBwLUlwj0BG','4P2miezHAwXLzcb0BYbZyxzLihrLEhq6ia','Dg9mB3DLCKnHC2u','ywrTAw4Tz2XVyMfSlwnVBNrYB2XZ','rxjYB3iGAw5PDgLHBgL6Aw5Nihn0B3jLigL0zw1ZoG','tM8GDMLZDwfSigvMzMvJDcbKzwzPBMvKigzVCJOG','4P2miezHAwXLzcb0BYb0B2DNBguG','mJa5mZG4mgXzt2fdBq','rgvLCcbWDxjWBguGz3jHzgLLBNrZ','t1Doruq','4P2mifvZzxiGBM90igzVDw5K','zg9JCW','Cg9PBNrZlwfTB3vUDa','C3bHBG','zgLZCgXHEu5HBwu','Dgv4DgfYzwe','Ag90lxn0CMvHAW','vw5SB2nRigeGC2XLzwSGzgfYAYbWDxjWBguGy29SB3iGC2nOzw1LigzVCIb0AguGzw50AxjLihDLyNnPDguU','zMvHDhvYzs1ZDgf0Dxm','D2HPDgu','4P2mifvZzxiGBM90igf1DgHLBNrPy2f0zwq','lMfKBwLUlwDSB2jHBc1JB250CM9SCW','DxnLCKLUDMvUDg9YEq','mtq2nZe3mwP6twXMyG','mJbuzwXJwxy','Bg9N','ihbVAw50CYbMB3iGDxnLCJO','Dg91CM5HBwvUDenOyw1WAw9U','lML0zw0TzMvHDhvYzxm','AgvHza','ywrKlxbVAw50CY1IDg4','Cg9PBNrZlwnVBNrYB2XZ','ywrTAw4TyMfKz2u','lML0zw0TzgvZy3jPChrPB24'];a47c=function(){return az;};return a47c();}function removeGlowEffects(){const N=a47w,a=document[N(0x1e5)](N(0x1bb));if(a)a['remove']();}function addAnimatedBackground(){const O=a47w,a=document[O(0x177)](O(0x1c7));a['id']=O(0x119),a[O(0x182)]=O(0x16e),document[O(0x139)][O(0x1fa)](a);}function removeAnimatedBackground(){const P=a47w,a=document[P(0x1e5)](P(0x119));if(a)a[P(0x142)]();}function addGoldenTheme(){const Q=a47w,a=document[Q(0x177)](Q(0x1c7));a['id']='golden-theme',a['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20.store-item\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20#ffd700\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20linear-gradient(135deg,\x20rgba(255,\x20215,\x200,\x200.1),\x20rgba(255,\x20215,\x200,\x200.05))\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20.item-icon\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#ffd700\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20.purchase-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20linear-gradient(135deg,\x20#ffd700,\x20#ffb300)\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#000\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20',document[Q(0x139)][Q(0x1fa)](a);}function removeGoldenTheme(){const R=a47w,a=document['getElementById']('golden-theme');if(a)a[R(0x142)]();}function addHotStreakEffect(){const S=a47w,a=document['createElement'](S(0x1c7));a['id']=S(0x12c),a['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20.page-title::after\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20content:\x20\x27🔥\x27;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20animation:\x20fire\x201s\x20ease-in-out\x20infinite\x20alternate;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20@keyframes\x20fire\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x200%\x20{\x20transform:\x20scale(1)\x20rotate(-5deg);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20100%\x20{\x20transform:\x20scale(1.2)\x20rotate(5deg);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20',document[S(0x139)]['appendChild'](a);}function removeHotStreakEffect(){const T=a47w,a=document[T(0x1e5)](T(0x12c));if(a)a['remove']();}function addDestroyerEffect(){const U=a47w,a=document['createElement'](U(0x1c7));a['id']='destroyer-effect',a['textContent']=U(0x15b),document['head']['appendChild'](a);}function removeDestroyerEffect(){const a=document['getElementById']('destroyer-effect');if(a)a['remove']();}async function loadUserPoints(a){const V=a47w;try{if(userPointsElement&&a){const b=doc(db,'userProfiles',a['uid']),c=await getDoc(b);if(c[V(0x1a1)]()){const d=c[V(0x183)]()['points']||0x0;userPointsElement[V(0x182)]=d['toLocaleString'](),console[V(0x135)]('Loaded\x20'+d+V(0x136),a['displayName']);}else await setDoc(b,{'points':0x0}),userPointsElement['textContent']='0',console[V(0x135)]('Created\x20new\x20profile\x20with\x200\x20points\x20for\x20user:',a['displayName']);}}catch(e){console['error'](V(0x1c3),e);if(userPointsElement)userPointsElement['textContent']='0';}}function showTempMessage(a,b=a47w(0x1a7)){const W=a47w;console[W(0x135)]('Message\x20('+b+'):\x20'+a);const c=document[W(0x172)]('.temp-message');c&&c['remove']();const d=document['createElement']('div');d['className']='temp-message\x20message-'+b,d[W(0x19f)]=a;let e,f,g;switch(b){case W(0x1a8):e='rgba(76,\x20175,\x2080,\x200.9)',f=W(0x12f),g=W(0x1bc);break;case W(0x1ac):e=W(0x1c2),f=W(0x12f),g=W(0x1d9);break;case'info':default:e='rgba(33,\x20150,\x20243,\x200.9)',f='white',g='#1565c0';break;}d[W(0x1c7)]['cssText']=W(0x186)+e+W(0x151)+f+W(0x17d)+g+';\x0a\x20\x20\x20\x20';if(!document[W(0x1e5)](W(0x1b0))){const h=document[W(0x177)]('style');h['id']='message-animations',h['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20@keyframes\x20fadeInOut\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x200%\x20{\x20opacity:\x200;\x20transform:\x20translate(-50%,\x20-20px);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x2010%\x20{\x20opacity:\x201;\x20transform:\x20translate(-50%,\x200);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x2080%\x20{\x20opacity:\x201;\x20transform:\x20translate(-50%,\x200);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20100%\x20{\x20opacity:\x200;\x20transform:\x20translate(-50%,\x20-20px);\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20',document['head'][W(0x1fa)](h);}document[W(0x17e)]['appendChild'](d),setTimeout(()=>{d['parentNode']&&d['remove']();},0xfa0);}function setupPurchaseButtons(){const X=a47w,a=document[X(0x14a)](X(0x1d4));a[X(0x1e4)](b=>{const Y=X;b[Y(0x18d)]('click',c=>{const Z=Y;c[Z(0x161)]();const d=b['closest']('.store-item'),f=d[Z(0x172)]('.item-title')?.[Z(0x182)]||'Unknown\x20Item',g=d['querySelector'](Z(0x1e7))?.['textContent']||Z(0x17a);if(userInventory[f])return;handlePurchase(f,g,b);});}),console[X(0x135)]('✅\x20Set\x20up\x20'+a[X(0x1d3)]+'\x20purchase\x20buttons');}async function handlePurchase(a,b,c){const a0=a47w;console[a0(0x135)]('🛒\x20Attempting\x20to\x20purchase:\x20'+a+a0(0x1b1)+b);const d=c['innerHTML'];c[a0(0x1d6)]=!![],c['innerHTML']='<i\x20class=\x22fas\x20fa-spinner\x20fa-spin\x22></i>\x20Processing...';try{const e=parseInt(b[a0(0x173)](/[^0-9]/g,'')),f=auth['currentUser'];if(!f)throw new Error(a0(0x1ae));const g=doc(db,a0(0x19b),f[a0(0x1d8)]),h=await getDoc(g);if(!h[a0(0x1a1)]())throw new Error(a0(0x1b5));const i=h[a0(0x183)]()[a0(0x16b)]||0x0;if(i<e)throw new Error('Not\x20enough\x20points!\x20Need\x20'+e+a0(0x152)+i);const j=i-e,k=h['data'](),l=k['purchasedItems']||{};l[a]={'purchasedAt':new Date(),'price':e,'owned':!![],'active':!![]},await updateDoc(g,{'points':j,'purchasedItems':l}),userInventory[a]={'purchaseDate':new Date()[a0(0x1ca)](),'price':b},localStorage['setItem']('userInventory',JSON['stringify'](userInventory)),enabledFeatures[a]=!![],localStorage['setItem'](a0(0x1f6),JSON[a0(0x1fb)](enabledFeatures)),applyFeatureEffect(a),showTempMessage(a0(0x159)+a+'!\x20It\x20will\x20appear\x20on\x20your\x20profile.',a0(0x1a8));const m=c['closest']('.store-item');updateItemAsOwned(m,c,a),userPointsElement&&(userPointsElement[a0(0x182)]=j['toLocaleString']());}catch(n){console['error']('❌\x20Purchase\x20failed:',n),c['innerHTML']=d,c[a0(0x1d6)]=![],showTempMessage('❌\x20'+(n[a0(0x1a2)]||'Failed\x20to\x20purchase.\x20Please\x20try\x20again.'),a0(0x1ac));}}async function isUserAdmin(a){const a1=a47w;if(!a)return![];try{const b=doc(db,a1(0x19b),a['uid']),c=await getDoc(b);if(c['exists']())return c['data']()[a1(0x1ea)]===!![];return![];}catch(d){return console[a1(0x1ac)]('Error\x20checking\x20admin\x20status:',d),![];}}let storeItemPrices={};async function initializeStoreItems(){const a2=a47w;try{const a=collection(db,a2(0x155)),b=await getDocs(a);if(b[a2(0x1d5)]){console[a2(0x135)](a2(0x19d));const d=[{'id':'darkPurpleTheme','title':'Dark\x20Purple\x20Theme','price':0x1f4,'description':a2(0x12d),'features':[a2(0x124),'Enhanced\x20contrast',a2(0x189)]},{'id':'animatedBackgroundPack','title':a2(0x1fc),'price':0x2ee,'description':'Collection\x20of\x205\x20animated\x20space-themed\x20backgrounds.','features':['Parallax\x20star\x20fields','Floating\x20particles','Smooth\x20animations']},{'id':'glowEffects','title':a2(0x179),'price':0x12c,'description':'Add\x20subtle\x20glow\x20effects\x20to\x20buttons\x20and\x20interactive\x20elements.','features':[a2(0x156),a2(0x1a5),a2(0x17b)]},{'id':a2(0x19e),'title':'Golden\x20Elite\x20Theme','price':0x3e8},{'id':a2(0x1ce),'title':'Veteran\x20Player','price':0x64},{'id':a2(0x15e),'title':a2(0x190),'price':0xfa},{'id':'destroyer','title':'Destroyer','price':0x15e},{'id':a2(0x137),'title':'Tournament\x20Champion','price':0x1f4},{'id':'risingStar','title':'Rising\x20Star','price':0x96},{'id':'legendary','title':'Legendary','price':0x4b0}];for(const e of d){await setDoc(doc(a,e['id']),e);}return await initializeStoreItems();}let c={};return b[a2(0x1e4)](f=>{const a3=a2,g=f['data']();c[g['title']]=g,storeItemPrices[g[a3(0x14c)]]=g[a3(0x1cf)];}),console[a2(0x135)]('📦\x20Store\x20items\x20loaded:',c),updateStoreItemsFromDatabase(c),c;}catch(f){return console[a2(0x1ac)](a2(0x120),f),{};}}function updateStoreItemsFromDatabase(a){const a4=a47w,b=document['querySelectorAll'](a4(0x165));b[a4(0x1e4)](c=>{const a5=a4,d=c[a5(0x172)](a5(0x1e3));if(!d)return;const e=d['textContent'],f=a[e];if(!f)return;const g=c['querySelector'](a5(0x1e7));g&&f['price']&&(g['textContent']=f['price']+a5(0x199));const h=c[a5(0x172)](a5(0x13d));h&&f['description']&&(h[a5(0x182)]=f['description']);const i=c[a5(0x172)]('.item-features');i&&f['features']&&Array['isArray'](f['features'])&&(i[a5(0x19f)]='',f['features']['forEach'](j=>{const a6=a5,k=document['createElement']('li');k['textContent']=j,i[a6(0x1fa)](k);}));});}function addAdminStyles(){const a7=a47w,a=document['createElement'](a7(0x1c7));a['id']='admin-styles',a[a7(0x182)]=a7(0x157),document['head']['appendChild'](a);}function showAdminControls(){const a8=a47w;addAdminStyles(),initializeAdminUIVisibility();const a=document['querySelector']('.page-title');if(a&&!document['querySelector'](a8(0x1b9))){const c=document['createElement'](a8(0x129));c['className']=a8(0x13c),c[a8(0x19f)]=a8(0x1e6),a[a8(0x1fa)](c);}const b=document[a8(0x14a)]('.store-item');b['forEach'](d=>{const a9=a8,e=d['querySelector'](a9(0x1e3)),f=d[a9(0x172)](a9(0x13d)),g=d[a9(0x172)](a9(0x1e7)),h=d[a9(0x172)](a9(0x138));e&&makeElementEditable(e,'title',d);f&&makeElementEditable(f,a9(0x147),d);if(h){const i=h['querySelectorAll']('li');i['forEach']((j,k)=>{makeElementEditable(j,'feature-'+k,d);});}if(g){const j=storeItemPrices[e['textContent']]||parseInt(g[a9(0x182)][a9(0x173)](/[^0-9]/g,'')),k=document['createElement'](a9(0x1e9));k[a9(0x17f)]='admin-price-editor',k['style'][a9(0x1a3)]=a9(0x16a);const l=document['createElement']('input');l[a9(0x191)]=a9(0x18b),l['value']=j,l['min']=0x0,l[a9(0x140)]=0x2710,l['style']['cssText']='width:80px;padding:5px;border-radius:4px;border:1px\x20solid\x20#673ab7;margin-right:5px;';const m=document['createElement']('button');m['innerHTML']=a9(0x1be),m['className']=a9(0x1cd),m['style']['cssText']=a9(0x1ad),m[a9(0x14c)]=a9(0x194),m[a9(0x18d)]('click',()=>{saveItemPrice(e['textContent'],parseInt(l['value']),g);}),k['appendChild'](document[a9(0x19a)](a9(0x17c))),k[a9(0x1fa)](l),k[a9(0x1fa)](m),d['appendChild'](k);}}),addGlobalAdminControls();}function addGlobalAdminControls(){const aa=a47w;if(document['querySelector'](aa(0x131)))return;const a=document['getElementById'](aa(0x197)),b=document['querySelector'](aa(0x16c));if(a&&b){const c=document['createElement']('div');c['className']=aa(0x11f),c[aa(0x1c7)][aa(0x1a3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.7);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2015px\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x202px\x20solid\x20#ff5722;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20space-between;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap;\x0a\x20\x20\x20\x20\x20\x20\x20\x20',c[aa(0x19f)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:flex;align-items:center\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3\x20style=\x22margin:0;color:#ff5722\x22><i\x20class=\x22fas\x20fa-shield-alt\x22></i>\x20Admin\x20Controls</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:flex;gap:10px;margin-top:10px\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22toggle-admin-btn\x22\x20style=\x22padding:8px\x2015px;border-radius:5px;background:#673ab7;border:none;color:white;cursor:pointer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-eye-slash\x22></i>\x20Hide\x20Admin\x20UI\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22save-all-btn\x22\x20style=\x22padding:8px\x2015px;border-radius:5px;background:#4CAF50;border:none;color:white;cursor:pointer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-save\x22></i>\x20Save\x20All\x20Changes\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22add-points-btn\x22\x20style=\x22padding:8px\x2015px;border-radius:5px;background:#2196F3;border:none;color:white;cursor:pointer\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-coins\x22></i>\x20Modify\x20User\x20Points\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',a['insertBefore'](c,b),document[aa(0x1e5)]('save-all-btn')['addEventListener'](aa(0x144),saveAllChanges),document[aa(0x1e5)](aa(0x13a))[aa(0x18d)](aa(0x144),showPointsModifierDialog),document['getElementById'](aa(0x11c))['addEventListener']('click',toggleAdminUI);}}async function saveItemPrice(a,b,c){const ab=a47w;try{const d=collection(db,ab(0x155)),e=query(d,where('title','==',a)),f=await getDocs(e);if(f[ab(0x1d5)]){const g=a[ab(0x11e)]()[ab(0x173)](/\s+/g,'');await setDoc(doc(d,g),{'id':g,'title':a,'price':b});}else{const h=f['docs'][0x0];await updateDoc(doc(d,h['id']),{'price':b});}storeItemPrices[a]=b,c&&(c['textContent']=b+ab(0x199)),showTempMessage('✅\x20Price\x20updated\x20for\x20'+a,'success');}catch(i){console[ab(0x1ac)](ab(0x1b7),i),showTempMessage(ab(0x11a)+i['message'],'error');}}async function saveAllChanges(){const ac=a47w;try{const a=document['querySelectorAll'](ac(0x148));let b=0x0;for(const c of a){const d=c['closest']('.store-item'),e=d[ac(0x172)]('.item-title')['textContent'],f=d[ac(0x172)]('.item-price'),g=parseInt(c[ac(0x19c)]);g!==storeItemPrices[e]&&(await saveItemPrice(e,g,f),b++);}showTempMessage('✅\x20Updated\x20'+b+'\x20item\x20prices','success');}catch(h){console[ac(0x1ac)]('Error\x20saving\x20all\x20changes:',h),showTempMessage('❌\x20Failed\x20to\x20save\x20all\x20changes:\x20'+h['message'],ac(0x1ac));}}function showPointsModifierDialog(){const ad=a47w,a=document['createElement'](ad(0x1e9));a[ad(0x17f)]='points-modifier-overlay',a['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20right:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.7);\x0a\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20';const b=document[ad(0x177)](ad(0x1e9));b['className']='points-modifier-dialog',b['style'][ad(0x1a3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#212121;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border:\x202px\x20solid\x20#9c27b0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x20400px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20max-width:\x2090%;\x0a\x20\x20\x20\x20',b['innerHTML']=ad(0x1c5),a['appendChild'](b),document['body']['appendChild'](a);let c=null;document[ad(0x1e5)]('lookup-user-btn')['addEventListener']('click',async()=>{const ae=ad,e=document['getElementById']('user-lookup')[ae(0x19c)][ae(0x1d0)]();if(!e){showTempMessage('❌\x20Please\x20enter\x20a\x20user\x20ID\x20or\x20email','error');return;}try{let f;if(e[ae(0x13e)]('@')){const g=collection(db,'userProfiles'),h=query(g,where(ae(0x185),'==',e)),i=await getDocs(h);!i[ae(0x1d5)]&&(f=i[ae(0x127)][0x0][ae(0x176)],c={'id':i['docs'][0x0]['id'],...i['docs'][0x0][ae(0x183)]()});}else{f=doc(db,ae(0x19b),e);const j=await getDoc(f);j[ae(0x1a1)]()&&(c={'id':j['id'],...j['data']()});}c?(document[ae(0x1e5)]('user-info')['style']['display']=ae(0x1c8),document['getElementById']('user-name')['textContent']=c[ae(0x12a)]||c['email']||c['id'],document['getElementById']('user-current-points')['textContent']='Current\x20Points:\x20'+(c[ae(0x16b)]||0x0),document['getElementById'](ae(0x13b))['style']['display']='block',document[ae(0x1e5)](ae(0x1dc))['style'][ae(0x18e)]=ae(0x171),document[ae(0x1e5)](ae(0x16f))['style'][ae(0x18e)]=ae(0x1f7)):showTempMessage(ae(0x126),'error');}catch(k){console[ae(0x1ac)](ae(0x196),k),showTempMessage(ae(0x170)+k[ae(0x1a2)],ae(0x1ac));}}),document['getElementById']('apply-points-btn')['addEventListener']('click',async()=>{const af=ad;if(!c)return;const e=parseInt(document['getElementById'](af(0x128))[af(0x19c)]);if(isNaN(e)||e<0x0){showTempMessage('❌\x20Please\x20enter\x20a\x20valid\x20amount','error');return;}try{let f=c[af(0x16b)]||0x0,g='';if(document[af(0x1e5)](af(0x11b))['classList']['contains'](af(0x187)))f+=e,g=af(0x167);else document['getElementById'](af(0x1aa))['classList'][af(0x1a0)]('active')?(f=Math[af(0x140)](0x0,f-e),g=af(0x1cb)):(f=e,g=af(0x166));const h=doc(db,'userProfiles',c['id']);await updateDoc(h,{'points':f}),showTempMessage('✅\x20'+e+af(0x16d)+g+'\x20for\x20'+(c[af(0x12a)]||c[af(0x185)]),af(0x1a8)),a[af(0x142)]();}catch(i){console[af(0x1ac)]('Error\x20updating\x20points:',i),showTempMessage(af(0x170)+i[af(0x1a2)],af(0x1ac));}});const d=[document['getElementById']('points-add'),document[ad(0x1e5)]('points-set'),document[ad(0x1e5)](ad(0x1aa))];d[ad(0x1e4)](e=>{const ag=ad;e[ag(0x18d)](ag(0x144),()=>{const ah=ag;d['forEach'](f=>f['classList']['remove']('active')),e['classList'][ah(0x193)]('active');});}),document[ad(0x1e5)](ad(0x11b))['classList']['add'](ad(0x187)),document[ad(0x1e5)](ad(0x1b3))[ad(0x18d)](ad(0x144),()=>{const ai=ad;a[ai(0x142)]();});}async function toggleAdminUI(){const aj=a47w;if(!auth['currentUser'])return;const a=await isUserAdmin(auth['currentUser']);if(!a){showTempMessage(aj(0x1c9),aj(0x1ac));return;}adminUIVisible=!adminUIVisible;const b=document['getElementById'](aj(0x11c));b&&(b[aj(0x19f)]=adminUIVisible?'<i\x20class=\x22fas\x20fa-eye-slash\x22></i>\x20Hide\x20Admin\x20UI':aj(0x1a4));const c=document[aj(0x14a)](aj(0x158));c['forEach'](d=>{const ak=aj;d[ak(0x1c7)][ak(0x18e)]=adminUIVisible?ak(0x1de):'none';}),showTempMessage(adminUIVisible?'👁️\x20Admin\x20UI\x20elements\x20are\x20now\x20visible':aj(0x1eb),aj(0x1a7)),localStorage[aj(0x1f1)]('adminUIVisible',adminUIVisible);}function initializeAdminUIVisibility(){const al=a47w,a=localStorage[al(0x169)](al(0x150));a!==null&&(adminUIVisible=a===al(0x1e8),setTimeout(()=>{const am=al;document[am(0x1e5)](am(0x11c))&&toggleAdminUI();},0x64));}function makeElementEditable(a,b,c){const an=a47w;if(!auth['currentUser'])return;isUserAdmin(auth[an(0x180)])[an(0x181)](d=>{const ao=an;if(!d)return;const e=a['innerHTML'];a['dataset']['originalText']=e,a[ao(0x1c7)][ao(0x1f9)]=ao(0x178);const f=document[ao(0x177)](ao(0x129));f['className']=ao(0x14d),f[ao(0x19f)]='<i\x20class=\x22fas\x20fa-pencil-alt\x22></i>',f['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20top:\x20-8px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20right:\x20-8px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#673ab7;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2018px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x2018px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2050%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200.7;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20opacity\x200.2s;\x0a\x20\x20\x20\x20\x20\x20\x20\x20',f['addEventListener'](ao(0x1f0),()=>{f['style']['opacity']='1';}),f[ao(0x18d)](ao(0x1a9),()=>{const ap=ao;f[ap(0x1c7)]['opacity']=ap(0x1bd);}),a['appendChild'](f),f[ao(0x18d)]('click',async g=>{const aq=ao,h=await isUserAdmin(auth['currentUser']);if(!h){showTempMessage(aq(0x1c9),'error');return;}const i=document['createElement'](aq(0x1e9));i[aq(0x17f)]=aq(0x143),i[aq(0x1c7)]['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20absolute;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20right:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.8);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x2010;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-direction:\x20column;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';let j;b==='description'?(j=document[aq(0x177)](aq(0x12b)),j['style'][aq(0x174)]=aq(0x1af)):(j=document['createElement']('input'),j['type']='text');j['value']=a[aq(0x182)]['trim'](),j[aq(0x1c7)][aq(0x1a3)]=aq(0x1db);const k=document[aq(0x177)](aq(0x1e9));k['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20space-between;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20';const l=document[aq(0x177)](aq(0x1ed));l['innerHTML']=aq(0x1da),l[aq(0x1c7)]['cssText']=aq(0x1f5);const m=document[aq(0x177)]('button');m['innerHTML']='<i\x20class=\x22fas\x20fa-times\x22></i>\x20Cancel',m['style']['cssText']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x203px\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#F44336;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x203px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',l[aq(0x18d)](aq(0x144),()=>{const ar=aq,n=c[ar(0x172)]('.item-title')[ar(0x182)];saveItemText(n,b,j['value'],a),i['remove']();}),m['addEventListener']('click',()=>{const as=aq;i[as(0x142)]();}),k['appendChild'](l),k['appendChild'](m),i[aq(0x1fa)](j),i['appendChild'](k),a['style']['position']='relative',a[aq(0x1fa)](i),j[aq(0x1cc)]();});});}function makeElementEditableWithText(a,b,c,d){const at=a47w,e=document['createElement'](at(0x1e9));e['className']=at(0x143),e['style'][at(0x1a3)]=at(0x1b2);let f;b===at(0x147)?(f=document[at(0x177)](at(0x12b)),f['style'][at(0x174)]='80px'):(f=document[at(0x177)]('input'),f['type']='text');f['value']=d||a['textContent'][at(0x1d0)](),f[at(0x1c7)][at(0x1a3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20padding:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#673ab7;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x203px;\x0a\x20\x20\x20\x20';const g=document['createElement'](at(0x1e9));g['style'][at(0x1a3)]=at(0x1b4);const h=document['createElement']('button');h[at(0x19f)]=at(0x1da),h['style'][at(0x1a3)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20padding:\x203px\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#4CAF50;\x0a\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x203px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20';const i=document[at(0x177)]('button');i['innerHTML']=at(0x160),i[at(0x1c7)][at(0x1a3)]=at(0x1dd),h[at(0x18d)]('click',()=>{const au=at,j=c[au(0x172)]('.item-title')['textContent'];saveItemText(j,b,f[au(0x19c)],a),e['remove']();}),i[at(0x18d)]('click',()=>{e['remove']();}),g[at(0x1fa)](h),g['appendChild'](i),e[at(0x1fa)](f),e['appendChild'](g),a['style']['position']=at(0x178),a[at(0x1fa)](e),f['focus']();}async function saveItemText(a,b,c,d){const av=a47w;if(!auth['currentUser']){showTempMessage(av(0x1e0),av(0x1ac));return;}const e=await isUserAdmin(auth[av(0x180)]);if(!e){showTempMessage('❌\x20Admin\x20privileges\x20required\x20to\x20save\x20changes','error');return;}try{const f=collection(db,'storeItems'),g=query(f,where(av(0x14c),'==',a)),h=await getDocs(g);let i;h[av(0x1d5)]?i=a[av(0x11e)]()[av(0x173)](/\s+/g,''):i=h['docs'][0x0]['id'];const j={};if(b===av(0x14c)){const l=d[av(0x1ef)]['originalText'];if(l&&l!==c){j['title']=c;const m=storeItemPrices[l];m&&(storeItemPrices[c]=m,delete storeItemPrices[l]);}}else{if(b==='description')j[av(0x147)]=c;else{if(b['startsWith']('feature-')){const n=parseInt(b['split']('-')[0x1]),o=doc(f,i),p=await getDoc(o);let r=[];p[av(0x1a1)]()&&p[av(0x183)]()['features']&&(r=[...p[av(0x183)]()['features']]);while(r['length']<=n){r['push']('');}r[n]=c,j[av(0x163)]=r;}}}await setDoc(doc(f,i),j,{'merge':!![]});while(d['firstChild']){d[av(0x18c)](d['firstChild']);}d[av(0x182)]=c;const k=document['createElement'](av(0x129));k[av(0x17f)]=av(0x14d),k['innerHTML']='<i\x20class=\x22fas\x20fa-pencil-alt\x22></i>',k[av(0x1c7)][av(0x1a3)]=av(0x1f2),k[av(0x18d)]('mouseenter',()=>{const aw=av;k[aw(0x1c7)]['opacity']='1';}),k[av(0x18d)]('mouseleave',()=>{const ax=av;k['style']['opacity']=ax(0x1bd);}),k['addEventListener'](av(0x144),async()=>{const ay=av,s=await isUserAdmin(auth[ay(0x180)]);if(!s){showTempMessage(ay(0x1c9),'error');return;}makeElementEditableWithText(d,b,itemContainer,c);}),d['dataset'][av(0x14e)]=c,d['appendChild'](k),showTempMessage('✅\x20Updated\x20'+b+av(0x1b1)+a,'success');}catch(s){console[av(0x1ac)](av(0x1e1),s),showTempMessage(av(0x11d)+s[av(0x1a2)],av(0x1ac));}}
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  updateDoc, 
+  getDoc, 
+  setDoc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Global variables for DOM elements
+let authWarning, storeContent, userPointsElement;
+
+// User's owned items (simulate with localStorage for now)
+let userInventory = JSON.parse(localStorage.getItem('userInventory') || '{}');
+let enabledFeatures = JSON.parse(localStorage.getItem('enabledFeatures') || '{}');
+
+// Admin UI visibility state
+let adminUIVisible = true;
+
+// Initialize DOM elements
+function initializeElements() {
+    authWarning = document.getElementById('auth-warning');
+    storeContent = document.getElementById('store-content');
+    userPointsElement = document.getElementById('user-points');
+    
+    console.log('DOM Elements found:', {
+        authWarning: !!authWarning,
+        storeContent: !!storeContent,
+        userPointsElement: !!userPointsElement
+    });
+    
+    return authWarning && storeContent;
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Redeem page DOM loaded, initializing...');
+    
+    // Wait a bit for nav to load, then initialize
+    setTimeout(() => {
+        const elementsReady = initializeElements();
+        
+        if (!elementsReady) {
+            console.error('Failed to initialize DOM elements, retrying...');
+            // Retry after another delay
+            setTimeout(() => {
+                const retrySuccess = initializeElements();
+                if (!retrySuccess) {
+                    console.error('DOM elements still not found after retry');
+                    // Show content anyway for debugging
+                    showContentFallback();
+                    return;
+                }
+                setupPage();
+            }, 1000);
+        } else {
+            setupPage();
+        }
+    }, 500);
+});
+
+// Fallback to show content if auth detection fails
+function showContentFallback() {
+    console.log('Using fallback to show content...');
+    const storeContentFallback = document.getElementById('store-content');
+    const authWarningFallback = document.getElementById('auth-warning');
+    
+    if (storeContentFallback) {
+        storeContentFallback.style.display = 'block';
+        console.log('✅ Store content shown via fallback');
+    }
+    
+    if (authWarningFallback) {
+        authWarningFallback.style.display = 'none';
+    }
+    
+    // Set up purchase buttons and load inventory
+    setupPurchaseButtons();
+    loadUserInventory();
+    
+    // Load placeholder points
+    const userPointsElementFallback = document.getElementById('user-points');
+    if (userPointsElementFallback) {
+        userPointsElementFallback.textContent = '1,250';
+    }
+}
+
+function setupPage() {
+    console.log('Setting up redeem page functionality...');
+    
+    // Initialize store items first
+    initializeStoreItems().then(() => {
+        // Set up auth state listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log('✅ User authenticated:', user.displayName);
+                if (authWarning && storeContent) {
+                    authWarning.style.display = 'none';
+                    storeContent.style.display = 'block';
+                    
+                    // Load user points and inventory
+                    loadUserPoints(user);
+                    loadUserInventory();
+                    
+                    // Check if user is admin and show admin controls if they are
+                    const admin = await isUserAdmin(user);
+                    if (admin) {
+                        showAdminControls();
+                        console.log('👑 Admin controls enabled');
+                    }
+                }
+            } else {
+                console.log('❌ User not authenticated');
+                if (authWarning && storeContent) {
+                    authWarning.style.display = 'block';
+                    storeContent.style.display = 'none';
+                }
+            }
+        });
+        
+        // Always set up purchase buttons and load inventory
+        setupPurchaseButtons();
+        loadUserInventory();
+        
+        // Show content immediately for testing (remove this later)
+        if (storeContent) {
+            storeContent.style.display = 'block';
+            console.log('🔧 DEBUG: Showing store content for testing');
+        }
+    });
+}
+
+// Load user inventory and update UI
+function loadUserInventory() {
+    console.log('📦 Loading user inventory:', userInventory);
+    console.log('⚙️ Enabled features:', enabledFeatures);
+    
+    const storeItems = document.querySelectorAll('.store-item');
+    
+    storeItems.forEach(item => {
+        const itemTitle = item.querySelector('.item-title')?.textContent;
+        const button = item.querySelector('.purchase-btn');
+        
+        if (itemTitle && userInventory[itemTitle]) {
+            // User owns this item
+            updateItemAsOwned(item, button, itemTitle);
+        }
+    });
+}
+
+// Update item UI when user owns it
+function updateItemAsOwned(item, button, itemTitle) {
+    // Add owned badge if not present
+    if (!item.querySelector('.owned-badge')) {
+        const ownedBadge = document.createElement('div');
+        ownedBadge.className = 'owned-badge';
+        ownedBadge.textContent = 'OWNED';
+        item.appendChild(ownedBadge);
+    }
+    
+    // Check active state in both localStorage and purchased items
+    const isEnabled = enabledFeatures[itemTitle] || false;
+    
+    // Update button to toggle functionality
+    button.innerHTML = isEnabled 
+        ? '<i class="fas fa-toggle-on"></i> Disable' 
+        : '<i class="fas fa-toggle-off"></i> Enable';
+    
+    button.style.background = isEnabled 
+        ? 'linear-gradient(135deg, #ff5722, #e64a19)' // Red for disable
+        : 'linear-gradient(135deg, #4caf50, #388e3c)'; // Green for enable
+    
+    button.disabled = false;
+    
+    // Update click handler for toggle functionality
+    button.onclick = (e) => {
+        e.preventDefault();
+        toggleFeature(itemTitle, button, item);
+    };
+    
+    // Add status indicator
+    updateFeatureStatusIndicator(item, itemTitle, isEnabled);
+}
+
+// Toggle feature on/off
+async function toggleFeature(itemTitle, button, item) {
+    const wasEnabled = enabledFeatures[itemTitle] || false;
+    const newState = !wasEnabled;
+    
+    console.log(`🔄 Toggling ${itemTitle}: ${wasEnabled ? 'ON' : 'OFF'} → ${newState ? 'ON' : 'OFF'}`);
+    
+    // Show loading state
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    
+    try {
+        // Update Firestore for profile display
+        const user = auth.currentUser;
+        if (user) {
+            const userRef = doc(db, "userProfiles", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const purchasedItems = userData.purchasedItems || {};
+                
+                // Update the active state for this item
+                if (purchasedItems[itemTitle]) {
+                    purchasedItems[itemTitle].active = newState;
+                    
+                    // Update Firestore with the new active state
+                    await updateDoc(userRef, {
+                        purchasedItems: purchasedItems
+                    });
+                    
+                    console.log(`✅ Updated ${itemTitle} active state in Firestore: ${newState}`);
+                }
+            }
+        }
+        
+        // Update local storage
+        enabledFeatures[itemTitle] = newState;
+        localStorage.setItem('enabledFeatures', JSON.stringify(enabledFeatures));
+        
+        // Apply/remove the feature effect
+        if (newState) {
+            applyFeatureEffect(itemTitle);
+            showTempMessage(`✅ ${itemTitle} enabled!`, 'success');
+        } else {
+            removeFeatureEffect(itemTitle);
+            showTempMessage(`⚪ ${itemTitle} disabled`, 'info');
+        }
+        
+        // Update button appearance
+        button.innerHTML = newState 
+            ? '<i class="fas fa-toggle-on"></i> Disable' 
+            : '<i class="fas fa-toggle-off"></i> Enable';
+        
+        button.style.background = newState 
+            ? 'linear-gradient(135deg, #ff5722, #e64a19)' 
+            : 'linear-gradient(135deg, #4caf50, #388e3c)';
+        
+        button.disabled = false;
+        
+        // Update status indicator on the item
+        updateFeatureStatusIndicator(item, itemTitle, newState);
+        
+    } catch (error) {
+        console.error('❌ Toggle failed:', error);
+        button.innerHTML = originalText;
+        button.disabled = false;
+        showTempMessage(`❌ Failed to toggle ${itemTitle}`, 'error');
+    }
+}
+// Update visual indicator for feature status
+function updateFeatureStatusIndicator(item, itemTitle, isEnabled) {
+    // Remove existing status indicator
+    const existingIndicator = item.querySelector('.feature-status');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // Add new status indicator
+    const statusIndicator = document.createElement('div');
+    statusIndicator.className = 'feature-status';
+    statusIndicator.style.cssText = `
+        position: absolute;
+        top: 10px;
+        left: ${item.querySelector('.limited-badge') ? '90px' : '10px'};
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        ${isEnabled 
+            ? 'background: #4CAF50; color: white; animation: pulse-green 2s infinite;' 
+            : 'background: #666; color: #ccc;'
+        }
+    `;
+    statusIndicator.textContent = isEnabled ? 'ACTIVE' : 'INACTIVE';
+    
+    item.appendChild(statusIndicator);
+}
+
+// Apply feature effects to the website
+function applyFeatureEffect(itemTitle) {
+    console.log(`🎨 Applying effect for: ${itemTitle}`);
+    
+    switch (itemTitle) {
+        case 'Dark Purple Theme':
+            document.body.style.filter = 'hue-rotate(20deg) saturate(1.2)';
+            break;
+            
+        case 'Glow Effects':
+            addGlowEffects();
+            break;
+            
+        case 'Animated Background Pack':
+            addAnimatedBackground();
+            break;
+            
+        case 'Golden Elite Theme':
+            addGoldenTheme();
+            break;
+            
+        case 'Hot Streak':
+            addHotStreakEffect();
+            break;
+            
+        case 'Destroyer':
+            addDestroyerEffect();
+            break;
+            
+        default:
+            console.log(`No visual effect defined for: ${itemTitle}`);
+    }
+}
+
+// Remove feature effects from the website
+function removeFeatureEffect(itemTitle) {
+    console.log(`🗑️ Removing effect for: ${itemTitle}`);
+    
+    switch (itemTitle) {
+        case 'Dark Purple Theme':
+            document.body.style.filter = '';
+            break;
+            
+        case 'Glow Effects':
+            removeGlowEffects();
+            break;
+            
+        case 'Animated Background Pack':
+            removeAnimatedBackground();
+            break;
+            
+        case 'Golden Elite Theme':
+            removeGoldenTheme();
+            break;
+            
+        case 'Hot Streak':
+            removeHotStreakEffect();
+            break;
+            
+        case 'Destroyer':
+            removeDestroyerEffect();
+            break;
+    }
+}
+
+// Feature effect implementations
+function addGlowEffects() {
+    const style = document.createElement('style');
+    style.id = 'glow-effects';
+    style.textContent = `
+        .purchase-btn:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(156, 39, 176, 0.8) !important;
+        }
+        .store-item:hover {
+            box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4) !important;
+        }
+        .item-title {
+            text-shadow: 0 0 10px rgba(156, 39, 176, 0.5) !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function removeGlowEffects() {
+    const style = document.getElementById('glow-effects');
+    if (style) style.remove();
+}
+
+function addAnimatedBackground() {
+    const style = document.createElement('style');
+    style.id = 'animated-bg';
+    style.textContent = `
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(156, 39, 176, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(103, 58, 183, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(156, 39, 176, 0.1) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function removeAnimatedBackground() {
+    const style = document.getElementById('animated-bg');
+    if (style) style.remove();
+}
+
+function addGoldenTheme() {
+    const style = document.createElement('style');
+    style.id = 'golden-theme';
+    style.textContent = `
+        .store-item {
+            border-color: #ffd700 !important;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05)) !important;
+        }
+        .item-icon {
+            color: #ffd700 !important;
+        }
+        .purchase-btn {
+            background: linear-gradient(135deg, #ffd700, #ffb300) !important;
+            color: #000 !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function removeGoldenTheme() {
+    const style = document.getElementById('golden-theme');
+    if (style) style.remove();
+}
+
+function addHotStreakEffect() {
+    const style = document.createElement('style');
+    style.id = 'hot-streak';
+    style.textContent = `
+        .page-title::after {
+            content: '🔥';
+            animation: fire 1s ease-in-out infinite alternate;
+            margin-left: 10px;
+        }
+        @keyframes fire {
+            0% { transform: scale(1) rotate(-5deg); }
+            100% { transform: scale(1.2) rotate(5deg); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function removeHotStreakEffect() {
+    const style = document.getElementById('hot-streak');
+    if (style) style.remove();
+}
+
+function addDestroyerEffect() {
+    const style = document.createElement('style');
+    style.id = 'destroyer-effect';
+    style.textContent = `
+        .page-title {
+            color: #ff1744 !important;
+            text-shadow: 0 0 10px rgba(255, 23, 68, 0.5) !important;
+        }
+        .store-item:hover {
+            border-color: #ff1744 !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function removeDestroyerEffect() {
+    const style = document.getElementById('destroyer-effect');
+    if (style) style.remove();
+}
+
+// Load user points
+async function loadUserPoints(user) {
+    try {
+        if (userPointsElement && user) {
+            // Get user points from Firestore
+            const userRef = doc(db, "userProfiles", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                // Get points from user profile, default to 0 if doesn't exist
+                const points = userDoc.data().points || 0;
+                userPointsElement.textContent = points.toLocaleString();
+                console.log(`Loaded ${points} points for user:`, user.displayName);
+            } else {
+                // If user document doesn't exist, create it with 0 points
+                await setDoc(userRef, { points: 0 });
+                userPointsElement.textContent = '0';
+                console.log(`Created new profile with 0 points for user:`, user.displayName);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user points:', error);
+        // Fallback to 0 on error
+        if (userPointsElement) userPointsElement.textContent = '0';
+    }
+}
+
+// Function to show temporary messages to the user
+function showTempMessage(message, type = 'info') {
+    console.log(`Message (${type}): ${message}`);
+    
+    // Remove any existing message
+    const existingMessage = document.querySelector('.temp-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create new message element
+    const messageElement = document.createElement('div');
+    messageElement.className = `temp-message message-${type}`;
+    messageElement.innerHTML = message;
+    
+    // Style the message based on type
+    let backgroundColor, textColor, borderColor;
+    switch (type) {
+        case 'success':
+            backgroundColor = 'rgba(76, 175, 80, 0.9)';
+            textColor = 'white';
+            borderColor = '#2e7d32';
+            break;
+        case 'error':
+            backgroundColor = 'rgba(244, 67, 54, 0.9)';
+            textColor = 'white';
+            borderColor = '#c62828';
+            break;
+        case 'info':
+        default:
+            backgroundColor = 'rgba(33, 150, 243, 0.9)';
+            textColor = 'white';
+            borderColor = '#1565c0';
+            break;
+    }
+    
+    // Apply styles
+    messageElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeInOut 4s forwards;
+        background-color: ${backgroundColor};
+        color: ${textColor};
+        border: 2px solid ${borderColor};
+    `;
+    
+    // Add animation styles if not already added
+    if (!document.getElementById('message-animations')) {
+        const animationStyle = document.createElement('style');
+        animationStyle.id = 'message-animations';
+        animationStyle.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translate(-50%, -20px); }
+                10% { opacity: 1; transform: translate(-50%, 0); }
+                80% { opacity: 1; transform: translate(-50%, 0); }
+                100% { opacity: 0; transform: translate(-50%, -20px); }
+            }
+        `;
+        document.head.appendChild(animationStyle);
+    }
+    
+    // Add to document and set timeout to remove
+    document.body.appendChild(messageElement);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        if (messageElement.parentNode) {
+            messageElement.remove();
+        }
+    }, 4000);
+}
+
+// Set up purchase button functionality
+function setupPurchaseButtons() {
+    const purchaseButtons = document.querySelectorAll('.purchase-btn');
+    
+    purchaseButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            const storeItem = button.closest('.store-item');
+            const itemTitle = storeItem.querySelector('.item-title')?.textContent || 'Unknown Item';
+            const itemPrice = storeItem.querySelector('.item-price')?.textContent || '0 Points';
+            
+            // Check if user already owns this item
+            if (userInventory[itemTitle]) {
+                // This is now handled by the toggle function
+                return;
+            }
+            
+            handlePurchase(itemTitle, itemPrice, button);
+        });
+    });
+    
+    console.log(`✅ Set up ${purchaseButtons.length} purchase buttons`);
+}
+
+// Handle purchase logic
+async function handlePurchase(itemTitle, itemPrice, button) {
+    console.log(`🛒 Attempting to purchase: ${itemTitle} for ${itemPrice}`);
+    
+    // Disable button during purchase
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    try {
+        // Parse price amount
+        const priceAmount = parseInt(itemPrice.replace(/[^0-9]/g, ''));
+        
+        // Get current user
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in to make purchases');
+        }
+        
+        // Get user document
+        const userRef = doc(db, "userProfiles", user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            throw new Error('User profile not found');
+        }
+        
+        // Get current points
+        const currentPoints = userDoc.data().points || 0;
+        
+        // Check if user has enough points
+        if (currentPoints < priceAmount) {
+            throw new Error(`Not enough points! Need ${priceAmount}, but you have ${currentPoints}`);
+        }
+        
+        // Deduct points from user account
+        const newPoints = currentPoints - priceAmount;
+        
+        // Get existing purchased items or create empty object
+        const existingData = userDoc.data();
+        const purchasedItems = existingData.purchasedItems || {};
+        
+        // Add item to purchased items with timestamp and state
+        purchasedItems[itemTitle] = {
+            purchasedAt: new Date(),
+            price: priceAmount,
+            owned: true,
+            active: true
+        };
+        
+        // Update user profile with points and purchased items
+        await updateDoc(userRef, { 
+            points: newPoints,
+            purchasedItems: purchasedItems
+        });
+        
+        // Also update localStorage for client-side tracking
+        userInventory[itemTitle] = {
+            purchaseDate: new Date().toISOString(),
+            price: itemPrice
+        };
+        localStorage.setItem('userInventory', JSON.stringify(userInventory));
+        
+        // Enable the feature by default
+        enabledFeatures[itemTitle] = true;
+        localStorage.setItem('enabledFeatures', JSON.stringify(enabledFeatures));
+        
+        // Apply the feature effect
+        applyFeatureEffect(itemTitle);
+        
+        // Show success message
+        showTempMessage(`✅ Successfully purchased ${itemTitle}! It will appear on your profile.`, 'success');
+        
+        // Update the item UI
+        const storeItem = button.closest('.store-item');
+        updateItemAsOwned(storeItem, button, itemTitle);
+        
+        // Update UI with new points value
+        if (userPointsElement) {
+            userPointsElement.textContent = newPoints.toLocaleString();
+        }
+        
+    } catch (error) {
+        console.error('❌ Purchase failed:', error);
+        button.innerHTML = originalText;
+        button.disabled = false;
+        showTempMessage(`❌ ${error.message || 'Failed to purchase. Please try again.'}`, 'error');
+    }
+}
+
+// Check if user is an admin
+async function isUserAdmin(user) {
+    if (!user) return false;
+    
+    try {
+        const userRef = doc(db, "userProfiles", user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            return userDoc.data().isAdmin === true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
+    }
+}
+
+// Global variable to store item prices
+let storeItemPrices = {};
+
+// Update initializeStoreItems function to include all item data
+async function initializeStoreItems() {
+    try {
+        const storeItemsRef = collection(db, "storeItems");
+        const querySnapshot = await getDocs(storeItemsRef);
+        
+        // If no items exist yet, create default entries
+        if (querySnapshot.empty) {
+            console.log("Creating default store items...");
+            const defaultItems = [
+                { id: "darkPurpleTheme", title: "Dark Purple Theme", price: 500, 
+                  description: "Unlock a sleek dark purple color scheme for the entire website.",
+                  features: ["Deep purple gradients", "Enhanced contrast", "Custom purple accents"] },
+                { id: "animatedBackgroundPack", title: "Animated Background Pack", price: 750,
+                  description: "Collection of 5 animated space-themed backgrounds.",
+                  features: ["Parallax star fields", "Floating particles", "Smooth animations"] },
+                { id: "glowEffects", title: "Glow Effects", price: 300,
+                  description: "Add subtle glow effects to buttons and interactive elements.",
+                  features: ["Button hover glows", "Text shadow effects", "Customizable intensity"] },
+                { id: "goldenEliteTheme", title: "Golden Elite Theme", price: 1000 },
+                { id: "veteranPlayer", title: "Veteran Player", price: 100 },
+                { id: "hotStreak", title: "Hot Streak", price: 250 },
+                { id: "destroyer", title: "Destroyer", price: 350 },
+                { id: "tournamentChampion", title: "Tournament Champion", price: 500 },
+                { id: "risingStar", title: "Rising Star", price: 150 },
+                { id: "legendary", title: "Legendary", price: 1200 }
+            ];
+            
+            for (const item of defaultItems) {
+                await setDoc(doc(storeItemsRef, item.id), item);
+            }
+            
+            // Fetch the newly created items
+            return await initializeStoreItems();
+        }
+        
+        // Build store items from database
+        let allStoreItems = {};
+        
+        querySnapshot.forEach(doc => {
+            const itemData = doc.data();
+            // Store complete item data, not just prices
+            allStoreItems[itemData.title] = itemData;
+            // Also maintain backward compatibility with existing code
+            storeItemPrices[itemData.title] = itemData.price;
+        });
+        
+        console.log("📦 Store items loaded:", allStoreItems);
+        
+        // Update the UI with loaded data
+        updateStoreItemsFromDatabase(allStoreItems);
+        
+        return allStoreItems;
+        
+    } catch (error) {
+        console.error("Error initializing store items:", error);
+        return {};
+    }
+}
+
+// Update store items in the UI with data from database
+function updateStoreItemsFromDatabase(storeItems) {
+    const storeItemElements = document.querySelectorAll('.store-item');
+    
+    storeItemElements.forEach(itemElement => {
+        const titleElement = itemElement.querySelector('.item-title');
+        if (!titleElement) return;
+        
+        const itemTitle = titleElement.textContent;
+        const itemData = storeItems[itemTitle];
+        
+        if (!itemData) return; // No data for this item
+        
+        // Update price
+        const priceElement = itemElement.querySelector('.item-price');
+        if (priceElement && itemData.price) {
+            priceElement.textContent = `${itemData.price} Points`;
+        }
+        
+        // Update description
+        const descElement = itemElement.querySelector('.item-description');
+        if (descElement && itemData.description) {
+            descElement.textContent = itemData.description;
+        }
+        
+        // Update features
+        const featuresList = itemElement.querySelector('.item-features');
+        if (featuresList && itemData.features && Array.isArray(itemData.features)) {
+            // Clear existing features
+            featuresList.innerHTML = '';
+            
+            // Add features from database
+            itemData.features.forEach(feature => {
+                const li = document.createElement('li');
+                li.textContent = feature;
+                featuresList.appendChild(li);
+            });
+        }
+    });
+}
+
+// Add admin styles to the page
+function addAdminStyles() {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'admin-styles';
+    styleElement.textContent = `
+        .admin-badge {
+            animation: pulse-admin 2s infinite alternate;
+        }
+        
+        .admin-price-editor {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .admin-save-btn:hover {
+            background: #2e7d32 !important;
+            transform: scale(1.05);
+        }
+        
+        .points-action-button.active {
+            box-shadow: 0 0 0 2px white;
+        }
+        
+        @keyframes pulse-admin {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(styleElement);
+}
+
+// Call this at the beginning of showAdminControls
+function showAdminControls() {
+    // Add admin styles first
+    addAdminStyles();
+    
+    // Initialize admin UI visibility
+    initializeAdminUIVisibility();
+    
+    // Add admin badge to the page
+    const pageTitle = document.querySelector('.page-title');
+    if (pageTitle && !document.querySelector('.admin-badge')) {
+        const adminBadge = document.createElement('span');
+        adminBadge.className = 'admin-badge';
+        adminBadge.innerHTML = ' <span style="background:#ff5722;color:white;padding:5px 10px;border-radius:15px;font-size:14px;margin-left:10px;">Admin Mode</span>';
+        pageTitle.appendChild(adminBadge);
+    }
+    
+    // Add edit controls to each store item
+    const storeItems = document.querySelectorAll('.store-item');
+    storeItems.forEach(item => {
+        const itemTitle = item.querySelector('.item-title');
+        const itemDesc = item.querySelector('.item-description');
+        const priceElement = item.querySelector('.item-price');
+        const featuresList = item.querySelector('.item-features');
+        
+        // Make the title editable
+        if (itemTitle) {
+            makeElementEditable(itemTitle, 'title', item);
+        }
+        
+        // Make the description editable
+        if (itemDesc) {
+            makeElementEditable(itemDesc, 'description', item);
+        }
+        
+        // Make each feature list item editable
+        if (featuresList) {
+            const features = featuresList.querySelectorAll('li');
+            features.forEach((feature, index) => {
+                makeElementEditable(feature, `feature-${index}`, item);
+            });
+        }
+        
+        // Add price editor
+        if (priceElement) {
+            // Get current price
+            const currentPrice = storeItemPrices[itemTitle.textContent] || parseInt(priceElement.textContent.replace(/[^0-9]/g, ''));
+            
+            // Add edit button and input field
+            const priceContainer = document.createElement('div');
+            priceContainer.className = 'admin-price-editor';
+            priceContainer.style.cssText = 'display:flex;align-items:center;margin:10px 0;';
+            
+            // Create input for price
+            const priceInput = document.createElement('input');
+            priceInput.type = 'number';
+            priceInput.value = currentPrice;
+            priceInput.min = 0;
+            priceInput.max = 10000;
+            priceInput.style.cssText = 'width:80px;padding:5px;border-radius:4px;border:1px solid #673ab7;margin-right:5px;';
+            
+            // Create save button
+            const saveButton = document.createElement('button');
+            saveButton.innerHTML = '<i class="fas fa-save"></i>';
+            saveButton.className = 'admin-save-btn';
+            saveButton.style.cssText = 'padding:5px 10px;border-radius:4px;background:#4CAF50;border:none;color:white;cursor:pointer;';
+            saveButton.title = 'Save price';
+            
+            // Add event listener to save button
+            saveButton.addEventListener('click', () => {
+                saveItemPrice(itemTitle.textContent, parseInt(priceInput.value), priceElement);
+            });
+            
+            // Append elements to the container
+            priceContainer.appendChild(document.createTextNode('Set price: '));
+            priceContainer.appendChild(priceInput);
+            priceContainer.appendChild(saveButton);
+            
+            // Add container to the item
+            item.appendChild(priceContainer);
+        }
+    });
+    
+    // Add global controls at the top
+    addGlobalAdminControls();
+}
+
+// Add global admin controls to the top of the store
+function addGlobalAdminControls() {
+    // Check if already exists
+    if (document.querySelector('.admin-global-controls')) return;
+    
+    const storeContent = document.getElementById('store-content');
+    const userPoints = document.querySelector('.user-points');
+    
+    if (storeContent && userPoints) {
+        const controlsContainer = document.createElement('div');
+        controlsContainer.className = 'admin-global-controls';
+        controlsContainer.style.cssText = `
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 2px solid #ff5722;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        `;
+        
+        // Update the HTML here
+        controlsContainer.innerHTML = `
+            <div style="display:flex;align-items:center">
+                <h3 style="margin:0;color:#ff5722"><i class="fas fa-shield-alt"></i> Admin Controls</h3>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px">
+                <button id="toggle-admin-btn" style="padding:8px 15px;border-radius:5px;background:#673ab7;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-eye-slash"></i> Hide Admin UI
+                </button>
+                <button id="save-all-btn" style="padding:8px 15px;border-radius:5px;background:#4CAF50;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+                <button id="add-points-btn" style="padding:8px 15px;border-radius:5px;background:#2196F3;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-coins"></i> Modify User Points
+                </button>
+            </div>
+        `;
+        
+        // Insert before the user points display
+        storeContent.insertBefore(controlsContainer, userPoints);
+        
+        // Add event listeners
+        document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
+        document.getElementById('add-points-btn').addEventListener('click', showPointsModifierDialog);
+        document.getElementById('toggle-admin-btn').addEventListener('click', toggleAdminUI);
+    }
+}
+
+// Save item price to Firestore
+async function saveItemPrice(itemTitle, price, priceElement) {
+    try {
+        // Find the item in the database
+        const storeItemsRef = collection(db, "storeItems");
+        const q = query(storeItemsRef, where("title", "==", itemTitle));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            // Create new item if it doesn't exist
+            const newItemId = itemTitle.toLowerCase().replace(/\s+/g, '');
+            await setDoc(doc(storeItemsRef, newItemId), {
+                id: newItemId,
+                title: itemTitle,
+                price: price
+            });
+        } else {
+            // Update existing item
+            const itemDoc = querySnapshot.docs[0];
+            await updateDoc(doc(storeItemsRef, itemDoc.id), {
+                price: price
+            });
+        }
+        
+        // Update local cache
+        storeItemPrices[itemTitle] = price;
+        
+        // Update displayed price
+        if (priceElement) {
+            priceElement.textContent = `${price} Points`;
+        }
+        
+        showTempMessage(`✅ Price updated for ${itemTitle}`, 'success');
+    } catch (error) {
+        console.error('Error saving item price:', error);
+        showTempMessage(`❌ Failed to save price: ${error.message}`, 'error');
+    }
+}
+
+// Update the saveAllPrices function name and functionality
+async function saveAllChanges() {
+    try {
+        // Save prices
+        const priceInputs = document.querySelectorAll('.admin-price-editor input');
+        let updateCount = 0;
+        
+        for (const input of priceInputs) {
+            const item = input.closest('.store-item');
+            const itemTitle = item.querySelector('.item-title').textContent;
+            const priceElement = item.querySelector('.item-price');
+            const price = parseInt(input.value);
+            
+            // Only update if price changed
+            if (price !== storeItemPrices[itemTitle]) {
+                await saveItemPrice(itemTitle, price, priceElement);
+                updateCount++;
+            }
+        }
+        
+        showTempMessage(`✅ Updated ${updateCount} item prices`, 'success');
+    } catch (error) {
+        console.error('Error saving all changes:', error);
+        showTempMessage(`❌ Failed to save all changes: ${error.message}`, 'error');
+    }
+}
+
+// Show dialog to modify user points
+function showPointsModifierDialog() {
+    // Create dialog overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'points-modifier-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    // Create dialog content
+    const dialog = document.createElement('div');
+    dialog.className = 'points-modifier-dialog';
+    dialog.style.cssText = `
+        background: #212121;
+        border: 2px solid #9c27b0;
+        border-radius: 10px;
+        padding: 20px;
+        width: 400px;
+        max-width: 90%;
+    `;
+    
+    dialog.innerHTML = `
+        <h3 style="margin-top:0;color:#9c27b0;text-align:center">
+            <i class="fas fa-coins"></i> Modify User Points
+        </h3>
+        <div style="margin-bottom:15px">
+            <label style="display:block;margin-bottom:5px;color:#ccc">User ID or Email:</label>
+            <input id="user-lookup" type="text" style="width:100%;padding:8px;border-radius:5px;background:#333;color:white;border:1px solid #555" placeholder="User ID or email address">
+        </div>
+        <div style="margin-bottom:15px" id="points-controls" style="display:none">
+            <label style="display:block;margin-bottom:5px;color:#ccc">Points Action:</label>
+            <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button id="points-add" style="flex:1;padding:8px;border-radius:5px;background:#4CAF50;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+                <button id="points-set" style="flex:1;padding:8px;border-radius:5px;background:#2196F3;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-edit"></i> Set
+                </button>
+                <button id="points-subtract" style="flex:1;padding:8px;border-radius:5px;background:#FF5722;border:none;color:white;cursor:pointer">
+                    <i class="fas fa-minus"></i> Subtract
+                </button>
+            </div>
+            <div>
+                <label style="display:block;margin-bottom:5px;color:#ccc">Amount:</label>
+                <input id="points-amount" type="number" min="0" value="100" style="width:100%;padding:8px;border-radius:5px;background:#333;color:white;border:1px solid #555">
+            </div>
+        </div>
+        <div id="user-info" style="margin-bottom:15px;padding:10px;border-radius:5px;background:#333;display:none">
+            <p id="user-name" style="margin:0 0 5px 0;color:#fff"></p>
+            <p id="user-current-points" style="margin:0;color:#aaa"></p>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+            <button id="lookup-user-btn" style="padding:8px 15px;border-radius:5px;background:#9c27b0;border:none;color:white;cursor:pointer">
+                <i class="fas fa-search"></i> Look Up User
+            </button>
+            <button id="cancel-btn" style="padding:8px 15px;border-radius:5px;background:#666;border:none;color:white;cursor:pointer">
+                Cancel
+            </button>
+            <button id="apply-points-btn" style="padding:8px 15px;border-radius:5px;background:#4CAF50;border:none;color:white;cursor:pointer;display:none">
+                <i class="fas fa-check"></i> Apply
+            </button>
+        </div>
+    `;
+    
+    // Append dialog to overlay
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Setup event listeners
+    let currentUser = null;
+    
+    document.getElementById('lookup-user-btn').addEventListener('click', async () => {
+        const userLookup = document.getElementById('user-lookup').value.trim();
+        if (!userLookup) {
+            showTempMessage('❌ Please enter a user ID or email', 'error');
+            return;
+        }
+        
+        try {
+            // Look up user by email or ID
+            let userRef;
+            
+            if (userLookup.includes('@')) {
+                // Search by email
+                const usersRef = collection(db, "userProfiles");
+                const q = query(usersRef, where("email", "==", userLookup));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    userRef = querySnapshot.docs[0].ref;
+                    currentUser = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+                }
+            } else {
+                // Try direct ID lookup
+                userRef = doc(db, "userProfiles", userLookup);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    currentUser = { id: userDoc.id, ...userDoc.data() };
+                }
+            }
+            
+            if (currentUser) {
+                // Show user info
+                document.getElementById('user-info').style.display = 'block';
+                document.getElementById('user-name').textContent = currentUser.displayName || currentUser.email || currentUser.id;
+                document.getElementById('user-current-points').textContent = `Current Points: ${currentUser.points || 0}`;
+                
+                // Show points controls
+                document.getElementById('points-controls').style.display = 'block';
+                document.getElementById('apply-points-btn').style.display = 'inline-block';
+                document.getElementById('lookup-user-btn').style.display = 'none';
+            } else {
+                showTempMessage('❌ User not found', 'error');
+            }
+        } catch (error) {
+            console.error('Error looking up user:', error);
+            showTempMessage(`❌ Error: ${error.message}`, 'error');
+        }
+    });
+    
+    document.getElementById('apply-points-btn').addEventListener('click', async () => {
+        if (!currentUser) return;
+        
+        const amount = parseInt(document.getElementById('points-amount').value);
+        
+        if (isNaN(amount) || amount < 0) {
+            showTempMessage('❌ Please enter a valid amount', 'error');
+            return;
+        }
+        
+        try {
+            let newPoints = currentUser.points || 0;
+            let action = '';
+            
+            // Determine which action button was clicked
+            if (document.getElementById('points-add').classList.contains('active')) {
+                newPoints += amount;
+                action = 'added';
+            } else if (document.getElementById('points-subtract').classList.contains('active')) {
+                newPoints = Math.max(0, newPoints - amount);
+                action = 'subtracted';
+            } else {
+                newPoints = amount;
+                action = 'set to';
+            }
+            
+            // Update points in database
+            const userRef = doc(db, "userProfiles", currentUser.id);
+            await updateDoc(userRef, { points: newPoints });
+            
+            showTempMessage(`✅ ${amount} points ${action} for ${currentUser.displayName || currentUser.email}`, 'success');
+            
+            // Close the dialog
+            overlay.remove();
+            
+        } catch (error) {
+            console.error('Error updating points:', error);
+            showTempMessage(`❌ Error: ${error.message}`, 'error');
+        }
+    });
+    
+    // Set active state for point action buttons
+    const pointsButtons = [
+        document.getElementById('points-add'),
+        document.getElementById('points-set'),
+        document.getElementById('points-subtract')
+    ];
+    
+    pointsButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            pointsButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+    
+    // Set "add" as default active
+    document.getElementById('points-add').classList.add('active');
+    
+    // Cancel button
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+        overlay.remove();
+    });
+}
+
+// Function to toggle admin editing UI
+async function toggleAdminUI() {
+    // Security check - only admins can toggle admin UI
+    if (!auth.currentUser) return;
+    
+    const isAdmin = await isUserAdmin(auth.currentUser);
+    if (!isAdmin) {
+        showTempMessage('❌ Admin privileges required', 'error');
+        return;
+    }
+    
+    adminUIVisible = !adminUIVisible;
+    
+    // Toggle button text
+    const toggleBtn = document.getElementById('toggle-admin-btn');
+    if (toggleBtn) {
+        toggleBtn.innerHTML = adminUIVisible ? 
+            '<i class="fas fa-eye-slash"></i> Hide Admin UI' : 
+            '<i class="fas fa-eye"></i> Show Admin UI';
+    }
+    
+    // Toggle admin editor visibility
+    const adminEditors = document.querySelectorAll('.admin-price-editor, .admin-text-editor');
+    adminEditors.forEach(editor => {
+        editor.style.display = adminUIVisible ? 'flex' : 'none';
+    });
+    
+    // Show message
+    showTempMessage(
+        adminUIVisible ? 
+        '👁️ Admin UI elements are now visible' : 
+        '🙈 Admin UI elements are now hidden', 
+        'info'
+    );
+    
+    // Store preference
+    localStorage.setItem('adminUIVisible', adminUIVisible);
+}
+
+// Initialize admin UI visibility from local storage
+function initializeAdminUIVisibility() {
+    const storedVisibility = localStorage.getItem('adminUIVisible');
+    if (storedVisibility !== null) {
+        adminUIVisible = storedVisibility === 'true';
+        // Apply visibility right away if admin controls are present
+        setTimeout(() => {
+            if (document.getElementById('toggle-admin-btn')) {
+                toggleAdminUI();
+            }
+        }, 100);
+    }
+}
+
+// Make an element editable for admin - add admin check
+function makeElementEditable(element, fieldType, itemContainer) {
+    // Security check - verify user is admin
+    if (!auth.currentUser) return;
+    
+    // Add additional safety check to ensure only admins can edit
+    isUserAdmin(auth.currentUser).then(isAdmin => {
+        if (!isAdmin) return;
+        
+        // Mark the original text
+        const originalText = element.innerHTML;
+        element.dataset.originalText = originalText;
+        
+        // Add edit styling
+        element.style.position = 'relative';
+        
+        // Create edit indicator
+        const editIndicator = document.createElement('span');
+        editIndicator.className = 'admin-edit-indicator';
+        editIndicator.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        editIndicator.style.cssText = `
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #673ab7;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        `;
+        editIndicator.addEventListener('mouseenter', () => {
+            editIndicator.style.opacity = '1';
+        });
+        editIndicator.addEventListener('mouseleave', () => {
+            editIndicator.style.opacity = '0.7';
+        });
+        element.appendChild(editIndicator);
+        
+        // Add click listener to make element editable
+        editIndicator.addEventListener('click', async (e) => {
+            // Double-check admin status before editing (added security)
+            const stillAdmin = await isUserAdmin(auth.currentUser);
+            if (!stillAdmin) {
+                showTempMessage('❌ Admin privileges required', 'error');
+                return;
+            }
+            
+            // Create edit UI
+            const editContainer = document.createElement('div');
+            editContainer.className = 'admin-text-editor';
+            editContainer.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10;
+                padding: 10px;
+                border-radius: 5px;
+                display: flex;
+                flex-direction: column;
+            `;
+            
+            // Create editor based on field type
+            let editor;
+            if (fieldType === 'description') {
+                editor = document.createElement('textarea');
+                editor.style.height = '80px';
+            } else {
+                editor = document.createElement('input');
+                editor.type = 'text';
+            }
+            
+            editor.value = element.textContent.trim();
+            editor.style.cssText = `
+                width: 100%;
+                padding: 5px;
+                margin-bottom: 5px;
+                background: #333;
+                color: white;
+                border: 1px solid #673ab7;
+                border-radius: 3px;
+            `;
+            
+            // Create buttons container
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+            `;
+            
+            // Save button
+            const saveBtn = document.createElement('button');
+            saveBtn.innerHTML = '<i class="fas fa-check"></i> Save';
+            saveBtn.style.cssText = `
+                padding: 3px 8px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+            `;
+            
+            // Cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            cancelBtn.style.cssText = `
+                padding: 3px 8px;
+                background: #F44336;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                margin-left: 5px;
+            `;
+            
+            // Add event listeners
+            saveBtn.addEventListener('click', () => {
+                const itemTitle = itemContainer.querySelector('.item-title').textContent;
+                saveItemText(itemTitle, fieldType, editor.value, element);
+                editContainer.remove();
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                editContainer.remove();
+            });
+            
+            // Assemble UI
+            buttonsContainer.appendChild(saveBtn);
+            buttonsContainer.appendChild(cancelBtn);
+            editContainer.appendChild(editor);
+            editContainer.appendChild(buttonsContainer);
+            
+            // Add to the element
+            element.style.position = 'relative';
+            element.appendChild(editContainer);
+            
+            // Focus the editor
+            editor.focus();
+        });
+    });
+}
+
+// Helper function to apply edit functionality with predefined text
+function makeElementEditableWithText(element, fieldType, itemContainer, text) {
+    // Create edit UI
+    const editContainer = document.createElement('div');
+    editContainer.className = 'admin-text-editor';
+    editContainer.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10;
+        padding: 10px;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+    `;
+    
+    // Create editor based on field type
+    let editor;
+    if (fieldType === 'description') {
+        editor = document.createElement('textarea');
+        editor.style.height = '80px';
+    } else {
+        editor = document.createElement('input');
+        editor.type = 'text';
+    }
+    
+    editor.value = text || element.textContent.trim();
+    editor.style.cssText = `
+        width: 100%;
+        padding: 5px;
+        margin-bottom: 5px;
+        background: #333;
+        color: white;
+        border: 1px solid #673ab7;
+        border-radius: 3px;
+    `;
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+    `;
+    
+    // Save button
+    const saveBtn = document.createElement('button');
+    saveBtn.innerHTML = '<i class="fas fa-check"></i> Save';
+    saveBtn.style.cssText = `
+        padding: 3px 8px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    `;
+    
+    // Cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+    cancelBtn.style.cssText = `
+        padding: 3px 8px;
+        background: #F44336;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-left: 5px;
+    `;
+    
+    // Add event listeners
+    saveBtn.addEventListener('click', () => {
+        const itemTitle = itemContainer.querySelector('.item-title').textContent;
+        saveItemText(itemTitle, fieldType, editor.value, element);
+        editContainer.remove();
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        editContainer.remove();
+    });
+    
+    // Assemble UI
+    buttonsContainer.appendChild(saveBtn);
+    buttonsContainer.appendChild(cancelBtn);
+    editContainer.appendChild(editor);
+    editContainer.appendChild(buttonsContainer);
+    
+    // Add to the element
+    element.style.position = 'relative';
+    element.appendChild(editContainer);
+    
+    // Focus the editor
+    editor.focus();
+}
+
+// Save item text changes - add admin check
+async function saveItemText(itemTitle, fieldType, newText, element) {
+    // Security check - verify user is admin before saving
+    if (!auth.currentUser) {
+        showTempMessage('❌ You must be logged in to make changes', 'error');
+        return;
+    }
+    
+    const isAdmin = await isUserAdmin(auth.currentUser);
+    if (!isAdmin) {
+        showTempMessage('❌ Admin privileges required to save changes', 'error');
+        return;
+    }
+    
+    try {
+        // Find the item in the database
+        const storeItemsRef = collection(db, "storeItems");
+        const q = query(storeItemsRef, where("title", "==", itemTitle));
+        const querySnapshot = await getDocs(q);
+        
+        let itemId;
+        
+        if (querySnapshot.empty) {
+            // Create new item if it doesn't exist
+            itemId = itemTitle.toLowerCase().replace(/\s+/g, '');
+        } else {
+            itemId = querySnapshot.docs[0].id;
+        }
+        
+        // Prepare update data
+        const updateData = {};
+        
+        // Set the correct field based on the field type
+        if (fieldType === 'title') {
+            // Special handling for title changes
+            const oldItemTitle = element.dataset.originalText;
+            if (oldItemTitle && oldItemTitle !== newText) {
+                // Update the title in the database
+                updateData.title = newText;
+                
+                // Update local cache
+                const oldPrice = storeItemPrices[oldItemTitle];
+                if (oldPrice) {
+                    storeItemPrices[newText] = oldPrice;
+                    delete storeItemPrices[oldItemTitle];
+                }
+            }
+        } else if (fieldType === 'description') {
+            updateData.description = newText;
+        } else if (fieldType.startsWith('feature-')) {
+            // Handle feature list items
+            const index = parseInt(fieldType.split('-')[1]);
+            
+            // Get all features
+            const itemDocRef = doc(storeItemsRef, itemId);
+            const itemDoc = await getDoc(itemDocRef);
+            let features = [];
+            
+            if (itemDoc.exists() && itemDoc.data().features) {
+                features = [...itemDoc.data().features];
+            }
+            
+            // Update the specific feature
+            while (features.length <= index) {
+                features.push('');
+            }
+            features[index] = newText;
+            
+            updateData.features = features;
+        }
+        
+        // Update the item in the database
+        await setDoc(doc(storeItemsRef, itemId), updateData, { merge: true });
+        
+        // Update the UI - FIX HERE
+        // Remove all child elements first
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+        
+        // Set the new text content
+        element.textContent = newText;
+        
+        // Recreate the edit indicator
+        const editIndicator = document.createElement('span');
+        editIndicator.className = 'admin-edit-indicator';
+        editIndicator.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        editIndicator.style.cssText = `
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #673ab7;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        `;
+        
+        // Add hover effects
+        editIndicator.addEventListener('mouseenter', () => {
+            editIndicator.style.opacity = '1';
+        });
+        editIndicator.addEventListener('mouseleave', () => {
+            editIndicator.style.opacity = '0.7';
+        });
+        
+        // Add click event to make it editable again
+        editIndicator.addEventListener('click', async () => {
+            // Re-add the edit functionality
+            const stillAdmin = await isUserAdmin(auth.currentUser);
+            if (!stillAdmin) {
+                showTempMessage('❌ Admin privileges required', 'error');
+                return;
+            }
+            
+            makeElementEditableWithText(element, fieldType, itemContainer, newText);
+        });
+        
+        // Update data attribute and append indicator
+        element.dataset.originalText = newText;
+        element.appendChild(editIndicator);
+        
+        showTempMessage(`✅ Updated ${fieldType} for ${itemTitle}`, 'success');
+    } catch (error) {
+        console.error('Error saving item text:', error);
+        showTempMessage(`❌ Failed to save text: ${error.message}`, 'error');
+    }
+}
+

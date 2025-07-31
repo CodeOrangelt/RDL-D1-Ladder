@@ -1,1 +1,436 @@
-const a35p=a35d;(function(a,b){const l=a35d,c=a();while(!![]){try{const d=parseInt(l(0xe6))/0x1+-parseInt(l(0x107))/0x2*(-parseInt(l(0x118))/0x3)+parseInt(l(0xff))/0x4*(-parseInt(l(0x121))/0x5)+-parseInt(l(0x117))/0x6+-parseInt(l(0xf3))/0x7+parseInt(l(0x12f))/0x8*(-parseInt(l(0xf5))/0x9)+parseInt(l(0x11f))/0xa*(parseInt(l(0xfa))/0xb);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a35c,0x2b43a));const a35b=(function(){let a=!![];return function(b,c){const d=a?function(){const m=a35d;if(c){const e=c[m(0x11e)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a35a=a35b(this,function(){const o=a35d,a=function(){const n=a35d;let f;try{f=Function(n(0x104)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=['log',o(0xee),'info','error',o(0x12e),'table',o(0xfc)];for(let e=0x0;e<d[o(0x135)];e++){const f=a35b['constructor']['prototype']['bind'](a35b),g=d[e],h=c[g]||f;f[o(0xed)]=a35b['bind'](a35b),f[o(0x13a)]=h['toString'][o(0x139)](h),c[g]=f;}});a35a();import{db}from'./firebase-config.js';function a35c(){const D=['BwvZC2fNzq','u2vHC29UidaGyxjJAgL2zwqGC3vJy2vZC2z1BgX5isbzB3uGy2fUig5VDYbYzxnLDcbMB3iGysbUzxCGC2vHC29UlG','DxnLCM5HBwu','BgfKzgvY','jtWVzgL2pGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxqTAg9SzgvYiJ4','mJa0otCZofL0uvHXyq','mZaZzufjyKvw','pc90zd4kicaGicaGicaGicaGicaGicaGicaGicaGphrKpG','lMnSB3nLlw1VzgfS','D2LUCW','Bw9KywWTDgL0Bgu','y2XPy2S','yxbWBhK','mtbPAMXYr3q','zgvHDgHZ','ntb0wxH2txG','pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IC3rHDc1OB2XKzxiIpG','Dgv4DenVBNrLBNq','Aw5Uzxjive1m','C3rHDhvZ','cIaGicaGicaGicaGicaGicaGicaGphrYpGOGicaGicaGicaGicaGicaGicaGicaGica8Dgq+','pha+tM8GBwf0y2HLCYbMB3vUzc48l3a+','rxjYB3iGyxjJAgL2Aw5NifnLyxnVBIaWlIbtzwuGy29UC29SzsbMB3iGzgv0ywLSCY4','C2vHC29Uma','C2vHC29Umc1TyxrJAgvZlwj0BG','igDHBwvZktWVzgL2pGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicakicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxqTy2fYzci+cIaGicaGicaGicaGicaGicaGicaGpgGZpKjLC3qGsY9eifjHDgLVpc9OmZ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lxzHBhvLiJ4','phaGy2XHC3m9iMvYCM9Ylw1LC3nHz2uIpKvYCM9YigXVywrPBMCGBwf0y2HLCYbKyxrHoIa','Bg9Zzxjty29Yzq','zxHJzxb0Aw9U','oezrB0T0Ca','ywrKrxzLBNrmAxn0zw5LCG','z2fTzxm','C3r5Bgu','zw1WDhK','CgXHEwvYCW','BgvUz3rO','zxjYB3i','C3rHDhm','cIaGicaGicaGicaGidX0ywjSzsbJBgfZCZ0IBw9KywWTDgfIBguIpGOGicaGicaGicaGicaGicaGphrOzwfKpGOGicaGicaGicaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGicaGicaGicaGphrOpKrHDgu8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGica8DgG+v2LUBMvYpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGphrOpKXVC2vYpc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGphrOpLnJB3jLpc90Ad4kicaGicaGicaGicaGicaGicaGica8l3rYpGOGicaGicaGicaGicaGicaGpc90AgvHzd4kicaGicaGicaGicaGicaGidX0yM9KEt4','yMLUza','Dg9tDhjPBMC','y3jLyxrLrwXLBwvUDa','cIaGicaGicaGicaGicaGica8l3rIB2r5pGOGicaGicaGicaGica8l3rHyMXLpGOGicaGicaGia','mtq5ndqZB0n6tNfq','A2LSBhm','Bwf0y2HLCW','zgvZyW','CM91BMq','u3rHDhmGBg9HzgvKigzYB20GCMvJB3jKCYbLBgvTzw50oG','ihbSyxLLCNm','x19WCM90B19F','D2fYBG','zgf0ys1TB2rHBa','CgXHEwvY','pc90zd4kicaGicaGicaGicaGicaGidWVDhi+','DgLTzxn0yw1W','mJeZmdK2ognKvfbgzq','yxbWCM92zwq','mty3ntyWmM5UCgPZrG','zM9YrwfJAa','z2v0rwXLBwvUDej5swq','pc90zd4kicaGicaGicaGicaGicaGicaGica8Dgq+','tM8GyxbWCM92zwqGBwf0y2GGzg9JDw1LBNrZigzVDw5KigLUigfWChjVDMvKtwf0y2HLCYbJB2XSzwn0Aw9UlG','nZqWotCYmvDZEeHREG','C2vHC29Umc1IDg4','DhjHy2u','Bg9N','Bw9KywWTyM9KEq','mte1ndbfrKfbyNa','zgL2','tw9KywWGzwXLBwvUDhmGBM90igzVDw5K','D2LUBMvY','zgf0yq','CMv0DxjUicHMDw5JDgLVBIGPia','yxjJAgL2zs1ZzwfZB24Wlwj0BG','Dg9gAxHLza','ndi2mKvft2vTra','BM9Uzq','cIaGicaGicaGicaGidX0ywjSzsbJBgfZCZ0IBw9KywWTDgfIBguIpGOGicaGicaGicaGicaGicaGphrOzwfKpGOGicaGicaGicaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGicaGicaGicaGphrOpLjHBMS8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGica8DgG+vxnLCM5HBwu8l3rOpGOGicaGicaGicaGicaGicaGicaGicaGica8DgG+ruXppc90Ad4kicaGicaGicaGicaGicaGicaGicaGicaGphrOpLCTtdWVDgG+cIaGicaGicaGicaGicaGicaGicaGpc90CJ4kicaGicaGicaGicaGicaGidWVDgHLywq+cIaGicaGicaGicaGicaGica8DgjVzhK+cIaGicaGicaG','zgLZCgXHEq','zwXV','Bg9ZC2vZ','yxbWzw5Kq2HPBgq','CMf0zq','CMf0Aw8','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNn0yxrZlwDYAwqIpGOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IC3rHDc1JyxjKiJ4kicaGicaGicaGicaGicaGicaGica8Adm+tw9ZDcbxAw5Zpc9OmZ4kicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjZDgf0lxzHBhvLiJ4','C2vHC29UCW'];a35c=function(){return D;};return a35c();}function a35d(a,b){const c=a35c();return a35d=function(d,e){d=d-0xe6;let f=c[d];if(a35d['hugwIU']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a35d['msZwbo']=g,a=arguments,a35d['hugwIU']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a35d['msZwbo'](f),a[i]=f):f=j,f;},a35d(a,b);}import{collection,getDocs,query,where,orderBy,setDoc,doc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';document[a35p(0x130)]('DOMContentLoaded',()=>{const q=a35p;setupModalStructure();const a=document[q(0xf7)](q(0xfb));a&&a[q(0x130)]('click',async()=>{const e=await prepareSeason0LadderData();showModal('Season\x200\x20Ladder\x20(Final\x20Standings)',e);});const b=document['getElementById']('season0-stats-btn');b&&b[q(0x130)](q(0x11d),async()=>{const e=await prepareSeason0StatsData();showModal('Season\x200\x20Stats',e);});const c=document[q(0xf7)](q(0x12a));c&&c['addEventListener'](q(0x11d),async()=>{const e=await prepareSeason0MatchesData();showModal('Season\x200\x20Matches',e);});const d=document['querySelector'](q(0x11a));d&&d['addEventListener']('click',closeModal),window[q(0x130)](q(0x11d),e=>{const f=document['getElementById']('data-modal');e['target']===f&&closeModal();}),document['getElementById'](q(0x105))?.[q(0x130)](q(0x11d),async()=>{const r=q,e=await snapshotSeason0();e?alert(r(0x113)):alert(r(0x128));});});async function prepareSeason0LadderData(){const s=a35p;try{const a=collection(db,'players'),b=query(a,orderBy(s(0x10b),'desc')),c=await getDocs(b);let d=s(0x109),e=0x1;return c['forEach'](f=>{const t=s,g=f['data']();(g['wins']>0x0||g['losses']>0x0)&&(d+=t(0x126)+e+t(0x119)+g[t(0x114)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+Math[t(0xea)](g['elo'])+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+g[t(0x11b)]+'-'+g[t(0x10c)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20',e++);}),d+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tbody>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</table>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',d;}catch(f){return console['error']('Error\x20loading\x20ladder\x20data:',f),'<p\x20class=\x22error-message\x22>Error\x20loading\x20ladder\x20data:\x20'+f['message']+'</p>';}}async function prepareSeason0StatsData(){const v=a35p;try{const a=collection(db,'players'),b=await getDocs(a);let c={'count':0x0,'player':''},d={'rate':0x0,'player':'','games':0x0},e={'ratio':0x0,'player':'','kills':0x0,'deaths':0x0};b['forEach'](g=>{const u=a35d,h=g['data'](),i=h[u(0x11b)]+h['losses'];h['wins']>c['count']&&(c['count']=h[u(0x11b)],c['player']=h['username']);if(i>=0x5){const j=h['wins']/ i*0x64;j>d[u(0x10e)]&&(d['rate']=j,d['player']=h[u(0x114)],d[u(0x131)]=i);}if(h[u(0xe7)]>=0xa){const k=h[u(0x120)]>0x0?h['kills']/h[u(0x120)]:h['kills'];k>e[u(0x10f)]&&(e[u(0x10f)]=k,e[u(0xf0)]=h['username'],e['kills']=h['kills'],e['deaths']=h['deaths']);}});const f=v(0x110)+c['count']+v(0x122)+c[v(0xf0)]+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-card\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3>Best\x20Win\x20Rate</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-value\x22>'+d['rate'][v(0x106)](0x1)+v(0x116)+d['player']+'\x20('+d['games']+v(0x12b)+e[v(0x10f)]['toFixed'](0x2)+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22stat-holder\x22>'+e['player']+'\x20('+e[v(0xe7)]+'K/'+e[v(0x120)]+'D)</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';return f;}catch(g){return console[v(0x136)]('Error\x20loading\x20stats\x20data:',g),'<p\x20class=\x22error-message\x22>Error\x20loading\x20stats\x20data:\x20'+g['message']+'</p>';}}async function prepareSeason0MatchesData(){const w=a35p;try{const a=collection(db,'matches'),b=query(a,where(w(0x125),'==',w(0xf4)),orderBy('timestamp','desc')),c=await getDocs(b);if(c['empty'])return w(0x127);let d=w(0x138);return c['forEach'](e=>{const x=w,f=e[x(0x103)](),g=f['timestamp']?new Date(f['timestamp']['toDate']()):new Date(),h=g['toLocaleDateString']();d+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td>'+h+x(0xf8)+f[x(0x102)]+x(0xf8)+f['loser']+x(0xf8)+f['winnerScore']+'\x20-\x20'+f[x(0x12d)]+x(0xf1);}),d+=w(0x13c),d;}catch(e){return console['error']('Error\x20loading\x20matches\x20data:',e),w(0x12c)+e[w(0x112)]+'</p>';}}function setupModalStructure(){const y=a35p;if(!document['getElementById'](y(0xef))){const a='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22data-modal\x22\x20class=\x22modal\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22modal-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22modal-header\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h2\x20id=\x22modal-title\x22>Title</h2>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22close-modal\x22>&times;</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20id=\x22modal-body\x22\x20class=\x22modal-body\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<!--\x20Content\x20will\x20be\x20inserted\x20here\x20-->\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',b=document[y(0x13b)](y(0x100));b[y(0x124)]=a,document['body'][y(0x10d)](b);const c=document['createElement'](y(0x132));c[y(0x123)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(0,\x200,\x200,\x200.7);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow:\x20auto;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-content\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20#2c2c2c;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x205%\x20auto;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2080%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-width:\x20900px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x204px\x208px\x20rgba(0,\x200,\x200,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-header\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20space-between;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding-bottom:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.close-modal\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#aaa;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x2028px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.close-modal:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#f8c300;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-body\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-height:\x2070vh;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20overflow-y:\x20auto;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-table\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-collapse:\x20collapse;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.modal-table\x20th,\x20.modal-table\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20left;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.stats-grid\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20grid;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20grid-template-columns:\x20repeat(auto-fit,\x20minmax(250px,\x201fr));\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.stat-card\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2020px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x202px\x204px\x20rgba(0,\x200,\x200,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.stat-value\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x202rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#f8c300;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x2010px\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.stat-holder\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-style:\x20italic;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.error-message\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#ff6b6b;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20bold;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2010px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20107,\x20107,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x205px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20',document['head'][y(0x10d)](c);}}function showModal(a,b){const z=a35p,c=document[z(0xf7)]('data-modal'),d=document['getElementById'](z(0x11c)),e=document[z(0xf7)](z(0xfe));if(!c||!d||!e){console[z(0x136)](z(0x101));return;}d['textContent']=a,e['innerHTML']=b,c[z(0x132)][z(0x10a)]='block';}function closeModal(){const A=a35p,a=document[A(0xf7)](A(0xef));a&&(a['style']['display']=A(0x108));}async function snapshotSeason0(){const B=a35p;try{console[B(0xfd)]('snapshotSeason0():\x20Started');const a={},b=collection(db,B(0x134)),c=query(b,orderBy('elo',B(0xe9))),d=await getDocs(c);a[B(0x115)]=[];d[B(0x133)]&&console[B(0xee)]('No\x20player\x20documents\x20found\x20in\x20the\x20players\x20collection.');d[B(0xf6)](i=>{const C=B;a['ladder']['push']({'id':i['id'],...i[C(0x103)]()});}),console['log']('Ladder:\x20Found\x20'+a['ladder'][B(0x135)]+B(0xec));const e=document['getElementById']('records-stats');e?(a[B(0x137)]=e['innerText'],console['log'](B(0xeb),a['stats'])):(a[B(0x137)]='Stats\x20not\x20available',console['warn']('records-stats\x20element\x20not\x20found\x20in\x20the\x20DOM.'));const f=collection(db,'approvedMatches'),g=query(f,orderBy(B(0xf2),'desc')),h=await getDocs(g);return a[B(0xe8)]=[],h[B(0x133)]&&console['warn'](B(0xf9)),h['forEach'](i=>{a['matches']['push']({'id':i['id'],...i['data']()});}),console['log']('Matches:\x20Found\x20'+a['matches'][B(0x135)]+'\x20approved\x20matches'),await setDoc(doc(db,B(0x111),B(0x129)),{'archivedAt':new Date(),...a}),console['log']('Season\x200\x20archived\x20successfully.',a),!![];}catch(i){return console['error']('Error\x20archiving\x20Season\x200:',i),![];}}
+import { db } from './firebase-config.js';
+import { collection, getDocs, query, where, orderBy, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Setup modal structure
+    setupModalStructure();
+    
+    // Setup button event listeners
+    const season0Btn = document.getElementById('season0-btn');
+    if (season0Btn) {
+        season0Btn.addEventListener('click', async () => {
+            const ladderData = await prepareSeason0LadderData();
+            showModal('Season 0 Ladder (Final Standings)', ladderData);
+        });
+    }
+    
+    const season0StatsBtn = document.getElementById('season0-stats-btn');
+    if (season0StatsBtn) {
+        season0StatsBtn.addEventListener('click', async () => {
+            const statsData = await prepareSeason0StatsData();
+            showModal('Season 0 Stats', statsData);
+        });
+    }
+    
+    const season0MatchesBtn = document.getElementById('season0-matches-btn');
+    if (season0MatchesBtn) {
+        season0MatchesBtn.addEventListener('click', async () => {
+            const matchesData = await prepareSeason0MatchesData();
+            showModal('Season 0 Matches', matchesData);
+        });
+    }
+    
+    // Setup modal close button
+    const closeBtn = document.querySelector('.close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    // Close modal when clicking outside of modal content
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('data-modal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Example: call snapshotSeason0() when the archive button is clicked.
+    document.getElementById("archive-season0-btn")?.addEventListener("click", async () => {
+        const success = await snapshotSeason0();
+        if (success) {
+            alert("Season 0 archived successfully! You can now reset for a new season.");
+        } else {
+            alert("Error archiving Season 0. See console for details.");
+        }
+    });
+});
+
+// Function to prepare Season 0 ladder data
+async function prepareSeason0LadderData() {
+    try {
+        // Using the db reference correctly
+        const playersRef = collection(db, "players");
+        const playersQuery = query(playersRef, orderBy("elo", "desc"));
+        const playersSnapshot = await getDocs(playersQuery);
+        
+        // Create the table HTML
+        let tableHTML = `
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>ELO</th>
+                        <th>W-L</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        let rank = 1;
+        playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            // Only include players who have played at least one match
+            if (player.wins > 0 || player.losses > 0) {
+                tableHTML += `
+                    <tr>
+                        <td>${rank}</td>
+                        <td>${player.username}</td>
+                        <td>${Math.round(player.elo)}</td>
+                        <td>${player.wins}-${player.losses}</td>
+                    </tr>
+                `;
+                rank++;
+            }
+        });
+        
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        return tableHTML;
+    } catch (error) {
+        console.error("Error loading ladder data:", error);
+        return `<p class="error-message">Error loading ladder data: ${error.message}</p>`;
+    }
+}
+
+// Function to prepare Season 0 stats data
+async function prepareSeason0StatsData() {
+    try {
+        const playersRef = collection(db, "players");
+        const playersSnapshot = await getDocs(playersRef);
+        
+        let mostWins = { count: 0, player: "" };
+        let bestWinRate = { rate: 0, player: "", games: 0 };
+        let bestKD = { ratio: 0, player: "", kills: 0, deaths: 0 };
+        
+        playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            const totalGames = player.wins + player.losses;
+            
+            // Most wins
+            if (player.wins > mostWins.count) {
+                mostWins.count = player.wins;
+                mostWins.player = player.username;
+            }
+            
+            // Best win rate (minimum 5 games)
+            if (totalGames >= 5) {
+                const winRate = (player.wins / totalGames) * 100;
+                if (winRate > bestWinRate.rate) {
+                    bestWinRate.rate = winRate;
+                    bestWinRate.player = player.username;
+                    bestWinRate.games = totalGames;
+                }
+            }
+            
+            // Best K/D ratio (minimum 10 kills)
+            if (player.kills >= 10) {
+                const kdRatio = player.deaths > 0 ? player.kills / player.deaths : player.kills;
+                if (kdRatio > bestKD.ratio) {
+                    bestKD.ratio = kdRatio;
+                    bestKD.player = player.username;
+                    bestKD.kills = player.kills;
+                    bestKD.deaths = player.deaths;
+                }
+            }
+        });
+        
+        // Create stats HTML
+        const statsHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Most Wins</h3>
+                    <div class="stat-value">${mostWins.count}</div>
+                    <div class="stat-holder">${mostWins.player}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Best Win Rate</h3>
+                    <div class="stat-value">${bestWinRate.rate.toFixed(1)}%</div>
+                    <div class="stat-holder">${bestWinRate.player} (${bestWinRate.games} games)</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Best K/D Ratio</h3>
+                    <div class="stat-value">${bestKD.ratio.toFixed(2)}</div>
+                    <div class="stat-holder">${bestKD.player} (${bestKD.kills}K/${bestKD.deaths}D)</div>
+                </div>
+            </div>
+        `;
+        
+        return statsHTML;
+    } catch (error) {
+        console.error("Error loading stats data:", error);
+        return `<p class="error-message">Error loading stats data: ${error.message}</p>`;
+    }
+}
+
+// Function to prepare Season 0 matches data
+async function prepareSeason0MatchesData() {
+    try {
+        const matchesRef = collection(db, "matches");
+        const matchesQuery = query(
+            matchesRef, 
+            where("status", "==", "approved"),
+            orderBy("timestamp", "desc")
+        );
+        const matchesSnapshot = await getDocs(matchesQuery);
+        
+        if (matchesSnapshot.empty) {
+            return '<p>No matches found.</p>';
+        }
+        
+        // Create matches HTML table
+        let matchesHTML = `
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Winner</th>
+                        <th>Loser</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+                
+        matchesSnapshot.forEach((doc) => {
+            const match = doc.data();
+            // Format date
+            const matchDate = match.timestamp ? new Date(match.timestamp.toDate()) : new Date();
+            const dateString = matchDate.toLocaleDateString();
+            
+            matchesHTML += `
+                <tr>
+                    <td>${dateString}</td>
+                    <td>${match.winner}</td>
+                    <td>${match.loser}</td>
+                    <td>${match.winnerScore} - ${match.loserScore}</td>
+                </tr>`;
+        });
+        
+        matchesHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        return matchesHTML;
+        
+    } catch (error) {
+        console.error("Error loading matches data:", error);
+        return `<p class="error-message">Error loading matches data: ${error.message}</p>`;
+    }
+}
+
+// Function to setup modal structure
+function setupModalStructure() {
+    // Create modal elements if they don't exist
+    if (!document.getElementById('data-modal')) {
+        const modalHTML = `
+            <div id="data-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modal-title">Title</h2>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div id="modal-body" class="modal-body">
+                        <!-- Content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal HTML to the body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        
+        // Add modal styles
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                overflow: auto;
+            }
+            
+            .modal-content {
+                background-color: #2c2c2c;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #444;
+                width: 80%;
+                max-width: 900px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #444;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .close-modal {
+                color: #aaa;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            
+            .close-modal:hover {
+                color: #f8c300;
+            }
+            
+            .modal-body {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            
+            .modal-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            .modal-table th, .modal-table td {
+                padding: 10px;
+                border-bottom: 1px solid #444;
+                text-align: left;
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .stat-card {
+                background-color: #333;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+                font-weight: bold;
+                color: #f8c300;
+                margin: 10px 0;
+            }
+            
+            .stat-holder {
+                font-style: italic;
+            }
+            
+            .error-message {
+                color: #ff6b6b;
+                font-weight: bold;
+                padding: 10px;
+                background-color: rgba(255, 107, 107, 0.1);
+                border-radius: 5px;
+            }
+        `;
+        document.head.appendChild(styleElement);
+    }
+}
+
+// Function to show modal with content
+function showModal(title, content) {
+    const modal = document.getElementById('data-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    
+    if (!modal || !modalTitle || !modalBody) {
+        console.error("Modal elements not found");
+        return;
+    }
+    
+    modalTitle.textContent = title;
+    modalBody.innerHTML = content;
+    
+    modal.style.display = 'block';
+}
+
+// Function to close modal
+function closeModal() {
+    const modal = document.getElementById('data-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Function to snapshot Season 0 data
+async function snapshotSeason0() {
+    try {
+        console.log("snapshotSeason0(): Started");
+        const seasonData = {};
+
+        // 1. Ladder history snapshot (players ordered by ELO)
+        const playersRef = collection(db, "players");
+        const ladderQuery = query(playersRef, orderBy("elo", "desc"));
+        const playersSnapshot = await getDocs(ladderQuery);
+        seasonData.ladder = [];
+        if (playersSnapshot.empty) {
+            console.warn("No player documents found in the players collection.");
+        }
+        playersSnapshot.forEach((playerDoc) => {
+            seasonData.ladder.push({ id: playerDoc.id, ...playerDoc.data() });
+        });
+        console.log(`Ladder: Found ${seasonData.ladder.length} players`);
+
+        // 2. Stats snapshot (parsing from records.html)
+        const recordsStatsElement = document.getElementById("records-stats");
+        if (recordsStatsElement) {
+            seasonData.stats = recordsStatsElement.innerText;
+            console.log("Stats loaded from records element:", seasonData.stats);
+        } else {
+            seasonData.stats = "Stats not available";
+            console.warn("records-stats element not found in the DOM.");
+        }
+
+        // 3. Match history snapshot (from approvedMatches collection)
+        const matchesRef = collection(db, "approvedMatches");
+        const matchesQuery = query(matchesRef, orderBy("timestamp", "desc"));
+        const matchesSnapshot = await getDocs(matchesQuery);
+        seasonData.matches = [];
+        if (matchesSnapshot.empty) {
+            console.warn("No approved match documents found in approvedMatches collection.");
+        }
+        matchesSnapshot.forEach((matchDoc) => {
+            seasonData.matches.push({ id: matchDoc.id, ...matchDoc.data() });
+        });
+        console.log(`Matches: Found ${seasonData.matches.length} approved matches`);
+
+        // Store the snapshot for Season 0 in a dedicated document
+        await setDoc(doc(db, "seasons", "season0"), {
+            archivedAt: new Date(),
+            ...seasonData
+        });
+        console.log("Season 0 archived successfully.", seasonData);
+        return true;
+    } catch (error) {
+        console.error("Error archiving Season 0:", error);
+        return false;
+    }
+}

@@ -1,1 +1,829 @@
-const a26a1=a26d;function a26d(a,b){const c=a26c();return a26d=function(d,e){d=d-0x1de;let f=c[d];if(a26d['URoGkK']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a26d['fsOjFH']=g,a=arguments,a26d['URoGkK']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a26d['fsOjFH'](f),a[i]=f):f=j,f;},a26d(a,b);}(function(a,b){const Y=a26d,c=a();while(!![]){try{const d=-parseInt(Y(0x20b))/0x1+-parseInt(Y(0x23f))/0x2+-parseInt(Y(0x216))/0x3+-parseInt(Y(0x21c))/0x4+-parseInt(Y(0x1e6))/0x5*(-parseInt(Y(0x22a))/0x6)+parseInt(Y(0x20c))/0x7+parseInt(Y(0x214))/0x8*(parseInt(Y(0x1f0))/0x9);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a26c,0xe0bf6));function a26c(){const az=['Bg9JyxrPB24','mtGYotm4ng10BeDpAa','nZC3ndy4m0L2BhvRsq','ugXLyxnLigvUDgvYihLVDxiGDxnLCM5HBwuGDg8Gy29UzMLYBs4','rxjYB3iGz29PBMCGB24GAgLHDhvZoG','zxjYB3i','AgfZvgvHBq','ww91igfYzsbUB3qGy3vYCMvUDgX5igLUigeGDgvHBs4','DMfSDwu','igXHzgrLCIe','nda3mMzxBfrmsa','DhjHy2u','mtG2mZC0mxHgwvzjzG','rgLZC29SDMLUzYb0zwfTigzVCIbYzxrPCMLUzYbWBgf5zxiUlI4','i2zMnMi2yG','BM9Uzq','zNjVBuXHzgrLCG','zxHJzxb0Aw9U','ndyXmJG1mKDys3zQzq','y3jLyxrLrwXLBwvUDa','CgXHEwvYCW','rxjYB3iGChjVy2vZC2LUzYb5B3vYihjLCxvLC3qUifbSzwfZzsb0CNKGywDHAw4U','x19WCM90B19F','rxjYB3iGCMv0DxjUAw5NigzYB20GAgLHDhvZoG','zMXLEa','Dw5OAwf0DxmTChjVBxb0','igXHzgrLCI4UlG','C3r5Bgu','uMv0AxjPBMCGzNjVBsa','ww91igfYzsbUB3qGB24GAgLHDhvZlG','BgfKzgvY','u3vJy2vZC2z1BgX5igXLzNqGDgvHBseGww91ihjLBwfPBIbVBIb0AguGBgfKzgvYigfZigeGC29SBYbWBgf5zxiU','nM1jBvnVqW','Dg9mB3DLCKnHC2u','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVigDVig9UigHPyxr1CY4','yNv0Dg9U','y29UzMLYBs1Szwf2zs10zwfTlwj1DhrVBG','vgvHBw1HDguNCYb0zwfTigrHDgeGy2XLyxjLzcbZDwnJzxnZzNvSBhK','zw1WDhK','BwvZC2fNzq','i2XHzgrLCI1YzxrPCMuTChjVBxb0ic5JBg9Zzs1IDxr0B24','rxjYB3iGy2HLy2TPBMCGAgLHDhvZihn0yxr1CYaODgHPCYbPCYbLEhbLy3rLzcbPzIbWzxjTAxnZAw9UCYbHCMvUj3qGC2v0ktO','uMv0AxjLigj1DhrVBIbJBgLJA2vK','rfvpuW','rxjYB3iGzhvYAw5NihjLDhvYBIbMCM9TigHPyxr1CZO','DxnLCM5HBwu','iZrdquy1ma','Dw5OAwf0DxmTDxnLCM5HBwuTAw5WDxq','ChjVDg90ExbL','CMv0AxjLlwXHzgrLCI1IDxr0B24','rxjYB3iGzgLZC29SDMLUzYb0zwfToG','y29UC29Szq','u3vJy2vZC2z1BgX5ihjLDgLYzwqGzNjVBsa','mtG0odqZmMPssNHHwq','Aw5MBW','Dw5OAwf0DxmTyNv0Dg9U','rxjYB3iGCMv0AxjPBMCGzNjVBsbSywrKzxi6','rxjYB3iGzhvYAw5NihjLDgLYzw1LBNq6','rxjYB3iGzhvYAw5NigHPyxr1CZO','zxHPC3rZ','zgLZCgXHEq','BgfKzgvYlxjLDgLYzs1WCM9TChq','ignVBgXLy3rPB24','zM9YrwfJAa','y29UzMLYBs11BMHPyxr1CY1IDxr0B24','vxnLCM5HBwuGzg9LCYbUB3qGBwf0y2GGEw91CIbHy2nVDw50lG','uMv0DxjUAw5NigzYB20GAgLHDhvZlI4U','iZi3ywu2ma','igXHzgrLCG','CgXHEwvYq29SBgvJDgLVBG','yMXVy2S','re9nq29UDgvUDeXVywrLza','nJi3mZy1t1nZA1Hu','CgXHEwvYC0qY','yMLUza','DhjPBq','rxjYB3iGBgvHDMLUzYb0zwfToG','zgf0yq','y29UC3rYDwn0B3i','y29SB3i','BgvMDa','BgfKzgvYlxjLDgLYzs1ZDgf0Dxm','nZq0odr0Axz0v2i','y3vYCMvUDfvZzxi','DwLK','ww91ig11C3qGyMuGBg9Nz2vKigLUihrVigXLyxzLigeGDgvHBs4','ywrKrxzLBNrmAxn0zw5LCG','i2zMytuWma','CMvSB2fK','yMfJA2DYB3vUza','i3vUAgLHDhvZlxbYB21WDcaUy2XVC2uTyNv0Dg9U','i2XLyxzLlxrLyw0TChjVBxb0ic5JBg9Zzs1IDxr0B24','z2v0rwXLBwvUDej5swq','BgvUz3rO','DgfYz2v0','yxbWBhK','BgvHDMuTDgvHBs1IDxr0B24','ww91igfYzsbUB3qGB24GDgHPCYbSywrKzxiU','Aw5WDxrBBMfTzt0IBgfKzgvYiL0','zgLZywjSzwq','CxvLCNLtzwXLy3rVCG','y2XPy2S','DgfIBgu','AgLHDhvZlxvZzxjUyw1LlwLUChv0','D2fYBG','uMv0AxjLoIbmywrKzxiGy2HHBMDLzcb0BZOG','Dgv4DenVBNrLBNq','Bg9N'];a26c=function(){return az;};return a26c();}const a26b=(function(){let a=!![];return function(b,c){const d=a?function(){const Z=a26d;if(c){const e=c[Z(0x1fd)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a26a=a26b(this,function(){const a0=a26d;let a;try{const d=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[a0(0x23d)]=a[a0(0x23d)]||{},c=[a0(0x209),'warn',a0(0x240),'error',a0(0x21b),a0(0x204),a0(0x215)];for(let g=0x0;g<c[a0(0x1fb)];g++){const h=a26b[a0(0x1ec)][a0(0x23a)][a0(0x1e8)](a26b),i=c[g],j=b[i]||h;h[a0(0x220)]=a26b['bind'](a26b),h['toString']=j['toString'][a0(0x1e8)](j),b[i]=h;}});a26a();import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{getFirestore}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{doc,getDoc,getDocs,updateDoc,deleteDoc,setDoc,query,collection,where}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{auth,db}from'./firebase-config.js';document[a26a1(0x1f4)](a26a1(0x1e5),()=>{const a2=a26a1,a=document[a2(0x1fa)]('tiny-retire-button'),b=document[a2(0x1fa)](a2(0x247)),c=document[a2(0x1fa)]('retire-ladder-type'),d=document[a2(0x1fa)]('retire-username-input'),e=document[a2(0x1fa)](a2(0x23b)),f=document['getElementById'](a2(0x1ef)),g=document[a2(0x1fa)](a2(0x1fe)),h=document['getElementById']('leave-team-prompt'),i=document['getElementById']('leave-team-status'),j=document['getElementById'](a2(0x22e)),k=document[a2(0x1fa)]('leave-team-username-input'),l=document[a2(0x1fa)]('hiatus-button'),m=document[a2(0x1fa)]('hiatus-prompt'),n=document['getElementById']('hiatus-ladder-type'),o=document[a2(0x1fa)](a2(0x205)),p=document['getElementById']('confirm-hiatus-button'),q=document['getElementById']('hiatus-status'),r=document['getElementById'](a2(0x223)),s=document[a2(0x1fa)]('unhiatus-ladder-type'),t=document['getElementById'](a2(0x239)),u=document['getElementById'](a2(0x1de)),v=document['getElementById']('unhiatus-status');let w='D1';function x(M){const a3=a2;switch(M){case'D1':return'players';case'D2':return a3(0x1e7);case'D3':return'playersD3';case a3(0x235):return'playersDuos';case'CTF':return'playersCTF';default:return a3(0x21e);}}function y(){const a4=a2;document['querySelectorAll'](a4(0x200))[a4(0x249)](M=>{const a5=a4;M[a5(0x1f4)]('change',N=>{const a6=a5;N[a6(0x1fc)]['checked']&&(w=N[a6(0x1fc)][a6(0x212)],console[a6(0x209)](a6(0x207)+w),c&&(c[a6(0x208)]=w),z());});});}function z(){const a7=a2;console['log']('Checking\x20retire\x20visibility\x20for\x20ladder:',w);const M=auth['currentUser'];if(!M){if(a)a[a7(0x225)]['display']=a7(0x219);if(g)g['style'][a7(0x246)]='none';if(l)l['style']['display']='none';if(H)H['style'][a7(0x246)]='none';return;}A(M);}async function A(M){const a8=a2;try{try{const N=doc(db,'playerHiatus',M['uid']),O=await getDoc(N);if(O['exists']()){const P=O['data']();console[a8(0x209)]('User\x20is\x20on\x20hiatus\x20from\x20'+P['fromLadder']+a8(0x1e2));if(H)H['style']['display']=a8(0x1e4);if(a)a[a8(0x225)]['display']='none';if(g)g[a8(0x225)]['display']=a8(0x219);if(l)l[a8(0x225)]['display']='none';return;}}catch(Q){console[a8(0x206)](a8(0x233),Q);}try{const R=x(w);console['log']('Checking\x20if\x20user\x20is\x20in\x20'+R+a8(0x248));const S=doc(db,R,M[a8(0x1f2)]),T=await getDoc(S);if(T['exists']()){console['log']('User\x20is\x20on\x20the\x20'+w+'\x20ladder');if(a)a[a8(0x225)]['display']='block';if(l)l['style'][a8(0x246)]=a8(0x1e4);if(w===a8(0x235)){const U=T['data']();if(U[a8(0x210)]&&U['teamId']){console['log']('User\x20is\x20in\x20a\x20team,\x20showing\x20leave\x20team\x20button');if(g)g[a8(0x225)][a8(0x246)]=a8(0x1e4);}else{console[a8(0x209)]('User\x20is\x20not\x20in\x20a\x20team,\x20hiding\x20leave\x20team\x20button');if(g)g[a8(0x225)][a8(0x246)]='none';}}else{if(g)g[a8(0x225)][a8(0x246)]=a8(0x219);}}else{console['log']('User\x20is\x20NOT\x20on\x20the\x20'+w+a8(0x1e2));if(a)a[a8(0x225)]['display']=a8(0x219);if(g)g[a8(0x225)]['display']='none';if(l)l['style'][a8(0x246)]='none';}}catch(V){console[a8(0x20f)]('Error\x20checking\x20player\x20status:',V);if(a)a['style'][a8(0x246)]=a8(0x219);if(g)g[a8(0x225)]['display']='none';if(l)l[a8(0x225)][a8(0x246)]='none';}}catch(W){console[a8(0x20f)]('Main\x20error\x20in\x20checkPlayerStatus:',W);if(a)a['style'][a8(0x246)]='none';if(g)g[a8(0x225)]['display']='none';if(l)l['style'][a8(0x246)]=a8(0x219);if(H)H['style'][a8(0x246)]='none';}}async function B(M,N){const a9=a2;if(M[a9(0x210)]&&M['teamId']&&M['teammate']){console[a9(0x209)](a9(0x217));try{const O=collection(db,N),P=query(O,where('username','==',M['teammate'])),Q=await getDocs(P);if(!Q[a9(0x230)]){const R=Q['docs'][0x0];await updateDoc(R['ref'],{'hasTeam':![],'teamId':null,'teamName':null,'teammate':null,'teamColor':null}),console['log'](a9(0x22f));}}catch(S){console[a9(0x20f)](a9(0x23c),S);}}}async function C(M,N){const aa=a2,O=x(w);try{const P=doc(db,O,N[aa(0x1f2)]),Q=await getDoc(P);if(!Q[aa(0x245)]())throw new Error('You\x20are\x20not\x20on\x20this\x20ladder.');const R=Q[aa(0x1eb)]();if(R['username'][aa(0x22b)]()!==M[aa(0x22b)]())throw new Error(aa(0x1df));if(!R['hasTeam']||!R['teamId'])throw new Error(aa(0x211));return await B(R,O),await updateDoc(P,{'hasTeam':![],'teamId':null,'teamName':null,'teammate':null,'teamColor':null}),{'success':!![]};}catch(S){console['error'](aa(0x1ea),S);throw S;}}async function D(M,N){const ab=a2,O=x(w);try{const P=doc(db,O,N[ab(0x1f2)]),Q=await getDoc(P);if(!Q['exists']())throw new Error(ab(0x1ff));const R=Q[ab(0x1eb)]();if(R[ab(0x237)][ab(0x22b)]()!==M['toLowerCase']())throw new Error(ab(0x1df));return w==='DUOS'&&await B(R,O),await deleteDoc(P),{'success':!![]};}catch(S){console[ab(0x20f)](ab(0x242),S);throw S;}}async function E(M,N){const ac=a2,O=x(w),P='playerHiatus';try{const Q=doc(db,O,N[ac(0x1f2)]),R=await getDoc(Q);if(!R[ac(0x245)]())throw new Error(ac(0x1ff));const S=R['data']();if(S['username']['toLowerCase']()!==M['toLowerCase']())throw new Error('Username\x20does\x20not\x20match\x20your\x20account.');w==='DUOS'&&S['hasTeam']&&await B(S,O);const T={...S,'fromLadder':w,'hiatusDate':new Date(),'playerCollection':O};return await setDoc(doc(db,P,N[ac(0x1f2)]),T),await deleteDoc(Q),{'success':!![]};}catch(U){console[ac(0x20f)](ac(0x20e),U);throw U;}}async function F(M,N){const ad=a2,O='playerHiatus';try{const P=doc(db,O,N['uid']),Q=await getDoc(P);if(!Q[ad(0x245)]())throw new Error(ad(0x227));const R=Q[ad(0x1eb)]();if(R[ad(0x237)][ad(0x22b)]()!==M['toLowerCase']())throw new Error(ad(0x1df));const S=R[ad(0x1e3)]||x(R[ad(0x21a)]),{hiatusDate:T,fromLadder:U,playerCollection:V,...W}=R;return await setDoc(doc(db,S,N['uid']),W),await deleteDoc(P),{'success':!![],'ladder':U};}catch(X){console['error'](ad(0x221),X);throw X;}}onAuthStateChanged(auth,M=>{const ae=a2;if(M)z();else{if(a)a[ae(0x225)]['display']='none';if(g)g[ae(0x225)][ae(0x246)]='none';if(b)b[ae(0x225)][ae(0x246)]=ae(0x219);if(h)h['style']['display']=ae(0x219);if(l)l['style'][ae(0x246)]='none';if(H)H['style']['display']=ae(0x219);}});a&&a['addEventListener'](a2(0x203),()=>{const af=a2;console['log'](af(0x234)),b&&(b[af(0x225)]['display']=af(0x222)),c&&(c['textContent']=w),f&&(f[af(0x208)]='',f[af(0x225)]['color']=''),d&&(d[af(0x212)]='');});g&&g['addEventListener'](a2(0x203),()=>{const ag=a2;console['log']('Leave\x20team\x20button\x20clicked'),h&&(h['style']['display']=ag(0x222)),i&&(i['textContent']='',i['style']['color']=''),k&&(k['value']='');});l&&l['addEventListener'](a2(0x203),()=>{const ah=a2;console[ah(0x209)]('Hiatus\x20button\x20clicked'),m&&(m['style'][ah(0x246)]=ah(0x222)),n&&(n[ah(0x208)]=w),q&&(q['textContent']='',q[ah(0x225)][ah(0x1ed)]=''),o&&(o[ah(0x212)]='');});e&&e[a2(0x1f4)]('click',async()=>{const ai=a2,M=d?d['value']['trim']():'';if(!M){f&&(f[ai(0x208)]=ai(0x20d),f[ai(0x225)][ai(0x1ed)]=ai(0x218));return;}const N=auth['currentUser'];if(!N){f&&(f['textContent']='You\x20must\x20be\x20logged\x20in\x20to\x20retire.',f[ai(0x225)]['color']=ai(0x218));return;}e['disabled']=!![];f&&(f['textContent']=ai(0x226)+w+ai(0x224),f['style']['color']='#ffa500');try{await D(M,N),f&&(f['textContent']=ai(0x23e)+w+'\x20ladder!',f[ai(0x225)][ai(0x1ed)]=ai(0x238)),setTimeout(()=>{const aj=ai;if(a)a['style']['display']='none';if(b)b[aj(0x225)]['display']=aj(0x219);window[aj(0x20a)][aj(0x1f6)]();},0x7d0);}catch(O){console[ai(0x20f)](ai(0x243),O),f&&(f[ai(0x208)]=O['message']||'Error\x20processing\x20your\x20request.\x20Please\x20try\x20again.',f['style']['color']='#ff6b6b'),e['disabled']=![];}});j&&j['addEventListener'](a2(0x203),async()=>{const ak=a2,M=k?k[ak(0x212)]['trim']():'';if(!M){i&&(i['textContent']=ak(0x20d),i[ak(0x225)][ak(0x1ed)]=ak(0x218));return;}const N=auth['currentUser'];if(!N){i&&(i['textContent']=ak(0x1f3),i['style']['color']='#ff6b6b');return;}j[ak(0x201)]=!![];i&&(i[ak(0x208)]='Leaving\x20team...',i['style'][ak(0x1ed)]='#ffa500');try{await C(M,N),i&&(i['textContent']=ak(0x229),i['style']['color']=ak(0x238)),setTimeout(()=>{const al=ak;if(g)g[al(0x225)][al(0x246)]=al(0x219);if(h)h[al(0x225)][al(0x246)]='none';window[al(0x20a)][al(0x1f6)]();},0x7d0);}catch(O){console['error']('Error\x20leaving\x20team:',O),i&&(i[ak(0x208)]=O[ak(0x231)]||'Error\x20processing\x20your\x20request.\x20Please\x20try\x20again.',i[ak(0x225)]['color']='#ff6b6b'),j['disabled']=![];}});p&&p['addEventListener']('click',async()=>{const am=a2,M=o?o['value']['trim']():'';if(!M){q&&(q[am(0x208)]='Please\x20enter\x20your\x20username\x20to\x20confirm.',q[am(0x225)]['color']='#ff6b6b');return;}const N=auth['currentUser'];if(!N){q&&(q['textContent']=am(0x22c),q[am(0x225)]['color']='#ff6b6b');return;}p['disabled']=!![];q&&(q['textContent']='Going\x20on\x20hiatus\x20from\x20'+w+am(0x224),q['style']['color']=am(0x1f5));try{await E(M,N),q&&(q['textContent']='Successfully\x20went\x20on\x20hiatus\x20from\x20'+w+am(0x213),q['style']['color']=am(0x238)),setTimeout(()=>{const an=am;if(l)l['style'][an(0x246)]='none';if(m)m['style'][an(0x246)]=an(0x219);window[an(0x20a)][an(0x1f6)]();},0x7d0);}catch(O){console['error'](am(0x244),O),q&&(q['textContent']=O['message']||am(0x21f),q['style'][am(0x1ed)]=am(0x218)),p['disabled']=![];}});function G(){const ao=a2;let M=document[ao(0x1fa)](ao(0x241));if(!M){M=document[ao(0x21d)](ao(0x22d)),M['id']=ao(0x241),M['className']='tiny-retire-button',M[ao(0x225)][ao(0x246)]=ao(0x219),M[ao(0x225)][ao(0x1f7)]=ao(0x1e1),M[ao(0x208)]='Return\x20from\x20Hiatus',M[ao(0x225)]['position']='relative',M['style'][ao(0x1ee)]='-50px';const N=document['getElementById']('ladder-retire-tiny-container');N&&N['appendChild'](M);}return M;}const H=G();H&&H['addEventListener']('click',async()=>{const ap=a2;console[ap(0x209)]('Unhiatus\x20button\x20clicked');const M=auth['currentUser'];if(!M)return;try{const N=doc(db,'playerHiatus',M['uid']),O=await getDoc(N);if(O[ap(0x245)]()){const P=O['data'](),Q=P[ap(0x21a)]||'D1';r&&(r[ap(0x225)][ap(0x246)]=ap(0x222)),s&&(s['textContent']=Q),v&&(v[ap(0x208)]='',v['style'][ap(0x1ed)]=''),t&&(t['value']='');}}catch(R){console['error']('Error\x20getting\x20hiatus\x20data:',R);}});u&&u[a2(0x1f4)](a2(0x203),async()=>{const aq=a2,M=t?t['value'][aq(0x1e9)]():'';if(!M){v&&(v[aq(0x208)]=aq(0x20d),v[aq(0x225)][aq(0x1ed)]=aq(0x218));return;}const N=auth[aq(0x1f1)];if(!N){v&&(v[aq(0x208)]='You\x20must\x20be\x20logged\x20in\x20to\x20return\x20from\x20hiatus.',v['style'][aq(0x1ed)]='#ff6b6b');return;}u['disabled']=!![];v&&(v['textContent']=aq(0x1e0),v[aq(0x225)][aq(0x1ed)]='#ffa500');try{const O=await F(M,N);v&&(v[aq(0x208)]='Successfully\x20returned\x20to\x20'+O[aq(0x228)]+aq(0x213),v[aq(0x225)][aq(0x1ed)]=aq(0x238)),setTimeout(()=>{const ar=aq;if(H)H[ar(0x225)]['display']='none';if(r)r[ar(0x225)][ar(0x246)]='none';window['location'][ar(0x1f6)]();},0x7d0);}catch(P){console[aq(0x20f)](aq(0x236),P),v&&(v['textContent']=P[aq(0x231)]||aq(0x21f),v['style'][aq(0x1ed)]='#ff6b6b'),u[aq(0x201)]=![];}});const I=document['querySelector'](a2(0x232));I&&I[a2(0x1f4)]('click',()=>{const as=a2;if(b)b['style'][as(0x246)]='none';});const J=document[a2(0x202)](a2(0x1f9));J&&J['addEventListener'](a2(0x203),()=>{const at=a2;if(h)h[at(0x225)]['display']=at(0x219);});const K=document[a2(0x202)]('#hiatus-prompt\x20.close-button');K&&K[a2(0x1f4)]('click',()=>{const au=a2;if(m)m[au(0x225)]['display']=au(0x219);});const L=document[a2(0x202)](a2(0x1f8));L&&L['addEventListener']('click',()=>{if(r)r['style']['display']='none';}),b&&b['addEventListener']('click',M=>{const av=a2;M[av(0x1fc)]===b&&(b['style'][av(0x246)]='none');}),h&&h['addEventListener'](a2(0x203),M=>{const aw=a2;M['target']===h&&(h[aw(0x225)]['display']='none');}),m&&m['addEventListener'](a2(0x203),M=>{const ax=a2;M[ax(0x1fc)]===m&&(m['style'][ax(0x246)]='none');}),r&&r[a2(0x1f4)]('click',M=>{const ay=a2;M['target']===r&&(r['style'][ay(0x246)]='none');}),y(),setTimeout(()=>{z();},0x3e8);});
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+    doc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    setDoc,
+    query,
+    collection,
+    where
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM elements
+    const tinyRetireButton = document.getElementById('tiny-retire-button');
+    const retirePrompt = document.getElementById('ladder-retire-prompt');
+    const retireLadderTypeSpan = document.getElementById('retire-ladder-type');
+    const retireUsernameInput = document.getElementById('retire-username-input');
+    const retireLadderButton = document.getElementById('retire-ladder-button');
+    const retireStatusSpan = document.getElementById('ladder-retire-status');
+    
+    // New elements for leave team functionality
+    const leaveTeamButton = document.getElementById('leave-team-button');
+    const leaveTeamPrompt = document.getElementById('leave-team-prompt');
+    const leaveTeamStatusSpan = document.getElementById('leave-team-status');
+    const confirmLeaveTeamButton = document.getElementById('confirm-leave-team-button');
+    const leaveTeamUsernameInput = document.getElementById('leave-team-username-input');
+    
+    // New elements for hiatus functionality
+    const hiatusButton = document.getElementById('hiatus-button');
+    const hiatusPrompt = document.getElementById('hiatus-prompt');
+    const hiatusLadderTypeSpan = document.getElementById('hiatus-ladder-type');
+    const hiatusUsernameInput = document.getElementById('hiatus-username-input');
+    const confirmHiatusButton = document.getElementById('confirm-hiatus-button');
+    const hiatusStatusSpan = document.getElementById('hiatus-status');
+
+    // Removed duplicate declaration of unhiatusButton
+    const unhiatusPrompt = document.getElementById('unhiatus-prompt');
+    const unhiatusLadderTypeSpan = document.getElementById('unhiatus-ladder-type');
+    const unhiatusUsernameInput = document.getElementById('unhiatus-username-input');
+    const confirmUnhiatusButton = document.getElementById('confirm-unhiatus-button');
+    const unhiatusStatusSpan = document.getElementById('unhiatus-status');
+    
+    let currentLadderMode = 'D1'; // Default to D1
+    
+    // Function to get the correct collection name based on ladder type
+    function getCollectionName(ladderType) {
+        switch(ladderType) {
+            case 'D1':
+                return 'players';
+            case 'D2':
+                return 'playersD2';
+            case 'D3':
+                return 'playersD3';
+            case 'DUOS':
+                return 'playersDuos';
+            case 'CTF':
+                return 'playersCTF';
+            default:
+                return 'players';
+        }
+    }
+    
+    // Listen for radio button changes to detect ladder switches
+    function setupRadioListeners() {
+        document.querySelectorAll('input[name="ladder"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    currentLadderMode = e.target.value;
+                    console.log(`Retire: Ladder changed to: ${currentLadderMode}`);
+                    
+                    // Update UI elements
+                    if (retireLadderTypeSpan) {
+                        retireLadderTypeSpan.textContent = currentLadderMode;
+                    }
+                    
+                    // Check if we should show the retire/leave team buttons for new ladder
+                    updateRetireButtonVisibility();
+                }
+            });
+        });
+    }
+    
+    // Function to show/hide retire and leave team buttons based on ladder membership
+    function updateRetireButtonVisibility() {
+        console.log("Checking retire visibility for ladder:", currentLadderMode);
+        
+        const user = auth.currentUser;
+        if (!user) {
+            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+            if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
+            if (unhiatusButton) unhiatusButton.style.display = 'none';
+            return;
+        }
+        
+        checkPlayerStatus(user);
+    }
+    
+    // Check if player is on the selected ladder and if they're in a team
+    // Check if player is on the selected ladder and if they're in a team
+async function checkPlayerStatus(user) {
+    try {
+        // First check if user is on hiatus - with proper error handling
+        try {
+            const hiatusRef = doc(db, 'playerHiatus', user.uid);
+            const hiatusDoc = await getDoc(hiatusRef);
+            
+            if (hiatusDoc.exists()) {
+                const hiatusData = hiatusDoc.data();
+                console.log(`User is on hiatus from ${hiatusData.fromLadder} ladder`);
+                
+                // Show unhiatus button
+                if (unhiatusButton) unhiatusButton.style.display = 'block';
+                // Hide other buttons
+                if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+                if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                if (hiatusButton) hiatusButton.style.display = 'none';
+                
+                return;
+            }
+        } catch (hiatusError) {
+            console.warn("Error checking hiatus status (this is expected if permissions aren't set):", hiatusError);
+            // Continue with normal ladder check even if hiatus check fails
+        }
+        
+        // Check ladder membership (this is the same approach used for retire button)
+        try {
+            const playerCollection = getCollectionName(currentLadderMode);
+            console.log(`Checking if user is in ${playerCollection} collection`);
+            
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (playerDoc.exists()) {
+                console.log(`User is on the ${currentLadderMode} ladder`);
+                if (tinyRetireButton) tinyRetireButton.style.display = 'block';
+                if (hiatusButton) hiatusButton.style.display = 'block';
+                
+                // Check if user is in a team (for DUOS ladder)
+                if (currentLadderMode === 'DUOS') {
+                    const playerData = playerDoc.data();
+                    if (playerData.hasTeam && playerData.teamId) {
+                        console.log("User is in a team, showing leave team button");
+                        if (leaveTeamButton) leaveTeamButton.style.display = 'block';
+                    } else {
+                        console.log("User is not in a team, hiding leave team button");
+                        if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                    }
+                } else {
+                    if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                }
+            } else {
+                console.log(`User is NOT on the ${currentLadderMode} ladder`);
+                if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+                if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                if (hiatusButton) hiatusButton.style.display = 'none';
+            }
+        } catch (playerError) {
+            console.error("Error checking player status:", playerError);
+            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+            if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Main error in checkPlayerStatus:", error);
+        // Hide all buttons if there's a general error
+        if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+        if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+        if (hiatusButton) hiatusButton.style.display = 'none';
+        if (unhiatusButton) unhiatusButton.style.display = 'none';
+    }
+}
+    
+    // Handle team dissolution for DUOS ladder
+    async function handleTeamDissolution(userData, collectionName) {
+        if (userData.hasTeam && userData.teamId && userData.teammate) {
+            console.log("Dissolving team for retiring player...");
+            
+            try {
+                // Find the teammate and remove their team data
+                const playersRef = collection(db, collectionName);
+                const teammateQuery = query(playersRef, where('username', '==', userData.teammate));
+                const teammateSnapshot = await getDocs(teammateQuery);
+                
+                if (!teammateSnapshot.empty) {
+                    const teammateDoc = teammateSnapshot.docs[0];
+                    await updateDoc(teammateDoc.ref, {
+                        hasTeam: false,
+                        teamId: null,
+                        teamName: null,
+                        teammate: null,
+                        teamColor: null
+                    });
+                    console.log("Teammate's team data cleared successfully");
+                }
+            } catch (error) {
+                console.error("Error dissolving team:", error);
+                // Continue with retirement even if team dissolution fails
+            }
+        }
+    }
+    
+    // Leave team function (keeps player on ladder but removes team)
+    async function leaveTeam(username, user) {
+        const playerCollection = getCollectionName(currentLadderMode);
+        
+        try {
+            // Get player document to verify and get team info
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (!playerDoc.exists()) {
+                throw new Error('You are not on this ladder.');
+            }
+            
+            const playerData = playerDoc.data();
+            
+            // Verify username matches
+            if (playerData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Check if player is actually in a team
+            if (!playerData.hasTeam || !playerData.teamId) {
+                throw new Error('You are not currently in a team.');
+            }
+            
+            // Handle team dissolution
+            await handleTeamDissolution(playerData, playerCollection);
+            
+            // Remove team data from current player but keep them on ladder
+            await updateDoc(playerRef, {
+                hasTeam: false,
+                teamId: null,
+                teamName: null,
+                teammate: null,
+                teamColor: null
+            });
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error("Error leaving team:", error);
+            throw error;
+        }
+    }
+    
+    // Main retire function
+    async function retireFromLadder(username, user) {
+        const playerCollection = getCollectionName(currentLadderMode);
+        
+        try {
+            // Get player document to verify and get team info
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (!playerDoc.exists()) {
+                throw new Error('You are not on this ladder.');
+            }
+            
+            const playerData = playerDoc.data();
+            
+            // Verify username matches
+            if (playerData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Handle special cases for DUOS ladder
+            if (currentLadderMode === 'DUOS') {
+                await handleTeamDissolution(playerData, playerCollection);
+            }
+            
+            // Delete player from ladder
+            await deleteDoc(playerRef);
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error("Error retiring from ladder:", error);
+            throw error;
+        }
+    }
+    
+    // Function to handle going on hiatus
+    async function goOnHiatus(username, user) {
+        const playerCollection = getCollectionName(currentLadderMode);
+        const hiatusCollection = 'playerHiatus';
+        
+        try {
+            // Get player document to verify
+            const playerRef = doc(db, playerCollection, user.uid);
+            const playerDoc = await getDoc(playerRef);
+            
+            if (!playerDoc.exists()) {
+                throw new Error('You are not on this ladder.');
+            }
+            
+            const playerData = playerDoc.data();
+            
+            // Verify username matches
+            if (playerData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Handle special cases for DUOS ladder
+            if (currentLadderMode === 'DUOS' && playerData.hasTeam) {
+                await handleTeamDissolution(playerData, playerCollection);
+            }
+            
+            // Store player data in hiatus collection with ladder info
+            const hiatusData = {
+                ...playerData,
+                fromLadder: currentLadderMode,
+                hiatusDate: new Date(),
+                playerCollection: playerCollection
+            };
+            
+            // Add to hiatus collection
+            await setDoc(doc(db, hiatusCollection, user.uid), hiatusData);
+            
+            // Remove from ladder collection
+            await deleteDoc(playerRef);
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error("Error going on hiatus:", error);
+            throw error;
+        }
+    }
+    
+    // Function to handle returning from hiatus
+    async function returnFromHiatus(username, user) {
+        const hiatusCollection = 'playerHiatus';
+        
+        try {
+            // Get hiatus document to verify
+            const hiatusRef = doc(db, hiatusCollection, user.uid);
+            const hiatusDoc = await getDoc(hiatusRef);
+            
+            if (!hiatusDoc.exists()) {
+                throw new Error('You are not on hiatus.');
+            }
+            
+            const hiatusData = hiatusDoc.data();
+            
+            // Verify username matches
+            if (hiatusData.username.toLowerCase() !== username.toLowerCase()) {
+                throw new Error('Username does not match your account.');
+            }
+            
+            // Get the original ladder collection
+            const playerCollection = hiatusData.playerCollection || getCollectionName(hiatusData.fromLadder);
+            
+            // Prepare player data (remove hiatus-specific fields)
+            const { hiatusDate, fromLadder, playerCollection: _, ...playerData } = hiatusData;
+            
+            // Add back to original ladder collection
+            await setDoc(doc(db, playerCollection, user.uid), playerData);
+            
+            // Remove from hiatus collection
+            await deleteDoc(hiatusRef);
+            
+            return { success: true, ladder: fromLadder };
+            
+        } catch (error) {
+            console.error("Error returning from hiatus:", error);
+            throw error;
+        }
+    }
+    
+    // Set up auth state listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            updateRetireButtonVisibility();
+        } else {
+            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+            if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+            if (retirePrompt) retirePrompt.style.display = 'none';
+            if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
+            if (hiatusButton) hiatusButton.style.display = 'none';
+            if (unhiatusButton) unhiatusButton.style.display = 'none';
+        }
+    });
+    
+    // Toggle retire form visibility when tiny retire button is clicked
+    if (tinyRetireButton) {
+        tinyRetireButton.addEventListener('click', () => {
+            console.log("Retire button clicked");
+            if (retirePrompt) {
+                retirePrompt.style.display = 'flex';
+            }
+            if (retireLadderTypeSpan) {
+                retireLadderTypeSpan.textContent = currentLadderMode;
+            }
+            
+            // Clear previous feedback
+            if (retireStatusSpan) {
+                retireStatusSpan.textContent = '';
+                retireStatusSpan.style.color = '';
+            }
+            if (retireUsernameInput) {
+                retireUsernameInput.value = '';
+            }
+        });
+    }
+    
+    // Toggle leave team form visibility when leave team button is clicked
+    if (leaveTeamButton) {
+        leaveTeamButton.addEventListener('click', () => {
+            console.log("Leave team button clicked");
+            if (leaveTeamPrompt) {
+                leaveTeamPrompt.style.display = 'flex';
+            }
+            
+            // Clear previous feedback
+            if (leaveTeamStatusSpan) {
+                leaveTeamStatusSpan.textContent = '';
+                leaveTeamStatusSpan.style.color = '';
+            }
+            if (leaveTeamUsernameInput) {
+                leaveTeamUsernameInput.value = '';
+            }
+        });
+    }
+    
+    // Toggle hiatus form visibility when hiatus button is clicked
+    if (hiatusButton) {
+        hiatusButton.addEventListener('click', () => {
+            console.log("Hiatus button clicked");
+            if (hiatusPrompt) {
+                hiatusPrompt.style.display = 'flex';
+            }
+            if (hiatusLadderTypeSpan) {
+                hiatusLadderTypeSpan.textContent = currentLadderMode;
+            }
+            
+            // Clear previous feedback
+            if (hiatusStatusSpan) {
+                hiatusStatusSpan.textContent = '';
+                hiatusStatusSpan.style.color = '';
+            }
+            if (hiatusUsernameInput) {
+                hiatusUsernameInput.value = '';
+            }
+        });
+    }
+    
+    // Handle retire form submission
+    if (retireLadderButton) {
+        retireLadderButton.addEventListener('click', async () => {
+            const username = retireUsernameInput ? retireUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (retireStatusSpan) {
+                    retireStatusSpan.textContent = 'Please enter your username to confirm.';
+                    retireStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (retireStatusSpan) {
+                    retireStatusSpan.textContent = 'You must be logged in to retire.';
+                    retireStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            retireLadderButton.disabled = true;
+            if (retireStatusSpan) {
+                retireStatusSpan.textContent = `Retiring from ${currentLadderMode} ladder...`;
+                retireStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                await retireFromLadder(username, user);
+                
+                // Success feedback
+                if (retireStatusSpan) {
+                    retireStatusSpan.textContent = `Successfully retired from ${currentLadderMode} ladder!`;
+                    retireStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide retire elements and reload page after delay
+                setTimeout(() => {
+                    if (tinyRetireButton) tinyRetireButton.style.display = 'none';
+                    if (retirePrompt) retirePrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error during retirement:", error);
+                if (retireStatusSpan) {
+                    retireStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    retireStatusSpan.style.color = '#ff6b6b';
+                }
+                retireLadderButton.disabled = false;
+            }
+        });
+    }
+    
+    // Handle leave team form submission
+    if (confirmLeaveTeamButton) {
+        confirmLeaveTeamButton.addEventListener('click', async () => {
+            const username = leaveTeamUsernameInput ? leaveTeamUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (leaveTeamStatusSpan) {
+                    leaveTeamStatusSpan.textContent = 'Please enter your username to confirm.';
+                    leaveTeamStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (leaveTeamStatusSpan) {
+                    leaveTeamStatusSpan.textContent = 'You must be logged in to leave a team.';
+                    leaveTeamStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            confirmLeaveTeamButton.disabled = true;
+            if (leaveTeamStatusSpan) {
+                leaveTeamStatusSpan.textContent = 'Leaving team...';
+                leaveTeamStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                await leaveTeam(username, user);
+                
+                // Success feedback
+                if (leaveTeamStatusSpan) {
+                    leaveTeamStatusSpan.textContent = 'Successfully left team! You remain on the ladder as a solo player.';
+                    leaveTeamStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide leave team elements and reload page after delay
+                setTimeout(() => {
+                    if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                    if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error leaving team:", error);
+                if (leaveTeamStatusSpan) {
+                    leaveTeamStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    leaveTeamStatusSpan.style.color = '#ff6b6b';
+                }
+                confirmLeaveTeamButton.disabled = false;
+            }
+        });
+    }
+    
+    // Handle hiatus form submission
+    if (confirmHiatusButton) {
+        confirmHiatusButton.addEventListener('click', async () => {
+            const username = hiatusUsernameInput ? hiatusUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = 'Please enter your username to confirm.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = 'You must be logged in to go on hiatus.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            confirmHiatusButton.disabled = true;
+            if (hiatusStatusSpan) {
+                hiatusStatusSpan.textContent = `Going on hiatus from ${currentLadderMode} ladder...`;
+                hiatusStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                await goOnHiatus(username, user);
+                
+                // Success feedback
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = `Successfully went on hiatus from ${currentLadderMode} ladder!`;
+                    hiatusStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide hiatus elements and reload page after delay
+                setTimeout(() => {
+                    if (hiatusButton) hiatusButton.style.display = 'none';
+                    if (hiatusPrompt) hiatusPrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error during hiatus:", error);
+                if (hiatusStatusSpan) {
+                    hiatusStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    hiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                confirmHiatusButton.disabled = false;
+            }
+        });
+    }
+    
+    // Create and add the unhiatus button to the DOM
+    function createUnhiatusButton() {
+        // Check if button already exists
+        let unhiatusBtn = document.getElementById('unhiatus-button');
+        if (!unhiatusBtn) {
+            unhiatusBtn = document.createElement('button');
+            unhiatusBtn.id = 'unhiatus-button';
+            unhiatusBtn.className = 'tiny-retire-button';
+            unhiatusBtn.style.display = 'none';
+            unhiatusBtn.style.background = '#27ae60';
+            unhiatusBtn.textContent = 'Return from Hiatus';
+            unhiatusBtn.style.position = 'relative';
+            unhiatusBtn.style.left = '-50px';
+            
+            // Add to container
+            const container = document.getElementById('ladder-retire-tiny-container');
+            if (container) {
+                container.appendChild(unhiatusBtn);
+            }
+        }
+        return unhiatusBtn;
+    }
+    
+    // Add this to your initialization
+    const unhiatusButton = createUnhiatusButton();
+    
+    // Handle unhiatus button click
+    if (unhiatusButton) {
+        unhiatusButton.addEventListener('click', async () => {
+            console.log("Unhiatus button clicked");
+            
+            // Get hiatus info for the user
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            try {
+                const hiatusRef = doc(db, 'playerHiatus', user.uid);
+                const hiatusDoc = await getDoc(hiatusRef);
+                
+                if (hiatusDoc.exists()) {
+                    const hiatusData = hiatusDoc.data();
+                    const ladderType = hiatusData.fromLadder || 'D1';
+                    
+                    if (unhiatusPrompt) {
+                        unhiatusPrompt.style.display = 'flex';
+                    }
+                    if (unhiatusLadderTypeSpan) {
+                        unhiatusLadderTypeSpan.textContent = ladderType;
+                    }
+                    
+                    // Clear previous feedback
+                    if (unhiatusStatusSpan) {
+                        unhiatusStatusSpan.textContent = '';
+                        unhiatusStatusSpan.style.color = '';
+                    }
+                    if (unhiatusUsernameInput) {
+                        unhiatusUsernameInput.value = '';
+                    }
+                }
+            } catch (error) {
+                console.error("Error getting hiatus data:", error);
+            }
+        });
+    }
+    
+    // Handle unhiatus form submission
+    if (confirmUnhiatusButton) {
+        confirmUnhiatusButton.addEventListener('click', async () => {
+            const username = unhiatusUsernameInput ? unhiatusUsernameInput.value.trim() : '';
+            
+            // Validation
+            if (!username) {
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = 'Please enter your username to confirm.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = 'You must be logged in to return from hiatus.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                return;
+            }
+            
+            // Disable button and show loading
+            confirmUnhiatusButton.disabled = true;
+            if (unhiatusStatusSpan) {
+                unhiatusStatusSpan.textContent = `Returning from hiatus...`;
+                unhiatusStatusSpan.style.color = '#ffa500';
+            }
+            
+            try {
+                const result = await returnFromHiatus(username, user);
+                
+                // Success feedback
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = `Successfully returned to ${result.ladder} ladder!`;
+                    unhiatusStatusSpan.style.color = '#4CAF50';
+                }
+                
+                // Hide unhiatus elements and reload page after delay
+                setTimeout(() => {
+                    if (unhiatusButton) unhiatusButton.style.display = 'none';
+                    if (unhiatusPrompt) unhiatusPrompt.style.display = 'none';
+                    
+                    // Reload the page to update all UI elements
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Error during return from hiatus:", error);
+                if (unhiatusStatusSpan) {
+                    unhiatusStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
+                    unhiatusStatusSpan.style.color = '#ff6b6b';
+                }
+                confirmUnhiatusButton.disabled = false;
+            }
+        });
+    }
+    
+    // Close retire prompt functionality
+    const closeRetireButton = document.querySelector('#ladder-retire-prompt .close-button');
+    if (closeRetireButton) {
+        closeRetireButton.addEventListener('click', () => {
+            if (retirePrompt) retirePrompt.style.display = 'none';
+        });
+    }
+    
+    // Close leave team prompt functionality
+    const closeLeaveTeamButton = document.querySelector('#leave-team-prompt .close-button');
+    if (closeLeaveTeamButton) {
+        closeLeaveTeamButton.addEventListener('click', () => {
+            if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
+        });
+    }
+    
+    // Close hiatus prompt functionality
+    const closeHiatusButton = document.querySelector('#hiatus-prompt .close-button');
+    if (closeHiatusButton) {
+        closeHiatusButton.addEventListener('click', () => {
+            if (hiatusPrompt) hiatusPrompt.style.display = 'none';
+        });
+    }
+    
+    // Close unhiatus prompt functionality
+    const closeUnhiatusButton = document.querySelector('#unhiatus-prompt .close-button');
+    if (closeUnhiatusButton) {
+        closeUnhiatusButton.addEventListener('click', () => {
+            if (unhiatusPrompt) unhiatusPrompt.style.display = 'none';
+        });
+    }
+    
+    // Close on outside click
+    if (retirePrompt) {
+        retirePrompt.addEventListener('click', (e) => {
+            if (e.target === retirePrompt) {
+                retirePrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close leave team on outside click
+    if (leaveTeamPrompt) {
+        leaveTeamPrompt.addEventListener('click', (e) => {
+            if (e.target === leaveTeamPrompt) {
+                leaveTeamPrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close on outside click for hiatus prompt
+    if (hiatusPrompt) {
+        hiatusPrompt.addEventListener('click', (e) => {
+            if (e.target === hiatusPrompt) {
+                hiatusPrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close on outside click for unhiatus prompt
+    if (unhiatusPrompt) {
+        unhiatusPrompt.addEventListener('click', (e) => {
+            if (e.target === unhiatusPrompt) {
+                unhiatusPrompt.style.display = 'none';
+            }
+        });
+    }
+    
+    // Initialize everything
+    setupRadioListeners();
+    
+    // Initial check when page loads
+    setTimeout(() => {
+        updateRetireButtonVisibility();
+    }, 1000); // Small delay to ensure auth state is loaded
+});

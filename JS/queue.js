@@ -1,1 +1,111 @@
-const a44m=a44d;(function(a,b){const k=a44d,c=a();while(!![]){try{const d=-parseInt(k(0x145))/0x1*(-parseInt(k(0x153))/0x2)+-parseInt(k(0x164))/0x3+parseInt(k(0x160))/0x4+-parseInt(k(0x146))/0x5*(-parseInt(k(0x149))/0x6)+parseInt(k(0x14a))/0x7*(parseInt(k(0x142))/0x8)+-parseInt(k(0x144))/0x9*(-parseInt(k(0x159))/0xa)+-parseInt(k(0x141))/0xb*(parseInt(k(0x15a))/0xc);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a44c,0x60bf4));const a44b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a44a=a44b(this,function(){const l=a44d;let a;try{const d=Function('return\x20(function()\x20'+l(0x15d)+');');a=d();}catch(f){a=window;}const b=a[l(0x15f)]=a['console']||{},c=[l(0x13f),'warn',l(0x155),'error',l(0x152),l(0x15b),l(0x15c)];for(let g=0x0;g<c['length'];g++){const h=a44b['constructor'][l(0x13e)]['bind'](a44b),i=c[g],j=b[i]||h;h[l(0x165)]=a44b['bind'](a44b),h['toString']=j['toString'][l(0x161)](j),b[i]=h;}});a44a();import{db}from'./firebase-config.js';import{collection,query,where,onSnapshot,updateDoc,doc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a44c(){const t=['BgfZDfvWzgf0zwq','ChjVDg90ExbL','Bg9N','zxjYB3i','mJC1u2jQDvfy','odq4uxDir2f0','Dg9eyxrL','ody0CLjzyw9J','nda5mxDPB1bgyG','mJe2mte5mg1oDfHXrG','zgLZCgXHEq','BM9Uzq','nMTiC2jqzq','mtyWntfezKjYDxe','cIaGicaGicaGpgrPDIbJBgfZCZ0ICxvLDwuTyM94iJ4kicaGicaGicaGicaGpgGYpLDHAxrPBMCGzM9YigeGz2fTztWVAdi+cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNf1zxvLlwXPC3qIpGOGicaG','cIaGicaGicaGicaGidXKAxyGy2XHC3m9iNbSyxLLCI1JyxjKiJ4kicaGicaGicaGicaGicaGidXZCgfUignSyxnZpsjWBgf5zxiTBMfTzsi+','CxvLDwuTy29UDgfPBMvY','ChvZAa','sNvZDcbUB3C','Dw5SB2fK','zgf0yq','zxHJzxb0Aw9U','mZaYDfLsEgD2','zM9YrwfJAa','Aw5MBW','AxnszwfKEq','ywrKrxzLBNrmAxn0zw5LCG','pc9ZCgfUpGOGicaGicaGicaGicaGicaGphnWyw4Gy2XHC3m9iNf1zxvLlxrPBwuIpG','ndG1nZbhwuf3CxG','nJaZmtGWr0TrDLvj','DgfIBgu','DhjHy2u','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','zMXVB3i','y29UC29Szq','nty2nZe2sw13EvfT','yMLUza','BgvUz3rO','rxjYB3iGCMvTB3zPBMCGCgXHEwvYigzYB20GCxvLDwu6','nZq0mJyXrvjgBK1S','x19WCM90B19F','C3r5Bgu','cIaGicaGicaGicaGidWVzgL2pGOGicaGicaGidWVzgL2pGOGicaG'];a44c=function(){return t;};return a44c();}const readyPlayersRef=collection(db,'readyPlayers'),activePlayersQuery=query(readyPlayersRef,where(a44m(0x156),'==',!![]));function updateQueueDisplay(a){const n=a44m,b=document['getElementById'](n(0x14d));if(!b)return;if(a[n(0x162)]===0x0){b[n(0x166)][n(0x147)]=n(0x148);return;}b[n(0x166)][n(0x147)]='block';let c=n(0x14b);a['forEach'](d=>{const o=n;c+=o(0x14c)+(d['username']||'Unknown\x20Player')+o(0x158)+formatQueueTime(d['lastUpdated'])+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}),c+=n(0x167),b['innerHTML']=c;}function a44d(a,b){const c=a44c();return a44d=function(d,e){d=d-0x13d;let f=c[d];if(a44d['yopQPk']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a44d['lLOrce']=g,a=arguments,a44d['yopQPk']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a44d['lLOrce'](f),a[i]=f):f=j,f;},a44d(a,b);}function formatQueueTime(a){const p=a44m;if(!a)return p(0x14f);const b=a['toDate']?a[p(0x143)]():new Date(a),c=new Date(),d=Math['floor']((c-b)/0xea60);if(d<0x1)return'Just\x20now';return d+'m\x20in\x20queue';}async function checkQueueTimeout(a){const q=a44m;if(!a[q(0x13d)])return;const b=a['lastUpdated']['toDate']?a[q(0x13d)][q(0x143)]():new Date(a[q(0x13d)]),c=new Date(),d=Math[q(0x15e)]((c-b)/0xea60);if(d>=0x1e)try{const e=doc(db,'readyPlayers',a['id']);await updateDoc(e,{'isReady':![]});}catch(f){console[q(0x140)](q(0x163),f);}}const unsubscribe=onSnapshot(readyPlayersRef,a=>{const r=a44m,b=[];a[r(0x154)](c=>{const s=r,d=c[s(0x151)]();if(d[s(0x156)]===!![]){const e={'id':c['id'],'username':d['username'],'lastUpdated':d[s(0x13d)]||new Date()};b[s(0x14e)](e),checkQueueTimeout(e);}}),updateQueueDisplay(b);},a=>{console['error']('Error\x20in\x20queue\x20listener:',a);});window[a44m(0x157)](a44m(0x150),()=>{unsubscribe();});
+import { db } from './firebase-config.js';
+import { collection, query, where, onSnapshot, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+// Get reference to readyPlayers collection
+const readyPlayersRef = collection(db, 'readyPlayers');
+
+// Create query for active players
+const activePlayersQuery = query(readyPlayersRef, where('isReady', '==', true));
+
+// Function to update queue display
+function updateQueueDisplay(players) {
+    const queueContainer = document.getElementById('queue-container');
+    
+    if (!queueContainer) {
+        return;
+    }
+
+    // Hide the entire queue section if no players are ready
+    if (players.length === 0) {
+        queueContainer.style.display = 'none';
+        return;
+    }
+
+    // Show the queue section if there are players
+    queueContainer.style.display = 'block';
+    
+    let queueHTML = `
+        <div class="queue-box">
+            <h2>Waiting for a game</h2>
+            <div class="queue-list">
+    `;
+
+    players.forEach(player => {
+        queueHTML += `
+            <div class="player-card">
+                <span class="player-name">${player.username || 'Unknown Player'}</span>
+                <span class="queue-time">${formatQueueTime(player.lastUpdated)}</span>
+            </div>
+        `;
+    });
+
+    queueHTML += `
+            </div>
+        </div>
+    `;
+
+    queueContainer.innerHTML = queueHTML;
+}
+
+// Helper function to format queue time
+function formatQueueTime(timestamp) {
+    if (!timestamp) return 'Just now';
+    
+    // Handle both Firestore Timestamp and regular Date objects
+    const queueTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const minutesInQueue = Math.floor((now - queueTime) / 60000);
+    
+    if (minutesInQueue < 1) return 'Just now';
+    return `${minutesInQueue}m in queue`;
+}
+
+// Helper function to check and update queue timeout
+async function checkQueueTimeout(player) {
+    if (!player.lastUpdated) return;
+    
+    const queueTime = player.lastUpdated.toDate ? player.lastUpdated.toDate() : new Date(player.lastUpdated);
+    const now = new Date();
+    const minutesInQueue = Math.floor((now - queueTime) / 60000);
+    
+    if (minutesInQueue >= 30) {
+        try {
+            const playerRef = doc(db, 'readyPlayers', player.id);
+            await updateDoc(playerRef, {
+                isReady: false
+            });
+        } catch (error) {
+            console.error('Error removing player from queue:', error);
+        }
+    }
+}
+
+// Set up real-time listener
+const unsubscribe = onSnapshot(readyPlayersRef, 
+    (snapshot) => {
+        const activePlayers = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            if (data.isReady === true) {
+                const player = {
+                    id: doc.id,
+                    username: data.username,
+                    lastUpdated: data.lastUpdated || new Date()
+                };
+                activePlayers.push(player);
+                checkQueueTimeout(player); // Check timeout for each active player
+            }
+        });
+
+        updateQueueDisplay(activePlayers);
+    },
+    (error) => {
+        console.error('Error in queue listener:', error);
+    }
+);
+
+// Cleanup listener on page unload
+window.addEventListener('unload', () => {
+    unsubscribe();
+});

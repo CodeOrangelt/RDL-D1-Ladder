@@ -1,1 +1,367 @@
-(function(a,b){const w=a12d,c=a();while(!![]){try{const d=-parseInt(w(0x146))/0x1+parseInt(w(0x14e))/0x2*(parseInt(w(0x153))/0x3)+parseInt(w(0x156))/0x4*(parseInt(w(0x145))/0x5)+-parseInt(w(0x12c))/0x6*(parseInt(w(0x127))/0x7)+-parseInt(w(0x144))/0x8*(parseInt(w(0x143))/0x9)+parseInt(w(0x16d))/0xa*(-parseInt(w(0x13f))/0xb)+parseInt(w(0x171))/0xc;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a12c,0x1bc75));const a12b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a12a=a12b(this,function(){const x=a12d;let a;try{const d=Function(x(0x149)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[x(0x142)]=a['console']||{},c=[x(0x14d),'warn',x(0x15a),'error',x(0x159),'table',x(0x126)];for(let g=0x0;g<c[x(0x15d)];g++){const h=a12b[x(0x150)][x(0x175)][x(0x135)](a12b),i=c[g],j=b[i]||h;h[x(0x12a)]=a12b['bind'](a12b),h['toString']=j[x(0x157)][x(0x135)](j),b[i]=h;}});a12a();import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{doc,getDoc,collection,query,where,getDocs,limit}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db}from'./firebase-config.js';import{isAdmin}from'./admin-check.js';function a12d(a,b){const c=a12c();return a12d=function(d,e){d=d-0x122;let f=c[d];if(a12d['jfWhxN']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a12d['ZvJqzY']=g,a=arguments,a12d['jfWhxN']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a12d['ZvJqzY'](f),a[i]=f):f=j,f;},a12d(a,b);}const ADMIN_EMAILS=['admin@ladder.com','Brian2af@outlook.com'],userCache={'uid':null,'username':null,'isAdmin':![],'hasCheckedCollections':![],'lastChecked':0x0,'role':null},invitationCache={'lastCheck':0x0,'pendingCount':0x0,'checkInterval':0x493e0};function updateInboxNotification(a){const y=a12d,b=document[y(0x16b)](y(0x122));b&&(a>0x0?(b['style'][y(0x173)]=y(0x137),b[y(0x147)]=a>0x9?'9+':a):b[y(0x132)][y(0x173)]=y(0x125));}async function checkPendingInvitationsForCurrentUser(a){const z=a12d;try{const b=Date[z(0x164)]();if(b-invitationCache['lastCheck']<invitationCache[z(0x161)])return updateInboxNotification(invitationCache[z(0x13b)]),invitationCache['pendingCount'];invitationCache['lastCheck']=b;const c=collection(db,'gameInvitations'),d=query(c,where(z(0x12d),'==',a),where('status','==',z(0x12b)),limit(0x5)),e=await getDocs(d),f=e['size'];return invitationCache['pendingCount']=f,updateInboxNotification(f),f;}catch(g){return console[z(0x14a)]('Could\x20not\x20check\x20pending\x20invitations\x20for\x20current\x20user:',g),0x0;}}function updateAuthSectionImmediate(a,b=![]){const A=a12d,c=document['getElementById'](A(0x155));if(!c)return;if(a&&b)document['querySelectorAll']('.admin-only')[A(0x128)](d=>{const B=A;d['style'][B(0x173)]=B(0x14f);});else!a&&document['querySelectorAll']('.admin-only')['forEach'](d=>{const C=A;d[C(0x132)][C(0x173)]='none';});if(a){const d=userCache['username']||(a['email']?a['email']['split']('@')[0x0]:A(0x141)),e=userCache[A(0x15b)]?'\x20('+userCache[A(0x15b)]+')':b?'\x20(Admin)':'';c['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22nav-dropdown\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22#\x22\x20class=\x22nav-username\x22>'+d+e+'</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22nav-dropdown-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(d)+'\x22>Profile</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22./inbox.html\x22\x20class=\x22nav-notification\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Inbox\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20id=\x22inbox-notification\x22\x20class=\x22notification-dot\x22></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22members.html\x22>Members</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22./redeem.html\x22><i\x20class=\x22fas\x20fa-gift\x22></i>\x20Redeem</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22#\x22\x20id=\x22logout-link\x22>Sign\x20Out</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';const f=document['getElementById'](A(0x15e));f&&f[A(0x174)]('click',g=>{const D=A;g[D(0x154)]();const h=getAuth();updateAuthSectionImmediate(null),h[D(0x16f)]()['catch'](i=>{const E=D;console['error'](E(0x12e),i);});}),a['uid']&&setTimeout(()=>{checkPendingInvitationsForCurrentUser(a['uid']);},0x3e8);}else c['innerHTML']=A(0x14b);}async function checkAdminRoles(a){const F=a12d;if(!a||!a[F(0x13d)])return{'isAdmin':![],'role':null};try{console['log']('Checking\x20roles\x20for\x20user:\x20'+a[F(0x13d)]);const b=[F(0x151),F(0x138),'playersD3',F(0x139),'userProfiles'],c=['council',F(0x129),F(0x16e),'admin'];for(const d of b){try{const e=doc(db,d,a[F(0x16a)]),f=await getDoc(e);if(f[F(0x170)]()){const g=f[F(0x168)]();console[F(0x14d)]('Found\x20user\x20in\x20'+d+'\x20by\x20UID:',g);let h=(g[F(0x152)]||g['role']||'')['toLowerCase'](),i=g['roleName']||g[F(0x15b)]||'';if(h&&c[F(0x12f)](h)){console[F(0x14d)](F(0x133)+h+'\x20in\x20'+d);const j=i[F(0x148)]('\x20')['map'](k=>k['charAt'](0x0)['toUpperCase']()+k[F(0x15f)](0x1)[F(0x167)]())['join']('\x20');return{'isAdmin':!![],'role':j};}}}catch(k){console[F(0x140)]('Error\x20checking\x20'+d+F(0x162),k);}}for(const l of b){try{const m=collection(db,l);let n=query(m,where(F(0x13d),'==',a[F(0x13d)])),o=await getDocs(n);o['empty']&&(n=query(m,where('email','==',a[F(0x13d)][F(0x167)]())),o=await getDocs(n));if(!o['empty']){const p=o['docs'][0x0]['data']();console[F(0x14d)]('Found\x20user\x20in\x20'+l+F(0x13e),p);let r=(p[F(0x152)]||p[F(0x15b)]||'')[F(0x167)](),s=p['roleName']||p[F(0x15b)]||'';if(r&&c['includes'](r)){console[F(0x14d)](F(0x133)+r+F(0x13c)+l);const t=s['split']('\x20')[F(0x134)](u=>u['charAt'](0x0)['toUpperCase']()+u[F(0x15f)](0x1)['toLowerCase']())[F(0x160)]('\x20');return{'isAdmin':!![],'role':t};}}}catch(u){console['error']('Error\x20checking\x20'+l+F(0x13e),u);}}return console['log'](F(0x131)),{'isAdmin':![],'role':null};}catch(v){return console['error'](F(0x13a),v),{'isAdmin':![],'role':null};}}function a12c(){const L=['mtm4ntCZsNrxtLDT','Dgv4DenVBNrLBNq','C3bSAxq','CMv0DxjUicHMDw5JDgLVBIGPia','D2fYBG','pgeGAhjLzJ0IBg9NAw4UAhrTBciGy2XHC3m9iMXVz2LUlwXPBMSIpKXVz2LUpc9HpG','DxnLCLbYB2zPBgvZ','Bg9N','ntH2ug5Jt3i','yMXVy2S','y29UC3rYDwn0B3i','CgXHEwvYCW','CM9Szu5HBwu','mJuYovPfzePyEa','ChjLDMvUDerLzMf1Bhq','yxv0Ac1Zzwn0Aw9U','mtiYmtK2wxr4DKzd','Dg9tDhjPBMC','AgLKzgvU','zxHJzxb0Aw9U','Aw5MBW','CM9Szq','BgfZDenOzwnRzwq','BgvUz3rO','Bg9NB3v0lwXPBMS','C2XPy2u','AM9PBG','y2HLy2TjBNrLCNzHBa','igj5ifvjrdO','y2XVC2vZDa','BM93','Axnbzg1PBG','CgXHEwvYC0nurG','Dg9mB3DLCKnHC2u','zgf0yq','y3vYCMvUDfvZzxi','DwLK','z2v0rwXLBwvUDej5swq','DMLZAwjPBgL0EwnOyw5Nzq','mtbdCwXWsgS','B3DUzxi','C2LNBK91Da','zxHPC3rZ','ndCYnZmXnKTZAgnjBq','DgHLBG','zgLZCgXHEq','ywrKrxzLBNrmAxn0zw5LCG','ChjVDg90ExbL','Aw5IB3GTBM90AwzPy2f0Aw9U','DxnLCM5HBwu','AgfZq2HLy2TLzenVBgXLy3rPB25Z','BM9Uzq','DhjHy2u','mtr0q01Wywe','zM9YrwfJAa','y3jLyxrPDMuGBgvHza','x19WCM90B19F','CgvUzgLUzW','ndmWnZK0D3HICvDJ','Dg9vC2vYswq','rxjYB3iGC2LNBMLUzYbVDxq6','Aw5JBhvKzxm','lMfKBwLUlw9UBhK','tM8GywrTAw4GCM9SzxmGzM91BMqGzM9YihvZzxi','C3r5Bgu','rM91BMqGywrTAw4GCM9SztOG','BwfW','yMLUza','zMLSDgvY','Aw5SAw5LlwjSB2nR','CgXHEwvYC0qY','BM9UugfYDgLJAxbHBNrZ','rxjYB3iGAw4Gy2HLy2Tbzg1PBLjVBgvZoG','CgvUzgLUz0nVDw50','igLUia','zw1HAwW','igj5igvTywLSoG','mtaYntuZu1rdrK1h','zxjYB3i','vxnLCG','y29UC29Szq','ovHIz0vmuG','mZq5mZeYEuDruK9b','nvnluMjxvW'];a12c=function(){return L;};return a12c();}async function updateAuthSection(a){const G=a12d,b=a&&isAdmin(a[G(0x13d)]);updateAuthSectionImmediate(a,b);if(!a){userCache[G(0x16a)]=null,userCache[G(0x123)]=null,userCache[G(0x165)]=![],userCache['hasCheckedCollections']=![],userCache[G(0x15b)]=null;return;}const c=Date[G(0x164)]();if(a['uid']===userCache[G(0x16a)]&&userCache[G(0x124)]&&c-userCache['lastChecked']<0x493e0)return;try{userCache['uid']=a[G(0x16a)],userCache[G(0x15c)]=c;const d=isAdmin(a[G(0x13d)]);userCache[G(0x165)]=d;if(!d){const {isAdmin:j,role:k}=await checkAdminRoles(a);userCache['isAdmin']=j,userCache['role']=k,j&&(document['querySelectorAll'](G(0x130))['forEach'](l=>{l['style']['display']='block';}),updateAuthSectionImmediate(a,!![]));}const e=['players',G(0x138),'playersD3','playersDuos',G(0x166),'nonParticipants',G(0x14c)],f=e[G(0x134)](l=>getDoc(doc(db,l,a['uid']))[G(0x172)](m=>m['exists']()?{'collection':l,'data':m[G(0x168)]()}:null)['catch'](()=>null)),g=await Promise['all'](f),h=g[G(0x136)](l=>l!==null);let i=null;for(const l of h){if(l['data'][G(0x123)]){i=l['data'][G(0x123)];break;}}userCache[G(0x123)]=i||(a[G(0x13d)]?a[G(0x13d)][G(0x148)]('@')[0x0]:'User'),userCache[G(0x124)]=!![],updateAuthSectionImmediate(a,userCache[G(0x165)]),setTimeout(()=>{const H=G;checkPendingInvitationsForCurrentUser(a[H(0x16a)]);},0x1f4);}catch(m){console[G(0x140)]('Error\x20in\x20full\x20auth\x20update:',m);}}document['addEventListener']('DOMContentLoaded',()=>{const I=a12d,a=getAuth();onAuthStateChanged(a,async b=>{await updateAuthSection(b),b&&checkPendingInvitationsForCurrentUser(b['uid']);}),document['addEventListener'](I(0x16c),()=>{const J=I;!document[J(0x158)]&&a['currentUser']&&checkPendingInvitationsForCurrentUser(a['currentUser'][J(0x16a)]);}),document['addEventListener']('click',b=>{const K=I;b['target'][K(0x163)]('a[href]')&&a['currentUser']&&checkPendingInvitationsForCurrentUser(a[K(0x169)][K(0x16a)]);});});export{updateAuthSection};
+import { 
+    getAuth, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    doc, 
+    getDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs,
+    limit  // Add this missing import
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+import { isAdmin } from './admin-check.js';
+
+// Admin emails (quick access)
+const ADMIN_EMAILS = ['admin@ladder.com', 'Brian2af@outlook.com'];
+
+// Cache for auth state to avoid unnecessary checks
+const userCache = {
+    uid: null,
+    username: null,
+    isAdmin: false,
+    hasCheckedCollections: false,
+    lastChecked: 0,
+    role: null // Add this line to store the user's role
+};
+
+// Remove the setInterval completely and replace with event-driven checks
+
+// Add caching for invitation checks
+const invitationCache = {
+    lastCheck: 0,
+    pendingCount: 0,
+    checkInterval: 300000 // 5 minutes cache
+};
+
+// Add this missing function
+function updateInboxNotification(pendingCount) {
+    const inboxNotification = document.getElementById('inbox-notification');
+    if (inboxNotification) {
+        if (pendingCount > 0) {
+            inboxNotification.style.display = 'inline-block';
+            inboxNotification.textContent = pendingCount > 9 ? '9+' : pendingCount;
+        } else {
+            inboxNotification.style.display = 'none';
+        }
+    }
+}
+
+// Update the invitation checking function with caching
+async function checkPendingInvitationsForCurrentUser(userId) {
+    try {
+        const now = Date.now();
+        
+        // Use cache if recent
+        if (now - invitationCache.lastCheck < invitationCache.checkInterval) {
+            updateInboxNotification(invitationCache.pendingCount);
+            return invitationCache.pendingCount;
+        }
+        
+        invitationCache.lastCheck = now;
+        
+        const invitationsRef = collection(db, 'gameInvitations');
+        const q = query(
+            invitationsRef,
+            where('toUserId', '==', userId),
+            where('status', '==', 'pending'),
+            limit(5) // Only need count
+        );
+        
+        const snapshot = await getDocs(q);
+        const pendingCount = snapshot.size;
+        
+        // Update cache
+        invitationCache.pendingCount = pendingCount;
+        
+        updateInboxNotification(pendingCount);
+        return pendingCount;
+        
+    } catch (error) {
+        console.warn('Could not check pending invitations for current user:', error);
+        return 0;
+    }
+}
+
+// Modify updateAuthSectionImmediate to display the role instead of just "(Admin)"
+function updateAuthSectionImmediate(user, isAdmin = false) {
+    const authSection = document.getElementById('auth-section');
+    if (!authSection) return;
+    
+    // Show admin links immediately if we know they're an admin
+    if (user && isAdmin) {
+        document.querySelectorAll('.admin-only').forEach(link => {
+            link.style.display = 'block';
+        });
+    } else if (!user) {
+        document.querySelectorAll('.admin-only').forEach(link => {
+            link.style.display = 'none';
+        });
+    }
+    
+    // Update auth section UI
+    if (user) {
+        // Use cached username or email initially
+        const displayName = userCache.username || 
+                           (user.email ? user.email.split('@')[0] : 'User');
+        
+        // Use the specific role if available, otherwise use "(Admin)" if they're an admin
+        const roleDisplay = userCache.role ? ` (${userCache.role})` : (isAdmin ? ' (Admin)' : '');
+        
+        authSection.innerHTML = `
+            <div class="nav-dropdown">
+                <a href="#" class="nav-username">${displayName}${roleDisplay}</a>
+                <div class="nav-dropdown-content">
+                    <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
+                    <a href="./inbox.html" class="nav-notification">
+                        Inbox 
+                        <span id="inbox-notification" class="notification-dot"></span>
+                    </a>
+                    <a href="members.html">Members</a>
+                    <a href="./redeem.html"><i class="fas fa-gift"></i> Redeem</a>
+                    <a href="#" id="logout-link">Sign Out</a>
+                </div>
+            </div>
+        `;
+        
+        // Set up logout handler
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const auth = getAuth();
+                
+                // Don't reload - just update UI first
+                updateAuthSectionImmediate(null);
+                
+                // Then sign out
+                auth.signOut().catch(error => {
+                    console.error('Error signing out:', error);
+                });
+            });
+        }
+        
+        // Check for pending invitations after creating the UI
+        if (user.uid) {
+            setTimeout(() => {
+                checkPendingInvitationsForCurrentUser(user.uid);
+            }, 1000);
+        }
+        
+    } else {
+        // No user - always show login
+        authSection.innerHTML = `<a href="login.html" class="login-link">Login</a>`;
+    }
+}
+
+// Update the checkAdminRoles function to return the role, not just a boolean
+async function checkAdminRoles(user) {
+    if (!user || !user.email) return { isAdmin: false, role: null };
+    
+    try {
+        // Set up logging for debugging
+        console.log(`Checking roles for user: ${user.email}`);
+        
+        const collections = ['players', 'playersD2', 'playersD3', 'nonParticipants', 'userProfiles'];
+        const adminRoles = ['council', 'creative lead', 'owner', 'admin'];
+        
+        // 1. First try direct user ID lookup
+        for (const collectionName of collections) {
+            try {
+                const docRef = doc(db, collectionName, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    console.log(`Found user in ${collectionName} by UID:`, userData);
+                    
+                    let roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    let originalRoleName = userData.roleName || userData.role || '';
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        console.log(`Found admin role: ${roleName} in ${collectionName}`);
+                        
+                        const displayRole = originalRoleName.split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                        
+                        return { isAdmin: true, role: displayRole };
+                    }
+                }
+            } catch (err) {
+                console.error(`Error checking ${collectionName} by UID:`, err);
+            }
+        }
+        
+        // 2. Then try email lookup (case insensitive)
+        for (const collectionName of collections) {
+            try {
+                const colRef = collection(db, collectionName);
+                // First try exact match
+                let q = query(colRef, where('email', '==', user.email));
+                let snapshot = await getDocs(q);
+                
+                // If no results, try lowercase
+                if (snapshot.empty) {
+                    q = query(colRef, where('email', '==', user.email.toLowerCase()));
+                    snapshot = await getDocs(q);
+                }
+                
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    console.log(`Found user in ${collectionName} by email:`, userData);
+                    
+                    let roleName = (userData.roleName || userData.role || '').toLowerCase();
+                    let originalRoleName = userData.roleName || userData.role || '';
+                    
+                    if (roleName && adminRoles.includes(roleName)) {
+                        console.log(`Found admin role: ${roleName} in ${collectionName}`);
+                        
+                        const displayRole = originalRoleName.split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                        
+                        return { isAdmin: true, role: displayRole };
+                    }
+                }
+            } catch (err) {
+                console.error(`Error checking ${collectionName} by email:`, err);
+            }
+        }
+        
+        console.log("No admin roles found for user");
+        return { isAdmin: false, role: null };
+    } catch (error) {
+        console.error('Error in checkAdminRoles:', error);
+        return { isAdmin: false, role: null };
+    }
+}
+
+// Update the main updateAuthSection function to use the new role info
+async function updateAuthSection(user) {
+    // Update UI immediately with what we know
+    const quickAdminCheck = user && isAdmin(user.email);
+    updateAuthSectionImmediate(user, quickAdminCheck);
+    
+    // Exit early if no user
+    if (!user) {
+        userCache.uid = null;
+        userCache.username = null;
+        userCache.isAdmin = false;
+        userCache.hasCheckedCollections = false;
+        userCache.role = null; // Reset role
+        return;
+    }
+    
+    // If user hasn't changed and we've checked collections recently, don't recheck
+    const now = Date.now();
+    if (user.uid === userCache.uid && 
+        userCache.hasCheckedCollections && 
+        now - userCache.lastChecked < 300000) { // 5 minutes
+        return;
+    }
+    
+    try {
+        // Update cache with current user ID
+        userCache.uid = user.uid;
+        userCache.lastChecked = now;
+        
+        // Check admin status first (fastest)
+        const isUserAdmin = isAdmin(user.email);
+        userCache.isAdmin = isUserAdmin;
+        
+        if (!isUserAdmin) {
+            // Check for admin roles if not already an admin by email
+            const { isAdmin: hasAdminRole, role } = await checkAdminRoles(user);
+            userCache.isAdmin = hasAdminRole;
+            userCache.role = role;
+            
+            // Update admin links if role check found admin privileges
+            if (hasAdminRole) {
+                document.querySelectorAll('.admin-only').forEach(link => {
+                    link.style.display = 'block';
+                });
+                
+                // Update the UI immediately with the role
+                updateAuthSectionImmediate(user, true);
+            }
+        }
+        
+        // Check collections in parallel for username
+        const collections = [
+            'players',
+            'playersD2', 
+            'playersD3', 
+            'playersDuos', 
+            'playersCTF',
+            'nonParticipants',
+            'userProfiles' // Check userProfiles too for username
+        ];
+        
+        const checkPromises = collections.map(collection => 
+            getDoc(doc(db, collection, user.uid))
+                .then(doc => doc.exists() ? { collection, data: doc.data() } : null)
+                .catch(() => null)
+        );
+        
+        const results = await Promise.all(checkPromises);
+        const validResults = results.filter(result => result !== null);
+        
+        // Find username from results
+        let username = null;
+        for (const result of validResults) {
+            if (result.data.username) {
+                username = result.data.username;
+                break;
+            }
+        }
+        
+        // Update cache
+        userCache.username = username || (user.email ? user.email.split('@')[0] : 'User');
+        userCache.hasCheckedCollections = true;
+        
+        // Final UI update with complete info
+        updateAuthSectionImmediate(user, userCache.isAdmin);
+        
+        // Check for pending invitations with the updated UI
+        setTimeout(() => {
+            checkPendingInvitationsForCurrentUser(user.uid);
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error in full auth update:', error);
+    }
+}
+
+// Initialize auth state listener
+document.addEventListener('DOMContentLoaded', () => {
+    const auth = getAuth();
+    
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        await updateAuthSection(user);
+        
+        // Only check invitations once on auth state change
+        if (user) {
+            checkPendingInvitationsForCurrentUser(user.uid);
+        }
+    });
+    
+    // Check invitations when page becomes visible (user returns to tab)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && auth.currentUser) {
+            checkPendingInvitationsForCurrentUser(auth.currentUser.uid);
+        }
+    });
+    
+    // Check invitations when user clicks on navigation (page navigation)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('a[href]') && auth.currentUser) {
+            checkPendingInvitationsForCurrentUser(auth.currentUser.uid);
+        }
+    });
+});
+
+export { updateAuthSection };

@@ -1,1 +1,1308 @@
-const a34u=a34d;(function(a,b){const r=a34d,c=a();while(!![]){try{const d=-parseInt(r(0xe7))/0x1+parseInt(r(0x10a))/0x2+-parseInt(r(0xf7))/0x3+-parseInt(r(0xa4))/0x4*(parseInt(r(0xdb))/0x5)+-parseInt(r(0x150))/0x6+-parseInt(r(0xcd))/0x7*(-parseInt(r(0xd1))/0x8)+parseInt(r(0x163))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a34c,0x52ba3));const a34b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a34a=a34b(this,function(){const t=a34d,a=function(){const s=a34d;let f;try{f=Function(s(0xb3)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b[t(0x138)]=b[t(0x138)]||{},d=['log',t(0xa2),'info','error',t(0x13b),'table',t(0x144)];for(let e=0x0;e<d[t(0x126)];e++){const f=a34b[t(0x122)][t(0xb9)][t(0x13a)](a34b),g=d[e],h=c[g]||f;f['__proto__']=a34b[t(0x13a)](a34b),f['toString']=h['toString']['bind'](h),c[g]=f;}});a34a();import{doc,getDoc,getDocs,updateDoc,query,collection,where,orderBy,limit,serverTimestamp,addDoc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{auth,db}from'./firebase-config.js';const TIER_SYSTEM={'CHAMPION':{'min':0x5a,'color':'#50C878','name':'Masters'},'ELITE':{'min':0x50,'color':'#50C878','name':'Emerald'},'VETERAN':{'min':0x46,'color':a34u(0x140),'name':'Gold'},'SKILLED':{'min':0x3c,'color':a34u(0x156),'name':a34u(0xe1)},'ROOKIE':{'min':0x0,'color':a34u(0xff),'name':'Bronze'}},MIN_MATCHES_FOR_RANKING=0x6;function calculateTeamTier(a){const v=a34u;if(a>=TIER_SYSTEM['CHAMPION'][v(0xd0)])return TIER_SYSTEM[v(0x147)];if(a>=TIER_SYSTEM['ELITE'][v(0xd0)])return TIER_SYSTEM[v(0xce)];if(a>=TIER_SYSTEM['VETERAN']['min'])return TIER_SYSTEM[v(0x9b)];if(a>=TIER_SYSTEM['SKILLED'][v(0xd0)])return TIER_SYSTEM[v(0x108)];return TIER_SYSTEM['ROOKIE'];}async function isCurrentUserAdmin(){const w=a34u,a=auth['currentUser'];if(!a)return![];try{const b=doc(db,'userProfiles',a['uid']),c=await getDoc(b);return c['exists']()&&c[w(0xa5)]()[w(0x102)]===!![];}catch(d){return console[w(0x128)](w(0x15c),d),![];}}function calculateTierWinRates(a,b){const x=a34u,c={'M':{'wins':0x0,'total':0x0},'E':{'wins':0x0,'total':0x0},'G':{'wins':0x0,'total':0x0},'S':{'wins':0x0,'total':0x0},'B':{'wins':0x0,'total':0x0}};return b[x(0xa8)](d=>{const y=x,e=d['winnerUsername']===a,f=d[y(0xb4)]===a;if(e||f){const g=e?d['loserUsername']:d['winnerUsername'],h=getPlayerWinRateAtTime(g,d[y(0x114)],b),i=calculateTeamTier(h);let j='B';if(i['name']==='Masters')j='M';else{if(i[y(0x164)]===y(0x10e))j='E';else{if(i[y(0x164)]===y(0xfa))j='G';else{if(i['name']==='Silver')j='S';}}}c[j][y(0xd6)]++,e&&c[j][y(0xc0)]++;}}),c;}function getPlayerWinRateAtTime(a,b,c){let d=0x0,e=0x0;return c['forEach'](f=>{const z=a34d;if(f['createdAt']<=b){if(f[z(0xdc)]===a)d++,e++;else f['loserUsername']===a&&e++;}}),e>0x0?d/e*0x64:0x0;}function formatTierWinRates(a){const A=a34u,b=['M','E','G','S','B'],c=[];return b[A(0xa8)](d=>{const B=A,e=a[d];if(e[B(0xd6)]>0x0){const f=(e[B(0xc0)]/e[B(0xd6)]*0x64)[B(0xb8)](0x0);c['push'](d+':'+f+'%');}}),c['length']>0x0?c['join']('\x20'):'No\x20data';}async function fetchBatchMatchStatsDuos(a){const C=a34u,b=new Map();try{a[C(0xa8)](f=>{b['set'](f,{'totalMatches':0x0,'wins':0x0,'losses':0x0,'totalKills':0x0,'totalDeaths':0x0,'totalSuicides':0x0,'kda':0x0,'winRate':0x0,'tierWinRates':{'M':{'wins':0x0,'total':0x0},'E':{'wins':0x0,'total':0x0},'G':{'wins':0x0,'total':0x0},'S':{'wins':0x0,'total':0x0},'B':{'wins':0x0,'total':0x0}}});});const c=collection(db,'approvedMatchesDuos'),d=await getDocs(c),e=[];d[C(0xa8)](f=>{const D=C,g={'id':f['id'],...f['data']()};e[D(0x104)](g);}),e[C(0x129)]((f,g)=>{const E=C,h=f[E(0x114)]?.[E(0xe3)]?.()||new Date(f['createdAt'])||new Date(0x0),i=g['createdAt']?.['toDate']?.()||new Date(g[E(0x114)])||new Date(0x0);return h-i;}),e[C(0xa8)](f=>{const F=C,g=f['winnerUsername'],h=f[F(0xb4)];if(a['includes'](g)){const i=b['get'](g);i['totalMatches']++,i[F(0xc0)]++,i[F(0xfb)]+=f['winnerKills']||0x0,i[F(0x151)]+=f[F(0x139)]||0x0,i['totalSuicides']+=f[F(0x15e)]||0x0;}if(a[F(0x115)](h)){const j=b['get'](h);j[F(0x136)]++,j['losses']++,j['totalKills']+=f[F(0x113)]||0x0,j[F(0x151)]+=f['loserDeaths']||0x0,j[F(0x97)]+=f['loserSuicides']||0x0;}}),a['forEach'](f=>{const G=C,g=b['get'](f);g['tierWinRates']=calculateTierWinRates(f,e),g['kda']=g[G(0x151)]>0x0?(g[G(0xfb)]/g['totalDeaths'])['toFixed'](0x2):g['totalKills'][G(0xb8)](0x2),g[G(0xcc)]=g[G(0x136)]>0x0?(g[G(0xc0)]/g[G(0x136)]*0x64)[G(0xb8)](0x1):0x0;});}catch(f){console[C(0x128)](C(0x146),f);}return b;}async function displayLadderDuos(a=![]){const H=a34u,b=document[H(0x152)]('#ladder-duos\x20tbody');if(!b){console['error']('Duos\x20Ladder\x20table\x20body\x20not\x20found');return;}b['innerHTML']=H(0xfd);try{const c=collection(db,H(0xac)),d=await getDocs(c),e=[];d[H(0xa8)](o=>{const I=H,p=o[I(0xa5)]();p['username']&&e[I(0x104)]({...p,'id':o['id'],'tierValue':p['tierValue']||0x3e8,'position':p[I(0x141)]||Number[I(0x98)],'hasTeam':p[I(0x103)]||![],'teamId':p[I(0x143)]||null,'teamName':p[I(0xbd)]||null,'teammate':p['teammate']||null,'teamColor':p[I(0xec)]||null});});const f=collection(db,H(0x154)),g=await getDocs(f),h=new Map();g[H(0xa8)](o=>{const J=H,p=o[J(0xa5)]();p[J(0xd7)]&&h[J(0x166)](p['username'][J(0xf1)](),p);}),e[H(0xa8)](o=>{const K=H,p=o[K(0xd7)][K(0xf1)]();if(h[K(0xf4)](p)){const q=h['get'](p);q[K(0x157)]&&(o[K(0x157)]=q['country']);}});const i=e[H(0x15f)](o=>o['username']),j=await fetchBatchMatchStatsDuos(i),k=new Map(),l=[],m=[];e['forEach'](o=>{const L=H,p=j[L(0xc2)](o['username'])||{'totalMatches':0x0,'wins':0x0,'losses':0x0,'kda':0x0,'winRate':0x0,'totalKills':0x0,'totalDeaths':0x0};o['individualStats']=p;if(o['hasTeam']&&o[L(0x143)]){!k[L(0xf4)](o[L(0x143)])&&k[L(0x166)](o['teamId'],{'teamId':o['teamId'],'teamName':o[L(0xbd)],'teamColor':o['teamColor'],'players':[],'combinedMatches':0x0,'combinedWins':0x0,'combinedLosses':0x0,'combinedKills':0x0,'combinedDeaths':0x0,'tierValue':0x0,'position':Math[L(0xd0)](o['position']||0x3e7,k['get'](o[L(0x143)])?.[L(0x141)]||0x3e7)});const q=k['get'](o['teamId']);q['players']['push'](o),q['combinedMatches']+=p['totalMatches'],q['combinedWins']+=p['wins'],q[L(0xd8)]+=p[L(0x121)],q[L(0x123)]+=p['totalKills'],q[L(0x107)]+=p[L(0x151)],q['tierValue']+=o['tierValue'],!q['teamColor']&&o[L(0xec)]&&(q['teamColor']=o[L(0xec)]);}else p[L(0x136)]>=MIN_MATCHES_FOR_RANKING?(o['winRate']=parseFloat(p['winRate'])||0x0,o[L(0x145)]=p,l[L(0x104)](o)):(o[L(0xcc)]=parseFloat(p['winRate'])||0x0,o['matchStats']=p,m['push'](o));});const n=Array['from'](k[H(0xd4)]())[H(0x15f)](o=>{const M=H;return o['winRate']=o[M(0x12a)]>0x0?o['combinedWins']/o['combinedMatches']*0x64:0x0,o[M(0xa3)]=o[M(0x168)]/o['players'][M(0x126)],o['combinedKDA']=o['combinedDeaths']>0x0?o[M(0x123)]/o['combinedDeaths']:o['combinedKills'],o;});n[H(0x129)]((o,p)=>{const N=H;if(Math['abs'](o['winRate']-p[N(0xcc)])>0.1)return p['winRate']-o[N(0xcc)];return p[N(0xa3)]-o[N(0xa3)];}),l['sort']((o,p)=>{const O=H;if(Math[O(0xbf)](o['winRate']-p[O(0xcc)])>0.1)return p[O(0xcc)]-o['winRate'];return p['matchStats'][O(0x136)]-o[O(0x145)][O(0x136)];}),m['sort']((o,p)=>{const P=H;return p['matchStats'][P(0x136)]-o[P(0x145)][P(0x136)];}),await updateLadderDisplayDuos({'teams':n,'rankedSoloPlayers':l,'unrankedSoloPlayers':m}),setTimeout(()=>{setupTeamInvitationSystem();},0x64);}catch(o){console[H(0x128)]('Error\x20loading\x20Duos\x20ladder:',o),b['innerHTML']=H(0x9e)+o[H(0x9f)]+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20';}}async function updateLadderDisplayDuos(a){const Q=a34u,b=document[Q(0x152)]('#ladder-duos\x20tbody');if(!b){console[Q(0x128)]('Duos\x20Ladder\x20table\x20body\x20not\x20found');return;}const c=await isCurrentUserAdmin(),d=document['querySelector'](Q(0x11c));d&&(c?d[Q(0x132)]=Q(0x9d):d['innerHTML']=Q(0x14b));let e='',f=0x1;a['teams']&&a[Q(0xb7)][Q(0x126)]>0x0&&a['teams'][Q(0xa8)](g=>{e+=createTeamRow(g,f,c),f++;}),a[Q(0x111)]&&a['rankedSoloPlayers']['length']>0x0&&(a['teams']&&a['teams'][Q(0x126)]>0x0&&(e+=Q(0xf8)+(c?'9':'8')+Q(0x117)+MIN_MATCHES_FOR_RANKING+'+\x20matches)\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'),a['rankedSoloPlayers']['forEach'](g=>{e+=createPlayerRowDuos(g,g['matchStats'],f,c,!![]),f++;})),a['unrankedSoloPlayers']&&a['unrankedSoloPlayers']['length']>0x0&&(e+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22separator-row\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20colspan=\x22'+(c?'9':'8')+Q(0x9a)+MIN_MATCHES_FOR_RANKING+'\x20matches)\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</tr>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',a[Q(0x13e)][Q(0xa8)](g=>{e+=createPlayerRowDuos(g,g['matchStats'],'?',c,![]);})),b['innerHTML']=e;}function createTeamRow(a,b,c=![]){const R=a34u,d=calculateTeamTier(a['winRate']),e=a[R(0xcc)]['toFixed'](0x1);let f='';b===0x1&&(f=R(0xee));const g=c?'<td\x20style=\x22color:\x20#888;\x20font-size:\x200.9em;\x20padding:\x208px;\x22>'+Math['round'](a['averageTierValue'])+'</td>':'',h={'M':{'wins':0x0,'total':0x0},'E':{'wins':0x0,'total':0x0},'G':{'wins':0x0,'total':0x0},'S':{'wins':0x0,'total':0x0},'B':{'wins':0x0,'total':0x0}};a[R(0x100)]['forEach'](k=>{const S=R;k['individualStats']?.[S(0x110)]&&Object['keys'](h)['forEach'](l=>{const T=S;h[l]['wins']+=k[T(0x130)][T(0x110)][l]['wins'],h[l]['total']+=k[T(0x130)]['tierWinRates'][l][T(0xd6)];});});const i=formatTierWinRates(h);let j=R(0xaf)+(a['players']['length']+0x1)+R(0x153)+b+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22position:\x20relative;\x20padding:\x208px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x20gap:\x208px;\x20margin-bottom:\x202px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22team.html?team='+encodeURIComponent(a[R(0x143)])+R(0x13c)+(a[R(0xec)]||d['color'])+';\x20text-decoration:\x20none;\x20font-weight:\x20bold;\x20font-size:\x201em;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+a['teamName']+R(0x106)+f+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22color:\x20'+d[R(0x15d)]+R(0xe6)+d[R(0x164)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20'+g+R(0xf3)+d[R(0x15d)]+';\x20font-weight:\x20bold;\x20padding:\x208px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22margin-bottom:\x203px;\x22>'+e+R(0x11f)+i+R(0xc6)+a[R(0x12a)]+R(0xf2)+a[R(0x165)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22padding:\x208px;\x22>'+a[R(0xd8)]+R(0xf2)+a['combinedKDA'][R(0xb8)](0x2)+'</td>\x0a\x20\x20\x20\x20</tr>';return a[R(0x100)][R(0xa8)]((k,l)=>{const U=R,m=k['individualStats']||{'totalMatches':0x0,'wins':0x0,'losses':0x0,'kda':0x0,'winRate':0x0,'totalKills':0x0,'totalDeaths':0x0,'tierWinRates':{'M':{'wins':0x0,'total':0x0},'E':{'wins':0x0,'total':0x0},'G':{'wins':0x0,'total':0x0},'S':{'wins':0x0,'total':0x0},'B':{'wins':0x0,'total':0x0}}},n=formatTierWinRates(m[U(0x110)]);let o='';k['country']&&(o=U(0x14f)+k[U(0x157)][U(0xf1)]()+'.png\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20alt=\x22'+k[U(0x157)]+'\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22player-flag\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20style=\x22margin-left:\x206px;\x20vertical-align:\x20middle;\x20width:\x2016px;\x20height:\x2012px;\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onerror=\x22this.style.display=\x27none\x27\x22>');const p=c?U(0x14d)+k['tierValue']+U(0xca):'';j+='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<tr\x20class=\x22team-player-row\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22padding:\x206px\x208px\x206px\x2020px;\x20font-size:\x200.9em;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20style=\x22color:\x20#666;\x20margin-right:\x206px;\x22>└</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(k['username'])+U(0xb2)+(a[U(0xec)]||'#bbb')+U(0xab)+k[U(0xd7)]+U(0xd3)+o+U(0xb6)+p+U(0x131)+m['winRate']+U(0xf6)+n+U(0xe0)+m[U(0x136)]+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22font-size:\x200.9em;\x20padding:\x206px\x208px;\x22>'+m['wins']+U(0xe8)+m[U(0x121)]+U(0xe8)+m[U(0xbb)]+U(0xf5);}),j;}function createPlayerRowDuos(a,b,c,d=![],e=!![]){const V=a34u,f=parseFloat(b['winRate'])||0x0,g=e?calculateTeamTier(f):{'color':'#666','name':V(0x142)},h=formatTierWinRates(b['tierWinRates']||{});let i='';if(a[V(0x157)]){const n=e?V(0x10d):V(0xd5);i=V(0x14f)+a['country']['toLowerCase']()+V(0x11d)+a['country']+V(0xba)+(e?V(0x160):V(0xda))+V(0x158)+n+V(0x11a);}const j=d?V(0xb1)+(e?V(0x13d):V(0x125))+';\x20padding:\x20'+(e?'8px':'4px')+';\x22>'+a[V(0x168)]+'</td>':'';let k='';if(!e){const o=MIN_MATCHES_FOR_RANKING-b[V(0x136)];k='<span\x20style=\x22color:\x20#ffa500;\x20font-size:\x201.0em;\x20font-style:\x20italic;\x20margin-left:\x204px;\x22>('+o+'\x20more)</span>';}else k=V(0xdd);const l=e?createTeamInviteButton(a['username']):createCompactTeamInviteButton(a['username']),m=e?f+'%':f+'%*';if(!e)return V(0x15a)+c+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22position:\x20relative;\x20padding:\x203px\x204px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x20flex-wrap:\x20wrap;\x20gap:\x202px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(a[V(0xd7)])+'&ladder=duos\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20style=\x22color:\x20'+g[V(0x15d)]+';\x20text-decoration:\x20none;\x20font-weight:\x20400;\x20font-size:\x201.1em;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+a[V(0xd7)]+V(0xd3)+i+V(0xa9)+k+V(0xa9)+l+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22color:\x20'+g['color']+';\x20font-weight:\x20normal;\x20padding:\x203px\x204px;\x20font-size:\x200.8em;\x22>'+g[V(0x164)]+V(0x159)+j+V(0x9c)+g[V(0x15d)]+';\x20font-weight:\x20normal;\x20padding:\x203px\x204px;\x20font-size:\x200.8em;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+m+V(0x161)+b['totalMatches']+V(0xbe)+b[V(0xc0)]+V(0xbe)+b['losses']+V(0xbe)+b['kda']+V(0xf5);return V(0xeb)+c+'</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22position:\x20relative;\x20padding:\x208px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20align-items:\x20center;\x20flex-wrap:\x20wrap;\x20gap:\x204px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22profile.html?username='+encodeURIComponent(a[V(0xd7)])+V(0x13c)+g['color']+';\x20text-decoration:\x20none;\x20font-weight:\x20500;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+a[V(0xd7)]+V(0x106)+i+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+k+V(0xf9)+l+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22color:\x20'+g['color']+';\x20font-weight:\x20bold;\x20padding:\x208px;\x22>'+g['name']+V(0x99)+j+V(0xf3)+g[V(0x15d)]+';\x20font-weight:\x20bold;\x20padding:\x208px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22margin-bottom:\x203px;\x22>'+m+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22font-size:\x200.75em;\x20color:\x20#888;\x20line-height:\x201.2;\x22>'+h+'</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</td>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<td\x20style=\x22padding:\x208px;\x22>'+b[V(0x136)]+V(0xf2)+b['wins']+V(0xf2)+b[V(0x121)]+V(0xf2)+b['kda']+V(0xad);}async function sendTeamInvitation(a,b,c,d){const W=a34u;try{const e=auth[W(0xef)];if(!e)throw new Error('You\x20must\x20be\x20logged\x20in\x20to\x20send\x20invitations');const f=await findUserByUsername(b);if(!f)throw new Error('Player\x20not\x20found');const g=collection(db,'playersDuos'),h=query(g,where('username','==',b)),i=await getDocs(h);if(!i['empty']){const n=i['docs'][0x0]['data']();if(n[W(0x103)])throw new Error('This\x20player\x20is\x20already\x20on\x20a\x20team');}const j=query(g,where('username','==',a)),k=await getDocs(j);if(!k['empty']){const o=k[W(0x119)][0x0]['data']();if(o[W(0x103)])throw new Error('You\x20are\x20already\x20on\x20a\x20team');}const l={'type':W(0xfc),'fromUserId':e['uid'],'fromUsername':a,'toUserId':f['uid'],'toUsername':b,'status':'pending','createdAt':serverTimestamp(),'message':a+'\x20has\x20invited\x20you\x20to\x20form\x20a\x20team\x20in\x20the\x20Duos\x20ladder!','teamData':{'proposedTeamName':c,'teamColor':d,'ladder':'duos'}},m=collection(db,'gameInvitations');return await addDoc(m,l),{'success':!![],'message':'Team\x20invitation\x20sent\x20successfully!'};}catch(p){return console['error'](W(0x109),p),{'success':![],'error':p['message']};}}async function findUserByUsername(a){const X=a34u;try{const b=collection(db,X(0x154)),c=query(b,where('username','==',a)),d=await getDocs(c);if(d['empty'])return null;const e=d[X(0x119)][0x0];return{'uid':e['id'],...e['data']()};}catch(f){return console[X(0x128)]('Error\x20finding\x20user:',f),null;}}function createTeamInviteButton(a){const Y=a34u,b=auth['currentUser'];if(!b)return'';return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22team-invite-btn\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20data-target-username=\x22'+a+'\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20title=\x22Invite\x20'+a+Y(0xc4);}function createCompactTeamInviteButton(a){const Z=a34u,b=auth['currentUser'];if(!b)return'';return Z(0xed)+a+Z(0xc8)+a+'\x20to\x20form\x20a\x20team\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20type=\x22button\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<i\x20class=\x22fas\x20fa-user-plus\x22></i>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20';}function a34d(a,b){const c=a34c();return a34d=function(d,e){d=d-0x97;let f=c[d];if(a34d['JULhmh']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a34d['EZHQgb']=g,a=arguments,a34d['JULhmh']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a34d['EZHQgb'](f),a[i]=f):f=j,f;},a34d(a,b);}function setupTeamInvitationSystem(){const a0=a34u;if(!document['getElementById'](a0(0x12f))){const a=document['createElement']('style');a['id']='team-invite-styles',a['textContent']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-invite-btn\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#4CAF50;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x20none;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x204px\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.75em;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20background-color\x200.3s;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20inline-flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x203px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20white-space:\x20nowrap;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-invite-btn.compact\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x202px\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.65em;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-left:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x201px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-invite-btn:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#45a049;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-invite-btn:disabled\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#666;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20not-allowed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-creation-modal\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20position:\x20fixed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20top:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20left:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20right:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20bottom:\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(0,\x200,\x200,\x200.8);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20z-index:\x201000;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-creation-content\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#2a2a2a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2090%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20max-width:\x20500px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x202rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.color-picker\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20grid;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20grid-template-columns:\x20repeat(6,\x201fr);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gap:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x201rem\x200;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.color-option\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x2040px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x2040px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x2050%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20transition:\x20border-color\x200.3s;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.color-option.selected\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.form-group\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x201rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.form-group\x20label\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20block;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#ccc;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.form-group\x20input\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20100%;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.5rem;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20#1a1a1a;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x201px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20white;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x204px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-sizing:\x20border-box;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-header\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20255,\x20255,\x200.03);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-left:\x203px\x20solid\x20rgba(255,\x20255,\x20255,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-player-row\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(0,\x200,\x200,\x200.15);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-left:\x203px\x20solid\x20rgba(255,\x20255,\x20255,\x200.1);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-player-row:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20255,\x20255,\x200.08);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-header:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20255,\x20255,\x200.08);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-row\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vertical-align:\x20middle;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.team-player-row\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#222;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.solo-player-row\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vertical-align:\x20middle;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#333;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Even\x20more\x20compact\x20styling\x20for\x20unranked\x20players\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.compact-row\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x203px\x204px\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.75em\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x201px\x20solid\x20#2a2a2a\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.compact-row\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(0,\x200,\x200,\x200.25)\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x2028px\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.compact-row:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20255,\x20255,\x200.03)\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.separator-row\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x208px\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20#2c2c2c;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#888;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-style:\x20italic;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x202px\x20solid\x20#444\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20#ladder-duos\x20tbody\x20tr:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20rgba(255,\x20255,\x20255,\x200.05);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.separator-row:hover\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background-color:\x20#2c2c2c\x20!important;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20/*\x20Ensure\x20consistent\x20table\x20cell\x20alignment\x20*/\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20#ladder-duos\x20td\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vertical-align:\x20middle;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20#ladder-duos\x20td:nth-child(2)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20left;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20#ladder-duos\x20th\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x2012px\x208px;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-bottom:\x202px\x20solid\x20#444;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20#ladder-duos\x20th:nth-child(2)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20left;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20',document[a0(0x10c)]['appendChild'](a);}document[a0(0x148)](a0(0x10b),handleTeamInviteClick),document['addEventListener'](a0(0x10b),handleTeamInviteClick),console['log'](a0(0x101));}function a34c(){const af=['pc90zd4kicaGicaGica','iIbZDhLSzt0IDgv4Dc1HBgLNBJOGy2vUDgvYoYbIywnRz3jVDw5KlwnVBg9YoIaJmMmYyZjJoYbJB2XVCJOGiZG4odSGCgfKzgLUzZOGohb4oYbMB250lxn0EwXLoIbPDgfSAwm7iJ4kicaGicaGicaGicaGicaGicaGicbqBgf5zxjZifvUzgvYiev2ywX1yxrPB24GkeXLC3mGDgHHBIa','vKvurvjbtG','cIaGicaGicaGicaGidX0zcbZDhLSzt0Iy29SB3i6ia','cIaGicaGicaGicaGicaGica8DgG+uMfUAZWVDgG+cIaGicaGicaGicaGicaGica8DgG+vgvHBs9qBgf5zxi8l3rOpGOGicaGicaGicaGicaGicaGphrOpLn0yxr1CZWVDgG+cIaGicaGicaGicaGicaGica8DgG+vgLLCIbwywX1ztWVDgG+cIaGicaGicaGicaGicaGica8DgG+v2LUifjHDgu8l3rOpGOGicaGicaGicaGicaGicaGphrOpK1HDgnOzxm8l3rOpGOGicaGicaGicaGicaGicaGphrOpLDPBNm8l3rOpGOGicaGicaGicaGicaGicaGphrOpKXVC3nLCZWVDgG+cIaGicaGicaGicaGicaGica8DgG+sY9epc90Ad4kicaGicaGicaGicaG','cIaGicaGicaGicaGidX0CJ4kicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi4iIbZDhLSzt0IDgv4Dc1HBgLNBJOGy2vUDgvYoYbJB2XVCJOGCMvKoYi+cIaGicaGicaGicaGicaGicaGicaGrxjYB3iGBg9HzgLUzYbeDw9ZigXHzgrLCIbKyxrHoIa','BwvZC2fNzq','iGOGicaGicaGicaGicaGicaGicaGicaGicaGicbTyxHSzw5NDgG9iJuWiJ4kicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGcIaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjMB3jTlwDYB3vWiJ4kicaGicaGicaGicaGicaGicaGica8BgfIzwW+vgvHBsbdB2XVCJO8l2XHyMvSpGOGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9YlxbPy2TLCIi+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIbZzwXLy3rLzciGzgf0ys1JB2XVCJ0Ii0zgrdCWmciGC3r5Bgu9iMjHy2TNCM91BMq6icngrKq3mda7iIb0AxrSzt0Ir29Szci+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0IiZuWqZG3ociGC3r5Bgu9iMjHy2TNCM91BMq6icm1mem4nZG7iIb0AxrSzt0Irw1LCMfSzci+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0zgnKi2qIiGC3r5Bgu9iMjHy2TNCM91BMq6icngrJzcnKi7iIb0AxrSzt0IuMvKiJ48l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0Iy29SB3iTB3b0Aw9UiIbKyxrHlwnVBg9YpsiJnevdrem0iIbZDhLSzt0IyMfJA2DYB3vUzdOGiZrfq0rdndSIihrPDgXLpsjuzwfSiJ48l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0Iy29SB3iTB3b0Aw9UiIbKyxrHlwnVBg9YpsiJqZbdmemWiIbZDhLSzt0IyMfJA2DYB3vUzdOGi0mWqZbdmdSIihrPDgXLpsjtAwX2zxiIpJWVzgL2pGOGicaGicaGicaGicaGicaGicaGicaGica8zgL2ignSyxnZpsjJB2XVCI1VChrPB24IigrHDgeTy29SB3i9iIngrJHdndiIihn0EwXLpsjIywnRz3jVDw5KoIaJrKy4qZqYoYiGDgL0Bgu9iK9Yyw5Nzsi+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0e4rtzdrIiGC3r5Bgu9iMjHy2TNCM91BMq6icnboeu2q0y7iIb0AxrSzt0ItwLUDci+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0zgodDbqIiGC3r5Bgu9iMjHy2TNCM91BMq6icngrJG3qui7iIb0AxrSzt0IugLUAYi+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0iXouneosiGC3r5Bgu9iMjHy2TNCM91BMq6icncmtLdrdK7iIb0AxrSzt0IuhvYCgXLiJ48l2rPDJ4kicaGicaGicaGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0Iy29SB3iTB3b0Aw9UiIbKyxrHlwnVBg9YpsiJodDdruvciIbZDhLSzt0IyMfJA2DYB3vUzdOGiZG3q0vfqJSIihrPDgXLpsjtA3KGqMX1zsi+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0reqtberciGC3r5Bgu9iMjHy2TNCM91BMq6icnereeWreq7iIb0AxrSzt0IugX1Bsi+pc9KAxy+cIaGicaGicaGicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMnVBg9Ylw9WDgLVBIiGzgf0ys1JB2XVCJ0Ii0yWrty4qYiGC3r5Bgu9iMjHy2TNCM91BMq6icngmeu2oem7iIb0AxrSzt0Is2HHA2KIpJWVzgL2pGOGicaGicaGicaGicaGicaGicaGidWVzgL2pGOGicaGicaGicaGicaGicaGpc9KAxy+cIaGicaGicaGicaGicaGicakicaGicaGicaGicaGicaGidXKAxyGy2XHC3m9iMzVCM0Tz3jVDxaIpGOGicaGicaGicaGicaGicaGicaGidXSywjLBd5qCMv2Awv3oJWVBgfIzwW+cIaGicaGicaGicaGicaGicaGicaGpgrPDIbPzd0IDgvHBs1WCMv2Awv3iIbZDhLSzt0ICgfKzgLUzZOGmxjLBtSGyMfJA2DYB3vUzdOGiZfHmweXytSGyM9YzgvYlxjHzgL1CZOGnhb4oYbJB2XVCJOGi0zgrdCWmdSIpGOGicaGicaGicaGicaGicaGicaGicaGica8C3rYB25NigLKpsjWCMv2Awv3lw5HBwuIpG','t25Lig9YigjVDgGGCgXHEwvYCYbUB3qGzM91BMqGAw4GrhvVCYbSywrKzxi','D2fYBG','yxzLCMfNzvrPzxjwywX1zq','mJe4ohrMrM1Uta','zgf0yq','CMvTB3zL','Aw5WDxq','zM9YrwfJAa','cIaGicaGicaGicaGicaGicaGicaG','D2LUBMvY','oYb0zxH0lwrLy29YyxrPB246ig5VBMu7iJ4kicaGicaGicaGicaGicaGicaGicaGicaG','CgXHEwvYC0r1B3m','pc90zd4kicaGidWVDhi+','DMfSDwu','cIaGica8DhiGy2XHC3m9iNrLyw0TCM93ihrLyw0TAgvHzgvYiJ4kicaGicaGica8DgqGCM93C3bHBJ0I','C3vJy2vZCW','phrKihn0EwXLpsjJB2XVCJOGiZG4odSGzM9UDc1ZAxPLoIa','jMXHzgrLCJ1KDw9ZiIakicaGicaGicaGicaGicaGicaGicaGicbZDhLSzt0Iy29SB3i6ia','CMv0DxjUicHMDw5JDgLVBIGPia','Bg9ZzxjvC2vYBMfTzq','i3nLBMqTDgvHBs1PBNzPDgu','cIaGicaGicaGicaGicaGica8l2rPDJ4kicaGicaGicaGicaGpc90zd4kicaGicaGicaGicaGphrKihn0EwXLpsjJB2XVCJOGiZC3nZSGzM9UDc1ZAxPLoIaWlJHLBtSGzM9UDc1ZDhLSztOGAxrHBgLJoYbWywrKAw5NoIa2ChGGohb4oYi+twvTyMvYpc90zd4kicaGicaGicaGicaG','DgvHBxm','Dg9gAxHLza','ChjVDg90ExbL','iIakicaGicaGicaGicaGicaGicaGicaGicaGy2XHC3m9iNbSyxLLCI1MBgfNiIakicaGicaGicaGicaGicaGicaGicaGicaGC3r5Bgu9iM1HCMDPBI1Szwz0oIa','A2rH','y2XHC3noyw1L','DgvHBu5HBwu','pc90zd4kicaGicaGicaGicaGphrKihn0EwXLpsjWywrKAw5NoIa4ChG7iJ4','ywjZ','D2LUCW','t25Lig9YigjVDgGGCgXHEwvYCYbHCMuGywXYzwfKEsbVBIbHihrLyw0','z2v0','CM91BMq','ihrVigzVCM0Gysb0zwfTiGOGicaGicaGicaGicaGicaGDhLWzt0IyNv0Dg9UiJ4kicaGicaGicaGicaGpgKGy2XHC3m9iMzHCYbMys11C2vYlxbSDxmIpJWVAt4Gsw52AxrLcIaGicaGicaGpc9IDxr0B24+cIaGica','CxvLCNLtzwXLy3rVCKfSBa','pc9KAxy+cIaGicaGicaGpc90zd4kicaGicaGica8DgqGC3r5Bgu9iNbHzgrPBMC6idHWEdSIpG','lNrLyw0TAw52AxrLlwj0BG','iGOGicaGicaGicaGicaGicaGDgL0Bgu9iKLUDML0zsa','DgvHBv8','pc90zd4','Bg9Zzxi','D2LUuMf0zq','mJy5ndi5m2Xiy0vgwG','ruXjveu','Bg9N','BwLU','oePODfnwBq','t3bLBMLUzYb0zwfTignYzwf0Aw9Uig1VzgfSigzVCJO','cIaGicaGicaGicaGicaGicaGicaGpc9HpGOGicaGicaGicaGicaGicaGicaGia','DMfSDwvZ','D2LKDgG6ideYChG7igHLAwDODdOGoxb4oW','Dg90ywW','DxnLCM5HBwu','y29TyMLUzwrmB3nZzxm','icyG','nhb4','nZu1yuDRse5W','D2LUBMvYvxnLCM5HBwu','phnWyw4GC3r5Bgu9iM1HCMDPBI1Szwz0oIa4ChG7ignVBg9YoIaJodG4oYbMB250lxnPEMu6idaUodvLBtSGzM9UDc1ZDhLSztOGAxrHBgLJoYi+tg9VA2LUzYbMB3iGDgvHBtWVC3bHBJ4','ChjLDMvUDerLzMf1Bhq','ww91ignHBM5VDcbPBNzPDguGEw91CNnLBgyH','pc9KAxy+cIaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGidX0zcbZDhLSzt0IzM9UDc1ZAxPLoIaWlJLLBtSGCgfKzgLUzZOGnNb4idHWEdSIpG','u2LSDMvY','ihrViezVCM0GysbuzwfTpc9OmZ4kicaGicaGicaGicaGicaGiaOGicaGicaGicaGicaGicaGpgrPDIbJBgfZCZ0IzM9YBs1NCM91Cci+cIaGicaGicaGicaGicaGicaGicaGpgXHyMvSigzVCJ0IDgvHBs1Uyw1LiJ5uzwfTie5HBwu6pc9SywjLBd4kicaGicaGicaGicaGicaGicaGica8Aw5WDxqGDhLWzt0IDgv4DciGcIaGicaGicaGicaGicaGicaGicaGicaGicaGigLKpsj0zwfTlw5HBwuIiaOGicaGicaGicaGicaGicaGicaGicaGicaGicbWBgfJzwHVBgrLCJ0Irw50zxiGDgvHBsbUyw1LlI4UiIakicaGicaGicaGicaGicaGicaGicaGicaGicaGDMfSDwu9iG','Dg9eyxrL','rMfPBgvKihrVig9Wzw4GDgvHBsbJCMvHDgLVBIbMB3jTlIbqBgvHC2uGDhj5igfNywLUlG','zgf0yxnLDa','oYbMB250lxDLAwDODdOGyM9SzdSGCgfKzgLUzZOGohb4oYi+','ntuXotyZtwLoqM5d','pc90zd4kicaGicaGicaGicaGphrKihn0EwXLpsjMB250lxnPEMu6idaUowvToYbWywrKAw5NoIa2ChGGohb4oYi+','DgfYz2v0','vgvHBsbPBNzPDgf0Aw9UihnLBNqGC3vJy2vZC2z1BgX5iq','cIaGica8DhiGy2XHC3m9iNnVBg8TCgXHEwvYlxjVDYi+cIaGicaGicaGphrKihn0EwXLpsjWywrKAw5NoIa4ChG7iJ4','DgvHBunVBg9Y','cIaGicaGicaGpgj1DhrVBIbJBgfZCZ0IDgvHBs1PBNzPDguTyNrUignVBxbHy3qIiaOGicaGicaGicaGicaGicaGzgf0ys10yxjNzxqTDxnLCM5HBwu9iG','phnWyw4Gy2XHC3m9iNn0CMvHAY1PBMrPy2f0B3iIihrPDgXLpsjuzwfTigf0icmXiJ7WN5grpc9ZCgfUpG','y3vYCMvUDfvZzxi','Dg9tDhjPBMC','Dg9mB3DLCKnHC2u','pc90zd4kicaGicaGica8DgqGC3r5Bgu9iNbHzgrPBMC6idHWEdSIpG','cIaGicaGicaGphrKihn0EwXLpsjJB2XVCJOG','AgfZ','pc90zd4kicaGicaGica8l3rYpG','jtWVzgL2pGOGicaGicaGicaGicaGicaGpgrPDIbZDhLSzt0IzM9UDc1ZAxPLoIaWlJC1zw07ignVBg9YoIaJnJy2oYbSAw5LlwHLAwDODdOGms4YoYi+','mteXnZa4DM9nCK1t','cIaGicaGicaGicaGicaGica8DhiGy2XHC3m9iNnLCgfYyxrVCI1YB3CIpGOGicaGicaGicaGicaGicaGicaGidX0zcbJB2XZCgfUpsi','cIaGicaGicaGicaGicaGica','r29Sza','Dg90ywXlAwXSCW','DgvHBv9PBNzPDgu','phrYpJX0zcbJB2XZCgfUpsi4iIbJBgfZCZ0IBg9HzgLUzY1JzwXSiJ5mB2fKAw5Nier1B3mGBgfKzgvYigrHDgeUlI48l3rKpJWVDhi+','q291BgqGBM90igzPBMqGD2LUBMvYig9YigXVC2vYigLUier1B3mGCgXHEwvYCYbSAxn0','i0nen0yZmG','CgXHEwvYCW','vgvHBsbPBNzPDgf0Aw9Uihn5C3rLBsbPBML0AwfSAxPLza','Axnbzg1PBG','AgfZvgvHBq','ChvZAa','ywrKrxzLBNrmAxn0zw5LCG','cIaGicaGicaGicaGicaGica8l2e+cIaGicaGicaGicaGicaGica','y29TyMLUzwrezwf0Ahm','u0TjteXfra','rxjYB3iGC2vUzgLUzYb0zwfTigLUDML0yxrPB246','nZy3odC0AxjiCLry','y2XPy2S','AgvHza','D2LKDgG6ide2ChG7igHLAwDODdOGmtjWEdS','rw1LCMfSza','yxbWzw5Kq2HPBgq','DgLLCLDPBLjHDgvZ','CMfUA2vKu29SB1bSyxLLCNm','Bwf4','Bg9ZzxjlAwXSCW','y3jLyxrLzef0','Aw5JBhvKzxm','y2XVC2vZDa','iIbZDhLSzt0IDgv4Dc1HBgLNBJOGy2vUDgvYoYbIywnRz3jVDw5KlwnVBg9YoIaJmMmYyZjJoYbJB2XVCJOGiZG4odSGCgfKzgLUzZOGmtbWEdSGzM9UDc1ZDhLSztOGAxrHBgLJoYi+cIaGicaGicaGicaGicaGicaGicaGicaGifjHBMTLzcbtB2XVifbSyxLLCNmGka','BM93','zg9JCW','iGOGicaGicaGicaGicaGicaGicaGicaGicbVBMvYCM9Ypsj0AgLZlNn0EwXLlMrPC3bSyxK9j25VBMuNiJ4','C2vSzwn0zwq','i2XHzgrLCI1KDw9ZihrOzwfKihrY','lNbUzYiGcIaGicaGicaGicaGicaGicaGicaGicaGigfSDd0I','C3vIC3rY','jtWVzgL2pGOGicaGicaGicaGica8zgL2ihn0EwXLpsjMB250lxnPEMu6idaUnZvLBtSGy29SB3i6icm4odG7igXPBMuTAgvPz2H0oIaXlJi7iJ4','Dgv4DenVBNrLBNq','Bg9ZC2vZ','y29UC3rYDwn0B3i','y29TyMLUzwrlAwXSCW','u2vUzcbjBNzPDgf0Aw9U','mc44zw0','BgvUz3rO','DwLK','zxjYB3i','C29YDa','y29TyMLUzwrnyxrJAgvZ','vgvHBsbUyw1Lig11C3qGyMuGyxqGBgvHC3qGmYbJAgfYywn0zxjZigXVBMC','zgLZywjSzwq','y3jLyxrLrwXLBwvUDa','rxjYB3iGC2vUzgLUzYbPBNzPDgf0Aw9UoG','DgvHBs1PBNzPDguTC3r5BgvZ','Aw5KAxzPzhvHBfn0yxrZ','cIaGicaGicaGicaGidX0zcbZDhLSzt0Iy29SB3i6icnJy2m7igzVBNqTC2L6ztOGmc45zw07ihbHzgrPBMC6idzWEca4ChG7iJ4kicaGicaGicaGicaGicaGidXKAxyGC3r5Bgu9iM1HCMDPBI1IB3r0B206idjWEdSIpG','Aw5Uzxjive1m','rxjYB3i6ia','yM9KEq','ywXS','Dg90ywXnyxrJAgvZ','CMvM','y29UC29Szq','D2LUBMvYrgvHDgHZ','yMLUza','zxHJzxb0Aw9U','jMXHzgrLCJ1KDw9ZiIakicaGicaGicaGicaGicaGicaGihn0EwXLpsjJB2XVCJOG','mc45zw0','Dw5Yyw5RzwrtB2XVugXHEwvYCW','DgfYz2v0vxnLCM5HBwu','i0zgrdCWma','Cg9ZAxrPB24','vw5Yyw5Rzwq','DgvHBuLK','DhjHy2u','Bwf0y2HtDgf0CW','rxjYB3iGzMv0y2HPBMCGyMf0y2GGrhvVCYbTyxrJAcbZDgf0CZO','q0Hbtvbjt04','CMvTB3zLrxzLBNrmAxn0zw5LCG','C3r5Bgu','u2vUzgLUzY4UlG','cIaGicaGicaGicaGicaGica8DgG+uMfUAZWVDgG+cIaGicaGicaGicaGicaGica8DgG+vgvHBs9qBgf5zxi8l3rOpGOGicaGicaGicaGicaGicaGphrOpLn0yxr1CZWVDgG+cIaGicaGicaGicaGicaGica8DgG+v2LUifjHDgu8l3rOpGOGicaGicaGicaGicaGicaGphrOpK1HDgnOzxm8l3rOpGOGicaGicaGicaGicaGicaGphrOpLDPBNm8l3rOpGOGicaGicaGicaGicaGicaGphrOpKXVC3nLCZWVDgG+cIaGicaGicaGicaGicaGica8DgG+sY9epc90Ad4kicaGicaGicaGicaG','lMnVBg9Ylw9WDgLVBG','phrKihn0EwXLpsjJB2XVCJOGiZy2nJSGzM9UDc1ZAxPLoIaWlJG1zw07ihbHzgrPBMC6idzWEca4ChG7iJ4','i3rLyw0TBMfTzq','pgLTzYbZCMm9iI4Ul2LTywDLCY9MBgfNCY8','oteZmZjcq1n5BMm','Dg90ywXezwf0Ahm','CxvLCNLtzwXLy3rVCG','iIbZDhLSzt0ICgfKzgLUzZOGmtbWEca4ChG7ihzLCNrPy2fSlwfSAwDUoIbTAwrKBgu7iJ4','DxnLCLbYB2zPBgvZ','zgL2','i0mWqZbdma','y291BNrYEq','oYb2zxj0AwnHBc1HBgLNBJOGBwLKzgXLoYa','pc90zd4kicaGicaGicaGicaG','cIaGicaGicaGphrYignSyxnZpsjZB2XVlxbSyxLLCI1YB3CGDw5Yyw5RzwqTCgXHEwvYignVBxbHy3qTCM93iJ4kicaGicaGicaGicaGphrKihn0EwXLpsjWywrKAw5NoIaZChGGnhb4oYbMB250lxnPEMu6ideUmMvToYi+','zMLUza','rxjYB3iGy2HLy2TPBMCGywrTAw4GC3rHDhvZoG','y29SB3i','D2LUBMvYu3vPy2LKzxm','BwfW','ohb4','cIaGicaGicaGicaGidWVDgq+cIaGicaGicaGicaGidX0zcbZDhLSzt0ICgfKzgLUzZOGohb4oYi+','vgvHBsbPBNzPDguGyNv0Dg9UignSAwnRzwqGzM9YoG','mJmXmZi5n2XQqvDoCG','BMfTzq','y29TyMLUzwrxAw5Z','C2v0','i2nHBMnLBc10zwfTlwLUDML0zq','DgLLCLzHBhvL','Dg90ywXtDwLJAwrLCW','tufyx1nbrKvFsu5uruDfuG'];a34c=function(){return af;};return a34c();}function handleTeamInviteClick(a){const a1=a34u;if(a['target'][a1(0x116)](a1(0xc7))){a[a1(0xde)](),a['stopPropagation']();const b=a[a1(0xe9)]['closest']('.team-invite-btn'),c=b['dataset'][a1(0x13f)];console[a1(0xcf)](a1(0x162),c),b[a1(0x12c)]=!![],setTimeout(()=>{const a2=a1;b[a2(0x12c)]=![];},0x3e8),openTeamCreationModal(c);}}async function openTeamCreationModal(a){const a3=a34u;console[a3(0xcf)](a3(0xd2),a);const b=auth[a3(0xef)];if(!b){alert('You\x20must\x20be\x20logged\x20in\x20to\x20send\x20team\x20invitations');return;}try{const c=await getCurrentUserUsername();if(!c){alert('Please\x20set\x20up\x20your\x20profile\x20before\x20sending\x20invitations');return;}if(c===a){alert(a3(0xdf));return;}const d=collection(db,a3(0xac)),e=query(d,where(a3(0xd7),'==',c)),f=await getDocs(e);if(!f['empty']){const k=f['docs'][0x0]['data']();if(k[a3(0x103)]){alert('You\x20are\x20already\x20on\x20a\x20team!\x20Leave\x20your\x20current\x20team\x20before\x20creating\x20a\x20new\x20one.');return;}}const g=document[a3(0x12d)](a3(0x155));g[a3(0xbc)]='team-creation-modal',g['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22team-creation-content\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3\x20style=\x22margin-top:\x200;\x20color:\x20white;\x22>Invite\x20'+a+a3(0xe2)+c+a3(0xd9)+a+a3(0xa0)+c+'\x20&\x20'+a+'</strong>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20gap:\x201rem;\x20justify-content:\x20flex-end;\x20margin-top:\x202rem;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22cancel-team-invite\x22\x20style=\x22background:\x20#666;\x20color:\x20white;\x20border:\x20none;\x20padding:\x200.5rem\x201rem;\x20border-radius:\x204px;\x20cursor:\x20pointer;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Cancel\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20id=\x22send-team-invite\x22\x20style=\x22background:\x20#4CAF50;\x20color:\x20white;\x20border:\x20none;\x20padding:\x200.5rem\x201rem;\x20border-radius:\x204px;\x20cursor:\x20pointer;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Send\x20Invitation\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20',document[a3(0x134)][a3(0x10f)](g);let h=a3(0x140);g['querySelectorAll'](a3(0x14c))['forEach'](l=>{const a4=a3;l[a4(0x105)]('click',()=>{const a5=a4;g[a5(0xc5)](a5(0x14c))[a5(0xa8)](m=>m['classList'][a5(0xa6)]('selected')),l['classList']['add'](a5(0x11b)),h=l[a5(0xe5)]['color'],j();});});const i=g[a3(0x152)](a3(0x14e));i[a3(0x105)](a3(0xa7),j);function j(){const a6=a3,l=g['querySelector']('#preview-name'),m=g['querySelector']('#team-preview');l[a6(0x120)]=i[a6(0xae)]||c+a6(0xd9)+a,m[a6(0x149)]['color']=h;}g['querySelector'](a3(0x167))['addEventListener']('click',()=>{const a7=a3;g[a7(0xa6)]();}),g[a3(0x152)]('#send-team-invite')[a3(0x105)](a3(0x10b),async()=>{const a8=a3,l=i[a8(0xae)]['trim']()||c+'\x20&\x20'+a;if(l[a8(0x126)]<0x3){alert(a8(0x12b));return;}const m=g['querySelector'](a8(0xb5));m['disabled']=!![],m[a8(0x120)]=a8(0x14a);try{const n=await sendTeamInvitation(c,a,l,h);n[a8(0xb0)]?(alert(a8(0xea)),g['remove']()):(alert(a8(0x133)+n[a8(0x128)]),m[a8(0x12c)]=![],m['textContent']=a8(0x124));}catch(o){console[a8(0x128)](a8(0x12e),o),alert('Failed\x20to\x20send\x20invitation.\x20Please\x20try\x20again.'),m['disabled']=![],m['textContent']='Send\x20Invitation';}}),g[a3(0x105)]('click',l=>{const a9=a3;l[a9(0xe9)]===g&&g['remove']();});}catch(l){console[a3(0x128)]('Error\x20opening\x20team\x20creation\x20modal:',l),alert(a3(0xe4));}}async function getCurrentUserUsername(){const aa=a34u,a=auth[aa(0xef)];if(!a)return null;try{const b=doc(db,aa(0x154),a[aa(0x127)]),c=await getDoc(b);if(c['exists']())return c['data']()['username'];return null;}catch(d){return console['error']('Error\x20getting\x20username:',d),null;}}async function updatePlayerPositionsDuos(a,b){const ab=a34u;try{const c=collection(db,ab(0xac)),d=await getDocs(c),e=[];d['forEach'](i=>{e['push']({'id':i['id'],...i['data']()});});const f=e[ab(0x15b)](i=>i[ab(0xd7)]===a),g=e['find'](i=>i[ab(0xd7)]===b);if(!f||!g){console[ab(0x128)](ab(0xfe));return;}const h=calculateTierValueChange(f['tierValue']||0x3e8,g['tierValue']||0x3e8);await updateDoc(doc(db,'playersDuos',f['id']),{'tierValue':(f['tierValue']||0x3e8)+h['winner']}),await updateDoc(doc(db,ab(0xac),g['id']),{'tierValue':Math[ab(0x112)](0x1f4,(g[ab(0x168)]||0x3e8)+h[ab(0xcb)])}),console['log']('Updated\x20tier\x20values:\x20'+a+'\x20+'+h[ab(0xaa)]+',\x20'+b+'\x20'+h[ab(0xcb)]);}catch(i){console[ab(0x128)]('Error\x20updating\x20Duos\x20player\x20positions:',i);}}function calculateTierValueChange(a,b){const ac=a34u,c=0x19,d=0x1/(0x1+Math['pow'](0xa,(b-a)/0x190)),e=Math['round'](c*(0x1-d)),f=Math[ac(0xc3)](c*(0x0-(0x1-d)));return{'winner':Math['max'](0x1,e),'loser':Math['min'](-0x1,f)};}async function createTeam(a,b,c=null,d='#FFD700'){const ad=a34u;try{const e=ad(0xc9)+Date[ad(0x118)]()+'_'+Math['random']()[ad(0xf0)](0x24)[ad(0x11e)](0x2,0x9),f=c||a+ad(0xd9)+b,g=collection(db,ad(0xac)),h=query(g,where('username','==',a)),i=query(g,where(ad(0xd7),'==',b)),[j,k]=await Promise['all']([getDocs(h),getDocs(i)]);if(j['empty']||k['empty'])throw new Error(ad(0xa1));const l=j[ad(0x119)][0x0],m=k[ad(0x119)][0x0];if(l['data']()['hasTeam']||m[ad(0xa5)]()['hasTeam'])throw new Error(ad(0xc1));return await Promise[ad(0x135)]([updateDoc(l[ad(0x137)],{'teamId':e,'teamName':f,'teammate':b,'hasTeam':!![],'teamColor':d}),updateDoc(m['ref'],{'teamId':e,'teamName':f,'teammate':a,'hasTeam':!![],'teamColor':d})]),{'success':!![],'teamId':e,'teamName':f};}catch(n){return console[ad(0x128)]('Error\x20creating\x20team:',n),{'success':![],'error':n['message']};}}async function getCurrentUserProfile(){const ae=a34u,a=auth[ae(0xef)];if(!a)return null;try{const b=doc(db,ae(0x154),a['uid']),c=await getDoc(b);if(c['exists']())return c[ae(0xa5)]();return null;}catch(d){return console['error']('Error\x20getting\x20user\x20profile:',d),null;}}export{displayLadderDuos,updatePlayerPositionsDuos,sendTeamInvitation,setupTeamInvitationSystem,createTeam};
+import {
+    doc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    query,
+    collection,
+    where,
+    orderBy,
+    limit,
+    serverTimestamp,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+
+// Tier system configuration (hidden from players, visible to admins only)
+const TIER_SYSTEM = {
+    CHAMPION: { min: 90, color: '#50C878', name: 'Masters' },      // 90%+ win rate (Emerald Green)
+    ELITE: { min: 80, color: '#50C878', name: 'Emerald' },         // 80-89% win rate (Emerald Green)
+    VETERAN: { min: 70, color: '#FFD700', name: 'Gold' },          // 70-79% win rate (Gold)
+    SKILLED: { min: 60, color: '#C0C0C0', name: 'Silver' },        // 60-69% win rate (Silver)
+    ROOKIE: { min: 0, color: '#CD7F32', name: 'Bronze' }           // Below 60% win rate (Bronze)
+};
+
+// Minimum matches required for ranking
+const MIN_MATCHES_FOR_RANKING = 6;
+
+// Function to calculate team tier based on win rate
+function calculateTeamTier(winRate) {
+    if (winRate >= TIER_SYSTEM.CHAMPION.min) return TIER_SYSTEM.CHAMPION;
+    if (winRate >= TIER_SYSTEM.ELITE.min) return TIER_SYSTEM.ELITE;
+    if (winRate >= TIER_SYSTEM.VETERAN.min) return TIER_SYSTEM.VETERAN;
+    if (winRate >= TIER_SYSTEM.SKILLED.min) return TIER_SYSTEM.SKILLED;
+    return TIER_SYSTEM.ROOKIE;
+}
+
+// Check if current user is admin
+async function isCurrentUserAdmin() {
+    const user = auth.currentUser;
+    if (!user) return false;
+    
+    try {
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        const profileDoc = await getDoc(profileRef);
+        return profileDoc.exists() && profileDoc.data().isAdmin === true;
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+// Add function to calculate tier-based win rates
+function calculateTierWinRates(username, allMatches) {
+    const tierStats = {
+        M: { wins: 0, total: 0 }, // Masters
+        E: { wins: 0, total: 0 }, // Emerald  
+        G: { wins: 0, total: 0 }, // Gold
+        S: { wins: 0, total: 0 }, // Silver
+        B: { wins: 0, total: 0 }  // Bronze
+    };
+
+    allMatches.forEach(match => {
+        const isWinner = match.winnerUsername === username;
+        const isLoser = match.loserUsername === username;
+        
+        if (isWinner || isLoser) {
+            // Determine opponent's tier at time of match
+            const opponentUsername = isWinner ? match.loserUsername : match.winnerUsername;
+            const opponentWinRate = getPlayerWinRateAtTime(opponentUsername, match.createdAt, allMatches);
+            const opponentTier = calculateTeamTier(opponentWinRate);
+            
+            let tierKey = 'B'; // Default Bronze
+            if (opponentTier.name === 'Masters') tierKey = 'M';
+            else if (opponentTier.name === 'Emerald') tierKey = 'E';
+            else if (opponentTier.name === 'Gold') tierKey = 'G';
+            else if (opponentTier.name === 'Silver') tierKey = 'S';
+            
+            tierStats[tierKey].total++;
+            if (isWinner) {
+                tierStats[tierKey].wins++;
+            }
+        }
+    });
+
+    return tierStats;
+}
+
+// Helper function to get player's win rate at a specific time
+function getPlayerWinRateAtTime(username, beforeDate, allMatches) {
+    let wins = 0;
+    let total = 0;
+    
+    allMatches.forEach(match => {
+        if (match.createdAt <= beforeDate) {
+            if (match.winnerUsername === username) {
+                wins++;
+                total++;
+            } else if (match.loserUsername === username) {
+                total++;
+            }
+        }
+    });
+    
+    return total > 0 ? (wins / total) * 100 : 0;
+}
+
+// Format tier win rates for display
+function formatTierWinRates(tierStats) {
+    const tiers = ['M', 'E', 'G', 'S', 'B'];
+    const formatted = [];
+    
+    tiers.forEach(tier => {
+        const stats = tierStats[tier];
+        if (stats.total > 0) {
+            const winRate = ((stats.wins / stats.total) * 100).toFixed(0);
+            formatted.push(`${tier}:${winRate}%`);
+        }
+    });
+    
+    return formatted.length > 0 ? formatted.join(' ') : 'No data';
+}
+
+// Updated fetchBatchMatchStatsDuos function to include tier breakdowns
+async function fetchBatchMatchStatsDuos(usernames) {
+    const matchStats = new Map();
+
+    try {
+        // Initialize stats for all players
+        usernames.forEach(username => {
+            matchStats.set(username, {
+                totalMatches: 0,
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                totalSuicides: 0,
+                kda: 0,
+                winRate: 0,
+                tierWinRates: { M: { wins: 0, total: 0 }, E: { wins: 0, total: 0 }, G: { wins: 0, total: 0 }, S: { wins: 0, total: 0 }, B: { wins: 0, total: 0 } }
+            });
+        });
+
+        // Get all matches from approvedMatchesDuos
+        const approvedMatchesRef = collection(db, 'approvedMatchesDuos');
+        const allMatches = await getDocs(approvedMatchesRef);
+        const matchesArray = [];
+        
+        // Convert to array for easier processing
+        allMatches.forEach(doc => {
+            const match = { id: doc.id, ...doc.data() };
+            matchesArray.push(match);
+        });
+
+        // Sort matches by date
+        matchesArray.sort((a, b) => {
+            const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || new Date(0);
+            const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || new Date(0);
+            return dateA - dateB;
+        });
+
+        // Process all matches for basic stats
+        matchesArray.forEach(match => {
+            const winnerUsername = match.winnerUsername;
+            const loserUsername = match.loserUsername;
+
+            if (usernames.includes(winnerUsername)) {
+                const stats = matchStats.get(winnerUsername);
+                stats.totalMatches++;
+                stats.wins++;
+                stats.totalKills += match.winnerKills || 0;
+                stats.totalDeaths += match.winnerDeaths || 0;
+                stats.totalSuicides += match.winnerSuicides || 0;
+            }
+
+            if (usernames.includes(loserUsername)) {
+                const stats = matchStats.get(loserUsername);
+                stats.totalMatches++;
+                stats.losses++;
+                stats.totalKills += match.loserKills || 0;
+                stats.totalDeaths += match.loserDeaths || 0;
+                stats.totalSuicides += match.loserSuicides || 0;
+            }
+        });
+
+        // Calculate tier-based win rates for each player
+        usernames.forEach(username => {
+            const stats = matchStats.get(username);
+            stats.tierWinRates = calculateTierWinRates(username, matchesArray);
+            
+            // Calculate overall stats
+            stats.kda = stats.totalDeaths > 0 ? 
+                (stats.totalKills / stats.totalDeaths).toFixed(2) : 
+                stats.totalKills.toFixed(2);
+
+            stats.winRate = stats.totalMatches > 0 ? 
+                ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
+        });
+
+    } catch (error) {
+        console.error("Error fetching batch Duos match stats:", error);
+    }
+
+    return matchStats;
+}
+
+// Optimized display function for Duos
+async function displayLadderDuos(forceRefresh = false) {
+    const tableBody = document.querySelector('#ladder-duos tbody');
+    if (!tableBody) {
+        console.error('Duos Ladder table body not found');
+        return;
+    }
+
+    // Clear the table first to prevent duplicates
+    tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading Duos ladder data...</td></tr>';
+    
+    try {
+        // Get all players from playersDuos collection
+        const playersRef = collection(db, 'playersDuos');
+        const querySnapshot = await getDocs(playersRef);
+        const players = [];
+        
+        querySnapshot.forEach((doc) => {
+            const playerData = doc.data();
+            if (playerData.username) {
+                players.push({
+                    ...playerData,
+                    id: doc.id,
+                    tierValue: playerData.tierValue || 1000,
+                    position: playerData.position || Number.MAX_SAFE_INTEGER,
+                    hasTeam: playerData.hasTeam || false,
+                    teamId: playerData.teamId || null,
+                    teamName: playerData.teamName || null,
+                    teammate: playerData.teammate || null,
+                    teamColor: playerData.teamColor || null
+                });
+            }
+        });
+
+        // Get all user profiles for flags
+        const profilesRef = collection(db, 'userProfiles');
+        const profilesSnapshot = await getDocs(profilesRef);
+
+        const profilesByUsername = new Map();
+        profilesSnapshot.forEach((doc) => {
+            const profileData = doc.data();
+            if (profileData.username) {
+                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+            }
+        });
+
+        // Match profiles to players
+        players.forEach(player => {
+            const username = player.username.toLowerCase();
+            if (profilesByUsername.has(username)) {
+                const profile = profilesByUsername.get(username);
+                if (profile.country) {
+                    player.country = profile.country;
+                }
+            }
+        });
+
+        // Get match stats for all players
+        const usernames = players.map(p => p.username);
+        const matchStatsBatch = await fetchBatchMatchStatsDuos(usernames);
+
+        // Separate teams, ranked solo players, and unranked solo players
+        const teams = new Map();
+        const rankedSoloPlayers = [];
+        const unrankedSoloPlayers = [];
+
+        players.forEach(player => {
+            const stats = matchStatsBatch.get(player.username) || {
+                totalMatches: 0, wins: 0, losses: 0,
+                kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
+            };
+            
+            // Store individual stats for the player
+            player.individualStats = stats;
+            
+            if (player.hasTeam && player.teamId) {
+                if (!teams.has(player.teamId)) {
+                    teams.set(player.teamId, {
+                        teamId: player.teamId,
+                        teamName: player.teamName,
+                        teamColor: player.teamColor,
+                        players: [],
+                        combinedMatches: 0,
+                        combinedWins: 0,
+                        combinedLosses: 0,
+                        combinedKills: 0,
+                        combinedDeaths: 0,
+                        tierValue: 0,
+                        position: Math.min(player.position || 999, teams.get(player.teamId)?.position || 999)
+                    });
+                }
+                
+                const team = teams.get(player.teamId);
+                team.players.push(player);
+                team.combinedMatches += stats.totalMatches;
+                team.combinedWins += stats.wins;
+                team.combinedLosses += stats.losses;
+                team.combinedKills += stats.totalKills;
+                team.combinedDeaths += stats.totalDeaths;
+                team.tierValue += player.tierValue;
+                
+                // Update team color if not set
+                if (!team.teamColor && player.teamColor) {
+                    team.teamColor = player.teamColor;
+                }
+            } else {
+                // Separate ranked and unranked solo players
+                if (stats.totalMatches >= MIN_MATCHES_FOR_RANKING) {
+                    player.winRate = parseFloat(stats.winRate) || 0;
+                    player.matchStats = stats;
+                    rankedSoloPlayers.push(player);
+                } else {
+                    player.winRate = parseFloat(stats.winRate) || 0;
+                    player.matchStats = stats;
+                    unrankedSoloPlayers.push(player);
+                }
+            }
+        });
+
+        // Convert teams map to array and calculate team stats
+        const teamsArray = Array.from(teams.values()).map(team => {
+            team.winRate = team.combinedMatches > 0 ? 
+                ((team.combinedWins / team.combinedMatches) * 100) : 0;
+            team.averageTierValue = team.tierValue / team.players.length;
+            team.combinedKDA = team.combinedDeaths > 0 ? 
+                (team.combinedKills / team.combinedDeaths) : team.combinedKills;
+            return team;
+        });
+
+        // Sort teams by win rate first, then by tier value
+        teamsArray.sort((a, b) => {
+            if (Math.abs(a.winRate - b.winRate) > 0.1) {
+                return b.winRate - a.winRate;
+            }
+            return b.averageTierValue - a.averageTierValue;
+        });
+
+        // Sort ranked solo players by win rate, then by matches played
+        rankedSoloPlayers.sort((a, b) => {
+            if (Math.abs(a.winRate - b.winRate) > 0.1) {
+                return b.winRate - a.winRate;
+            }
+            return b.matchStats.totalMatches - a.matchStats.totalMatches;
+        });
+
+        // Sort unranked solo players by matches played (closest to 6 at top)
+        unrankedSoloPlayers.sort((a, b) => {
+            return b.matchStats.totalMatches - a.matchStats.totalMatches;
+        });
+
+        // Update display
+        await updateLadderDisplayDuos({ 
+            teams: teamsArray, 
+            rankedSoloPlayers, 
+            unrankedSoloPlayers 
+        });
+        
+        // Re-initialize event listeners after the table is updated
+        setTimeout(() => {
+            setupTeamInvitationSystem();
+        }, 100);
+
+    } catch (error) {
+        console.error("Error loading Duos ladder:", error);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; color: red;">
+                    Error loading Duos ladder data: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Updated display function
+async function updateLadderDisplayDuos(ladderData) {
+    const tbody = document.querySelector('#ladder-duos tbody');
+    if (!tbody) {
+        console.error('Duos Ladder table body not found');
+        return;
+    }
+
+    const isAdmin = await isCurrentUserAdmin();
+
+    // Update the table header based on admin status
+    const thead = document.querySelector('#ladder-duos thead tr');
+    if (thead) {
+        if (isAdmin) {
+            thead.innerHTML = `
+                <th>Rank</th>
+                <th>Team/Player</th>
+                <th>Status</th>
+                <th>Tier Value</th>
+                <th>Win Rate</th>
+                <th>Matches</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>K/D</th>
+            `;
+        } else {
+            thead.innerHTML = `
+                <th>Rank</th>
+                <th>Team/Player</th>
+                <th>Status</th>
+                <th>Win Rate</th>
+                <th>Matches</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>K/D</th>
+            `;
+        }
+    }
+
+    let rowsHtml = '';
+    let currentRank = 1;
+
+    // Display teams first
+    if (ladderData.teams && ladderData.teams.length > 0) {
+        ladderData.teams.forEach(team => {
+            rowsHtml += createTeamRow(team, currentRank, isAdmin);
+            currentRank++;
+        });
+    }
+
+    // Add separator for ranked solo players
+    if (ladderData.rankedSoloPlayers && ladderData.rankedSoloPlayers.length > 0) {
+        if (ladderData.teams && ladderData.teams.length > 0) {
+            rowsHtml += `
+                <tr class="separator-row">
+                    <td colspan="${isAdmin ? '9' : '8'}" style="text-align: center; background-color: #2c2c2c; color: #888; padding: 10px; font-style: italic;">
+                        Ranked Solo Players (${MIN_MATCHES_FOR_RANKING}+ matches)
+                    </td>
+                </tr>
+            `;
+        }
+
+        ladderData.rankedSoloPlayers.forEach(player => {
+            rowsHtml += createPlayerRowDuos(player, player.matchStats, currentRank, isAdmin, true);
+            currentRank++;
+        });
+    }
+
+    // Add separator for unranked solo players
+    if (ladderData.unrankedSoloPlayers && ladderData.unrankedSoloPlayers.length > 0) {
+        rowsHtml += `
+            <tr class="separator-row">
+                <td colspan="${isAdmin ? '9' : '8'}" style="text-align: center; background-color: #2c2c2c; color: #888; padding: 8px; font-style: italic;">
+                    Players Under Evaluation (Less than ${MIN_MATCHES_FOR_RANKING} matches)
+                </td>
+            </tr>
+        `;
+
+        ladderData.unrankedSoloPlayers.forEach(player => {
+            rowsHtml += createPlayerRowDuos(player, player.matchStats, '?', isAdmin, false);
+        });
+    }
+
+    tbody.innerHTML = rowsHtml;
+}
+
+// Updated createTeamRow function with better spacing and alignment
+// Updated createTeamRow function - changing the link to team.html
+function createTeamRow(team, rank, isAdmin = false) {
+    const tier = calculateTeamTier(team.winRate);
+    const winRateFormatted = team.winRate.toFixed(1);
+
+    let streakHtml = '';
+    if (rank === 1) {
+        streakHtml = `<span class="streak-indicator" title="Team at #1">👑</span>`;
+    }
+
+    const tierValueCell = isAdmin ? `<td style="color: #888; font-size: 0.9em; padding: 8px;">${Math.round(team.averageTierValue)}</td>` : '';
+
+    // Calculate combined tier win rates for the team
+    const combinedTierStats = { M: { wins: 0, total: 0 }, E: { wins: 0, total: 0 }, G: { wins: 0, total: 0 }, S: { wins: 0, total: 0 }, B: { wins: 0, total: 0 } };
+    team.players.forEach(player => {
+        if (player.individualStats?.tierWinRates) {
+            Object.keys(combinedTierStats).forEach(tier => {
+                combinedTierStats[tier].wins += player.individualStats.tierWinRates[tier].wins;
+                combinedTierStats[tier].total += player.individualStats.tierWinRates[tier].total;
+            });
+        }
+    });
+    const teamTierBreakdown = formatTierWinRates(combinedTierStats);
+
+    // Create team header row - CHANGED: Link now points to team.html instead of profile.html
+    let teamHtml = `
+    <tr class="team-row team-header">
+        <td rowspan="${team.players.length + 1}" style="padding: 10px 8px; vertical-align: middle;">${rank}</td>
+        <td style="position: relative; padding: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                <a href="team.html?team=${encodeURIComponent(team.teamId)}&ladder=duos" 
+                   style="color: ${team.teamColor || tier.color}; text-decoration: none; font-weight: bold; font-size: 1em;">
+                    ${team.teamName}
+                </a>
+                ${streakHtml}
+            </div>
+        </td>
+        <td style="color: ${tier.color}; font-weight: bold; padding: 8px;">${tier.name}</td>
+        ${tierValueCell}
+        <td style="color: ${tier.color}; font-weight: bold; padding: 8px;">
+            <div style="margin-bottom: 3px;">${winRateFormatted}%</div>
+            <div style="font-size: 0.75em; color: #888; line-height: 1.2;">${teamTierBreakdown}</div>
+        </td>
+        <td style="padding: 8px;">${team.combinedMatches}</td>
+        <td style="padding: 8px;">${team.combinedWins}</td>
+        <td style="padding: 8px;">${team.combinedLosses}</td>
+        <td style="padding: 8px;">${team.combinedKDA.toFixed(2)}</td>
+    </tr>`;
+
+    // Add compact player rows
+    team.players.forEach((player, index) => {
+        const stats = player.individualStats || {
+            totalMatches: 0, wins: 0, losses: 0,
+            kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0,
+            tierWinRates: { M: { wins: 0, total: 0 }, E: { wins: 0, total: 0 }, G: { wins: 0, total: 0 }, S: { wins: 0, total: 0 }, B: { wins: 0, total: 0 } }
+        };
+
+        const playerTierBreakdown = formatTierWinRates(stats.tierWinRates);
+
+        let flagHtml = '';
+        if (player.country) {
+            flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                            alt="${player.country}" 
+                            class="player-flag" 
+                            style="margin-left: 6px; vertical-align: middle; width: 16px; height: 12px;"
+                            onerror="this.style.display='none'">`;
+        }
+
+        const playerTierValueCell = isAdmin ? `<td style="color: #666; font-size: 0.85em; padding: 6px 8px;">${player.tierValue}</td>` : '';
+
+        teamHtml += `
+        <tr class="team-player-row">
+            <td style="padding: 6px 8px 6px 20px; font-size: 0.9em;">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #666; margin-right: 6px;">└</span>
+                    <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=duos" 
+                       style="color: ${team.teamColor || '#bbb'}; text-decoration: none;">
+                        ${player.username}
+                    </a>
+                    ${flagHtml}
+                </div>
+            </td>
+            <td style="color: #777; font-size: 0.8em; font-style: italic; padding: 6px 8px;">Member</td>
+            ${playerTierValueCell}
+            <td style="color: #ccc; font-size: 0.9em; padding: 6px 8px;">
+                <div style="margin-bottom: 2px;">${stats.winRate}%</div>
+                <div style="font-size: 0.75em; color: #666; line-height: 1.2;">${playerTierBreakdown}</div>
+            </td>
+            <td style="font-size: 0.9em; padding: 6px 8px;">${stats.totalMatches}</td>
+            <td style="font-size: 0.9em; padding: 6px 8px;">${stats.wins}</td>
+            <td style="font-size: 0.9em; padding: 6px 8px;">${stats.losses}</td>
+            <td style="font-size: 0.9em; padding: 6px 8px;">${stats.kda}</td>
+        </tr>`;
+    });
+
+    return teamHtml;
+}
+
+// Updated createPlayerRowDuos function with compact mode for unranked players
+function createPlayerRowDuos(player, stats, rank, isAdmin = false, isRanked = true) {
+    const winRate = parseFloat(stats.winRate) || 0;
+    const tier = isRanked ? calculateTeamTier(winRate) : { color: '#666', name: 'Unranked' };
+    const tierBreakdown = formatTierWinRates(stats.tierWinRates || {});
+
+    // Create flag HTML
+    let flagHtml = '';
+    if (player.country) {
+        const flagSize = isRanked ? 'width: 16px; height: 12px;' : 'width: 12px; height: 9px;';
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: ${isRanked ? '8px' : '4px'}; vertical-align: middle; ${flagSize}"
+                        onerror="this.style.display='none'">`;
+    }
+
+    const tierValueCell = isAdmin ? `<td style="color: #888; font-size: ${isRanked ? '0.9em' : '0.8em'}; padding: ${isRanked ? '8px' : '4px'};">${player.tierValue}</td>` : '';
+
+    let statusText = '';
+    if (!isRanked) {
+        const matchesNeeded = MIN_MATCHES_FOR_RANKING - stats.totalMatches;
+        statusText = `<span style="color: #ffa500; font-size: 1.0em; font-style: italic; margin-left: 4px;">(${matchesNeeded} more)</span>`;
+    } else {
+        statusText = `<span style="margin-left: 8px; color: #888; font-size: 0.85em; font-style: italic;">Looking for team</span>`;
+    }
+
+    // Add team invite button for solo players (smaller for unranked)
+    const inviteButton = isRanked ? createTeamInviteButton(player.username) : createCompactTeamInviteButton(player.username);
+
+    const displayWinRate = isRanked ? `${winRate}%` : `${winRate}%*`;
+
+    // Compact styling for unranked players
+    if (!isRanked) {
+        return `
+        <tr class="solo-player-row unranked-player compact-row">
+            <td style="padding: 3px 4px; font-size: 1.2em;">${rank}</td>
+            <td style="position: relative; padding: 3px 4px;">
+                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 2px;">
+                    <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=duos" 
+                       style="color: ${tier.color}; text-decoration: none; font-weight: 400; font-size: 1.1em;">
+                        ${player.username}
+                    </a>
+                    ${flagHtml}
+                    ${statusText}
+                    ${inviteButton}
+                </div>
+            </td>
+            <td style="color: ${tier.color}; font-weight: normal; padding: 3px 4px; font-size: 0.8em;">${tier.name}</td>
+            ${tierValueCell}
+            <td style="color: ${tier.color}; font-weight: normal; padding: 3px 4px; font-size: 0.8em;">
+                ${displayWinRate}
+            </td>
+            <td style="padding: 8px;">${stats.totalMatches}</td>
+            <td style="padding: 8px;">${stats.wins}</td>
+            <td style="padding: 8px;">${stats.losses}</td>
+            <td style="padding: 8px;">${stats.kda}</td>
+        </tr>`;
+    }
+    // Normal styling for ranked players
+    return `
+    <tr class="solo-player-row">
+        <td style="padding: 8px;">${rank}</td>
+        <td style="position: relative; padding: 8px;">
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=duos" 
+                   style="color: ${tier.color}; text-decoration: none; font-weight: 500;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+                ${statusText}
+                ${inviteButton}
+            </div>
+        </td>
+        <td style="color: ${tier.color}; font-weight: bold; padding: 8px;">${tier.name}</td>
+        ${tierValueCell}
+        <td style="color: ${tier.color}; font-weight: bold; padding: 8px;">
+            <div style="margin-bottom: 3px;">${displayWinRate}</div>
+            <div style="font-size: 0.75em; color: #888; line-height: 1.2;">${tierBreakdown}</div>
+        </td>
+        <td style="padding: 8px;">${stats.totalMatches}</td>
+        <td style="padding: 8px;">${stats.wins}</td>
+        <td style="padding: 8px;">${stats.losses}</td>
+        <td style="padding: 8px;">${stats.kda}</td>
+    </tr>`;
+}
+
+// Function to send team invitation
+async function sendTeamInvitation(fromUsername, toUsername, teamName, teamColor) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('You must be logged in to send invitations');
+        }
+
+        // Get the target user's UID from their username
+        const toUserProfile = await findUserByUsername(toUsername);
+        if (!toUserProfile) {
+            throw new Error('Player not found');
+        }
+
+        // Check if target user is already on a team
+        const playersRef = collection(db, 'playersDuos');
+        const targetPlayerQuery = query(playersRef, where('username', '==', toUsername));
+        const targetPlayerSnapshot = await getDocs(targetPlayerQuery);
+        
+        if (!targetPlayerSnapshot.empty) {
+            const targetPlayerData = targetPlayerSnapshot.docs[0].data();
+            if (targetPlayerData.hasTeam) {
+                throw new Error('This player is already on a team');
+            }
+        }
+
+        // Check if sender is already on a team
+        const senderPlayerQuery = query(playersRef, where('username', '==', fromUsername));
+        const senderPlayerSnapshot = await getDocs(senderPlayerQuery);
+        
+        if (!senderPlayerSnapshot.empty) {
+            const senderPlayerData = senderPlayerSnapshot.docs[0].data();
+            if (senderPlayerData.hasTeam) {
+                throw new Error('You are already on a team');
+            }
+        }
+
+        // Create the invitation document
+        const invitationData = {
+            type: 'team_invite',
+            fromUserId: user.uid,
+            fromUsername: fromUsername,
+            toUserId: toUserProfile.uid,
+            toUsername: toUsername,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            message: `${fromUsername} has invited you to form a team in the Duos ladder!`,
+            teamData: {
+                proposedTeamName: teamName,
+                teamColor: teamColor,
+                ladder: 'duos'
+            }
+        };
+
+        // Add to gameInvitations collection (reusing existing system)
+        const invitationsRef = collection(db, 'gameInvitations');
+        await addDoc(invitationsRef, invitationData);
+
+        return { success: true, message: 'Team invitation sent successfully!' };
+    } catch (error) {
+        console.error('Error sending team invitation:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Helper function to find user by username
+async function findUserByUsername(username) {
+    try {
+        const profilesRef = collection(db, 'userProfiles');
+        const userQuery = query(profilesRef, where('username', '==', username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (userSnapshot.empty) {
+            return null;
+        }
+        
+        const userDoc = userSnapshot.docs[0];
+        return {
+            uid: userDoc.id,
+            ...userDoc.data()
+        };
+    } catch (error) {
+        console.error('Error finding user:', error);
+        return null;
+    }
+}
+
+// Function to create team invite button for each solo player
+function createTeamInviteButton(playerUsername) {
+    const user = auth.currentUser;
+    if (!user) return '';
+
+    return `
+        <button class="team-invite-btn" 
+                data-target-username="${playerUsername}"
+                title="Invite ${playerUsername} to form a team"
+                type="button">
+            <i class="fas fa-user-plus"></i> Invite
+        </button>
+    `;
+}
+
+// Create compact team invite button for unranked players
+function createCompactTeamInviteButton(playerUsername) {
+    const user = auth.currentUser;
+    if (!user) return '';
+
+    return `
+        <button class="team-invite-btn compact" 
+                data-target-username="${playerUsername}"
+                title="Invite ${playerUsername} to form a team"
+                type="button">
+            <i class="fas fa-user-plus"></i>
+        </button>
+    `;
+}
+
+// Setup team invitation system with all styles
+function setupTeamInvitationSystem() {
+    // Add CSS for team invite buttons and modal
+    if (!document.getElementById('team-invite-styles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'team-invite-styles';
+        styleEl.textContent = `
+            .team-invite-btn {
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 4px 8px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.75em;
+                margin-left: 8px;
+                transition: background-color 0.3s;
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+                white-space: nowrap;
+            }
+            
+            .team-invite-btn.compact {
+                padding: 2px 4px;
+                font-size: 0.65em;
+                margin-left: 4px;
+                gap: 1px;
+            }
+            
+            .team-invite-btn:hover {
+                background: #45a049;
+            }
+            
+            .team-invite-btn:disabled {
+                background: #666;
+                cursor: not-allowed;
+            }
+            
+            .team-creation-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            
+            .team-creation-content {
+                background: #2a2a2a;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 500px;
+                padding: 2rem;
+                color: white;
+            }
+            
+            .color-picker {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 0.5rem;
+                margin: 1rem 0;
+            }
+            
+            .color-option {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 3px solid transparent;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+            
+            .color-option.selected {
+                border-color: white;
+            }
+            
+            .form-group {
+                margin-bottom: 1rem;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                color: #ccc;
+            }
+            
+            .form-group input {
+                width: 100%;
+                padding: 0.5rem;
+                background: #1a1a1a;
+                border: 1px solid #444;
+                color: white;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            
+            .team-header {
+                background-color: rgba(255, 255, 255, 0.03);
+                border-left: 3px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .team-player-row {
+                background-color: rgba(0, 0, 0, 0.15);
+                border-left: 3px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .team-player-row:hover {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+            
+            .team-header:hover {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+            
+            .team-row td {
+                border-bottom: 1px solid #333;
+                vertical-align: middle;
+            }
+            
+            .team-player-row td {
+                border-bottom: 1px solid #222;
+            }
+            
+            .solo-player-row td {
+                padding: 8px;
+                vertical-align: middle;
+                border-bottom: 1px solid #333;
+            }
+            
+            /* Even more compact styling for unranked players */
+            .compact-row td {
+                padding: 3px 4px !important;
+                font-size: 0.75em !important;
+                border-bottom: 1px solid #2a2a2a !important;
+                line-height: 1.2 !important;
+            }
+            
+            .compact-row {
+                background-color: rgba(0, 0, 0, 0.25) !important;
+                height: 28px !important;
+            }
+            
+            .compact-row:hover {
+                background-color: rgba(255, 255, 255, 0.03) !important;
+            }
+            
+            .separator-row td {
+                padding: 8px !important;
+                text-align: center;
+                background-color: #2c2c2c;
+                color: #888;
+                font-style: italic;
+                border-bottom: 2px solid #444 !important;
+            }
+            
+            #ladder-duos tbody tr:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .separator-row:hover {
+                background-color: #2c2c2c !important;
+            }
+            
+            /* Ensure consistent table cell alignment */
+            #ladder-duos td {
+                text-align: center;
+                vertical-align: middle;
+            }
+            
+            #ladder-duos td:nth-child(2) {
+                text-align: left;
+            }
+            
+            #ladder-duos th {
+                padding: 12px 8px;
+                text-align: center;
+                border-bottom: 2px solid #444;
+            }
+            
+            #ladder-duos th:nth-child(2) {
+                text-align: left;
+            }
+        `;
+        document.head.appendChild(styleEl);
+    }
+    
+    // Remove any existing event listeners to prevent duplicates
+    document.removeEventListener('click', handleTeamInviteClick);
+    
+    // Add the event listener
+    document.addEventListener('click', handleTeamInviteClick);
+    
+    console.log('Team invitation system initialized');
+}
+
+// Separate click handler function
+function handleTeamInviteClick(e) {
+    if (e.target.closest('.team-invite-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const btn = e.target.closest('.team-invite-btn');
+        const targetUsername = btn.dataset.targetUsername;
+        
+        console.log('Team invite button clicked for:', targetUsername);
+        
+        // Disable button temporarily to prevent double clicks
+        btn.disabled = true;
+        setTimeout(() => {
+            btn.disabled = false;
+        }, 1000);
+        
+        openTeamCreationModal(targetUsername);
+    }
+}
+
+// Updated modal opening function with better error handling
+async function openTeamCreationModal(targetUsername) {
+    console.log('Opening team creation modal for:', targetUsername);
+    
+    const user = auth.currentUser;
+    if (!user) {
+        alert('You must be logged in to send team invitations');
+        return;
+    }
+
+    try {
+        // Get current user's username and check if it's the same as target
+        const currentUsername = await getCurrentUserUsername();
+        if (!currentUsername) {
+            alert('Please set up your profile before sending invitations');
+            return;
+        }
+
+        if (currentUsername === targetUsername) {
+            alert('You cannot invite yourself!');
+            return;
+        }
+
+        // Check if current user is already on a team
+        const playersRef = collection(db, 'playersDuos');
+        const currentPlayerQuery = query(playersRef, where('username', '==', currentUsername));
+        const currentPlayerSnapshot = await getDocs(currentPlayerQuery);
+        
+        if (!currentPlayerSnapshot.empty) {
+            const currentPlayerData = currentPlayerSnapshot.docs[0].data();
+            if (currentPlayerData.hasTeam) {
+                alert('You are already on a team! Leave your current team before creating a new one.');
+                return;
+            }
+        }
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'team-creation-modal';
+        modal.innerHTML = `
+            <div class="team-creation-content">
+                <h3 style="margin-top: 0; color: white;">Invite ${targetUsername} to Form a Team</h3>
+                
+                <div class="form-group">
+                    <label for="team-name">Team Name:</label>
+                    <input type="text" 
+                           id="team-name" 
+                           placeholder="Enter team name..." 
+                           value="${currentUsername} & ${targetUsername}"
+                           maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label>Team Color:</label>
+                    <div class="color-picker">
+                        <div class="color-option selected" data-color="#FFD700" style="background: #FFD700;" title="Gold"></div>
+                        <div class="color-option" data-color="#50C878" style="background: #50C878;" title="Emerald"></div>
+                        <div class="color-option" data-color="#FF6B6B" style="background: #FF6B6B;" title="Red"></div>
+                        <div class="color-option" data-color="#4ECDC4" style="background: #4ECDC4;" title="Teal"></div>
+                        <div class="color-option" data-color="#C0C0C0" style="background: #C0C0C0;" title="Silver"></div>
+                        <div class="color-option" data-color="#FF8C42" style="background: #FF8C42;" title="Orange"></div>
+                        <div class="color-option" data-color="#A8E6CF" style="background: #A8E6CF;" title="Mint"></div>
+                        <div class="color-option" data-color="#FF87AB" style="background: #FF87AB;" title="Pink"></div>
+                        <div class="color-option" data-color="#B19CD9" style="background: #B19CD9;" title="Purple"></div>
+                        <div class="color-option" data-color="#87CEEB" style="background: #87CEEB;" title="Sky Blue"></div>
+                        <div class="color-option" data-color="#DDA0DD" style="background: #DDA0DD;" title="Plum"></div>
+                        <div class="color-option" data-color="#F0E68C" style="background: #F0E68C;" title="Khaki"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Preview:</label>
+                    <div id="team-preview" style="padding: 1rem; background: #1a1a1a; border-radius: 4px; color: #FFD700;">
+                        <strong id="preview-name">${currentUsername} & ${targetUsername}</strong>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button id="cancel-team-invite" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button id="send-team-invite" style="background: #4CAF50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        Send Invitation
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Setup modal event listeners
+        let selectedColor = '#FFD700'; // Default gold
+
+        // Color picker functionality
+        modal.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                modal.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedColor = option.dataset.color;
+                updatePreview();
+            });
+        });
+
+        // Team name input
+        const teamNameInput = modal.querySelector('#team-name');
+        teamNameInput.addEventListener('input', updatePreview);
+
+        // Preview update function
+        function updatePreview() {
+            const previewName = modal.querySelector('#preview-name');
+            const previewContainer = modal.querySelector('#team-preview');
+            previewName.textContent = teamNameInput.value || `${currentUsername} & ${targetUsername}`;
+            previewContainer.style.color = selectedColor;
+        }
+
+        // Cancel button
+        modal.querySelector('#cancel-team-invite').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Send invitation button
+        modal.querySelector('#send-team-invite').addEventListener('click', async () => {
+            const teamName = teamNameInput.value.trim() || `${currentUsername} & ${targetUsername}`;
+            
+            if (teamName.length < 3) {
+                alert('Team name must be at least 3 characters long');
+                return;
+            }
+
+            const sendBtn = modal.querySelector('#send-team-invite');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                const result = await sendTeamInvitation(currentUsername, targetUsername, teamName, selectedColor);
+                
+                if (result.success) {
+                    alert('Team invitation sent successfully!');
+                    modal.remove();
+                } else {
+                    alert(`Error: ${result.error}`);
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Send Invitation';
+                }
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                alert('Failed to send invitation. Please try again.');
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Invitation';
+            }
+        });
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+    } catch (error) {
+        console.error('Error opening team creation modal:', error);
+        alert('Failed to open team creation form. Please try again.');
+    }
+}
+
+// Helper function to get current user's username
+async function getCurrentUserUsername() {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    try {
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        const profileDoc = await getDoc(profileRef);
+        
+        if (profileDoc.exists()) {
+            return profileDoc.data().username;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting username:', error);
+        return null;
+    }
+}
+
+// Updated position update function using tier values instead of ELO
+async function updatePlayerPositionsDuos(winnerUsername, loserUsername) {
+    try {
+        const playersRef = collection(db, 'playersDuos');
+        const querySnapshot = await getDocs(playersRef);
+        const players = [];
+        
+        querySnapshot.forEach((doc) => {
+            players.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        const winner = players.find(p => p.username === winnerUsername);
+        const loser = players.find(p => p.username === loserUsername);
+
+        if (!winner || !loser) {
+            console.error("Could not find winner or loser in Duos players list");
+            return;
+        }
+
+        // Calculate tier value changes based on win/loss
+        const tierValueChange = calculateTierValueChange(winner.tierValue || 1000, loser.tierValue || 1000);
+        
+        // Update tier values
+        await updateDoc(doc(db, 'playersDuos', winner.id), {
+            tierValue: (winner.tierValue || 1000) + tierValueChange.winner
+        });
+        
+        await updateDoc(doc(db, 'playersDuos', loser.id), {
+            tierValue: Math.max(500, (loser.tierValue || 1000) + tierValueChange.loser) // Minimum tier value of 500
+        });
+
+        // Handle position updates based on new tier values and win rates
+        // Positions will be recalculated when the ladder refreshes based on win rates
+        console.log(`Updated tier values: ${winnerUsername} +${tierValueChange.winner}, ${loserUsername} ${tierValueChange.loser}`);
+        
+    } catch (error) {
+        console.error("Error updating Duos player positions:", error);
+    }
+}
+
+// Calculate tier value changes (similar to ELO but simpler)
+function calculateTierValueChange(winnerTier, loserTier) {
+    const K = 25; // Adjustment factor
+    const expectedScore = 1 / (1 + Math.pow(10, (loserTier - winnerTier) / 400));
+    
+    const winnerChange = Math.round(K * (1 - expectedScore));
+    const loserChange = Math.round(K * (0 - (1 - expectedScore)));
+    
+    return {
+        winner: Math.max(1, winnerChange), // Minimum +1 for winner
+        loser: Math.min(-1, loserChange)   // Maximum -1 for loser
+    };
+}
+
+// Team creation function (improved)
+async function createTeam(player1Username, player2Username, teamName = null, teamColor = '#FFD700') {
+    try {
+        const teamId = `team_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const finalTeamName = teamName || `${player1Username} & ${player2Username}`;
+        
+        const playersRef = collection(db, 'playersDuos');
+        const player1Query = query(playersRef, where('username', '==', player1Username));
+        const player2Query = query(playersRef, where('username', '==', player2Username));
+        
+        const [player1Snapshot, player2Snapshot] = await Promise.all([
+            getDocs(player1Query),
+            getDocs(player2Query)
+        ]);
+        
+        if (player1Snapshot.empty || player2Snapshot.empty) {
+            throw new Error('One or both players not found in Duos ladder');
+        }
+        
+        const player1Doc = player1Snapshot.docs[0];
+        const player2Doc = player2Snapshot.docs[0];
+        
+        // Check if either player is already on a team
+        if (player1Doc.data().hasTeam || player2Doc.data().hasTeam) {
+            throw new Error('One or both players are already on a team');
+        }
+        
+        await Promise.all([
+            updateDoc(player1Doc.ref, {
+                teamId: teamId,
+                teamName: finalTeamName,
+                teammate: player2Username,
+                hasTeam: true,
+                teamColor: teamColor
+            }),
+            updateDoc(player2Doc.ref, {
+                teamId: teamId,
+                teamName: finalTeamName,
+                teammate: player1Username,
+                hasTeam: true,
+                teamColor: teamColor
+            })
+        ]);
+        
+        return { success: true, teamId, teamName: finalTeamName };
+    } catch (error) {
+        console.error('Error creating team:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Fix the getCurrentUserProfile function issue
+async function getCurrentUserProfile() {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    try {
+        const profileRef = doc(db, 'userProfiles', user.uid);
+        const profileDoc = await getDoc(profileRef);
+        
+        if (profileDoc.exists()) {
+            return profileDoc.data();
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting user profile:', error);
+        return null;
+    }
+}
+
+// Export all the functions
+export { 
+    displayLadderDuos, 
+    updatePlayerPositionsDuos, 
+    sendTeamInvitation, 
+    setupTeamInvitationSystem,
+    createTeam 
+};

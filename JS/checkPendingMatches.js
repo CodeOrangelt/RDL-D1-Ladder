@@ -1,1 +1,255 @@
-const a10v=a10d;(function(a,b){const l=a10d,c=a();while(!![]){try{const d=-parseInt(l(0x1bd))/0x1*(-parseInt(l(0x1bb))/0x2)+parseInt(l(0x1d8))/0x3*(-parseInt(l(0x1c3))/0x4)+parseInt(l(0x1db))/0x5*(-parseInt(l(0x1ac))/0x6)+-parseInt(l(0x1c6))/0x7*(parseInt(l(0x1b9))/0x8)+parseInt(l(0x1a7))/0x9+-parseInt(l(0x1bc))/0xa+parseInt(l(0x1cf))/0xb;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a10c,0xa9ac5));const a10b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a10a=a10b(this,function(){const m=a10d;let a;try{const d=Function(m(0x1b0)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[m(0x1c2)]=a[m(0x1c2)]||{},c=[m(0x1b1),'warn','info','error','exception','table','trace'];for(let g=0x0;g<c[m(0x1d5)];g++){const h=a10b[m(0x1d9)]['prototype'][m(0x1a8)](a10b),i=c[g],j=b[i]||h;h[m(0x1d0)]=a10b['bind'](a10b),h[m(0x1d2)]=j[m(0x1d2)]['bind'](j),b[i]=h;}});a10a();import{collection,query,where,getDocs,doc,getDoc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db,auth}from'./firebase-config.js';function a10d(a,b){const c=a10c();return a10d=function(d,e){d=d-0x1a7;let f=c[d];if(a10d['RGoRFO']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a10d['gyTuLj']=g,a=arguments,a10d['RGoRFO']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a10d['gyTuLj'](f),a[i]=f):f=j,f;},a10d(a,b);}let lastCheckTime=0x0;const CHECK_INTERVAL=0x2710,NOTIFICATION_CACHE_KEY='pendingMatchesCache',CACHE_EXPIRY=0xea60;export async function checkPendingMatches(a=![]){const n=a10d,b=Date['now'](),c=checkNotificationCache();if(c!==null&&!a){updateNotificationDot(c);if(b-lastCheckTime<CHECK_INTERVAL)return;}lastCheckTime=b;const d=auth[n(0x1ad)];if(!d){updateNotificationDot(![]),updateNotificationCache(![]);return;}try{const [e,f,g]=await Promise[n(0x1af)]([checkForPendingMatchesInCollection(d,'pendingMatches'),checkForPendingMatchesInCollection(d,n(0x1ae)),checkForPendingMatchesInCollection(d,'pendingMatchesD3')]),h=e||f||g;updateNotificationDot(h),updateNotificationCache(h);}catch(i){console['error']('Error\x20checking\x20pending\x20matches:',i);}}async function checkForPendingMatchesInCollection(a,b){const o=a10d,c=a[o(0x1ba)],d=a['email'],e=query(collection(db,b),where(o(0x1b3),'==',c),where('approved','==',![])),f=await getDocs(e);if(!f[o(0x1be)])return!![];if(d){const h=query(collection(db,b),where(o(0x1c4),'==',d),where(o(0x1c0),'==',![])),i=await getDocs(h);if(!i['empty'])return!![];}let g=await getUsernameFromAllSources(a);if(g){const j=query(collection(db,b),where(o(0x1b4),'==',g),where(o(0x1c0),'==',![])),k=await getDocs(j);if(!k[o(0x1be)])return!![];}return![];}async function getUsernameFromAllSources(a){const p=a10d,b=localStorage['getItem'](p(0x1b2));if(b)return b;try{const [c,d,e]=await Promise['all']([getDocs(query(collection(db,'players'),where(p(0x1ab),'==',a['uid']))),getDocs(query(collection(db,p(0x1c7)),where(p(0x1ab),'==',a['uid']))),getDocs(query(collection(db,p(0x1de)),where('userId','==',a[p(0x1ba)])))]);if(!c[p(0x1be)]){const g=c['docs'][0x0][p(0x1dd)]()[p(0x1dc)];return localStorage['setItem']('currentUsername',g),g;}if(!d['empty']){const h=d[p(0x1d6)][0x0][p(0x1dd)]()[p(0x1dc)];return localStorage[p(0x1ce)](p(0x1b2),h),h;}if(!e[p(0x1be)]){const i=e[p(0x1d6)][0x0][p(0x1dd)]()[p(0x1dc)];return localStorage['setItem']('currentUsername',i),i;}const f=await getDoc(doc(db,'users',a[p(0x1ba)]));if(f[p(0x1c8)]()&&f[p(0x1dd)]()['username']){const j=f['data']()[p(0x1dc)];return localStorage['setItem'](p(0x1b2),j),j;}}catch(k){console['error']('Error\x20fetching\x20username:',k);}if(a[p(0x1aa)])return a[p(0x1aa)][p(0x1d4)]('@')[0x0];return null;}function updateNotificationCache(a){const q=a10d,b={'status':a,'timestamp':Date['now']()};localStorage[q(0x1ce)](NOTIFICATION_CACHE_KEY,JSON['stringify'](b));}function checkNotificationCache(){const r=a10d,a=localStorage['getItem'](NOTIFICATION_CACHE_KEY);if(!a)return null;try{const {status:b,timestamp:c}=JSON['parse'](a),d=Date[r(0x1b8)]();if(d-c<CACHE_EXPIRY)return b;}catch(f){}return null;}export function updateNotificationDot(a){const t=a10d,b=new MutationObserver((d,e)=>{const s=a10d,f=document[s(0x1d7)](s(0x1b6));f&&(updateDotStyle(f,a),e[s(0x1b5)]());});b[t(0x1cd)](document['body'],{'childList':!![],'subtree':!![]});const c=document['getElementById'](t(0x1b6));c&&(updateDotStyle(c,a),b[t(0x1b5)]()),setTimeout(()=>b[t(0x1b5)](),0x1388);}function updateDotStyle(a,b){const u=a10d;b?(a[u(0x1c5)][u(0x1d3)]='block',a['style']['backgroundColor']='#ff3b30',a['style'][u(0x1a9)]='10px',a['style']['height']='10px',a[u(0x1c5)]['position']=u(0x1c1),a['style']['top']='-5px',a['style'][u(0x1da)]='-8px',a[u(0x1c5)][u(0x1bf)]=u(0x1c9),a[u(0x1c5)]['border']=u(0x1b7),a[u(0x1c5)][u(0x1cb)]='999'):a[u(0x1c5)]['display']='none';}export function updatePendingMatchNotification(){checkPendingMatches(!![]);}document[a10v(0x1ca)](a10v(0x1cc),()=>{const w=a10v;setTimeout(()=>checkPendingMatches(),0x1f4),auth[w(0x1d1)](()=>{const x=w;localStorage['removeItem'](x(0x1b2)),setTimeout(()=>checkPendingMatches(!![]),0x1f4);}),setInterval(()=>checkPendingMatches(),0xea60);});function a10c(){const y=['C3bSAxq','BgvUz3rO','zg9JCW','z2v0rwXLBwvUDej5swq','mtvlBeLhqwK','y29UC3rYDwn0B3i','CMLNAhq','otviru9UvxO','DxnLCM5HBwu','zgf0yq','CgXHEwvYC0qZ','mtiXntGWmxLOA2Hcrq','yMLUza','D2LKDgG','zw1HAwW','DxnLCKLK','mZq2mdaYA3zyCNLo','y3vYCMvUDfvZzxi','CgvUzgLUz01HDgnOzxnemG','ywXS','CMv0DxjUicHMDw5JDgLVBIGPia','Bg9N','y3vYCMvUDfvZzxjUyw1L','D2LUBMvYswq','D2LUBMvYvxnLCM5HBwu','zgLZy29UBMvJDa','CMvWB3j0lw1HDgnOlw5VDgLMAwnHDgLVBG','mNb4ihnVBgLKihDOAxrL','BM93','odu2DhPSrMfm','DwLK','ntGYotbvvwz5vLu','mtuXnduYmhPrBfzsyW','nNDcwvDJta','zw1WDhK','yM9YzgvYuMfKAxvZ','yxbWCM92zwq','ywjZB2X1Dgu','y29UC29Szq','ndKYotKYt0nbCePJ','D2LUBMvYrw1HAwW','C3r5Bgu','nZyWnJLQrMr3qMS','CgXHEwvYC0qY','zxHPC3rZ','ntaL','ywrKrxzLBNrmAxn0zw5LCG','EKLUzgv4','re9nq29UDgvUDeXVywrLza','B2jZzxj2zq','C2v0sxrLBq','mZC1mJi3mtzRA0jbBxi','x19WCM90B19F','B25bDxrOu3rHDgvdAgfUz2vK','Dg9tDhjPBMC','zgLZCgXHEq'];a10c=function(){return y;};return a10c();}
+import { 
+    collection, query, where, getDocs, doc, getDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, auth } from './firebase-config.js';
+
+// Global variables for performance optimization
+let lastCheckTime = 0;
+const CHECK_INTERVAL = 10000; // 10 seconds between checks (increased from 5)
+const NOTIFICATION_CACHE_KEY = 'pendingMatchesCache';
+const CACHE_EXPIRY = 60000; // 1 minute cache expiry
+
+// Function to check for pending matches awaiting approval
+export async function checkPendingMatches(forceCheck = false) {
+    const now = Date.now();
+    
+    // Check cache first for quick response
+    const cachedResult = checkNotificationCache();
+    if (cachedResult !== null && !forceCheck) {
+        updateNotificationDot(cachedResult);
+        
+        // If cache is valid and not a forced check, we can exit early
+        if (now - lastCheckTime < CHECK_INTERVAL) {
+            return;
+        }
+    }
+    
+    lastCheckTime = now;
+    
+    const user = auth.currentUser;
+    if (!user) {
+        updateNotificationDot(false);
+        updateNotificationCache(false);
+        return;
+    }
+    
+    try {
+        // Use Promise.all for parallel queries
+        const [pendingD1, pendingD2, pendingD3] = await Promise.all([
+            checkForPendingMatchesInCollection(user, 'pendingMatches'),
+            checkForPendingMatchesInCollection(user, 'pendingMatchesD2'),
+            checkForPendingMatchesInCollection(user, 'pendingMatchesD3')
+        ]);
+        
+        const hasPendingMatches = pendingD1 || pendingD2 || pendingD3;
+        
+        // Update UI and cache the result
+        updateNotificationDot(hasPendingMatches);
+        updateNotificationCache(hasPendingMatches);
+        
+    } catch (error) {
+        console.error("Error checking pending matches:", error);
+    }
+}
+
+// Check for pending matches in a specific collection using all available methods
+async function checkForPendingMatchesInCollection(user, collectionName) {
+    // Get all possible identifiers for the user
+    const userId = user.uid;
+    const email = user.email;
+    
+    // First try the most efficient query - by user ID
+    const byIdQuery = query(
+        collection(db, collectionName),
+        where('winnerId', '==', userId),
+        where('approved', '==', false)
+    );
+    
+    const idResults = await getDocs(byIdQuery);
+    if (!idResults.empty) {
+        return true;
+    }
+    
+    // If ID check fails, try by email
+    if (email) {
+        const byEmailQuery = query(
+            collection(db, collectionName),
+            where('winnerEmail', '==', email),
+            where('approved', '==', false)
+        );
+        
+        const emailResults = await getDocs(byEmailQuery);
+        if (!emailResults.empty) {
+            return true;
+        }
+    }
+    
+    // Only fetch username if previous checks failed
+    let username = await getUsernameFromAllSources(user);
+    
+    // If we have a username, check by that as last resort
+    if (username) {
+        const byNameQuery = query(
+            collection(db, collectionName),
+            where('winnerUsername', '==', username),
+            where('approved', '==', false)
+        );
+        
+        const nameResults = await getDocs(byNameQuery);
+        if (!nameResults.empty) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Helper function to get username from all possible sources
+async function getUsernameFromAllSources(user) {
+    // Try to get from localStorage first (fastest)
+    const cachedUsername = localStorage.getItem('currentUsername');
+    if (cachedUsername) {
+        return cachedUsername;
+    }
+    
+    // Try players collections (D1, D2 & D3)
+    try {
+        const [d1Snapshot, d2Snapshot, d3Snapshot] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('userId', '==', user.uid))),
+            getDocs(query(collection(db, 'playersD2'), where('userId', '==', user.uid))),
+            getDocs(query(collection(db, 'playersD3'), where('userId', '==', user.uid)))
+        ]);
+        
+        if (!d1Snapshot.empty) {
+            const username = d1Snapshot.docs[0].data().username;
+            localStorage.setItem('currentUsername', username);
+            return username;
+        } 
+        
+        if (!d2Snapshot.empty) {
+            const username = d2Snapshot.docs[0].data().username;
+            localStorage.setItem('currentUsername', username);
+            return username;
+        }
+        
+        if (!d3Snapshot.empty) {
+            const username = d3Snapshot.docs[0].data().username;
+            localStorage.setItem('currentUsername', username);
+            return username;
+        }
+        
+        // Try users collection
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().username) {
+            const username = userDoc.data().username;
+            localStorage.setItem('currentUsername', username);
+            return username;
+        }
+    } catch (error) {
+        console.error("Error fetching username:", error);
+    }
+    
+    // Use email prefix as last resort
+    if (user.email) {
+        return user.email.split('@')[0];
+    }
+    
+    return null;
+}
+
+// Cache notification state to reduce database reads
+function updateNotificationCache(hasPendingMatches) {
+    const cacheData = {
+        status: hasPendingMatches,
+        timestamp: Date.now()
+    };
+    localStorage.setItem(NOTIFICATION_CACHE_KEY, JSON.stringify(cacheData));
+}
+
+// Check if we have a valid cached notification state
+function checkNotificationCache() {
+    const cachedData = localStorage.getItem(NOTIFICATION_CACHE_KEY);
+    if (!cachedData) return null;
+    
+    try {
+        const { status, timestamp } = JSON.parse(cachedData);
+        const now = Date.now();
+        
+        // Return cached value if it's less than the expiry time
+        if (now - timestamp < CACHE_EXPIRY) {
+            return status;
+        }
+    } catch (e) {
+        // Invalid cache data
+    }
+    
+    return null;
+}
+
+// Helper function to update notification dot visibility (optimized)
+export function updateNotificationDot(show) {
+    // Instead of multiple timeouts, use a single MutationObserver
+    const observer = new MutationObserver((mutations, obs) => {
+        const mainDot = document.getElementById('report-match-notification');
+        if (mainDot) {
+            updateDotStyle(mainDot, show);
+            obs.disconnect();
+        }
+    });
+    
+    // Start observing the document for changes
+    observer.observe(document.body, { 
+        childList: true,
+        subtree: true
+    });
+    
+    // Immediately try to update any dots that exist
+    const mainDot = document.getElementById('report-match-notification');
+    if (mainDot) {
+        updateDotStyle(mainDot, show);
+        observer.disconnect();
+    }
+    
+    // Add a timeout to clean up the observer if it never finds the dot
+    setTimeout(() => observer.disconnect(), 5000);
+}
+
+// Apply styling to a notification dot (unchanged)
+function updateDotStyle(element, show) {
+    if (show) {
+        element.style.display = 'block';
+        element.style.backgroundColor = '#ff3b30';
+        element.style.width = '10px';
+        element.style.height = '10px';
+        element.style.position = 'absolute';
+        element.style.top = '-5px';
+        element.style.right = '-8px';
+        element.style.borderRadius = '50%';
+        element.style.border = '2px solid white';
+        element.style.zIndex = '999';
+    } else {
+        element.style.display = 'none';
+    }
+}
+
+// Function for other parts of the app to trigger notification checks
+export function updatePendingMatchNotification() {
+    // Force a new check immediately
+    checkPendingMatches(true);
+}
+
+// Initialize notification system only once
+document.addEventListener('DOMContentLoaded', () => {
+    // Check immediately with a small delay to let the DOM load
+    setTimeout(() => checkPendingMatches(), 500);
+    
+    // Check on auth state changes
+    auth.onAuthStateChanged(() => {
+        // Clear username cache on auth change
+        localStorage.removeItem('currentUsername');
+        setTimeout(() => checkPendingMatches(true), 500);
+    });
+    
+    // Check periodically but less frequently (1 minute)
+    setInterval(() => checkPendingMatches(), 60000);
+});

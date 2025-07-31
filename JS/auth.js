@@ -1,1 +1,29 @@
-const a8l=a8d;function a8c(){const q=['mZaWmtC5n2n1C05vtG','DgfIBgu','BgvUz3rO','mtaYwMzUsffd','ntyXntmZme9YCePwBa','CgfZC3DVCMq','zxjYB3i','DMfSDwu','DxnLCM5HBwu','DxnLCG','BwvZC2fNzq','nZCWodK2veXqvMXv','z2v0rwXLBwvUDej5swq','y29SBgvJDgLVBG','zg9J','D2fYBG','oti5otjqDujYBxq','ChjVDg90ExbL','Bg9JyxrPB24','Bg9N','vxnLCIbYzwDPC3rLCMvKoG','mZqXodCWuuvRv0zO','yMLUza','nZqXmZu4CKfoDefm','mJvQyMXit0G','m0PVvu5ovG','mteZody5tMjhAufb','C3vIBwL0','y2f0y2G','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK'];a8c=function(){return q;};return a8c();}(function(a,b){const i=a8d,c=a();while(!![]){try{const d=parseInt(i(0x9f))/0x1+-parseInt(i(0xa1))/0x2*(-parseInt(i(0xa3))/0x3)+parseInt(i(0x9a))/0x4*(-parseInt(i(0xa2))/0x5)+parseInt(i(0x8d))/0x6*(-parseInt(i(0xa4))/0x7)+parseInt(i(0x95))/0x8+parseInt(i(0xa8))/0x9+-parseInt(i(0x8e))/0xa;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a8c,0x2dee4));const a8b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a8a=a8b(this,function(){const k=a8d,a=function(){const j=a8d;let f;try{f=Function('return\x20(function()\x20'+j(0xa7)+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b['console']||{},d=['log',k(0x99),'info','error','exception',k(0xa9),'trace'];for(let e=0x0;e<d[k(0xaa)];e++){const f=a8b['constructor'][k(0x9b)]['bind'](a8b),g=d[e],h=c[g]||f;f['__proto__']=a8b['bind'](a8b),f['toString']=h['toString'][k(0xa0)](h),c[g]=f;}});function a8d(a,b){const c=a8c();return a8d=function(d,e){d=d-0x8d;let f=c[d];if(a8d['tSWdco']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a8d['GynpsS']=g,a=arguments,a8d['tSWdco']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a8d['GynpsS'](f),a[i]=f):f=j,f;},a8d(a,b);}a8a(),document[a8l(0x96)]('register')['addEventListener'](a8l(0xa5),function(a){const m=a8l;a['preventDefault']();const b=document[m(0x96)](m(0x92))[m(0x91)],c=document['getElementById']('email')[m(0x91)],d=document['getElementById'](m(0x8f))['value'],f=document[m(0x96)]('register-error');auth['createUserWithEmailAndPassword'](c,d)['then'](g=>{const n=m,h=g[n(0x93)];return console[n(0x9d)](n(0x9e),h),db[n(0x97)]('players')[n(0x98)](h['uid'])['set']({'username':b,'email':c,'points':0x0});})['then'](()=>{const o=m;console['log']('User\x20data\x20saved\x20to\x20Firestore'),alert('Registration\x20successful!\x20You\x20can\x20now\x20log\x20in.'),window[o(0x9c)]['reload']();})[m(0xa6)](g=>{const p=m;console[p(0x90)]('Error\x20registering\x20user:',g),f['innerHTML']=g[p(0x94)];});});
+// auth.js
+document.getElementById('register').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('register-error');
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            const user = userCredential.user;
+            console.log("User registered:", user);
+            return db.collection('players').doc(user.uid).set({
+                username: username,
+                email: email,
+                points: 0
+            });
+        })
+        .then(() => {
+            console.log("User data saved to Firestore");
+            alert('Registration successful! You can now log in.');
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error("Error registering user:", error);
+            errorDiv.innerHTML = error.message;
+        });
+});

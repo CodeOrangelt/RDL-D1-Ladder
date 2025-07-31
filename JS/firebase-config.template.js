@@ -1,1 +1,52 @@
-const a18m=a18d;(function(a,b){const i=a18d,c=a();while(!![]){try{const d=-parseInt(i(0x9a))/0x1*(-parseInt(i(0x92))/0x2)+parseInt(i(0x86))/0x3+parseInt(i(0x87))/0x4*(parseInt(i(0x97))/0x5)+parseInt(i(0x85))/0x6*(parseInt(i(0x8b))/0x7)+-parseInt(i(0x89))/0x8+parseInt(i(0x99))/0x9+-parseInt(i(0x82))/0xa*(parseInt(i(0x8a))/0xb);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a18c,0xaa211));const a18b=(function(){let a=!![];return function(b,c){const d=a?function(){const j=a18d;if(c){const e=c[j(0x93)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a18a=a18b(this,function(){const l=a18d,a=function(){const k=a18d;let f;try{f=Function(k(0x7e)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[l(0x95)]||{},d=[l(0x90),l(0x8d),'info','error',l(0x80),l(0x81),'trace'];for(let e=0x0;e<d[l(0x84)];e++){const f=a18b[l(0x94)]['prototype'][l(0x7f)](a18b),g=d[e],h=c[g]||f;f[l(0x91)]=a18b[l(0x7f)](a18b),f['toString']=h['toString'][l(0x7f)](h),c[g]=f;}});a18a();import{initializeApp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';import{getAuth}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{getFirestore,initializeFirestore,enableIndexedDbPersistence,CACHE_SIZE_UNLIMITED}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';function a18c(){const o=['mtjQEujRz3q','nJGWmZe5EMXJBM5W','ntG0otiWwuDZvvnQ','CMrSywrKzxi','mZu1mtiWofncEujdAW','nJK0nJeZn0HRBNDuyW','mJeYnJuWoxfftKXlAa','ugvYC2LZDgvUy2uGBM90igf2ywLSywjSzsbPBIb0AgLZigjYB3DZzxi','D2fYBG','rMLYzwjHC2uGAw5PDgLHBgL6zwq6','Dw5PBxbSzw1LBNrLza','Bg9N','x19WCM90B19F','ntm1nZm4y095EhvL','yxbWBhK','y29UC3rYDwn0B3i','y29UC29Szq','CMrSywrKzxiUzMLYzwjHC2vHChaUy29T','nu5ZzMrAEG','y29Kzq','mtaZotCXndjVzwj3ELC','mvDiC1noqq','CMv0DxjUicHMDw5JDgLVBIGPia','yMLUza','zxHJzxb0Aw9U','DgfIBgu','mJbLtw9ruvi','quL6yvn5re1glwjXnhrWtg9ADLvzzxbFrY1Pz21iyKSYAc1LlvPZ','BgvUz3rO'];a18c=function(){return o;};return a18c();}import{initIdleTimeout}from'./idle-timeout.js';export const firebaseConfig={'apiKey':a18m(0x83),'authDomain':a18m(0x96),'projectId':a18m(0x88),'storageBucket':'rdladder.firebasestorage.app','messagingSenderId':'152922774046','appId':'1:152922774046:web:c14bd25f07ad1aa0366c0f','measurementId':'G-MXVPNC0TVJ'};const app=initializeApp(firebaseConfig);function a18d(a,b){const c=a18c();return a18d=function(d,e){d=d-0x7e;let f=c[d];if(a18d['jtUrVC']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a18d['SAQxsl']=g,a=arguments,a18d['jtUrVC']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a18d['SAQxsl'](f),a[i]=f):f=j,f;},a18d(a,b);}export const auth=getAuth(app);const firestoreSettings={'cacheSizeBytes':CACHE_SIZE_UNLIMITED,'ignoreUndefinedProperties':!![]},db=initializeFirestore(app,firestoreSettings);enableIndexedDbPersistence(db)['catch'](a=>{const n=a18m;if(a[n(0x98)]==='failed-precondition')console['warn']('Persistence\x20failed\x20-\x20multiple\x20tabs\x20open');else a['code']===n(0x8f)&&console['warn'](n(0x8c));});export{app,db};console['log'](a18m(0x8e),!!app),console['log']('Firestore\x20initialized:',!!db),document['addEventListener']('DOMContentLoaded',()=>{initIdleTimeout();});
+// firebase-config.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, initializeFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Import idle timeout functionality
+import { initIdleTimeout } from './idle-timeout.js';
+
+export const firebaseConfig = {
+  apiKey: "AIzaSyDMF-bq4tpLoZvUYep_G-igmHbK2h-e-Zs",
+  authDomain: "rdladder.firebaseapp.com",
+  projectId: "rdladder",
+  storageBucket: "rdladder.firebasestorage.app",
+  messagingSenderId: "152922774046",
+  appId: "1:152922774046:web:c14bd25f07ad1aa0366c0f",
+  measurementId: "G-MXVPNC0TVJ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+
+// Initialize Firestore with settings for reduced network usage
+const firestoreSettings = {
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+  ignoreUndefinedProperties: true,
+};
+
+// Then initialize Firestore with optimized settings
+const db = initializeFirestore(app, firestoreSettings);
+
+// Enable offline persistence (careful with quota)
+enableIndexedDbPersistence(db)
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Persistence failed - multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Persistence not available in this browser');
+    }
+  });
+
+// Export the optimized db instance
+export { app, db };
+
+//debug lines for connection ping
+console.log('Firebase initialized:', !!app);
+console.log('Firestore initialized:', !!db);
+
+// Initialize idle timeout when firebase config is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initIdleTimeout();
+});

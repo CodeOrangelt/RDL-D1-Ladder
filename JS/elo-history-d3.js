@@ -1,1 +1,179 @@
-const a15p=a15d;(function(a,b){const n=a15d,c=a();while(!![]){try{const d=-parseInt(n(0xf2))/0x1*(-parseInt(n(0x106))/0x2)+-parseInt(n(0x107))/0x3*(parseInt(n(0xf6))/0x4)+parseInt(n(0x10a))/0x5+-parseInt(n(0xf1))/0x6*(-parseInt(n(0x110))/0x7)+-parseInt(n(0xfe))/0x8*(parseInt(n(0x10f))/0x9)+-parseInt(n(0x10c))/0xa+-parseInt(n(0xfa))/0xb*(-parseInt(n(0x101))/0xc);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a15c,0x5bece));const a15b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a15a=a15b(this,function(){const o=a15d;let a;try{const d=Function('return\x20(function()\x20'+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a['console']=a[o(0xfc)]||{},c=['log',o(0x111),'info',o(0x10d),'exception',o(0xee),'trace'];for(let g=0x0;g<c[o(0xf3)];g++){const h=a15b['constructor']['prototype'][o(0xf4)](a15b),i=c[g],j=b[i]||h;h[o(0xef)]=a15b[o(0xf4)](a15b),h['toString']=j['toString'][o(0xf4)](j),b[i]=h;}});function a15c(){const u=['zxjYB3i','zgf0yq','mtu2nMTZwvbMEa','nduWmvP4wKHpCa','D2fYBG','r29Sza','DgfIBgu','x19WCM90B19F','C2L6zq','mte1og9gsLLYwa','nKnOChj2wq','BgvUz3rO','yMLUza','zg9JCW','mJrvywjmwwK','BwfW','rxjYB3iGCMvJB3jKAw5NieqZievmtYbOAxn0B3j5oG','DgLTzxn0yw1W','mtfZCgf4s28','ChjLDMLVDxnfBg8','y29UC29Szq','zwXVsgLZDg9YEuqZ','mtK1mJbOvKvYvLi','DxnLCM5HBwu','Bg9ZzxjvC2vYBMfTzq','ndKYmty5mMPewMT0rG','u2LSDMvY','D2LUBMvYswq','vw5RBM93BIbqBgf5zxi','ChjVBw90Aw9U','mtq3ntq4CMv3CvrY','otKYndLIvfzwAeC','zw1WDhK','ywXS','mtyXmJm1swPOBfjV','zgvZyW','otu0nZbruuTiv2i'];a15c=function(){return u;};return a15c();}a15a();import{collection,addDoc,serverTimestamp,query,orderBy,getDocs,limit,startAfter,doc,setDoc,getDoc,where}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db}from'./firebase-config.js';const ELO_THRESHOLDS_D3=[{'name':'Emerald','elo':0x7d0},{'name':a15p(0x112),'elo':0x708},{'name':a15p(0x102),'elo':0x640},{'name':'Bronze','elo':0x578},{'name':'Unranked','elo':0x4b0}];let lastVisibleD3=null;function a15d(a,b){const c=a15c();return a15d=function(d,e){d=d-0xee;let f=c[d];if(a15d['rrvufL']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a15d['SfDMlh']=g,a=arguments,a15d['rrvufL']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a15d['SfDMlh'](f),a[i]=f):f=j,f;},a15d(a,b);}async function getUsernameByIdD3(a){const q=a15p;try{if(!a)return q(0x104);const b=await getDoc(doc(db,'playersD3',a));if(b['exists']())return b[q(0x10e)]()[q(0xff)]||q(0x104);const c=await getDocs(query(collection(db,'approvedMatchesD3'),where(q(0x103),'==',a),limit(0x1)));if(!c['empty'])return c[q(0xf5)][0x0][q(0x10e)]()['winnerUsername']||'Unknown\x20Player';const d=await getDocs(query(collection(db,'approvedMatchesD3'),where('loserId','==',a),limit(0x1)));if(!d[q(0x108)])return d[q(0xf5)][0x0]['data']()[q(0x100)]||'Unknown\x20Player';return q(0x104);}catch(e){return console['error']('Error\x20getting\x20D3\x20username:',e),'Unknown\x20Player';}}export async function recordEloChangeD3({playerId:a,previousElo:b,newElo:c,opponentId:d,matchResult:e,previousPosition:f,newPosition:g,isPromotion:isPromotion=![],isDemotion:isDemotion=![],matchId:h,timestamp:i}){const r=a15p;try{const j=doc(collection(db,r(0xfd)));let k='match';if(isPromotion)k=r(0x105);if(isDemotion)k='demotion';let l='Unranked';if(c>=0x7d0)l='Emerald';else{if(c>=0x708)l=r(0x112);else{if(c>=0x640)l='Silver';else{if(c>=0x578)l='Bronze';}}}return await setDoc(j,{'type':k,'player':a,'opponent':d,'previousElo':b,'newElo':c,'change':c-b,'matchResult':e,'previousPosition':f,'newPosition':g,'rankAchieved':l,'matchId':h,'timestamp':i||serverTimestamp(),'gameMode':'D3'}),console['log']('D3\x20ELO\x20history\x20recorded\x20for\x20'+a),!![];}catch(m){console['error'](r(0xf8),m);throw m;}}export async function getEloHistoryD3(a=0x14){const s=a15p;try{const b=collection(db,s(0xfd));let c;lastVisibleD3?c=query(b,orderBy('timestamp',s(0x10b)),startAfter(lastVisibleD3),limit(a)):c=query(b,orderBy('timestamp','desc'),limit(a));const d=await getDocs(c);if(d['empty'])return{'entries':[],'hasMore':![]};lastVisibleD3=d[s(0xf5)][d[s(0xf5)]['length']-0x1];const e=d['docs'][s(0xf7)](async g=>{const t=s,h=g[t(0x10e)](),[i,j]=await Promise[t(0x109)]([getUsernameByIdD3(h['player']),getUsernameByIdD3(h['opponent'])]);return{...h,'playerUsername':i,'opponentUsername':j,'change':h['newElo']-h[t(0xfb)],'timestamp':h[t(0xf9)]};}),f=await Promise[s(0x109)](e);return{'entries':f,'hasMore':d[s(0xf0)]===a};}catch(g){console[s(0x10d)]('Error\x20fetching\x20D3\x20ELO\x20history:',g);throw g;}}export function resetPaginationD3(){lastVisibleD3=null;}
+import { 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    query, 
+    orderBy, 
+    getDocs,
+    limit,
+    startAfter,
+    doc,
+    setDoc,
+    getDoc,
+    where
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+
+// Add these threshold constants at the top of the file
+const ELO_THRESHOLDS_D3 = [
+    { name: 'Emerald', elo: 2000 },
+    { name: 'Gold', elo: 1800 },
+    { name: 'Silver', elo: 1600 },
+    { name: 'Bronze', elo: 1400 },
+    { name: 'Unranked', elo: 1200 }
+];
+
+// Track pagination for D3
+let lastVisibleD3 = null;
+
+async function getUsernameByIdD3(userId) {
+    try {
+        if (!userId) return 'Unknown Player';
+        
+        // Try checking in playersD3 collection
+        const userDoc = await getDoc(doc(db, 'playersD3', userId));
+        if (userDoc.exists()) {
+            return userDoc.data().username || 'Unknown Player';
+        }
+        
+        // If not found, try to get from matches
+        const winnerMatches = await getDocs(
+            query(
+                collection(db, 'approvedMatchesD3'), 
+                where('winnerId', '==', userId), 
+                limit(1)
+            )
+        );
+        
+        if (!winnerMatches.empty) {
+            return winnerMatches.docs[0].data().winnerUsername || 'Unknown Player';
+        }
+        
+        const loserMatches = await getDocs(
+            query(
+                collection(db, 'approvedMatchesD3'), 
+                where('loserId', '==', userId), 
+                limit(1)
+            )
+        );
+        
+        if (!loserMatches.empty) {
+            return loserMatches.docs[0].data().loserUsername || 'Unknown Player';
+        }
+        
+        return 'Unknown Player';
+    } catch (error) {
+        console.error('Error getting D3 username:', error);
+        return 'Unknown Player';
+    }
+}
+
+export async function recordEloChangeD3({
+    playerId,
+    previousElo,
+    newElo,
+    opponentId,
+    matchResult,
+    previousPosition,
+    newPosition,
+    isPromotion = false,
+    isDemotion = false,
+    matchId,
+    timestamp
+}) {
+    try {
+        const historyRef = doc(collection(db, 'eloHistoryD3'));
+        
+        // Determine the type and rank
+        let type = 'match';
+        if (isPromotion) type = 'promotion';
+        if (isDemotion) type = 'demotion';
+        
+        // Calculate rank based on new ELO
+        let rankAchieved = 'Unranked';
+        if (newElo >= 2000) rankAchieved = 'Emerald';
+        else if (newElo >= 1800) rankAchieved = 'Gold';
+        else if (newElo >= 1600) rankAchieved = 'Silver';
+        else if (newElo >= 1400) rankAchieved = 'Bronze';
+
+        await setDoc(historyRef, {
+            type,
+            player: playerId,
+            opponent: opponentId,
+            previousElo,
+            newElo,
+            change: newElo - previousElo,
+            matchResult,
+            previousPosition,
+            newPosition,
+            rankAchieved,
+            matchId,
+            timestamp: timestamp || serverTimestamp(),
+            gameMode: 'D3'
+        });
+
+        console.log(`D3 ELO history recorded for ${playerId}`);
+        return true;
+    } catch (error) {
+        console.error('Error recording D3 ELO history:', error);
+        throw error;
+    }
+}
+
+export async function getEloHistoryD3(pageSize = 20) {
+    try {
+        const eloHistoryRef = collection(db, 'eloHistoryD3');
+        let q;
+        
+        if (lastVisibleD3) {
+            q = query(
+                eloHistoryRef, 
+                orderBy('timestamp', 'desc'),
+                startAfter(lastVisibleD3),
+                limit(pageSize)
+            );
+        } else {
+            q = query(
+                eloHistoryRef, 
+                orderBy('timestamp', 'desc'),
+                limit(pageSize)
+            );
+        }
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            return { entries: [], hasMore: false };
+        }
+        
+        lastVisibleD3 = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+        // Use Promise.all to fetch all usernames concurrently
+        const entryPromises = querySnapshot.docs.map(async doc => {
+            const data = doc.data();
+            const [playerUsername, opponentUsername] = await Promise.all([
+                getUsernameByIdD3(data.player),
+                getUsernameByIdD3(data.opponent)
+            ]);
+
+            return {
+                ...data,
+                playerUsername,
+                opponentUsername,
+                change: data.newElo - data.previousElo,
+                timestamp: data.timestamp
+            };
+        });
+
+        const resolvedEntries = await Promise.all(entryPromises);
+        return { entries: resolvedEntries, hasMore: querySnapshot.size === pageSize };
+
+    } catch (error) {
+        console.error("Error fetching D3 ELO history:", error);
+        throw error;
+    }
+}
+
+export function resetPaginationD3() {
+    lastVisibleD3 = null;
+}

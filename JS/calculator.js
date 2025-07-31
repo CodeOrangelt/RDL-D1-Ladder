@@ -1,1 +1,241 @@
-const a9p=a9d;(function(a,b){const k=a9d,c=a();while(!![]){try{const d=parseInt(k(0x137))/0x1*(-parseInt(k(0x132))/0x2)+parseInt(k(0x133))/0x3+parseInt(k(0x11b))/0x4+parseInt(k(0x142))/0x5*(-parseInt(k(0x12d))/0x6)+parseInt(k(0x121))/0x7+-parseInt(k(0x15e))/0x8+-parseInt(k(0x14d))/0x9*(-parseInt(k(0x13d))/0xa);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a9c,0x48c76));const a9b=(function(){let a=!![];return function(b,c){const d=a?function(){const l=a9d;if(c){const e=c[l(0x15f)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a9a=a9b(this,function(){const m=a9d;let a;try{const d=Function(m(0x11d)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');');a=d();}catch(f){a=window;}const b=a[m(0x118)]=a[m(0x118)]||{},c=['log','warn','info',m(0x13a),'exception','table',m(0x160)];for(let g=0x0;g<c['length'];g++){const h=a9b['constructor'][m(0x125)][m(0x14e)](a9b),i=c[g],j=b[i]||h;h[m(0x144)]=a9b[m(0x14e)](a9b),h['toString']=j[m(0x127)][m(0x14e)](j),b[i]=h;}});a9a();function a9d(a,b){const c=a9c();return a9d=function(d,e){d=d-0x116;let f=c[d];if(a9d['VNkwYk']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a9d['JFzonV']=g,a=arguments,a9d['VNkwYk']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a9d['JFzonV'](f),a[i]=f):f=j,f;},a9d(a,b);}import{collection,getDocs,query,orderBy}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db}from'./firebase-config.js';function a9c(){const D=['yMLUza','zgf0yq','zwXVuMf0Aw5N','z2v0ruXpuMfUA0nSyxnZ','cGPjBML0AwfSifjHDgLUz3m6cIaG','pg9WDgLVBIb2ywX1zt0I','Dg9gAxHLza','zgLZCgXHEq','Cg9ZAxrPB24','C29YDa','zM9YrwfJAa','id0G','y29SB3i','y2HHBMDL','z2v0rwXLBwvUDej5swq','DxnLCM5HBwu','mte1mte5mLPNq1DnuW','yxbWBhK','DhjHy2u','i0zgrdCWma','Dw5Yyw5Rzwq','y2fSy3vSyxrLruXp','Bg9ZzxjdAgfUz2u','icSG','CgXHEwvYC0qZ','Aw5Uzxjive1m','pg9WDgLVBIb2ywX1zt0IiJ5mB2fKAw5NihbSyxLLCNmUlI48l29WDgLVBJ4','Bg9ZzxiTBMv3lwvSBW','tMv3ievmtZOG','DgfYz2v0','z29Sza','Bg9ZzxiTy3vYCMvUDc1LBg8','y2fSy3vSyxrPB24TDgv4Da','BMv3v2LUBMvYuMf0Aw5N','BgfKzgvY','yNjVBNPL','y29UC29Szq','y3vYCMvUDeXHzgrLCG','z2v0','mtu2nJy1nNb1v01puW','D2LUBMvYlxnLBgvJDa','CMv0DxjUicHMDw5JDgLVBIGPia','BM9Uzq','ugXHEwvYig5VDcbMB3vUza','z3jPza','nJKZntm5vgn6r1j5','y2fSy3vSyxrPB24Tzgv0ywLSCW','Dgv4DenVBNrLBNq','C2v0','ChjVDg90ExbL','CgXHEwvYCW','Dg9tDhjPBMC','Aw5PDa','Bg9N','zxHWzwn0zwrty29YzuXVC2vY','zwXV','y2XPy2S','mtm2ndi4s0XlCM1t','D2LUBMvYq2HHBMDL','ywn0AxzL','zgf0yxnLDa','Bg9ZzxiTC2vSzwn0','mtK5nfzjswTYzq','mtuYnJK0wKrKENLU','C2v0DxbfDMvUDeXPC3rLBMvYCW','lMXHzgrLCI1IDg4','zw1LCMfSza','mZm0AxHZvvD3','ihbSyxLLCNmGzNjVBsa','q3vYCMvUDcbfte86ia','zxjYB3i','Bg9ZzxiTBMfTzq','Cg93','mJbMqMnJzgm','DMfSDwu','ievmtYKkicaGicaGicaGicaGpc9VChrPB24+','iIbJBgfZCZ0I','y2XHC3nmAxn0','mte1DuXSAgfI','D2LUBMvYlw5HBwu','x19WCM90B19F','C3r5Bgu','CM91BMq','zgLZCgXHEu1HDgnOuMvZDwX0','ywrKrxzLBNrmAxn0zw5LCG','CxvLCNLtzwXLy3rVCKfSBa','tg9HzgvKia','ieHPz2GGruXpigDHAw4','DxbKyxrLrhjVCgrVD25Z','mZqWmZuWm1rMshvKsa'];a9c=function(){return D;};return a9c();}class ELOCalculator{constructor(){const n=a9d;this['currentLadder']='D1',this['players']=new Map(),this[n(0x128)]();}['init'](){const o=a9d;this[o(0x134)](),this['loadPlayers']();}[a9p(0x134)](){const q=a9p;document[q(0x149)](q(0x135))['forEach'](a=>{const r=q;a[r(0x148)]('click',b=>{const s=r;document['querySelectorAll']('.ladder-btn')['forEach'](c=>c[s(0x141)]['remove'](s(0x12f))),b['target'][s(0x141)]['add'](s(0x12f)),this['currentLadder']=b[s(0x16b)][s(0x130)][s(0x116)],this['loadPlayers']();});}),document['getElementById']('refresh-players')['addEventListener'](q(0x12c),()=>{this['loadPlayers']();}),document['getElementById'](q(0x11c))[q(0x148)](q(0x15b),()=>this['calculateMatch']()),document['getElementById'](q(0x131))['addEventListener'](q(0x15b),()=>this['calculateMatch']());}async['loadPlayers'](){const t=a9p;try{this['updateDropdowns'](t(0x168));const a=this[t(0x119)]==='D1'?t(0x126):this['currentLadder']==='D2'?'playersD2':t(0x166),b=collection(db,a),c=query(b,orderBy('eloRating','desc')),d=await getDocs(c);this['players']['clear'](),d[t(0x158)](e=>{const u=t,f=e[u(0x14f)]();f[u(0x15d)]&&this[u(0x126)][u(0x124)](f['username'],{'id':e['id'],'username':f[u(0x15d)],'elo':parseInt(f[u(0x150)])||0x4b0,'position':f[u(0x156)]||0x3e7});}),this[t(0x14c)](),console[t(0x129)](t(0x14a)+this[t(0x126)]['size']+t(0x138)+this[t(0x119)]+'\x20ladder');}catch(e){console['error']('Error\x20loading\x20players:',e),this['updateDropdowns']('<option\x20value=\x22\x22>Error\x20loading\x20players</option>');}}[a9p(0x14c)](a=null){const v=a9p,b=document['getElementById'](v(0x11c)),c=document[v(0x15c)]('loser-select');if(a){b['innerHTML']=a,c['innerHTML']=a;return;}let d='<option\x20value=\x22\x22>Select\x20a\x20player...</option>';const e=Array['from'](this['players']['values']())[v(0x157)]((f,g)=>g['elo']-f[v(0x12b)]);e['forEach'](f=>{const w=v,g=this[w(0x151)](f['elo']);d+=w(0x153)+f['username']+'\x22\x20data-elo=\x22'+f[w(0x12b)]+w(0x140)+g+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+f['username']+'\x20('+f['elo']+w(0x13f);}),b[v(0x167)]=d,c[v(0x167)]=d;}['calculateMatch'](){const x=a9p,a=document[x(0x15c)]('winner-select'),b=document[x(0x15c)]('loser-select'),c=a['value'],d=b[x(0x13e)];if(!c||!d){document[x(0x15c)]('match-result')[x(0x145)]['display']=x(0x11e),document['getElementById']('calculation-details')[x(0x145)][x(0x155)]=x(0x11e);return;}if(c===d){alert('Please\x20select\x20different\x20players\x20for\x20winner\x20and\x20loser');return;}const e=this['players']['get'](c),f=this['players'][x(0x11a)](d);if(!e||!f){console[x(0x13a)](x(0x11f));return;}const g=this[x(0x163)](e[x(0x12b)],f[x(0x12b)]);this[x(0x147)](e,f,g),this['displayCalculationDetails'](e,f,g);}[a9p(0x163)](a,b,c=0x20){const y=a9p,d=0x1/(0x1+Math['pow'](0xa,(b-a)/0x190)),e=0x1/(0x1+Math[y(0x13c)](0xa,(a-b)/0x190)),f=a+c*(0x1-d),g=b+c*(0x0-e);return{'winnerChange':Math[y(0x146)](f-a),'loserChange':Math[y(0x146)](g-b),'newWinnerRating':Math[y(0x146)](f),'newLoserRating':Math[y(0x146)](g),'expectedScoreWinner':d,'expectedScoreLoser':e};}[a9p(0x147)](a,b,c){const z=a9p;document['getElementById']('winner-name')['textContent']=a['username'],document[z(0x15c)]('winner-current-elo')['textContent']='Current\x20ELO:\x20'+a[z(0x12b)],document[z(0x15c)]('winner-elo-change')['textContent']='+'+c['winnerChange'],document[z(0x15c)]('winner-new-elo')['textContent']=z(0x16a)+c[z(0x16f)],document['getElementById'](z(0x13b))[z(0x123)]=b['username'],document[z(0x15c)](z(0x16d))['textContent']=z(0x139)+b['elo'],document[z(0x15c)]('loser-elo-change')[z(0x123)]=''+c[z(0x164)],document[z(0x15c)](z(0x169))['textContent']='New\x20ELO:\x20'+c['newLoserRating'];const d=this['getELOColor'](a[z(0x12b)]),e=this['getELOColor'](b['elo']);document[z(0x15c)](z(0x143))['style']['color']=d,document[z(0x15c)](z(0x13b))['style'][z(0x15a)]=e,document['getElementById']('match-result')['style']['display']=z(0x120);}['displayCalculationDetails'](a,b,c){const A=a9p,d=A(0x152)+a['username']+':\x20'+a[A(0x12b)]+'\x0a\x20\x20'+b['username']+':\x20'+b['elo']+'\x0a\x20\x20\x0aExpected\x20Scores:\x0a\x20\x20'+a[A(0x15d)]+':\x20'+c['expectedScoreWinner'][A(0x154)](0x3)+'\x20('+(c['expectedScoreWinner']*0x64)['toFixed'](0x1)+'%\x20chance\x20to\x20win)\x0a\x20\x20'+b['username']+':\x20'+c['expectedScoreLoser'][A(0x154)](0x3)+'\x20('+(c[A(0x12a)]*0x64)[A(0x154)](0x1)+'%\x20chance\x20to\x20win)\x0a\x0aELO\x20Changes:\x0a\x20\x20'+a['username']+':\x20'+a['elo']+'\x20+\x20'+c[A(0x12e)]+A(0x159)+c[A(0x16f)]+'\x0a\x20\x20'+b['username']+':\x20'+b[A(0x12b)]+A(0x165)+c['loserChange']+A(0x159)+c['newLoserRating']+'\x0a\x0aFormula\x20Used:\x0a\x20\x20New\x20Rating\x20=\x20Old\x20Rating\x20+\x20K-factor\x20×\x20(Actual\x20Score\x20-\x20Expected\x20Score)\x0a\x20\x20K-factor\x20=\x2032\x0a\x20\x20Actual\x20Score:\x20Winner\x20=\x201,\x20Loser\x20=\x200\x0a\x20\x20\x0a'+(c[A(0x12e)]>0x14?A(0x14b):'')+'\x0a'+(c[A(0x12e)]<0x5?'Low\x20ELO\x20gain.':'')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20';document[A(0x15c)](A(0x16e))['textContent']=d,document[A(0x15c)](A(0x122))['style']['display']='block';}['getELOColor'](a){const B=a9p;if(a>=0x7d0)return'#50C878';else{if(a>=0x708)return B(0x161);else{if(a>=0x640)return'#C0C0C0';else{if(a>=0x578)return'#CD7F32';else return'#808080';}}}}['getELORankClass'](a){const C=a9p;if(a>=0x7d0)return C(0x136);else{if(a>=0x708)return C(0x16c);else{if(a>=0x640)return'silver';else{if(a>=0x578)return C(0x117);else return C(0x162);}}}}}document[a9p(0x148)]('DOMContentLoaded',()=>{document['getElementById']('sandbox')&&new ELOCalculator();});
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+
+class ELOCalculator {
+    constructor() {
+        this.currentLadder = 'D1';
+        this.players = new Map();
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.loadPlayers();
+    }
+
+    setupEventListeners() {
+        // Ladder selection buttons
+        document.querySelectorAll('.ladder-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update active button
+                document.querySelectorAll('.ladder-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Update current ladder and reload players
+                this.currentLadder = e.target.dataset.ladder;
+                this.loadPlayers();
+            });
+        });
+
+        // Refresh button
+        document.getElementById('refresh-players').addEventListener('click', () => {
+            this.loadPlayers();
+        });
+
+        // Player selection dropdowns
+        document.getElementById('winner-select').addEventListener('change', () => this.calculateMatch());
+        document.getElementById('loser-select').addEventListener('change', () => this.calculateMatch());
+    }
+
+    async loadPlayers() {
+        try {
+            // Show loading state
+            this.updateDropdowns('<option value="">Loading players...</option>');
+            
+            // Determine collection based on ladder
+            const collectionName = this.currentLadder === 'D1' ? 'players' : 
+                                 this.currentLadder === 'D2' ? 'playersD2' : 'playersD3';
+            
+            // Query players ordered by ELO descending
+            const playersRef = collection(db, collectionName);
+            const playersQuery = query(playersRef, orderBy('eloRating', 'desc'));
+            const playersSnapshot = await getDocs(playersQuery);
+            
+            // Clear and rebuild players map
+            this.players.clear();
+            
+            playersSnapshot.forEach(doc => {
+                const playerData = doc.data();
+                if (playerData.username) {
+                    this.players.set(playerData.username, {
+                        id: doc.id,
+                        username: playerData.username,
+                        elo: parseInt(playerData.eloRating) || 1200,
+                        position: playerData.position || 999
+                    });
+                }
+            });
+
+            // Update dropdowns with player data
+            this.updateDropdowns();
+            
+            console.log(`Loaded ${this.players.size} players from ${this.currentLadder} ladder`);
+            
+        } catch (error) {
+            console.error('Error loading players:', error);
+            this.updateDropdowns('<option value="">Error loading players</option>');
+        }
+    }
+
+    updateDropdowns(content = null) {
+        const winnerSelect = document.getElementById('winner-select');
+        const loserSelect = document.getElementById('loser-select');
+        
+        if (content) {
+            winnerSelect.innerHTML = content;
+            loserSelect.innerHTML = content;
+            return;
+        }
+
+        // Build options from players
+        let options = '<option value="">Select a player...</option>';
+        
+        // Sort players by ELO descending for better UX
+        const sortedPlayers = Array.from(this.players.values())
+            .sort((a, b) => b.elo - a.elo);
+        
+        sortedPlayers.forEach(player => {
+            const rankClass = this.getELORankClass(player.elo);
+            options += `<option value="${player.username}" data-elo="${player.elo}" class="${rankClass}">
+                ${player.username} (${player.elo} ELO)
+            </option>`;
+        });
+        
+        winnerSelect.innerHTML = options;
+        loserSelect.innerHTML = options;
+    }
+
+    calculateMatch() {
+        const winnerSelect = document.getElementById('winner-select');
+        const loserSelect = document.getElementById('loser-select');
+        
+        const winnerName = winnerSelect.value;
+        const loserName = loserSelect.value;
+        
+        if (!winnerName || !loserName) {
+            document.getElementById('match-result').style.display = 'none';
+            document.getElementById('calculation-details').style.display = 'none';
+            return;
+        }
+
+        if (winnerName === loserName) {
+            alert('Please select different players for winner and loser');
+            return;
+        }
+
+        const winner = this.players.get(winnerName);
+        const loser = this.players.get(loserName);
+        
+        if (!winner || !loser) {
+            console.error('Player not found');
+            return;
+        }
+
+        // Calculate ELO changes
+        const result = this.calculateELO(winner.elo, loser.elo);
+        
+        // Update UI
+        this.displayMatchResult(winner, loser, result);
+        this.displayCalculationDetails(winner, loser, result);
+    }
+
+    calculateELO(winnerRating, loserRating, kFactor = 32) {
+        // Expected scores
+        const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
+        const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
+
+        // New ratings
+        const newWinnerRating = winnerRating + kFactor * (1 - expectedScoreWinner);
+        const newLoserRating = loserRating + kFactor * (0 - expectedScoreLoser);
+
+        return {
+            winnerChange: Math.round(newWinnerRating - winnerRating),
+            loserChange: Math.round(newLoserRating - loserRating),
+            newWinnerRating: Math.round(newWinnerRating),
+            newLoserRating: Math.round(newLoserRating),
+            expectedScoreWinner,
+            expectedScoreLoser
+        };
+    }
+
+    displayMatchResult(winner, loser, result) {
+        // Winner card
+        document.getElementById('winner-name').textContent = winner.username;
+        document.getElementById('winner-current-elo').textContent = `Current ELO: ${winner.elo}`;
+        document.getElementById('winner-elo-change').textContent = `+${result.winnerChange}`;
+        document.getElementById('winner-new-elo').textContent = `New ELO: ${result.newWinnerRating}`;
+        
+        // Loser card
+        document.getElementById('loser-name').textContent = loser.username;
+        document.getElementById('loser-current-elo').textContent = `Current ELO: ${loser.elo}`;
+        document.getElementById('loser-elo-change').textContent = `${result.loserChange}`;
+        document.getElementById('loser-new-elo').textContent = `New ELO: ${result.newLoserRating}`;
+
+        // Apply ELO-based colors
+        const winnerColor = this.getELOColor(winner.elo);
+        const loserColor = this.getELOColor(loser.elo);
+        
+        document.getElementById('winner-name').style.color = winnerColor;
+        document.getElementById('loser-name').style.color = loserColor;
+
+        // Show the result
+        document.getElementById('match-result').style.display = 'grid';
+    }
+
+    displayCalculationDetails(winner, loser, result) {
+        const details = `
+
+Initial Ratings:
+  ${winner.username}: ${winner.elo}
+  ${loser.username}: ${loser.elo}
+  
+Expected Scores:
+  ${winner.username}: ${result.expectedScoreWinner.toFixed(3)} (${(result.expectedScoreWinner * 100).toFixed(1)}% chance to win)
+  ${loser.username}: ${result.expectedScoreLoser.toFixed(3)} (${(result.expectedScoreLoser * 100).toFixed(1)}% chance to win)
+
+ELO Changes:
+  ${winner.username}: ${winner.elo} + ${result.winnerChange} = ${result.newWinnerRating}
+  ${loser.username}: ${loser.elo} + ${result.loserChange} = ${result.newLoserRating}
+
+Formula Used:
+  New Rating = Old Rating + K-factor × (Actual Score - Expected Score)
+  K-factor = 32
+  Actual Score: Winner = 1, Loser = 0
+  
+${result.winnerChange > 20 ? ' High ELO gain' : ''}
+${result.winnerChange < 5 ? 'Low ELO gain.' : ''}
+        `;
+        
+        document.getElementById('calculation-text').textContent = details;
+        document.getElementById('calculation-details').style.display = 'block';
+    }
+
+    getELOColor(elo) {
+        if (elo >= 2000) return '#50C878';      // Emerald
+        else if (elo >= 1800) return '#FFD700'; // Gold
+        else if (elo >= 1600) return '#C0C0C0'; // Silver
+        else if (elo >= 1400) return '#CD7F32'; // Bronze
+        else return '#808080';                  // Unranked/Default
+    }
+
+    getELORankClass(elo) {
+        if (elo >= 2000) return 'emerald';
+        else if (elo >= 1800) return 'gold';
+        else if (elo >= 1600) return 'silver';
+        else if (elo >= 1400) return 'bronze';
+        else return 'unranked';
+    }
+}
+
+// Initialize the calculator when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Only initialize if we're on the rules page with the sandbox section
+    if (document.getElementById('sandbox')) {
+        new ELOCalculator();
+    }
+});

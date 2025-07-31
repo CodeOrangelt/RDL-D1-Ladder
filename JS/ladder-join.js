@@ -1,1 +1,322 @@
-const a25C=a25d;function a25c(){const N=['DxnLCM5HBwu','DwLK','mta4nJm1mJnPr25wwKy','y2HLy2TLza','CgXHEwvYC0qZ','tgfKzgvYigPVAw46ieqYihjHzgLVigzVDw5KoG','re9nq29UDgvUDeXVywrLza','mtyZoe5rEK9lvW','Dg9mB3DLCKnHC2u','DMfSDwu','y2XHC3noyw1L','Dg9vChbLCKnHC2u','ywrKrxzLBNrmAxn0zw5LCG','n0PAvfP5wq','z2v0swruB2TLBG','rxjYB3iGy2HLy2TPBMCGBgfKzgvYihn0yxr1CZO','igXHzgrLCI4UlG','DhjHy2u','Dgv4DenVBNrLBNq','mtiWmdG2mZjRrfrmBKy','AM9PBI1SywrKzxiTDhLWzq','rxjYB3iGAM9PBMLUzYbSywrKzxi6','CgXHEwvYC0r1B3m','ChjVDg90ExbL','BgfKzgvYlwPVAw4TChjVBxb0','BM9Uzq','zgLZCgXHEq','zgLZywjSzwq','rfvpuW','CxvLCNLtzwXLy3rVCKfSBa','DgfIBgu','BgfKzgvYlwPVAw4TC3rHDhvZ','z2v0rwXLBwvUDej5swq','otmWmJeZmhrkB05Ltq','BgvUz3rO','igXHzgrLCIeGvgHLihbHz2uGD2LSBcbYzwzYzxnOlI4U','Aw5WDxrBBMfTzt0IBgfKzgvYiL0','CgXHEwvYC0qY','BgfKzgvYlwPVAw4TC3rHDhvZigvYCM9Y','yMLUza','mtC3nJu4yLDny3Ht','nti2ogDcvvzbDq','mJuWmtzWDhLXthm','zw1WDhK','vMvYAwz5Aw5NihvZzxjUyw1LlI4U','Bg9JyxrPB24','zgf0yq','qxv0AgvUDgLJyxrPB24GzMfPBgvKlIbqBgvHC2uGC2LNBIbPBIbHz2fPBI4','Bg9N','rxjYB3iGy2HLy2TPBMCG','zxjYB3i','mJjlDuzbBuq','vxnLCM5HBwuGzg9LC24NDcbTyxrJAc4GugXLyxnLigvUDgvYici','AM9PBI11C2vYBMfTzs1PBNb1Da','CgXHEwvYCW','C3r5Bgu','mtbjvNnbugW','nZK1Ehzqrxj4','u3vJy2vZC2z1BgX5igPVAw5Lzcb0AguG','ww91igfYzsbHBhjLywr5ihbHCNqGB2yGDgHLia','CMv0DxjUicHMDw5JDgLVBIGPia','sM9PBMLUzYa','iIb0BYbJB25MAxjTlG','u3vJy2vZC2z1BgX5igPVAw5Lzcb0AguGrhvVCYbSywrKzxiHifLVDsbJyw4GBM93igzVCM0GDgvHBxmGD2L0AcbVDgHLCIbWBgf5zxjZlIbuAguGCgfNzsb3AwXSihjLzNjLC2GUlI4','y29UC29Szq','mtC1mdjYy3nMtKe','mtq4ogHLvfnwyG','B25JBgLJAW','AM9PBI1SywrKzxiTyNv0Dg9U','zdiTC3DPDgnO','D2fYBG','zxHJzxb0Aw9U','yMXVy2S','CgXHEwvYC0nurG','y2HHBMDL','Cg9ZAxrPB24','Dg9tDhjPBMC','zgvZyW','zdeTC3DPDgnO'];a25c=function(){return N;};return a25c();}(function(a,b){const z=a25d,c=a();while(!![]){try{const d=-parseInt(z(0xb4))/0x1*(parseInt(z(0xbd))/0x2)+-parseInt(z(0xe0))/0x3*(parseInt(z(0xb3))/0x4)+parseInt(z(0xc3))/0x5*(-parseInt(z(0xcb))/0x6)+parseInt(z(0xe6))/0x7*(-parseInt(z(0xec))/0x8)+parseInt(z(0xfa))/0x9+parseInt(z(0xc2))/0xa*(parseInt(z(0xdb))/0xb)+-parseInt(z(0xcc))/0xc*(-parseInt(z(0xb2))/0xd);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a25c,0xb8b7f));function a25d(a,b){const c=a25c();return a25d=function(d,e){d=d-0xac;let f=c[d];if(a25d['uLshuU']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a25d['XpcUQd']=g,a=arguments,a25d['uLshuU']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a25d['XpcUQd'](f),a[i]=f):f=j,f;},a25d(a,b);}const a25b=(function(){let a=!![];return function(b,c){const d=a?function(){if(c){const e=c['apply'](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a25a=a25b(this,function(){const B=a25d,a=function(){const A=a25d;let f;try{f=Function(A(0xc6)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b[B(0xca)]=b[B(0xca)]||{},d=[B(0xba),B(0xd0),'info','error',B(0xd1),B(0xf7),B(0xea)];for(let e=0x0;e<d[B(0xac)];e++){const f=a25b['constructor'][B(0xf0)][B(0xb1)](a25b),g=d[e],h=c[g]||f;f['__proto__']=a25b['bind'](a25b),f[B(0xd6)]=h['toString'][B(0xb1)](h),c[g]=f;}});a25a();import{doc,getDoc,getDocs,setDoc,query,collection,orderBy,limit,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';import{auth,db}from'./firebase-config.js';let currentLadder='D1';document['addEventListener'](a25C(0xdf),()=>{const D=a25C,a=document[D(0xf9)](D(0xd8)),b=document[D(0xf9)](D(0xcf));console['log']('Ladder\x20join:\x20D1\x20radio\x20found:',!!a),console['log'](D(0xde),!!b);function c(){const E=D;document[E(0xf6)](E(0xae))['forEach'](e=>{const F=E;e[F(0xe5)](F(0xd4),f=>{const G=F;f['target'][G(0xdc)]&&(currentLadder=f['target']['value'],console[G(0xba)]('Ladder\x20changed\x20to:\x20'+currentLadder),checkUserLadderStatus());});});}c();const d=document['getElementById']('join-ladder-button');d&&d[D(0xe5)]('click',handleJoinLadder),onAuthStateChanged(auth,e=>{const H=D;if(e)checkUserLadderStatus();else{const f=document['getElementById'](H(0xf1));f&&(f[H(0xc1)][H(0xf3)]=H(0xf2));}});});function getCollectionName(a){const I=a25C;switch(a?.[I(0xe4)]()){case'D1':return'players';case'D2':return'playersD2';case'D3':return I(0xdd);case I(0xf5):case'DUO':return I(0xef);case'CTF':return I(0xd3);default:console[I(0xd0)]('Unknown\x20ladder\x20type:\x20'+a+',\x20defaulting\x20to\x20D1');return'players';}}async function checkUserLadderStatus(){const J=a25C;console[J(0xba)]('Checking\x20user\x20status\x20for\x20ladder:',currentLadder);const a=auth['currentUser'],b=document[J(0xf9)](J(0xf1)),c=document['getElementById'](J(0xed)),d=document[J(0xf9)]('tiny-join-button');if(!a||!a['uid']||!b||!c||!d){if(b)b['style']['display']=J(0xf2);if(d)d['style'][J(0xf3)]=J(0xf2);return;}try{try{await a[J(0xe7)](![]);}catch(h){console[J(0xbc)]('Authentication\x20verification\x20failed:',h),b[J(0xc1)][J(0xf3)]='none',d['style']['display']='none';return;}const e=getCollectionName(currentLadder),f=doc(db,e,a['uid']),g=await getDoc(f);if(g['exists']())b['style']['display']='none',d['style'][J(0xf3)]='none';else{b[J(0xc1)]['display']='none',d['style']['display']='block',c['textContent']=currentLadder,d[J(0xcd)]=()=>{const K=J;b['style'][K(0xf3)]==='block'?b['style']['display']='none':b['style'][K(0xf3)]=K(0xd2);};const i=document[J(0xf9)]('join-username-input'),j=document['getElementById'](J(0xf8));if(i)i['value']='';j&&(j[J(0xeb)]='',j['className']='ladder-join-status');}}catch(k){console[J(0xbc)](J(0xe8),k),b[J(0xc1)][J(0xf3)]=J(0xf2),d['style']['display']='none';}}async function handleJoinLadder(){const L=a25C,a=auth['currentUser'],b=document['getElementById'](L(0xce)),c=document['getElementById'](L(0xf8)),d=document['getElementById'](L(0xbf));if(!a||!a[L(0xda)]){c['textContent']='You\x20must\x20be\x20signed\x20in\x20to\x20join\x20a\x20ladder.',c['className']=L(0xb0);return;}try{await a['getIdToken'](!![]);}catch(e){console['error']('Authentication\x20error:',e),c[L(0xeb)]=L(0xb9),c['className']=L(0xb0);return;}if(!d||!d['value']['trim']()){c['textContent']='Please\x20enter\x20your\x20username\x20to\x20confirm.',c['className']='ladder-join-status\x20error';return;}try{b[L(0xf4)]=!![],c['textContent']=L(0xb6),c['className']='ladder-join-status\x20loading';let f='',g=null;const h=[L(0xc0),L(0xaf),'playersD3',L(0xef),'playersCTF','nonParticipants'];for(const s of h){try{const t=doc(db,s,a[L(0xda)]),u=await getDoc(t);if(u['exists']()){g=u[L(0xb8)]();if(g[L(0xd9)]){f=g['username'];break;}}}catch(v){console[L(0xbc)](L(0xbb)+s+':',v);}}!f&&a['email']&&(f=a['email']['split']('@')[0x0]);if(!f){c[L(0xeb)]='Could\x20not\x20verify\x20your\x20account.\x20Please\x20contact\x20an\x20administrator.',c[L(0xe3)]=L(0xb0),b[L(0xf4)]=![];return;}const i=d[L(0xe2)]['trim']();if(f&&i[L(0xe1)]()!==f['toLowerCase']()){c[L(0xeb)]=L(0xbe)+f+L(0xc8),c[L(0xe3)]=L(0xb0),b[L(0xf4)]=![];return;}c[L(0xeb)]=L(0xc7)+currentLadder+L(0xe9);const j=getCollectionName(currentLadder),k=doc(db,j,a['uid']),l=await getDoc(k);if(l['exists']()){c[L(0xeb)]=L(0xc5)+currentLadder+'\x20ladder.',c['className']='ladder-join-status\x20error',b['disabled']=![];return;}try{await a[L(0xe7)](!![]);}catch(w){c['textContent']='Authentication\x20failed.\x20Please\x20sign\x20in\x20again.',c[L(0xe3)]=L(0xb0),b['disabled']=![];return;}const m=f,n=collection(db,j),o=query(n,orderBy('position',L(0xd7)),limit(0x1)),p=await getDocs(o);let q=0x1;if(!p[L(0xb5)]){const x=p['docs'][0x0]['data']();q=(x[L(0xd5)]||0x0)+0x1;}const r={'username':m,'email':a['email'],'eloRating':0x4b0,'position':q,'createdAt':serverTimestamp(),'isAdmin':![],'matches':0x0,'wins':0x0,'losses':0x0,'gameMode':currentLadder,...currentLadder===L(0xf5)&&{'hasTeam':![],'teamId':null,'teamName':null,'teammate':null,'teamColor':null,'lookingForTeam':!![],'tierValue':0x3e8}};await setDoc(k,r),currentLadder===L(0xf5)?c[L(0xeb)]=L(0xc9):c[L(0xeb)]=L(0xc4)+currentLadder+L(0xad),c[L(0xe3)]='ladder-join-status\x20success',setTimeout(()=>{const M=L;window[M(0xb7)]['reload']();},0x7d0);}catch(y){console['error'](L(0xee),y),c['textContent']='Error\x20joining\x20ladder:\x20'+y['message'],c['className']=L(0xb0),b[L(0xf4)]=![];}}
+// Language: JavaScript
+// filepath: /c:/Descent Nexus Repo/RDL-D1-Ladder/JS/ladder-join.js
+
+import {
+    doc,
+    getDoc,
+    getDocs,
+    setDoc,
+    query,
+    collection,
+    orderBy,
+    limit,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { auth, db } from './firebase-config.js';
+
+// Track currently selected ladder
+let currentLadder = 'D1';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Listen for radio button changes instead of button clicks
+    const d1Radio = document.getElementById('d1-switch');
+    const d2Radio = document.getElementById('d2-switch');
+    
+    console.log("Ladder join: D1 radio found:", !!d1Radio);
+    console.log("Ladder join: D2 radio found:", !!d2Radio);
+    
+    // Setup radio change handlers
+    function setupRadioListeners() {
+        document.querySelectorAll('input[name="ladder"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    currentLadder = e.target.value;
+                    console.log(`Ladder changed to: ${currentLadder}`);
+                    checkUserLadderStatus();
+                }
+            });
+        });
+    }
+    
+    // Call the setup function
+    setupRadioListeners();
+    
+    // Setup join button click handler
+    const joinButton = document.getElementById('join-ladder-button');
+    if (joinButton) {
+        joinButton.addEventListener('click', handleJoinLadder);
+    }
+    
+    // Listen for auth state changes
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            checkUserLadderStatus();
+        } else {
+            const joinPrompt = document.getElementById('ladder-join-prompt');
+            if (joinPrompt) {
+                joinPrompt.style.display = 'none';
+            }
+        }
+    });
+});
+
+// Update the getCollectionName function to ensure proper Duos support
+function getCollectionName(ladderType) {
+    switch(ladderType?.toUpperCase()) {
+        case 'D1':
+            return 'players';
+        case 'D2':
+            return 'playersD2';
+        case 'D3':
+            return 'playersD3';
+        case 'DUOS':
+        case 'DUO':
+            return 'playersDuos';
+        case 'CTF':
+            return 'playersCTF';
+        default:
+            console.warn(`Unknown ladder type: ${ladderType}, defaulting to D1`);
+            return 'players';
+    }
+}
+
+// Update the checkUserLadderStatus function with additional security checks
+async function checkUserLadderStatus() {
+    console.log("Checking user status for ladder:", currentLadder);
+
+    const user = auth.currentUser;
+    const joinPrompt = document.getElementById('ladder-join-prompt');
+    const joinLadderType = document.getElementById('join-ladder-type');
+    const tinyJoinButton = document.getElementById('tiny-join-button');
+    
+    if (!user || !user.uid || !joinPrompt || !joinLadderType || !tinyJoinButton) {
+        // If no user or UI elements missing, hide the join prompt and tiny join button
+        if (joinPrompt) joinPrompt.style.display = 'none';
+        if (tinyJoinButton) tinyJoinButton.style.display = 'none';
+        return;
+    }
+    
+    try {
+        // Verify authentication is valid
+        try {
+            await user.getIdToken(false); // Check token without forcing refresh
+        } catch (authError) {
+            console.error("Authentication verification failed:", authError);
+            joinPrompt.style.display = 'none';
+            tinyJoinButton.style.display = 'none';
+            return;
+        }
+        
+        // Get the collection name based on the current ladder - UPDATED TO USE HELPER FUNCTION
+        const collectionName = getCollectionName(currentLadder);
+        
+        // Check if user exists in this ladder collection
+        const userDocRef = doc(db, collectionName, user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            // User is already on this ladder, hide both the join prompt and tiny join button
+            joinPrompt.style.display = 'none';
+            tinyJoinButton.style.display = 'none';
+        } else {
+            // User is not on this ladder: show the tiny join button and prepare the join prompt.
+            joinPrompt.style.display = 'none'; // Hide full prompt by default.
+            tinyJoinButton.style.display = 'block';
+            joinLadderType.textContent = currentLadder;
+            
+            // Toggle the join prompt when the tiny join button is clicked.
+            tinyJoinButton.onclick = () => {
+                if (joinPrompt.style.display === 'block') {
+                    joinPrompt.style.display = 'none';
+                } else {
+                    joinPrompt.style.display = 'block';
+                }
+            };
+
+            // Clear any previous inputs and status messages
+            const usernameInput = document.getElementById('join-username-input');
+            const joinStatus = document.getElementById('ladder-join-status');
+            if (usernameInput) usernameInput.value = '';
+            if (joinStatus) {
+                joinStatus.textContent = '';
+                joinStatus.className = 'ladder-join-status';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking ladder status:', error);
+        joinPrompt.style.display = 'none'; // Hide on error as a safety measure
+        tinyJoinButton.style.display = 'none';
+    }
+}
+
+// Update the handleJoinLadder function to support DUOS
+async function handleJoinLadder() {
+    const user = auth.currentUser;
+    const joinButton = document.getElementById('join-ladder-button');
+    const joinStatus = document.getElementById('ladder-join-status');
+    const usernameInput = document.getElementById('join-username-input');
+    
+    // First, make sure the user is authenticated
+    if (!user || !user.uid) {
+        joinStatus.textContent = 'You must be signed in to join a ladder.';
+        joinStatus.className = 'ladder-join-status error';
+        return;
+    }
+    
+    // Verify authentication state again
+    try {
+        // This will throw an error if the user's auth token is invalid or expired
+        await user.getIdToken(true);
+    } catch (authError) {
+        console.error("Authentication error:", authError);
+        joinStatus.textContent = 'Authentication failed. Please sign in again.';
+        joinStatus.className = 'ladder-join-status error';
+        return;
+    }
+    
+    if (!usernameInput || !usernameInput.value.trim()) {
+        joinStatus.textContent = 'Please enter your username to confirm.';
+        joinStatus.className = 'ladder-join-status error';
+        return;
+    }
+    
+    try {
+        // Disable the button and show loading state
+        joinButton.disabled = true;
+        joinStatus.textContent = `Verifying username...`;
+        joinStatus.className = 'ladder-join-status loading';
+        
+        // First, find the user's actual username across collections
+        let actualUsername = '';
+        let userData = null;
+        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersCTF', 'nonParticipants'];
+        
+        for (const collection of collections) {
+            try {
+                const docRef = doc(db, collection, user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                    if (userData.username) {
+                        actualUsername = userData.username;
+                        break;
+                    }
+                }
+            } catch (error) {
+                console.error(`Error checking ${collection}:`, error);
+            }
+        }
+        
+        // If we couldn't find a username, use email as fallback
+        if (!actualUsername && user.email) {
+            actualUsername = user.email.split('@')[0];
+        }
+        
+        // If we still don't have a username, reject the attempt
+        if (!actualUsername) {
+            joinStatus.textContent = 'Could not verify your account. Please contact an administrator.';
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
+        // Verify the entered username matches the actual username
+        const enteredUsername = usernameInput.value.trim();
+        
+        if (actualUsername && enteredUsername.toLowerCase() !== actualUsername.toLowerCase()) {
+            joinStatus.textContent = `Username doesn't match. Please enter "${actualUsername}" to confirm.`;
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
+        // Username verified, now continue with the join process
+        joinStatus.textContent = `Joining ${currentLadder} ladder...`;
+        
+        // Get the collection name based on the current ladder - UPDATED TO INCLUDE DUOS
+        const collectionName = getCollectionName(currentLadder);
+        
+        // Check if user already exists in this ladder collection
+        const userDocRef = doc(db, collectionName, user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            joinStatus.textContent = `You are already part of the ${currentLadder} ladder.`;
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
+        // Verify the user's authentication again before adding them to the ladder
+        try {
+            await user.getIdToken(true); // Force token refresh to verify auth state
+        } catch (authError) {
+            joinStatus.textContent = 'Authentication failed. Please sign in again.';
+            joinStatus.className = 'ladder-join-status error';
+            joinButton.disabled = false;
+            return;
+        }
+        
+        // Use the verified username
+        const username = actualUsername;
+        
+        // Get the next available position number for the ladder
+        const playersRef = collection(db, collectionName);
+        const playersQuery = query(playersRef, orderBy("position", "desc"), limit(1));
+        const playersSnapshot = await getDocs(playersQuery);
+        
+        let nextPosition = 1;
+        if (!playersSnapshot.empty) {
+            const highestPositionDoc = playersSnapshot.docs[0].data();
+            nextPosition = (highestPositionDoc.position || 0) + 1;
+        }
+        
+            // Create a proper playerData variable first
+        const playerData = {
+            username: username,
+            email: user.email,
+            eloRating: 1200,
+            position: nextPosition,
+            createdAt: serverTimestamp(),
+            isAdmin: false,
+            matches: 0,
+            wins: 0,
+            losses: 0,
+            gameMode: currentLadder,
+            // Enhanced team-related fields for DUOS
+            ...(currentLadder === 'DUOS' && {
+                hasTeam: false,
+                teamId: null,
+                teamName: null,
+                teammate: null,
+                teamColor: null,
+                lookingForTeam: true,
+                tierValue: 1000
+            })
+        };
+
+        // Now playerData is defined and can be used
+        await setDoc(userDocRef, playerData);
+        
+        // Show success message with Duos-specific guidance
+        if (currentLadder === 'DUOS') {
+            joinStatus.textContent = `Successfully joined the Duos ladder! You can now form teams with other players. The page will refresh...`;
+        } else {
+            joinStatus.textContent = `Successfully joined the ${currentLadder} ladder! The page will refresh...`;
+        }
+        joinStatus.className = 'ladder-join-status success';
+        
+        // Refresh the page after a delay to show the updated ladder
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error joining ladder:', error);
+        joinStatus.textContent = `Error joining ladder: ${error.message}`;
+        joinStatus.className = 'ladder-join-status error';
+        joinButton.disabled = false;
+    }
+}

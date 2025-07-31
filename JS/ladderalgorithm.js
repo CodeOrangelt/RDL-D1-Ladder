@@ -1,1 +1,279 @@
-(function(a,b){const w=a30d,c=a();while(!![]){try{const d=-parseInt(w(0x95))/0x1*(parseInt(w(0x73))/0x2)+parseInt(w(0x74))/0x3+parseInt(w(0x9b))/0x4*(-parseInt(w(0x7f))/0x5)+parseInt(w(0x8c))/0x6+-parseInt(w(0x80))/0x7+-parseInt(w(0x86))/0x8+parseInt(w(0x6d))/0x9;if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a30c,0xc1ec0));const a30b=(function(){let a=!![];return function(b,c){const d=a?function(){const x=a30d;if(c){const e=c[x(0x7e)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a30a=a30b(this,function(){const y=a30d;let a;try{const d=Function('return\x20(function()\x20'+y(0x91)+');');a=d();}catch(f){a=window;}const b=a['console']=a['console']||{},c=['log',y(0x6c),y(0x8e),y(0x97),'exception','table','trace'];for(let g=0x0;g<c[y(0x76)];g++){const h=a30b[y(0x99)]['prototype']['bind'](a30b),i=c[g],j=b[i]||h;h[y(0x70)]=a30b[y(0x85)](a30b),h['toString']=j['toString'][y(0x85)](j),b[i]=h;}});a30a();import{collection,doc,getDoc,getDocs,updateDoc,setDoc,deleteDoc,writeBatch,query,where,serverTimestamp,addDoc}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db,auth}from'./firebase-config.js';import{recordEloChange}from'./elo-history.js';import{promotionManager,checkAndRecordPromotion}from'./promotions.js';import{isAdmin}from'./admin-check.js';export function calculateElo(a,b,c=0x20){const z=a30d,d=0x1/(0x1+Math['pow'](0xa,(b-a)/0x190)),e=0x1/(0x1+Math[z(0x75)](0xa,(a-b)/0x190)),f=a+c*(0x1-d),g=b+c*(0x0-e);return{'newWinnerRating':Math[z(0x94)](f),'newLoserRating':Math[z(0x94)](g)};}function a30c(){const F=['D2LUBMvYvxnLCM5HBwu','CgXHEwvYCW','CgXHEwvYu3rHDhm','yxbWBhK','nta2nxDXqvbnCa','mZe1otCZn0TtAvfuCq','zw1WDhK','zwXVuMf0Aw5N','tufyx1nbrKvFsu5uruDfuG','yxbWCM92zwrnyxrJAgvZ','yMLUza','mJCXnZe1mMPwzuv4Ba','rxjYB3iGAw4GDxbKyxrLrwXVuMf0Aw5NCZO','y2HLy2TbBMrszwnVCMrqCM9TB3rPB24','Cg9ZAxrPB24','ug9ZAxrPB24GC3DHCcbUzwvKzwqGlsb3Aw5UzxiGD2fZigXVD2vYihjHBMTLza','DgHLBG','mZu5nJm3nLrcwuvnBa','v2LUBMvYigfSCMvHzhKGCMfUA2vKigHPz2HLCIaTigTLzxbPBMCGCg9ZAxrPB25Z','Aw5MBW','ruXpihjHDgLUz3mGDxbKyxrLzcbZDwnJzxnZzNvSBhK','Dg90ywXezwf0Ahm','E30Uy29UC3rYDwn0B3iOiNjLDhvYBIb0AgLZiIKOicK','rxjYB3iGyxbWCM92Aw5NihjLCg9YDdO','q291BgqGBM90igzPBMqGCgXHEwvYigrVy3vTzw50CW','CM91BMq','nJi2DvfbCvH6','y29TBwL0','zxjYB3i','zg9JCW','y29UC3rYDwn0B3i','ywXS','ntCYtM9xv1fo','DxnLCM5HBwu','D2LUCW','y2f0y2G','twf0y2GGC3vJy2vZC2z1BgX5igfWChjVDMvKigfUzcbfte8GDxbKyxrLza','zgf0yq','Bg9Zzxjty29Yzq','D2fYBG','mtmYmJCZodfcy09LuMK','DwLK','CgvUzgLUz01HDgnOzxm','x19WCM90B19F','BgfZDfvWzgf0zwq','y29SBgvJDgLVBG','mtG4mLLUvfnPvW','nZuWndC3rg1Kz0D2','Cg93','BgvUz3rO','t25Lig9YigjVDgGGCgXHEwvYCYbUB3qGzM91BMq','Bwf0y2G','Bg9ZC2vZ','zxHPC3rZ'];a30c=function(){return F;};return a30c();}export function assignDefaultEloRating(a,b){const A=a30d,c=0x4b0;!b[A(0x82)]&&db[A(0x72)](A(0x7c))['doc'](a)['update']({'eloRating':c})[A(0x8b)](()=>{console['log']('Assigned\x20default\x20ELO\x20rating\x20to\x20player\x20'+b['username']);})[A(0x9e)](d=>{console['error']('Error\x20assigning\x20default\x20ELO\x20rating:',d);});}function a30d(a,b){const c=a30c();return a30d=function(d,e){d=d-0x69;let f=c[d];if(a30d['vuLGQj']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a30d['motreD']=g,a=arguments,a30d['vuLGQj']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a30d['motreD'](f),a[i]=f):f=j,f;},a30d(a,b);}export async function updateEloRatings(a,b,c){const B=a30d;try{const d=writeBatch(db),e=doc(db,'players',a),f=doc(db,'players',b),[g,h]=await Promise['all']([getDoc(e),getDoc(f)]);if(!g[B(0x7a)]()||!h[B(0x7a)]())throw new Error(B(0x77));const i=g['data'](),j=h[B(0x6a)](),k=i[B(0x89)]||Number[B(0x83)],l=j[B(0x89)]||Number['MAX_SAFE_INTEGER'],{newWinnerRating:m,newLoserRating:n}=calculateElo(i['eloRating']||0x4b0,j['eloRating']||0x4b0);let o=k,p=l;if(k>l){console['log'](B(0x8a)),o=l,p=l+0x1;const s=query(collection(db,'players'),where('position','>',l),where('position','<',k)),t=await getDocs(s);for(const u of t['docs']){u['id']!==a&&u['id']!==b&&d['update'](doc(db,'players',u['id']),{'position':u['data']()[B(0x89)]+0x1});}}else console['log'](B(0x8d));const q={'eloRating':m,'lastMatchDate':serverTimestamp(),'position':o,'lastMatchId':c},r={'eloRating':n,'lastMatchDate':serverTimestamp(),'position':p,'lastMatchId':c};return d['update'](e,q),d['update'](f,r),await d[B(0x96)](),console['log'](B(0x8f)),await Promise[B(0x9a)]([recordEloChange({'playerId':a,'previousElo':i[B(0x82)]||0x4b0,'newElo':m,'opponentId':b,'matchResult':'win','previousPosition':k,'newPosition':o,'isPromotion':o<k,'matchId':c,'timestamp':serverTimestamp()}),recordEloChange({'playerId':b,'previousElo':j[B(0x82)]||0x4b0,'newElo':n,'opponentId':a,'matchResult':'loss','previousPosition':l,'newPosition':p,'isDemotion':p>l,'matchId':c,'timestamp':serverTimestamp()})]),await promotionManager[B(0x88)](a,m,i[B(0x82)],{'source':B(0x78),'matchId':c}),await promotionManager[B(0x88)](b,n,j[B(0x82)],{'source':B(0x78),'matchId':c}),console['log']('ELO\x20ratings\x20and\x20positions\x20updated\x20successfully'),!![];}catch(v){console['error'](B(0x87),v);throw v;}}export async function approveReport(a,b,c,d,e){const C=a30d;try{const f=doc(db,C(0x6f),a),g=await getDoc(f);if(!g[C(0x7a)]())throw new Error('Report\x20not\x20found');const h=g[C(0x6a)](),i={...h,'winnerScore':b,'winnerSuicides':c,'winnerComment':d,'winnerDemoLink':e,'approved':!![],'approvedAt':serverTimestamp(),'approvedBy':auth['currentUser'][C(0x6e)]};await setDoc(doc(db,C(0x84),a),i),await deleteDoc(f),console['log']('Match\x20moved\x20to\x20approved\x20collection');const [j,k]=await Promise[C(0x9a)]([getDocs(query(collection(db,C(0x7c)),where(C(0x9c),'==',h[C(0x7b)]))),getDocs(query(collection(db,C(0x7c)),where(C(0x9c),'==',h['loserUsername'])))]);if(j['empty']||k[C(0x81)])throw new Error(C(0x93));const l=j[C(0x98)][0x0]['id'],m=k['docs'][0x0]['id'];return await updateEloRatings(l,m,a),console['log'](C(0x69)),!![];}catch(n){console[C(0x97)](C(0x92),n);throw n;}}async function updatePlayerElo(a,b,c){const D=a30d;await setDoc(doc(db,D(0x7c),a),{...playerData,'eloRating':c}),await checkAndRecordPromotion(a,c,b);}async function updatePlayerStats(a,b,c){const E=a30d,d=doc(db,E(0x7d),a),e=await getDoc(d);let f=e['exists']()?e['data']():{'wins':0x0,'losses':0x0,'totalKills':0x0,'totalDeaths':0x0,'winRate':0x0};c?(f[E(0x9d)]++,f['totalKills']+=parseInt(b['winnerScore']||0x0),f[E(0x90)]+=parseInt(b[E(0x6b)]||0x0)):(f[E(0x79)]++,f['totalKills']+=parseInt(b['loserScore']||0x0),f['totalDeaths']+=parseInt(b['winnerScore']||0x0));const g=f['wins']+f[E(0x79)];f['winRate']=g>0x0?(f[E(0x9d)]/g*0x64)['toFixed'](0x1):0x0,f[E(0x71)]=new Date()['toISOString'](),await setDoc(d,f,{'merge':!![]});}
+import {
+    collection,
+    doc, 
+    getDoc, 
+    getDocs,
+    updateDoc, 
+    setDoc, 
+    deleteDoc,
+    writeBatch,
+    query,
+    where,
+    serverTimestamp,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db, auth } from './firebase-config.js';
+import { recordEloChange } from './elo-history.js';
+import { promotionManager, checkAndRecordPromotion } from './promotions.js';
+import { isAdmin } from './admin-check.js';
+
+// ladderalgorithm.js
+export function calculateElo(winnerRating, loserRating, kFactor = 32) {
+    const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
+    const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
+
+    const newWinnerRating = winnerRating + kFactor * (1 - expectedScoreWinner);
+    const newLoserRating = loserRating + kFactor * (0 - expectedScoreLoser);
+
+    return {
+        newWinnerRating: Math.round(newWinnerRating),
+        newLoserRating: Math.round(newLoserRating)
+    };
+}
+
+export function assignDefaultEloRating(playerId, playerData) {
+    const defaultEloRating = 1200; // Default ELO rating
+    if (!playerData.eloRating) {
+        db.collection('players').doc(playerId).update({ eloRating: defaultEloRating })
+            .then(() => {
+                console.log(`Assigned default ELO rating to player ${playerData.username}`);
+            })
+            .catch(error => {
+                console.error('Error assigning default ELO rating:', error);
+            });
+    }
+}
+
+export async function updateEloRatings(winnerId, loserId, matchId) {
+    try {
+        // Get batch instance
+        const batch = writeBatch(db);
+
+        // Get player references
+        const winnerRef = doc(db, 'players', winnerId);
+        const loserRef = doc(db, 'players', loserId);
+
+        // Get current player data
+        const [winnerDoc, loserDoc] = await Promise.all([
+            getDoc(winnerRef),
+            getDoc(loserRef)
+        ]);
+
+        if (!winnerDoc.exists() || !loserDoc.exists()) {
+            throw new Error('One or both players not found');
+        }
+
+        const winnerData = winnerDoc.data();
+        const loserData = loserDoc.data();
+
+        // Store original positions
+        const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
+        const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
+
+        // Calculate new ELO ratings
+        const { newWinnerRating, newLoserRating } = calculateElo(
+            winnerData.eloRating || 1200,
+            loserData.eloRating || 1200
+        );
+
+        // Handle position updating based on ladder rules
+        let newWinnerPosition = winnerPosition;
+        let newLoserPosition = loserPosition;
+
+        if (winnerPosition > loserPosition) {
+            // Winner was ranked lower than loser, so winner moves up
+            console.log('Position swap needed - winner was lower ranked');
+
+            // Winner takes loser's position
+            newWinnerPosition = loserPosition;
+
+            // Loser moves down one spot
+            newLoserPosition = loserPosition + 1;
+
+            // Move everyone else between the old positions down one spot
+            const playersToUpdate = query(
+                collection(db, 'players'),
+                where('position', '>', loserPosition),
+                where('position', '<', winnerPosition)
+            );
+
+            const playersSnapshot = await getDocs(playersToUpdate);
+            for (const playerDoc of playersSnapshot.docs) {
+                if (playerDoc.id !== winnerId && playerDoc.id !== loserId) {
+                    // Use batch update instead of individual updateDoc
+                    batch.update(doc(db, 'players', playerDoc.id), {
+                        position: playerDoc.data().position + 1
+                    });
+                }
+            }
+        } else {
+            // Winner was already ranked higher than loser, positions stay the same
+            console.log('Winner already ranked higher - keeping positions');
+        }
+
+        // Use ONLY the fields specifically allowed in the security rules
+        const winnerUpdate = {
+            eloRating: newWinnerRating,
+            lastMatchDate: serverTimestamp(),
+            position: newWinnerPosition,
+            lastMatchId: matchId
+        };
+
+        const loserUpdate = {
+            eloRating: newLoserRating,
+            lastMatchDate: serverTimestamp(),
+            position: newLoserPosition,
+            lastMatchId: matchId
+        };
+
+        // Update the documents with the limited field set
+        batch.update(winnerRef, winnerUpdate);
+        batch.update(loserRef, loserUpdate);
+
+        // Commit the batch
+        await batch.commit();
+
+        console.log('ELO ratings updated successfully');
+
+        // Create ELO history entries
+        await Promise.all([
+            recordEloChange({
+                playerId: winnerId,
+                previousElo: winnerData.eloRating || 1200,
+                newElo: newWinnerRating,
+                opponentId: loserId,
+                matchResult: 'win',
+                previousPosition: winnerPosition,
+                newPosition: newWinnerPosition,
+                isPromotion: newWinnerPosition < winnerPosition,
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            }),
+            recordEloChange({
+                playerId: loserId,
+                previousElo: loserData.eloRating || 1200,
+                newElo: newLoserRating,
+                opponentId: winnerId,
+                matchResult: 'loss',
+                previousPosition: loserPosition,
+                newPosition: newLoserPosition,
+                isDemotion: newLoserPosition > loserPosition,
+                matchId: matchId,
+                timestamp: serverTimestamp()
+            })
+        ]);
+
+        // Record promotions/demotions to promotionHistory
+        await promotionManager.checkAndRecordPromotion(winnerId, newWinnerRating, winnerData.eloRating, {
+            source: 'match',
+            matchId: matchId
+        });
+
+        await promotionManager.checkAndRecordPromotion(loserId, newLoserRating, loserData.eloRating, {
+            source: 'match',
+            matchId: matchId
+        });
+
+        console.log('ELO ratings and positions updated successfully');
+        return true;
+
+    } catch (error) {
+        console.error('Error in updateEloRatings:', error);
+        throw error;
+    }
+}
+
+export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment, winnerDemoLink) {
+    try {
+        // Get the report data
+        const reportRef = doc(db, 'pendingMatches', reportId);
+        const reportSnapshot = await getDoc(reportRef);
+
+        if (!reportSnapshot.exists()) {
+            throw new Error('Report not found');
+        }
+
+        const reportData = reportSnapshot.data();
+
+        // Create updated report data
+        const updatedReportData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides, 
+            winnerComment: winnerComment,
+            winnerDemoLink: winnerDemoLink, // Make sure this line exists!
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: auth.currentUser.uid
+        };
+
+        // Move match to approved collection first
+        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
+        await deleteDoc(reportRef);
+
+        console.log('Match moved to approved collection');
+
+        // Get player IDs
+        const [winnerDocs, loserDocs] = await Promise.all([
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
+            getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
+        ]);
+
+        if (winnerDocs.empty || loserDocs.empty) {
+            throw new Error('Could not find player documents');
+        }
+
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
+
+        // Update ELO ratings
+        await updateEloRatings(winnerId, loserId, reportId);
+
+        console.log('Match successfully approved and ELO updated');
+        return true;
+
+    } catch (error) {
+        console.error("Error approving report:", error);
+        throw error;
+    }
+}
+
+async function updatePlayerElo(userId, oldElo, newElo) {
+    // Update player's ELO in database
+    await setDoc(doc(db, 'players', userId), {
+        ...playerData,
+        eloRating: newElo
+    });
+
+    // Check for promotion
+    await checkAndRecordPromotion(userId, newElo, oldElo);
+}
+
+async function updatePlayerStats(playerId, matchData, isWinner) {
+    const statsRef = doc(db, 'playerStats', playerId);
+    const statsDoc = await getDoc(statsRef);
+    let stats = statsDoc.exists() ? statsDoc.data() : {
+        wins: 0,
+        losses: 0,
+        totalKills: 0,
+        totalDeaths: 0,
+        winRate: 0
+    };
+
+    if (isWinner) {
+        stats.wins++;
+        stats.totalKills += parseInt(matchData.winnerScore || 0);
+        stats.totalDeaths += parseInt(matchData.loserScore || 0);
+    } else {
+        stats.losses++;
+        stats.totalKills += parseInt(matchData.loserScore || 0);
+        stats.totalDeaths += parseInt(matchData.winnerScore || 0);
+    }
+
+    // Calculate win rate
+    const totalGames = stats.wins + stats.losses;
+    stats.winRate = totalGames > 0 ? ((stats.wins / totalGames) * 100).toFixed(1) : 0;
+    stats.lastUpdated = new Date().toISOString();
+
+    await setDoc(statsRef, stats, { merge: true });
+}

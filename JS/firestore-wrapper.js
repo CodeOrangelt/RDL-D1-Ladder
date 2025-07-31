@@ -1,1 +1,295 @@
-const a20P=a20d;(function(a,b){const v=a20d,c=a();while(!![]){try{const d=parseInt(v(0x189))/0x1+parseInt(v(0x18e))/0x2*(parseInt(v(0x171))/0x3)+-parseInt(v(0x18d))/0x4*(-parseInt(v(0x180))/0x5)+parseInt(v(0x18f))/0x6*(parseInt(v(0x174))/0x7)+-parseInt(v(0x16b))/0x8*(parseInt(v(0x16e))/0x9)+parseInt(v(0x18b))/0xa*(-parseInt(v(0x191))/0xb)+parseInt(v(0x194))/0xc*(-parseInt(v(0x177))/0xd);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a20c,0x9f0e1));const a20b=(function(){let a=!![];return function(b,c){const d=a?function(){const w=a20d;if(c){const e=c[w(0x16d)](b,arguments);return c=null,e;}}:function(){};return a=![],d;};}()),a20a=a20b(this,function(){const y=a20d,a=function(){const x=a20d;let f;try{f=Function(x(0x175)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(g){f=window;}return f;},b=a(),c=b['console']=b[y(0x17d)]||{},d=['log',y(0x173),y(0x18c),'error',y(0x17e),'table',y(0x192)];for(let e=0x0;e<d['length'];e++){const f=a20b[y(0x179)]['prototype'][y(0x181)](a20b),g=d[e],h=c[g]||f;f['__proto__']=a20b[y(0x181)](a20b),f['toString']=h[y(0x188)]['bind'](h),c[g]=f;}});function a20d(a,b){const c=a20c();return a20d=function(d,e){d=d-0x16b;let f=c[d];if(a20d['BslAJA']===undefined){var g=function(l){const m='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let n='',o='';for(let p=0x0,q,r,s=0x0;r=l['charAt'](s++);~r&&(q=p%0x4?q*0x40+r:r,p++%0x4)?n+=String['fromCharCode'](0xff&q>>(-0x2*p&0x6)):0x0){r=m['indexOf'](r);}for(let t=0x0,u=n['length'];t<u;t++){o+='%'+('00'+n['charCodeAt'](t)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(o);};a20d['EdYSgT']=g,a=arguments,a20d['BslAJA']=!![];}const h=c[0x0],i=d+h,j=a[i];return!j?(f=a20d['EdYSgT'](f),a[i]=f):f=j,f;},a20d(a,b);}a20a();function a20c(){const R=['uKrmx1nfu1njt05Fu1vtuevoreve','Dg9tDhjPBMC','odi0nZC0s3rTD0Tb','BgvUz3rO','mJbmq1nzDvq','Aw5MBW','mtaWmdH2EwXzvha','nJu2otrJs0jOrg4','nte2EMTZu3LO','ywrKrxzLBNrmAxn0zw5LCG','nZaWmJmXnfvAz3j2uG','DhjHy2u','C2vZC2LVBI1ZDxnWzw5Kzwq','mtjUuxb5swO','Bg9N','BwvZC2fNzq','mZa5nMzxwNDHva','BM93','yxbWBhK','nJiXowLuCvzNrG','C3rYAw5N','rMLYzxn0B3jLig9WzxjHDgLVBIbMywLSzwq6','mta1CwDzufrc','Aw5JBhvKzxm','D2fYBG','mZG3mtbIAwzyD20','CMv0DxjUicHMDw5JDgLVBIGPia','zxjYB3i','mtCWndy3mZfvrxzXr1C','BMv0D29YAY1LCNjVCG','y29UC3rYDwn0B3i','q2f1z2H0ig5LDhDVCMSGzxjYB3i6','y29TBwL0','y29Kzq','y29UC29Szq','zxHJzxb0Aw9U','u2vZC2LVBIbZDxnWzw5KzwqGzhvLihrVigLUywn0AxzPDhKUifbSzwfZzsbYzxn1BwuGEw91CIbZzxnZAw9UlG','mJeWnxDdD3DRCa','yMLUza','ChjLDMvUDerLzMf1Bhq','q2f1z2H0ihnLC3nPB24GC3vZCgvUzgvKigvYCM9YoG','rMLYzxn0B3jLig9WzxjHDgLVBIbIBg9JA2vKic0GBMv0D29YAYbLCNjVCG','CMvZB3vYy2uTzxHOyxvZDgvK','BMv0D29YAW'];a20c=function(){return R;};return a20c();}import{collection as a20e,doc as a20f,getDoc as a20g,getDocs as a20h,query as a20i,where as a20j,orderBy as a20k,limit as a20l,startAfter as a20m,addDoc as a20n,updateDoc as a20o,deleteDoc as a20p,writeBatch as a20q,serverTimestamp as a20r,Timestamp as a20s,getCountFromServer as a20t,setDoc as a20u,enableNetwork,disableNetwork}from'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';import{db}from'./firebase-config.js';import{handleNetworkError}from'./idle-timeout.js';function checkSessionStatus(){const z=a20d;if(window[z(0x187)]){console[z(0x173)]('Firestore\x20operation\x20blocked\x20-\x20session\x20suspended');const a=new Error(z(0x17f));a[z(0x17c)]=z(0x193);throw a;}if(window['RDL_NETWORK_ERROR']){console['warn'](z(0x184));const b=new Error('Network\x20connection\x20error.\x20Please\x20check\x20your\x20internet\x20connection.');b['code']='network-error';throw b;}}async function handleFirestoreError(a){const A=a20d;console['error'](A(0x170),a);if(a&&(a[A(0x17c)]==='unavailable'||a[A(0x17c)]===A(0x185)||a[A(0x196)]&&a[A(0x196)]['includes']('network')||a[A(0x17c)]&&a[A(0x17c)]['includes']('network')))return console['warn']('Network-related\x20error\x20detected,\x20suspending\x20operations'),handleNetworkError(),!![];return![];}export const rdlFirestore={'collection':function(){const B=a20d;if(arguments[B(0x18a)]===0x1){if(typeof arguments[0x0]===B(0x16f))return a20e(db,arguments[0x0]);return arguments[0x0];}else{if(arguments[B(0x18a)]===0x2&&arguments[0x0]===db&&typeof arguments[0x1]===B(0x16f))return a20e(db,arguments[0x1]);}return a20e[B(0x16d)](null,arguments);},'doc':function(){const C=a20d;if(arguments[C(0x18a)]===0x2){if(typeof arguments[0x0]===C(0x16f)&&typeof arguments[0x1]==='string')return a20f(db,arguments[0x0],arguments[0x1]);return a20f['apply'](null,arguments);}else{if(arguments['length']===0x3&&arguments[0x0]===db)return a20f['apply'](null,arguments);}return a20f[C(0x16d)](null,arguments);},'query':function(){return a20i['apply'](null,arguments);},'where':function(){const D=a20d;return a20j[D(0x16d)](null,arguments);},'orderBy':function(){const E=a20d;return a20k[E(0x16d)](null,arguments);},'limit':function(a){return a20l(a);},'startAfter':function(a){return a20m(a);},'getDoc':async function(a){const F=a20d;try{return checkSessionStatus(),await a20g(a);}catch(b){const c=await handleFirestoreError(b);c&&(b[F(0x17c)]='network-error');throw b;}},'getDocs':async function(a){const G=a20d;try{return checkSessionStatus(),await a20h(a);}catch(b){const c=await handleFirestoreError(b);c&&(b[G(0x17c)]=G(0x178));throw b;}},'getCountFromServer':async function(a){const H=a20d;try{return checkSessionStatus(),await a20t(a);}catch(b){const c=await handleFirestoreError(b);c&&(b['code']=H(0x178));throw b;}},'addDoc':async function(a,b){const I=a20d;try{return checkSessionStatus(),await a20n(a,b);}catch(c){const d=await handleFirestoreError(c);d&&(c[I(0x17c)]=I(0x178));throw c;}},'setDoc':async function(a,b,c){const J=a20d;try{return checkSessionStatus(),await a20u(a,b,c);}catch(d){const e=await handleFirestoreError(d);e&&(d[J(0x17c)]=J(0x178));throw d;}},'updateDoc':async function(a,b){try{return checkSessionStatus(),await a20o(a,b);}catch(c){const d=await handleFirestoreError(c);d&&(c['code']='network-error');throw c;}},'deleteDoc':async function(a){const K=a20d;try{return checkSessionStatus(),await a20p(a);}catch(b){const c=await handleFirestoreError(b);c&&(b['code']=K(0x178));throw b;}},'writeBatch':function(){const L=a20d;checkSessionStatus();const a=a20q(db),b=a[L(0x17b)]['bind'](a);return a['commit']=async function(){const M=L;try{return checkSessionStatus(),await b();}catch(c){const d=await handleFirestoreError(c);d&&(c[M(0x17c)]='network-error');throw c;}},a;},'serverTimestamp':function(){return a20r();},'Timestamp':{'now':function(){const N=a20d;return a20s[N(0x16c)]();},'fromDate':function(a){return a20s['fromDate'](a);}},'enableNetwork':async function(){const O=a20d;try{return await enableNetwork(db);}catch(a){console[O(0x176)]('Failed\x20to\x20enable\x20network:',a);throw a;}},'disableNetwork':async function(){try{return await disableNetwork(db);}catch(a){console['error']('Failed\x20to\x20disable\x20network:',a);throw a;}}};window[a20P(0x190)](a20P(0x176),function(a){const Q=a20P;if(a['error']){if(a['error'][Q(0x17c)]===Q(0x193))a['preventDefault'](),console[Q(0x195)](Q(0x183),a['error']['message']);else(a[Q(0x176)][Q(0x17c)]==='unavailable'||a[Q(0x176)]['code']==='resource-exhausted'||a['error']['message']&&a['error'][Q(0x196)][Q(0x172)](Q(0x186))||a['error'][Q(0x17c)]&&a[Q(0x176)]['code']['includes']('network'))&&(a[Q(0x182)](),console['log'](Q(0x17a),a[Q(0x176)]['message']),handleNetworkError());}}),window['rdlFirestore']=rdlFirestore,console['log']('Firestore\x20wrapper\x20initialized\x20with\x20session\x20checking\x20and\x20network\x20error\x20handling');
+import {
+    collection as firestoreCollection,
+    doc as firestoreDoc,
+    getDoc as firestoreGetDoc,
+    getDocs as firestoreGetDocs,
+    query as firestoreQuery,
+    where as firestoreWhere,
+    orderBy as firestoreOrderBy,
+    limit as firestoreLimit,
+    startAfter as firestoreStartAfter,
+    addDoc as firestoreAddDoc,
+    updateDoc as firestoreUpdateDoc,
+    deleteDoc as firestoreDeleteDoc,
+    writeBatch as firestoreWriteBatch,
+    serverTimestamp as firestoreServerTimestamp,
+    Timestamp as firestoreTimestamp,
+    getCountFromServer as firestoreGetCountFromServer,
+    setDoc as firestoreSetDoc,
+    enableNetwork,
+    disableNetwork
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+import { handleNetworkError } from './idle-timeout.js';
+
+// Check if session is suspended before performing Firestore operations
+function checkSessionStatus() {
+    if (window.RDL_SESSION_SUSPENDED) {
+        console.warn('Firestore operation blocked - session suspended');
+        const error = new Error('Session suspended due to inactivity. Please resume your session.');
+        error.code = 'session-suspended';
+        throw error;
+    }
+    
+    if (window.RDL_NETWORK_ERROR) {
+        console.warn('Firestore operation blocked - network error');
+        const error = new Error('Network connection error. Please check your internet connection.');
+        error.code = 'network-error';
+        throw error;
+    }
+}
+
+// Handle network error
+async function handleFirestoreError(error) {
+    console.error('Firestore operation failed:', error);
+    
+    if (error && (
+        error.code === 'unavailable' || 
+        error.code === 'resource-exhausted' ||
+        (error.message && error.message.includes('network')) ||
+        (error.code && error.code.includes('network'))
+    )) {
+        console.warn('Network-related error detected, suspending operations');
+        handleNetworkError();
+        return true;
+    }
+    
+    return false;
+}
+
+// Firestore wrapper with session checks and network error handling
+export const rdlFirestore = {
+    // Collection reference - fixed to handle multiple argument patterns
+    collection: function() {
+        // Handle different argument patterns
+        if (arguments.length === 1) {
+            // Case: collection('collectionName')
+            if (typeof arguments[0] === 'string') {
+                return firestoreCollection(db, arguments[0]);
+            } 
+            // Case: collection(collectionRef)
+            return arguments[0];
+        } 
+        // Case: collection(db, 'collectionName')
+        else if (arguments.length === 2 && arguments[0] === db && typeof arguments[1] === 'string') {
+            return firestoreCollection(db, arguments[1]);
+        }
+        // Fallback: pass all arguments through
+        return firestoreCollection.apply(null, arguments);
+    },
+    
+    // Document reference - fixed to handle multiple argument patterns
+    doc: function() {
+        if (arguments.length === 2) {
+            // Case: doc('collectionName', 'docId')
+            if (typeof arguments[0] === 'string' && typeof arguments[1] === 'string') {
+                return firestoreDoc(db, arguments[0], arguments[1]);
+            }
+            // Case: doc(collectionRef, 'docId')
+            return firestoreDoc.apply(null, arguments);
+        }
+        else if (arguments.length === 3 && arguments[0] === db) {
+            // Case: doc(db, 'collectionName', 'docId')
+            return firestoreDoc.apply(null, arguments);
+        }
+        // Fallback: pass all arguments through
+        return firestoreDoc.apply(null, arguments);
+    },
+    
+    // Query functions
+    query: function() {
+        return firestoreQuery.apply(null, arguments);
+    },
+    
+    where: function() {
+        return firestoreWhere.apply(null, arguments);
+    },
+    
+    orderBy: function() {
+        return firestoreOrderBy.apply(null, arguments);
+    },
+    
+    limit: function(n) {
+        return firestoreLimit(n);
+    },
+    
+    startAfter: function(docSnapshot) {
+        return firestoreStartAfter(docSnapshot);
+    },
+    
+    // Read operations with error handling
+    getDoc: async function(docRef) {
+        try {
+            checkSessionStatus();
+            return await firestoreGetDoc(docRef);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    getDocs: async function(queryRef) {
+        try {
+            checkSessionStatus();
+            return await firestoreGetDocs(queryRef);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    getCountFromServer: async function(queryRef) {
+        try {
+            checkSessionStatus();
+            return await firestoreGetCountFromServer(queryRef);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    // Write operations with error handling
+    addDoc: async function(collectionRef, data) {
+        try {
+            checkSessionStatus();
+            return await firestoreAddDoc(collectionRef, data);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    setDoc: async function(docRef, data, options) {
+        try {
+            checkSessionStatus();
+            return await firestoreSetDoc(docRef, data, options);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    updateDoc: async function(docRef, data) {
+        try {
+            checkSessionStatus();
+            return await firestoreUpdateDoc(docRef, data);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    deleteDoc: async function(docRef) {
+        try {
+            checkSessionStatus();
+            return await firestoreDeleteDoc(docRef);
+        } catch (error) {
+            const isNetworkError = await handleFirestoreError(error);
+            if (isNetworkError) {
+                error.code = 'network-error';
+            }
+            throw error;
+        }
+    },
+    
+    // Batch operations with error handling
+    writeBatch: function() {
+        checkSessionStatus();
+        const batch = firestoreWriteBatch(db);
+        
+        // Create a wrapper around the batch to check session status before commit
+        const originalCommit = batch.commit.bind(batch);
+        batch.commit = async function() {
+            try {
+                checkSessionStatus();
+                return await originalCommit();
+            } catch (error) {
+                const isNetworkError = await handleFirestoreError(error);
+                if (isNetworkError) {
+                    error.code = 'network-error';
+                }
+                throw error;
+            }
+        };
+        
+        return batch;
+    },
+    
+    // Timestamp functions
+    serverTimestamp: function() {
+        return firestoreServerTimestamp();
+    },
+    
+    Timestamp: {
+        now: function() {
+            return firestoreTimestamp.now();
+        },
+        fromDate: function(date) {
+            return firestoreTimestamp.fromDate(date);
+        }
+    },
+    
+    // Network controls
+    enableNetwork: async function() {
+        try {
+            return await enableNetwork(db);
+        } catch (error) {
+            console.error('Failed to enable network:', error);
+            throw error;
+        }
+    },
+    
+    disableNetwork: async function() {
+        try {
+            return await disableNetwork(db);
+        } catch (error) {
+            console.error('Failed to disable network:', error);
+            throw error;
+        }
+    }
+};
+
+// Add global error handler for uncaught session suspension errors
+window.addEventListener('error', function(event) {
+    if (event.error) {
+        if (event.error.code === 'session-suspended') {
+            // Prevent the default error handler
+            event.preventDefault();
+            console.log('Caught session suspended error:', event.error.message);
+        } 
+        else if (
+            event.error.code === 'unavailable' || 
+            event.error.code === 'resource-exhausted' ||
+            (event.error.message && event.error.message.includes('network')) ||
+            (event.error.code && event.error.code.includes('network'))
+        ) {
+            // Handle network errors
+            event.preventDefault();
+            console.log('Caught network error:', event.error.message);
+            handleNetworkError();
+        }
+    }
+});
+
+// Add to window so other scripts can access
+window.rdlFirestore = rdlFirestore;
+
+console.log('Firestore wrapper initialized with session checking and network error handling');
