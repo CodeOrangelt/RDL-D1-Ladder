@@ -89,37 +89,3 @@ jobs:
         with:
           branch: gh-pages
           folder: .
-
-      - name: Deploy to VPS
-        if: github.ref == 'refs/heads/main'
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          script: |
-            # Backup current deployment
-            if [ -d "/var/www/rdl" ]; then
-              cp -r /var/www/rdl /var/backups/rdl-$(date +%Y%m%d-%H%M%S)
-            fi
-            
-            # Clean and clone fresh
-            rm -rf /var/www/rdl
-            mkdir -p /var/www/rdl
-            cd /tmp
-            git clone https://github.com/${{ github.repository }}.git rdl-deploy
-            cp -r rdl-deploy/* /var/www/rdl/
-            rm -rf rdl-deploy
-            
-            # Set up web structure
-            cd /var/www/rdl
-            cp -r HTML/* .
-            rm -rf HTML
-            
-            # Fix permissions
-            chown -R www-data:www-data /var/www/rdl
-            find /var/www/rdl -type d -exec chmod 755 {} \;
-            find /var/www/rdl -type f -exec chmod 644 {} \;
-            
-            # Reload Nginx
-            systemctl reload nginx
