@@ -16,37 +16,17 @@ jobs:
 
       - name: Prepare root files
         run: |
-          # Create a temporary build directory
-          mkdir -p build
+          # Simply copy HTML files to root - don't move CSS/JS/images since they're already correct
+          cp ./HTML/* ./
           
-          # Copy all directories to build directory
-          cp -r ./CSS ./build/
-          cp -r ./JS ./build/
-          cp -r ./images ./build/
+          # Your HTML files already have correct paths (../CSS, ../JS, ../images)
+          # But since we're moving HTML to root, we need to remove the ../ 
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
           
-          # Copy all HTML files to build directory
-          cp ./HTML/* ./build/
-          
-          # Update paths in HTML files - remove ../ since everything is now in root
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
-          
-          # Also fix any ./CSS, ./JS, ./images references to not have leading dot
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\/CSS/CSS/g' {} \;
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\/JS/JS/g' {} \;
-          find ./build -type f -name "*.html" -exec sed -i 's/\.\/images/images/g' {} \;
-          
-          # Fix import paths in JavaScript files
-          find ./build/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
-          find ./build/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
-          
-          # Remove existing directories in root to avoid conflicts
-          rm -rf ./CSS ./JS ./images
-          
-          # Move everything from build to root
-          mv ./build/* ./
-          rm -rf ./build
+          # Remove the problematic root-index.html if it exists
+          rm -f root-index.html
           
           # List directory structure for debugging
           echo "=== Directory structure after preparation ==="
@@ -57,6 +37,8 @@ jobs:
           ls -la JS/ || echo "JS directory not found"
           echo "=== images directory ==="
           ls -la images/ || echo "images directory not found"
+          echo "=== HTML files in root ==="
+          ls -la *.html
 
       - name: Remove file extensions for clean URLs
         run: |
