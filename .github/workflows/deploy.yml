@@ -14,103 +14,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Prepare root files
-        run: |
-          # Simply copy HTML files to root - don't move CSS/JS/images since they're already correct
-          cp ./HTML/* ./
-          
-          # Convert relative paths to absolute paths from root (add leading slash)
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\/CSS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\/JS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/\/images/g' {} \;
-          
-          # Also fix any existing relative references without ../
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"CSS\//"\/CSS\//g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"JS\//"\/JS\//g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"images\//"\/images\//g' {} \;
-          
-          # Remove the problematic root-index.html if it exists
-          rm -f root-index.html
-          
-          # List directory structure for debugging
-          echo "=== Directory structure after preparation ==="
-          ls -la
-          echo "=== CSS directory ==="
-          ls -la CSS/ || echo "CSS directory not found"
-          echo "=== JS directory ==="
-          ls -la JS/ || echo "JS directory not found"
-          echo "=== images directory ==="
-          ls -la images/ || echo "images directory not found"
-          echo "=== HTML files in root ==="
-          ls -la *.html
-
-      - name: Remove file extensions for clean URLs
-        run: |
-          # Create .htaccess for clean URLs (if using Apache)
-          cat > .htaccess << 'EOF'
-          RewriteEngine On
-          RewriteCond %{REQUEST_FILENAME} !-d
-          RewriteCond %{REQUEST_FILENAME} !-f
-          RewriteRule ^([^\.]+)$ $1.html [NC,L]
-          
-          # Remove .html extension from URLs
-          RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
-          RewriteRule ^ /%1 [NC,L,R]
-          EOF
-          
-          # For GitHub Pages, also create extensionless copies
-          for file in *.html; do
-            if [[ "$file" != "index.html" ]]; then
-              basename="${file%.html}"
-              mkdir -p "$basename"
-              cp "$file" "$basename/index.html"
-            fi
-          done
-
-      - name: Create Firebase Config
-        run: |
-          cp JS/firebase-config.template.js JS/firebase-config.js
-          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
-
-      - name: Obfuscate JavaScript
-        uses: KevinRohn/github-action-javascript-obfuscator@v1
-        with:
-          input_path: JS
-          output_path: JS
-          compact: true
-          control_flow_flattening: false
-          dead_code_injection: false
-          debug_protection: false
-          disable_console_output: false
-          identifier_names_generator: mangled
-          self_defending: false
-          string_array: true
-          string_array_threshold: 0.5
-          string_array_encoding: 'base64'
-          transform_object_keys: false
-          target: browser
-
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: 192.210.140.94
-          username: root
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          script: |
-            # Create web directory if it doesn't exist
-            mkdir -p /var/www/html
-            # Stop nginx/apache if running
-            systemctl stop nginx 2>/dev/null || systemctl stop apache2 2>/dev/null || true
-            # Clear existing files
-            rm -rf /var/www/html/*
-
       - name: Upload files to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -131,38 +34,32 @@ jobs:
           port: 22
           script: |
             # Install nginx if not present
-            if ! command -v nginx &> /dev/null; then
-              apt update
-              apt install -y nginx
-            fi
+            apt update && apt install -y nginx
             
-            # Configure nginx
+            # Simple nginx config - serve files as-is
             cat > /etc/nginx/sites-available/default << 'EOF'
             server {
                 listen 80 default_server;
-                listen [::]:80 default_server;
-                
                 root /var/www/html;
-                index index.html index.htm index.nginx-debian.html;
-                
+                index index.html;
                 server_name _;
                 
                 location / {
-                    try_files $uri $uri.html $uri/ =404;
-                }
-                
-                # Remove .html extension from URLs
-                location ~ ^/(.*)\.html$ {
-                    return 301 /$1;
+                    try_files $uri $uri/ =404;
                 }
             }
             EOF
             
-            # Set proper permissions
+            # Set permissions and start nginx
             chown -R www-data:www-data /var/www/html
             chmod -R 755 /var/www/html
-            
-            # Start nginx
             systemctl enable nginx
-            systemctl start nginx
-            systemctl reload nginx
+            systemctl restart nginx
+            
+            # Debug: Show what files are actually there
+            echo "=== Files on VPS ==="
+            ls -la /var/www/html/
+            echo "=== CSS directory ==="
+            ls -la /var/www/html/CSS/ || echo "No CSS directory"
+            echo "=== HTML directory ==="
+            ls -la /var/www/html/HTML/ || echo "No HTML directory"
