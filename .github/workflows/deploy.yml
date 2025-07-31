@@ -16,30 +16,34 @@ jobs:
 
       - name: Prepare root files
         run: |
-          # Copy all directories to root while preserving structure
-          cp -r ./CSS ./
-          cp -r ./JS ./
-          cp -r ./images ./
+          # Create a temporary build directory
+          mkdir -p build
           
-          # Copy all HTML files to root 
-          cp -r ./HTML/* ./
+          # Copy all directories to build directory
+          cp -r ./CSS ./build/
+          cp -r ./JS ./build/
+          cp -r ./images ./build/
           
-          # Make sure index.html is in root
-          cp ./HTML/index.html ./index.html
+          # Copy all HTML files to build directory
+          cp ./HTML/* ./build/
           
           # Update paths in HTML files - remove ../ since everything is now in root
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/CSS/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/JS/JS/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\.\/images/images/g' {} \;
           
           # Also fix any ./CSS, ./JS, ./images references to not have leading dot
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\/CSS/CSS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\/JS/JS/g' {} \;
-          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\/images/images/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\/CSS/CSS/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\/JS/JS/g' {} \;
+          find ./build -type f -name "*.html" -exec sed -i 's/\.\/images/images/g' {} \;
           
           # Fix import paths in JavaScript files
-          find ./JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
-          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
+          find ./build/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
+          find ./build/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
+          
+          # Move everything from build to root
+          mv ./build/* ./
+          rm -rf ./build
           
           # List directory structure for debugging
           echo "=== Directory structure after preparation ==="
