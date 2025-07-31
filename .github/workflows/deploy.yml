@@ -75,7 +75,7 @@ jobs:
           control_flow_flattening: false
           dead_code_injection: false
           debug_protection: false
-          disable_console_output: false
+          disable_console_output: true
           identifier_names_generator: mangled
           self_defending: false
           string_array: true
