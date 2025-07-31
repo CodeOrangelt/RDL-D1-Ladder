@@ -41,6 +41,9 @@ jobs:
           find ./build/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
           find ./build/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
           
+          # Remove existing directories in root to avoid conflicts
+          rm -rf ./CSS ./JS ./images
+          
           # Move everything from build to root
           mv ./build/* ./
           rm -rf ./build
