@@ -12,18 +12,128 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Upload files to VPS
-        uses: appleboy/scp-action@v0.1.4
+      - name: Prepare root files
+        run: |
+          # Simply copy HTML files to root - don't move CSS/JS/images since they're already correct
+          cp ./HTML/* ./
+          
+          # Convert relative paths to absolute paths from root (add leading slash)
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\/CSS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\/JS/g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/\.\.\/images/\/images/g' {} \;
+          
+          # Also fix any existing relative references without ../
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"CSS\//"\/CSS\//g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"JS\//"\/JS\//g' {} \;
+          find . -maxdepth 1 -type f -name "*.html" -exec sed -i 's/"images\//"\/images\//g' {} \;
+          
+          # Remove the problematic root-index.html if it exists
+          rm -f root-index.html
+          
+          # List directory structure for debugging
+          echo "=== Directory structure after preparation ==="
+          ls -la
+          echo "=== CSS directory ==="
+          ls -la CSS/ || echo "CSS directory not found"
+          echo "=== JS directory ==="
+          ls -la JS/ || echo "JS directory not found"
+          echo "=== images directory ==="
+          ls -la images/ || echo "images directory not found"
+          echo "=== HTML files in root ==="
+          ls -la *.html
+
+      - name: Remove file extensions for clean URLs
+        run: |
+          # Create .htaccess for clean URLs (if using Apache)
+          cat > .htaccess << 'EOF'
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteRule ^([^\.]+)$ $1.html [NC,L]
+          
+          # Remove .html extension from URLs
+          RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
+          RewriteRule ^ /%1 [NC,L,R]
+          EOF
+          
+          # For GitHub Pages, also create extensionless copies
+          for file in *.html; do
+            if [[ "$file" != "index.html" ]]; then
+              basename="${file%.html}"
+              mkdir -p "$basename"
+              cp "$file" "$basename/index.html"
+            fi
+          done
+
+      - name: Create Firebase Config
+        run: |
+          cp JS/firebase-config.template.js JS/firebase-config.js
+          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
+
+      - name: Obfuscate JavaScript
+        uses: KevinRohn/github-action-javascript-obfuscator@v1
+        with:
+          input_path: JS
+          output_path: JS
+          compact: true
+          control_flow_flattening: false
+          dead_code_injection: false
+          debug_protection: false
+          disable_console_output: false
+          identifier_names_generator: mangled
+          self_defending: false
+          string_array: true
+          string_array_threshold: 0.5
+          string_array_encoding: 'base64'
+          transform_object_keys: false
+          target: browser
+
+      - name: Pre-upload verification
+        run: |
+          echo "=== Final structure before upload ==="
+          find . -type f -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.png" -o -name "*.jpg" -o -name "*.gif" -o -name "*.ico" | sort
+          echo "=== Total files to upload ==="
+          find . -type f | wc -l
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.5
         with:
           host: 192.210.140.94
           username: root
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
-          source: "./*"
+          script: |
+            # Create web directory if it doesn't exist
+            mkdir -p /var/www/html
+            # Stop nginx/apache if running
+            systemctl stop nginx 2>/dev/null || systemctl stop apache2 2>/dev/null || true
+            # Clear existing files
+            rm -rf /var/www/html/*
+            # Ensure all expected directories exist
+            mkdir -p /var/www/html/{CSS,JS,images,HTML,Files,Archive}
+
+      - name: Upload files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 192.210.140.94
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: "*,.*"
           target: "/var/www/html/"
           strip_components: 0
+          overwrite: true
+          debug: true
 
       - name: Configure web server
         uses: appleboy/ssh-action@v0.1.5
@@ -34,38 +144,145 @@ jobs:
           port: 22
           script: |
             # Install nginx if not present
-            apt update && apt install -y nginx
+            if ! command -v nginx &> /dev/null; then
+              apt update
+              apt install -y nginx
+            fi
             
-            # Configure nginx to serve from HTML directory but allow access to root assets
+            # Configure nginx with better file structure support
             cat > /etc/nginx/sites-available/default << 'EOF'
             server {
                 listen 80 default_server;
+                listen [::]:80 default_server;
+                
                 root /var/www/html;
-                index index.html;
+                index index.html index.htm;
+                
                 server_name _;
                 
-                # Serve HTML files from /HTML/ directory as if they're at root
+                # Security headers
+                add_header X-Frame-Options "SAMEORIGIN" always;
+                add_header X-Content-Type-Options "nosniff" always;
+                
+                # Main location block for clean URLs
                 location / {
-                    try_files /HTML$uri /HTML$uri/ /HTML$uri.html =404;
+                    try_files $uri $uri.html $uri/ =404;
                 }
                 
-                # Serve CSS, JS, images directly from root
-                location ~ ^/(CSS|JS|images)/ {
+                # Handle CSS files with proper MIME type
+                location ~* \.css$ {
+                    add_header Content-Type text/css;
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+                
+                # Handle JS files with proper MIME type
+                location ~* \.js$ {
+                    add_header Content-Type application/javascript;
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+                
+                # Handle images with caching
+                location ~* \.(jpg|jpeg|png|gif|ico|svg|webp)$ {
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+                
+                # Specific handling for your directories
+                location /CSS/ {
                     try_files $uri =404;
+                }
+                
+                location /JS/ {
+                    try_files $uri =404;
+                }
+                
+                location /images/ {
+                    try_files $uri =404;
+                }
+                
+                location /HTML/ {
+                    try_files $uri =404;
+                }
+                
+                location /Files/ {
+                    try_files $uri =404;
+                }
+                
+                location /Archive/ {
+                    try_files $uri =404;
+                }
+                
+                # Remove .html extension from URLs
+                location ~ ^/(.*)\.html$ {
+                    return 301 /$1;
+                }
+                
+                # Deny access to sensitive files
+                location ~ /\.(git|env) {
+                    deny all;
+                }
+                
+                location ~ /\.ht {
+                    deny all;
                 }
             }
             EOF
             
-            # Set permissions and start nginx
+            # Set proper permissions
             chown -R www-data:www-data /var/www/html
-            chmod -R 755 /var/www/html
-            systemctl enable nginx
-            systemctl restart nginx
+            find /var/www/html -type d -exec chmod 755 {} \;
+            find /var/www/html -type f -exec chmod 644 {} \;
             
-            # Debug: Show what files are actually there
-            echo "=== Files on VPS ==="
+            # Test nginx configuration
+            nginx -t
+            
+            # Start nginx
+            systemctl enable nginx
+            systemctl start nginx
+            systemctl reload nginx
+            
+            # Comprehensive verification
+            echo "=== VPS Upload Verification ==="
+            echo "Total files uploaded:"
+            find /var/www/html -type f | wc -l
+            echo ""
+            
+            echo "Directory structure:"
             ls -la /var/www/html/
-            echo "=== CSS directory ==="
-            ls -la /var/www/html/CSS/ || echo "No CSS directory"
-            echo "=== HTML directory ==="
-            ls -la /var/www/html/HTML/ || echo "No HTML directory"
+            echo ""
+            
+            echo "CSS files:"
+            find /var/www/html/CSS -name "*.css" 2>/dev/null | wc -l || echo "0"
+            echo ""
+            
+            echo "JS files:"
+            find /var/www/html/JS -name "*.js" 2>/dev/null | wc -l || echo "0"
+            echo ""
+            
+            echo "HTML files:"
+            find /var/www/html -maxdepth 1 -name "*.html" | wc -l
+            echo ""
+            
+            echo "Image files:"
+            find /var/www/html/images -type f 2>/dev/null | wc -l || echo "0"
+            echo ""
+            
+            echo "Files directory:"
+            find /var/www/html/Files -type f 2>/dev/null | wc -l || echo "0"
+            echo ""
+            
+            echo "Archive directory:"
+            find /var/www/html/Archive -type f 2>/dev/null | wc -l || echo "0"
+            echo ""
+            
+            echo "Sample files check:"
+            ls -la /var/www/html/CSS/ 2>/dev/null | head -5 || echo "CSS directory empty/missing"
+            ls -la /var/www/html/JS/ 2>/dev/null | head -5 || echo "JS directory empty/missing"
+            ls -la /var/www/html/images/ 2>/dev/null | head -5 || echo "Images directory empty/missing"
+            
+            # Test nginx response
+            echo ""
+            echo "Testing nginx response:"
+            curl -I http://localhost/ 2>/dev/null | head -5 || echo "Failed to test nginx"
