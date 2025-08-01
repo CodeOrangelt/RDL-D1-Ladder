@@ -2,15 +2,17 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.5", // Change this ID when you want to show a new announcement
+    id: "beta-release 1.7", // Change this ID when you want to show a new announcement
     title: "Redux Descent League Beta Release 1.7",
     content: `
-        <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
-            <li>ELO Visibility Toggle</li>
-            <li>Hiatus/Unhiatus Added</li>
-            <li>Availability Toggle (Profiles)</li>
-            <li>Hiatus/Unhiatus Added</li>
-            <li>Hiatus/Unhiatus Added</li>
+        <p1 style="color:#ffffff; font-weight: bold;">WHATS NEW:</p1><br></br>
+            <li style="color:#90EE90">ELO Visibility Toggle</li>
+            <li style="color:#90EE90">Hiatus/Unhiatus Added</li>
+            <li style="color:#90EE90">Availability Toggle (Profiles)</li>
+            <li style="color:#90EE90">Misc Subgame added</li>
+            <li style="color:#90EE90">Added "Misc Subgame"</li>
+            <li style="color:#90EE90">Increased website security</li>
+            <li style="color:red">Retirements REMOVED</li>
 
             <br>
 \

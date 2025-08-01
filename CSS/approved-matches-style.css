@@ -1076,6 +1076,11 @@ body {
     color: black;
 }
 
+.match-subgame.gauss-and-mercs {
+    background-color: #1800f5; /* Goldenrod */
+    color: rgb(255, 255, 255);
+}
+
 /* Date - hugs right side */
 .match-date {
     font-size: 0.9em;
