@@ -337,7 +337,7 @@
                 </table>
             </div>
 
-        <!-- Inside your outer-container, after the ladder tables -->
+            <!-- Inside your outer-container, after the ladder tables -->
         <!-- Adjust placement as needed -->
         <div id="ladder-retire-tiny-container" style="display: flex; gap: 8px; align-items: center;">
             <!-- Leave Team Button (shows next to retire button for DUOS ladder) -->
@@ -353,6 +353,12 @@
         <!-- Tiny join button container, positioned at the bottom right of the ladder container -->
         <div id="ladder-join-tiny-container">
             <button id="tiny-join-button" class="tiny-join-button" style="display: none;">Join</button>
+        </div>
+        <!-- ELO Toggle Button Container, positioned at the bottom left -->
+        <div id="elo-toggle-container" style="position: absolute; bottom: 10px; left: 10px;">
+            <button id="toggle-elo-button" class="tiny-retire-button" style="background: #6c757d;">
+                Toggle ELO
+            </button>
         </div>
         </div>
 
@@ -547,6 +553,58 @@
 
         // For testing - uncomment to reset popup
         // localStorage.removeItem('mappingCompetitionPopupClosed');
+    </script>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleEloButton = document.getElementById('toggle-elo-button');
+            let eloVisible = true;
+            
+            if (toggleEloButton) {
+                toggleEloButton.addEventListener('click', () => {
+                    eloVisible = !eloVisible;
+                    
+                    // Toggle ELO column for all ladder tables
+                    const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'];
+                    
+                    tables.forEach(tableSelector => {
+                        const table = document.querySelector(tableSelector);
+                        if (table) {
+                            // Find ELO column index (usually 3rd column)
+                            const headerRow = table.querySelector('thead tr');
+                            if (headerRow) {
+                                const headers = headerRow.querySelectorAll('th');
+                                let eloColumnIndex = -1;
+                                
+                                headers.forEach((header, index) => {
+                                    if (header.textContent.trim() === 'ELO') {
+                                        eloColumnIndex = index;
+                                    }
+                                });
+                                
+                                if (eloColumnIndex !== -1) {
+                                    // Toggle header
+                                    headers[eloColumnIndex].style.display = eloVisible ? '' : 'none';
+                                    
+                                    // Toggle all body cells in that column
+                                    const bodyRows = table.querySelectorAll('tbody tr');
+                                    bodyRows.forEach(row => {
+                                        const cells = row.querySelectorAll('td');
+                                        if (cells[eloColumnIndex]) {
+                                            cells[eloColumnIndex].style.display = eloVisible ? '' : 'none';
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Update button appearance
+                    toggleEloButton.style.background = eloVisible ? '#6c757d' : '#28a745';
+                    toggleEloButton.textContent = eloVisible ? 'Toggle ELO' : 'Show ELO';
+                });
+            }
+        });
     </script>
 
     <!-- Add this new script to check for pending matches on index page -->
