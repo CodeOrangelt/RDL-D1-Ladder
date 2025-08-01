@@ -993,7 +993,6 @@ tr:nth-child(even) {
     font-size: 14px;
     transition: all 0.3s ease;
     z-index: 2;
-    user-select: none;
     margin: 2px;
     background: rgba(0, 0, 0, 0.2);
     border: 2px solid transparent;
