@@ -9,26 +9,45 @@
     <link rel="stylesheet" href="../CSS/nav.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/inbox.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div id="nav-placeholder"></div>
-    <main>
-        <div class="container">
+    
+    <main class="inbox-main">
+        <div class="inbox-container">
+            <!-- Header -->
             <div class="inbox-header">
-                <h1 style="color: white">Game Invitations</h1>
-                <div class="inbox-filters">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="pending">Pending</button>
-                    <button class="filter-btn" data-filter="accepted">Accepted</button>
-                    <button class="filter-btn" data-filter="declined">Declined</button>
-                </div>
+                <h1>Invitations!</h1>
+                    <div class="inbox-filters">
+                        <button class="filter-btn" data-filter="all">
+                            <i class="fas fa-list"></i> All
+                        </button>
+                        <button class="filter-btn active" data-filter="pending">
+                            <i class="fas fa-clock"></i> Pending
+                        </button>
+                        <button class="filter-btn" data-filter="accepted">
+                            <i class="fas fa-check"></i> Accepted
+                        </button>
+                        <button class="filter-btn" data-filter="declined">
+                            <i class="fas fa-times"></i> Declined
+                        </button>
+                        <button class="filter-btn" data-filter="outbox">
+                            <i class="fas fa-paper-plane"></i> Sent
+                        </button>
+                    </div>
             </div>
             
+            <!-- Content Area -->
             <div id="inbox-content" class="inbox-content">
-                <div class="loading-message">Loading invitations...</div>
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading invitations...</p>
+                </div>
             </div>
         </div>
     </main>
+    
     <div id="footer-placeholder"></div>
     
     <!-- Scripts -->
@@ -45,6 +64,7 @@
         }).catch(error => {
             console.error('Error loading nav/footer:', error);
         });
+        
     </script>
 </body>
 </html>

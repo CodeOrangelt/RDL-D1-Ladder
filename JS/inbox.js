@@ -14,10 +14,12 @@ import {
 
 class InboxManager {
     constructor() {
-        this.currentFilter = 'all';
+        this.currentFilter = 'pending';  // Changed from 'all' to 'pending'
         this.invitations = [];
+        this.sentInvitations = []; 
         this.unsubscribe = null;
-        this.pageSize = 20; // Pagination
+        this.sentUnsubscribe = null;
+        this.pageSize = 20;
         this.lastDoc = null;
         this.hasMore = true;
         this.init();
@@ -47,7 +49,7 @@ class InboxManager {
     }
     
     loadInvitations(userId) {
-        // Use more efficient query with pagination
+        // Existing query for received invitations
         const invitationsRef = collection(db, 'gameInvitations');
         let q = query(
             invitationsRef,
@@ -56,7 +58,6 @@ class InboxManager {
             limit(this.pageSize)
         );
         
-        // Set up real-time listener only for recent invitations
         this.unsubscribe = onSnapshot(q, (snapshot) => {
             this.invitations = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -66,24 +67,58 @@ class InboxManager {
             this.renderInvitations();
             this.updateNotificationCount();
         });
+        
+        // Add query for sent invitations
+        let sentQ = query(
+            invitationsRef,
+            where('fromUserId', '==', userId),
+            orderBy('createdAt', 'desc'),
+            limit(this.pageSize)
+        );
+        
+        this.sentUnsubscribe = onSnapshot(sentQ, (snapshot) => {
+            this.sentInvitations = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                isSent: true // Flag to identify sent invitations
+            }));
+            
+            this.renderInvitations();
+        });
     }
     
     renderInvitations() {
         const container = document.getElementById('inbox-content');
         if (!container) return;
         
-        // Filter invitations
-        let filteredInvitations = this.invitations;
-        if (this.currentFilter !== 'all') {
+        // Filter invitations based on current filter
+        let filteredInvitations = [];
+        
+        if (this.currentFilter === 'outbox') {
+            filteredInvitations = this.sentInvitations;
+        } else if (this.currentFilter === 'all') {
+            // Show both received and sent invitations
+            filteredInvitations = [...this.invitations, ...this.sentInvitations]
+                .sort((a, b) => {
+                    const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                    const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                    return dateB - dateA;
+                });
+        } else {
+            // Filter received invitations by status
             filteredInvitations = this.invitations.filter(inv => inv.status === this.currentFilter);
         }
         
         if (filteredInvitations.length === 0) {
+            const filterText = this.currentFilter === 'outbox' ? 'sent' : 
+                             this.currentFilter === 'all' ? '' : this.currentFilter;
             container.innerHTML = `
                 <div class="empty-inbox">
                     <i class="fas fa-inbox"></i>
-                    <h3>No ${this.currentFilter === 'all' ? '' : this.currentFilter} invitations</h3>
-                    <p>When other players invite you to games, they'll appear here.</p>
+                    <h3>No ${filterText} invitations</h3>
+                    <p>${this.currentFilter === 'outbox' ? 
+                        'Invitations you send to other players will appear here.' : 
+                        'When other players invite you to games, they\'ll appear here.'}</p>
                 </div>
             `;
             return;
@@ -101,6 +136,7 @@ class InboxManager {
             new Date(invitation.createdAt);
         
         const timeAgo = this.getTimeAgo(createdAt);
+        const isSent = invitation.isSent || false;
         
         // Handle different invitation types
         let invitationContent = '';
@@ -119,57 +155,24 @@ class InboxManager {
                         </p>
                     </div>
                 </div>
-                
-                <div class="invitation-game-info">
-                    <div class="game-detail">
-                        <span class="detail-label">Invitation Type</span>
-                        <span class="detail-value">Team Formation</span>
-                    </div>
-                    <div class="game-detail">
-                        <span class="detail-label">Ladder</span>
-                        <span class="detail-value">Duos</span>
-                    </div>
-                    <div class="game-detail">
-                        <span class="detail-label">From Player</span>
-                        <span class="detail-value">
-                            <a href="./profile.html?username=${encodeURIComponent(invitation.fromUsername)}" 
-                               class="player-link">${invitation.fromUsername}</a>
-                        </span>
-                    </div>
-                </div>
             `;
         } else {
-            // Game invitation content (existing)
+            // Game invitation content
             invitationContent = `
                 <div class="invitation-details">
                     <p>${invitation.message}</p>
-                </div>
-                
-                <div class="invitation-game-info">
-                    <div class="game-detail">
-                        <span class="detail-label">Invitation Type</span>
-                        <span class="detail-value">${invitation.type === 'home' ? 'Home Level' : 'Subgame'}</span>
-                    </div>
-                    <div class="game-detail">
-                        <span class="detail-label">${invitation.type === 'home' ? 'Level' : 'Game Mode'}</span>
-                        <span class="detail-value">${invitation.value}</span>
-                    </div>
-                    <div class="game-detail">
-                        <span class="detail-label">From Player</span>
-                        <span class="detail-value">
-                            <a href="./profile.html?username=${encodeURIComponent(invitation.fromUsername)}" 
-                               class="player-link">${invitation.fromUsername}</a>
-                        </span>
-                    </div>
                 </div>
             `;
         }
         
         return `
-            <div class="invitation-card ${invitation.status}" data-invitation-id="${invitation.id}">
+            <div class="invitation-card ${invitation.status} ${isSent ? 'sent-invitation' : ''}" data-invitation-id="${invitation.id}">
                 <div class="invitation-header">
                     <div>
-                        <div class="invitation-from">${invitation.fromUsername}</div>
+                        <div class="invitation-from">
+                            ${isSent ? `To: ${invitation.toUsername}` : invitation.fromUsername}
+                            ${isSent ? '<span class="sent-indicator"><i class="fas fa-paper-plane"></i> Sent</span>' : ''}
+                        </div>
                         <div class="invitation-time">${timeAgo}</div>
                     </div>
                     <span class="status-badge status-${invitation.status}">${invitation.status}</span>
@@ -177,7 +180,7 @@ class InboxManager {
                 
                 ${invitationContent}
                 
-                ${invitation.status === 'pending' ? `
+                ${!isSent && invitation.status === 'pending' ? `
                     <div class="invitation-actions">
                         <button class="action-btn accept-btn" data-action="accept" data-invitation-id="${invitation.id}">
                             <i class="fas fa-check"></i> Accept
@@ -190,6 +193,14 @@ class InboxManager {
                                 <i class="fas fa-reply"></i> Send Message
                             </button>
                         ` : ''}
+                    </div>
+                ` : ''}
+                
+                ${isSent && invitation.status === 'pending' ? `
+                    <div class="invitation-actions">
+                        <button class="action-btn cancel-btn" data-action="cancel" data-invitation-id="${invitation.id}">
+                            <i class="fas fa-times"></i> Cancel Invitation
+                        </button>
                     </div>
                 ` : ''}
             </div>
@@ -213,6 +224,9 @@ class InboxManager {
                             break;
                         case 'decline':
                             await this.updateInvitationStatus(invitationId, 'declined');
+                            break;
+                        case 'cancel':
+                            await this.updateInvitationStatus(invitationId, 'cancelled');
                             break;
                         case 'respond':
                             this.openResponseModal(invitationId);
@@ -427,6 +441,9 @@ class InboxManager {
     destroy() {
         if (this.unsubscribe) {
             this.unsubscribe();
+        }
+        if (this.sentUnsubscribe) {
+            this.sentUnsubscribe();
         }
     }
 }
