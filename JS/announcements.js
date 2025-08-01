@@ -3,9 +3,10 @@
 // Configuration
 const ANNOUNCEMENT = {
     id: "beta-release 1.7", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.7",
+    title: "Redux Descent League Beta Release 1.8",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">WHATS NEW:</p1><br></br>
+            <li style="color:#90EE90">Purchasable website themes</li>
             <li style="color:#90EE90">ELO Visibility Toggle</li>
             <li style="color:#90EE90">Hiatus/Unhiatus Added</li>
             <li style="color:#90EE90">Availability Toggle (Profiles)</li>
