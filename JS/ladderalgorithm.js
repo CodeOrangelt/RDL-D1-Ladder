@@ -183,6 +183,34 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     }
 }
 
+// Add this function to ladderalgorithm.js before approveReport
+async function awardMatchPoints(winnerUserId, loserUserId, subgameType) {
+    // Points chart as defined in your requirements
+    const pointsChart = {
+        '': 10, // Standard match
+        'Standard': 10,
+        'Fusion Match': 25,
+        '≥6 Missiles': 10,
+        'Weapon Imbalance': 30,
+        // ...other game types as per your list
+    };
+    
+    // Get points for this subgame type (default to 10 for standard)
+    const pointsToAward = pointsChart[subgameType] || 10;
+    
+    // Award points to both winner and loser
+    try {
+        // Use the modifyUserPoints function from adminbackend.js
+        await modifyUserPoints(winnerUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match`);
+        await modifyUserPoints(loserUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match`);
+        console.log(`Awarded ${pointsToAward} points to both players for ${subgameType || 'Standard'} match`);
+        return true;
+    } catch (error) {
+        console.error('Error awarding match points:', error);
+        return false;
+    }
+}
+
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment, winnerDemoLink) {
     try {
         // Get the report data
@@ -228,6 +256,9 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
+
+        // Award points based on subgame type
+        await awardMatchPoints(winnerId, loserId, reportData.subgameType);
 
         console.log('Match successfully approved and ELO updated');
         return true;
