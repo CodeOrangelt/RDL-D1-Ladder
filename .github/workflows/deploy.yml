@@ -76,4 +76,7 @@ jobs:
         with:
           branch: gh-pages
           folder: distribution_path
-          reserved_names: ['approvedMatches', 'players', 'retroTracker']
+          reserved_names:
+            - approvedMatches
+            - players
+            - retroTracker
