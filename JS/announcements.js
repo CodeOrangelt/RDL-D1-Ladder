@@ -3,15 +3,19 @@
 // Configuration
 const ANNOUNCEMENT = {
     id: "beta-release 1.5", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.5",
+    title: "Redux Descent League Beta Release 1.7",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">FEATURES ADDED:</p1><br></br>
-            <li>Elo Sandbox - Rules tab</li>
-            <li>Ribbons Descriptions - Rules tab</li>
+            <li>ELO Visibility Toggle</li>
+            <li>Hiatus/Unhiatus Added</li>
+            <li>Availability Toggle (Profiles)</li>
+            <li>Hiatus/Unhiatus Added</li>
+            <li>Hiatus/Unhiatus Added</li>
+
             <br>
 \
         <p1 style="color:#ffffff; font-weight: bold;">RDL News!:</p1><br></br>
-             <li>the 1st RDL Mapping competition has concluded! congrats to Belphegor Prime for 1st place!</li>
+             <li>the 2nd RDL Town Hall commenced! Good feedback, and many new features approved by the community! Attend next time to have your voice heard.</li>
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Let me in!"
