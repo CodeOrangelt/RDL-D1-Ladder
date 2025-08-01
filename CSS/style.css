@@ -682,6 +682,13 @@ tr:nth-child(even) {
   position: absolute;
   bottom: 10px;
   right: 10px;
+  z-index: 1000;
+}
+
+ #elo-toggle-container button {
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 1001;
 }
 
 .tiny-retire-button {
