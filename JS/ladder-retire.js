@@ -14,13 +14,7 @@ import {
 import { auth, db } from './firebase-config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM elements
-    const tinyRetireButton = document.getElementById('tiny-retire-button');
-    const retirePrompt = document.getElementById('ladder-retire-prompt');
-    const retireLadderTypeSpan = document.getElementById('retire-ladder-type');
-    const retireUsernameInput = document.getElementById('retire-username-input');
-    const retireLadderButton = document.getElementById('retire-ladder-button');
-    const retireStatusSpan = document.getElementById('ladder-retire-status');
+    // DOM elements - removed retirement elements
     
     // New elements for leave team functionality
     const leaveTeamButton = document.getElementById('leave-team-button');
@@ -70,27 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
             radio.addEventListener('change', (e) => {
                 if (e.target.checked) {
                     currentLadderMode = e.target.value;
-                    console.log(`Retire: Ladder changed to: ${currentLadderMode}`);
+                    console.log(`Ladder changed to: ${currentLadderMode}`);
                     
-                    // Update UI elements
-                    if (retireLadderTypeSpan) {
-                        retireLadderTypeSpan.textContent = currentLadderMode;
-                    }
-                    
-                    // Check if we should show the retire/leave team buttons for new ladder
-                    updateRetireButtonVisibility();
+                    // Check if we should show the leave team buttons for new ladder
+                    updateButtonVisibility();
                 }
             });
         });
     }
     
-    // Function to show/hide retire and leave team buttons based on ladder membership
-    function updateRetireButtonVisibility() {
-        console.log("Checking retire visibility for ladder:", currentLadderMode);
+    // Function to show/hide leave team and hiatus buttons based on ladder membership
+    function updateButtonVisibility() {
+        console.log("Checking button visibility for ladder:", currentLadderMode);
         
         const user = auth.currentUser;
         if (!user) {
-            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
             if (hiatusButton) hiatusButton.style.display = 'none';
             if (unhiatusButton) unhiatusButton.style.display = 'none';
@@ -100,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkPlayerStatus(user);
     }
     
-    // Check if player is on the selected ladder and if they're in a team
     // Check if player is on the selected ladder and if they're in a team
 async function checkPlayerStatus(user) {
     try {
@@ -116,7 +103,6 @@ async function checkPlayerStatus(user) {
                 // Show unhiatus button
                 if (unhiatusButton) unhiatusButton.style.display = 'block';
                 // Hide other buttons
-                if (tinyRetireButton) tinyRetireButton.style.display = 'none';
                 if (leaveTeamButton) leaveTeamButton.style.display = 'none';
                 if (hiatusButton) hiatusButton.style.display = 'none';
                 
@@ -127,7 +113,7 @@ async function checkPlayerStatus(user) {
             // Continue with normal ladder check even if hiatus check fails
         }
         
-        // Check ladder membership (this is the same approach used for retire button)
+        // Check ladder membership
         try {
             const playerCollection = getCollectionName(currentLadderMode);
             console.log(`Checking if user is in ${playerCollection} collection`);
@@ -137,7 +123,6 @@ async function checkPlayerStatus(user) {
             
             if (playerDoc.exists()) {
                 console.log(`User is on the ${currentLadderMode} ladder`);
-                if (tinyRetireButton) tinyRetireButton.style.display = 'block';
                 if (hiatusButton) hiatusButton.style.display = 'block';
                 
                 // Check if user is in a team (for DUOS ladder)
@@ -155,20 +140,17 @@ async function checkPlayerStatus(user) {
                 }
             } else {
                 console.log(`User is NOT on the ${currentLadderMode} ladder`);
-                if (tinyRetireButton) tinyRetireButton.style.display = 'none';
                 if (leaveTeamButton) leaveTeamButton.style.display = 'none';
                 if (hiatusButton) hiatusButton.style.display = 'none';
             }
         } catch (playerError) {
             console.error("Error checking player status:", playerError);
-            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
             if (hiatusButton) hiatusButton.style.display = 'none';
         }
     } catch (error) {
         console.error("Main error in checkPlayerStatus:", error);
         // Hide all buttons if there's a general error
-        if (tinyRetireButton) tinyRetireButton.style.display = 'none';
         if (leaveTeamButton) leaveTeamButton.style.display = 'none';
         if (hiatusButton) hiatusButton.style.display = 'none';
         if (unhiatusButton) unhiatusButton.style.display = 'none';
@@ -178,7 +160,7 @@ async function checkPlayerStatus(user) {
     // Handle team dissolution for DUOS ladder
     async function handleTeamDissolution(userData, collectionName) {
         if (userData.hasTeam && userData.teamId && userData.teammate) {
-            console.log("Dissolving team for retiring player...");
+            console.log("Dissolving team...");
             
             try {
                 // Find the teammate and remove their team data
@@ -199,7 +181,7 @@ async function checkPlayerStatus(user) {
                 }
             } catch (error) {
                 console.error("Error dissolving team:", error);
-                // Continue with retirement even if team dissolution fails
+                // Continue even if team dissolution fails
             }
         }
     }
@@ -210,7 +192,7 @@ async function checkPlayerStatus(user) {
         
         try {
             // Get player document to verify and get team info
-            const playerRef = doc(db, playerCollection, user.uid);
+            const playerRef = doc(playerCollection, user.uid);
             const playerDoc = await getDoc(playerRef);
             
             if (!playerDoc.exists()) {
@@ -249,42 +231,6 @@ async function checkPlayerStatus(user) {
         }
     }
     
-    // Main retire function
-    async function retireFromLadder(username, user) {
-        const playerCollection = getCollectionName(currentLadderMode);
-        
-        try {
-            // Get player document to verify and get team info
-            const playerRef = doc(db, playerCollection, user.uid);
-            const playerDoc = await getDoc(playerRef);
-            
-            if (!playerDoc.exists()) {
-                throw new Error('You are not on this ladder.');
-            }
-            
-            const playerData = playerDoc.data();
-            
-            // Verify username matches
-            if (playerData.username.toLowerCase() !== username.toLowerCase()) {
-                throw new Error('Username does not match your account.');
-            }
-            
-            // Handle special cases for DUOS ladder
-            if (currentLadderMode === 'DUOS') {
-                await handleTeamDissolution(playerData, playerCollection);
-            }
-            
-            // Delete player from ladder
-            await deleteDoc(playerRef);
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error("Error retiring from ladder:", error);
-            throw error;
-        }
-    }
-    
     // Function to handle going on hiatus
     async function goOnHiatus(username, user) {
         const playerCollection = getCollectionName(currentLadderMode);
@@ -292,7 +238,7 @@ async function checkPlayerStatus(user) {
         
         try {
             // Get player document to verify
-            const playerRef = doc(db, playerCollection, user.uid);
+            const playerRef = doc(playerCollection, user.uid);
             const playerDoc = await getDoc(playerRef);
             
             if (!playerDoc.exists()) {
@@ -376,38 +322,14 @@ async function checkPlayerStatus(user) {
     // Set up auth state listener
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            updateRetireButtonVisibility();
+            updateButtonVisibility();
         } else {
-            if (tinyRetireButton) tinyRetireButton.style.display = 'none';
             if (leaveTeamButton) leaveTeamButton.style.display = 'none';
-            if (retirePrompt) retirePrompt.style.display = 'none';
             if (leaveTeamPrompt) leaveTeamPrompt.style.display = 'none';
             if (hiatusButton) hiatusButton.style.display = 'none';
             if (unhiatusButton) unhiatusButton.style.display = 'none';
         }
     });
-    
-    // Toggle retire form visibility when tiny retire button is clicked
-    if (tinyRetireButton) {
-        tinyRetireButton.addEventListener('click', () => {
-            console.log("Retire button clicked");
-            if (retirePrompt) {
-                retirePrompt.style.display = 'flex';
-            }
-            if (retireLadderTypeSpan) {
-                retireLadderTypeSpan.textContent = currentLadderMode;
-            }
-            
-            // Clear previous feedback
-            if (retireStatusSpan) {
-                retireStatusSpan.textContent = '';
-                retireStatusSpan.style.color = '';
-            }
-            if (retireUsernameInput) {
-                retireUsernameInput.value = '';
-            }
-        });
-    }
     
     // Toggle leave team form visibility when leave team button is clicked
     if (leaveTeamButton) {
@@ -432,79 +354,37 @@ async function checkPlayerStatus(user) {
     if (hiatusButton) {
         hiatusButton.addEventListener('click', () => {
             console.log("Hiatus button clicked");
+            
+            // Toggle the modal visibility
             if (hiatusPrompt) {
-                hiatusPrompt.style.display = 'flex';
-            }
-            if (hiatusLadderTypeSpan) {
-                hiatusLadderTypeSpan.textContent = currentLadderMode;
-            }
-            
-            // Clear previous feedback
-            if (hiatusStatusSpan) {
-                hiatusStatusSpan.textContent = '';
-                hiatusStatusSpan.style.color = '';
-            }
-            if (hiatusUsernameInput) {
-                hiatusUsernameInput.value = '';
-            }
-        });
-    }
-    
-    // Handle retire form submission
-    if (retireLadderButton) {
-        retireLadderButton.addEventListener('click', async () => {
-            const username = retireUsernameInput ? retireUsernameInput.value.trim() : '';
-            
-            // Validation
-            if (!username) {
-                if (retireStatusSpan) {
-                    retireStatusSpan.textContent = 'Please enter your username to confirm.';
-                    retireStatusSpan.style.color = '#ff6b6b';
-                }
-                return;
-            }
-            
-            const user = auth.currentUser;
-            if (!user) {
-                if (retireStatusSpan) {
-                    retireStatusSpan.textContent = 'You must be logged in to retire.';
-                    retireStatusSpan.style.color = '#ff6b6b';
-                }
-                return;
-            }
-            
-            // Disable button and show loading
-            retireLadderButton.disabled = true;
-            if (retireStatusSpan) {
-                retireStatusSpan.textContent = `Retiring from ${currentLadderMode} ladder...`;
-                retireStatusSpan.style.color = '#ffa500';
-            }
-            
-            try {
-                await retireFromLadder(username, user);
+                const isVisible = hiatusPrompt.style.display === 'flex';
                 
-                // Success feedback
-                if (retireStatusSpan) {
-                    retireStatusSpan.textContent = `Successfully retired from ${currentLadderMode} ladder!`;
-                    retireStatusSpan.style.color = '#4CAF50';
-                }
-                
-                // Hide retire elements and reload page after delay
-                setTimeout(() => {
-                    if (tinyRetireButton) tinyRetireButton.style.display = 'none';
-                    if (retirePrompt) retirePrompt.style.display = 'none';
+                if (isVisible) {
+                    // Close the modal
+                    hiatusPrompt.style.display = 'none';
+                } else {
+                    // Open the modal
+                    hiatusPrompt.style.display = 'flex';
                     
-                    // Reload the page to update all UI elements
-                    window.location.reload();
-                }, 2000);
-                
-            } catch (error) {
-                console.error("Error during retirement:", error);
-                if (retireStatusSpan) {
-                    retireStatusSpan.textContent = error.message || 'Error processing your request. Please try again.';
-                    retireStatusSpan.style.color = '#ff6b6b';
+                    // Set ladder type and clear form
+                    if (hiatusLadderTypeSpan) {
+                        hiatusLadderTypeSpan.textContent = currentLadderMode;
+                    }
+                    
+                    // Clear previous feedback
+                    if (hiatusStatusSpan) {
+                        hiatusStatusSpan.textContent = '';
+                        hiatusStatusSpan.style.color = '';
+                    }
+                    if (hiatusUsernameInput) {
+                        hiatusUsernameInput.value = '';
+                    }
+                    
+                    // Re-enable the confirm button if it was disabled
+                    if (confirmHiatusButton) {
+                        confirmHiatusButton.disabled = false;
+                    }
                 }
-                retireLadderButton.disabled = false;
             }
         });
     }
@@ -627,8 +507,7 @@ async function checkPlayerStatus(user) {
         });
     }
     
-    // Create and add the unhiatus button to the DOM
-    function createUnhiatusButton() {
+ function createUnhiatusButton() {
         // Check if button already exists
         let unhiatusBtn = document.getElementById('unhiatus-button');
         if (!unhiatusBtn) {
@@ -640,6 +519,9 @@ async function checkPlayerStatus(user) {
             unhiatusBtn.textContent = 'Return from Hiatus';
             unhiatusBtn.style.position = 'relative';
             unhiatusBtn.style.left = '-50px';
+            unhiatusBtn.style.zIndex = '1000';
+            unhiatusBtn.style.cursor = 'pointer';
+            unhiatusBtn.style.pointerEvents = 'auto';
             
             // Add to container
             const container = document.getElementById('ladder-retire-tiny-container');
@@ -751,14 +633,6 @@ async function checkPlayerStatus(user) {
         });
     }
     
-    // Close retire prompt functionality
-    const closeRetireButton = document.querySelector('#ladder-retire-prompt .close-button');
-    if (closeRetireButton) {
-        closeRetireButton.addEventListener('click', () => {
-            if (retirePrompt) retirePrompt.style.display = 'none';
-        });
-    }
-    
     // Close leave team prompt functionality
     const closeLeaveTeamButton = document.querySelector('#leave-team-prompt .close-button');
     if (closeLeaveTeamButton) {
@@ -780,15 +654,6 @@ async function checkPlayerStatus(user) {
     if (closeUnhiatusButton) {
         closeUnhiatusButton.addEventListener('click', () => {
             if (unhiatusPrompt) unhiatusPrompt.style.display = 'none';
-        });
-    }
-    
-    // Close on outside click
-    if (retirePrompt) {
-        retirePrompt.addEventListener('click', (e) => {
-            if (e.target === retirePrompt) {
-                retirePrompt.style.display = 'none';
-            }
         });
     }
     
@@ -824,6 +689,6 @@ async function checkPlayerStatus(user) {
     
     // Initial check when page loads
     setTimeout(() => {
-        updateRetireButtonVisibility();
+        updateButtonVisibility();
     }, 1000); // Small delay to ensure auth state is loaded
 });
