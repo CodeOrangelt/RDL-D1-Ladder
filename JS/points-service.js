@@ -3,26 +3,20 @@ import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "htt
 
 // Points chart matching your requirements
 const POINTS_CHART = {
-    '': 10, // Standard match
-    'Standard': 10,
-    'Standard Match': 10,
-    'Fusion Match': 25,
-    '≥6 Missiles': 10,
-    'Weapon Imbalance': 30,
-    'No Energy': 15,
-    'No Shields': 15,
-    'Pilot Assist Only': 20,
-    'Classic Robots': 15,
-    'Enhanced CTF': 25,
-    'CTF Hybrids': 30,
-    'Custom Weapon Load': 25,
-    'Tracker/Merc': 20,
-    'Bomb/Bomb': 15,
-    'Zoom/Zoom': 15,
-    'Stock Ships Only': 20,
-    'Expert AI Match': 35,
-    'Challenge Match': 40,
-    'Tournament Match': 50
+        '': 10, // Standard match
+        'Standard': 10,
+        'Fusion Match': 25,
+        '≥6 Missiles': 10,
+        'Weapon Imbalance': 30,
+        'Blind Match': 75,
+        'Rematch': 20,
+        'Disorientation': 50,
+        'Ratting': 35,
+        'Altered Powerups': 35,
+        'Mega Match': 40,
+        'Dogfight': 50,
+        'Gauss and Mercs': 25,
+        'Misc': 30
 };
 
 // Safe wrapper that doesn't break if adminbackend isn't available
