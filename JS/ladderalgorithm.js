@@ -16,6 +16,7 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
+import { modifyUserPoints } from './adminbackend.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
