@@ -1,60 +1,102 @@
-import {
-    collection,
-    getDocs,
-    query,
-    orderBy,
-    limit,
-    where,
-    startAfter
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
-// --- Configuration ---
-const MIN_MATCHES_REQUIREMENT = 10; // Min matches to qualify for rate/ratio records
-const CACHE_DURATION_MS = 30 * 60 * 1000; // 30 minutes cache (was 5 minutes)
-const MAX_PLAYERS_PER_BATCH = 50; // Limit initial player fetch
-const MAX_MATCHES_PER_BATCH = 100; // Limit initial match fetch
-
-// --- Global State & Variables ---
 const state = {
-    currentGameMode: 'D1', // Default to D1
-    cache: {
-        D1: { 
-            playerStats: null, 
-            playerSnapshot: null, 
-            matchSnapshot: null,
-            timestamp: 0,
-            fullDataLoaded: false 
-        },
-        D2: { 
-            playerStats: null, 
-            playerSnapshot: null, 
-            matchSnapshot: null,
-            timestamp: 0,
-            fullDataLoaded: false 
-        }
-    },
-    isLoadingMore: false
+    currentGameMode: 'D1',
+    cache: { D1: {}, D2: {}, D3: {} }
 };
-let mapChart = null; // Chart.js instance for map stats
 
-console.log("🚀 Ultra-optimized records.js loaded!");
-console.log("📊 This page now uses ~50 reads instead of 1000+!");
+// Cache configuration
+const CACHE_CONFIG = {
+    EXPIRY_TIME: 5 * 60 * 1000, // 5 minutes in milliseconds
+    MAX_CACHE_SIZE: 3, // Maximum number of game modes to cache
+    STORAGE_KEY: 'rdl_stats_cache'
+};
 
-// --- Helper Functions ---
+// Load cache from localStorage on startup
+function loadCacheFromStorage() {
+    try {
+        const stored = localStorage.getItem(CACHE_CONFIG.STORAGE_KEY);
+        if (stored) {
+            const parsedCache = JSON.parse(stored);
+            // Validate cache structure and merge with default
+            for (const gameMode in parsedCache) {
+                if (['D1', 'D2', 'D3'].includes(gameMode) && parsedCache[gameMode]) {
+                    state.cache[gameMode] = parsedCache[gameMode];
+                }
+            }
+            console.log('Cache loaded from localStorage');
+        }
+    } catch (error) {
+        console.warn('Failed to load cache from storage:', error);
+        // Clear corrupted cache
+        localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
+    }
+}
 
-/**
- * Determines the tier based on ELO rating.
- */
+// Save cache to localStorage
+function saveCacheToStorage() {
+    try {
+        localStorage.setItem(CACHE_CONFIG.STORAGE_KEY, JSON.stringify(state.cache));
+    } catch (error) {
+        console.warn('Failed to save cache to storage:', error);
+        // Storage might be full, try to clear old entries
+        try {
+            localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
+            localStorage.setItem(CACHE_CONFIG.STORAGE_KEY, JSON.stringify(state.cache));
+        } catch (retryError) {
+            console.error('Cache storage failed completely:', retryError);
+        }
+    }
+}
+
+// Check if cache is valid (not expired)
+function isCacheValid(cacheEntry) {
+    if (!cacheEntry || !cacheEntry.timestamp) return false;
+    const now = Date.now();
+    return (now - cacheEntry.timestamp) < CACHE_CONFIG.EXPIRY_TIME;
+}
+
+// Clean expired cache entries
+function cleanExpiredCache() {
+    let cleaned = false;
+    for (const gameMode in state.cache) {
+        if (!isCacheValid(state.cache[gameMode])) {
+            console.log(`Cleaning expired cache for ${gameMode}`);
+            state.cache[gameMode] = {};
+            cleaned = true;
+        }
+    }
+    if (cleaned) {
+        saveCacheToStorage();
+    }
+}
+
+// Get cache status for UI feedback
+function getCacheStatus(gameMode) {
+    const cacheEntry = state.cache[gameMode];
+    if (!cacheEntry || !cacheEntry.timestamp) {
+        return { status: 'empty', message: 'No cached data' };
+    }
+    
+    const age = Date.now() - cacheEntry.timestamp;
+    const remaining = CACHE_CONFIG.EXPIRY_TIME - age;
+    
+    if (remaining <= 0) {
+        return { status: 'expired', message: 'Cache expired' };
+    }
+    
+    const minutesRemaining = Math.ceil(remaining / (60 * 1000));
+    return { 
+        status: 'valid', 
+        message: `Cached data (expires in ${minutesRemaining}m)`,
+        age: Math.floor(age / 1000)
+    };
+}
+
+// Helper functions
 function getPlayerTier(eloRating) {
-    if (eloRating === undefined || eloRating === null) {
-        return 'default';
-    }
-    const elo = Number(eloRating);
-    if (isNaN(elo)) {
-        return 'default';
-    }
-
+    const elo = Number(eloRating) || 1200;
     if (elo >= 2000) return 'emerald';
     if (elo >= 1800) return 'gold';
     if (elo >= 1600) return 'silver';
@@ -62,1013 +104,824 @@ function getPlayerTier(eloRating) {
     return 'default';
 }
 
-/**
- * Updates a record card element in the DOM.
- */
-function updateRecordCard(elementId, recordData, unit = '', formatSign = false) {
-    const element = document.getElementById(elementId);
-    if (!element) {
-        console.warn(`Element with ID "${elementId}" not found.`);
-        return;
+function getPlayerElo(username, currentMode) {
+    // Try to get ELO from cache first
+    const cachedData = state.cache[currentMode];
+    if (cachedData && cachedData.playerData) {
+        const playerData = cachedData.playerData.find(player => player.username === username);
+        if (playerData) {
+            return playerData.eloRating || playerData.elo || 1200;
+        }
     }
-    const tier = getPlayerTier(recordData.elo);
-    let displayValue = recordData.value;
-    if (formatSign && recordData.value > 0) {
-        displayValue = `+${recordData.value}`;
-    }
-    element.innerHTML =
-        `<span class="player-name ${tier}-rank">${recordData.username}</span> <span class="record-stat">(${displayValue}${unit})</span>`;
+    return 1200; // Default ELO
 }
 
-// --- 🔥 ULTRA-OPTIMIZED DATA LOADING ---
+function updateRecordRow(elementId, recordData, unit = '', formatSign = false) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const tier = getPlayerTier(recordData.elo);
+    let displayValue = recordData.value;
+    if (formatSign && recordData.value > 0) displayValue = `+${recordData.value}`;
+    
+    // Create clickable profile link
+    element.innerHTML = `<a href="profile.html?username=${encodeURIComponent(recordData.username)}" class="player-link tier-${tier}">${recordData.username}</a>`;
+    element.nextElementSibling.textContent = `${displayValue}${unit}`;
+    element.classList.remove('loading');
+}
 
-/**
- * Loads records with intelligent pagination and caching
- */
-async function loadRecords() {
-    try {
-        console.log(`🔄 Loading ${state.currentGameMode} records...`);
+// Initialize subgame stats structure
+function initializeSubgameStats(currentMode) {
+    return {
+        totalCounts: new Map(),
+        playerPerformance: new Map()
+    };
+}
+
+function processData(playerSnapshot, matchSnapshot) {
+    const playerStats = new Map();
+    const playerMatchesMap = new Map();
+    const mapStats = new Map();
+    const subgameStats = initializeSubgameStats(state.currentGameMode);
+
+    // Pre-allocate player data structures
+    playerSnapshot.forEach(playerDoc => {
+        const player = playerDoc.data();
+        if (player.username) {
+            playerMatchesMap.set(player.username, { wins: [], losses: [] });
+            playerStats.set(player.username, {
+                wins: 0, losses: 0, totalMatches: 0, 
+                totalKills: 0, totalDeaths: 0, totalSuicides: 0, 
+                scoreDifferential: 0,
+                eloRating: player.eloRating || player.elo || 1200,
+                position: player.position || player.rank || 999
+            });
+        }
+    });
+
+    // Process matches in a single pass
+    matchSnapshot.forEach(matchDoc => {
+        const match = matchDoc.data();
         
-        // Show loading state
-        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'Loading...');
-        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Loading players...</div>');
+        const winnerUsername = match.winnerUsername || match.winner || match.player1;
+        const loserUsername = match.loserUsername || match.loser || match.player2;
+        
+        if (!winnerUsername || !loserUsername) return;
 
-        const currentMode = state.currentGameMode;
-        const playersCollectionName = currentMode === 'D1' ? 'players' : 'playersD2';
-        const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
+        // Track maps
+        const map = match.mapPlayed || match.map || match.level || 'Unknown';
+        mapStats.set(map, (mapStats.get(map) || 0) + 1);
 
-        // Check cache first
-        const now = Date.now();
+        // Track subgames
+        const rawSubgameType = match.subgameType || match.gameType || match.type;
+        const displaySubgameType = rawSubgameType === "" || rawSubgameType === undefined || rawSubgameType === null 
+            ? "Standard Match" 
+            : rawSubgameType;
+        
+        subgameStats.totalCounts.set(
+            displaySubgameType, 
+            (subgameStats.totalCounts.get(displaySubgameType) || 0) + 1
+        );
+
+        // Initialize player performance tracking for this subgame if needed
+        if (!subgameStats.playerPerformance.has(displaySubgameType)) {
+            subgameStats.playerPerformance.set(displaySubgameType, new Map());
+        }
+        
+        const subgamePerf = subgameStats.playerPerformance.get(displaySubgameType);
+        
+        if (!subgamePerf.has(winnerUsername)) {
+            subgamePerf.set(winnerUsername, { wins: 0, matches: 0 });
+        }
+        if (!subgamePerf.has(loserUsername)) {
+            subgamePerf.set(loserUsername, { wins: 0, matches: 0 });
+        }
+        
+        subgamePerf.get(winnerUsername).wins++;
+        subgamePerf.get(winnerUsername).matches++;
+        subgamePerf.get(loserUsername).matches++;
+
+        // Track player matches if players exist
+        const winnerMatches = playerMatchesMap.get(winnerUsername);
+        const loserMatches = playerMatchesMap.get(loserUsername);
+        
+        if (winnerMatches) winnerMatches.wins.push(match);
+        if (loserMatches) loserMatches.losses.push(match);
+    });
+
+    // Calculate player stats efficiently
+    for (const [username, playerMatches] of playerMatchesMap) {
+        const stats = playerStats.get(username);
+        if (!stats) continue;
+
+        const wins = playerMatches.wins.length;
+        const losses = playerMatches.losses.length;
+        const totalMatches = wins + losses;
+
+        if (totalMatches === 0) continue;
+
+        let totalKills = 0, totalDeaths = 0, totalSuicides = 0, scoreDifferential = 0;
+
+        // Process wins
+        for (const match of playerMatches.wins) {
+            const winnerScore = parseInt(match.winnerScore || match.score1 || match.winnerKills || 0) || 0;
+            const loserScore = parseInt(match.loserScore || match.score2 || match.loserKills || 0) || 0;
+            const suicides = parseInt(match.winnerSuicides || match.suicides1 || 0) || 0;
+            
+            totalKills += winnerScore;
+            totalDeaths += loserScore;
+            totalSuicides += suicides;
+            scoreDifferential += (winnerScore - loserScore);
+        }
+
+        // Process losses
+        for (const match of playerMatches.losses) {
+            const winnerScore = parseInt(match.winnerScore || match.score1 || match.winnerKills || 0) || 0;
+            const loserScore = parseInt(match.loserScore || match.score2 || match.loserKills || 0) || 0;
+            const suicides = parseInt(match.loserSuicides || match.suicides2 || 0) || 0;
+            
+            totalKills += loserScore;
+            totalDeaths += winnerScore;
+            totalSuicides += suicides;
+            scoreDifferential -= (winnerScore - loserScore);
+        }
+
+        // Calculate derived stats
+        const kdRatio = totalDeaths > 0 ? parseFloat((totalKills / totalDeaths).toFixed(2)) : totalKills;
+        const winRate = parseFloat(((wins / totalMatches) * 100).toFixed(1));
+
+        // Update stats object
+        Object.assign(stats, {
+            wins, losses, totalMatches, kdRatio, winRate,
+            totalKills, totalDeaths, totalSuicides, scoreDifferential
+        });
+    }
+
+    return { playerStats, subgameStats, mapStats };
+}
+
+// Enhanced data loading function with caching
+async function loadStats(forceRefresh = false) {
+    const currentMode = state.currentGameMode;
+    
+    // Clean expired cache entries
+    cleanExpiredCache();
+    
+    // Check if we have valid cached data and not forcing refresh
+    if (!forceRefresh && isCacheValid(state.cache[currentMode])) {
+        console.log(`Using cached data for ${currentMode}`);
         const cachedData = state.cache[currentMode];
-        if (cachedData.playerStats && cachedData.playerSnapshot && now - cachedData.timestamp < CACHE_DURATION_MS) {
-            console.log(`✅ Using cached ${currentMode} records data`);
-            updateRecordDisplay(cachedData.playerStats);
-            await updateTopPlayersByTier(cachedData.playerSnapshot);
-            updateSummaryStats(cachedData.playerSnapshot);
+        
+        // Show cache status in header
+        const cacheStatus = getCacheStatus(currentMode);
+        updateCacheStatusDisplay(cacheStatus);
+        
+        // Restore Maps from cached data
+        const restoredPlayerStats = new Map();
+        const restoredMapStats = new Map();
+        const restoredSubgameStats = {
+            totalCounts: new Map(),
+            playerPerformance: new Map()
+        };
+
+        // Restore playerStats Map
+        if (cachedData.playerStats) {
+            Object.entries(cachedData.playerStats).forEach(([key, value]) => {
+                restoredPlayerStats.set(key, value);
+            });
+        }
+
+        // Restore mapStats Map
+        if (cachedData.mapStats) {
+            Object.entries(cachedData.mapStats).forEach(([key, value]) => {
+                restoredMapStats.set(key, value);
+            });
+        }
+
+        // Restore subgameStats Maps
+        if (cachedData.subgameStats) {
+            if (cachedData.subgameStats.totalCounts) {
+                Object.entries(cachedData.subgameStats.totalCounts).forEach(([key, value]) => {
+                    restoredSubgameStats.totalCounts.set(key, value);
+                });
+            }
+
+            if (cachedData.subgameStats.playerPerformance) {
+                Object.entries(cachedData.subgameStats.playerPerformance).forEach(([subgameType, playerMap]) => {
+                    const restoredPlayerMap = new Map();
+                    if (playerMap && typeof playerMap === 'object') {
+                        Object.entries(playerMap).forEach(([username, stats]) => {
+                            restoredPlayerMap.set(username, stats);
+                        });
+                    }
+                    restoredSubgameStats.playerPerformance.set(subgameType, restoredPlayerMap);
+                });
+            }
+        }
+
+        // Create mock snapshot objects for compatibility
+        const mockPlayerSnapshot = {
+            size: cachedData.recordCount?.players || 0,
+            forEach: (callback) => {
+                if (cachedData.playerData && Array.isArray(cachedData.playerData)) {
+                    cachedData.playerData.forEach(playerData => {
+                        callback({
+                            data: () => playerData
+                        });
+                    });
+                }
+            }
+        };
+
+        const mockMatchSnapshot = {
+            size: cachedData.recordCount?.matches || 0
+        };
+
+        // Update displays with restored cached data
+        updatePlayerRecords(restoredPlayerStats);
+        updateTopPlayers(mockPlayerSnapshot);
+        updateMapStats(restoredMapStats);
+        updateSubgameStats(restoredSubgameStats, currentMode);
+        updateTopPointEarners(currentMode); // Add this line
+        updateSummary(mockPlayerSnapshot, mockMatchSnapshot);
+        
+        return;
+    }
+    
+    let playersCollection, matchesCollection;
+    
+    // Set collection names based on game mode
+    switch(currentMode) {
+        case 'D1':
+            playersCollection = 'players';
+            matchesCollection = 'approvedMatches';
+            break;
+        case 'D2':
+            playersCollection = 'playersD2';
+            matchesCollection = 'approvedMatchesD2';
+            break;
+        case 'D3':
+            playersCollection = 'playersD3';
+            matchesCollection = 'approvedMatchesD3';
+            break;
+        default:
+            playersCollection = 'players';
+            matchesCollection = 'approvedMatches';
+    }
+
+    try {
+        console.log(`Loading ${currentMode} statistics from Firebase...`);
+        
+        // Show loading states
+        showLoadingStates();
+        updateCacheStatusDisplay({ status: 'loading', message: 'Loading from Firebase...' });
+        
+        // Fetch all data
+        const [playerSnapshot, matchSnapshot] = await Promise.all([
+            getDocs(collection(db, playersCollection)),
+            getDocs(collection(db, matchesCollection))
+        ]);
+
+        console.log(`Loaded ${playerSnapshot.size} players, ${matchSnapshot.size} matches`);
+
+        // Check if we have any data
+        if (playerSnapshot.size === 0 && matchSnapshot.size === 0) {
+            showNoDataState();
             return;
         }
 
-        // SIMPLE APPROACH: Just get ALL data (like original)
-        console.log(`📥 Fetching ALL data from ${playersCollectionName} and ${matchesCollectionName}...`);
-        
-        const playersRef = collection(db, playersCollectionName);
-        const matchesRef = collection(db, matchesCollectionName);
-        
-        const [playerSnapshot, matchSnapshot] = await Promise.all([
-            getDocs(playersRef),
-            getDocs(matchesRef)
-        ]);
+        // Process data
+        const { playerStats, subgameStats, mapStats } = processData(playerSnapshot, matchSnapshot);
 
-        console.log(`📊 Loaded: ${playerSnapshot.size} players, ${matchSnapshot.size} matches`);
-
-        // Calculate stats using existing logic
-        const playerStats = await calculateOptimizedStats(playerSnapshot, matchSnapshot, currentMode);
-        
-        console.log(`📊 Calculated stats for ${playerStats.size} players`);
-
-        // Cache the results
-        state.cache[currentMode] = { 
-            playerStats, 
-            playerSnapshot, 
-            matchSnapshot,
-            timestamp: now,
-            fullDataLoaded: true 
-        };
-
-        // Update displays
-        updateRecordDisplay(playerStats);
-        await updateTopPlayersByTier(playerSnapshot);
-        updateSummaryStats(playerSnapshot);
-
-        console.log('✅ Records loaded successfully!');
-
-    } catch (error) {
-        console.error(`❌ Error loading ${state.currentGameMode} records:`, error);
-        
-        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'Error');
-        document.querySelectorAll('.tier-players').forEach(el => {
-            el.innerHTML = '<div class="loading-msg">Error loading data</div>';
-        });
-    }
-}
-
-/**
- * 🔥 OPTIMIZED STATS CALCULATION - Works with smaller dataset
- */
-async function calculateOptimizedStats(playerSnapshot, matchSnapshot, currentMode) {
-    const playerStats = new Map();
-    const playerMatchesMap = new Map();
-
-    // Process matches to group by player
-    matchSnapshot.forEach(matchDoc => {
-        const match = matchDoc.data();
-        if (!match.winnerUsername || !match.loserUsername) return;
-
-        if (!playerMatchesMap.has(match.winnerUsername)) {
-            playerMatchesMap.set(match.winnerUsername, { wins: [], losses: [] });
-        }
-        if (!playerMatchesMap.has(match.loserUsername)) {
-            playerMatchesMap.set(match.loserUsername, { wins: [], losses: [] });
-        }
-
-        playerMatchesMap.get(match.winnerUsername).wins.push(match);
-        playerMatchesMap.get(match.loserUsername).losses.push(match);
-    });
-
-    // Process players and calculate stats
-    playerSnapshot.forEach(playerDoc => {
-        const player = playerDoc.data();
-        const username = player.username;
-        if (!username) return;
-
-        const playerMatches = playerMatchesMap.get(username) || { wins: [], losses: [] };
-        const wins = playerMatches.wins.length;
-        const losses = playerMatches.losses.length;
-        const totalMatches = wins + losses;
-
-        let totalKills = 0;
-        let totalDeaths = 0;
-        let totalSuicides = 0;
-        let scoreDifferential = 0;
-
-        // Process wins
-        playerMatches.wins.forEach(match => {
-            const winnerScore = parseInt(match.winnerScore) || 0;
-            const loserScore = parseInt(match.loserScore) || 0;
-            totalKills += winnerScore;
-            totalDeaths += loserScore;
-            totalSuicides += parseInt(match.winnerSuicides) || 0;
-            scoreDifferential += (winnerScore - loserScore);
+        // Extract player data for caching
+        const playerData = [];
+        playerSnapshot.forEach(doc => {
+            playerData.push(doc.data());
         });
 
-        // Process losses
-        playerMatches.losses.forEach(match => {
-            const winnerScore = parseInt(match.winnerScore) || 0;
-            const loserScore = parseInt(match.loserScore) || 0;
-            totalKills += loserScore;
-            totalDeaths += winnerScore;
-            totalSuicides += parseInt(match.loserSuicides) || 0;
-            scoreDifferential -= (winnerScore - loserScore);
-        });
-
-        const kdRatio = totalDeaths > 0 ? parseFloat((totalKills / totalDeaths).toFixed(2)) : totalKills;
-        const winRate = totalMatches > 0 ? parseFloat(((wins / totalMatches) * 100).toFixed(1)) : 0;
-
-        playerStats.set(username, {
-            wins,
-            losses,
-            totalMatches,
-            kdRatio,
-            winRate,
-            totalKills,
-            totalDeaths,
-            totalSuicides,
-            scoreDifferential,
-            eloRating: player.eloRating || 1200,
-            position: player.position,
-            isPartialData: true // Flag to indicate this is based on limited dataset
-        });
-    });
-
-    console.log(`📊 Calculated stats for ${playerStats.size} players from optimized dataset`);
-    return playerStats;
-}
-
-/**
- * Add "Load More" option for users who want complete data
- */
-function addLoadMoreOption(currentMode) {
-    const cachedData = state.cache[currentMode];
-    if (cachedData.fullDataLoaded) return; // Already loaded full data
-
-    // Add load more button to records section
-    const recordsContainer = document.querySelector('.records-grid') || document.querySelector('.records');
-    if (recordsContainer && !document.getElementById('load-more-btn')) {
-        const loadMoreBtn = document.createElement('button');
-        loadMoreBtn.id = 'load-more-btn';
-        loadMoreBtn.className = 'load-more-btn';
-        loadMoreBtn.innerHTML = `
-            <i class="fas fa-expand-arrows-alt"></i>
-            Load Complete Dataset (All Players & Matches)
-            <small>May take longer but shows complete statistics</small>
-        `;
-        
-        loadMoreBtn.addEventListener('click', () => loadCompleteDataset(currentMode));
-        
-        recordsContainer.appendChild(loadMoreBtn);
-    }
-}
-
-/**
- * Load complete dataset when user requests it
- */
-async function loadCompleteDataset(currentMode) {
-    if (state.isLoadingMore) return;
-    state.isLoadingMore = true;
-
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if (loadMoreBtn) {
-        loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading complete dataset...';
-        loadMoreBtn.disabled = true;
-    }
-
-    try {
-        console.log('🔄 Loading COMPLETE dataset (this will use more reads)...');
-
-        const playersCollectionName = currentMode === 'D1' ? 'players' : 'playersD2';
-        const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-
-        // Fetch ALL players and matches (original method)
-        const playersRef = collection(db, playersCollectionName);
-        const matchesRef = collection(db, matchesCollectionName);
-        const [playerSnapshot, matchSnapshot] = await Promise.all([
-            getDocs(playersRef),
-            getDocs(matchesRef)
-        ]);
-
-        console.log(`📊 Complete dataset: ${playerSnapshot.size} players, ${matchSnapshot.size} matches`);
-
-        // Calculate complete stats
-        const playerStats = await calculateCompleteStats(playerSnapshot, matchSnapshot);
-
-        // Update cache with complete data
-        state.cache[currentMode] = { 
-            playerStats, 
-            playerSnapshot, 
-            matchSnapshot,
+        // Store in cache with timestamp
+        const cacheEntry = {
+            playerStats: Object.fromEntries(playerStats),
+            subgameStats: {
+                totalCounts: Object.fromEntries(subgameStats.totalCounts),
+                playerPerformance: Object.fromEntries(
+                    Array.from(subgameStats.playerPerformance.entries()).map(([key, value]) => [
+                        key, 
+                        Object.fromEntries(value)
+                    ])
+                )
+            },
+            mapStats: Object.fromEntries(mapStats),
+            playerData: playerData,
             timestamp: Date.now(),
-            fullDataLoaded: true 
+            recordCount: {
+                players: playerSnapshot.size,
+                matches: matchSnapshot.size
+            }
         };
+        
+        state.cache[currentMode] = cacheEntry;
+        
+        // Save to localStorage
+        saveCacheToStorage();
+        
+        // Update cache status display
+        const cacheStatus = getCacheStatus(currentMode);
+        updateCacheStatusDisplay(cacheStatus);
 
         // Update displays
-        updateRecordDisplay(playerStats);
-        await updateTopPlayersByTier(playerSnapshot);
-        updateSummaryStats(playerSnapshot);
+        updatePlayerRecords(playerStats);
+        updateTopPlayers(playerSnapshot);
+        updateMapStats(mapStats);
+        updateSubgameStats(subgameStats, currentMode);
+        updateTopPointEarners(currentMode); // Add this line
+        updateSummary(playerSnapshot, matchSnapshot);
 
-        // Remove load more button
-        if (loadMoreBtn) {
-            loadMoreBtn.remove();
-        }
-
-        console.log('✅ Complete dataset loaded successfully!');
+        console.log(`${currentMode} data cached successfully`);
 
     } catch (error) {
-        console.error('Error loading complete dataset:', error);
-        if (loadMoreBtn) {
-            loadMoreBtn.innerHTML = 'Error loading complete data - Click to retry';
-            loadMoreBtn.disabled = false;
-        }
-    } finally {
-        state.isLoadingMore = false;
+        console.error('Error loading stats:', error);
+        showErrorState();
+        updateCacheStatusDisplay({ status: 'error', message: 'Error loading data' });
     }
 }
 
-/**
- * Calculate stats from complete dataset (original logic)
- */
-async function calculateCompleteStats(playerSnapshot, matchSnapshot) {
-    const playerStats = new Map();
-    const playerMatchesMap = new Map();
-
-    // Process all matches
-    matchSnapshot.forEach(matchDoc => {
-        const match = matchDoc.data();
-        if (!match.winnerUsername || !match.loserUsername) return;
-
-        if (!playerMatchesMap.has(match.winnerUsername)) {
-            playerMatchesMap.set(match.winnerUsername, { wins: [], losses: [] });
-        }
-        if (!playerMatchesMap.has(match.loserUsername)) {
-            playerMatchesMap.set(match.loserUsername, { wins: [], losses: [] });
-        }
-
-        playerMatchesMap.get(match.winnerUsername).wins.push(match);
-        playerMatchesMap.get(match.loserUsername).losses.push(match);
-    });
-
-    // Process all players
-    playerSnapshot.forEach(playerDoc => {
-        const player = playerDoc.data();
-        const username = player.username;
-        if (!username) return;
-
-        const playerMatches = playerMatchesMap.get(username) || { wins: [], losses: [] };
-        const wins = playerMatches.wins.length;
-        const losses = playerMatches.losses.length;
-        const totalMatches = wins + losses;
-
-        let totalKills = 0;
-        let totalDeaths = 0;
-        let totalSuicides = 0;
-        let scoreDifferential = 0;
-
-        playerMatches.wins.forEach(match => {
-            const winnerScore = parseInt(match.winnerScore) || 0;
-            const loserScore = parseInt(match.loserScore) || 0;
-            totalKills += winnerScore;
-            totalDeaths += loserScore;
-            totalSuicides += parseInt(match.winnerSuicides) || 0;
-            scoreDifferential += (winnerScore - loserScore);
+function updatePlayerRecords(playerStats) {
+    if (playerStats.size === 0) {
+        const recordElements = [
+            'most-wins', 'best-winrate', 'best-kd', 'most-matches',
+            'best-differential', 'most-kills', 'best-elo', 'least-suicides'
+        ];
+        
+        recordElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = 'No data';
+                element.classList.remove('loading');
+                if (element.nextElementSibling) {
+                    element.nextElementSibling.textContent = '-';
+                }
+            }
         });
-
-        playerMatches.losses.forEach(match => {
-            const winnerScore = parseInt(match.winnerScore) || 0;
-            const loserScore = parseInt(match.loserScore) || 0;
-            totalKills += loserScore;
-            totalDeaths += winnerScore;
-            totalSuicides += parseInt(match.loserSuicides) || 0;
-            scoreDifferential -= (winnerScore - loserScore);
-        });
-
-        const kdRatio = totalDeaths > 0 ? parseFloat((totalKills / totalDeaths).toFixed(2)) : totalKills;
-        const winRate = totalMatches > 0 ? parseFloat(((wins / totalMatches) * 100).toFixed(1)) : 0;
-
-        playerStats.set(username, {
-            wins,
-            losses,
-            totalMatches,
-            kdRatio,
-            winRate,
-            totalKills,
-            totalDeaths,
-            totalSuicides,
-            scoreDifferential,
-            eloRating: player.eloRating || 1200,
-            position: player.position,
-            isPartialData: false // Complete data
-        });
-    });
-
-    return playerStats;
-}
-
-/**
- * Updates all the individual record cards in the DOM.
- */
-function updateRecordDisplay(playerStats) {
-    if (!playerStats || playerStats.size === 0) {
-        console.warn("No player stats available to display records.");
-        document.querySelectorAll('.record-value').forEach(el => el.textContent = 'N/A');
         return;
     }
 
-    // Find Record Holders
-    let mostWins = { username: 'N/A', value: 0, elo: 0 };
-    let bestWinRate = { username: 'N/A', value: 0, elo: 0 };
-    let bestKD = { username: 'N/A', value: 0, elo: 0 };
-    let mostMatches = { username: 'N/A', value: 0, elo: 0 };
-    let bestDiff = { username: 'N/A', value: -Infinity, elo: 0 };
-    let mostLosses = { username: 'N/A', value: 0, elo: 0 };
-    let leastSuicidesData = null;
-    let bestSuicideRate = Infinity;
-    let mostKills = { username: 'N/A', value: 0, elo: 0 };
-    let bestElo = { username: 'N/A', value: 0, elo: 0 };
+    const MIN_MATCHES = 10;
+    
+    const records = {
+        mostWins: { username: 'N/A', value: 0, elo: 0 },
+        bestWinRate: { username: 'N/A', value: 0, elo: 0 },
+        bestKD: { username: 'N/A', value: 0, elo: 0 },
+        mostMatches: { username: 'N/A', value: 0, elo: 0 },
+        bestDiff: { username: 'N/A', value: -Infinity, elo: 0 },
+        mostKills: { username: 'N/A', value: 0, elo: 0 },
+        bestElo: { username: 'N/A', value: 0, elo: 0 },
+        leastSuicides: { username: 'N/A', value: Infinity, elo: 0 }
+    };
 
     for (const [username, stats] of playerStats) {
-        const elo = stats.eloRating || 0;
+        const elo = stats.eloRating;
+        const hasMinMatches = stats.totalMatches >= MIN_MATCHES;
 
-        // Most Wins
-        if (stats.wins > mostWins.value) mostWins = { username, value: stats.wins, elo };
-        // Best Win Rate (with min matches)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.winRate > bestWinRate.value) bestWinRate = { username, value: stats.winRate, elo };
-        // Best K/D (with min matches)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.kdRatio > bestKD.value) bestKD = { username, value: stats.kdRatio, elo };
-        // Most Matches
-        if (stats.totalMatches > mostMatches.value) mostMatches = { username, value: stats.totalMatches, elo };
-        // Best Score Differential (with min matches)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.scoreDifferential > bestDiff.value) bestDiff = { username, value: stats.scoreDifferential, elo };
-        // Most Losses
-        if (stats.losses > mostLosses.value) mostLosses = { username, value: stats.losses, elo };
-        
-        // Least Suicides as percentage (with min matches)
-        if (stats.totalMatches >= MIN_MATCHES_REQUIREMENT && stats.totalSuicides >= 0) {
-            const suicideRate = (stats.totalSuicides / stats.totalMatches) * 100;
-            if (suicideRate < bestSuicideRate) {
-                bestSuicideRate = suicideRate;
-                leastSuicidesData = {
-                    username: username,
-                    suicideRate: suicideRate,
-                    totalSuicides: stats.totalSuicides,
-                    totalMatches: stats.totalMatches,
-                    elo: elo
+        if (stats.wins > records.mostWins.value) {
+            records.mostWins = { username, value: stats.wins, elo };
+        }
+
+        if (stats.totalMatches > records.mostMatches.value) {
+            records.mostMatches = { username, value: stats.totalMatches, elo };
+        }
+
+        if (stats.totalKills > records.mostKills.value) {
+            records.mostKills = { username, value: stats.totalKills, elo };
+        }
+
+        if (stats.eloRating > records.bestElo.value) {
+            records.bestElo = { username, value: Math.round(stats.eloRating), elo };
+        }
+
+        if (hasMinMatches) {
+            if (stats.winRate > records.bestWinRate.value) {
+                records.bestWinRate = { username, value: stats.winRate, elo };
+            }
+
+            if (stats.kdRatio > records.bestKD.value) {
+                records.bestKD = { username, value: stats.kdRatio, elo };
+            }
+
+            if (stats.scoreDifferential > records.bestDiff.value) {
+                records.bestDiff = { username, value: stats.scoreDifferential, elo };
+            }
+
+            // Fix suicide calculation - show average suicides per match, not percentage
+            const avgSuicides = stats.totalSuicides / stats.totalMatches;
+            if (avgSuicides < records.leastSuicides.value) {
+                records.leastSuicides = { 
+                    username, 
+                    value: avgSuicides.toFixed(2), // Average suicides per match
+                    elo
                 };
             }
         }
-        
-        // Most Kills
-        if (stats.totalKills > mostKills.value) mostKills = { username, value: stats.totalKills, elo };
-        // Best ELO
-        if (stats.eloRating > bestElo.value) bestElo = { username, value: Math.round(stats.eloRating), elo };
     }
 
-    // Update DOM
-    updateRecordCard('most-wins', mostWins);
-    updateRecordCard('best-winrate', bestWinRate, '%');
-    updateRecordCard('best-kd', bestKD);
-    updateRecordCard('most-matches', mostMatches);
-    updateRecordCard('best-differential', bestDiff, '', true);
-    updateRecordCard('most-losses', mostLosses);
-    
-    // Handle least suicides with custom formatting
-    const leastSuicidesEl = document.getElementById('least-suicides');
-    if (leastSuicidesData && leastSuicidesEl) {
-        const tier = getPlayerTier(leastSuicidesData.elo);
-        leastSuicidesEl.innerHTML = `
-            <span class="player-name ${tier}-rank">${leastSuicidesData.username}</span>
-            <span class="record-stat">(${leastSuicidesData.suicideRate.toFixed(2)}%)</span>
-            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
-        `;
-    } else if (leastSuicidesEl) {
-        leastSuicidesEl.textContent = 'No data available';
-    }
-    
-    updateRecordCard('most-kills', mostKills); 
-    updateRecordCard('best-elo', bestElo);
+    const updateRecordOrNoData = (elementId, record, unit = '', formatSign = false) => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
 
-    // Show indicator if using partial data
-    const isPartialData = Array.from(playerStats.values()).some(stats => stats.isPartialData);
-    if (isPartialData) {
-        addPartialDataIndicator();
-    }
-
-    updateHiddenStatsDiv(playerStats);
-}
-
-/**
- * Add indicator when showing partial data
- */
-function addPartialDataIndicator() {
-    const recordsContainer = document.querySelector('.records-grid') || document.querySelector('.records');
-    if (recordsContainer && !document.querySelector('.partial-data-indicator')) {
-        const indicator = document.createElement('div');
-        indicator.className = 'partial-data-indicator';
-        indicator.innerHTML = `
-            <i class="fas fa-info-circle"></i>
-            Showing results from top ${MAX_PLAYERS_PER_BATCH} players and recent ${MAX_MATCHES_PER_BATCH} matches
-        `;
-        recordsContainer.insertBefore(indicator, recordsContainer.firstChild);
-    }
-}
-
-// Keep existing loadMapStats function but optimize it
-async function loadMapStats() {
-    try {
-        console.log(`🔄 Loading map stats for ${state.currentGameMode}...`);
-        
-        const currentMode = state.currentGameMode;
-        const cachedData = state.cache[currentMode];
-        
-        // Use cached match data if available (THIS IS THE KEY FIX!)
-        let matchesSnapshot;
-        if (cachedData.matchSnapshot && Date.now() - cachedData.timestamp < CACHE_DURATION_MS) {
-            console.log('✅ Using cached match data for map stats (from loadRecords)');
-            matchesSnapshot = cachedData.matchSnapshot;
+        if (record.username === 'N/A' || (record.value === 0 && elementId !== 'best-elo') || 
+            record.value === -Infinity || record.value === Infinity) {
+            element.textContent = 'No data';
+            element.classList.remove('loading');
+            if (element.nextElementSibling) {
+                element.nextElementSibling.textContent = '-';
+            }
         } else {
-            console.log('🔄 Fetching matches for map stats (separate query)...');
-            const matchesCollectionName = currentMode === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-            const approvedMatchesRef = collection(db, matchesCollectionName);
-            
-            // SIMPLE FALLBACK: Just get all matches (no orderBy)
-            console.log('📥 Using simple getDocs (no orderBy to avoid index issues)...');
-            matchesSnapshot = await getDocs(approvedMatchesRef);
-            console.log(`✅ Simple map query successful: ${matchesSnapshot.size} matches`);
+            updateRecordRow(elementId, record, unit, formatSign);
         }
+    };
 
-        console.log(`📊 Processing map stats from ${matchesSnapshot.size} matches...`);
-        
-        const mapCounts = new Map();
-        const mapCasings = new Map();
-        let processedMaps = 0;
-
-        matchesSnapshot.forEach(doc => {
-            const match = doc.data();
-            // Check multiple possible field names for map
-            const map = match.mapPlayed || match.map || match.mapName || match.level;
-            
-            if (map && typeof map === 'string' && map.trim().length > 0) {
-                const normalizedMap = map.toLowerCase().trim();
-                mapCounts.set(normalizedMap, (mapCounts.get(normalizedMap) || 0) + 1);
-                
-                if (!mapCasings.has(normalizedMap)) {
-                    mapCasings.set(normalizedMap, {});
-                }
-                mapCasings.get(normalizedMap)[map] = (mapCasings.get(normalizedMap)[map] || 0) + 1;
-                processedMaps++;
-            }
-        });
-
-        console.log(`📊 Processed ${processedMaps} matches with map data out of ${matchesSnapshot.size} total`);
-        console.log(`📊 Found ${mapCounts.size} unique maps`);
-        
-        if (mapCounts.size === 0) {
-            console.warn('⚠️ No maps found in match data');
-            
-            // Debug: Log a sample match to see structure
-            if (matchesSnapshot.size > 0) {
-                console.log('🔍 Sample match structure for debugging:');
-                matchesSnapshot.forEach((doc, index) => {
-                    if (index === 0) {
-                        const matchData = doc.data();
-                        console.log('First match data:', matchData);
-                        console.log('Available fields:', Object.keys(matchData));
-                    }
-                });
-            }
-            
-            const container = document.getElementById('mapStatsChart')?.parentElement || 
-                             document.querySelector('.chart-container') ||
-                             document.querySelector('.map-stats-container');
-            if (container) {
-                container.innerHTML = `
-                    <div class="map-stats-header">
-                        <h3>Most Played Maps - ${state.currentGameMode}</h3>
-                        <p class="error-message">No map data found in ${matchesSnapshot.size} matches</p>
-                        <p class="error-message">Check console for match structure debug info</p>
-                    </div>
-                `;
-            }
-            return;
-        }
-
-        const sortedMaps = Array.from(mapCounts.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 15);
-
-        const maxCount = sortedMaps.length > 0 ? sortedMaps[0][1] : 1;
-        const totalMatchesAnalyzed = matchesSnapshot.size;
-
-        const container = document.getElementById('mapStatsChart')?.parentElement || 
-                         document.querySelector('.chart-container') ||
-                         document.querySelector('.map-stats-container');
-        
-        if (!container) {
-            console.warn("Map stats container not found. Looking for containers...");
-            console.log('Available containers:', {
-                mapStatsChart: !!document.getElementById('mapStatsChart'),
-                chartContainer: !!document.querySelector('.chart-container'),
-                mapStatsContainer: !!document.querySelector('.map-stats-container')
-            });
-            return;
-        }
-
-        let listHTML = `
-            <div class="map-stats-header">
-                <h3>🗺️ Most Played Maps - ${state.currentGameMode}</h3>
-                <p class="total-matches">Based on ${processedMaps} matches with map data • ${mapCounts.size} unique maps</p>
-            </div>
-            <div class="map-stats-list">
-        `;
-
-        sortedMaps.forEach(([normalizedMap, count], index) => {
-            const casings = mapCasings.get(normalizedMap);
-            let preferredCasing = normalizedMap;
-            let maxCasingCount = 0;
-            
-            // Find the most common casing
-            for (const [casing, casingCount] of Object.entries(casings)) {
-                if (casingCount > maxCasingCount) {
-                    maxCasingCount = casingCount;
-                    preferredCasing = casing;
-                }
-            }
-
-            const percentage = Math.round((count / maxCount) * 100);
-            const matchPercentage = Math.round((count / processedMaps) * 100);
-            const rank = index + 1;
-
-            listHTML += `
-                <div class="map-stat-item" title="${preferredCasing}: ${count} matches (${matchPercentage}%)">
-                    <div class="map-info">
-                        <span class="map-rank">#${rank}</span>
-                        <span class="map-name">${preferredCasing}</span>
-                        <span class="map-count">${count} matches</span>
-                    </div>
-                    <div class="map-bar-container">
-                        <div class="map-bar" style="width: ${percentage}%"></div>
-                        <span class="map-percentage">${matchPercentage}%</span>
-                    </div>
-                </div>
-            `;
-        });
-
-        listHTML += '</div>';
-        
-        // Show remaining maps summary if there are more than 15
-        if (mapCounts.size > 15) {
-            const remainingMaps = mapCounts.size - 15;
-            const remainingCount = Array.from(mapCounts.values())
-                .slice(15)
-                .reduce((sum, count) => sum + count, 0);
-            
-            listHTML += `
-                <div class="map-stats-footer">
-                    <p class="remaining-maps">
-                        + ${remainingMaps} more maps with ${remainingCount} total matches
-                    </p>
-                </div>
-            `;
-        }
-        
-        container.innerHTML = listHTML;
-        console.log(`✅ Map stats displayed: ${sortedMaps.length} maps shown`);
-
-    } catch (error) {
-        console.error(`❌ Error loading ${state.currentGameMode} map statistics:`, error);
-        const container = document.getElementById('mapStatsChart')?.parentElement || 
-                         document.querySelector('.chart-container');
-        if (container) {
-            container.innerHTML = `
-                <div class="map-stats-header">
-                    <h3>Most Played Maps - ${state.currentGameMode}</h3>
-                    <p class="error-message">Error loading map statistics: ${error.message}</p>
-                </div>
-            `;
-        }
-    }
+    updateRecordOrNoData('most-wins', records.mostWins);
+    updateRecordOrNoData('best-winrate', records.bestWinRate, '%');
+    updateRecordOrNoData('best-kd', records.bestKD);
+    updateRecordOrNoData('most-matches', records.mostMatches);
+    updateRecordOrNoData('best-differential', records.bestDiff, '', true);
+    updateRecordOrNoData('most-kills', records.mostKills);
+    updateRecordOrNoData('best-elo', records.bestElo);
+    updateRecordOrNoData('least-suicides', records.leastSuicides, ' avg'); // Changed from '%' to ' avg'
 }
 
-// Keep all other existing functions (updateTopPlayersByTier, updateSummaryStats, etc.)
-async function updateTopPlayersByTier(playerSnapshot) {
-    if (!playerSnapshot) {
-        console.error("playerSnapshot not provided to updateTopPlayersByTier");
-        try {
-            const playersCollectionName = state.currentGameMode === 'D1' ? 'players' : 'playersD2';
-            playerSnapshot = await getDocs(collection(db, playersCollectionName));
-        } catch (fetchError) {
-             console.error(`Error fetching players for tiers: ${fetchError}`);
-             document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Error loading players</div>');
-             return;
-        }
-    }
+function updateTopPlayers(playerSnapshot) {
+    const tiers = {
+        emerald: { min: 2000, players: [] },
+        gold: { min: 1800, players: [] },
+        silver: { min: 1600, players: [] },
+        bronze: { min: 1400, players: [] }
+    };
 
-    try {
-        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Processing...</div>');
-
-        const tiers = {
-            emerald: { min: 2000, players: [] },
-            gold: { min: 1800, players: [] },
-            silver: { min: 1600, players: [] },
-            bronze: { min: 1400, players: [] }
-        };
-
+    if (playerSnapshot && playerSnapshot.forEach) {
         playerSnapshot.forEach(doc => {
             const player = doc.data();
             if (!player.username) return;
-            const elo = player.eloRating || 1200;
-            const playerData = { username: player.username, elo, position: player.position || 999 };
+            
+            const elo = player.eloRating || player.elo || 1200;
+            const position = player.position || player.rank || 999;
+            
+            const playerData = { username: player.username, elo, position };
 
             if (elo >= tiers.emerald.min) tiers.emerald.players.push(playerData);
             else if (elo >= tiers.gold.min) tiers.gold.players.push(playerData);
             else if (elo >= tiers.silver.min) tiers.silver.players.push(playerData);
             else if (elo >= tiers.bronze.min) tiers.bronze.players.push(playerData);
         });
+    }
 
-        for (const tierName in tiers) {
-            const tierData = tiers[tierName];
-            if (tierData.players.length > 0) {
-                tierData.players.sort((a, b) => {
-                    const posA = a.position === 999 ? Infinity : a.position;
-                    const posB = b.position === 999 ? Infinity : b.position;
-                    if (posA !== posB) return posA - posB;
-                    return b.elo - a.elo;
+    const tbody = document.getElementById('tier-table');
+    let html = '';
+
+    for (const [tierName, tierData] of Object.entries(tiers)) {
+        if (tierData.players.length > 0) {
+            tierData.players.sort((a, b) => {
+                if (a.position !== b.position) return a.position - b.position;
+                return b.elo - a.elo;
+            });
+
+            const topPlayer = tierData.players[0];
+            const displayRank = topPlayer.position < 999 ? topPlayer.position : 1;
+            
+            html += `
+                <tr>
+                    <td>${tierName.charAt(0).toUpperCase() + tierName.slice(1)}</td>
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(topPlayer.username)}" 
+                           class="player-link tier-${tierName}">
+                            ${topPlayer.username}
+                        </a>
+                    </td>
+                    <td>${Math.round(topPlayer.elo)}</td>
+                    <td>#${displayRank}</td>
+                </tr>
+            `;
+        }
+    }
+
+    tbody.innerHTML = html || '<tr><td colspan="4">No ranked players found</td></tr>';
+}
+
+function updateMapStats(mapStats) {
+    const tbody = document.querySelector('#maps-table tbody');
+    
+    if (mapStats.size === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No map data available</td></tr>';
+        return;
+    }
+
+    const totalMatches = Array.from(mapStats.values()).reduce((sum, count) => sum + count, 0);
+    const sortedMaps = Array.from(mapStats.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+    let html = '';
+    sortedMaps.forEach(([map, count], index) => {
+        const percentage = ((count / totalMatches) * 100).toFixed(1);
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${map}</td>
+                <td>${count}</td>
+                <td>${percentage}%</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html || '<tr><td colspan="4">No map data found</td></tr>';
+}
+
+function updateSubgameStats(subgameStats, currentMode) {
+    const tbody = document.querySelector('#subgame-table tbody');
+    
+    if (!subgameStats.totalCounts || subgameStats.totalCounts.size === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No subgame data available</td></tr>';
+        return;
+    }
+
+    const totalMatches = Array.from(subgameStats.totalCounts.values()).reduce((sum, count) => sum + count, 0);
+    const sortedSubgames = Array.from(subgameStats.totalCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+    let html = '';
+    sortedSubgames.forEach(([subgame, count], index) => {
+        const percentage = ((count / totalMatches) * 100).toFixed(1);
+        
+        // Find champion for this subgame
+        let championInfo = '';
+        const subgamePerf = subgameStats.playerPerformance.get(subgame);
+        if (subgamePerf) {
+            let bestPlayer = null;
+            let bestWinRate = 0;
+            
+            for (const [username, stats] of subgamePerf.entries()) {
+                if (stats.matches >= 3) {
+                    const winRate = (stats.wins / stats.matches) * 100;
+                    if (winRate > bestWinRate) {
+                        bestWinRate = winRate;
+                        bestPlayer = {
+                            username,
+                            winRate: winRate.toFixed(1),
+                            wins: stats.wins,
+                            matches: stats.matches
+                        };
+                    }
+                }
+            }
+            
+            if (bestPlayer) {
+                const elo = getPlayerElo(bestPlayer.username, currentMode);
+                const tier = getPlayerTier(elo);
+                championInfo = `<a href="profile.html?username=${encodeURIComponent(bestPlayer.username)}" 
+                               class="player-link tier-${tier}">${bestPlayer.username}</a> 
+                               (${bestPlayer.wins}/${bestPlayer.matches}, ${bestPlayer.winRate}%)`;
+            } else {
+                championInfo = 'No champion (min 3 matches)';
+            }
+        }
+        
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${subgame}</td>
+                <td>${count} (${percentage}%)</td>
+                <td>${championInfo}</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html || '<tr><td colspan="4">No subgame data found</td></tr>';
+}
+
+// Add this function after updateSubgameStats
+async function updateTopPointEarners(currentMode) {
+    const tbody = document.querySelector('#points-table tbody');
+    
+    try {
+        // Determine collection name based on game mode
+        let profilesCollection;
+        switch(currentMode) {
+            case 'D1':
+                profilesCollection = 'userProfiles';
+                break;
+            case 'D2':
+                profilesCollection = 'userProfilesD2';
+                break;
+            case 'D3':
+                profilesCollection = 'userProfilesD3';
+                break;
+            default:
+                profilesCollection = 'userProfiles';
+        }
+
+        const profilesSnapshot = await getDocs(collection(db, profilesCollection));
+        
+        if (profilesSnapshot.size === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">No point data available</td></tr>';
+            return;
+        }
+
+        const pointsData = [];
+        profilesSnapshot.forEach(doc => {
+            const profile = doc.data();
+            const points = parseInt(profile.points) || 0;
+            if (profile.username && points > 0) {
+                pointsData.push({
+                    username: profile.username,
+                    points: points,
+                    elo: profile.eloRating || profile.elo || 1200
                 });
-                tierData.topPlayer = tierData.players[0];
-            } else {
-                tierData.topPlayer = null;
             }
+        });
 
-            const tierElement = document.getElementById(`${tierName}-players`);
-            if (!tierElement) continue;
-
-            if (!tierData.topPlayer) {
-                tierElement.innerHTML = '<div class="loading-msg">No players in this tier</div>';
-            } else {
-                const player = tierData.topPlayer;
-                const displayRank = (player.position && player.position < 999) ? player.position : 1;
-                tierElement.innerHTML = `
-                    <div class="tier-player top-player">
-                        <span class="player-rank">#${displayRank}</span>
-                        <span class="player-name">${player.username}</span>
-                        <span class="player-elo">${Math.round(player.elo)}</span>
-                        <span class="player-badge">Best ${tierName.charAt(0).toUpperCase() + tierName.slice(1)}</span>
-                    </div>
-                    <div class="tier-count">
-                        ${tierData.players.length} player${tierData.players.length !== 1 ? 's' : ''} in ${state.currentGameMode} ${tierName} tier
-                    </div>`;
-            }
+        if (pointsData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">No players with points found</td></tr>';
+            return;
         }
+
+        // Sort by points (descending) and take top 10
+        pointsData.sort((a, b) => b.points - a.points);
+        const top10 = pointsData.slice(0, 10);
+
+        let html = '';
+        top10.forEach((player, index) => {
+            const tier = getPlayerTier(player.elo);
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <a href="profile.html?username=${encodeURIComponent(player.username)}" 
+                           class="player-link tier-${tier}">
+                            ${player.username}
+                        </a>
+                    </td>
+                    <td>${player.points.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+        console.log(`Top point earners updated: ${top10.length} players`);
+
     } catch (error) {
-        console.error(`Error updating top players by tier: ${error}`);
-        document.querySelectorAll('.tier-players').forEach(el => el.innerHTML = '<div class="loading-msg">Error loading players</div>');
+        console.error('Error loading point earners:', error);
+        tbody.innerHTML = '<tr><td colspan="3">Error loading point data</td></tr>';
     }
 }
 
-function updateSummaryStats(playerSnapshot) {
-     if (!playerSnapshot) return;
-
-     const totalPlayers = playerSnapshot.size;
-     const activePlayersCount = playerSnapshot.docs.filter(doc => doc.data().active !== false).length;
-
-     const totalMatchesElement = document.getElementById('total-matches');
-     const totalPlayersElement = document.getElementById('total-players');
-     const lastUpdatedElement = document.getElementById('last-updated');
-
-     const playerStats = state.cache[state.currentGameMode]?.playerStats;
-     if (playerStats) {
-         const totalMatchesCount = Array.from(playerStats.values()).reduce((sum, stats) => sum + stats.totalMatches, 0) / 2;
-         if (totalMatchesElement) totalMatchesElement.textContent = Math.round(totalMatchesCount);
-     } else {
-         if (totalMatchesElement) totalMatchesElement.textContent = 'N/A';
-     }
-
-     if (totalPlayersElement) totalPlayersElement.textContent = activePlayersCount;
-     if (lastUpdatedElement) lastUpdatedElement.textContent = new Date().toLocaleDateString();
+function updateSummary(playerSnapshot, matchSnapshot) {
+    document.getElementById('total-matches').textContent = matchSnapshot.size;
+    document.getElementById('total-players').textContent = playerSnapshot.size;
+    document.getElementById('last-updated').textContent = new Date().toLocaleDateString();
 }
 
-function updateHiddenStatsDiv(playerStats) {
-    let statsDiv = document.getElementById('records-stats');
-    if (!statsDiv) {
-        statsDiv = document.createElement('div');
-        statsDiv.id = 'records-stats';
-        statsDiv.style.display = 'none';
-        document.body.appendChild(statsDiv);
-    }
-
-    const getTopN = (statKey, filterFn = () => true, sortFn, valueKey = statKey) =>
-        Array.from(playerStats.entries())
-            .filter(filterFn)
-            .sort(sortFn)
-            .slice(0, 3)
-            .map(([name, stats]) => ({ name, [valueKey]: stats[valueKey] }));
-
-    const statsData = {
-        mode: state.currentGameMode,
-        timestamp: new Date().toISOString(),
-        records: {
-            mostWins: getTopN('wins', () => true, (a, b) => b[1].wins - a[1].wins),
-            bestWinRate: getTopN('winRate', ([_, stats]) => stats.totalMatches >= MIN_MATCHES_REQUIREMENT, (a, b) => b[1].winRate - a[1].winRate),
-            bestKD: getTopN('kdRatio', ([_, stats]) => stats.totalMatches >= MIN_MATCHES_REQUIREMENT, (a, b) => b[1].kdRatio - a[1].kdRatio),
-            mostMatches: getTopN('totalMatches', () => true, (a, b) => b[1].totalMatches - a[1].totalMatches),
+// UI state management functions
+function showLoadingStates() {
+    const recordElements = ['most-wins', 'best-winrate', 'best-kd', 'most-matches', 'best-differential', 'most-kills', 'best-elo', 'least-suicides'];
+    recordElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = 'Loading...';
+            element.classList.add('loading');
+            if (element.nextElementSibling) {
+                element.nextElementSibling.textContent = '';
+            }
         }
-    };
-
-    statsDiv.textContent = JSON.stringify(statsData, null, 2);
+    });
+    
+    const tierTable = document.getElementById('tier-table');
+    if (tierTable) tierTable.innerHTML = '<tr><td colspan="4" class="loading">Loading players...</td></tr>';
+    
+    const mapsTableBody = document.querySelector('#maps-table tbody');
+    if (mapsTableBody) mapsTableBody.innerHTML = '<tr><td colspan="4" class="loading">Loading maps...</td></tr>';
+    
+    const subgameTableBody = document.querySelector('#subgame-table tbody');
+    if (subgameTableBody) subgameTableBody.innerHTML = '<tr><td colspan="4" class="loading">Loading subgames...</td></tr>';
+    
+    const pointsTableBody = document.querySelector('#points-table tbody');
+    if (pointsTableBody) pointsTableBody.innerHTML = '<tr><td colspan="3" class="loading">Loading points...</td></tr>';
 }
 
-// Event Listeners & Initialization
+function showNoDataState() {
+    const recordElements = ['most-wins', 'best-winrate', 'best-kd', 'most-matches', 'best-differential', 'most-kills', 'best-elo', 'least-suicides'];
+    recordElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = 'No data';
+            element.classList.remove('loading');
+            if (element.nextElementSibling) {
+                element.nextElementSibling.textContent = '-';
+            }
+        }
+    });
+    
+    const tierTable = document.getElementById('tier-table');
+    const mapsTableBody = document.querySelector('#maps-table tbody');
+    const subgameTableBody = document.querySelector('#subgame-table tbody');
+    const pointsTableBody = document.querySelector('#points-table tbody');
+    
+    if (tierTable) tierTable.innerHTML = '<tr><td colspan="4">No data available</td></tr>';
+    if (mapsTableBody) mapsTableBody.innerHTML = '<tr><td colspan="4">No data available</td></tr>';
+    if (subgameTableBody) subgameTableBody.innerHTML = '<tr><td colspan="4">No data available</td></tr>';
+    if (pointsTableBody) pointsTableBody.innerHTML = '<tr><td colspan="3">No data available</td></tr>';
+    
+    updateSummary({ size: 0 }, { size: 0 });
+}
+
+function showErrorState() {
+    const recordElements = ['most-wins', 'best-winrate', 'best-kd', 'most-matches', 'best-differential', 'most-kills', 'best-elo', 'least-suicides'];
+    recordElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = 'Error';
+            element.classList.remove('loading');
+            if (element.nextElementSibling) {
+                element.nextElementSibling.textContent = 'Error loading data';
+            }
+        }
+    });
+    
+    const tierTable = document.getElementById('tier-table');
+    const mapsTableBody = document.querySelector('#maps-table tbody');
+    const subgameTableBody = document.querySelector('#subgame-table tbody');
+    const pointsTableBody = document.querySelector('#points-table tbody');
+    
+    if (tierTable) tierTable.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+    if (mapsTableBody) mapsTableBody.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+    if (subgameTableBody) subgameTableBody.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+    if (pointsTableBody) pointsTableBody.innerHTML = '<tr><td colspan="3">Error loading data</td></tr>';
+}
+
+function updateCacheStatusDisplay(cacheStatus) {
+    let statusElement = document.getElementById('cache-status');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'cache-status';
+        statusElement.style.cssText = `
+            font-size: 12px; 
+            color: #ccc; 
+            margin-top: 5px; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        `;
+        
+        const summaryElement = document.querySelector('.summary');
+        if (summaryElement) {
+            summaryElement.appendChild(statusElement);
+        }
+    }
+    
+    let statusColor = '#ccc';
+    switch(cacheStatus.status) {
+        case 'valid': statusColor = '#50C878'; break;
+        case 'expired': statusColor = '#FFD700'; break;
+        case 'error': statusColor = '#FF6B6B'; break;
+        case 'loading': statusColor = '#87CEEB'; break;
+    }
+    
+    statusElement.style.color = statusColor;
+    statusElement.textContent = cacheStatus.message;
+}
+
 function setupGameModeToggle() {
-    const toggleButtons = document.querySelectorAll('.toggle-btn');
-
-    toggleButtons.forEach(button => {
-        const clone = button.cloneNode(true);
-        button.parentNode.replaceChild(clone, button);
-
-        clone.addEventListener('click', function() {
+    document.querySelectorAll('.toggle-btn').forEach(button => {
+        button.addEventListener('click', function() {
             if (this.classList.contains('active')) return;
-
-            const gameMode = this.getAttribute('data-game').toUpperCase();
-            console.log(`Switching to ${gameMode} mode...`);
 
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
 
-            state.currentGameMode = gameMode;
-
-            // Remove any existing load more button
-            const loadMoreBtn = document.getElementById('load-more-btn');
-            if (loadMoreBtn) loadMoreBtn.remove();
-
-            loadRecords();
-            loadMapStats();
+            state.currentGameMode = this.getAttribute('data-game').toUpperCase();
+            loadStats();
         });
     });
 }
 
-// Add CSS for new elements
-const style = document.createElement('style');
-style.textContent = `
-    .load-more-btn {
-        background: linear-gradient(135deg, #673ab7, #9c27b0);
-        color: white;
-        border: none;
-        padding: 15px 25px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin: 20px auto;
-        display: block;
-        font-size: 16px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
-    }
-    
-    .load-more-btn:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(103, 58, 183, 0.4);
-    }
-    
-    .load-more-btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-    
-    .load-more-btn small {
-        display: block;
-        font-size: 12px;
-        margin-top: 5px;
-        opacity: 0.9;
-    }
-    
-    .partial-data-indicator {
-        background: rgba(255, 193, 7, 0.1);
-        border: 1px solid rgba(255, 193, 7, 0.3);
-        color: #ffc107;
-        padding: 10px 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .partial-data-indicator i {
-        color: #ffc107;
-    }
-    
-    /* Enhanced Map Stats Styling */
-    .map-stats-header {
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .map-stats-header h3 {
-        color: #333;
-        margin-bottom: 8px;
-        font-size: 1.4em;
-    }
-    
-    .map-stats-header .total-matches {
-        color: #666;
-        font-size: 0.9em;
-        margin: 0;
-    }
-    
-    .map-stats-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .map-stat-item {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        padding: 12px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .map-stat-item:hover {
-        background: rgba(255, 255, 255, 0.95);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .map-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-    
-    .map-rank {
-        font-weight: bold;
-        color: #673ab7;
-        min-width: 30px;
-    }
-    
-    .map-name {
-        font-weight: 600;
-        color: #333;
-        flex: 1;
-        margin-left: 12px;
-    }
-    
-    .map-count {
-        color: #666;
-        font-size: 0.9em;
-    }
-    
-    .map-bar-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .map-bar {
-        flex: 1;
-        height: 6px;
-        background: linear-gradient(90deg, #673ab7, #9c27b0);
-        border-radius: 3px;
-        transition: width 0.3s ease;
-    }
-    
-    .map-percentage {
-        font-size: 0.8em;
-        color: #666;
-        min-width: 35px;
-        text-align: right;
-    }
-    
-    .map-stats-footer {
-        margin-top: 15px;
-        text-align: center;
-        padding-top: 15px;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-    }
-    
-    .remaining-maps {
-        color: #666;
-        font-size: 0.9em;
-        margin: 0;
-        font-style: italic;
-    }
-    
-    .error-message {
-        color: #dc3545;
-        font-style: italic;
-        text-align: center;
-        padding: 20px;
-    }
-`;
-document.head.appendChild(style);
-
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    Promise.all([
-        fetch('../HTML/nav.html').then(response => response.ok ? response.text() : Promise.reject('Nav fetch failed')),
-        fetch('../HTML/footer.html').then(response => response.ok ? response.text() : Promise.reject('Footer fetch failed'))
-    ]).then(([navData, footerData]) => {
-        const navPlaceholder = document.getElementById('nav-placeholder');
-        const footerPlaceholder = document.getElementById('footer-placeholder');
-        if (navPlaceholder) navPlaceholder.innerHTML = navData;
-        if (footerPlaceholder) footerPlaceholder.innerHTML = footerData;
-    }).catch(error => {
-        console.error('Error loading nav or footer:', error);
-    });
-
-    // Initial data load
-    loadRecords();
-    loadMapStats();
+    loadCacheFromStorage();
     setupGameModeToggle();
+    loadStats();
+    setInterval(cleanExpiredCache, 30000);
 });
 
-function calculatePlayerRecords(matches, players) {
-    // ... existing code ...
-
-    // Calculate least suicides as percentage
-    let leastSuicidesData = null;
-    let bestSuicideRate = Infinity;
-
-    players.forEach(player => {
-        const playerMatches = matches.filter(match => 
-            match.winnerUsername === player.username || match.loserUsername === player.username
-        );
-        
-        if (playerMatches.length < 5) return; // Minimum matches requirement
-        
-        const totalSuicides = playerMatches.reduce((sum, match) => {
-            if (match.winnerUsername === player.username) {
-                return sum + (match.winnerSuicides || 0);
-            } else {
-                return sum + (match.loserSuicides || 0);
-            }
-        }, 0);
-        
-        const suicideRate = (totalSuicides / playerMatches.length) * 100;
-        
-        if (suicideRate < bestSuicideRate) {
-            bestSuicideRate = suicideRate;
-            leastSuicidesData = {
-                player: player.username,
-                suicideRate: suicideRate,
-                totalSuicides: totalSuicides,
-                totalMatches: playerMatches.length
-            };
-        }
-    });
-
-    // Update the DOM element
-    const leastSuicidesEl = document.getElementById('least-suicides');
-    if (leastSuicidesData) {
-        leastSuicidesEl.innerHTML = `
-            <div class="player-name">${leastSuicidesData.player}</div>
-            <div class="record-stat">${leastSuicidesData.suicideRate.toFixed(2)}%</div>
-            <div class="record-detail">${leastSuicidesData.totalSuicides} suicides in ${leastSuicidesData.totalMatches} matches</div>
-        `;
-    } else {
-        leastSuicidesEl.textContent = 'No data available';
+// Export cache management functions for debugging
+window.rdlCache = {
+    clear: () => {
+        state.cache = { D1: {}, D2: {}, D3: {} };
+        localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
+        console.log('Cache cleared');
+    },
+    status: () => {
+        console.log('Cache status:', {
+            D1: getCacheStatus('D1'),
+            D2: getCacheStatus('D2'),
+            D3: getCacheStatus('D3')
+        });
     }
-
-    // ... rest of existing code ...
-}
+};
