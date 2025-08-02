@@ -18,6 +18,17 @@ import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
 import { modifyUserPoints } from './adminbackend.js';
 
+
+// Import modifyUserPoints with a try-catch to handle if it's not available
+let modifyUserPoints;
+try {
+    const adminModule = await import('./adminbackend.js');
+    modifyUserPoints = adminModule.modifyUserPoints;
+} catch (error) {
+    console.warn('Could not import modifyUserPoints from adminbackend.js, points will not be awarded automatically');
+    modifyUserPoints = null;
+}
+
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
     const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
@@ -193,7 +204,15 @@ async function awardMatchPoints(winnerUserId, loserUserId, subgameType) {
         'Fusion Match': 25,
         '≥6 Missiles': 10,
         'Weapon Imbalance': 30,
-        // ...other game types as per your list
+        'Blind Match': 75,
+        'Rematch': 20,
+        'Disorientation': 50,
+        'Ratting': 35,
+        'Altered Powerups': 35,
+        'Mega Match': 40,
+        'Dogfight': 50,
+        'Gauss and Mercs': 25,
+        'Misc': 30
     };
     
     // Get points for this subgame type (default to 10 for standard)
@@ -201,9 +220,11 @@ async function awardMatchPoints(winnerUserId, loserUserId, subgameType) {
     
     // Award points to both winner and loser
     try {
-        // Use the modifyUserPoints function from adminbackend.js
-        await modifyUserPoints(winnerUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match`);
-        await modifyUserPoints(loserUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match`);
+        await Promise.all([
+            modifyUserPoints(winnerUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match (Winner)`),
+            modifyUserPoints(loserUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match (Participant)`)
+        ]);
+        
         console.log(`Awarded ${pointsToAward} points to both players for ${subgameType || 'Standard'} match`);
         return true;
     } catch (error) {

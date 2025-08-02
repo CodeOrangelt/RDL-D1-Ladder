@@ -6779,3 +6779,5 @@ function editUserRibbons(username, ladder) {
     document.getElementById('ribbon-user-search').value = username;
     searchRibbonUser();
 }
+
+export { modifyUserPoints };
