@@ -16,18 +16,6 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
-import { modifyUserPoints } from './adminbackend.js';
-
-
-// Import modifyUserPoints with a try-catch to handle if it's not available
-let modifyUserPoints;
-try {
-    const adminModule = await import('./adminbackend.js');
-    modifyUserPoints = adminModule.modifyUserPoints;
-} catch (error) {
-    console.warn('Could not import modifyUserPoints from adminbackend.js, points will not be awarded automatically');
-    modifyUserPoints = null;
-}
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -195,44 +183,6 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     }
 }
 
-// Add this function to ladderalgorithm.js before approveReport
-async function awardMatchPoints(winnerUserId, loserUserId, subgameType) {
-    // Points chart as defined in your requirements
-    const pointsChart = {
-        '': 10, // Standard match
-        'Standard': 10,
-        'Fusion Match': 25,
-        '≥6 Missiles': 10,
-        'Weapon Imbalance': 30,
-        'Blind Match': 75,
-        'Rematch': 20,
-        'Disorientation': 50,
-        'Ratting': 35,
-        'Altered Powerups': 35,
-        'Mega Match': 40,
-        'Dogfight': 50,
-        'Gauss and Mercs': 25,
-        'Misc': 30
-    };
-    
-    // Get points for this subgame type (default to 10 for standard)
-    const pointsToAward = pointsChart[subgameType] || 10;
-    
-    // Award points to both winner and loser
-    try {
-        await Promise.all([
-            modifyUserPoints(winnerUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match (Winner)`),
-            modifyUserPoints(loserUserId, 'add', pointsToAward, `Match points: ${subgameType || 'Standard'} match (Participant)`)
-        ]);
-        
-        console.log(`Awarded ${pointsToAward} points to both players for ${subgameType || 'Standard'} match`);
-        return true;
-    } catch (error) {
-        console.error('Error awarding match points:', error);
-        return false;
-    }
-}
-
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment, winnerDemoLink) {
     try {
         // Get the report data
@@ -251,7 +201,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             winnerScore: winnerScore,
             winnerSuicides: winnerSuicides, 
             winnerComment: winnerComment,
-            winnerDemoLink: winnerDemoLink, // Make sure this line exists!
+            winnerDemoLink: winnerDemoLink,
             approved: true,
             approvedAt: serverTimestamp(),
             approvedBy: auth.currentUser.uid
@@ -279,8 +229,12 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
 
-        // Award points based on subgame type
-        await awardMatchPoints(winnerId, loserId, reportData.subgameType);
+        // Award points based on subgame type (now using safe service)
+        try {
+            await awardMatchPoints(winnerId, loserId, reportData.subgameType);
+        } catch (pointsError) {
+            console.warn('Points award failed, but match approval continues:', pointsError);
+        }
 
         console.log('Match successfully approved and ELO updated');
         return true;
