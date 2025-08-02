@@ -699,26 +699,14 @@ function updateSubgameStats(subgameStats, currentMode) {
     tbody.innerHTML = html || '<tr><td colspan="4">No subgame data found</td></tr>';
 }
 
-// Add this function after updateSubgameStats
+// Update this function to always use the main userProfiles collection
 async function updateTopPointEarners(currentMode) {
     const tbody = document.querySelector('#points-table tbody');
     
     try {
-        // Determine collection name based on game mode
-        let profilesCollection;
-        switch(currentMode) {
-            case 'D1':
-                profilesCollection = 'userProfiles';
-                break;
-            case 'D2':
-                profilesCollection = 'userProfilesD2';
-                break;
-            case 'D3':
-                profilesCollection = 'userProfilesD3';
-                break;
-            default:
-                profilesCollection = 'userProfiles';
-        }
+        // Always use the main userProfiles collection regardless of game mode
+        // since points are universal across all games
+        const profilesCollection = 'userProfiles';
 
         const profilesSnapshot = await getDocs(collection(db, profilesCollection));
         
