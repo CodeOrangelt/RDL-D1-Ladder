@@ -258,8 +258,30 @@
       // --- Initial Load ---
       loadRecentMatchesPreview('current'); // Initial load for preview section
     });
-  </script>
-  
+    // Check for problematic localStorage entries
+    Object.keys(localStorage).forEach(key => {
+        const value = localStorage.getItem(key);
+        console.log(`localStorage[${key}]:`, value);
+        
+        // Try to parse each item to find the problematic one
+        if (value && value.includes('[object Object]')) {
+            console.error(`Found problematic localStorage entry: ${key} = ${value}`);
+            // Clean it up
+            localStorage.removeItem(key);
+        }
+    });
+
+    // Also check sessionStorage
+    Object.keys(sessionStorage).forEach(key => {
+        const value = sessionStorage.getItem(key);
+        console.log(`sessionStorage[${key}]:`, value);
+        
+        if (value && value.includes('[object Object]')) {
+            console.error(`Found problematic sessionStorage entry: ${key} = ${value}`);
+            sessionStorage.removeItem(key);
+        }
+    });
+    </script>
   <!-- Footer loading script -->
   <script>
     Promise.all([
