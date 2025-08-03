@@ -477,7 +477,6 @@ async function processPurchase(itemId, item, type) {
     }
 }
 
-// Update the equipToken function to refresh ALL ladders
 async function equipToken(tokenId) {
     const user = auth.currentUser;
     if (!user) {
@@ -528,6 +527,7 @@ async function equipToken(tokenId) {
             }
         } catch (tokenCollectionError) {
             console.warn('Token collection update had an issue, but equip was successful:', tokenCollectionError);
+            // Don't fail the equip operation for collection sync issues
         }
         
         // Update local data
@@ -539,52 +539,28 @@ async function equipToken(tokenId) {
             clearTokenCache();
         }
         
-        // NEW: Trigger ALL ladder refreshes
+        // Trigger ladder refresh if available
         setTimeout(() => {
-            // Refresh D1 ladder
-            if (window.refreshLadderDisplay) {
-                console.log('🔄 Refreshing D1 ladder');
-                window.refreshLadderDisplay(true);
-            } else if (window.displayLadder && typeof window.displayLadder === 'function') {
-                console.log('🔄 Refreshing D1 ladder via displayLadder');
+            if (window.displayLadder && typeof window.displayLadder === 'function') {
+                console.log('🔄 Refreshing ladder to show equipped token');
                 window.displayLadder(true);
             }
             
-            // Refresh D2 ladder
-            if (window.refreshLadderDisplayD2) {
-                console.log('🔄 Refreshing D2 ladder');
-                window.refreshLadderDisplayD2(true);
-            } else if (window.displayLadderD2 && typeof window.displayLadderD2 === 'function') {
-                console.log('🔄 Refreshing D2 ladder via displayLadderD2');
-                window.displayLadderD2(true);
-            }
-            
-            // Refresh D3 ladder
-            if (window.refreshLadderDisplayD3) {
-                console.log('🔄 Refreshing D3 ladder');
-                window.refreshLadderDisplayD3(true);
-            } else if (window.displayLadderD3 && typeof window.displayLadderD3 === 'function') {
-                console.log('🔄 Refreshing D3 ladder via displayLadderD3');
-                window.displayLadderD3(true);
-            }
-            
-            // Add more ladder divisions as needed (D4, D5, etc.)
-            
-            // Also refresh the redeem UI
             if (window.RedeemStore && typeof window.RedeemStore.refreshUI === 'function') {
                 window.RedeemStore.refreshUI();
             }
         }, 500);
         
         console.log(`✅ Equipped token: ${token.name}`);
-        showMessage(`${token.name} equipped! All ladders will refresh shortly.`, 'success');
+        showMessage(`${token.name} equipped! Ladder will refresh shortly.`, 'success');
         return true;
         
     } catch (error) {
         console.error('Token equip failed:', error);
         
+        // Only show error for actual failures
         if (error.code === 'permission-denied') {
-            showMessage('Permission denied. Token may still be equipped - check the ladders.', 'warning');
+            showMessage('Permission denied. Token may still be equipped - check the ladder.', 'warning');
         } else {
             showMessage(`Failed to equip token: ${error.message}`, 'error');
         }
@@ -592,7 +568,7 @@ async function equipToken(tokenId) {
     }
 }
 
-// Update the unequipToken function similarly
+// Unequip current token
 async function unequipToken() {
     const user = auth.currentUser;
     if (!user) {
@@ -614,28 +590,24 @@ async function unequipToken() {
         });
         
         // Update userTokens collection
-        try {
-            const userTokensRef = doc(db, 'userTokens', user.uid);
-            const userTokensDoc = await getDoc(userTokensRef);
+        const userTokensRef = doc(db, 'userTokens', user.uid);
+        const userTokensDoc = await getDoc(userTokensRef);
+        
+        if (userTokensDoc.exists()) {
+            const tokensData = userTokensDoc.data();
+            const tokens = tokensData.tokens || [];
             
-            if (userTokensDoc.exists()) {
-                const tokensData = userTokensDoc.data();
-                const tokens = tokensData.tokens || [];
-                
-                // Unequip all tokens
-                const updatedTokens = tokens.map(token => ({
-                    ...token,
-                    equipped: false
-                }));
-                
-                await updateDoc(userTokensRef, {
-                    tokens: updatedTokens,
-                    equippedToken: null,
-                    lastUpdated: serverTimestamp()
-                });
-            }
-        } catch (tokenCollectionError) {
-            console.warn('Token collection update had an issue, but unequip was successful:', tokenCollectionError);
+            // Unequip all tokens
+            const updatedTokens = tokens.map(token => ({
+                ...token,
+                equipped: false
+            }));
+            
+            await updateDoc(userTokensRef, {
+                tokens: updatedTokens,
+                equippedToken: null,
+                lastUpdated: serverTimestamp()
+            });
         }
         
         // Update local data
@@ -644,55 +616,30 @@ async function unequipToken() {
         // Clear token cache to refresh display
         if (typeof clearTokenCache === 'function') {
             clearTokenCache(user.uid);
+            // Also clear the cache globally to force refresh
             clearTokenCache();
         }
         
-        // NEW: Trigger ALL ladder refreshes
+        // NEW: Trigger ladder refresh if available
         setTimeout(() => {
-            // Refresh D1 ladder
-            if (window.refreshLadderDisplay) {
-                console.log('🔄 Refreshing D1 ladder (unequip)');
-                window.refreshLadderDisplay(true);
-            } else if (window.displayLadder && typeof window.displayLadder === 'function') {
-                window.displayLadder(true);
+            if (window.displayLadder && typeof window.displayLadder === 'function') {
+                console.log('🔄 Refreshing ladder to remove unequipped token');
+                window.displayLadder(true); // Force refresh
             }
             
-            // Refresh D2 ladder
-            if (window.refreshLadderDisplayD2) {
-                console.log('🔄 Refreshing D2 ladder (unequip)');
-                window.refreshLadderDisplayD2(true);
-            } else if (window.displayLadderD2 && typeof window.displayLadderD2 === 'function') {
-                window.displayLadderD2(true);
-            }
-            
-            // Refresh D3 ladder
-            if (window.refreshLadderDisplayD3) {
-                console.log('🔄 Refreshing D3 ladder (unequip)');
-                window.refreshLadderDisplayD3(true);
-            } else if (window.displayLadderD3 && typeof window.displayLadderD3 === 'function') {
-                window.displayLadderD3(true);
-            }
-            
-            // Add more ladder divisions as needed
-            
-            // Also refresh the redeem UI
+            // Also try the RedeemStore refresh
             if (window.RedeemStore && typeof window.RedeemStore.refreshUI === 'function') {
                 window.RedeemStore.refreshUI();
             }
-        }, 500);
+        }, 500); // Small delay to ensure Firestore updates are processed
         
         console.log('✅ Token unequipped');
-        showMessage('Token unequipped! All ladders will refresh shortly.', 'success');
+        showMessage('Token unequipped! Ladder will refresh shortly.', 'success');
         return true;
         
     } catch (error) {
         console.error('Token unequip failed:', error);
-        
-        if (error.code === 'permission-denied') {
-            showMessage('Permission denied. Token may still be unequipped - check the ladders.', 'warning');
-        } else {
-            showMessage(`Failed to unequip token: ${error.message}`, 'error');
-        }
+        showMessage(`Failed to unequip token: ${error.message}`, 'error');
         return false;
     }
 }

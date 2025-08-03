@@ -16,7 +16,6 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChangeD2 } from './elo-history-d2.js';
 import { promotionManager } from './promotions.js';
 import firebaseIdle from './firebase-idle-wrapper.js';
-import { awardMatchPoints } from './points-service.js'; // ADD THIS IMPORT
 
 // Same ELO calculation formula as D1
 export function calculateEloD2(winnerRating, loserRating, kFactor = 32) {
@@ -234,22 +233,6 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
 
         // Update ELO ratings using D2-specific function
         await updateEloRatingsD2(winnerId, loserId, reportId);
-
-        // Award points based on subgame type - ADD THIS SECTION
-        try {
-            console.log(`🎯 Awarding D2 match points to winner: ${winnerId}, loser: ${loserId}, subgame: ${reportData.subgameType || 'Standard'}`);
-            
-            const pointsAwarded = await awardMatchPoints(winnerId, loserId, reportData.subgameType);
-            
-            if (pointsAwarded) {
-                console.log('✅ D2 Match points awarded successfully');
-            } else {
-                console.warn('⚠️ D2 Match points failed to award, but match approval continues');
-            }
-        } catch (pointsError) {
-            console.error('❌ D2 Points award error:', pointsError);
-            // Don't fail the entire approval for points issues
-        }
 
         console.log('D2 Match successfully approved and ELO updated');
         return true;

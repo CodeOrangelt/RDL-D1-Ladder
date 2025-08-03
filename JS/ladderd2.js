@@ -15,7 +15,6 @@ import {
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import firebaseIdle from './firebase-idle-wrapper.js';
-import { getTokensByUsernames, getPrimaryDisplayToken, clearTokenCache } from './tokens.js';
 
 // Add caching system like in D1 ladder
 const playerCacheD2 = {
@@ -236,16 +235,6 @@ function getPlayerRankNameD2(elo) {
     return 'Unranked';
 }
 
-// Add global refresh function
-window.refreshLadderDisplayD2 = function(forceRefresh = true) {
-    console.log('🔄 External D2 ladder refresh triggered');
-    if (typeof displayLadderD2 === 'function') {
-        displayLadderD2(forceRefresh);
-    } else {
-        console.warn('displayLadderD2 function not available');
-    }
-};
-
 // Optimized displayLadder with batch processing
 async function updateLadderDisplayD2(ladderData) {
     // Sort by position before displaying
@@ -253,39 +242,16 @@ async function updateLadderDisplayD2(ladderData) {
     
     const tbody = document.querySelector('#ladder-d2 tbody');
     if (!tbody) return;
-
+    
     // Clear any existing content
     tbody.innerHTML = '';
-
+    
     // Get all usernames for batch processing
     const usernames = ladderData.map(p => p.username);
-
+    
     // Pre-fetch all match statistics in a single batch operation
     const matchStatsBatch = await fetchBatchMatchStatsD2(usernames);
-
-    // NEW: Get tokens for all players with forced refresh
-    let userTokensMap = new Map();
-    try {
-        // Clear token cache before fetching to ensure fresh data
-        if (typeof clearTokenCache === 'function') {
-            clearTokenCache();
-        }
-        
-        userTokensMap = await getTokensByUsernames(usernames);
-        console.log('🪙 D2: Loaded fresh tokens for', userTokensMap.size, 'players');
-        
-        // Debug: Log equipped tokens
-        userTokensMap.forEach((tokens, username) => {
-            const equipped = tokens.find(token => token.equipped);
-            if (equipped) {
-                console.log(`🎯 D2: ${username} has equipped: ${equipped.tokenName}`);
-            }
-        });
-        
-    } catch (error) {
-        console.error('D2: Error fetching tokens:', error);
-    }
-
+    
     // Update the table header to match D1
     const thead = document.querySelector('#ladder-d2 thead tr');
     if (thead) {
@@ -300,7 +266,7 @@ async function updateLadderDisplayD2(ladderData) {
             <th>Win Rate</th>
         `;
     }
-
+    
     // Create all rows at once for better performance
     const rowsHtml = ladderData.map(player => {
         const stats = matchStatsBatch.get(player.username) || {
@@ -308,21 +274,12 @@ async function updateLadderDisplayD2(ladderData) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
         
-        // NEW: Get user's tokens
-        const userTokens = userTokensMap.get(player.username) || [];
-        const primaryToken = getPrimaryDisplayToken(userTokens);
-        
-        // Debug: Log what token is being used for each player
-        if (primaryToken) {
-            console.log(`🎨 D2: ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
-        }
-        
-        return createPlayerRowWithTokenD2(player, stats, primaryToken);
+        return createPlayerRowD2(player, stats);
     }).join('');
-
+    
     // Append all rows at once
     tbody.innerHTML = rowsHtml;
-
+    
     // Get all ELO changes and update indicators (same pattern as D1)
     getPlayersLastEloChangesD2(usernames)
         .then(changes => {
@@ -333,7 +290,7 @@ async function updateLadderDisplayD2(ladderData) {
                     rowMap.set(usernames[index], row);
                 }
             });
-
+            
             changes.forEach((change, username) => {
                 const row = rowMap.get(username);
                 if (row && change !== 0) {
@@ -361,8 +318,7 @@ async function updateLadderDisplayD2(ladderData) {
         .catch(error => console.error('Error updating D2 ELO trend indicators:', error));
 }
 
-// NEW: Function to create HTML for a single D2 player row with token support
-function createPlayerRowWithTokenD2(player, stats, primaryToken) {
+function createPlayerRowD2(player, stats) {
     const elo = parseFloat(player.elo) || 0;
     
     // Set ELO-based colors (same as D1)
@@ -377,25 +333,34 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
-    // Create flag HTML if player has country (comes AFTER username)
+   /*
+    // IMPROVED: Create streak HTML if player is #1 AND has active streak
+    let streakHtml = '';
+    if (player.position === 1) {
+        let streakDays = 0;
+        
+        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
+        if (player.streakDays && player.streakDays > 0) {
+            streakDays = player.streakDays;
+        } else if (player.firstPlaceDate) {
+            streakDays = calculateStreakDays(player.firstPlaceDate);
+        }
+        
+        if (streakDays > 0) {
+            const pluralDays = streakDays === 1 ? 'day' : 'days';
+            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
+        }
+    }
+    */
+
+    // Create flag HTML if player has country (same as D1)
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
                         alt="${player.country}" 
                         class="player-flag" 
-                        style="margin-left: 5px; vertical-align: middle; width: 20px; height: auto;"
+                        style="margin-left: 5px; vertical-align: middle;"
                         onerror="this.style.display='none'">`;
-    }
-
-    // NEW: Create token HTML if player has tokens (comes AFTER flag)
-    let tokenHtml = '';
-    if (primaryToken) {
-        tokenHtml = `<img src="${primaryToken.tokenImage}" 
-                         alt="${primaryToken.tokenName}" 
-                         class="player-token" 
-                         title="${primaryToken.tokenName} ${primaryToken.equipped ? '(Equipped)' : ''}"
-                         style="width: 35px; height: 35px; margin-left: 5px; vertical-align: middle; object-fit: contain;"
-                         onerror="this.style.display='none'">`;
     }
 
     return `
@@ -408,7 +373,6 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
                     ${player.username}
                 </a>
                 ${flagHtml}
-                ${tokenHtml}
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">

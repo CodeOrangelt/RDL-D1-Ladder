@@ -16,7 +16,6 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
-import { awardMatchPoints } from './points-service.js'; // ADD THIS IMPORT
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -214,7 +213,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         console.log('Match moved to approved collection');
 
-        // Get player IDs - these are the Firestore document IDs
+        // Get player IDs
         const [winnerDocs, loserDocs] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
@@ -224,27 +223,17 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
             throw new Error('Could not find player documents');
         }
 
-        const winnerId = winnerDocs.docs[0].id; // This is the auth UID
-        const loserId = loserDocs.docs[0].id; // This is the auth UID
+        const winnerId = winnerDocs.docs[0].id;
+        const loserId = loserDocs.docs[0].id;
 
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
 
-        // Award points based on subgame type - IMPROVED ERROR HANDLING
+        // Award points based on subgame type (now using safe service)
         try {
-            console.log(`🎯 Awarding match points to winner: ${winnerId}, loser: ${loserId}, subgame: ${reportData.subgameType || 'Standard'}`);
-            
-            const pointsAwarded = await awardMatchPoints(winnerId, loserId, reportData.subgameType);
-            
-            if (pointsAwarded) {
-                console.log('✅ Match points awarded successfully');
-            } else {
-                console.warn('⚠️ Match points failed to award, but match approval continues');
-            }
+            await awardMatchPoints(winnerId, loserId, reportData.subgameType);
         } catch (pointsError) {
-            console.error('❌ Points award error:', pointsError);
-            // Don't fail the entire approval for points issues
-            // Log the error but continue with the match approval
+            console.warn('Points award failed, but match approval continues:', pointsError);
         }
 
         console.log('Match successfully approved and ELO updated');
