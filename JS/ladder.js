@@ -23,6 +23,8 @@ import {
     setupEfficientListener 
 } from './services/firebaseService.js';
 import { displayLadderDuos } from './ladderduos.js';
+import { getTokensByUsernames, getPrimaryDisplayToken } from './tokens.js';
+
 
 
 const auth = getAuth();
@@ -347,27 +349,7 @@ function createPlayerRow(player, stats) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
-   /*
-    // Create streak HTML if player is #1
-    let streakHtml = '';
-    if (player.position === 1 && player.firstPlaceDate) {
-        const streakDays = calculateStreakDays(player.firstPlaceDate);
-
-
-
-
-
-
-
-
-        if (streakDays > 0) {
-            streakHtml = `<span style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); font-size:0.9em; color:#FF4500;">${streakDays}d</span>`;
-
-        }
-    }
-   */
-
-    // Create flag HTML if player has country
+    // Create flag HTML if player has country (comes AFTER username)
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
@@ -387,7 +369,6 @@ function createPlayerRow(player, stats) {
                     ${player.username}
                 </a>
                 ${flagHtml}
-
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
@@ -534,6 +515,70 @@ async function getPlayersLastEloChanges(usernames) {
     return changes;
 }
 
+// NEW: Function to create HTML for a single player row with token support
+function createPlayerRowWithToken(player, stats, primaryToken) {
+    const elo = parseFloat(player.elo) || 0;
+
+    // Set ELO-based colors
+    let usernameColor = 'gray'; // Default for unranked
+    if (elo >= 2000) {
+        usernameColor = '#50C878'; // Emerald Green
+    } else if (elo >= 1800) {
+        usernameColor = '#FFD700'; // Gold
+    } else if (elo >= 1600) {
+        usernameColor = '#b9f1fc'; // Silver
+    } else if (elo >= 1400) {
+        usernameColor = '#CD7F32'; // Bronze
+    }
+
+    // Create flag HTML if player has country (comes AFTER username)
+    let flagHtml = '';
+    if (player.country) {
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle; width: 20px; height: auto;"
+                        onerror="this.style.display='none'">`;
+    }
+
+    // NEW: Create token HTML if player has tokens (comes AFTER flag)
+    let tokenHtml = '';
+    if (primaryToken) {
+        tokenHtml = `<img src="${primaryToken.tokenImage}" 
+                         alt="${primaryToken.tokenName}" 
+                         class="player-token" 
+                         title="${primaryToken.tokenName} ${primaryToken.equipped ? '(Equipped)' : ''}"
+                         style="width: 35px; height: 35px; margin-left: 5px; vertical-align: middle; object-fit: contain;"
+                         onerror="this.style.display='none'">`;
+    }
+
+    return `
+    <tr>
+        <td>${player.position}</td>
+        <td style="position: relative;">
+            <div style="display: flex; align-items: center; position: relative;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+                ${tokenHtml}
+            </div>
+        </td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
+        <td>${stats.totalMatches}</td>
+        <td>${stats.wins}</td>
+        <td>${stats.losses}</td>
+        <td>${stats.kda}</td>
+        <td>${stats.winRate}%</td>
+    </tr>`;
+}
+
 // Updated to use batch HTML creation
 async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
     const tbody = document.querySelector('#ladder tbody');
@@ -565,6 +610,29 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
         matchStatsBatch = await fetchBatchMatchStats(usernames);
     }
 
+    // NEW: Get tokens for all players with forced refresh
+    let userTokensMap = new Map();
+    try {
+        // Clear token cache before fetching to ensure fresh data
+        if (typeof clearTokenCache === 'function') {
+            clearTokenCache();
+        }
+        
+        userTokensMap = await getTokensByUsernames(usernames);
+        console.log('🪙 Loaded fresh tokens for', userTokensMap.size, 'players');
+        
+        // Debug: Log equipped tokens
+        userTokensMap.forEach((tokens, username) => {
+            const equipped = tokens.find(token => token.equipped);
+            if (equipped) {
+                console.log(`🎯 ${username} has equipped: ${equipped.tokenName}`);
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching tokens:', error);
+    }
+
     // Create all rows at once for better performance
     const rowsHtml = ladderData.map(player => {
         // Get pre-fetched stats from our batch operation
@@ -573,7 +641,16 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
 
-        return createPlayerRow(player, stats);
+        // NEW: Get user's tokens
+        const userTokens = userTokensMap.get(player.username) || [];
+        const primaryToken = getPrimaryDisplayToken(userTokens);
+        
+        // Debug: Log what token is being used for each player
+        if (primaryToken) {
+            console.log(`🎨 ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
+        }
+
+        return createPlayerRowWithToken(player, stats, primaryToken);
     }).join('');
 
     // Append all rows at once (much faster than individual DOM operations)
@@ -609,7 +686,6 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
                             indicator.style.display = 'inline'; // Ensure it's displayed
                             indicator.style.visibility = 'visible';
                             indicator.style.opacity = '1';
-                        } else {
                         }
                     }
                 }

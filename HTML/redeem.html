@@ -105,7 +105,7 @@
         }
         
         /* Grid Layout */
-        .themes-grid, .aesthetics-grid, .special-grid {
+        .themes-grid, .tokens-grid, .special-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1rem;
@@ -141,6 +141,67 @@
             color: white;
         }
         
+        /* Token specific styling */
+        .token-icon {
+            width: 60px;
+            height: 60px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto 0.75rem auto;
+        }
+        
+        .token-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 2px;
+        }
+        
+        .token-fallback {
+            width: 100%;
+            height: 100%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Token item specific adjustments */
+        .token-item {
+            padding: 0.75rem;
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .token-item .item-header {
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .token-item .item-price {
+            margin-top: 0.5rem;
+            align-self: center;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .token-select-btn {
+            margin-top: auto;
+            padding: 0.2rem;
+            font-size: 0.9rem;
+        }
+        
         .item-price {
             background: var(--accent-color);
             color: white;
@@ -166,7 +227,7 @@
         }
         
         /* Buttons */
-        .theme-select-btn, .store-btn {
+        .theme-select-btn, .token-select-btn, .store-btn {
             width: 100%;
             padding: 0.6rem;
             background: var(--accent-color);
@@ -177,11 +238,15 @@
             cursor: pointer;
         }
         
-        .theme-select-btn:hover:not(:disabled), .store-btn:hover:not(:disabled) {
+        .theme-select-btn:hover:not(:disabled), 
+        .token-select-btn:hover:not(:disabled), 
+        .store-btn:hover:not(:disabled) {
             background: var(--accent-secondary, var(--accent-color));
         }
         
-        .theme-select-btn:disabled, .store-btn:disabled {
+        .theme-select-btn:disabled, 
+        .token-select-btn:disabled, 
+        .store-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
@@ -195,11 +260,11 @@
             background: var(--success-color, #4CAF50);
         }
         
-        .theme-select-btn.can-afford {
+        .theme-select-btn.can-afford, .token-select-btn.can-afford {
             background: var(--info-color, #2196F3);
         }
         
-        .theme-select-btn.cannot-afford {
+        .theme-select-btn.cannot-afford, .token-select-btn.cannot-afford {
             background: var(--muted-color, #757575);
         }
         
@@ -207,8 +272,12 @@
             background: var(--success-color, #4CAF50);
         }
         
-        .theme-select-btn.sign-in-paid {
+        .theme-select-btn.sign-in-paid, .token-select-btn.sign-in {
             background: var(--muted-color, #757575);
+        }
+        
+        .token-select-btn.owned {
+            background: var(--success-color, #4CAF50);
         }
         
         /* Locked item styling */
@@ -360,13 +429,13 @@
                 font-size: 0.9rem;
             }
             
-            .themes-grid, .aesthetics-grid, .special-grid {
+            .themes-grid, .tokens-grid, .special-grid {
                 grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             }
         }
         
         @media (max-width: 480px) {
-            .themes-grid, .aesthetics-grid, .special-grid {
+            .themes-grid, .tokens-grid, .special-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -397,7 +466,7 @@
             <!-- Store Navigation Tabs -->
             <div class="store-tabs">
                 <div class="store-tab active" data-tab="themes">Themes</div>
-                <div class="store-tab locked" data-tab="aesthetics">Aesthetics</div>
+                <div class="store-tab" data-tab="tokens">Tokens</div>
                 <div class="store-tab locked" data-tab="special">Special Items</div>
             </div>
             
@@ -409,14 +478,14 @@
                 </div>
             </section>
             
-            <!-- Aesthetics Section -->
-            <section class="store-section" id="aesthetics-section">
-                <h2 class="section-title">Aesthetics Collection</h2>
-                <div class="locked-category">
-                    <div class="lock-icon">🔒</div>
-                    <h3>Aesthetics Coming Soon</h3>
-                    <p>Customize your RDL experience with profile aesthetics and backgrounds.</p>
-                    <p><strong>Stay tuned for new customization options!</strong></p>
+            <!-- Tokens Section -->
+            <section class="store-section" id="tokens-section">
+                <h2 class="section-title">Token Collection</h2>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                    Collect animated tokens to show off in your profile and matches!
+                </p>
+                <div class="tokens-grid">
+                    <!-- Token items will be generated by JavaScript -->
                 </div>
             </section>
             
