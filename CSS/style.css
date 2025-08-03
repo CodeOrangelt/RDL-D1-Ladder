@@ -1411,3 +1411,35 @@ tr:nth-child(even) {
 .ladder-d3 .recommendation-highlight {
     color: #4CAF50; /* Green to match D3 button */
 }
+
+/* Add these styles to your existing CSS file */
+.player-token {
+    width: 40px;
+    height: 40px;
+    margin-right: 5px;
+    vertical-align: middle;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.player-token:hover {
+    transform: scale(1.2);
+    z-index: 10;
+    position: relative;
+}
+
+/* Responsive adjustments for tokens */
+@media (max-width: 768px) {
+    .player-token {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .player-token {
+        width: 16px;
+        height: 16px;
+    }
+}
