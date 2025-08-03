@@ -14,6 +14,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db, auth } from './firebase-config.js';
 import { recordEloChangeD3 } from './elo-history-d3.js';
+import { awardMatchPoints } from './points-service.js'; // ADD THIS IMPORT
 
 // EXACT SAME ELO calculation as D1/D2
 export function calculateEloD3(winnerRating, loserRating, kFactor = 32) {
@@ -221,6 +222,22 @@ export async function approveReportD3(reportId, winnerScore, winnerSuicides, win
 
         // Update ELO ratings using D3-specific function
         await updateEloRatingsD3(winnerId, loserId, reportId);
+
+        // Award points based on subgame type - ADD THIS SECTION
+        try {
+            console.log(`🎯 Awarding D3 match points to winner: ${winnerId}, loser: ${loserId}, subgame: ${reportData.subgameType || 'Standard'}`);
+            
+            const pointsAwarded = await awardMatchPoints(winnerId, loserId, reportData.subgameType);
+            
+            if (pointsAwarded) {
+                console.log('✅ D3 Match points awarded successfully');
+            } else {
+                console.warn('⚠️ D3 Match points failed to award, but match approval continues');
+            }
+        } catch (pointsError) {
+            console.error('❌ D3 Points award error:', pointsError);
+            // Don't fail the entire approval for points issues
+        }
 
         console.log('D3 Match successfully approved and ELO updated');
         return true;

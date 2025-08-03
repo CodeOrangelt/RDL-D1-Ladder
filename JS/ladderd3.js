@@ -39,7 +39,6 @@ const CACHE_DURATION = 30000; // 30 seconds cache validity
 async function displayLadderD3(forceRefresh = false) {
     const tableBody = document.querySelector('#ladder-d3 tbody');
     if (!tableBody) {
-        console.error('D3 Ladder table body not found');
         return;
     }
     
@@ -131,7 +130,6 @@ async function displayLadderD3(forceRefresh = false) {
         updateLadderDisplayD3(players);
         
     } catch (error) {
-        console.error("Error loading D3 ladder:", error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="8" style="text-align: center; color: red;">
@@ -171,7 +169,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
         const loser = players.find(p => p.username === loserUsername);
 
         if (!winner || !loser) {
-            console.error("Could not find winner or loser in D3 players list");
             return;
         }
 
@@ -216,7 +213,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
             }
         }
     } catch (error) {
-        console.error("Error updating D3 player positions:", error);
     }
 }
 
@@ -299,7 +295,6 @@ async function updateLadderDisplayD3(ladderData) {
                 }
             });
         })
-        .catch(error => console.error('Error updating D3 ELO trend indicators:', error));
 }
 
 // Helper function to fetch all match stats at once for D3
@@ -371,7 +366,6 @@ async function fetchBatchMatchStatsD3(usernames) {
         });
         
     } catch (error) {
-        console.error('Error fetching batch match stats for D3:', error);
     }
     
     return matchStats;
@@ -454,7 +448,6 @@ async function getPlayersLastEloChangesD3(usernames) {
     usernames.forEach(username => changes.set(username, 0));
     
     try {
-        console.log('D3: Looking for ELO changes for users:', usernames);
         
         // ADD MISSING PLAYER ID MAPPING (like D1 & D2)
         const playerIdToUsername = new Map();
@@ -466,7 +459,6 @@ async function getPlayersLastEloChangesD3(usernames) {
             }
         });
         
-        console.log('D3: Player ID mappings:', Array.from(playerIdToUsername.entries()));
         
         // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistoryD3');
@@ -517,9 +509,7 @@ async function getPlayersLastEloChangesD3(usernames) {
                 });
             }
         });
-        
-        console.log(`D3: Found entries for ${entriesByUsername.size} players`);
-        
+                
         // Process each player's entries
         entriesByUsername.forEach((playerEntries, username) => {
             if (playerEntries.length > 0) {
@@ -548,7 +538,6 @@ async function getPlayersLastEloChangesD3(usernames) {
         
         // Enhanced fallback with better logging
         if (entriesByUsername.size === 0) {
-            console.log('D3: No entries found in eloHistoryD3, trying fallback...');
             
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
@@ -560,7 +549,6 @@ async function getPlayersLastEloChangesD3(usernames) {
             
             try {
                 const fallbackSnapshot = await getDocs(fallbackQuery);
-                console.log(`D3: Found ${fallbackSnapshot.size} fallback entries`);
                 
                 fallbackSnapshot.forEach(doc => {
                     const entry = doc.data();
@@ -578,21 +566,17 @@ async function getPlayersLastEloChangesD3(usernames) {
                         
                         if (eloChange !== 0) {
                             changes.set(username, eloChange);
-                            console.log(`D3: ${username} fallback ELO change: ${eloChange}`);
                         }
                     }
                 });
             } catch (fallbackError) {
-                console.log('D3: Fallback query failed:', fallbackError);
             }
         }
         
         // Final summary
         const nonZeroChanges = Array.from(changes.entries()).filter(([_, change]) => change !== 0);
-        console.log('D3: Final ELO changes:', nonZeroChanges);
         
     } catch (error) {
-        console.error('D3: Error fetching ELO history:', error);
     }
     
     return changes;
