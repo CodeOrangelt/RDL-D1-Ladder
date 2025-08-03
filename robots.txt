@@ -34,9 +34,6 @@ Disallow: /*.ico$
 # Allow important pages for SEO
 Allow: /index.html
 Allow: /rules.html
-Allow: /profile.html
-Allow: /history.html
-Allow: /whosplaying.html
 Allow: /approved-matches.html
 Allow: /report.html
 Allow: /confirm.html
