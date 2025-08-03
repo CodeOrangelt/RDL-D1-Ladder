@@ -138,6 +138,63 @@ function initializeSubgameStats(currentMode) {
     };
 }
 
+export async function getSubgameChampions(gameMode = 'D1') {
+    try {
+        // Use the existing data loading logic
+        const { playerSnapshot, matchSnapshot } = await getGameModeData(gameMode);
+        const { subgameStats } = processData(playerSnapshot, matchSnapshot);
+        
+        const champions = {};
+        
+        // Process each subgame to find champions
+        if (subgameStats.playerPerformance) {
+            subgameStats.playerPerformance.forEach((subgamePerf, subgame) => {
+                let bestPlayer = null;
+                let bestWinRate = 0;
+                
+                for (const [username, stats] of subgamePerf.entries()) {
+                    if (stats.matches >= 3) { // Minimum 3 matches requirement
+                        const winRate = (stats.wins / stats.matches) * 100;
+                        if (winRate > bestWinRate) {
+                            bestWinRate = winRate;
+                            bestPlayer = {
+                                username,
+                                winRate: winRate.toFixed(1),
+                                wins: stats.wins,
+                                matches: stats.matches
+                            };
+                        }
+                    }
+                }
+                
+                if (bestPlayer) {
+                    champions[subgame] = bestPlayer;
+                }
+            });
+        }
+        
+        return champions;
+    } catch (error) {
+        console.error('Error getting subgame champions:', error);
+        return {};
+    }
+}
+
+// Add helper function to get game mode data (extract from existing loadStats logic)
+async function getGameModeData(gameMode) {
+    const playerCollection = gameMode === 'D1' ? 'players' : 
+                            gameMode === 'D2' ? 'playersD2' : 'playersD3';
+    const matchCollection = gameMode === 'D1' ? 'approvedMatches' : 
+                           gameMode === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+
+    const [playerSnapshot, matchSnapshot] = await Promise.all([
+        getDocs(collection(db, playerCollection)),
+        getDocs(collection(db, matchCollection))
+    ]);
+
+    return { playerSnapshot, matchSnapshot };
+}
+
 function processData(playerSnapshot, matchSnapshot) {
     const playerStats = new Map();
     const playerMatchesMap = new Map();

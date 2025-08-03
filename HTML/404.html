@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found - RDL</title>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <script type="module" src="../JS/themes.js"></script>
+    
+    <style>
+        /* 404 Page Specific Styles */
+        .error-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 2rem;
+        }
+        
+        .error-content {
+            display: flex;
+            align-items: center;
+            gap: 5rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .error-image-container {
+            flex: 0 0 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .error-image {
+            width: 600px;
+            height: 600px;
+            opacity: 0.9;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.4));
+        }
+        
+        .error-text-container {
+            flex: 0 0 350px;
+            max-width: 350px;
+        }
+        
+        .error-code {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #f44336;
+            margin: 0 0 0.8rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+        }
+        
+        .error-title {
+            font-size: 1.4rem;
+            color: #e0e0e0;
+            margin: 0 0 1rem 0;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .error-message {
+            font-size: 0.95rem;
+            color: #bbb;
+            margin-bottom: 1.8rem;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .error-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .error-btn-primary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .error-btn-primary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+        }
+        .error-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .error-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1100px) {
+            .error-content {
+                gap: 3rem;
+            }
+            
+            .error-image-container {
+                flex: 0 0 380px;
+            }
+            
+            .error-image {
+                width: 380px;
+                height: 380px;
+            }
+            
+            .error-text-container {
+                flex: 0 0 300px;
+                max-width: 300px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .error-content {
+                gap: 2.5rem;
+            }
+            
+            .error-image-container {
+                flex: 0 0 320px;
+            }
+            
+            .error-image {
+                width: 320px;
+                height: 320px;
+            }
+            
+            .error-text-container {
+                flex: 0 0 280px;
+                max-width: 280px;
+            }
+            
+            .error-code {
+                font-size: 3rem;
+            }
+            
+            .error-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 1.5rem;
+                min-height: 70vh;
+            }
+            
+            .error-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem;
+            }
+            
+            .error-image-container {
+                flex: none;
+            }
+            
+            .error-text-container {
+                text-align: center;
+                max-width: none;
+                flex: none;
+            }
+            
+            .error-image {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .error-code {
+                font-size: 2.8rem;
+            }
+            
+            .error-title {
+                font-size: 1.2rem;
+            }
+            
+            .error-message {
+                font-size: 0.9rem;
+            }
+            
+            .error-actions {
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .error-btn {
+                width: 200px;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 1rem;
+            }
+            
+            .error-image {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .error-code {
+                font-size: 2.5rem;
+            }
+            
+            .error-title {
+                font-size: 1.1rem;
+            }
+            
+            .error-message {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Improved animation for the image */
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg); 
+            }
+            25% { 
+                transform: translateY(-10px) rotate(1deg); 
+            }
+            50% { 
+                transform: translateY(-20px) rotate(0deg); 
+            }
+            75% { 
+                transform: translateY(-10px) rotate(-1deg); 
+            }
+        }
+        
+        .error-image {
+            animation: float 5s ease-in-out infinite;
+        }
+        
+        /* Add subtle glow effect */
+        .error-code {
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7), 0 0 5px rgba(244, 67, 54, 0.3);
+            }
+            to {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7), 0 0 15px rgba(244, 67, 54, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    
+    <main>
+        <div class="error-container">
+            <div class="error-content">
+                <div class="error-image-container">
+                    <img src="../images/bot.png" alt="404 Error" class="error-image">
+                </div>
+                <div class="error-text-container">
+                    <h1 class="error-code">404</h1>
+                    <h2 class="error-title">Page Not Found</h2>
+                    <p class="error-message">
+                        The mines can get disorienting sometimes. The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+                    </p>
+                    <div class="error-actions">
+                        <a href="index.html" class="error-btn error-btn-primary">
+                            <i class="fas fa-home"></i>
+                            Return to Ladder
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <!-- Scripts -->
+    <script type="module" src="../JS/current-user.js"></script>
+    <script type="module" src="../JS/logout.js"></script>
+    
+    <script>
+        // Load nav and footer
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>
