@@ -1,0 +1,16 @@
+# Allow all bots including Googlebot
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Remove any bot blocking rules
+</IfModule>
+
+# Set proper headers for Google
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "index, follow"
+    Header always set Cache-Control "public, max-age=86400"
+</IfModule>
+
+# Handle missing trailing slashes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !(.*)/$
+RewriteRule ^(.*)$ https://rdl.descentnexus.com/$1/ [L,R=301]
