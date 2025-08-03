@@ -688,6 +688,30 @@
     });
     </script>
 
+    <script>
+            // Check for problematic localStorage entries
+        Object.keys(localStorage).forEach(key => {
+            const value = localStorage.getItem(key);
+            
+            // Try to parse each item to find the problematic one
+            if (value && value.includes('[object Object]')) {
+                console.error(`Found problematic localStorage entry: ${key} = ${value}`);
+                // Clean it up
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Also check sessionStorage
+        Object.keys(sessionStorage).forEach(key => {
+            const value = sessionStorage.getItem(key);
+            
+            if (value && value.includes('[object Object]')) {
+                console.error(`Found problematic sessionStorage entry: ${key} = ${value}`);
+                sessionStorage.removeItem(key);
+            }
+        });
+    </script>
+
     <!-- Add this new script to check for pending matches on index page -->
     <script type="module">
         import { auth } from '../JS/firebase-config.js';
