@@ -1,0 +1,59 @@
+# Robots.txt for Redux Descent League (RDL)
+# https://rdl.descentnexus.com/robots.txt
+
+# Allow all search engines to crawl the main content
+User-agent: *
+
+# Block access to admin areas and sensitive files
+Disallow: /admin.html
+Disallow: /admin-*
+Disallow: /adminbackend.js
+Disallow: /admin-config.js
+Disallow: /login.html
+Disallow: /login.js
+Disallow: /login-style.css
+
+# Block configuration and backend files
+Disallow: /firebase-config.js
+Disallow: /auth.js
+Disallow: /current-user.js
+Disallow: /*-config.js
+Disallow: /*backend.js
+Disallow: /security*
+
+# Block archive and development files
+Disallow: /Archive/
+Disallow: /RDL-D1-Ladder/Archive/
+Disallow: /docs/
+
+# Block specific file types that shouldn't be indexed
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.ico$
+
+# Allow important pages for SEO
+Allow: /index.html
+Allow: /rules.html
+Allow: /profile.html
+Allow: /history.html
+Allow: /whosplaying.html
+Allow: /approved-matches.html
+Allow: /report.html
+Allow: /confirm.html
+
+# Allow important directories
+Allow: /images/
+Allow: /CSS/
+Allow: /HTML/
+Allow: /styles/
+
+# Allow CSS and JS that are essential for user experience
+Allow: /style.css
+Allow: /nav.css
+Allow: /footer.css
+
+# Crawl delay to be respectful to the server
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://rdl.descentnexus.com/sitemap.xml
