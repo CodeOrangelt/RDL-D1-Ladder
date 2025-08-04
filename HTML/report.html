@@ -8,85 +8,9 @@
     <link rel="stylesheet" href="./CSS/report-style.css">
     <link rel="stylesheet" href="./CSS/footer.css">
     <link rel="stylesheet" href="./CSS/style.css">
-    <script type="module" src="./JS/firebase-config.js"></script>
     <link rel="stylesheet" href="./CSS/themes.css">
     <script type="module" src="./JS/themes.js"></script>
-    <style>
-        
-        /* Make container position relative to properly position the absolute button */
-        .container {
-            position: relative;
-            background-color: rgba(0, 0, 0, 0.75);
-            border: 5px solid white;
-            margin: 50px auto 0; /* Added top margin to make room for the button */
-            border-radius: 15px;
-            width: 50%;
-            max-width: 700px;
-            min-width: 300px;
-            padding: 15px;
-            min-height: 600px;
-            overflow: hidden;
-        }
-        
-        /* Game mode toggle buttons */
-        .game-mode-toggle {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        
-        .game-mode-toggle button {
-            padding: 8px 20px;
-            background-color: #333;
-            color: #ccc;
-            border: 1px solid #555;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        
-        .game-mode-toggle button:hover {
-            background-color: #444;
-        }
-        
-        .game-mode-toggle button.active {
-            background-color: #b026b9; /* Purple to match theme */
-            color: white;
-            border-color: #b026b9;
-        }
-        
-        /* Modal specific styles */
-        .report-lightbox {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .report-lightbox.show {
-            display: flex;
-        }
-        
-        .lightbox-content {
-            background-color: #222;
-            color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 0 20px rgba(176, 38, 185, 0.5);
-        }
-    </style>
+    <script type="module" src="./JS/firebase-config.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -139,7 +63,6 @@
                     <label for="winner-username">Opponent:</label>
                     <select id="winner-username" required>
                         <option value="">Select Winner</option>
-                        <!-- Options will be populated by JavaScript -->
                     </select>
                 </div>
                 <div class="form-group">
@@ -176,7 +99,6 @@
                     <label for="loser-comment">Your Comment:</label>
                     <textarea id="loser-comment" placeholder="Your Comment" required></textarea>
                 </div>
-                <!-- Report form submit button and Outstanding Matches button in a row -->
                 <div class="button-container">
                     <button type="submit" class="btn">Report Game</button>
                     <div id="view-outstanding-container" style="display: none;">
@@ -210,7 +132,6 @@
                         <textarea id="winner-comment" required></textarea>
                     </div>
                     
-                    <!-- New subgame type detail -->
                     <div class="lightbox-detail">
                         <span class="lightbox-label">Subgame Type:</span>
                         <span id="lightbox-subgame"></span>
@@ -231,7 +152,6 @@
             <h2>Your Outstanding Matches</h2>
             <p>These matches are waiting patiently:</p>
             <div id="outstanding-matches-list" class="matches-list">
-                <!-- Matches will be populated here -->
                 <div class="loading">Loading your matches...</div>
             </div>
             <div class="lightbox-buttons">
@@ -240,7 +160,6 @@
         </div>
     </div>
 
-    <script type="module" src="./JS/firebase-config.js"></script>
     <script type="module" src="./JS/ladderalgorithm.js"></script>
     <script type="module" src="./JS/current-user.js"></script>
     <script type="module" src="./JS/logout.js"></script>
