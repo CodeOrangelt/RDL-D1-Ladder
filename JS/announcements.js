@@ -2,8 +2,8 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.7", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.8",
+    id: "beta-release 1.8.4", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.8.4",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">WHATS NEW:</p1><br></br>
             <li style="color:#90EE90">Purchasable website themes w/Points</li>
@@ -13,8 +13,11 @@ const ANNOUNCEMENT = {
             <li style="color:#90EE90">Misc Subgame added</li>
             <li style="color:#90EE90">Added "Misc Subgame"</li>
             <li style="color:#90EE90">Increased website security</li>
+            <li style="color:#90EE90">11 purchasable tokens</li>
+            <li style="color:#90EE90">6 purchasable themes</li>
+            <li style="color:#90EE90">Matches now award 10 points! </li>
+            <li style="color:#90EE90">Subgame types award various points!</li>
             <li style="color:red">Retirements REMOVED</li>
-
             <br>
 \
         <p1 style="color:#ffffff; font-weight: bold;">RDL News!:</p1><br></br>
