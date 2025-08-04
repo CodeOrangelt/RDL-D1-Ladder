@@ -245,7 +245,6 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         await updateEloRatings(winnerId, loserId, reportId);
 
         try {
-            await awardMatchPoints(winnerId, loserId, reportData.subgameType);
             const subgameType = reportData.subgameType || 'Standard';
             const pointsToAward = POINTS_CHART[subgameType] || 10;
             

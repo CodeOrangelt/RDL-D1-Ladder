@@ -6339,6 +6339,258 @@ function setupManagePointsSection() {
     if (refreshPointsBtn) {
         refreshPointsBtn.addEventListener('click', loadPointsOverview);
     }
+
+        // Add bulk award points button
+    const bulkAwardPointsBtn = document.getElementById('bulk-award-points-btn');
+    if (bulkAwardPointsBtn) {
+        bulkAwardPointsBtn.addEventListener('click', async () => {
+            if (confirm('This will award points for all approved matches based on their subgame types. Continue?')) {
+                bulkAwardPointsBtn.disabled = true;
+                bulkAwardPointsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                await bulkAwardMatchPoints();
+                bulkAwardPointsBtn.disabled = false;
+                bulkAwardPointsBtn.innerHTML = '<i class="fas fa-coins"></i> Award Points for All Matches';
+            }
+        });
+    }
+
+        // Add award points to all pilots button
+    const awardAllPilotsBtn = document.getElementById('award-all-pilots-btn');
+    if (awardAllPilotsBtn) {
+        awardAllPilotsBtn.addEventListener('click', awardPointsToAllPilots);
+    }
+
+async function bulkAwardMatchPoints() {
+    try {
+        showNotification('Starting bulk points award process for ALL game types...', 'info');
+        
+        // Points chart copied from points-service.js
+        const POINTS_CHART = {
+            '': 10, // Standard match
+            'Standard': 10,
+            'Fusion Match': 25,
+            '≥6 Missiles': 10,
+            'Weapon Imbalance': 30,
+            'Blind Match': 75,
+            'Rematch': 20,
+            'Disorientation': 50,
+            'Ratting': 35,
+            'Altered Powerups': 35,
+            'Mega Match': 40,
+            'Dogfight': 50,
+            'Gauss and Mercs': 25,
+            'Misc': 30
+        };
+        
+        // Stats to track progress
+        let processedD1 = 0;
+        let processedD2 = 0;
+        let processedD3 = 0;
+        let pointsAwarded = 0;
+        let errors = 0;
+        let alreadyAwarded = 0;
+        
+        // Store processed match IDs to avoid duplicate awards
+        const processedMatches = new Set();
+        
+        // Keep track of which matches have already had points awarded
+        const pointsHistoryRef = collection(db, 'pointsHistory');
+        const historyQuery = query(pointsHistoryRef, 
+            where('reason', '>=', 'Bulk award:'), 
+            where('reason', '<=', 'Bulk award:\uf8ff')
+        );
+        const historySnapshot = await getDocs(historyQuery);
+        
+        // Extract match IDs from existing point awards
+        historySnapshot.forEach(doc => {
+            const data = doc.data();
+            const reason = data.reason || '';
+            const matchIdMatch = reason.match(/Match ID: ([a-zA-Z0-9]+)/);
+            if (matchIdMatch && matchIdMatch[1]) {
+                processedMatches.add(matchIdMatch[1]);
+            }
+        });
+        
+        console.log(`Found ${processedMatches.size} matches that already have had points awarded`);
+        
+        // Get all matches from all three collections
+        const [d1Snapshot, d2Snapshot, d3Snapshot] = await Promise.all([
+            getDocs(collection(db, 'approvedMatches')),
+            getDocs(collection(db, 'approvedMatchesD2')),
+            getDocs(collection(db, 'approvedMatchesD3'))
+        ]);
+        
+        const totalMatches = d1Snapshot.size + d2Snapshot.size + d3Snapshot.size;
+        showNotification(`Found ${totalMatches} total matches across all ladders`, 'info');
+        
+            const processMatches = async (snapshot, gameType) => {
+                // Process each match
+                let batch = writeBatch(db); // Changed from const to let
+                const batchHistory = [];
+                let batchCount = 0;
+                
+                for (const matchDoc of snapshot.docs) {
+                    try {
+                        // Skip if this match has already been processed
+                        if (processedMatches.has(matchDoc.id)) {
+                            if (gameType === 'D1') alreadyAwarded++;
+                            if (gameType === 'D2') alreadyAwarded++;
+                            if (gameType === 'D3') alreadyAwarded++;
+                            continue;
+                        }
+                    
+                        const match = matchDoc.data();
+                        const subgameType = match.subgameType || 'Standard';
+                        const pointsToAward = POINTS_CHART[subgameType] || 10;
+                        
+                        // Find winner user ID
+                        let winnerUserId = match.winnerId;
+                        if (!winnerUserId && match.winnerUsername) {
+                            // Try to find user ID by username across all player collections
+                            const [d1Winners, d2Winners, d3Winners] = await Promise.all([
+                                getDocs(query(collection(db, 'players'), where('username', '==', match.winnerUsername))),
+                                getDocs(query(collection(db, 'playersD2'), where('username', '==', match.winnerUsername))),
+                                getDocs(query(collection(db, 'playersD3'), where('username', '==', match.winnerUsername)))
+                            ]);
+                            
+                            if (!d1Winners.empty) winnerUserId = d1Winners.docs[0].id;
+                            else if (!d2Winners.empty) winnerUserId = d2Winners.docs[0].id;
+                            else if (!d3Winners.empty) winnerUserId = d3Winners.docs[0].id;
+                        }
+                        
+                        // Find loser user ID
+                        let loserUserId = match.loserId;
+                        if (!loserUserId && match.loserUsername) {
+                            // Try to find user ID by username across all player collections
+                            const [d1Losers, d2Losers, d3Losers] = await Promise.all([
+                                getDocs(query(collection(db, 'players'), where('username', '==', match.loserUsername))),
+                                getDocs(query(collection(db, 'playersD2'), where('username', '==', match.loserUsername))),
+                                getDocs(query(collection(db, 'playersD3'), where('username', '==', match.loserUsername)))
+                            ]);
+                            
+                            if (!d1Losers.empty) loserUserId = d1Losers.docs[0].id;
+                            else if (!d2Losers.empty) loserUserId = d2Losers.docs[0].id;
+                            else if (!d3Losers.empty) loserUserId = d3Losers.docs[0].id;
+                        }
+                        
+                        if (winnerUserId && loserUserId) {
+                            // Find user profiles
+                            const winnerRef = doc(db, 'userProfiles', winnerUserId);
+                            const loserRef = doc(db, 'userProfiles', loserUserId);
+                            
+                            // Get current profile data for both users
+                            const [winnerSnap, loserSnap] = await Promise.all([
+                                getDoc(winnerRef),
+                                getDoc(loserRef)
+                            ]);
+                            
+                            if (winnerSnap.exists()) {
+                                const winnerData = winnerSnap.data();
+                                const currentPoints = winnerData.points || 0;
+                                batch.update(winnerRef, {
+                                    points: currentPoints + pointsToAward,
+                                    lastPointsModified: serverTimestamp()
+                                });
+                                
+                                // Add to history batch
+                                batchHistory.push({
+                                    userId: winnerUserId,
+                                    userEmail: winnerData.email || 'unknown',
+                                    displayName: winnerData.displayName || match.winnerUsername || 'Unknown User',
+                                    action: 'add',
+                                    amount: pointsToAward,
+                                    previousPoints: currentPoints,
+                                    newPoints: currentPoints + pointsToAward,
+                                    reason: `Bulk award: ${subgameType} match (Winner) - Match ID: ${matchDoc.id} - ${gameType}`,
+                                    adminEmail: auth.currentUser.email,
+                                    timestamp: serverTimestamp()
+                                });
+                            }
+                            
+                            if (loserSnap.exists()) {
+                                const loserData = loserSnap.data();
+                                const currentPoints = loserData.points || 0;
+                                batch.update(loserRef, {
+                                    points: currentPoints + pointsToAward,
+                                    lastPointsModified: serverTimestamp()
+                                });
+                                
+                                // Add to history batch
+                                batchHistory.push({
+                                    userId: loserUserId,
+                                    userEmail: loserData.email || 'unknown',
+                                    displayName: loserData.displayName || match.loserUsername || 'Unknown User',
+                                    action: 'add',
+                                    amount: pointsToAward,
+                                    previousPoints: currentPoints,
+                                    newPoints: currentPoints + pointsToAward,
+                                    reason: `Bulk award: ${subgameType} match (Participant) - Match ID: ${matchDoc.id} - ${gameType}`,
+                                    adminEmail: auth.currentUser.email,
+                                    timestamp: serverTimestamp()
+                                });
+                            }
+                            
+                            pointsAwarded += (pointsToAward * 2); // Both winner and loser
+                            batchCount += 2;
+                            
+                            // Add this match to processed set
+                            processedMatches.add(matchDoc.id);
+                            
+                            // Commit batch when it reaches size limit
+                            if (batchCount >= 400) { // Firestore batch limit is 500
+                                await batch.commit();
+                                
+                                // Create history entries
+                                for (const historyEntry of batchHistory) {
+                                    await addDoc(collection(db, 'pointsHistory'), historyEntry);
+                                }
+                                
+                                // Create a NEW batch object
+                                batch = writeBatch(db); // Create a new batch
+                                batchCount = 0;
+                                batchHistory.length = 0;
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error processing ${gameType} match ${matchDoc.id}:`, error);
+                        errors++;
+                    }
+                }
+                
+                // Commit any remaining batch operations
+                if (batchCount > 0) {
+                    await batch.commit();
+                    
+                    // Create history entries
+                    for (const historyEntry of batchHistory) {
+                        await addDoc(collection(db, 'pointsHistory'), historyEntry);
+                    }
+                }
+                
+                return { processed: gameType === 'D1' ? processedD1 : gameType === 'D2' ? processedD2 : processedD3 };
+            };
+        
+        // Process each collection
+        await processMatches(d1Snapshot, 'D1');
+        await processMatches(d2Snapshot, 'D2');
+        await processMatches(d3Snapshot, 'D3');
+        
+        showNotification(
+            `Completed! Processed ${processedD1} D1 matches, ${processedD2} D2 matches, ${processedD3} D3 matches. ` +
+            `Awarded ${pointsAwarded} points. Skipped ${alreadyAwarded} already processed matches. Errors: ${errors}`, 
+            'success'
+        );
+        
+        // Refresh points overview if it's visible
+        if (document.getElementById('points-overview-table-body')) {
+            loadPointsOverview();
+        }
+        
+    } catch (error) {
+        console.error('Error in bulk award points:', error);
+        showNotification(`Error in bulk award process: ${error.message}`, 'error');
+    }
+}
     
     // Quick edit modal events - MAKE SURE THESE WORK
     const quickEditModal = document.getElementById('quick-edit-points-modal');
@@ -6391,6 +6643,154 @@ function setupManagePointsSection() {
     }
     
     console.log('Manage Points section initialized');
+}
+
+async function awardPointsToAllPilots() {
+    try {
+        // Prompt for points amount
+        const pointsAmount = parseInt(prompt("Enter points amount to award to ALL pilots:", "10"));
+        
+        if (!pointsAmount || isNaN(pointsAmount)) {
+            showNotification('Invalid points amount', 'error');
+            return;
+        }
+        
+        if (!confirm(`This will award ${pointsAmount} points to ALL pilots in ALL ladders (D1, D2, and D3). Continue?`)) {
+            return;
+        }
+        
+        showNotification('Starting points award process...', 'info');
+        
+        // Get all pilots from all ladders
+        const [d1Pilots, d2Pilots, d3Pilots] = await Promise.all([
+            getDocs(collection(db, 'players')),
+            getDocs(collection(db, 'playersD2')),
+            getDocs(collection(db, 'playersD3'))
+        ]);
+        
+        console.log(`Found ${d1Pilots.size} D1 pilots, ${d2Pilots.size} D2 pilots, ${d3Pilots.size} D3 pilots`);
+        const totalPilots = d1Pilots.size + d2Pilots.size + d3Pilots.size;
+        
+        // Collect all pilot IDs from all ladders
+        const pilotMap = new Map(); // userId -> {username, ladder}
+        
+        // Process D1 pilots
+        d1Pilots.forEach(doc => {
+            const data = doc.data();
+            pilotMap.set(doc.id, {
+                username: data.username,
+                ladder: 'D1'
+            });
+        });
+        
+        // Process D2 pilots
+        d2Pilots.forEach(doc => {
+            const data = doc.data();
+            pilotMap.set(doc.id, {
+                username: data.username,
+                ladder: 'D2'
+            });
+        });
+        
+        // Process D3 pilots
+        d3Pilots.forEach(doc => {
+            const data = doc.data();
+            pilotMap.set(doc.id, {
+                username: data.username,
+                ladder: 'D3'
+            });
+        });
+        
+        console.log(`Found ${pilotMap.size} unique pilots across all ladders`);
+        
+        // Process in batches
+        let processed = 0;
+        let pointsAwarded = 0;
+        let errors = 0;
+        
+        // Process pilots in batches of 400
+        const pilotIds = Array.from(pilotMap.keys());
+        const BATCH_SIZE = 400;
+        
+        for (let i = 0; i < pilotIds.length; i += BATCH_SIZE) {
+            const batch = writeBatch(db);
+            const batchHistory = [];
+            const batchPilots = pilotIds.slice(i, i + BATCH_SIZE);
+            
+            // Get user profiles for this batch
+            const profileDocs = await Promise.all(
+                batchPilots.map(pilotId => getDoc(doc(db, 'userProfiles', pilotId)))
+            );
+            
+            for (let j = 0; j < batchPilots.length; j++) {
+                try {
+                    const pilotId = batchPilots[j];
+                    const pilotInfo = pilotMap.get(pilotId);
+                    const profileDoc = profileDocs[j];
+                    
+                    if (profileDoc.exists()) {
+                        const profileData = profileDoc.data();
+                        const currentPoints = profileData.points || 0;
+                        const newPoints = currentPoints + pointsAmount;
+                        
+                        // Update user profile
+                        batch.update(doc(db, 'userProfiles', pilotId), {
+                            points: newPoints,
+                            lastPointsModified: serverTimestamp()
+                        });
+                        
+                        // Add history entry
+                        batchHistory.push({
+                            userId: pilotId,
+                            userEmail: profileData.email || 'unknown',
+                            displayName: profileData.displayName || pilotInfo.username || 'Unknown User',
+                            action: 'add',
+                            amount: pointsAmount,
+                            previousPoints: currentPoints,
+                            newPoints: newPoints,
+                            reason: `Bulk award to all pilots (${pilotInfo.ladder})`,
+                            adminEmail: auth.currentUser.email,
+                            timestamp: serverTimestamp()
+                        });
+                        
+                        pointsAwarded += pointsAmount;
+                        processed++;
+                    } else {
+                        errors++;
+                        console.warn(`No user profile found for pilot ${pilotInfo.username} (${pilotId})`);
+                    }
+                } catch (error) {
+                    errors++;
+                    console.error(`Error processing pilot ${pilotInfo?.username}:`, error);
+                }
+            }
+            
+            // Commit batch
+            await batch.commit();
+            
+            // Add history entries
+            for (const historyEntry of batchHistory) {
+                await addDoc(collection(db, 'pointsHistory'), historyEntry);
+            }
+            
+            // Update progress
+            showNotification(`Processed ${processed}/${totalPilots} pilots...`, 'info');
+        }
+        
+        showNotification(
+            `Complete! Awarded ${pointsAwarded} points to ${processed} pilots. Errors: ${errors}`,
+            'success'
+        );
+        
+        // Refresh points overview if it's visible
+        if (document.getElementById('points-overview-table-body')) {
+            loadPointsOverview();
+        }
+        
+    } catch (error) {
+        console.error('Error in award points to all pilots:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+    }
 }
 
 // Setup manage ribbons section
