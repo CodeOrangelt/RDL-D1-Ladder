@@ -120,7 +120,7 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
                         <span id="inbox-notification" class="notification-dot"></span>
                     </a>
                     <a href="members.html">Members</a>
-                    <a href="./redeem.html"><i class="fas fa-gift"></i> Redeem</a>
+                    <a href="./redeem.html"><i class="fas fa-gift"></i>Store</a>
                     <a href="#" id="logout-link">Sign Out</a>
                 </div>
             </div>
