@@ -2,13 +2,18 @@ import { db } from './firebase-config.js';
 import { 
     collection, 
     getDocs,
+    deleteDoc,
     doc,
     getDoc,
     query,
     where,
+    updateDoc,
+    Timestamp,
+    onSnapshot,
     orderBy,
     limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getRankStyle } from './ranks.js';
 import { displayLadderD2 } from './ladderd2.js';
 import { displayLadderD3 } from './ladderd3.js'; 
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -20,17 +25,12 @@ import {
 import { displayLadderDuos } from './ladderduos.js';
 import { getTokensByUsernames, getPrimaryDisplayToken } from './tokens.js';
 
+
+
 const auth = getAuth();
 
 // Track active listeners for cleanup
 let activeListeners = [];
-
-// Cache configuration
-const playerCache = {
-    data: null,
-    timestamp: 0
-};
-const CACHE_DURATION = 30000; // 30 seconds cache validity
 
 // Load ladder data efficiently
 export async function loadLadderData(division = 1) {
@@ -107,6 +107,32 @@ export function cleanupListeners() {
   activeListeners.forEach(unsubscribe => unsubscribe());
   activeListeners = [];
 }
+
+function renderLadder(players) {
+  const ladderContainer = document.getElementById('ladder-container');
+  ladderContainer.innerHTML = '';
+
+  players.forEach(player => {
+    const playerElement = document.createElement('div');
+    playerElement.className = 'ladder-player';
+    playerElement.innerHTML = `
+      <div class="rank">#${player.rank}</div>
+      <div class="player-name">${player.username || player.id}</div>
+      <div class="player-elo">${player.elo}</div>
+      <div class="player-activity ${player.recentActivity ? 'active' : 'inactive'}">
+        ${player.recentActivity ? 'Active' : 'Inactive'}
+      </div>
+    `;
+    ladderContainer.appendChild(playerElement);
+  });
+}
+
+// Add caching system like D2/D3 ladders
+const playerCache = {
+    data: null,
+    timestamp: 0
+};
+const CACHE_DURATION = 30000; // 30 seconds cache validity
 
 async function displayLadder(forceRefresh = false) {
     const tableBody = document.querySelector('#ladder tbody');
@@ -276,7 +302,90 @@ async function fetchBatchMatchStats(usernames) {
     return matchStats;
 }
 
-// Get player's rank name by ELO
+/*
+// Calculate how many days a player has been in first place
+function calculateStreakDays(firstPlaceDate) {
+    if (!firstPlaceDate) return 0;
+
+    // Convert Firebase timestamp to JavaScript Date if needed
+    let dateObj;
+    if (firstPlaceDate.seconds) {
+        // It's a Firebase Timestamp
+        dateObj = new Date(firstPlaceDate.seconds * 1000);
+    } else if (firstPlaceDate instanceof Date) {
+        // It's already a Date object
+        dateObj = firstPlaceDate;
+    } else if (typeof firstPlaceDate === 'string') {
+        // It's a date string
+        dateObj = new Date(firstPlaceDate);
+    } else {
+        // Unknown format
+        console.error('Unknown date format for firstPlaceDate:', firstPlaceDate);
+        return 0;
+    }
+
+    // Calculate difference in days
+    const now = new Date();
+    const diffTime = Math.abs(now - dateObj);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+}
+*/
+
+// Function to create HTML for a single player row
+function createPlayerRow(player, stats) {
+    const elo = parseFloat(player.elo) || 0;
+
+    // Set ELO-based colors
+    let usernameColor = 'gray'; // Default for unranked
+    if (elo >= 2000) {
+        usernameColor = '#50C878'; // Emerald Green
+    } else if (elo >= 1800) {
+        usernameColor = '#FFD700'; // Gold
+    } else if (elo >= 1600) {
+        usernameColor = '#b9f1fc'; // Silver
+    } else if (elo >= 1400) {
+        usernameColor = '#CD7F32'; // Bronze
+    }
+
+    // Create flag HTML if player has country (comes AFTER username)
+    let flagHtml = '';
+    if (player.country) {
+        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                        alt="${player.country}" 
+                        class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle;"
+                        onerror="this.style.display='none'">`;
+    }
+
+    return `
+    <tr>
+        <td>${player.position}</td>
+        <td style="position: relative;">
+            <div style="display: flex; align-items: center; position: relative;">
+                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d1" 
+                   style="color: ${usernameColor}; text-decoration: none;">
+                    ${player.username}
+                </a>
+                ${flagHtml}
+            </div>
+        </td>
+        <td style="color: ${usernameColor}; position: relative;">
+            <div class="elo-container" style="display: flex; align-items: center;">
+                <span class="elo-value">${elo}</span>
+                <span class="trend-indicator" style="margin-left: 5px;"></span>
+            </div>
+        </td>
+        <td>${stats.totalMatches}</td>
+        <td>${stats.wins}</td>
+        <td>${stats.losses}</td>
+        <td>${stats.kda}</td>
+        <td>${stats.winRate}%</td>
+    </tr>`;
+}
+
+// Add this function to determine the player's rank name by ELO
 function getPlayerRankName(elo) {
     if (elo >= 2000) return 'Emerald';
     if (elo >= 1800) return 'Gold';
@@ -284,6 +393,8 @@ function getPlayerRankName(elo) {
     if (elo >= 1400) return 'Bronze';
     return 'Unranked';
 }
+
+// Add this function right before updateLadderDisplay function (around line 280)
 
 // Function to get the last ELO change for each player
 async function getPlayersLastEloChanges(usernames) {
@@ -310,7 +421,8 @@ async function getPlayersLastEloChanges(usernames) {
             }
         });
 
-        // Query for ELO history - limit to most recent 300 entries
+
+        // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistory');
         const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(300));
         const eloSnapshot = await getDocs(eloQuery);
@@ -318,6 +430,14 @@ async function getPlayersLastEloChanges(usernames) {
         if (eloSnapshot.empty) {
             console.log('ELO history collection is empty');
             return changes;
+        }
+
+        // Log sample entry structure
+        if (eloSnapshot.docs.length > 0) {
+            const sample = eloSnapshot.docs[0].data();
+            // Check if the player field is a user ID
+            if (sample.player && userIdToUsername.has(sample.player)) {
+            }
         }
 
         // Process entries and group by username
@@ -332,7 +452,7 @@ async function getPlayersLastEloChanges(usernames) {
             if (entry.player && userIdToUsername.has(entry.player)) {
                 username = userIdToUsername.get(entry.player);
             }
-            // Second try: Look for username field
+            // Second try: Look for username field in case some entries use that
             else if (entry.username && usernameToUserId.has(entry.username.toLowerCase())) {
                 username = entry.username;
             }
@@ -374,9 +494,9 @@ async function getPlayersLastEloChanges(usernames) {
 
                     if (recentEntry.change !== undefined) {
                         eloChange = parseInt(recentEntry.change);
-                    } else if (recentEntry.newElo !== undefined && recentEntry.previousElo !== undefined) {
+                    } else if (recentEntry.newElo !== undefined && entry.previousElo !== undefined) {
                         eloChange = parseInt(recentEntry.newElo) - parseInt(recentEntry.previousElo);
-                    } else if (recentEntry.newEloRating !== undefined && recentEntry.oldEloRating !== undefined) {
+                    } else if (recentEntry.newEloRating !== undefined && entry.oldEloRating !== undefined) {
                         eloChange = parseInt(recentEntry.newEloRating) - parseInt(recentEntry.oldEloRating);
                     }
 
@@ -395,7 +515,7 @@ async function getPlayersLastEloChanges(usernames) {
     return changes;
 }
 
-// Function to create HTML for a single player row with token support
+// NEW: Function to create HTML for a single player row with token support
 function createPlayerRowWithToken(player, stats, primaryToken) {
     const elo = parseFloat(player.elo) || 0;
 
@@ -411,7 +531,7 @@ function createPlayerRowWithToken(player, stats, primaryToken) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
-    // Create flag HTML if player has country
+    // Create flag HTML if player has country (comes AFTER username)
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
@@ -421,7 +541,7 @@ function createPlayerRowWithToken(player, stats, primaryToken) {
                         onerror="this.style.display='none'">`;
     }
 
-    // Create token HTML if player has tokens
+    // NEW: Create token HTML if player has tokens (comes AFTER flag)
     let tokenHtml = '';
     if (primaryToken) {
         tokenHtml = `<img src="${primaryToken.tokenImage}" 
@@ -459,7 +579,7 @@ function createPlayerRowWithToken(player, stats, primaryToken) {
     </tr>`;
 }
 
-// Updated ladder display function with batch HTML creation
+// Updated to use batch HTML creation
 async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
     const tbody = document.querySelector('#ladder tbody');
     if (!tbody) {
@@ -490,7 +610,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
         matchStatsBatch = await fetchBatchMatchStats(usernames);
     }
 
-    // Get tokens for all players
+    // NEW: Get tokens for all players with forced refresh
     let userTokensMap = new Map();
     try {
         // Clear token cache before fetching to ensure fresh data
@@ -500,6 +620,15 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
         
         userTokensMap = await getTokensByUsernames(usernames);
         console.log('🪙 Loaded fresh tokens for', userTokensMap.size, 'players');
+        
+        // Debug: Log equipped tokens
+        userTokensMap.forEach((tokens, username) => {
+            const equipped = tokens.find(token => token.equipped);
+            if (equipped) {
+                console.log(`🎯 ${username} has equipped: ${equipped.tokenName}`);
+            }
+        });
+        
     } catch (error) {
         console.error('Error fetching tokens:', error);
     }
@@ -512,9 +641,14 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
 
-        // Get user's tokens
+        // NEW: Get user's tokens
         const userTokens = userTokensMap.get(player.username) || [];
         const primaryToken = getPrimaryDisplayToken(userTokens);
+        
+        // Debug: Log what token is being used for each player
+        if (primaryToken) {
+            console.log(`🎨 ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
+        }
 
         return createPlayerRowWithToken(player, stats, primaryToken);
     }).join('');
@@ -548,8 +682,8 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
                             indicator.textContent = formattedChange;
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
                             indicator.style.fontWeight = 'bold';
-                            indicator.style.fontSize = '0.85em';
-                            indicator.style.display = 'inline';
+                            indicator.style.fontSize = '0.85em'; // Make slightly larger
+                            indicator.style.display = 'inline'; // Ensure it's displayed
                             indicator.style.visibility = 'visible';
                             indicator.style.opacity = '1';
                         }
@@ -560,105 +694,151 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
         .catch(error => console.error('Error updating ELO trend indicators:', error));
 }
 
-// Initialize ladder toggle functionality
+// Update the ladder toggle function to properly handle container visibility
 function initLadderToggles() {    
-    const toggles = {
-        d1: document.getElementById('d1-switch'),
-        d2: document.getElementById('d2-switch'),
-        d3: document.getElementById('d3-switch'),
-        duos: document.getElementById('duos-switch')
-    };
-    
-    const containers = {
-        d1: document.getElementById('d1-ladder-container'),
-        d2: document.getElementById('d2-ladder-container'),
-        d3: document.getElementById('d3-ladder-container'),
-        duos: document.getElementById('duos-ladder-container')
-    };
-    
-    const recommendationTexts = {
-        d1: document.getElementById('elo-recommendation-text-d1'),
-        d2: document.getElementById('elo-recommendation-text-d2'),
-        d3: document.getElementById('elo-recommendation-text-d3'),
-        duos: document.getElementById('elo-recommendation-text-duos')
-    };
+    const d1Toggle = document.getElementById('d1-switch');
+    const d2Toggle = document.getElementById('d2-switch');
+    const d3Toggle = document.getElementById('d3-switch');
+    const duosToggle = document.getElementById('duos-switch');
 
-    // Helper function to hide all ladders
+
+    const d1Container = document.getElementById('d1-ladder-container');
+    const d2Container = document.getElementById('d2-ladder-container');
+    const d3Container = document.getElementById('d3-ladder-container');
+    const duosContainer = document.getElementById('duos-ladder-container');
+
     function hideAllLadders() {
-        Object.values(containers).forEach(container => {
-            if (container) {
-                container.classList.remove('active');
-                container.style.display = 'none';
-            }
-        });
-        
-        // Hide all recommendation texts
-        Object.values(recommendationTexts).forEach(text => {
-            if (text) text.style.display = 'none';
-        });
-        
-        // Remove active class from all toggles
-        Object.values(toggles).forEach(toggle => {
-            if (toggle) toggle.classList.remove('active');
-        });
+        // First, remove active class from all containers
+        if (d1Container) d1Container.classList.remove('active');
+        if (d2Container) d2Container.classList.remove('active');
+        if (d3Container) d3Container.classList.remove('active');
+        if (duosContainer) duosContainer.style.display = 'none';
+
+        // Also ensure display is none (as a fallback)
+        if (d1Container) d1Container.style.display = 'none';
+        if (d2Container) d2Container.style.display = 'none';
+        if (d3Container) d3Container.style.display = 'none';
     }
-    
-    // Create event listeners for each toggle
-    if (toggles.d1) {
-        toggles.d1.addEventListener('click', () => {
-            hideAllLadders();
-            if (containers.d1) {
-                containers.d1.classList.add('active');
-                containers.d1.style.display = 'block';
+
+    // D1 button event listener
+    if (d1Toggle) {
+        d1Toggle.addEventListener('click', () => {
+            console.log("D1 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            // Show D1 ladder
+            if (d1Container) {
+                d1Container.classList.add('active');
+                d1Container.style.display = 'block';
             }
-            if (recommendationTexts.d1) recommendationTexts.d1.style.display = 'block';
-            toggles.d1.classList.add('active');
+
+            // Show D1 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+
+            // Update button UI
+            if (d1Toggle) d1Toggle.classList.add('active');
+            if (d2Toggle) d2Toggle.classList.remove('active');
+            if (d3Toggle) d3Toggle.classList.remove('active');
+
+            // Load ladder data
             displayLadder();
             findBestOpponent('d1');
         });
     }
 
-    if (toggles.d2) {
-        toggles.d2.addEventListener('click', () => {
-            hideAllLadders();
-            if (containers.d2) {
-                containers.d2.classList.add('active');
-                containers.d2.style.display = 'block';
+    // Similarly update the D2 and D3 button event listeners
+    if (d2Toggle) {
+        d2Toggle.addEventListener('click', () => {
+            console.log("D2 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            if (d2Container) {
+                d2Container.classList.add('active');
+                d2Container.style.display = 'block';
             }
-            if (recommendationTexts.d2) recommendationTexts.d2.style.display = 'block';
-            toggles.d2.classList.add('active');
+
+            // Show D2 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'block';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+
+            // Update button UI
+            if (d2Toggle) d2Toggle.classList.add('active');
+            if (d1Toggle) d1Toggle.classList.remove('active');
+            if (d3Toggle) d3Toggle.classList.remove('active');
+
+            // Load ladder data
             displayLadderD2();
             findBestOpponent('d2');
         });
     }
 
-    if (toggles.d3) {
-        toggles.d3.addEventListener('click', () => {
-            hideAllLadders();
-            if (containers.d3) {
-                containers.d3.classList.add('active');
-                containers.d3.style.display = 'block';
+    if (d3Toggle) {
+        d3Toggle.addEventListener('click', () => {
+            console.log("D3 toggle clicked");
+            hideAllLadders(); // Hide all ladders first
+
+            if (d3Container) {
+                d3Container.classList.add('active');
+                d3Container.style.display = 'block';
             }
-            if (recommendationTexts.d3) recommendationTexts.d3.style.display = 'block';
-            toggles.d3.classList.add('active');
+
+            // Show D3 recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'block';
+
+            // Update button UI
+            if (d3Toggle) d3Toggle.classList.add('active');
+            if (d1Toggle) d1Toggle.classList.remove('active');
+            if (d2Toggle) d2Toggle.classList.remove('active');
+
+            // Load ladder data
             displayLadderD3();
             findBestOpponent('d3');
         });
     }
 
-    if (toggles.duos) {
-        toggles.duos.addEventListener('click', () => {
+        // Duos button event listener
+    if (duosToggle) {
+        duosToggle.addEventListener('click', () => {
             hideAllLadders();
-            if (containers.duos) containers.duos.style.display = 'block';
-            if (recommendationTexts.duos) recommendationTexts.duos.style.display = 'block';
+            if (duosContainer) duosContainer.style.display = 'block';
             displayLadderDuos();
             findBestOpponent('duos');
+            if (document.getElementById('elo-recommendation-text-duos')) {
+                document.getElementById('elo-recommendation-text-duos').style.display = 'block';
+            }
+
+        // Show Duos recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none'; 
         });
     }
 }
 
+// Add document ready event to initialize everything
+document.addEventListener('DOMContentLoaded', () => {
+    initLadderToggles();
+    displayLadder();  // Initial display of the ladder
+    findBestOpponent('d1'); // Initial opponent recommendation
+
+    // Show only D1 recommendation initially (D1 is the default ladder)
+    document.getElementById('elo-recommendation-text-d1').style.display = 'block';
+});
+
+// Export the displayLadder function so it can be called from other modules
+export { displayLadder };
+
+// Add this function to ladder.js
+// Add this after the updateLadderDisplay function
+
 // Find the best opponent for the current user
 async function findBestOpponent(currentLadder = 'd1') {
+    // Get the appropriate recommendation element based on ladder type
     const recommendationElId = `elo-recommendation-text-${currentLadder}`;
     const recommendationEl = document.getElementById(recommendationElId);
 
@@ -694,18 +874,180 @@ async function findBestOpponent(currentLadder = 'd1') {
         }
 
         // Determine which collection to query based on current ladder
-        const ladderCollection = currentLadder === 'd1' ? 'players' : 
-                               currentLadder === 'd2' ? 'playersD2' :
-                               currentLadder === 'd3' ? 'playersD3' : 'playersDuos';
+        let ladderCollection;
+        switch(currentLadder) {
+            case 'd1':
+                ladderCollection = 'players';
+                break;
+            case 'd2':
+                ladderCollection = 'playersD2';
+                break;
+            case 'd3':
+                ladderCollection = 'playersD3';
+                break;
+            case 'duos':
+                ladderCollection = 'playersDuos';
+                break;
+            default:
+                ladderCollection = 'players';
+        }
 
         // Special handling for DUOS ladder
         if (currentLadder === 'duos') {
-            await handleDuosRecommendation(username, ladderCollection, recommendationEl);
+            // Get the user's data from DUOS ladder
+            const playersRef = collection(db, ladderCollection);
+            const playerQuery = query(playersRef, where('username', '==', username));
+            const playerSnapshot = await getDocs(playerQuery);
+
+            if (playerSnapshot.empty) {
+                recommendationEl.textContent = 
+                    `You're not registered on the DUOS ladder`;
+                return;
+            }
+
+            const playerData = playerSnapshot.docs[0].data();
+            const userElo = parseInt(playerData.eloRating) || 1200;
+
+            // Check if user has a team
+            if (playerData.hasTeam && playerData.teammate) {
+                recommendationEl.innerHTML = `You're teamed with <span class="recommendation-highlight">${playerData.teammate}</span>. Challenge other teams!`;
+                return;
+            }
+
+            // If no team, find potential teammates or opponents
+            const allPlayersSnapshot = await getDocs(playersRef);
+            let bestTeammate = null;
+            let bestTeammateScore = -1;
+
+            allPlayersSnapshot.forEach(doc => {
+                const potentialTeammate = doc.data();
+
+                // Skip if this is the current user
+                if (potentialTeammate.username === username) return;
+
+                // Skip if they already have a team
+                if (potentialTeammate.hasTeam) return;
+
+                const teammateElo = parseInt(potentialTeammate.eloRating) || 1200;
+                const eloDifference = Math.abs(teammateElo - userElo);
+
+                // Calculate teammate compatibility score
+                // Closer ELO is better for teamwork
+                const compatibilityScore = Math.max(0, 200 - eloDifference);
+
+                if (compatibilityScore > bestTeammateScore) {
+                    bestTeammate = potentialTeammate;
+                    bestTeammateScore = compatibilityScore;
+                }
+            });
+
+            if (bestTeammate) {
+                const teammateElo = parseInt(bestTeammate.eloRating) || 1200;
+
+                // Set ELO-based colors
+                let usernameColor = 'gray';
+                if (teammateElo >= 2000) {
+                    usernameColor = '#50C878'; // Emerald Green
+                } else if (teammateElo >= 1800) {
+                    usernameColor = '#FFD700'; // Gold
+                } else if (teammateElo >= 1600) {
+                    usernameColor = '#C0C0C0'; // Silver
+                } else if (teammateElo >= 1400) {
+                    usernameColor = '#CD7F32'; // Bronze
+                }
+
+                recommendationEl.innerHTML = `Looking for a teammate? Consider <span class="recommendation-highlight" style="color: ${usernameColor};">${bestTeammate.username}</span> (ELO: ${teammateElo})`;
+            } else {
+                recommendationEl.textContent = `No available teammates found. More players needed on DUOS ladder!`;
+            }
+
             return;
         }
 
-        // Handle solo ladder recommendations
-        await handleSoloRecommendation(username, ladderCollection, recommendationEl);
+        // Original logic for solo ladders (D1, D2, D3)
+        const playersRef = collection(db, ladderCollection);
+        const playerQuery = query(playersRef, where('username', '==', username));
+        const playerSnapshot = await getDocs(playerQuery);
+
+        if (playerSnapshot.empty) {
+            recommendationEl.textContent = 
+                `You're not registered on the ${currentLadder.toUpperCase()} ladder`;
+            return;
+        }
+
+        const playerData = playerSnapshot.docs[0].data();
+        const userElo = parseInt(playerData.eloRating) || 1500;
+
+        // Get all players to find best match
+        const allPlayersSnapshot = await getDocs(playersRef);
+        let bestMatch = null;
+        let bestMatchScore = -1;
+
+        // Get user's rank tier
+        const userRankTier = getPlayerRankName(userElo);
+
+        allPlayersSnapshot.forEach(doc => {
+            const potentialOpponent = doc.data();
+
+            // Skip if this is the current user
+            if (potentialOpponent.username === username) return;
+
+            const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
+            const opponentRankTier = getPlayerRankName(opponentElo);
+
+            // Calculate ELO difference (absolute value)
+            const eloDifference = Math.abs(opponentElo - userElo);
+
+            // Calculate expected ELO gain using the ELO formula
+            const K = 32;
+            const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400));
+            const potentialEloGain = Math.round(K * (1 - expectedScore));
+
+            // Skip opponents where you wouldn't gain any ELO
+            if (potentialEloGain <= 0) return;
+
+            // Calculate match quality score
+            let matchScore = 0;
+
+            // Base score from ELO proximity
+            const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
+
+            // ELO gain score
+            const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
+                             potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
+
+            // Same rank tier bonus
+            const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
+
+            // Calculate final score
+            matchScore = proximityScore + gainScore + tierBonus;
+
+            // Update best match if we found a better one
+            if (matchScore > bestMatchScore) {
+                bestMatch = potentialOpponent;
+                bestMatchScore = matchScore;
+            }
+        });
+
+        if (bestMatch) {
+            const opponentElo = parseInt(bestMatch.eloRating) || 1500;
+
+            // Set ELO-based colors
+            let usernameColor = 'gray';
+            if (opponentElo >= 2000) {
+                usernameColor = '#50C878'; // Emerald Green
+            } else if (opponentElo >= 1800) {
+                usernameColor = '#FFD700'; // Gold
+            } else if (opponentElo >= 1600) {
+                usernameColor = '#b9f1fc'; // Silver
+            } else if (opponentElo >= 1400) {
+                usernameColor = '#CD7F32'; // Bronze
+            }
+
+            recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
+        } else {
+            recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
+        }
 
     } catch (error) {
         console.error('Error finding best opponent:', error);
@@ -713,132 +1055,67 @@ async function findBestOpponent(currentLadder = 'd1') {
     }
 }
 
-// Helper function for duos ladder recommendation
-async function handleDuosRecommendation(username, ladderCollection, recommendationEl) {
-    // Get the user's data from DUOS ladder
-    const playersRef = collection(db, ladderCollection);
-    const playerQuery = query(playersRef, where('username', '==', username));
-    const playerSnapshot = await getDocs(playerQuery);
+// Listen for auth state changes to update recommendations
+auth.onAuthStateChanged(user => {
+    // Get current active ladder
+    const d1Active = document.getElementById('d1-ladder-container') && document.getElementById('d1-ladder-container').style.display !== 'none';
+    const d2Active = document.getElementById('d2-ladder-container') && document.getElementById('d2-ladder-container').style.display !== 'none';
+    const d3Active = document.getElementById('d3-ladder-container') && document.getElementById('d3-ladder-container').style.display !== 'none';
+    const duosActive = document.getElementById('duos-ladder-container') && document.getElementById('duos-ladder-container').style.display !== 'none';
 
-    if (playerSnapshot.empty) {
-        recommendationEl.textContent = `You're not registered on the DUOS ladder`;
-        return;
+    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : 'd1';
+    findBestOpponent(currentLadder);
+});
+
+// Add this to your main ladder switching JavaScript (likely in ladder.js or inline script)
+document.addEventListener('DOMContentLoaded', () => {
+    // Add admin check for DUOS radio button
+    const duosRadio = document.getElementById('duos-switch');
+    const duosLabel = document.querySelector('label[for="duos-switch"]');
+    
+    if (duosRadio && duosLabel) {
+        // Check if user is admin when they try to select DUOS
+        duosRadio.addEventListener('change', async (e) => {
+            if (e.target.checked) {
+                const user = auth?.currentUser;
+                const isUserAdmin = await checkIfUserIsAdmin(user);
+                
+                if (!isUserAdmin) {
+                    // Prevent selection and reset to D1
+                    e.preventDefault();
+                    const d1Radio = document.getElementById('d1-switch');
+                    if (d1Radio) {
+                        d1Radio.checked = true;
+                        // Trigger the D1 change event
+                        d1Radio.dispatchEvent(new Event('change'));
+                    }
+                    
+                    // Show admin-only message
+                    showAdminOnlyMessage();
+                    return false;
+                }
+            }
+        });
+        
+        // Also disable the radio button visually for non-admins
+        auth.onAuthStateChanged(async (user) => {
+            const isUserAdmin = await checkIfUserIsAdmin(user);
+            if (!isUserAdmin) {
+                duosRadio.disabled = true;
+                duosLabel.style.opacity = '0.5';
+                duosLabel.style.cursor = 'not-allowed';
+                duosLabel.title = 'Duos ladder is currently admin-only';
+            } else {
+                duosRadio.disabled = false;
+                duosLabel.style.opacity = '1';
+                duosLabel.style.cursor = 'pointer';
+                duosLabel.title = '';
+            }
+        });
     }
+});
 
-    const playerData = playerSnapshot.docs[0].data();
-    const userElo = parseInt(playerData.eloRating) || 1200;
-
-    // Check if user has a team
-    if (playerData.hasTeam && playerData.teammate) {
-        recommendationEl.innerHTML = `You're teamed with <span class="recommendation-highlight">${playerData.teammate}</span>. Challenge other teams!`;
-        return;
-    }
-
-    // If no team, find potential teammates
-    const allPlayersSnapshot = await getDocs(playersRef);
-    let bestTeammate = null;
-    let bestTeammateScore = -1;
-
-    allPlayersSnapshot.forEach(doc => {
-        const potentialTeammate = doc.data();
-
-        // Skip if this is the current user or they already have a team
-        if (potentialTeammate.username === username || potentialTeammate.hasTeam) return;
-
-        const teammateElo = parseInt(potentialTeammate.eloRating) || 1200;
-        const eloDifference = Math.abs(teammateElo - userElo);
-
-        // Calculate teammate compatibility score - closer ELO is better for teamwork
-        const compatibilityScore = Math.max(0, 200 - eloDifference);
-
-        if (compatibilityScore > bestTeammateScore) {
-            bestTeammate = potentialTeammate;
-            bestTeammateScore = compatibilityScore;
-        }
-    });
-
-    if (bestTeammate) {
-        const teammateElo = parseInt(bestTeammate.eloRating) || 1200;
-        const usernameColor = getEloColor(teammateElo);
-
-        recommendationEl.innerHTML = `Looking for a teammate? Consider <span class="recommendation-highlight" style="color: ${usernameColor};">${bestTeammate.username}</span> (ELO: ${teammateElo})`;
-    } else {
-        recommendationEl.textContent = `No available teammates found. More players needed on DUOS ladder!`;
-    }
-}
-
-// Helper function for solo ladder recommendation
-async function handleSoloRecommendation(username, ladderCollection, recommendationEl) {
-    const playersRef = collection(db, ladderCollection);
-    const playerQuery = query(playersRef, where('username', '==', username));
-    const playerSnapshot = await getDocs(playerQuery);
-
-    if (playerSnapshot.empty) {
-        const ladderName = ladderCollection === 'players' ? 'D1' : 
-                         ladderCollection === 'playersD2' ? 'D2' : 'D3';
-        recommendationEl.textContent = `You're not registered on the ${ladderName} ladder`;
-        return;
-    }
-
-    const playerData = playerSnapshot.docs[0].data();
-    const userElo = parseInt(playerData.eloRating) || 1500;
-    const userRankTier = getPlayerRankName(userElo);
-
-    // Get all players to find best match
-    const allPlayersSnapshot = await getDocs(playersRef);
-    let bestMatch = null;
-    let bestMatchScore = -1;
-
-    allPlayersSnapshot.forEach(doc => {
-        const potentialOpponent = doc.data();
-        if (potentialOpponent.username === username) return; // Skip self
-
-        const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
-        const opponentRankTier = getPlayerRankName(opponentElo);
-        const eloDifference = Math.abs(opponentElo - userElo);
-
-        // Calculate expected ELO gain using the ELO formula
-        const K = 32;
-        const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400));
-        const potentialEloGain = Math.round(K * (1 - expectedScore));
-
-        // Skip opponents where you wouldn't gain any ELO
-        if (potentialEloGain <= 0) return;
-
-        // Calculate match quality score
-        const proximityScore = Math.max(0, 100 - (eloDifference * 0.5));
-        const gainScore = potentialEloGain >= 3 && potentialEloGain <= 8 ? 50 : 
-                         potentialEloGain > 0 && potentialEloGain < 15 ? 30 : 10;
-        const tierBonus = userRankTier === opponentRankTier ? 40 : 0;
-        const matchScore = proximityScore + gainScore + tierBonus;
-
-        // Update best match if we found a better one
-        if (matchScore > bestMatchScore) {
-            bestMatch = potentialOpponent;
-            bestMatchScore = matchScore;
-        }
-    });
-
-    if (bestMatch) {
-        const opponentElo = parseInt(bestMatch.eloRating) || 1500;
-        const usernameColor = getEloColor(opponentElo);
-
-        recommendationEl.innerHTML = `Based on your ELO (${userElo}), you should be playing <span class="recommendation-highlight" style="color: ${usernameColor};">${bestMatch.username}</span>`;
-    } else {
-        recommendationEl.innerHTML = `No ideal opponent found for your current ELO (${userElo})`;
-    }
-}
-
-// Helper function to get ELO-based color
-function getEloColor(elo) {
-    if (elo >= 2000) return '#50C878'; // Emerald
-    if (elo >= 1800) return '#FFD700'; // Gold
-    if (elo >= 1600) return '#b9f1fc'; // Silver
-    if (elo >= 1400) return '#CD7F32'; // Bronze
-    return 'gray'; // Unranked
-}
-
-// Admin check function
+// Add the admin check function
 async function checkIfUserIsAdmin(user) {
     if (!user) return false;
     
@@ -878,7 +1155,6 @@ async function checkIfUserIsAdmin(user) {
     }
 }
 
-// Show admin-only message for restricted features
 function showAdminOnlyMessage() {
     // Remove any existing message
     const existingMessage = document.getElementById('admin-only-message');
@@ -917,77 +1193,3 @@ function showAdminOnlyMessage() {
         }
     }, 3000);
 }
-
-// Initialize DUOS admin-only restrictions
-document.addEventListener('DOMContentLoaded', () => {
-    // Add admin check for DUOS radio button
-    const duosRadio = document.getElementById('duos-switch');
-    const duosLabel = document.querySelector('label[for="duos-switch"]');
-    
-    if (duosRadio && duosLabel) {
-        // Check if user is admin when they try to select DUOS
-        duosRadio.addEventListener('change', async (e) => {
-            if (e.target.checked) {
-                const user = auth?.currentUser;
-                const isUserAdmin = await checkIfUserIsAdmin(user);
-                
-                if (!isUserAdmin) {
-                    // Prevent selection and reset to D1
-                    e.preventDefault();
-                    const d1Radio = document.getElementById('d1-switch');
-                    if (d1Radio) {
-                        d1Radio.checked = true;
-                        d1Radio.dispatchEvent(new Event('change'));
-                    }
-                    
-                    showAdminOnlyMessage();
-                    return false;
-                }
-            }
-        });
-        
-        // Disable the radio button visually for non-admins
-        auth.onAuthStateChanged(async (user) => {
-            const isUserAdmin = await checkIfUserIsAdmin(user);
-            if (!isUserAdmin) {
-                duosRadio.disabled = true;
-                duosLabel.style.opacity = '0.5';
-                duosLabel.style.cursor = 'not-allowed';
-                duosLabel.title = 'Duos ladder is currently admin-only';
-            } else {
-                duosRadio.disabled = false;
-                duosLabel.style.opacity = '1';
-                duosLabel.style.cursor = 'pointer';
-                duosLabel.title = '';
-            }
-        });
-    }
-    
-    // Initialize ladder toggles and default ladder
-    initLadderToggles();
-    displayLadder();
-    findBestOpponent('d1');
-    
-    // Show only D1 recommendation initially
-    const d1RecommendationText = document.getElementById('elo-recommendation-text-d1');
-    if (d1RecommendationText) d1RecommendationText.style.display = 'block';
-});
-
-// Listen for auth state changes to update recommendations
-auth.onAuthStateChanged(user => {
-    // Get current active ladder
-    const d1Active = document.getElementById('d1-ladder-container') && 
-                     document.getElementById('d1-ladder-container').style.display !== 'none';
-    const d2Active = document.getElementById('d2-ladder-container') && 
-                     document.getElementById('d2-ladder-container').style.display !== 'none';
-    const d3Active = document.getElementById('d3-ladder-container') && 
-                     document.getElementById('d3-ladder-container').style.display !== 'none';
-    const duosActive = document.getElementById('duos-ladder-container') && 
-                       document.getElementById('duos-ladder-container').style.display !== 'none';
-
-    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : 'd1';
-    findBestOpponent(currentLadder);
-});
-
-// Export functions for external use
-export { displayLadder };

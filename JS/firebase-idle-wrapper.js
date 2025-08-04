@@ -145,27 +145,34 @@ class FirebaseIdleWrapper {
      */
     suspendAllListeners() {
         console.log('[FirebaseIdle] Suspending all active listeners:', this.activeListeners.size);
-        
+
         // Store current listeners for resumption later
         this._suspendedListeners = new Map(this.activeListeners);
-        
+
         // Unsubscribe each listener
-        this.activeListeners.forEach((unsubscribe, key) => {
+        this.activeListeners.forEach((listenerConfig, key) => {
             console.log('[FirebaseIdle] Suspending listener:', key);
-            // Call the unsubscribe function returned by onSnapshot
-            if (typeof unsubscribe === 'function') {
+            // listenerConfig can be either a function or an object with unsubscribe
+            if (typeof listenerConfig === 'function') {
                 try {
-                    unsubscribe();
+                    listenerConfig();
+                    console.log('[FirebaseIdle] Successfully suspended listener:', key);
+                } catch (error) {
+                    console.error('[FirebaseIdle] Error suspending listener:', key, error);
+                }
+            } else if (listenerConfig && typeof listenerConfig.unsubscribe === 'function') {
+                try {
+                    listenerConfig.unsubscribe();
                     console.log('[FirebaseIdle] Successfully suspended listener:', key);
                 } catch (error) {
                     console.error('[FirebaseIdle] Error suspending listener:', key, error);
                 }
             }
         });
-        
+
         // Clear the active listeners map
         this.activeListeners.clear();
-        
+
         // Add visual indicator if in debug mode
         if (this.debug) {
             const indicator = document.createElement('div');
@@ -184,7 +191,7 @@ class FirebaseIdleWrapper {
             indicator.textContent = 'Firebase: Suspended';
             document.body.appendChild(indicator);
         }
-        
+
         console.log('[FirebaseIdle] All listeners suspended');
     }
     
