@@ -183,9 +183,25 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
     }
 }
 
+const POINTS_CHART = {
+    '': 10, // Standard match
+    'Standard': 10,
+    'Fusion Match': 25,
+    '≥6 Missiles': 10,
+    'Weapon Imbalance': 30,
+    'Blind Match': 75,
+    'Rematch': 20,
+    'Disorientation': 50,
+    'Ratting': 35,
+    'Altered Powerups': 35,
+    'Mega Match': 40,
+    'Dogfight': 50,
+    'Gauss and Mercs': 25,
+    'Misc': 30
+};
+
 export async function approveReport(reportId, winnerScore, winnerSuicides, winnerComment, winnerDemoLink) {
     try {
-        // Get the report data
         const reportRef = doc(db, 'pendingMatches', reportId);
         const reportSnapshot = await getDoc(reportRef);
 
@@ -225,13 +241,77 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
-
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
 
-        // Award points based on subgame type (now using safe service)
         try {
             await awardMatchPoints(winnerId, loserId, reportData.subgameType);
+            const subgameType = reportData.subgameType || 'Standard';
+            const pointsToAward = POINTS_CHART[subgameType] || 10;
+            
+            // Get user profiles
+            const winnerProfileRef = doc(db, 'userProfiles', winnerId);
+            const loserProfileRef = doc(db, 'userProfiles', loserId);
+            const [winnerProfile, loserProfile] = await Promise.all([
+                getDoc(winnerProfileRef),
+                getDoc(loserProfileRef)
+            ]);
+            
+            // If profiles exist, update points
+            if (winnerProfile.exists() && loserProfile.exists()) {
+                const winnerData = winnerProfile.data();
+                const loserData = loserProfile.data();
+                
+                const winnerCurrentPoints = winnerData.points || 0;
+                const loserCurrentPoints = loserData.points || 0;
+                
+                const winnerNewPoints = winnerCurrentPoints + pointsToAward;
+                const loserNewPoints = loserCurrentPoints + pointsToAward;
+                
+                // Update points for both players
+                await Promise.all([
+                    updateDoc(winnerProfileRef, {
+                        points: winnerNewPoints,
+                        lastPointsModified: serverTimestamp()
+                    }),
+                    updateDoc(loserProfileRef, {
+                        points: loserNewPoints,
+                        lastPointsModified: serverTimestamp()
+                    })
+                ]);
+                
+                // Log points history for both players
+                await Promise.all([
+                    addDoc(collection(db, 'pointsHistory'), {
+                        userId: winnerId,
+                        userEmail: winnerData.email || 'unknown',
+                        displayName: winnerData.displayName || winnerData.username || 'Unknown User',
+                        action: 'add',
+                        amount: pointsToAward,
+                        previousPoints: winnerCurrentPoints,
+                        newPoints: winnerNewPoints,
+                        reason: `Match points: ${subgameType} match (Winner)`,
+                        adminEmail: 'system-match-award',
+                        timestamp: serverTimestamp()
+                    }),
+                    addDoc(collection(db, 'pointsHistory'), {
+                        userId: loserId,
+                        userEmail: loserData.email || 'unknown',
+                        displayName: loserData.displayName || loserData.username || 'Unknown User',
+                        action: 'add',
+                        amount: pointsToAward,
+                        previousPoints: loserCurrentPoints,
+                        newPoints: loserNewPoints,
+                        reason: `Match points: ${subgameType} match (Participant)`,
+                        adminEmail: 'system-match-award',
+                        timestamp: serverTimestamp()
+                    })
+                ]);
+                
+                console.log(`Awarded ${pointsToAward} points to both players for ${subgameType} match`);
+            } else {
+                console.warn('Could not award points - one or both user profiles not found');
+            }
         } catch (pointsError) {
             console.warn('Points award failed, but match approval continues:', pointsError);
         }
