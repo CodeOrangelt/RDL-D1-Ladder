@@ -115,7 +115,7 @@ function createNexusFooterLink() {
     const nexusFooter = document.createElement('div');
     nexusFooter.className = 'nexus-footer-link';
     nexusFooter.innerHTML = `
-        <a href="https://codeorangelt.github.io/Descent-Nexus/">
+        <a href="\Nexus\index.html">
             <img src="../images/cloak.ico" alt="Nexus" width="16" height="16"> Nexus
         </a>
     `;
