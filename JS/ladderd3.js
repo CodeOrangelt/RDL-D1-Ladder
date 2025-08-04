@@ -15,6 +15,8 @@ import {
 import { db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import firebaseIdle from './firebase-idle-wrapper.js';
+import { getTokensByUsernames, getPrimaryDisplayToken, clearTokenCache } from './tokens.js'; // ADD THIS LINE
+
 
 // Add a style block for consistent styling
 const styleEl = document.createElement('style');
@@ -237,6 +239,29 @@ async function updateLadderDisplayD3(ladderData) {
     // Pre-fetch all match statistics in a single batch operation
     const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
     
+    // NEW: Get tokens for all players with forced refresh
+    let userTokensMap = new Map();
+    try {
+        // Clear token cache before fetching to ensure fresh data
+        if (typeof clearTokenCache === 'function') {
+            clearTokenCache();
+        }
+        
+        userTokensMap = await getTokensByUsernames(usernames);
+        console.log('🪙 D3: Loaded fresh tokens for', userTokensMap.size, 'players');
+        
+        // Debug: Log equipped tokens
+        userTokensMap.forEach((tokens, username) => {
+            const equipped = tokens.find(token => token.equipped);
+            if (equipped) {
+                console.log(`🎯 D3: ${username} has equipped: ${equipped.tokenName}`);
+            }
+        });
+        
+    } catch (error) {
+        console.error('D3: Error fetching tokens:', error);
+    }
+    
     // Update the table header with new columns - add ELO column
     const thead = document.querySelector('#ladder-d3 thead tr');
     thead.innerHTML = `
@@ -258,7 +283,16 @@ async function updateLadderDisplayD3(ladderData) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
         
-        return createPlayerRowD3(player, stats);
+        // NEW: Get user's tokens
+        const userTokens = userTokensMap.get(player.username) || [];
+        const primaryToken = getPrimaryDisplayToken(userTokens);
+        
+        // Debug: Log what token is being used for each player
+        if (primaryToken) {
+            console.log(`🎨 D3: ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
+        }
+        
+        return createPlayerRowD3(player, stats, primaryToken); // PASS TOKEN TO FUNCTION
     }).join('');
     
     // Append all rows at once (much faster than individual DOM operations)
@@ -377,7 +411,7 @@ async function fetchBatchMatchStatsD3(usernames) {
     return matchStats;
 }
 
-function createPlayerRowD3(player, stats) {
+function createPlayerRowD3(player, stats, primaryToken) { 
     const elo = parseFloat(player.elo) || 0;
     
     // Set ELO-based colors (same as D1/D2)
@@ -391,26 +425,6 @@ function createPlayerRowD3(player, stats) {
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32'; // Bronze
     }
-    
-    /*
-    // IMPROVED: Create streak HTML if player is #1 AND has active streak
-    let streakHtml = '';
-    if (player.position === 1) {
-        let streakDays = 0;
-        
-        // Use stored streakDays if available, otherwise calculate from firstPlaceDate
-        if (player.streakDays && player.streakDays > 0) {
-            streakDays = player.streakDays;
-        } else if (player.firstPlaceDate) {
-            streakDays = calculateStreakDays(player.firstPlaceDate);
-        }
-        
-        if (streakDays > 0) {
-            const pluralDays = streakDays === 1 ? 'day' : 'days';
-            streakHtml = `<span class="streak-indicator" title="${streakDays} ${pluralDays} at #1">${streakDays}d</span>`;
-        }
-    }
-    */
 
     // Create flag HTML if player has country (same as D1/D2)
     let flagHtml = '';
@@ -418,7 +432,19 @@ function createPlayerRowD3(player, stats) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
                         alt="${player.country}" 
                         class="player-flag" 
+                        style="margin-left: 5px; vertical-align: middle; width: 20px; height: auto;"
                         onerror="this.style.display='none'">`;
+    }
+    
+    // NEW: Create token HTML if player has tokens (comes AFTER flag)
+    let tokenHtml = '';
+    if (primaryToken) {
+        tokenHtml = `<img src="${primaryToken.tokenImage}" 
+                         alt="${primaryToken.tokenName}" 
+                         class="player-token" 
+                         title="${primaryToken.tokenName} ${primaryToken.equipped ? '(Equipped)' : ''}"
+                         style="width: 35px; height: 35px; margin-left: 5px; vertical-align: middle; object-fit: contain;"
+                         onerror="this.style.display='none'">`;
     }
     
     return `
@@ -431,6 +457,7 @@ function createPlayerRowD3(player, stats) {
                     ${player.username}
                 </a>
                 ${flagHtml}
+                ${tokenHtml}
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
