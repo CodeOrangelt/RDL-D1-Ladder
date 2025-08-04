@@ -3,7 +3,7 @@ export const RANKS = {
     BRONZE: { threshold: 1400, color: '#CD7F32', name: 'Bronze' },     // Bronze (1400-1599)
     SILVER: { threshold: 1600, color: '#C0C0C0', name: 'Silver' },     // Silver (1600-1799)
     GOLD: { threshold: 1800, color: '#FFD700', name: 'Gold' },         // Gold (1800-2099)
-    EMERALD: { threshold: 2100, color: '#50C878', name: 'Emerald' }    // Emerald (2100+)
+    EMERALD: { threshold: 2000, color: '#50C878', name: 'Emerald' }    // Emerald (2000+)
 };
 
 export function getRankStyle(eloRating) {

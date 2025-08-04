@@ -1,19 +1,16 @@
 import { 
     collection, 
     getDocs,
-    deleteDoc,
     doc,
     getDoc,
     query,
     where,
     updateDoc,
     Timestamp,
-    onSnapshot,
     orderBy,
     limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
-import { getRankStyle } from './ranks.js';
 import firebaseIdle from './firebase-idle-wrapper.js';
 import { getTokensByUsernames, getPrimaryDisplayToken, clearTokenCache } from './tokens.js';
 
@@ -45,7 +42,6 @@ async function displayLadderD2(forceRefresh = false) {
 
         // Query players with server-side ordering for efficiency
         const playersRef = collection(db, 'playersD2');
-        const orderedQuery = query(playersRef, orderBy('position', 'asc'));
         const querySnapshot = await firebaseIdle.getDocuments(playersRef);
 
         // Process players in a single pass
@@ -218,15 +214,6 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
     }
 }
 
-// Helper function to calculate streak days
-function calculateStreakDays(startDate) {
-    if (!startDate) return 0;
-    const start = startDate.toDate();
-    const now = new Date();
-    const diffTime = Math.abs(now - start);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
 // Update the D2 ladder structure to match D1
 function getPlayerRankNameD2(elo) {
     if (elo >= 2100) return 'Emerald';
@@ -238,7 +225,6 @@ function getPlayerRankNameD2(elo) {
 
 // Add global refresh function
 window.refreshLadderDisplayD2 = function(forceRefresh = true) {
-    console.log('🔄 External D2 ladder refresh triggered');
     if (typeof displayLadderD2 === 'function') {
         displayLadderD2(forceRefresh);
     } else {
@@ -263,7 +249,7 @@ async function updateLadderDisplayD2(ladderData) {
     // Pre-fetch all match statistics in a single batch operation
     const matchStatsBatch = await fetchBatchMatchStatsD2(usernames);
 
-    // NEW: Get tokens for all players with forced refresh
+    // Get tokens for all players
     let userTokensMap = new Map();
     try {
         // Clear token cache before fetching to ensure fresh data
@@ -272,16 +258,6 @@ async function updateLadderDisplayD2(ladderData) {
         }
         
         userTokensMap = await getTokensByUsernames(usernames);
-        console.log('🪙 D2: Loaded fresh tokens for', userTokensMap.size, 'players');
-        
-        // Debug: Log equipped tokens
-        userTokensMap.forEach((tokens, username) => {
-            const equipped = tokens.find(token => token.equipped);
-            if (equipped) {
-                console.log(`🎯 D2: ${username} has equipped: ${equipped.tokenName}`);
-            }
-        });
-        
     } catch (error) {
         console.error('D2: Error fetching tokens:', error);
     }
@@ -308,14 +284,9 @@ async function updateLadderDisplayD2(ladderData) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
 
-        // NEW: Get user's tokens
+        // Get user's tokens
         const userTokens = userTokensMap.get(player.username) || [];
         const primaryToken = getPrimaryDisplayToken(userTokens);
-        
-        // Debug: Log what token is being used for each player
-        if (primaryToken) {
-            console.log(`🎨 D2: ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
-        }
         
         return createPlayerRowWithTokenD2(player, stats, primaryToken);
     }).join('');
@@ -361,23 +332,23 @@ async function updateLadderDisplayD2(ladderData) {
         .catch(error => console.error('Error updating D2 ELO trend indicators:', error));
 }
 
-// NEW: Function to create HTML for a single D2 player row with token support
+// Function to create HTML for a single D2 player row with token support
 function createPlayerRowWithTokenD2(player, stats, primaryToken) {
     const elo = parseFloat(player.elo) || 0;
 
-    // Set ELO-based colors (same as D1)
+    // Set ELO-based colors (standardized with D1)
     let usernameColor = 'gray';
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
         usernameColor = '#FFD700'; // Gold
     } else if (elo >= 1600) {
-        usernameColor = '#C0C0C0'; // Silver
+        usernameColor = '#b9f1fc'; // Silver - standardized with D1
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
-    // Create flag HTML if player has country (comes AFTER username)
+    // Create flag HTML if player has country
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
@@ -387,7 +358,7 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
                         onerror="this.style.display='none'">`;
     }
 
-    // NEW: Create token HTML if player has tokens (comes AFTER flag)
+    // Create token HTML if player has tokens
     let tokenHtml = '';
     if (primaryToken) {
         tokenHtml = `<img src="${primaryToken.tokenImage}" 
@@ -425,7 +396,7 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
     </tr>`;
 }
 
-// Function for D2 ELO change tracking - KEEP THIS AS IS
+// Function for D2 ELO change tracking
 async function getPlayersLastEloChangesD2(usernames) {
     const changes = new Map();
     usernames.forEach(username => changes.set(username, 0));
@@ -457,11 +428,6 @@ async function getPlayersLastEloChangesD2(usernames) {
             // If we have a player ID, try to match it
             if (!username && entry.player && playerIdToUsername.has(entry.player)) {
                 username = playerIdToUsername.get(entry.player);
-            }
-
-            // If still no username but we have match ID, try to get from match data
-            if (!username && entry.matchId) {
-                // This will be handled later if needed
             }
 
             if (username && usernames.includes(username)) {
@@ -504,7 +470,6 @@ async function getPlayersLastEloChangesD2(usernames) {
 
         // If we didn't find any changes, try fallback to main eloHistory
         if (entriesByUsername.size === 0) {
-
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
                 fallbackRef, 
@@ -515,8 +480,6 @@ async function getPlayersLastEloChangesD2(usernames) {
 
             try {
                 const fallbackSnapshot = await getDocs(fallbackQuery);
-                console.log('D2: Found', fallbackSnapshot.size, 'fallback entries');
-
                 fallbackSnapshot.forEach(doc => {
                     const entry = doc.data();
                     const username = entry.username || entry.playerUsername;
@@ -528,11 +491,11 @@ async function getPlayersLastEloChangesD2(usernames) {
 
                         if (eloChange !== 0) {
                             changes.set(username, eloChange);
-                            console.log(`D2: ${username} fallback ELO change: ${eloChange}`);
                         }
                     }
                 });
             } catch (fallbackError) {
+                // Silently continue if fallback fails
             }
         }
     } catch (error) {
@@ -542,7 +505,7 @@ async function getPlayersLastEloChangesD2(usernames) {
     return changes;
 }
 
-// Helper function to fetch all D2 match stats at once - much more efficient
+// Helper function to fetch all D2 match stats at once
 async function fetchBatchMatchStatsD2(usernames) {
     const matchStats = new Map();
 
@@ -607,7 +570,6 @@ async function fetchBatchMatchStatsD2(usernames) {
 
     return matchStats;
 }
-
 
 // Export the D2 ladder functions
 export { displayLadderD2, updatePlayerPositions };

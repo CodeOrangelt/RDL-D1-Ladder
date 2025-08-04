@@ -1,22 +1,18 @@
 import { 
     collection, 
     getDocs,
-    deleteDoc,
     doc,
     getDoc,
     query,
     where,
     updateDoc,
     Timestamp,
-    onSnapshot,
     orderBy,
     limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
-import { getRankStyle } from './ranks.js';
 import firebaseIdle from './firebase-idle-wrapper.js';
-import { getTokensByUsernames, getPrimaryDisplayToken, clearTokenCache } from './tokens.js'; // ADD THIS LINE
-
+import { getTokensByUsernames, getPrimaryDisplayToken, clearTokenCache } from './tokens.js';
 
 // Add a style block for consistent styling
 const styleEl = document.createElement('style');
@@ -216,13 +212,16 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
                     firstPlaceDate: null // Reset their streak
                 });
             }
+
+            // Invalidate cache to ensure fresh data is loaded
+            playerCacheD3.timestamp = 0;
         }
     } catch (error) {
         console.error("Error updating D3 player positions:", error);
     }
 }
 
-// Fix the ELO trend indicator update to match D1/D2 pattern exactly
+// Display ladder with ELO trend indicators
 async function updateLadderDisplayD3(ladderData) {
     // Sort by position before displaying
     ladderData.sort((a, b) => a.position - b.position);
@@ -239,7 +238,7 @@ async function updateLadderDisplayD3(ladderData) {
     // Pre-fetch all match statistics in a single batch operation
     const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
     
-    // NEW: Get tokens for all players with forced refresh
+    // Get tokens for all players
     let userTokensMap = new Map();
     try {
         // Clear token cache before fetching to ensure fresh data
@@ -248,32 +247,24 @@ async function updateLadderDisplayD3(ladderData) {
         }
         
         userTokensMap = await getTokensByUsernames(usernames);
-        console.log('🪙 D3: Loaded fresh tokens for', userTokensMap.size, 'players');
-        
-        // Debug: Log equipped tokens
-        userTokensMap.forEach((tokens, username) => {
-            const equipped = tokens.find(token => token.equipped);
-            if (equipped) {
-                console.log(`🎯 D3: ${username} has equipped: ${equipped.tokenName}`);
-            }
-        });
-        
     } catch (error) {
         console.error('D3: Error fetching tokens:', error);
     }
     
-    // Update the table header with new columns - add ELO column
+    // Update the table header with new columns
     const thead = document.querySelector('#ladder-d3 thead tr');
-    thead.innerHTML = `
-        <th>Rank</th>
-        <th>Username</th>
-        <th>ELO</th>
-        <th>Matches</th>
-        <th>Wins</th>
-        <th>Losses</th>
-        <th>K/D</th>
-        <th>Win Rate</th>
-    `;
+    if (thead) {
+        thead.innerHTML = `
+            <th>Rank</th>
+            <th>Username</th>
+            <th>ELO</th>
+            <th>Matches</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>K/D</th>
+            <th>Win Rate</th>
+        `;
+    }
     
     // Create all rows at once for better performance
     const rowsHtml = ladderData.map(player => {
@@ -283,22 +274,17 @@ async function updateLadderDisplayD3(ladderData) {
             kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
         };
         
-        // NEW: Get user's tokens
+        // Get user's tokens
         const userTokens = userTokensMap.get(player.username) || [];
         const primaryToken = getPrimaryDisplayToken(userTokens);
         
-        // Debug: Log what token is being used for each player
-        if (primaryToken) {
-            console.log(`🎨 D3: ${player.username} displaying token: ${primaryToken.tokenName} (equipped: ${primaryToken.equipped})`);
-        }
-        
-        return createPlayerRowD3(player, stats, primaryToken); // PASS TOKEN TO FUNCTION
+        return createPlayerRowD3(player, stats, primaryToken);
     }).join('');
     
-    // Append all rows at once (much faster than individual DOM operations)
+    // Append all rows at once
     tbody.innerHTML = rowsHtml;
     
-    // Get all ELO changes and update indicators - MATCH D1/D2 PATTERN EXACTLY
+    // Get all ELO changes and update indicators
     getPlayersLastEloChangesD3(usernames)
         .then(changes => {
             // Create a mapping of username to row for quick updates
@@ -320,7 +306,7 @@ async function updateLadderDisplayD3(ladderData) {
                         // Find the indicator element that's already in the DOM
                         const indicator = eloCell.querySelector('.trend-indicator');
                         if (indicator) {
-                            // Update the existing indicator (EXACTLY like D1/D2)
+                            // Update the existing indicator
                             indicator.textContent = formattedChange;
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
                             indicator.style.fontWeight = 'bold';
@@ -341,29 +327,31 @@ async function fetchBatchMatchStatsD3(usernames) {
     const matchStats = new Map();
     
     try {
+        // Initialize stats for all players
+        usernames.forEach(username => {
+            matchStats.set(username, {
+                totalMatches: 0,
+                wins: 0,
+                losses: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                kda: 0,
+                winRate: 0
+            });
+        });
+        
         const approvedMatchesRef = collection(db, 'approvedMatchesD3');
         const allMatches = await getDocs(approvedMatchesRef);
         
         // Process all matches in a single pass
         allMatches.forEach(doc => {
             const match = doc.data();
+            const winnerUsername = match.winnerUsername;
+            const loserUsername = match.loserUsername;
             
             // Process winner stats
-            if (usernames.includes(match.winnerUsername)) {
-                const username = match.winnerUsername;
-                if (!matchStats.has(username)) {
-                    matchStats.set(username, {
-                        totalMatches: 0,
-                        wins: 0,
-                        losses: 0,
-                        totalKills: 0,
-                        totalDeaths: 0,
-                        kda: 0,
-                        winRate: 0
-                    });
-                }
-                
-                const stats = matchStats.get(username);
+            if (usernames.includes(winnerUsername)) {
+                const stats = matchStats.get(winnerUsername);
                 stats.wins++;
                 stats.totalMatches++;
                 stats.totalKills += parseInt(match.winnerScore) || 0;
@@ -371,21 +359,8 @@ async function fetchBatchMatchStatsD3(usernames) {
             }
             
             // Process loser stats
-            if (usernames.includes(match.loserUsername)) {
-                const username = match.loserUsername;
-                if (!matchStats.has(username)) {
-                    matchStats.set(username, {
-                        totalMatches: 0,
-                        wins: 0,
-                        losses: 0,
-                        totalKills: 0,
-                        totalDeaths: 0,
-                        kda: 0,
-                        winRate: 0
-                    });
-                }
-                
-                const stats = matchStats.get(username);
+            if (usernames.includes(loserUsername)) {
+                const stats = matchStats.get(loserUsername);
                 stats.losses++;
                 stats.totalMatches++;
                 stats.totalKills += parseInt(match.loserScore) || 0;
@@ -394,7 +369,9 @@ async function fetchBatchMatchStatsD3(usernames) {
         });
         
         // Calculate derived stats for all users
-        matchStats.forEach(stats => {
+        usernames.forEach(username => {
+            const stats = matchStats.get(username);
+            
             // Calculate KDA
             stats.kda = stats.totalDeaths > 0 ? 
                 (stats.totalKills / stats.totalDeaths).toFixed(2) : stats.totalKills;
@@ -414,19 +391,19 @@ async function fetchBatchMatchStatsD3(usernames) {
 function createPlayerRowD3(player, stats, primaryToken) { 
     const elo = parseFloat(player.elo) || 0;
     
-    // Set ELO-based colors (same as D1/D2)
+    // Set ELO-based colors (standardized with D1/D2)
     let usernameColor = 'gray';
     if (elo >= 2000) {
         usernameColor = '#50C878'; // Emerald Green
     } else if (elo >= 1800) {
         usernameColor = '#FFD700'; // Gold
     } else if (elo >= 1600) {
-        usernameColor = '#C0C0C0'; // Silver
+        usernameColor = '#b9f1fc'; // Silver - standardized with D1/D2
     } else if (elo >= 1400) {
         usernameColor = '#CD7F32'; // Bronze
     }
 
-    // Create flag HTML if player has country (same as D1/D2)
+    // Create flag HTML if player has country
     let flagHtml = '';
     if (player.country) {
         flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
@@ -436,7 +413,7 @@ function createPlayerRowD3(player, stats, primaryToken) {
                         onerror="this.style.display='none'">`;
     }
     
-    // NEW: Create token HTML if player has tokens (comes AFTER flag)
+    // Create token HTML if player has tokens
     let tokenHtml = '';
     if (primaryToken) {
         tokenHtml = `<img src="${primaryToken.tokenImage}" 
@@ -474,16 +451,13 @@ function createPlayerRowD3(player, stats, primaryToken) {
     </tr>`;
 }
 
-// Replace the getPlayersLastEloChangesD3 function with this improved version:
-
+// Function for tracking ELO changes
 async function getPlayersLastEloChangesD3(usernames) {
     const changes = new Map();
     usernames.forEach(username => changes.set(username, 0));
     
     try {
-        console.log('D3: Looking for ELO changes for users:', usernames);
-        
-        // ADD MISSING PLAYER ID MAPPING (like D1 & D2)
+        // Build a player ID to username mapping
         const playerIdToUsername = new Map();
         const playersQuery = await getDocs(collection(db, 'playersD3'));
         playersQuery.forEach(doc => {
@@ -493,18 +467,10 @@ async function getPlayersLastEloChangesD3(usernames) {
             }
         });
         
-        console.log('D3: Player ID mappings:', Array.from(playerIdToUsername.entries()));
-        
         // Query for ELO history
         const eloHistoryRef = collection(db, 'eloHistoryD3');
         const eloQuery = query(eloHistoryRef, orderBy('timestamp', 'desc'), limit(100));
         const eloSnapshot = await getDocs(eloQuery);
-        
-        if (eloSnapshot.empty) {
-            console.log('D3: eloHistoryD3 is empty, trying fallback...');
-        } else {
-            console.log(`D3: Found ${eloSnapshot.size} entries in eloHistoryD3`);
-        }
         
         // Process entries and find most recent change for each player
         const entriesByUsername = new Map();
@@ -513,24 +479,17 @@ async function getPlayersLastEloChangesD3(usernames) {
             const entry = doc.data();
             let username = null;
             
-            // ENHANCED FIELD MATCHING (like D1 & D2)
-            // Try direct username fields first
+            // Try different fields to find username
             if (entry.username) username = entry.username;
             else if (entry.playerUsername) username = entry.playerUsername;
             else if (entry.player && typeof entry.player === 'string') username = entry.player;
-            // Try player ID lookup (THIS WAS MISSING)
+            // Try player ID lookup
             else if (entry.player && playerIdToUsername.has(entry.player)) {
                 username = playerIdToUsername.get(entry.player);
             }
             // Try other ID fields
             else if (entry.playerId && playerIdToUsername.has(entry.playerId)) {
                 username = playerIdToUsername.get(entry.playerId);
-            }
-            
-            // Debug pilot specifically
-            if (entry.username === 'pilot' || entry.playerUsername === 'pilot' || 
-                (entry.player && playerIdToUsername.get(entry.player) === 'pilot')) {
-                console.log('D3: Found pilot entry:', entry);
             }
             
             if (username && usernames.includes(username)) {
@@ -544,8 +503,6 @@ async function getPlayersLastEloChangesD3(usernames) {
                 });
             }
         });
-        
-        console.log(`D3: Found entries for ${entriesByUsername.size} players`);
         
         // Process each player's entries
         entriesByUsername.forEach((playerEntries, username) => {
@@ -567,16 +524,13 @@ async function getPlayersLastEloChangesD3(usernames) {
                     
                     if (eloChange !== undefined) {
                         changes.set(username, eloChange);
-                        console.log(`D3: ${username} ELO change: ${eloChange}`);
                     }
                 }
             }
         });
         
-        // Enhanced fallback with better logging
+        // Fallback to main eloHistory if needed
         if (entriesByUsername.size === 0) {
-            console.log('D3: No entries found in eloHistoryD3, trying fallback...');
-            
             const fallbackRef = collection(db, 'eloHistory');
             const fallbackQuery = query(
                 fallbackRef, 
@@ -587,7 +541,6 @@ async function getPlayersLastEloChangesD3(usernames) {
             
             try {
                 const fallbackSnapshot = await getDocs(fallbackQuery);
-                console.log(`D3: Found ${fallbackSnapshot.size} fallback entries`);
                 
                 fallbackSnapshot.forEach(doc => {
                     const entry = doc.data();
@@ -605,25 +558,28 @@ async function getPlayersLastEloChangesD3(usernames) {
                         
                         if (eloChange !== 0) {
                             changes.set(username, eloChange);
-                            console.log(`D3: ${username} fallback ELO change: ${eloChange}`);
                         }
                     }
                 });
             } catch (fallbackError) {
-                console.log('D3: Fallback query failed:', fallbackError);
+                console.error('D3: Fallback query failed:', fallbackError);
             }
         }
-        
-        // Final summary
-        const nonZeroChanges = Array.from(changes.entries()).filter(([_, change]) => change !== 0);
-        console.log('D3: Final ELO changes:', nonZeroChanges);
-        
     } catch (error) {
         console.error('D3: Error fetching ELO history:', error);
     }
     
     return changes;
 }
+
+// Add global refresh function
+window.refreshLadderDisplayD3 = function(forceRefresh = true) {
+    if (typeof displayLadderD3 === 'function') {
+        displayLadderD3(forceRefresh);
+    } else {
+        console.warn('displayLadderD3 function not available');
+    }
+};
 
 // Export the D3 ladder functions
 export { displayLadderD3, updatePlayerPositions };
