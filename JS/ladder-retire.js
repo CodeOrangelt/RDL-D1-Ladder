@@ -238,7 +238,7 @@ async function checkPlayerStatus(user) {
         
         try {
             // Get player document to verify
-            const playerRef = doc(playerCollection, user.uid);
+            const playerRef = doc(db, playerCollection, user.uid);
             const playerDoc = await getDoc(playerRef);
             
             if (!playerDoc.exists()) {
