@@ -18,65 +18,45 @@ const db = getFirestore();
 
 // Theme configuration
 const THEMES = {
-    default: { price: 0, name: "Classic RDL", description: "Rock texture with a sleek nav and footer" },
-    purple: { price: 150, name: "Purple", description: "Can't get enough" },
-    cyberpunk: { price: 400, name: "Yellow Orange", description: "This theme makes me happy" },
-    emerald: { price: 1000, name: "Emerald", description: "Emerald City!" },
-    gold: { price: 800, name: "Gold", description: "Only the best get this one" },
-    contrast: { price: 0, name: "Black & White", description: "You can see better!" },
-    ocean: { price: 300, name: "Blue", description: "This one is really pretty" },
-    volcanic: { price: 500, name: "Red", description: "For the angry type." }
+    default:   { price: 0,    name: "Classic RDL", description: "Rock texture with a sleek nav and footer" },
+    contrast:  { price: 0,    name: "Nightmode", description: "You can see better!" },
+    purple:    { price: 150,  name: "Purple", description: "Can't get enough" },
+    ocean:     { price: 300,  name: "Blue", description: "This one is really pretty" },
+    cyberpunk: { price: 400,  name: "Yellow Orange", description: "This theme makes me happy" },
+    volcanic:  { price: 500,  name: "Red", description: "For the angry type." },
+    gold:      { price: 800,  name: "Gold", description: "Only the best get this one" },
+    emerald:   { price: 1000, name: "Emerald", description: "Emerald City!" },
+    cockpit:   { price: 1200, name: "Familiar...", description: "is that... Pfunk?" }
 };
 
 // Token configuration
 const TOKENS = {
-    blob01: { 
-        price: 500, 
-        name: "Blob Token 1", 
-        description: "A mysterious purple blob token",
-        image: "../images/tokens/blob01.gif",
-        category: "blob"
+    pwr01: { 
+        price: 100, 
+        name: "Energy", 
+        description: "Enhanced energy generation unit",
+        image: "../images/tokens/subgame/pwr01.gif",
+        category: "powerup"
     },
-    blob02: { 
-        price: 1000, 
-        name: "Blob Token 2", 
-        description: "Another enigmatic blob creature",
-        image: "../images/tokens/blob02.gif",
-        category: "blob"
+    fan: {
+        price: 150,
+        name: "Fan",
+        description: "Show your support with this fan token.",
+        image: "../images/tokens/Fan.gif",
+        category: "fun"
     },
-    blob03: { 
-        price: 2000, 
-        name: "Blob Token 3", 
-        description: "The final blob in the collection",
-        image: "../images/tokens/blob03.gif",
-        category: "blob"
+    marker: {
+        price: 250,
+        name: "Marker",
+        description: "Leave your mark on the leaderboard.",
+        image: "../images/tokens/Marker.gif",
+        category: "fun"
     },
-    cloak: { 
-        price: 500, 
-        name: "Cloaking Device", 
-        description: "Become one with the shadows",
-        image: "../images/tokens/cloak.gif",
-        category: "special"
-    },
-    gauge18: { 
-        price: 800, 
-        name: "R/Y/B Keys", 
-        description: "Monitor your ship's energy levels",
-        image: "../images/tokens/gauge18.gif",
-        category: "equipment"
-    },
-    fusion: { 
-        price: 350, 
-        name: "Fusion Cannon", 
-        description: "Devastating fusion weapon technology",
-        image: "../images/tokens/subgame/fusion.gif",
-        category: "weapon"
-    },
-    mmissile: { 
-        price: 800, 
-        name: "Mega Missile", 
-        description: "Heavy ordinance for tough situations",
-        image: "../images/tokens/subgame/mmissile.gif",
+    laser: {
+        price: 300,
+        name: "Laser",
+        description: "Classic laser weapon token.",
+        image: "../images/tokens/Laser.gif",
         category: "weapon"
     },
     pbomb: { 
@@ -86,12 +66,40 @@ const TOKENS = {
         image: "../images/tokens/subgame/pbomb.gif",
         category: "weapon"
     },
-    pwr01: { 
-        price: 100, 
-        name: "Energy", 
-        description: "Enhanced energy generation unit",
-        image: "../images/tokens/subgame/pwr01.gif",
-        category: "powerup"
+    fusion: { 
+        price: 350, 
+        name: "Fusion Cannon", 
+        description: "Devastating fusion weapon technology",
+        image: "../images/tokens/subgame/fusion.gif",
+        category: "weapon"
+    },
+    lock: {
+        price: 450,
+        name: "Lock",
+        description: "Lock in your victory.",
+        image: "../images/tokens/Lock.gif",
+        category: "fun"
+    },
+    blob01: { 
+        price: 500, 
+        name: "Blob Token 1", 
+        description: "A mysterious purple blob token",
+        image: "../images/tokens/blob01.gif",
+        category: "blob"
+    },
+    plasma: {
+        price: 500,
+        name: "Plasma Cannon",
+        description: "High-powered plasma cannon token.",
+        image: "../images/tokens/Plasma.gif",
+        category: "weapon"
+    },
+    cloak: { 
+        price: 500, 
+        name: "Cloaking Device", 
+        description: "Become one with the shadows",
+        image: "../images/tokens/cloak.gif",
+        category: "special"
     },
     pwr02: { 
         price: 600, 
@@ -100,12 +108,110 @@ const TOKENS = {
         image: "../images/tokens/subgame/pwr02.gif",
         category: "powerup"
     },
+    mercury: {
+        price: 600,
+        name: "Mercury Missile",
+        description: "Fast and furious missile token.",
+        image: "../images/tokens/Mercury.gif",
+        category: "weapon"
+    },
+    plasmablobl: {
+        price: 600,
+        name: "Plasma Blob",
+        description: "A mysterious plasma blob.",
+        image: "../images/tokens/Plasmablobl.gif",
+        category: "blob"
+    },
     smissile: { 
         price: 650, 
         name: "Smart Missile", 
         description: "Intelligent targeting system",
         image: "../images/tokens/subgame/smissile.gif",
         category: "weapon"
+    },
+    smartmine: {
+        price: 750,
+        name: "Smart Mine",
+        description: "A cunning explosive device.",
+        image: "../images/tokens/Smartmine.gif",
+        category: "weapon"
+    },
+    mmissile: { 
+        price: 800, 
+        name: "Mega Missile", 
+        description: "Heavy ordinance for tough situations",
+        image: "../images/tokens/subgame/mmissile.gif",
+        category: "weapon"
+    },
+    gauge18: { 
+        price: 800, 
+        name: "R/Y/B Keys", 
+        description: "Monitor your ship's energy levels",
+        image: "../images/tokens/gauge18.gif",
+        category: "equipment"
+    },
+    extralife: {
+        price: 800,
+        name: "Extra Life",
+        description: "A rare extra life token.",
+        image: "../images/tokens/Extralife.gif",
+        category: "special"
+    },
+    hostage: {
+        price: 950,
+        name: "Hostage",
+        description: "Rescue the hostage for bonus points.",
+        image: "../images/tokens/Hostage.gif",
+        category: "special"
+    },
+    phoenix: {
+        price: 950,
+        name: "Phoenix Cannon",
+        description: "Fiery phoenix cannon token.",
+        image: "../images/tokens/Phoenix.gif",
+        category: "weapon"
+    },
+    blob02: { 
+        price: 1000, 
+        name: "Blob Token 2", 
+        description: "Another enigmatic blob creature",
+        image: "../images/tokens/blob02.gif",
+        category: "blob"
+    },
+    emerald: { 
+        price: 1000, 
+        name: "Emerald", 
+        description: "Emerald City!",
+        image: "../images/tokens/emerald.gif",
+        category: "special"
+    },
+    invuln: {
+        price: 1500,
+        name: "Invulnerability",
+        description: "Become invincible for a short time.",
+        image: "../images/tokens/Invuln.gif",
+        category: "powerup"
+    },
+    blob03: { 
+        price: 2000, 
+        name: "Blob Token 3", 
+        description: "The final blob in the collection",
+        image: "../images/tokens/blob03.gif",
+        category: "blob"
+    },
+    reactor: {
+        price: 2000,
+        name: "Reactor",
+        description: "The heart of every mine.",
+        image: "../images/tokens/Reactor.gif",
+        category: "special"
+    },
+    pyro: {
+        price: 3000,
+        name: "Pyro",
+        description: "The iconic Pyro-GX ship.",
+        image: "../images/tokens/Pyro.gif",
+        category: "ship"
     }
 };
 

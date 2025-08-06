@@ -9,7 +9,8 @@ const THEMES = {
     GOLD: 'gold',
     CONTRAST: 'contrast',
     OCEAN: 'ocean',
-    VOLCANIC: 'volcanic'
+    VOLCANIC: 'volcanic',
+    COCKPIT: 'cockpit',
 };
 
 // Theme storage key

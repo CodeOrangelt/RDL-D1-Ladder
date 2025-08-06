@@ -111,13 +111,13 @@ body.theme-gold footer {
 
 /* High Contrast Theme - Pure black for maximum readability */
 body.theme-contrast {
-    background: #000000;
+    background: #1f1f1f;
     background-attachment: fixed;
 }
 
 body.theme-contrast nav,
 body.theme-contrast footer {
-    background: #111111;
+    background: #000000; 
     border-bottom: 1px solid #333;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
@@ -146,6 +146,18 @@ body.theme-ocean footer {
     background: linear-gradient(to right, rgba(0, 30, 60, 0.9), rgba(0, 40, 80, 0.9));
     border-bottom: 2px solid rgba(0, 120, 215, 0.2);
     box-shadow: 0 0 15px rgba(0, 120, 215, 0.1);
+}
+/* Cockpit Theme - Familiar cockpit view */
+body.theme-cockpit {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('../images/themes/cockpit.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+body.theme-cockpit nav,
+body.theme-cockpit footer {
+    background: rgba(255, 0, 0, 0.199);
 }
 
 /* Volcanic Theme - Fiery dark reds and blacks */
