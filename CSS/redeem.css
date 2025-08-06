@@ -411,12 +411,21 @@
         }
         
         /* Theme icons - use theme variables where possible */
-        .theme-icon-default { background: var(--bg-highlight, #303030); }
+        .theme-icon-default {            
+            background-image: url('../images/laddericon.png');
+            background-size: 60px 30px;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-width: 60px;
+            min-height: 30px;
+            width: 60px;
+            height: 30px;
+        }
         .theme-icon-purple { background: #9c27b0; }
         .theme-icon-cyberpunk { background: #ff9800; }
         .theme-icon-emerald { background: #4caf50; }
         .theme-icon-gold { background: #ffc107; }
-        .theme-icon-contrast { background: #000000; }
+        .theme-icon-contrast { background: #3d3d3d; }
         .theme-icon-ocean { background: #03a9f4; }
         .theme-icon-volcanic { background: #f44336; }
         .theme-icon-cockpit { 
