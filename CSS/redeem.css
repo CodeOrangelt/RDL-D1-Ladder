@@ -1,4 +1,4 @@
-        /* Main container */
+/* Main container */
         .redeem-main {
             padding: 1.5rem;
             max-width: 1200px;
@@ -75,6 +75,8 @@
         /* Store Sections */
         .store-section {
             margin-bottom: 2rem;
+                        padding: 3rem;
+
         }
         
         .store-section:not(.active) {
@@ -85,27 +87,38 @@
             font-size: 1.5rem;
             margin-bottom: 1rem;
             color: var(--text-highlight);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        /* Grid Layout */
-        .themes-grid, .tokens-grid, .special-grid {
+        /* Redesigned Grid Layout */
+        .themes-grid,
+        .tokens-grid,
+        .special-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            align-items: stretch;
+            margin-bottom: 2rem;
+            padding: 0.5rem 0;
+            width: 100%;
+            box-sizing: border-box;
+            transition: gap 0.2s, grid-template-columns 0.2s;
         }
         
-        /* Store Items */
         .store-item {
             background: var(--bg-card);
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .store-item:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            padding: 1.25rem 1rem 1rem 1rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            min-height: 220px;
+            transition: box-shadow 0.2s, transform 0.15s;
+            position: relative;
         }
         
         .item-header {
@@ -124,6 +137,12 @@
             justify-content: center;
             font-size: 1.2rem;
             color: white;
+        }
+
+        .store-item:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.10);
+            transform: translateY(-2px) scale(1.015);
+            z-index: 2;
         }
         
         /* Token specific styling */
@@ -400,6 +419,14 @@
         .theme-icon-contrast { background: #000000; }
         .theme-icon-ocean { background: #03a9f4; }
         .theme-icon-volcanic { background: #f44336; }
+        .theme-icon-cockpit { 
+            background-image: url('../images/tokens/Pyro.gif');
+            background-repeat: no-repeat;
+            background-size: 60px 60px;
+            background-position: center;
+            min-width: 60px;
+            min-height: 60px;
+        }
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -426,5 +453,24 @@
             
             .points-display {
                 font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .themes-grid,
+            .tokens-grid,
+            .special-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .themes-grid,
+            .tokens-grid,
+            .special-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                padding: 0;
             }
         }
