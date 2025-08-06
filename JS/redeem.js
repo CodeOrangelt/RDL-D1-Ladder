@@ -19,14 +19,14 @@ const db = getFirestore();
 // Theme configuration
 const THEMES = {
     default:   { price: 0,    name: "Classic RDL", description: "Rock texture with a sleek nav and footer" },
-    contrast:  { price: 0,    name: "Nightmode", description: "You can see better!" },
+    contrast:  { price: 0,    name: "Nightlight", description: "For the late-nights." },
     purple:    { price: 150,  name: "Purple", description: "Can't get enough" },
     ocean:     { price: 300,  name: "Blue", description: "This one is really pretty" },
     cyberpunk: { price: 400,  name: "Yellow Orange", description: "This theme makes me happy" },
     volcanic:  { price: 500,  name: "Red", description: "For the angry type." },
     gold:      { price: 800,  name: "Gold", description: "Only the best get this one" },
     emerald:   { price: 1000, name: "Emerald", description: "Emerald City!" },
-    cockpit:   { price: 1200, name: "Familiar...", description: "is that... Pfunk?" }
+    cockpit:   { price: 1200, name: "Cockpit", description: "is that... Pfunk?" }
 };
 
 // Token configuration
@@ -177,13 +177,6 @@ const TOKENS = {
         description: "Another enigmatic blob creature",
         image: "../images/tokens/blob02.gif",
         category: "blob"
-    },
-    emerald: { 
-        price: 1000, 
-        name: "Emerald", 
-        description: "Emerald City!",
-        image: "../images/tokens/emerald.gif",
-        category: "special"
     },
     invuln: {
         price: 1500,
