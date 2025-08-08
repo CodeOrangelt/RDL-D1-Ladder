@@ -95,19 +95,19 @@ async function checkPlayerStatus(user) {
         try {
             const hiatusRef = doc(db, 'playerHiatus', user.uid);
             const hiatusDoc = await getDoc(hiatusRef);
-            
+
             if (hiatusDoc.exists()) {
                 const hiatusData = hiatusDoc.data();
-                console.log(`User is on hiatus from ${hiatusData.fromLadder} ladder`);
-                
-                // Show unhiatus button
-                if (unhiatusButton) unhiatusButton.style.display = 'block';
-                // Hide other buttons
-                if (leaveTeamButton) leaveTeamButton.style.display = 'none';
-                if (hiatusButton) hiatusButton.style.display = 'none';
-                
-                return;
+                if (hiatusData.fromLadder === currentLadderMode) {
+                    // Only hide hiatus button if on hiatus from the current ladder
+                    if (unhiatusButton) unhiatusButton.style.display = 'block';
+                    if (leaveTeamButton) leaveTeamButton.style.display = 'none';
+                    if (hiatusButton) hiatusButton.style.display = 'none';
+                    return;
+                }
             }
+            if (unhiatusButton) unhiatusButton.style.display = 'none';
+
         } catch (hiatusError) {
             console.warn("Error checking hiatus status (this is expected if permissions aren't set):", hiatusError);
             // Continue with normal ladder check even if hiatus check fails
@@ -518,7 +518,7 @@ async function checkPlayerStatus(user) {
             unhiatusBtn.style.background = '#27ae60';
             unhiatusBtn.textContent = 'Return from Hiatus';
             unhiatusBtn.style.position = 'relative';
-            unhiatusBtn.style.left = '-50px';
+            unhiatusBtn.style.left = '0'; // Remove offset
             unhiatusBtn.style.zIndex = '1000';
             unhiatusBtn.style.cursor = 'pointer';
             unhiatusBtn.style.pointerEvents = 'auto';
