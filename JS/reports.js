@@ -186,7 +186,6 @@ async function handleUserSignedIn(user, elements) {
             // If user is not in any player collection, show warning and hide form
             if (elements.authWarning) {
                 elements.authWarning.style.display = 'block';
-                elements.authWarning.textContent = 'You are not registered in any ladder.';
             }
             
             if (elements.reportForm) {
