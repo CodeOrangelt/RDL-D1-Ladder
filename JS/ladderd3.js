@@ -88,11 +88,15 @@ async function displayLadderD3(forceRefresh = false) {
             const username = player.username.toLowerCase();
             if (profilesByUsername.has(username)) {
                 const profile = profilesByUsername.get(username);
-                
+
                 // Set country from profile
                 if (profile.country) {
                     player.country = profile.country.toLowerCase();
                 }
+                // Add points from userProfile
+                player.points = profile.points || 0;
+            } else {
+                player.points = 0; // Default if no profile
             }
         }
         
@@ -263,6 +267,7 @@ async function updateLadderDisplayD3(ladderData) {
             <th>Losses</th>
             <th>K/D</th>
             <th>Win Rate</th>
+            <th>Points</th>
         `;
     }
     
@@ -390,7 +395,7 @@ async function fetchBatchMatchStatsD3(usernames) {
 
 function createPlayerRowD3(player, stats, primaryToken) { 
     const elo = parseFloat(player.elo) || 0;
-    
+
     // Set ELO-based colors (standardized with D1/D2)
     let usernameColor = 'gray';
     if (elo >= 2000) {
@@ -448,6 +453,7 @@ function createPlayerRowD3(player, stats, primaryToken) {
         <td>${stats.losses}</td>
         <td>${stats.kda}</td>
         <td>${stats.winRate}%</td>
+        <td style="color: gray;">${player.points || 0}</td>
     </tr>`;
 }
 

@@ -189,6 +189,10 @@ async function displayLadder(forceRefresh = false) {
                 if (profile.country) {
                     player.country = profile.country.toLowerCase();
                 }
+                // Add points from userProfile
+                player.points = profile.points || 0;
+            } else {
+                player.points = 0; // Default if no profile
             }
         });
 
@@ -250,7 +254,8 @@ async function fetchBatchMatchStats(usernames) {
                 totalKills: 0,
                 totalDeaths: 0,
                 kda: 0,
-                winRate: 0
+                winRate: 0,
+                points: 0
             });
         });
 
@@ -382,6 +387,7 @@ function createPlayerRow(player, stats) {
         <td>${stats.losses}</td>
         <td>${stats.kda}</td>
         <td>${stats.winRate}%</td>
+        <td>${stats.points}</td>
     </tr>`;
 }
 
@@ -576,6 +582,7 @@ function createPlayerRowWithToken(player, stats, primaryToken) {
         <td>${stats.losses}</td>
         <td>${stats.kda}</td>
         <td>${stats.winRate}%</td>
+        <td style="color: gray;">${player.points || 0}</td>
     </tr>`;
 }
 
@@ -599,6 +606,7 @@ async function updateLadderDisplay(ladderData, matchStatsBatch = null) {
             <th>Losses</th>
             <th>K/D</th>
             <th>Win Rate</th>
+            <th>Points</th>
         `;
     }
 

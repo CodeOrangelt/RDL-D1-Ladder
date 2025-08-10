@@ -81,6 +81,10 @@ async function displayLadderD2(forceRefresh = false) {
                 if (profile.country) {
                     player.country = profile.country.toLowerCase();
                 }
+                // Add points from userProfile
+                player.points = profile.points || 0;
+            } else {
+                player.points = 0; // Default if no profile
             }
         }
 
@@ -274,6 +278,7 @@ async function updateLadderDisplayD2(ladderData) {
             <th>Losses</th>
             <th>K/D</th>
             <th>Win Rate</th>
+            <th>Points</th>
         `;
     }
 
@@ -370,30 +375,31 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
     }
 
     return `
-    <tr>
-        <td>${player.position}</td>
-        <td style="position: relative;">
-            <div style="display: flex; align-items: center; position: relative;">
-                <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
-                   style="color: ${usernameColor}; text-decoration: none;">
-                    ${player.username}
-                </a>
-                ${flagHtml}
-                ${tokenHtml}
-            </div>
-        </td>
-        <td style="color: ${usernameColor}; position: relative;">
-            <div class="elo-container" style="display: flex; align-items: center;">
-                <span class="elo-value">${elo}</span>
-                <span class="trend-indicator" style="margin-left: 5px;"></span>
-            </div>
-        </td>
-        <td>${stats.totalMatches}</td>
-        <td>${stats.wins}</td>
-        <td>${stats.losses}</td>
-        <td>${stats.kda}</td>
-        <td>${stats.winRate}%</td>
-    </tr>`;
+<tr>
+    <td>${player.position}</td>
+    <td style="position: relative;">
+        <div style="display: flex; align-items: center; position: relative;">
+            <a href="profile.html?username=${encodeURIComponent(player.username)}&ladder=d2" 
+               style="color: ${usernameColor}; text-decoration: none;">
+                ${player.username}
+            </a>
+            ${flagHtml}
+            ${tokenHtml}
+        </div>
+    </td>
+    <td style="color: ${usernameColor}; position: relative;">
+        <div class="elo-container" style="display: flex; align-items: center;">
+            <span class="elo-value">${elo}</span>
+            <span class="trend-indicator" style="margin-left: 5px;"></span>
+        </div>
+    </td>
+    <td>${stats.totalMatches}</td>
+    <td>${stats.wins}</td>
+    <td>${stats.losses}</td>
+    <td>${stats.kda}</td>
+    <td>${stats.winRate}%</td>
+    <td style="color: gray;">${player.points || 0}</td>
+</tr>`;
 }
 
 // Function for D2 ELO change tracking
