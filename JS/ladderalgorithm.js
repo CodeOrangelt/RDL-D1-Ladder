@@ -33,7 +33,7 @@ export function calculateElo(winnerRating, loserRating, kFactor = 32) {
     return {
         newWinnerRating: Math.round(Math.min(newWinnerRating)), // Cap at 1000
         newLoserRating: Math.round(Math.max(newLoserRating, 0)) // Floor at 0
-    };
+    };//
 }
 
 export function assignDefaultEloRating(playerId, playerData) {

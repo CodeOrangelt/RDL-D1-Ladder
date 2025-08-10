@@ -30,7 +30,7 @@ export function calculateEloD2(winnerRating, loserRating, kFactor = 32) {
         newLoserRating: Math.round(newLoserRating)
     };
 }
-
+//
 // D2-specific ELO update function
 export async function updateEloRatingsD2(winnerId, loserId, matchId) {
     try {

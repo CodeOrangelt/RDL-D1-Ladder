@@ -32,7 +32,7 @@ const playerCacheD3 = {
     timestamp: 0
 };
 const CACHE_DURATION = 30000; // 30 seconds cache validity
-
+//
 // Complete displayLadderD3 function implementation
 async function displayLadderD3(forceRefresh = false) {
     const tableBody = document.querySelector('#ladder-d3 tbody');
