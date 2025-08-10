@@ -16,9 +16,14 @@ import { db, auth } from './firebase-config.js';
 import { recordEloChange } from './elo-history.js';
 import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
+import { RANKS, getRankStyle } from './ranks.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
+    // Normalize starting ratings if they're using old system
+    winnerRating = winnerRating > 1000 ? 200 : winnerRating;
+    loserRating = loserRating > 1000 ? 200 : loserRating;
+
     const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
     const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
 
@@ -26,13 +31,13 @@ export function calculateElo(winnerRating, loserRating, kFactor = 32) {
     const newLoserRating = loserRating + kFactor * (0 - expectedScoreLoser);
 
     return {
-        newWinnerRating: Math.round(newWinnerRating),
-        newLoserRating: Math.round(newLoserRating)
-    };
+        newWinnerRating: Math.round(Math.min(newWinnerRating)), // Cap at 1000
+        newLoserRating: Math.round(Math.max(newLoserRating, 0)) // Floor at 0
+    };//
 }
 
 export function assignDefaultEloRating(playerId, playerData) {
-    const defaultEloRating = 1200; // Default ELO rating
+    const defaultEloRating = 200; // Changed from 1200 to match new Bronze threshold
     if (!playerData.eloRating) {
         db.collection('players').doc(playerId).update({ eloRating: defaultEloRating })
             .then(() => {
@@ -325,14 +330,29 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 }
 
 async function updatePlayerElo(userId, oldElo, newElo) {
-    // Update player's ELO in database
-    await setDoc(doc(db, 'players', userId), {
-        ...playerData,
-        eloRating: newElo
+    const playerRef = doc(db, 'players', userId);
+    const playerDoc = await getDoc(playerRef);
+    const playerData = playerDoc.data();
+
+    // Get player stats for rank calculation
+    const statsRef = doc(db, 'playerStats', userId);
+    const statsDoc = await getDoc(statsRef);
+    const stats = statsDoc.data() || { totalMatches: 0, winRate: 0 };
+
+    // Get new rank using updated system
+    const newRank = getRankStyle(newElo, stats.totalMatches, stats.winRate);
+
+    await updateDoc(playerRef, {
+        eloRating: newElo,
+        rank: newRank.name,
+        rankColor: newRank.color
     });
 
     // Check for promotion
-    await checkAndRecordPromotion(userId, newElo, oldElo);
+    await checkAndRecordPromotion(userId, newElo, oldElo, {
+        matchCount: stats.totalMatches,
+        winRate: stats.winRate
+    });
 }
 
 async function updatePlayerStats(playerId, matchData, isWinner) {
