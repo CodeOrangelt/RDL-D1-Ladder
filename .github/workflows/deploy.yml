@@ -76,3 +76,6 @@ jobs:
         with:
           branch: gh-pages
           folder: distribution_path
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository-name: Codeorangelt/RDL-D1-Ladder
+          commit-message: "Deploy from Codeorangelt organization"
