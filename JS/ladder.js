@@ -1173,7 +1173,7 @@ function showAdminOnlyMessage() {
     const existingMessage = document.getElementById('admin-only-message');
     if (existingMessage) {
         existingMessage.remove();
-    }
+    }//
     //
     // Create new message
     const messageDiv = document.createElement('div');
