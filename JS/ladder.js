@@ -1174,7 +1174,7 @@ function showAdminOnlyMessage() {
     if (existingMessage) {
         existingMessage.remove();
     }
-    //
+    // //
     // Create new message
     const messageDiv = document.createElement('div');
     messageDiv.id = 'admin-only-message';
