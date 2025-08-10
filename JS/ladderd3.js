@@ -396,16 +396,18 @@ async function fetchBatchMatchStatsD3(usernames) {
 function createPlayerRowD3(player, stats, primaryToken) { 
     const elo = parseFloat(player.elo) || 0;
 
-    // Set ELO-based colors (standardized with D1/D2)
-    let usernameColor = 'gray';
-    if (elo >= 2000) {
-        usernameColor = '#50C878'; // Emerald Green
-    } else if (elo >= 1800) {
-        usernameColor = '#FFD700'; // Gold
-    } else if (elo >= 1600) {
-        usernameColor = '#b9f1fc'; // Silver - standardized with D1/D2
-    } else if (elo >= 1400) {
-        usernameColor = '#CD7F32'; // Bronze
+    // Set ELO-based colors with new thresholds
+    let usernameColor = '#DC143C'; // Default for unranked
+    if (stats.totalMatches === 0) {
+        usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
+        usernameColor = '#50C878'; // Emerald (special requirements)
+    } else if (elo >= 700) {
+        usernameColor = '#FFD700'; // Gold (700-999)
+    } else if (elo >= 500) {
+        usernameColor = '#C0C0C0'; // Silver (500-699)
+    } else if (elo >= 200) {
+        usernameColor = '#CD7F32'; // Bronze (200-499)
     }
 
     // Create flag HTML if player has country

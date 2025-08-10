@@ -342,16 +342,18 @@ function calculateStreakDays(firstPlaceDate) {
 function createPlayerRow(player, stats) {
     const elo = parseFloat(player.elo) || 0;
 
-    // Set ELO-based colors
-    let usernameColor = 'gray'; // Default for unranked
-    if (elo >= 2000) {
-        usernameColor = '#50C878'; // Emerald Green
-    } else if (elo >= 1800) {
-        usernameColor = '#FFD700'; // Gold
-    } else if (elo >= 1600) {
-        usernameColor = '#b9f1fc'; // Silver
-    } else if (elo >= 1400) {
-        usernameColor = '#CD7F32'; // Bronze
+    // Update the color logic in createPlayerRow and createPlayerRowWithToken functions
+    let usernameColor = '#DC143C'; // Default for unranked
+    if (stats.totalMatches === 0) {
+        usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (stats.winRate >= 80 && stats.totalMatches >= 20) {
+        usernameColor = '#50C878'; // Emerald (special requirements)
+    } else if (elo >= 700) {
+        usernameColor = '#FFD700'; // Gold (700+)
+    } else if (elo >= 500) {
+        usernameColor = '#C0C0C0'; // Silver (500-700)
+    } else if (elo >= 200) {
+        usernameColor = '#CD7F32'; // Bronze (200-500)
     }
 
     // Create flag HTML if player has country (comes AFTER username)
@@ -391,12 +393,13 @@ function createPlayerRow(player, stats) {
     </tr>`;
 }
 
-// Add this function to determine the player's rank name by ELO
-function getPlayerRankName(elo) {
-    if (elo >= 2000) return 'Emerald';
-    if (elo >= 1800) return 'Gold';
-    if (elo >= 1600) return 'Silver';
-    if (elo >= 1400) return 'Bronze';
+// Update getPlayerRankName function
+function getPlayerRankName(elo, matchCount = 0, winRate = 0) {
+    if (matchCount === 0) return 'Unranked';
+    if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return 'Emerald';
+    if (elo >= 700) return 'Gold';
+    if (elo >= 500) return 'Silver';
+    if (elo >= 200) return 'Bronze';
     return 'Unranked';
 }
 
@@ -525,16 +528,18 @@ async function getPlayersLastEloChanges(usernames) {
 function createPlayerRowWithToken(player, stats, primaryToken) {
     const elo = parseFloat(player.elo) || 0;
 
-    // Set ELO-based colors
-    let usernameColor = 'gray'; // Default for unranked
-    if (elo >= 2000) {
-        usernameColor = '#50C878'; // Emerald Green
-    } else if (elo >= 1800) {
-        usernameColor = '#FFD700'; // Gold
-    } else if (elo >= 1600) {
-        usernameColor = '#b9f1fc'; // Silver
-    } else if (elo >= 1400) {
-        usernameColor = '#CD7F32'; // Bronze
+    // Update the rank color logic in createPlayerRow and createPlayerRowWithToken functions
+    let usernameColor = '#DC143C'; // Default for unranked
+    if (stats.totalMatches === 0) {
+        usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
+        usernameColor = '#50C878'; // Emerald (all requirements met)
+    } else if (elo >= 700) {
+        usernameColor = '#FFD700'; // Gold (700-999)
+    } else if (elo >= 500) {
+        usernameColor = '#C0C0C0'; // Silver (500-699)
+    } else if (elo >= 200) {
+        usernameColor = '#CD7F32'; // Bronze (200-499)
     }
 
     // Create flag HTML if player has country (comes AFTER username)

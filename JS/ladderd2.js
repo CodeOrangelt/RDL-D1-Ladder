@@ -218,12 +218,13 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
     }
 }
 
-// Update the D2 ladder structure to match D1
-function getPlayerRankNameD2(elo) {
-    if (elo >= 2100) return 'Emerald';
-    if (elo >= 1800) return 'Gold';
-    if (elo >= 1600) return 'Silver';
-    if (elo >= 1400) return 'Bronze';
+// Update the getPlayerRankNameD2 function
+function getPlayerRankNameD2(elo, matchCount = 0, winRate = 0) {
+    if (matchCount === 0) return 'Unranked';
+    if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return 'Emerald';
+    if (elo >= 700) return 'Gold';
+    if (elo >= 500) return 'Silver';
+    if (elo >= 200) return 'Bronze';
     return 'Unranked';
 }
 
@@ -293,6 +294,7 @@ async function updateLadderDisplayD2(ladderData) {
         const userTokens = userTokensMap.get(player.username) || [];
         const primaryToken = getPrimaryDisplayToken(userTokens);
         
+        // Pass all required stats for Emerald rank calculation
         return createPlayerRowWithTokenD2(player, stats, primaryToken);
     }).join('');
 
@@ -341,16 +343,18 @@ async function updateLadderDisplayD2(ladderData) {
 function createPlayerRowWithTokenD2(player, stats, primaryToken) {
     const elo = parseFloat(player.elo) || 0;
 
-    // Set ELO-based colors (standardized with D1)
-    let usernameColor = 'gray';
-    if (elo >= 2000) {
-        usernameColor = '#50C878'; // Emerald Green
-    } else if (elo >= 1800) {
-        usernameColor = '#FFD700'; // Gold
-    } else if (elo >= 1600) {
-        usernameColor = '#b9f1fc'; // Silver - standardized with D1
-    } else if (elo >= 1400) {
-        usernameColor = '#CD7F32'; // Bronze
+    // Set ELO-based colors with new thresholds
+    let usernameColor = '#DC143C'; // Default for unranked
+    if (stats.totalMatches === 0) {
+        usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
+        usernameColor = '#50C878'; // Emerald (special requirements)
+    } else if (elo >= 700) {
+        usernameColor = '#FFD700'; // Gold (700+)
+    } else if (elo >= 500) {
+        usernameColor = '#C0C0C0'; // Silver (500-700)
+    } else if (elo >= 200) {
+        usernameColor = '#CD7F32'; // Bronze (200-500)
     }
 
     // Create flag HTML if player has country
