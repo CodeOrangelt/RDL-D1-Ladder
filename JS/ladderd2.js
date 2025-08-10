@@ -32,7 +32,7 @@ async function displayLadderD2(forceRefresh = false) {
     // Clear the table first to prevent duplicates
     tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading D2 ladder data...</td></tr>';
 
-    try {//
+    try {
         // Use cache if available and not expired
         const now = Date.now();
         if (!forceRefresh && playerCacheD2.data && (now - playerCacheD2.timestamp < CACHE_DURATION)) {
