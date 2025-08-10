@@ -3,24 +3,18 @@
 // Configuration
 const ANNOUNCEMENT = {
     id: "beta-release 1.8.4", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.8.4",
+    title: "Redux Descent League Beta Release 1.9 - THE ELO OVERHAUL",
     content: `
         <p1 style="color:#ffffff; font-weight: bold;">WHATS NEW:</p1><br></br>
-            <li style="color:#90EE90">ELO Visibility Toggle</li>
-            <li style="color:#90EE90">Hiatus/Unhiatus Added</li>
-            <li style="color:#90EE90">Availability Toggle (Profiles)</li>
-            <li style="color:#90EE90">Misc Subgame added</li>
-            <li style="color:#90EE90">Added "Misc Subgame"</li>
-            <li style="color:#90EE90">Increased website security</li>
-            <li style="color:#90EE90">24 purchasable tokens</li>
-            <li style="color:#90EE90">7 purchasable themes</li>
-            <li style="color:#90EE90">Matches now award 10 points! </li>
-            <li style="color:#90EE90">Subgame types award various points!</li>
-            <li style="color:red">Retirements REMOVED</li>
+            <li style="color:#90EE90">ELO REHAUL</li>
+            <li style="color:#90EE90">Points Displayed on main page!</li>
             <br>
 \
-        <p1 style="color:#ffffff; font-weight: bold;">RDL News!:</p1><br></br>
-             <li>the 2nd RDL Town Hall commenced! Good feedback, and many new features approved by the community! Attend next time to have your voice heard.</li>
+        <p1 style="color:#ffffff; font-weight: bold;">ELO Format:</p1><br></br>
+             <li>ELO has now been overhauled! Bronze:200-499, 
+             <li> Silver: 500-599, </li>
+             <li> Gold: 700-999, </li>
+             <li> Emerald 1000+, 80%+ W/R, 20 match minimum. </li>
         <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Let me in!"
