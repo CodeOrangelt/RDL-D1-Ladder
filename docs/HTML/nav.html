@@ -105,7 +105,7 @@
                 return;
             }
             
-            const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            const { collection, query, where, getDocs, limit } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
             const { db } = await import('../JS/firebase-config.js');
             
             const invitationsRef = collection(db, 'gameInvitations');
