@@ -20,17 +20,6 @@ jobs:
         run: |
           # Copy all HTML files to root 
           cp -r ./HTML/* ./
-          
-          # Make a proper root index.html
-          cp ./HTML/index.html ./index.html
-          
-          # Update paths in HTML files
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
-          
-          # CRITICAL: Fix import paths in JavaScript files too
-          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
 
       - name: Create Firebase Config
         run: |
