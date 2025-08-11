@@ -38,45 +38,7 @@ jobs:
           # Copy HTML files
           mkdir -p docs/HTML
           cp -r HTML/* docs/HTML/
-          
-          # Create root index.html
-          cat > docs/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Redux Descent League</title>
-              <script>
-                  window.location.href = './HTML/index.html';
-              </script>
-              <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      background-color: #1a1a1a;
-                      color: #f0f0f0;
-                      display: flex;
-                      justify-content: center;
-                      align-items: center;
-                      height: 100vh;
-                      margin: 0;
-                      text-align: center;
-                  }
-              </style>
-          </head>
-          <body>
-              <div>
-                  <h1>Redux Descent League</h1>
-                  <p>Redirecting to the main page...</p>
-                  <p>If you are not redirected, <a href="./HTML/index.html" style="color: #6495ED;">click here</a>.</p>
-              </div>
-          </body>
-          </html>
-          EOF
-          
-          # Fix the limit issue in nav.html
-          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/HTML/nav.html
-
+        
       - name: Process Firebase Configuration
         run: |
           mkdir -p docs/JS
