@@ -30,7 +30,7 @@ jobs:
           string_array_rotate: false
           self_defending: false
           string_array: true
-          string_array_threshold: 0.3
+          string_array_threshold: 1.0
           unicode_escape_sequence: false
           target: browser
 
