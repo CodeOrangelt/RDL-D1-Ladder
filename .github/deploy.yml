@@ -7,28 +7,23 @@ on:
 
 jobs:
   deploy:
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload HTML folder
+        uses: actions/upload-pages-artifact@v2
         with:
-          node-version: 16
-
-      - name: Install dependencies
-        run: npm install # or yarn install
-
-      - name: Build the site
-        run: npm run build # or yarn build (This command depends on your static site generator)
+          path: HTML
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site/HTML # changed from ./HTML to ./_site/HTML
+        id: deployment
+        uses: actions/deploy-pages@v3
+
+      - name: Create redirect index.html
+        run: |
+          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/HTML/index.html"></head><body></body></html>' > ./HTML/index.html
