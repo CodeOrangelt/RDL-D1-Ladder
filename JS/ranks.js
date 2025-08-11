@@ -18,7 +18,7 @@ export function getRankStyle(eloRating, matchCount = 0, winRate = 0) {
 
     // Special Emerald tier check
     // Only award if winRate >= 80% and matchCount >= 20
-    if (eloRating < 1000 && winRate >= 80 && matchCount >= 20) {
+    if (eloRating >= 1000 && winRate >= 80 && matchCount >= 20) {
         return RANKS.EMERALD;
     }
 
