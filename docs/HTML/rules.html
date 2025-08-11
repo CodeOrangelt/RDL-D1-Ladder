@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDL - Rules</title>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico" />
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/rules.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <script type="module" src="../JS/themes.js"></script>
+    <style>
+        body {
+            color: white;
+            /* Set text color to white */
+        }
+
+        .rule-item {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #222;
+            /* optional darker background */
+        }
+
+        h4 {
+            font-size: larger
+        }
+
+        h5 {
+            text-decoration: underline;
+        }
+
+        /* Sandbox specific styles */
+        .sandbox-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .ladder-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .ladder-btn {
+            padding: 8px 16px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .ladder-btn.active {
+            background-color: #303030;
+        }
+
+        .ladder-btn:hover {
+            background-color: #666;
+        }
+
+        .player-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .player-dropdown {
+            padding: 8px;
+            background-color: #444;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        .elo-calculator {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .match-simulation {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .player-card {
+            text-align: center;
+            padding: 15px;
+            background-color: #444;
+            border-radius: 8px;
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-elo {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .elo-change {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .elo-gain {
+            color: #4CAF50;
+        }
+
+        .elo-loss {
+            color: #F44336;
+        }
+
+        .vs-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .calculation-details {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover {
+            background-color: #218838;
+        }
+
+        .loading {
+            color: #ccc;
+            font-style: italic;
+        }
+
+.ribbon-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.ribbon-card {
+    background: linear-gradient(145deg, #2a2a2a 0%, #1e1e1e 100%);
+    border: 2px solid #444;
+    border-radius: 15px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ribbon-card:hover {
+    border-color: #666;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.ribbon-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #444;
+}
+
+.ribbon-icon {
+    width: 90px;
+    height: 90px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+    border: 4px solid #555;
+    background-color: #1a1a1a;
+    padding: 10px;
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 0, 0, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.ribbon-icon:hover {
+    border-color: #777;
+    background-color: #222;
+    transform: scale(1.05);
+}
+
+.ribbon-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    line-height: 1.2;
+}
+
+.ribbon-description {
+    color: #e0e0e0;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.ribbon-levels {
+    background: linear-gradient(135deg, #1a1a1a 0%, #1a1a1a 100%);
+    padding: 18px;
+    border-radius: 10px;
+    font-size: 1em;
+    border: 2px solid #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-levels strong {
+    color: #4CAF50;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Enhanced ribbon icon backgrounds with better contrast */
+.ribbon-icon.rematch { 
+    background-image: url('../images/ribbons/Rematch.png');
+    border-color: #e91e63;
+    background-color: rgba(233, 30, 99, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(233, 30, 99, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.domination { 
+    background-image: url('../images/ribbons/Domination.png');
+    border-color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 152, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.underdog { 
+    background-image: url('../images/ribbons/Underdog.png');
+    border-color: #2196f3;
+    background-color: rgba(33, 150, 243, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(33, 150, 243, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.overachiever { 
+    background-image: url('../images/ribbons/Overachiever.png');
+    border-color: #9c27b0;
+    background-color: rgba(156, 39, 176, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(156, 39, 176, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.legendary { 
+    background-image: url('../images/ribbons/Legendary.png');
+    border-color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 215, 0, 0.3),
+        0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.ribbon-icon.elo-goblin { 
+    background-image: url('../images/ribbons/ELOGoblin.png');
+    border-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(76, 175, 80, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.brick-wall { 
+    background-image: url('../images/ribbons/BrickWall.png');
+    border-color: #795548;
+    background-color: rgba(121, 85, 72, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(121, 85, 72, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.collector { 
+    background-image: url('../images/ribbons/Collector.png');
+    border-color: #607d8b;
+    background-color: rgba(96, 125, 139, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(96, 125, 139, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.sub-gamer { 
+    background-image: url('../images/ribbons/Subgamer.png');
+    border-color: #00bcd4;
+    background-color: rgba(0, 188, 212, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(0, 188, 212, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.explorer { 
+    background-image: url('../images/ribbons/Explorer.png');
+    border-color: #8bc34a;
+    background-color: rgba(139, 195, 74, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(139, 195, 74, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.socialite { 
+    background-image: url('../images/ribbons/Socialite.png');
+    border-color: #ffeb3b;
+    background-color: rgba(255, 235, 59, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 235, 59, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.top-rank { 
+    background-image: url('../images/ribbons/toprank.png');
+    border-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(244, 67, 54, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-info-box {
+    background: linear-gradient(145deg, #1a1a1a 0%, #1a1a1a 100%);
+    border: 2px solid #444;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ribbon-info-box h5 {
+    color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.ribbon-info-box ul {
+    margin-bottom: 20px;
+}
+
+.ribbon-info-box li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+.ribbon-info-box p {
+    color: #e0e0e0;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ribbon-showcase {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .ribbon-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .ribbon-header {
+        gap: 15px;
+    }
+    
+    .ribbon-title {
+        font-size: 1.3em;
+    }
+}
+
+/* Special glow effects for legendary ribbons */
+.ribbon-icon.legendary:hover {
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 215, 0, 0.4),
+        0 4px 12px rgba(255, 215, 0, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.ribbon-icon.top-rank:hover {
+    box-shadow: 
+        inset 0 2px 8px rgba(244, 67, 54, 0.4),
+        0 4px 12px rgba(244, 67, 54, 0.4),
+        0 0 20px rgba(244, 67, 54, 0.3);
+}
+    </style>
+</head>
+
+<body>
+    <div id="nav-placeholder"></div>
+
+    <main>
+        <div class="rules-header">
+            <h1>RDL Rules</h1>
+            <p class="rules-tagline">Questions? Contact me at code6dof@gmail.com</p>
+        </div>
+
+        <div class="rules-container">
+            <div class="rules-nav">
+                <div class="rules-nav-item active" data-target="general">General</div>
+                <div class="rules-nav-item" data-target="solo">Solos</div>
+                <div class="rules-nav-item" data-target="duos">Duos</div>
+                <div class="rules-nav-item" data-target="ctf">CTF</div>
+                <div class="rules-nav-item" data-target="ribbons">Ribbons</div>
+                <div class="rules-nav-item" data-target="sandbox">ELO Calculator</div>
+            </div>
+
+            <div class="rules-sections">
+                <!-- General section -->
+                <div id="general" class="rules-section active">
+                    <!-- Replace your existing accordion items with a simple structure like this -->
+                    <div class="rule-item">
+                        <h4>Registration</h4>
+                        <div>
+                            <h5>Player Requirements</h5>
+                            <ul>
+                                <li>Before joining, all Pilots must provide a valid email address. The RDL will verify
+                                    its authenticity as part of the registration process</li>
+                                <p>
+
+                                    <li>Pilots must not use aliases. We would like pilots to go by their common pilot.
+                                        For example, b2af should not register as b2.
+                                        Maintain a consistent name throughout the Descent community.</li>
+                                <p>
+                                    <li>Country: Setting your home country is recommended but optional. The RDL would
+                                        like for you to set your country so others can prepare for a high-ping match.
+                                    </li>
+                                <p <li>Players must register with three home maps that follow the home level framework.
+                                    </li>
+                            </ul>
+
+                            <h5>Home Level Frame Work</h5>
+                            <ul>
+                                <li> Homes should be used as a last-ditch measure for pilots to play. Ideally, you
+                                    should
+                                    agree on maps rather than rely on one single level. Map diversity is encouraged on
+                                    the
+                                    RDL.</li>
+                                </p>
+                                <li>Home maps that do not follow this standard will be rejected.
+
+                            </ul>
+                            The Home Level Framework standard is as follows:</li>
+                            <ol>
+                                <li>Primary weapons should be equal in number.</li>
+                                <li>Weapons should not focus on subtype matches (e.g., disorientation, single-use
+                                    weapons, rat, Gauss and Mercs, etc.).</li>
+                                <li>Map sizes should be reasonably sized for 1v1 play.</li>
+                                <li>Maps that encourage "missile boating" are prohibited. (e.g., levels that start
+                                    players with maxed-out missiles and include large caches of additional
+                                    missiles).</li>
+                                <li>Home Maps should be stock (e.g., no MCAPs or Xs).</li>
+                            </ol>
+
+
+
+                            <h5>Version Requirements</h5>
+                            <ul>
+                                <li>For Descent/Descent II, players must use only the game files provided by Steam,
+                                    GOG, or the US CD versions of the game, and the most recent DXX-Redux build (<a
+                                        href="https://dxx-redux.com/" target="_blank" rel="noopener">Click here</a>), currently
+                                    v1.1.</li>
+                                <p></p>
+                                <li>For Descent 3, players must use the Piccu Engine along with game files provided
+                                    by Steam, GOG, or the CD versions of the game. The current Piccu Engine is
+                                    v1.2.2 and can be found <a href="https://github.com/InsanityBringer/PiccuEngine"
+                                        target="_blank" rel="noopener">here</a>.</li>
+                                <p></p>
+                                <li>Any D1/D2/D3 experimental builds are prohibited in RDL ladder matches.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>RDL Rankings</h4>
+                        <div>
+                            <ul>
+                                <li>Ranking System: The RDL uses a ladder system to rank players. Players are ranked
+                                    based on their Elo rating, which is calculated based on match performance.</li>
+                                <p></p>
+                                <li>Scoring System: To prove your skill, players compete for ladder positions. However,
+                                    ELO determines your skill level. Skill levels are Bronze, Silver, Gold, and
+                                    Emerald.</li>
+                            </ul>
+
+                            <h5>The Ladder System</h5>
+                            <p>The ranges are as follows:</p>
+                            <ol>
+                                <li>1400–1600: Bronze</li>
+                                <li>1600–1800: Silver</li>
+                                <li>1800–2000: Gold</li>
+                                <li>2000+: Emerald</li>
+                            </ol>
+
+                            <ul>
+                                <li>Players gain or lose Elo based on match performance and are placed according to
+                                    their
+                                    latest ELO value. ELO is not determined by K/D ratio, but by wins against opponents
+                                    (upsets grant bigger gains). The ladder resets with all pilots at 0 matches each
+                                    season.
+                                    However, ELO does not reset.
+                                </li>
+                                <p></p>
+                            </ul>
+
+
+                        </div>
+                    </div>
+
+                    <!-- Additional rule items follow the same structure -->
+                    <div class="rule-item">
+                        <h4>Timeouts</h4>
+                        <div>
+                            <ul>
+                                <li>A player can call a timeout at any time. Pilots must evade any in-air projectiles
+                                    before stopping. Players must not pick up any objects during a timeout.</li>
+                                <p></p>
+                                <li>Once the timeout is done, the pilot who called timeout must type "Ready" in the
+                                    message box. The other pilot must acknowledge by typing "Go." On the message "Go,"
+                                    the match resumes.</li>
+                                <P></P>
+                                <li>Extended timeouts are allowed if both players agree. The pilot must justify the
+                                    extended timeout. If justification is not heard or agreed upon, the match is
+                                    forfeited.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Participation</h4>
+                        <div>
+                            <ui>
+                                <li>Pilots must play a minimum of two match per month to remain eligible to play. </li>
+                                <p></p>
+
+                                <li>Pilots that exceed this duration will lose placement on the ladder, will lose 50 ELO
+                                    and will be placed in active status. </li>
+                                <p></p>
+                            </ui>
+                        </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Respect and Sportsmanship</h4>
+
+
+
+                        <div>
+                            <ul>
+                                <li>The RDL encourages a spirit of open, fair, respectful, and good-faith competition
+                                    among players. RDL admins have first, last, and final say on disciplinary action, up
+                                    to and including permanent removal from the ladder.</li>
+                                <p>
+                                    <li>General conduct, including in the Discord, and on the ladder:<p></p>
+                                        <ul>
+                                            <li>Do not use slurs or derogatory language about any group or pilot,
+                                                anywhere,
+                                                at any time.</li>
+                                            <p>
+                                                <li>Do not impersonate other players or RDL admins.</li>
+                                            <p>
+                                                <li>Do not share others' private information without their consent.</li>
+                                            <p></p>
+                                            <li>Do not engage in targeted harassment or bullying.</li>
+                                            <p></p>
+                                            <li>Aliasing – the practice of flying under other in-game pilot names or
+                                                profiles – is permitted, with three guidelines and two rules:<p></p>
+                                                <ul>
+                                                    <li>Names should typically be recognizable as your ladder profile
+                                                        name
+                                                        or a name you commonly use.</li>
+                                                    <p></p>
+                                                    <li>If you plan to alias during a match, disclose it when setting up
+                                                        the
+                                                        match.</li>
+                                                    <p></p>
+                                                    <li>Aliases shall never be commonly used names by other pilots or
+                                                        their
+                                                        ladder profiles.</li>
+                                                    <p></p>
+                                                    <li>Aliases should only be used in games; pilots should only
+                                                        maintain
+                                                        one RDL profile.</li>
+                                                    <p></p>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>Communication and trash talk are allowed. However, no pilot is obligated to chat
+                                        during a match, and any requests for minimal communication (besides timeouts)
+                                        must
+                                        be respected.</li>
+                                <p></p>
+                                <li>Demos, observers, and streaming:
+                                    <ul>
+                                        <li>In Descent/Descent II, leaving observer slots open and recording demos is
+                                            strongly encouraged, but not required, especially if all pilots agree
+                                            beforehand.</li>
+                                        <p></p>
+                                        <li>Streaming is encouraged but not required. You may stream your own POV, but
+                                            not your opponent's.</li>
+                                        <p></p>
+                                    </ul>
+                                </li>
+                                <li>All players must adhere to the league's Respect and Sportsmanship rule. Failure to
+                                    do so will result in a reduction in rank, skill level, time ban, or general ban.
+                                </li>
+                                <p></p>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="rule-item">
+                        <h4>Cheating</h4>
+                        <div>
+                            <ul>
+                                <li>Players should never, under any circumstances, use cheats, hacks, asset
+                                    replacements, or similar software/techniques to gain an edge during a match.</li>
+                                <p></p>
+                                <li>Do not accuse someone of cheating publicly without consulting League Admins. If you
+                                    suspect cheating, report evidence. RDL
+                                    staff will make a determination and take appropriate action.</li>
+                                <p></p>
+                                <li>Cheating constitutes:
+                                    <ul>
+                                        <li>Using Hog edits</li>
+                                        <li>Playing with non-default Descent physics (e.g., making plasma bounce off
+                                            walls, or increasing ship velocity)</li>
+                                        <li>Using graphical enhancements such as OpenGL ReShade for unfair advantages
+                                        </li>
+                                        <li>Using network tools like VPNs, proxies, or VLANs to maliciously hinder an
+                                            opponent's connection</li>
+                                        <li>Using Cheat Engine or other hex editors to alter game physics (beyond simple
+                                            color changes)</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="rule-item">
+                        <h4>Home Levels GamePlay</h4>
+                        <div>
+
+                            <div>
+                                <ul>
+                                    <li>If pilots cannot agree on a level to play,
+                                        they should refer to the Home Level Framework to resolve the conflict. Pilots
+                                        will play a series of two or more matches, each from the pilot's homes. The
+                                        first pilot will choose one of the opponent's home levels. After the match, the
+                                        other pilot will choose from the first pilot's home levels.</li>
+                                    <p></p>
+                                    <li>If both pilots agree to use home
+                                        levels to play, they must not deny any matches despite the opponent's home level
+                                        choice.</li>
+                                    <p></p>
+                                    <p></p>
+                                    <li>Home levels must follow the home level
+                                        framework. See Rule 1.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <div class="rule-item">
+                        <h4>Challenges</h4>
+                        <div>
+                            <ul>
+
+                                <li>Comming soon</li>
+
+
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solo section - MOVE THIS OUTSIDE -->
+            <div id="solo" class="rules-section">
+                <div class="rule-item">
+                    <h4>Hosting</h4>
+                    <div>
+                        <ul>
+                            <li><strong>Descent/Descent II:</strong>
+                                <p></p>
+                                <ul>
+                                    <li>Altered settings, such as missile caps, duplicated
+                                        primaries, ship
+                                        colors other than blue, reduced flash, or altered graphics,
+                                        must be
+                                        agreed to by both pilots before hosting the match.</li>
+                                    <p></p>
+                                    <li>If players do not agree on altered settings, but still wish
+                                        to play,
+                                        they should use the defaults.</li>
+                                    <p></p>
+                                </ul>
+                            </li>
+                            <li><strong>Descent 3:</strong>
+                                <p></p>
+                                <ul>
+                                    <li>Players should find any means to determine the best
+                                        connection type for
+                                        competitive play, whether that is P2P or the server tracker.
+                                    </li>
+                                    <p></p>
+                                    <li>If by P2P: players win by 2, enable rotational velocity.
+                                    </li>
+                                    <p></p>
+                                    <li>If by Server: players first to 20 wins, settings set by
+                                        server host.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Conduct</h4>
+                    <div>
+                        <ul>
+                            <li>Refer to 'Respect and Sportsmanship' under 'General' rules.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Restarting from Disconnect/Timeout</h4>
+                    <div>
+                        <ul>
+                            <li>Should players lose connection during a match they wish to finish,
+                                or players
+                                want to restart a match in progress that had to be paused for an
+                                extended length
+                                of time, both players should agree to the starting score (or refer
+                                to the
+                                tracker entry of the first portion of the map), and rehost with
+                                identical
+                                settings.</li>
+                            <p></p>
+                            <li>If players do not want to finish the disconnected/timed out match,
+                                do not report
+                                the partial match to the ladder – consider it as having not
+                                happened.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Winning and Losing</h4>
+                    <div>
+                        <ul>
+                            <li>The first player to reach 20 points, by a margin of 2 points, wins
+                                the match.
+                                All projectiles in the vicinity must be dodged before victory is
+                                declared.</li>
+                            <p></p>
+                            <li>If a player reaches 20 points and their opponent has 19, the game
+                                goes to
+                                overtime and play continues until one player attains a winning
+                                margin of two
+                                points over the other.</li>
+                            <p></p>
+                            <li>If a player is unresponsive after a lengthy timeout, they forfeit
+                                the match.
+                            </li>
+                            <li>If a player intentionally quits the game (i.e. 'ragequits'), the
+                                other player
+                                wins the match. For reporting purposes, set their score to 20 except
+                                if a
+                                ragequit happens in overtime, in which case set the winning player's
+                                score to
+                                whatever it would take to win.</li>
+                            <p></p>
+                            <li>Repeated ragequits should be reported to RDL staff.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Level Selection</h4>
+                    <div>
+                        <ul>
+                            <li>Players must agree on a level before hosting a match.</li>
+                            <p></p>
+                            <li>If players cannot agree, but both still wish to play, they shall
+                                choose and play
+                                one level from each pilot's home set.</li>
+                            <p></p>
+                            <li>Players should offer, consider, and negotiate levels in good faith,
+                                with no
+                                assumption or implication of a rematch or game series unless agreed
+                                to as part
+                                of the level selection process.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Home Levels</h4>
+                    <div>
+                        <p>For Solos, players must have set 3 home maps according to the following
+                            framework:
+                        </p>
+                        <ul>
+                            <li>Primary weapon count should be an even number for each present on
+                                the map.</li>
+                            <p></p>
+                            <li>Weapons should not focus on 'subgames', including but not limited
+                                to:
+                                disorientation (e.g. Tetrafusion), single weapons (e.g. ugh or IS),
+                                ratting
+                                (e.g. Fusion Rat's Paradise), blind
+                                <ul>
+                                    <li>Blind matches: Both players should have played the map
+                                        before starting a
+                                        RDL match.</li>
+                                    <li>Maps that allow/encourage 'missile boating' – a count higher
+                                        than 6 –
+                                        should not be played. (This figure is not inclusive of
+                                        concussion
+                                        missiles or proximity mine packs.)</li>
+                                </ul>
+                            </li>
+                            <li>Map sizes should be reasonably sized for 1v1 play, though this is up
+                                to players'
+                                discretion.</li>
+                            <p></p>
+                            <li>Maps should feature stock weapons (e.g. no match rules as part of a
+                                home level,
+                                like adding mcap2, and no levels explicitly designed to multiply
+                                weapons from a
+                                prior version).</li>
+                            <p></p>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Rematches</h4>
+                    <div>
+                        <ul>
+                            <li>Players may request, but are never required to accept, a rematch.
+                                Players must
+                                negotiate and agree to the game settings for the rematch, including
+                                map choice.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Challenges (Coming Soon)</h4>
+                    <div>
+                        <ul>
+                            <li>Challenges are incentives that spur gameplay on the RDL. Pilots may
+                                issue one
+                                formal challenge once per week, with the prize of taking the others'
+                                ladder
+                                placement.</li>
+                            <p></p>
+                            <li>Challenges are a two-match series, with players selecting from each
+                                other's home
+                                levels.</li>
+                            <p></p>
+                            <li>Challenge winners are determined by the higher of the summed scores
+                                from each
+                                match.</li>
+                            <p></p>
+                            <li>In the case of a tie, the lower-ranked player is considered the
+                                winner.</li>
+                            <li>Ignoring a challenge for two weeks or rejecting it outright will be
+                                considered a
+                                20-0 forfeiture.
+                                <ul>
+                                    <li>If the player issuing the challenge is of a lower rank and
+                                        the one being
+                                        challenged forfeits, the players will switch places on the
+                                        ladder.</li>
+                                    <p></p>
+                                    <li>If the player issuing the challenge is of a higher rank and
+                                        the one
+                                        being challenged forfeits, the lower-ranked player will not
+                                        be able to
+                                        ascend higher than the player issuing the challenge for two
+                                        weeks.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Default Game Settings</h4>
+                    <div>
+                        <ul>
+                            <li>The default game settings are used in case players cannot agree on
+                                the game
+                                settings.</li>
+                            <p></p>
+                            <li>Any disputes during a match must be fixed immediately or reported to
+                                an admin.
+                            </li>
+                            <p></p>
+                        </ul>
+
+                        <h5>Default Game Settings:</h5>
+                        <div class="settings-grid">
+                            <div class="setting-item">Do NOT set "Open Game"</div>
+                            <div class="setting-item">Maximum Observers at least 4</div>
+                            <div class="setting-item">Broadcast Delay 15 Seconds OFF</div>
+                            <div class="setting-item">Minimal Observer Info OFF</div>
+                            <div class="setting-item">Difficulty MAX (Insane)</div>
+                            <div class="setting-item">Reactor life 50 MINUTES</div>
+                            <div class="setting-item">Max time 0 MINUTES</div>
+                            <div class="setting-item">Kill goal 0 KILLS</div>
+                            <div class="setting-item">Extra primaries NONE for 2 players, 2x for 3-4
+                                players, 3x
+                                for 5-6 players, 4x for 7 players</div>
+                            <div class="setting-item">Extra secondaries NONE</div>
+                            <div class="setting-item">Cap secondaries UNCAPPED</div>
+                            <div class="setting-item">Low vulcan ammo OFF</div>
+                            <div class="setting-item">Set objects allowed ALL CHECKED EXCEPT
+                                CLOAKING &
+                                INVULNERABILITY</div>
+                            <div class="setting-item">Spawn style 0 second INVULN</div>
+                            <div class="setting-item">Vulcan ammo style ORIGINAL (DEPLETING)</div>
+                            <div class="setting-item">All players blue ON for 2 players, OFF for 3-7
+                                players
+                            </div>
+                            <div class="setting-item">Allow colored dynamic lighting OFF</div>
+                            <div class="setting-item">Allow players to choose their colors ON</div>
+                            <div class="setting-item">Packets per second 40 for 2 players, 30 for 3
+                                or higher
+                            </div>
+                            <div class="setting-item">Track this game ON</div>
+                            <div class="setting-item">Retro protocol ON</div>
+                            <div class="setting-item">Show all players on automap OFF</div>
+                            <div class="setting-item">Bright player ships ON</div>
+                            <div class="setting-item">Show enemy names on HUD OFF</div>
+                            <div class="setting-item">Homing update rate 25</div>
+                            <div class="setting-item">DXX-Retro homing speed OFF</div>
+                            <div class="setting-item">Allow custom models and textures ON or OFF
+                                (Both players
+                                must agree)</div>
+                            <div class="setting-item">Reduced flash ON or OFF (Both players must
+                                agree)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duos section - MOVE THIS OUTSIDE AND FIX CLASS NAME -->
+            <div id="duos" class="rules-section">
+                <!-- Changed from rules-sections to rules-section -->
+                <div class="rule-item">
+                    <h4>Duo Matches - COMING SOON POST BETA</h4>
+                    <div>
+                        <p>2v2 matches will follow a different structure:</p>
+                        <ul>
+                            <!-- Future duo rules go here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTF section - MOVE THIS OUTSIDE -->
+            <div id="ctf" class="rules-section">
+                <div class="rule-item">
+                    <h4>Capture The Flag - COMING SOON POST BETA</h4>
+                    <div>
+                        <p>CTF matches have unique requirements:</p>
+                        <ul>
+                            <!-- Future CTF rules go here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="ribbons" class="rules-section">
+                <div class="rule-item">
+                        <div class="ribbon-info-box">
+                            <h5>RDL Ribbons</h5>
+                            <ul>
+                                <li><strong>Leveling:</strong> Most ribbons increase in level each time you earn them</li>
+                                <li><strong>Incremental:</strong> Some ribbons level up at specific increments (e.g., every 50 matches)</li>
+                                <li><strong>Unique:</strong> A few ribbons don't have levels and are one-time achievements</li>
+                                <li><strong>Seasonal:</strong> Some ribbons reset each season, others are permanent</li>
+                            </ul>
+                        </div>
+
+                        <div class="ribbon-showcase">
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon rematch"></div>
+                                    <h3 class="ribbon-title">Rematch Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat a pilot with the "Rematch" subgame selected in the report form.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon domination"></div>
+                                    <h3 class="ribbon-title">Domination Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat 5 unique pilots in a rank (including your own rank).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level increases for each rank you've "dominated".
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon underdog"></div>
+                                    <h3 class="ribbon-title">Underdog Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Beat a pilot with at least 300 ELO more than you.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> Each time you earn this ribbon it goes up 1 level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon overachiever"></div>
+                                    <h3 class="ribbon-title">Overachiever Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played over 100 matches.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level is at increments of 100 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon legendary"></div>
+                                    <h3 class="ribbon-title">Legendary Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Gain at least 300 ELO in one season. <em>(Work in Progress)</em>
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon's level can be continually earned with +100 ELO factored instead of default 300 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon elo-goblin"></div>
+                                    <h3 class="ribbon-title">ELO Goblin Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    In one match gain +32 ELO (the maximum possible ELO gain).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon brick-wall"></div>
+                                    <h3 class="ribbon-title">Brick Wall Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Amass at least 80% overall win rate percentage.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level gains a level every 5 percent until 100% where it is maxed. <em>(Minimum 50 matches required)</em>
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon collector"></div>
+                                    <h3 class="ribbon-title">Collector Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Hold more than 5 ribbons at a time.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 5 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon sub-gamer"></div>
+                                    <h3 class="ribbon-title">Sub-Gamer Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Play over 50 subgame matches in one season.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 50 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon explorer"></div>
+                                    <h3 class="ribbon-title">Explorer Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played at least 20 unique maps.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 20 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon socialite"></div>
+                                    <h3 class="ribbon-title">Socialite Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Played at least 10 unique pilots.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 5 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon top-rank"></div>
+                                    <h3 class="ribbon-title">Top {Rank} Pilot Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    You have claimed the highest spot on the ladder for your rank class (Bronze, Silver, Gold, or Emerald).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon does not have levels - it's a unique achievement.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW SANDBOX SECTION -->
+            <div id="sandbox" class="rules-section">
+                <div class="rule-item">
+                    <h4>ELO Calculator Sandbox</h4>
+                    <div>
+                        <p>Use this tool to understand how ELO calculations work on the RDL.</p>
+                        
+                        <div class="sandbox-controls">
+                            <div class="ladder-selector">
+                                <label>Select Ladder:</label>
+                                <button class="ladder-btn active" data-ladder="D1">D1</button>
+                                <button class="ladder-btn" data-ladder="D2">D2</button>
+                                <button class="ladder-btn" data-ladder="D3">D3</button>
+                                <button class="refresh-btn" id="refresh-players">
+                                    <i class="fas fa-sync-alt"></i> Refresh Players
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="elo-calculator">
+                            <h5>Match Simulation</h5>
+                            <div class="player-selector">
+                                <div>
+                                    <label for="winner-select">Winner:</label>
+                                    <select id="winner-select" class="player-dropdown">
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="loser-select">Loser:</label>
+                                    <select id="loser-select" class="player-dropdown">
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="match-result" class="match-simulation" style="display: none;">
+                                <div class="player-card" id="winner-card">
+                                    <div class="player-name" id="winner-name">-</div>
+                                    <div class="player-elo" id="winner-current-elo">Current ELO: -</div>
+                                    <div class="elo-change elo-gain" id="winner-elo-change">+0</div>
+                                    <div class="player-elo" id="winner-new-elo">New ELO: -</div>
+                                </div>
+
+                                <div class="vs-indicator">VS</div>
+
+                                <div class="player-card" id="loser-card">
+                                    <div class="player-name" id="loser-name">-</div>
+                                    <div class="player-elo" id="loser-current-elo">Current ELO: -</div>
+                                    <div class="elo-change elo-loss" id="loser-elo-change">-0</div>
+                                    <div class="player-elo" id="loser-new-elo">New ELO: -</div>
+                                </div>
+                            </div>
+
+                            <div id="calculation-details" class="calculation-details" style="display: none;">
+                                <h5>Calculation</h5>
+                                <pre id="calculation-text"></pre>
+                            </div>
+                        </div>
+
+                        <div class="rule-item" style="margin-top: 20px; background-color: #1a1a1a;">
+                            <h5>How ELO Works</h5>
+                            <p>The RDL uses the standard ELO rating system with a K-factor of 32:</p>
+                            <ul>
+                                <li><strong>Expected Score:</strong> Based on the ELO difference between players</li>
+                                <li><strong>Actual Score:</strong> 1 for win, 0 for loss</li>
+                                <li><strong>ELO Change:</strong> K-factor × (Actual Score - Expected Score)</li>
+                                <li><strong>Upsets:</strong> Lower-rated players gain more ELO when beating higher-rated opponents</li>
+                                <li><strong>Favored Wins:</strong> Higher-rated players gain less ELO when beating lower-rated opponents</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <!-- Add this Terms of Service section between main and footer -->
+    <div class="tos-container">
+        <button class="tos-button" id="showTos">RDL Terms of Service</button>
+
+        <div class="tos-modal" id="tosModal">
+            <div class="tos-content">
+                <span class="close-tos">&times;</span>
+                <h2>RDL Terms of Service</h2>
+                <div class="tos-text">
+                    <p>By using this website, you agree to the following terms and conditions:</p>
+                    <ol>
+                        <li>All match results submitted become the property of RDL.</li>
+                        <li>You agree to follow all rules and guidelines described in the RDL Rules.</li>
+                        <li>Administrators reserve the right to modify rankings or remove players who violate rules.
+                        </li>
+                        <li>You are responsible for maintaining the security of your account.</li>
+                    </ol>
+                    <p>Last updated: April 18, 2025</p>
+                </div>
+                <div class="tos-actions">
+                    <button class="tos-agree" id="agreeTos">I Agree</button>
+                    <button class="tos-decline" id="closeTos">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load navigation and footer
+            Promise.all([
+                fetch('../HTML/nav.html').then(response => response.text()),
+                fetch('../HTML/footer.html').then(response => response.text())
+            ]).then(([navData, footerData]) => {
+                document.getElementById('nav-placeholder').innerHTML = navData;
+                document.getElementById('footer-placeholder').innerHTML = footerData;
+            }).catch(error => console.error('Error loading nav/footer:', error));
+
+            // Tab switching for General/Solo/Duos/CTF buttons
+            document.querySelectorAll('.rules-nav-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    // Remove active class from all nav items
+                    document.querySelectorAll('.rules-nav-item').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+
+                    // Add active class to clicked item
+                    this.classList.add('active');
+
+                    // Get the target section
+                    const target = this.getAttribute('data-target');
+
+                    // Hide all sections
+                    document.querySelectorAll('.rules-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+
+                    // Show target section
+                    document.getElementById(target).classList.add('active');
+                });
+            });
+        });
+    </script>
+
+    <!-- Firebase scripts -->
+    <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" src="../JS/current-user.js"></script>
+    <script type="module" src="../JS/logout.js"></script>
+    <script type="module" src="../JS/calculator.js"></script>
+    <script src="../JS/metadata.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,515 @@
+        /* Main container styling */
+        .team-container {
+            max-width: 1300px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(28,28,28,.95);
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
+            color: #e0e0e0;
+        }
+        
+        /* Banner styling */
+        .team-banner {
+            height: 160px;
+            background-position: center;
+            background-size: cover;
+            background-color: #222;
+            position: relative;
+            margin: -20px -20px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,.8));
+            padding: 20px;
+        }
+        
+        .edit-banner-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,.6);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+        
+        .edit-banner-btn:hover {opacity: 1}
+        
+        /* Team name and badges */
+        .team-name {
+            font-size: 2.2rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,.5);
+            color: #fff
+
+        }
+        
+        .team-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: .8rem;
+        }
+        
+        .tier-badge {color: #fff}
+        .tier-badge.masters, .tier-badge.emerald {background: #50C878}
+        .tier-badge.gold {background: #FFD700; color: #000}
+        .tier-badge.silver {background: #C0C0C0; color: #000}
+        .tier-badge.bronze {background: #CD7F32}
+        
+        /* Header with stats */
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+        
+        .team-quick-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-pill {
+            background: #333;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .stat-pill i {
+            opacity: .7;
+        }
+        
+        /* Content layout */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 3fr 4fr;
+            gap: 20px;
+        }
+        
+        /* Cards styling */
+        .card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        
+        .card-title {
+            margin: 0 0 15px;
+            color: #9c27b0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .card-title-noborder {
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        
+        /* Team info */
+        .team-info {
+            padding: 5px 0;
+            font-size: .9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .team-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .team-info-item i {
+            color: #9c27b0;
+            width: 16px;
+            text-align: center;
+            margin-top: 3px;
+        }
+        
+        /* Stats rows */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .stat-row:last-child {border-bottom: none}
+        .win {color: #50C878}
+        .loss {color: #ff6b6b}
+        
+        /* Tier breakdown */
+        .tier-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .tier-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        /* Team members */
+        .member-card {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .member-card:last-child {border-bottom: none}
+        
+        .member-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+        
+        .member-name {
+            margin: 0 0 5px;
+            font-size: 1rem;
+        }
+        
+        .member-role {
+            color: #888;
+            font-size: .85rem;
+            margin-bottom: 8px;
+        }
+        
+        .member-stats {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .member-stat {
+            font-size: .75rem;
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        /* Matches */
+        .match-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            align-items: center;
+        }
+        
+        .match-item:last-child {border-bottom: none}
+        .match-item:hover {background: #333}
+        
+        .match-result {
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .match-opponent {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .match-meta {
+            font-size: .8rem;
+            color: #888;
+        }
+        
+        .match-scores {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Buttons */
+        .btn-sm {
+            background: #9c27b0;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: .85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-sm:hover {background: #7b1fa2}
+        
+        /* Debug */
+        .debug-banner {
+            padding: 10px;
+            margin: 10px 0;
+            background: #222;
+            border-left: 4px solid #ff6b6b;
+            font-size: .85rem;
+            display: none;
+        }
+        
+        /* Modal */
+        .team-edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .modal-title {
+            margin: 0;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #9c27b0;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .banner-preview {
+            width: 100%;
+            height: 120px;
+            background-color: #222;
+            background-position: center;
+            background-size: cover;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .banner-upload {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .banner-upload-btn {
+            background: #444;
+            color: #ccc;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .banner-upload-btn:hover {background: #555}
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+        }
+        
+        .btn {
+            background: #333;
+            color: #ccc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #9c27b0;
+            color: #fff;
+        }
+        
+        .btn:hover {background: #444}
+        .btn-primary:hover {background: #7b1fa2}
+        
+        /* Loading and error states */
+        .loading-container {
+            text-align: center;
+            padding: 50px 0;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #9c27b0;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% {transform: rotate(0)}
+            100% {transform: rotate(360deg)}
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(255,107,107,.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255,107,107,.3);
+        }
+        
+        /* Dynamic theme classes - better placed */
+        .theme-masters {border-color: #50C878}
+        .theme-masters .card-title {color: #50C878}
+        .theme-masters .team-info-item i {color: #50C878}
+        .theme-masters .btn-sm, .theme-masters .btn-primary {background: #50C878}
+        .theme-masters .btn-sm:hover, .theme-masters .btn-primary:hover {background: #3aa55c}
+        
+        .theme-emerald {border-color: #50C878}
+        .theme-emerald .card-title {color: #50C878}
+        .theme-emerald .team-info-item i {color: #50C878}
+        .theme-emerald .btn-sm, .theme-emerald .btn-primary {background: #50C878}
+        .theme-emerald .btn-sm:hover, .theme-emerald .btn-primary:hover {background: #3aa55c}
+        
+        .theme-gold {border-color: #FFD700}
+        .theme-gold .card-title {color: #D4AF37}
+        .theme-gold .team-info-item i {color: #D4AF37}
+        .theme-gold .btn-sm, .theme-gold .btn-primary {background: #D4AF37}
+        .theme-gold .btn-sm:hover, .theme-gold .btn-primary:hover {background: #BB9830}
+        
+        .theme-silver {border-color: #C0C0C0}
+        .theme-silver .card-title {color: #A0A0A0}
+        .theme-silver .team-info-item i {color: #A0A0A0}
+        .theme-silver .btn-sm, .theme-silver .btn-primary {background: #A0A0A0}
+        .theme-silver .btn-sm:hover, .theme-silver .btn-primary:hover {background: #888888}
+        
+        .theme-bronze {border-color: #CD7F32}
+        .theme-bronze .card-title {color: #CD7F32}
+        .theme-bronze .team-info-item i {color: #CD7F32}
+        .theme-bronze .btn-sm, .theme-bronze .btn-primary {background: #CD7F32}
+        .theme-bronze .btn-sm:hover, .theme-bronze .btn-primary:hover {background: #B36922}
+        
+        /* Responsive design */
+        @media (max-width: 900px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .team-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+        
+        .tab-active {
+            color: #fff !important;
+            border-bottom: 2px solid #9c27b0 !important;
+        }
+        
+        /* Add this to your existing theme classes */
+        .theme-masters .tab-active {border-bottom-color: #50C878 !important;}
+        .theme-emerald .tab-active {border-bottom-color: #50C878 !important;}
+        .theme-gold .tab-active {border-bottom-color: #D4AF37 !important;}
+        .theme-silver .tab-active {border-bottom-color: #A0A0A0 !important;}
+        .theme-bronze .tab-active {border-bottom-color: #CD7F32 !important;}

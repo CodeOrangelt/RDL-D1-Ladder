@@ -1,0 +1,268 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    margin: 20px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+/* Update the form container styles */
+.form-container {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 30px;  /* Increased padding */
+    border: 1px solid white;
+    border-radius: 5px;
+    margin: 20px;
+    width: 300px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Style all inputs in both forms */
+.form-container input,
+.form-group input {
+    width: calc(100% - 24px);  /* Account for padding */
+    padding: 12px;
+    margin: 10px 12px;  /* Added horizontal margin */
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+}
+
+.form-container input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-container input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-container button {
+    width: calc(100% - 24px);
+    margin: 10px 12px;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-container button:hover {
+    background-color: #45a049;
+}
+
+#error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+/* Update form container text colors */
+.form-container h2,
+.form-container p,
+.switch-form {
+    color: white;
+}
+
+.switch-form {
+    text-align: center;
+    margin-top: 20px;
+    padding: 0 12px;
+    color: #666;
+}
+
+.switch-form a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.switch-form a:hover {
+    text-decoration: underline;
+}
+
+/* Success and warning messages */
+.success-message {
+    background-color: rgba(76, 175, 80, 0.2);
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.warning-message {
+    background-color: rgba(255, 152, 0, 0.2);
+    border: 1px solid #FF9800;
+    color: #FF9800;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Only show error message when it has content */
+.error-message:empty {
+    display: none;
+}
+
+.error-message {
+    display: none;  /* Hide by default */
+}
+
+.error-message:not(:empty) {
+    display: block;  /* Show only when there's content */
+    background-color: #f2dede;
+    color: #a94442;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #ebccd1;
+    border-radius: 4px;
+}
+
+.resend-button {
+    background-color: transparent;
+    border: 1px solid currentColor;
+    padding: 5px 10px;
+    border-radius: 3px;
+    color: inherit;
+    cursor: pointer;
+    margin-top: 5px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.resend-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#verification-answer {
+    /* Will inherit styles from .form-container input */
+}
+
+/* Update form group styles */
+.form-group {
+    margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Update the form-group and input styling */
+.form-group input {
+    /* Will inherit styles from .form-container input */
+}
+
+/* Style the game mode dropdown */
+.form-group select {
+    width: calc(100% - 24px);
+    padding: 12px;
+    margin: 10px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    cursor: pointer;
+}
+
+.form-group select:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.form-group select option {
+    background-color: #333;
+    color: white;
+}
+
+/* Style the non-participant checkbox container */
+.form-group label {
+    width: calc(100% - 24px);
+    margin: 10px 12px;
+    display: flex;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+}
+
+/* Style the checkbox itself */
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin: 0 10px 0 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+    background-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-group input[type="checkbox"]:checked {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.form-group input[type="checkbox"]:checked::after {
+    content: "✓";
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.form-group input[type="checkbox"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* Add transition effects */
+.form-group select,
+.form-group input[type="checkbox"] {
+    transition: all 0.3s ease;
+}
+
+.error-message {
+    color: #ff4444;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.success-message {
+    color: #4CAF50;
+    margin: 10px 0;
+    text-align: center;
+}

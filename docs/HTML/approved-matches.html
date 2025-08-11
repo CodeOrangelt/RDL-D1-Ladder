@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recent Matches</title>
+  <link rel="stylesheet" href="../CSS/nav.css" />
+  <link rel="stylesheet" href="../CSS/approved-matches-style.css" />
+  <link rel="stylesheet" href="../CSS/footer.css" />
+  <link rel="stylesheet" href="../CSS/style.css" />
+  <link rel="stylesheet" href="../CSS/themes.css">
+  <script type="module" src="../JS/themes.js"></script>
+  <script src="../JS/metadata.js"></script>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { firebaseConfig } from "../JS/firebase-config.js";
+    const app = initializeApp(firebaseConfig);
+    window.auth = getAuth(app);
+    window.db = getFirestore(app);
+  </script>
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <br><br>
+  <div class="container">
+    <div class="recent-matches-section">
+        <div class="action-bar preview-action-bar">
+            <button id="preview-d1-button" class="toggle-button active">D1</button>
+            <button id="preview-d2-button" class="toggle-button">D2</button>
+            <button id="preview-d3-button" class="toggle-button">D3</button>
+            <button id="filter-toggle-button" class="toggle-button filter-toggle">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+        </div>
+        
+        <div id="enhanced-filter-section" class="enhanced-filter-section" style="display: none;">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Pilots:</label>
+                    <input type="text" id="filter-pilots" placeholder="Enter pilot names...">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Levels:</label>
+                    <input type="text" id="filter-levels" placeholder="Enter level names...">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Subgames:</label>
+                    <select id="filter-subgames" multiple>
+                        <option value="">All Subgames</option>
+                        <option value="Standard Match">Standard Match</option>
+                        <option value="Fusion Match">Fusion Match</option>
+                        <option value="≥6 missiles">≥6 Missiles</option>
+                        <option value="Weapon Imbalance">Weapon Imbalance</option>
+                        <option value="Blind Match">Blind Match</option>
+                        <option value="Rematch">Rematch</option>
+                        <option value="Disorientation">Disorientation</option>
+                        <option value="Ratting">Ratting</option>
+                        <option value="Altered Powerups">Altered Powerups</option>
+                        <option value="Mega Match">Mega Match</option>
+                        <option value="Dogfight">Dogfight</option>
+                        <option value="Gauss and Mercs">Gauss and Mercs</option>
+                        <option value="Misc">Misc (Not listed)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group jump-navigation">
+                    <label>Quick Jump:</label>
+                    <div class="jump-buttons">
+                        <button class="jump-btn" data-jump="start">Start</button>
+                        <button class="jump-btn" data-jump="-10">-10</button>
+                        <button class="jump-btn" data-jump="-5">-5</button>
+                        <button class="jump-btn" data-jump="-1">-1</button>
+                        <input type="number" id="jump-to-page" placeholder="Page #" min="1">
+                        <button class="jump-btn" data-jump="+1">+1</button>
+                        <button class="jump-btn" data-jump="+5">+5</button>
+                        <button class="jump-btn" data-jump="+10">+10</button>
+                        <button class="jump-btn" data-jump="end">End</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button id="apply-enhanced-filters" class="filter-action-btn apply">Apply Filters</button>
+                <button id="clear-enhanced-filters" class="filter-action-btn clear">Clear All</button>
+            </div>
+        </div>
+        
+        <div id="recent-matches-preview" class="matches-preview-container">
+            <div class="matches-loading">Loading recent matches...</div>
+        </div>
+
+        <template id="match-card-template">
+            <div class="match-display-wrapper">
+                <div class="match-container">
+                    <div class="match-card">
+                        <div class="match-header">
+                            <div class="match-map-group">
+                                <div class="match-map">Test Match</div>
+                                <div class="match-subgame">Fusion Match</div>
+                            </div>
+                            <div class="match-date">6/5/2025</div>
+                        </div>
+                        
+                        <div class="match-demo-links">
+                            <a href="#" class="winner-demo-link video-button" target="_blank" style="display: none;" title="Winner's Demo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#fff">
+                                    <circle cx="10" cy="10" r="9" fill="#1E90FF" stroke="#fff" stroke-width="1"/>
+                                    <polygon points="8,6 8,14 14,10" fill="#fff"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="loser-demo-link video-button" target="_blank" style="display: none;" title="Loser's Demo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#fff">
+                                    <circle cx="10" cy="10" r="9" fill="#1E90FF" stroke="#fff" stroke-width="1"/>
+                                    <polygon points="8,6 8,14 14,10" fill="#fff"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <div class="match-body">
+                            <div class="player winner">
+                                <div class="player-name"></div>
+                                <div class="player-score-container">
+                                    <div class="player-score"></div>
+                                    <div class="player-suicides"></div>
+                                </div>
+                            </div>
+                            <div class="vs-separator">VS</div>
+                            <div class="player loser">
+                                <div class="player-score-container">
+                                    <div class="player-score"></div>
+                                    <div class="player-suicides"></div>
+                                </div>
+                                <div class="player-name"></div>
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            <div class="match-comments">
+                                <div class="comment winner-comment"></div>
+                                <div class="comment loser-comment"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="community-comments-section">
+                    <div class="comments-container">
+                        <div class="no-comments-message">No comments yet</div>
+                    </div>
+                    <button class="add-comment-btn">Add Comment</button>
+                </div>
+            </div>
+        </template>
+        
+        <div class="pagination-controls preview-pagination">
+            <button id="previewPrevPage" class="pagination-btn" disabled>&lt; Prev</button>
+            <span id="previewPageInfo">Page 1</span>
+            <button id="previewNextPage" class="pagination-btn" disabled>Next &gt;</button>
+        </div>
+
+        <div id="filterSection" class="filter-section" style="display: none;">
+            <h4>Filter Matches</h4>
+            <div class="filter-input-group">
+                <label for="filterUsername">Username:</label>
+                <input type="text" id="filterUsername" placeholder="Enter username...">
+            </div>
+            <div class="filter-input-group">
+                <label for="filterStartDate">Start Date:</label>
+                <input type="date" id="filterStartDate" disabled>
+            </div>
+            <div class="filter-input-group">
+                <label for="filterEndDate">End Date:</label>
+                <input type="date" id="filterEndDate" disabled>
+            </div>
+            <div class="filter-actions">
+                <button id="applyFilterBtn" class="filter-action-btn apply">Apply</button>
+                <button id="clearFilterBtn" class="filter-action-btn clear">Clear</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <div class="loading-indicator" id="loading-indicator">
+    <div class="spinner"></div>
+    <p>Loading...</p> 
+  </div>
+  
+  <div class="comment-popup-overlay" id="commentOverlayPreview"></div>
+  <div class="comment-popup" id="commentPopupPreview">
+    <h3 class="comment-popup-title" id="commentPopupTitlePreview">Comment</h3>
+    <div class="comment-popup-content" id="commentPopupContentPreview"></div>
+    <div class="popup-actions">
+        <button class="comment-popup-close" id="closeCommentPopupPreview">Close</button>
+        <button class="comment-popup-report" id="reportCommentButton">Report</button>
+    </div>
+  </div>
+
+  <div id="commentAddOverlay" class="comment-popup-overlay"></div>
+  <div id="commentAddPopup" class="comment-popup"></div>
+
+  <div id="footer-placeholder"></div>
+  
+  <script type="module" src="../JS/firebase-config.js"></script>
+  <script type="module" src="../JS/logout.js"></script>
+  <script type="module" src="../JS/current-user.js"></script>
+  <script type="module" src="../JS/approved-matches-main.js"></script> 
+  
+  <script type="module">
+    import { 
+        loadRecentMatchesPreview, 
+        setupPreviewEventListeners,
+        updatePreviewLadderModeUI
+    } from "../JS/approved-matches-main.js";
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      setupPreviewEventListeners();
+      updatePreviewLadderModeUI();
+      loadRecentMatchesPreview('current');
+    });
+  </script>
+  
+  <script>
+    Promise.all([
+      fetch("../HTML/nav.html").then(response => response.text()),
+      fetch("../HTML/footer.html").then(response => response.text())
+    ]).then(([navData, footerData]) => {
+      document.getElementById("nav-placeholder").innerHTML = navData;
+      document.getElementById("footer-placeholder").innerHTML = footerData;
+    }).catch(error => console.error("Error loading nav/footer:", error));
+  </script>
+</body>
+</html>
