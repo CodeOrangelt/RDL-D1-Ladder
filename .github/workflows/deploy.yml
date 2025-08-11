@@ -38,7 +38,13 @@ jobs:
           # Copy HTML files
           mkdir -p docs/HTML
           cp -r HTML/* docs/HTML/
-        
+          
+          # Use the HTML/index.html file as the root index with a redirect
+          cp docs/HTML/index.html docs/index.html
+          
+          # Fix the limit issue in nav.html
+          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/HTML/nav.html
+
       - name: Process Firebase Configuration
         run: |
           mkdir -p docs/JS
