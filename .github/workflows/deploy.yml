@@ -33,6 +33,12 @@ jobs:
           git checkout -b obfuscated-deploy
           git add JS/
           git commit -m "Obfuscated JS files for deployment"
+
+      - name: Push to obfuscated-deploy branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
           git push --force origin obfuscated-deploy
 
       # Add your deployment steps here (e.g., upload to server, trigger Netlify/Vercel, etc.)
