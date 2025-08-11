@@ -21,17 +21,11 @@ jobs:
       # Step 2: Prepare root files
       - name: Prepare root files
         run: |
-          # Copy all HTML files to root
-          cp -r ./HTML/* ./
-          
-          # Make a proper root index.html
-          cp ./HTML/index.html ./index.html
-          
-          # Update paths in HTML files
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
-          
+          # Update paths in HTML files inside the HTML folder
+          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/..\/CSS/g' {} \;
+          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/JS/..\/JS/g' {} \;
+          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/images/..\/images/g' {} \;
+
           # Fix import paths in JavaScript files
           find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
 
@@ -81,6 +75,6 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages
-          folder: distribution_path
-          clean: true
+      branch: gh-pages
+      folder: distribution_path/HTML
+      clean: true
