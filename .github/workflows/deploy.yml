@@ -1,5 +1,4 @@
-name: Deploy to GitHub Pages
-
+name: Build and Deploy
 on:
   push:
     branches: [main]
@@ -9,11 +8,19 @@ permissions:
   contents: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JavaScript Obfuscator
+        run: npm install -g javascript-obfuscator
 
       - name: Prepare docs Directory
         run: |
@@ -24,25 +31,64 @@ jobs:
           fi
           rm -rf docs
           mv docs_temp docs
+          
+          # Copy all static assets
+          cp -r CSS images docs/
+          
+          # Copy HTML files
+          mkdir -p docs/HTML
+          cp -r HTML/* docs/HTML/
+          
+          # Use the HTML/index.html file as the root index with a redirect
+          cp docs/HTML/index.html docs/index.html
+          
+          # Fix the limit issue in nav.html
+          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/HTML/nav.html
 
-          # Create a simple index.html with a redirect
-          cat > docs/index.html <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta http-equiv="refresh" content="0; url=HTML/index.html">
-            <title>Redirecting...</title>
-          </head>
-          <body>
-            <p>Redirecting to <a href="HTML/index.html">HTML/index.html</a></p>
-          </body>
-          </html>
-          EOF
+      - name: Process Firebase Configuration
+        run: |
+          mkdir -p docs/JS
+          cp JS/firebase-config.template.js docs/JS/firebase-config.js
+          
+          # Replace all placeholders in a single command
+          sed -i \
+            -e 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' \
+            -e 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' \
+            -e 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' \
+            -e 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' \
+            -e 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' \
+            -e 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' \
+            -e 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' \
+            docs/JS/firebase-config.js
 
-      - name: Commit and Push changes
+      - name: Obfuscate JavaScript Files
+        run: |
+          # Process JS files with obfuscator
+          for file in $(find JS -type f -name "*.js" -not -name "firebase-config.template.js"); do
+            # Get the relative path
+            rel_path=$(realpath --relative-to="JS" "$file")
+            # Create directory if needed
+            mkdir -p "docs/JS/$(dirname "$rel_path")"
+            
+            echo "Obfuscating: $file"
+            # Obfuscate and output to distribution directory
+            javascript-obfuscator "$file" \
+              --output "docs/JS/$rel_path" \
+              --compact true \
+              --control-flow-flattening false \
+              --dead-code-injection false \
+              --debug-protection false \
+              --disable-console-output true \
+              --self-defending false \
+              --string-array true \
+              --string-array-threshold 0.3 \
+              --target browser
+          done
+
+      - name: Commit changes
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
-          git add docs/index.html
-          git commit -m "Add redirect to HTML/index.html" || echo "No changes to commit"
+          git add docs/
+          git commit -m "Update docs folder with latest website files" || echo "No changes to commit"
           git push
