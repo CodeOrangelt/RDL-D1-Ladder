@@ -1,5 +1,4 @@
 name: Build and Deploy
-
 on:
   push:
     branches: [ main ]
@@ -14,22 +13,24 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Step 2: Prepare root files
       - name: Prepare root files
         run: |
-          # Update paths in HTML files inside the HTML folder
-          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/..\/CSS/g' {} \;
-          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/JS/..\/JS/g' {} \;
-          find ./HTML -type f -name "*.html" -exec sed -i 's/\.\.\/images/..\/images/g' {} \;
-
-          # Fix import paths in JavaScript files
+          # Copy all HTML files to root 
+          cp -r ./HTML/* ./
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # CRITICAL: Fix import paths in JavaScript files too
           find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
-
-      # Step 3: Create Firebase Config
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
@@ -40,8 +41,6 @@ jobs:
           sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
-
-      # Step 4: Create distribution path
       - name: Create distribution path
         run: |
           mkdir -p distribution_path
@@ -49,8 +48,7 @@ jobs:
           find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
           # Remove the JS folder from distribution since we'll replace it with obfuscated version
           rm -rf distribution_path/JS
-
-      # Step 5: Obfuscate JavaScript
+      
       - name: Low obfuscation of JavaScript
         uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
@@ -71,10 +69,8 @@ jobs:
           unicode_escape_sequence: false
           target: browser
 
-      # Step 6: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-      branch: gh-pages
-      folder: distribution_path/HTML
-      clean: true
+          branch: gh-pages
+          folder: distribution_path
