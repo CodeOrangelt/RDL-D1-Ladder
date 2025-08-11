@@ -38,24 +38,20 @@ jobs:
           # Flatten structure: Copy all HTML files directly to docs root
           cp -r HTML/*.html docs/
           
-          # Fix all internal links and resource paths in HTML files
-          find docs -type f -name "*.html" -exec sed -i \
-            -e 's/\.\.\/CSS/\.\/CSS/g' \
-            -e 's/\.\.\/JS/\.\/JS/g' \
-            -e 's/\.\.\/images/\.\/images/g' \
-            -e 's/href="\.\/\([^"]*\.html\)"/href="\/\1"/g' \
-            {} \;
+          # Fix resource paths (CSS, JS, images)
+          find docs -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find docs -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find docs -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
           
-          # Update internal HTML links to reflect flattened structure
-          find docs -type f -name "*.html" -exec sed -i 's/href="\.\/\([^"]*\.html\)"/href="\/\1"/g' {} \;
+          # Fix relative HTML links to absolute ones (./file.html -> /file.html)
+          find docs -type f -name "*.html" -exec sed -i 's/href="\.\/\([^"]*\.html\)/href="\/\1/g' {} \;
           
           # Fix the limit issue in nav.html
-          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/nav.html
+          sed -i "s/collection, query, where, getDocs/collection, query, where, getDocs, limit/g" docs/nav.html
           
-          # Import files like nav.html and footer.html should be updated
-          # This fixes how HTML components are loaded from other HTML files
-          find docs -type f -name "*.html" -exec sed -i 's/fetch(\([\'"]\)\.\/HTML\//fetch(\1\.\//g' {} \;
-          find docs -type f -name "*.html" -exec sed -i 's/fetch(\([\'"]\)\.\//fetch(\1\.\//g' {} \;
+          # Fix component loading references
+          find docs -type f -name "*.html" -exec sed -i 's/fetch("\.\/HTML\//fetch("\.\//g' {} \;
+          find docs -type f -name "*.html" -exec sed -i 's/fetch("'"\'"'\.\/HTML\//fetch("'"\'"'\.\//g' {} \;
 
       - name: Process Firebase Configuration
         run: |
@@ -100,7 +96,7 @@ jobs:
           # Fix import paths in JavaScript files
           find docs/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
           find docs/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
-          find docs/JS -type f -name "*.js" -exec sed -i 's/import.*from.*\.\.\/JS\/firebase-config/import { auth, db } from ".\/firebase-config/g' {} \;
+          find docs/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\/firebase-config/from ".\/firebase-config/g' {} \;
 
       - name: Commit changes
         run: |
