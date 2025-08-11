@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Profile - RDL Duos Ladder</title>
-    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
-    <link rel="stylesheet" href="./CSS/nav.css">
-    <link rel="stylesheet" href="./CSS/style.css">
-    <link rel="stylesheet" href="./CSS/footer.css">
-    <link rel="stylesheet" href="./CSS/team.css">
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/team.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./CSS/themes.css">
-    <script type="module" src="./JS/themes.js"></script>
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <script type="module" src="../JS/themes.js"></script>
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -246,7 +246,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
-        import { firebaseConfig } from "./JS/firebase-config.js";
+        import { firebaseConfig } from "../JS/firebase-config.js";
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -479,7 +479,7 @@
             teamMembersContainer.innerHTML = '';
             
             members.forEach((member, index) => {
-                const flagHtml = member.country ? `<img src="./images/flags/${member.country.toLowerCase()}.png" alt="${member.country}" style="width:12px;height:9px;margin-left:5px;vertical-align:middle" onerror="this.style.display='none'">` : '';
+                const flagHtml = member.country ? `<img src="../images/flags/${member.country.toLowerCase()}.png" alt="${member.country}" style="width:12px;height:9px;margin-left:5px;vertical-align:middle" onerror="this.style.display='none'">` : '';
                 teamMembersContainer.innerHTML += `
                     <div class="member-card">
                         <div class="member-avatar"><i class="fas fa-user"></i></div>

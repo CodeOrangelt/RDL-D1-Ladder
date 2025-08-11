@@ -1,5 +1,5 @@
 <head>
-    <script type="module" src="./JS/idle-timeout.js"></script>
+    <script type="module" src="../JS/idle-timeout.js"></script>
 </head>
 <nav>
     <ul class="nav-links">
@@ -27,8 +27,8 @@
 
 <!-- Notification management script - IMPROVED VERSION -->
 <script type="module">
-    import { auth } from './JS/firebase-config.js';
-    import { checkPendingMatches } from './JS/checkPendingMatches.js';
+    import { auth } from '../JS/firebase-config.js';
+    import { checkPendingMatches } from '../JS/checkPendingMatches.js';
     
     function updateAuthSection(user) {
         const authSection = document.getElementById('auth-section');
@@ -106,7 +106,7 @@
             }
             
             const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-            const { db } = await import('./JS/firebase-config.js');
+            const { db } = await import('../JS/firebase-config.js');
             
             const invitationsRef = collection(db, 'gameInvitations');
             const q = query(
