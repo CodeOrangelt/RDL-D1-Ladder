@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RDL - Members</title>
-    <link rel="stylesheet" href="../CSS/style.css">
-    <link rel="stylesheet" href="../CSS/nav.css">
-    <link rel="stylesheet" href="../CSS/footer.css">
-    <link rel="stylesheet" href="../CSS/pagination.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <link rel="stylesheet" href="./CSS/nav.css">
+    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="./CSS/pagination.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../CSS/themes.css">
-    <script type="module" src="../JS/themes.js"></script>
-    <script src="../JS/metadata.js"></script>
+    <link rel="stylesheet" href="./CSS/themes.css">
+    <script type="module" src="./JS/themes.js"></script>
+    <script src="./JS/metadata.js"></script>
     <style>
         .content {
             max-width: 1200px;
@@ -591,7 +591,7 @@
         orderBy
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-    import { firebaseConfig } from "../JS/firebase-config.js";
+    import { firebaseConfig } from "./JS/firebase-config.js";
 
     // Initialize Firebase - same as before
     const app = initializeApp(firebaseConfig);
@@ -599,7 +599,7 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     
-    const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png";
+    const DEFAULT_PROFILE_IMAGE = "./images/shieldorb.png";
     
     // 🚀 ULTRA-OPTIMIZED CACHING - 30 minute cache vs 10 minute
     const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -902,7 +902,7 @@
         // Updated flag HTML to include country name
         const flagHtml = member.country ? `
             <div class="country-info">
-                <img src="../images/flags/${member.country.toLowerCase()}.png" 
+                <img src="./images/flags/${member.country.toLowerCase()}.png" 
                      alt="${member.country}" 
                      class="member-flag"
                      onerror="this.style.display='none'">
