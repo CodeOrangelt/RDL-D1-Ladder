@@ -23,7 +23,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v3
-
-      - name: Create redirect index.html
-        run: |
-          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/HTML/index.html"></head><body></body></html>' > ./HTML/index.html
