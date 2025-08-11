@@ -1,9 +1,10 @@
 name: Build and Deploy
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: write
   pages: write
@@ -13,43 +14,97 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Firebase Config
-        run: |
-          cp JS/firebase-config.template.js JS/firebase-config.js
-          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
-          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
-      - name: Create distribution path
-        run: |
-         mkdir -p distribution_path
-      
-      - name: Low obfuscation test
-        uses: KevinRohn/github-action-javascript-obfuscator@v1
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # Updated to latest version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4 # Updated to latest version
         with:
-          input_path: input_path
-          output_path: distribution_path
-          compact: true
-          control_flow_flattening: false
-          dead_code_injection: false
-          debug_protection: false
-          debug_protection_interval: 0
-          log: false
-          disable_console_output: true
-          rename_globals: false
-          string_array_rotate: true
-          self_defending: true
-          string_array: true
-          string_array_encoding: 'none'
-          string_array_threshold: 0.75
-          unicode_escape_sequence: false
-          target: node
+          node-version: '20' # Using LTS version
+          cache: 'npm' # Enable npm caching
+
+      - name: Install JavaScript Obfuscator
+        run: npm install -g javascript-obfuscator
+
+      - name: Prepare Distribution Directory
+        run: |
+          # Create distribution directory
+          mkdir -p distribution_path
+
+          # Copy all static assets (except JS which will be obfuscated)
+          cp -r CSS images distribution_path/
+          
+          # Process HTML files - copy to distribution and fix paths
+          mkdir -p distribution_path/HTML
+          cp -r HTML/* distribution_path/HTML/
+          
+          # Create root index.html
+          cp HTML/index.html distribution_path/index.html
+          
+          # Fix paths in all HTML files using a single sed command per replacement
+          find distribution_path -type f -name "*.html" -exec sed -i \
+            -e 's/\.\.\/CSS/\/CSS/g' \
+            -e 's/\.\.\/JS/\/JS/g' \
+            -e 's/\.\.\/images/\/images/g' \
+            -e 's/href="\.\/\([^"]*\.html\)"/href="\/\1"/g' \
+            {} \;
+
+      - name: Process Firebase Configuration
+        run: |
+          mkdir -p distribution_path/JS
+          cp JS/firebase-config.template.js distribution_path/JS/firebase-config.js
+          
+          # Replace all placeholders in a single command
+          sed -i \
+            -e 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' \
+            -e 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' \
+            -e 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' \
+            -e 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' \
+            -e 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' \
+            -e 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' \
+            -e 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' \
+            distribution_path/JS/firebase-config.js
+
+      - name: Obfuscate JavaScript Files
+        run: |
+          # Process JS files with obfuscator
+          for file in $(find JS -type f -name "*.js" -not -name "firebase-config.template.js"); do
+            # Get the relative path
+            rel_path=$(realpath --relative-to="JS" "$file")
+            # Create directory if needed
+            mkdir -p "distribution_path/JS/$(dirname "$rel_path")"
+            
+            echo "Obfuscating: $file"
+            # Obfuscate and output to distribution directory
+            javascript-obfuscator "$file" \
+              --output "distribution_path/JS/$rel_path" \
+              --compact true \
+              --control-flow-flattening false \
+              --dead-code-injection false \
+              --debug-protection false \
+              --disable-console-output true \
+              --self-defending false \
+              --string-array true \
+              --string-array-threshold 0.3 \
+              --target browser
+          done
+          
+          # Fix import paths in JavaScript files
+          find distribution_path/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\/JS\//g' {} \;
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4 # Latest version for GitHub Pages
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@v4.4.3 # Using specific version
         with:
           branch: gh-pages
           folder: distribution_path
+          clean: true # Removes deleted files from the deploy branch
+          commit-message: "Deploy: ${GITHUB_SHA}"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3 # Latest version
+        with:
+          path: './distribution_path'
