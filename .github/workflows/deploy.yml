@@ -13,20 +13,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Low obfuscation of JavaScript
+        uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
-          persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install javascript-obfuscator
-        run: npm install -g javascript-obfuscator
-
-      - name: Obfuscate JS files
-        run: |
-          find JS -type f -name "*.js" -exec javascript-obfuscator {} --output {} \;
+          input_path: JS
+          output_path: JS
+          compact: true
+          control_flow_flattening: false
+          dead_code_injection: false
+          debug_protection: false
+          debug_protection_interval: 0
+          log: false
+          disable_console_output: true
+          rename_globals: false
+          string_array_rotate: false
+          self_defending: false
+          string_array: true
+          string_array_threshold: 0.3
+          unicode_escape_sequence: false
+          target: browser
 
       - name: Commit obfuscated files
         run: |
@@ -35,12 +41,6 @@ jobs:
           git checkout -b obfuscated-deploy
           git add JS/
           git commit -m "Obfuscated JS files for deployment"
-
-      - name: Push to obfuscated-deploy branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
           git push --force origin obfuscated-deploy
 
       # Add your deployment steps here (e.g., upload to server, trigger Netlify/Vercel, etc.)
