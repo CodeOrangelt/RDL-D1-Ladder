@@ -296,116 +296,73 @@
     </script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const toggleEloButton = document.getElementById('toggle-elo-button');
-        const eloToggleContainer = document.getElementById('elo-toggle-container');
-        
-        let eloVisible = localStorage.getItem('eloVisible') !== 'false';
-        
-        function applyEloVisibility() {
-            const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'];
-            
-            tables.forEach(tableSelector => {
-                const table = document.querySelector(tableSelector);
-                if (table) {
-                    const headerRow = table.querySelector('thead tr');
-                    if (headerRow) {
-                        const headers = headerRow.querySelectorAll('th');
-                        let eloColumnIndex = -1;
-                        
-                        headers.forEach((header, index) => {
-                            if (header.textContent.trim() === 'ELO') {
-                                eloColumnIndex = index;
-                            }
-                        });
-                        
-                        if (eloColumnIndex !== -1) {
-                            headers[eloColumnIndex].style.display = eloVisible ? '' : 'none';
-                            
-                            const bodyRows = table.querySelectorAll('tbody tr');
-                            bodyRows.forEach(row => {
-                                const cells = row.querySelectorAll('td');
-                                if (cells[eloColumnIndex]) {
-                                    cells[eloColumnIndex].style.display = eloVisible ? '' : 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleEloButton = document.getElementById('toggle-elo-button');
+            const eloToggleContainer = document.getElementById('elo-toggle-container');
+            let eloVisible = localStorage.getItem('eloVisible') !== 'false';
+
+            function applyEloVisibility() {
+                const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'];
+                tables.forEach(tableSelector => {
+                    const table = document.querySelector(tableSelector);
+                    if (table) {
+                        const headerRow = table.querySelector('thead tr');
+                        if (headerRow) {
+                            const headers = headerRow.querySelectorAll('th');
+                            let eloColumnIndex = -1;
+                            headers.forEach((header, index) => {
+                                if (header.textContent.trim() === 'ELO') {
+                                    eloColumnIndex = index;
                                 }
                             });
+                            if (eloColumnIndex !== -1) {
+                                headers[eloColumnIndex].style.display = eloVisible ? '' : 'none';
+                                // Batch update rows
+                                const bodyRows = table.tBodies[0]?.rows;
+                                if (bodyRows) {
+                                    for (let row of bodyRows) {
+                                        if (row.cells[eloColumnIndex]) {
+                                            row.cells[eloColumnIndex].style.display = eloVisible ? '' : 'none';
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            });
-        }
-        
-        function updateButtonAppearance() {
-            if (toggleEloButton) {
-                toggleEloButton.style.background = eloVisible ? '#6c757d' : '#28a745';
-                toggleEloButton.textContent = eloVisible ? 'Toggle ELO' : 'Show ELO';
+                });
             }
-        }
-        
-        const checkTablesLoaded = setInterval(() => {
-            const tables = document.querySelectorAll('#ladder, #ladder-d2, #ladder-d3, #ladder-duos');
-            let tablesWithData = 0;
-            
-            tables.forEach(table => {
-                if (table && table.querySelector('tbody tr:not(:empty)')) {
-                    tablesWithData++;
+
+            function updateButtonAppearance() {
+                if (toggleEloButton) {
+                    toggleEloButton.style.background = eloVisible ? '#6c757d' : '#28a745';
+                    toggleEloButton.textContent = eloVisible ? 'Toggle ELO' : 'Show ELO';
                 }
-            });
-            
-            if (tablesWithData > 0) {
-                clearInterval(checkTablesLoaded);
-                applyEloVisibility();
-                updateButtonAppearance();
-                
-                if (eloToggleContainer) {
-                    eloToggleContainer.style.display = 'block';
-                }
-                
-                setInterval(applyEloVisibility, 1000);
             }
-        }, 500);
-        
-        setTimeout(() => {
-            clearInterval(checkTablesLoaded);
+
+            // Use MutationObserver only, no polling
+            const observer = new MutationObserver(applyEloVisibility);
+            ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'].forEach(sel => {
+                const tbody = document.querySelector(sel + ' tbody');
+                if (tbody) observer.observe(tbody, { childList: true, subtree: true });
+            });
+
             applyEloVisibility();
             updateButtonAppearance();
-            if (eloToggleContainer) {
-                eloToggleContainer.style.display = 'block';
-            }
-            
-            setInterval(applyEloVisibility, 1000);
-        }, 10000);
-        
-        if (toggleEloButton) {
-            toggleEloButton.addEventListener('click', () => {
-                eloVisible = !eloVisible;
-                
-                localStorage.setItem('eloVisible', eloVisible.toString());
-                
-                applyEloVisibility();
-                updateButtonAppearance();
-            });
-        }
-        
-        document.querySelectorAll('input[name="ladder"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                setTimeout(() => {
+            if (eloToggleContainer) eloToggleContainer.style.display = 'block';
+
+            if (toggleEloButton) {
+                toggleEloButton.addEventListener('click', () => {
+                    eloVisible = !eloVisible;
+                    localStorage.setItem('eloVisible', eloVisible.toString());
                     applyEloVisibility();
-                }, 1000);
+                    updateButtonAppearance();
+                });
+            }
+
+            document.querySelectorAll('input[name="ladder"]').forEach(radio => {
+                radio.addEventListener('change', () => setTimeout(applyEloVisibility, 500));
             });
         });
-        
-        const observer = new MutationObserver(() => {
-            applyEloVisibility();
-        });
-        
-        const tables = document.querySelectorAll('#ladder tbody, #ladder-d2 tbody, #ladder-d3 tbody, #ladder-duos tbody');
-        tables.forEach(tbody => {
-            if (tbody) {
-                observer.observe(tbody, { childList: true, subtree: true });
-            }
-        });
-    });
     </script>
 
     <script>
