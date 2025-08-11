@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading...</title>
+    <style>
+        @font-face {
+            font-family: 'Descent';
+            src: url('./Files/DescScor.TTF') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: url(images/descentspace.png);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-text {
+            font-family: 'Descent', monospace;
+            color: #ffd900;
+            font-size: 4rem;
+            text-align: center;
+            text-shadow: 0 0 20px #ffd90088, 0 0 40px #fff;
+            animation: flicker 1s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { opacity: 1;}
+            100% { opacity: 0.7;}
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-text">Loading...</div>
+    <script>
+        setTimeout(() => {
+            document.body.style.transition = "opacity 0.7s";
+            document.body.style.opacity = 0;
+            setTimeout(() => {
+                window.location.href = '/html/index.html';
+            }, 700);
+        }, 500);
+    </script>
+</body>
+</html>
