@@ -1,0 +1,1325 @@
+.profile-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    border: 1px solid white; /* Add white border to match report.html */
+}
+
+.profile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    color: white;
+}
+
+.profile-image-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#profile-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Profile image styles */
+.profile-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.profile-image-container {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-preview-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Add this to your CSS file */
+.profile-image-container.default-image {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.profile-image-preview {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 50%;
+    border: 2px solid #444;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+#profile-image-preview:not([src]) {
+    display: none;
+}
+
+.username-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.username-section h2 {
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.motto-text {
+    font-weight: bold;
+    font-style: italic;
+    margin: 0;
+    color: inherit;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+/* Update profile field styling for tighter inline layout */
+.profile-field {
+    width: 100%;
+    margin-bottom: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 15px; /* Reduced padding top/bottom */
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* Add small gap between label and text */
+}
+
+/* Update label styling */
+.profile-field label {
+    color: inherit;
+    opacity: 0.9;
+    font-weight: bold;
+    flex: 0 0 auto;
+    white-space: nowrap; /* Prevent label from wrapping */
+}
+
+/* Update view text styling */
+.view-text {
+    opacity: 1;
+    color: white !important;
+    text-align: left; /* Change to left alignment */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+}
+
+/* Update input styling */
+.profile-field input[type="text"] {
+    flex: 1;
+    margin: 0; /* Remove margin */
+    padding: 4px 8px; /* Reduce padding */
+    border: 1px solid #4CAF50;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff !important;
+}
+
+/* Add select styling to match inputs */
+.profile-field select {
+    flex: 1;
+    margin: 0;
+    padding: 4px 8px;
+    border: 1px solid #4CAF50;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    cursor: pointer;
+}
+
+.profile-field select option {
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.edit-btn, .save-btn, .cancel-btn, .upload-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+}
+
+.edit-btn:hover, .save-btn:hover, .upload-btn:hover {
+    background-color: #45a049;
+}
+
+.cancel-btn:hover {
+    background-color: #da190b;
+}
+
+#profile-image-upload {
+    display: none;
+}
+
+.edit-mode {
+    display: none;
+    width: 100%;
+}
+
+.view-mode {
+    width: 100%;
+    display: block; /* Ensure view mode is visible */
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 4px;
+}
+
+.image-upload-controls {
+    display: none; /* Hidden by default */
+    margin-top: 10px;
+}
+
+#edit-profile {
+    display: none; /* Hidden by default */
+}
+
+/* ELO Rating Color Classes */
+.elo-unranked {
+    color: #808080; /* Gray */
+}
+
+.elo-bronze {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-silver {
+    color: #b9f1fc; /* Changed from #C0C0C0 */
+}
+
+.elo-gold {
+    color: #FFD700; /* Gold */
+}
+
+.elo-emerald {
+    color: #50C878; /* Emerald */
+}
+
+/* Update text elements to inherit color */
+.username-section h2,
+.profile-field label,
+.view-text,
+.profile-field input[type="text"] {
+    color: inherit;
+}
+
+.match-history-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    border: 1px solid white;
+    position: relative;  /* Add this to contain absolute positioned season label */
+}
+
+.match-history-container h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.match-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+
+.match-history-table th,
+.match-history-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.match-history-table th {
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.match-won {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.match-lost {
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.player-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.player-link:hover {
+    text-decoration: underline;
+}
+
+.player-link.current-user {
+    font-weight: bold;
+}
+
+/* Match history table styling */
+.match-history-table tr.match-won {
+    background-color: rgba(76, 175, 80, 0.2); /* Semi-transparent green */
+}
+
+.match-history-table tr.match-won:hover {
+    background-color: rgba(76, 175, 80, 0.3); /* Slightly more opaque on hover */
+}
+
+.match-history-table tr.match-lost {
+    background-color: rgba(255, 59, 48, 0.2); /* Semi-transparent red */
+}
+
+.match-history-table tr.match-lost:hover {
+    background-color: rgba(255, 59, 48, 0.3); /* Slightly more opaque on hover */
+}
+
+/* Add border between rows */
+.match-history-table tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+/* Make text more visible on colored backgrounds */
+.match-history-table td {
+    color: white;
+    padding: 12px;
+}
+
+.match-history-table th {
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.match-history-table td.wins {
+    color: #4CAF50;
+}
+
+.match-history-table td.losses {
+    color: #f44336;
+}
+
+.stats-content {
+    display: flex;  /* Changed from 'none' to 'flex' */
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.match-history-container + .match-history-container {
+    margin-top: 20px;
+}
+
+.season-label {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.stats-container {
+    display: block;  /* Changed from 'none' */
+    width: 100%;
+}
+
+.stats-container p {
+    margin: 5px 0;
+    font-size: 25px;
+    letter-spacing: 0.5px;
+}
+
+.stats-section {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.stat-row {
+    display: none;
+}
+
+/* Stats Grid Styling */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.stat-item {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Next Rank Styling */
+.stat-item.next-rank {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* ELO rank colors */
+.next-rank .elo-unranked {
+    color: #808080;
+}
+
+.next-rank .elo-bronze {
+    color: #CD7F32;
+}
+
+.next-rank .elo-silver {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+.next-rank .elo-gold {
+    color: #FFD700;
+}
+
+.next-rank .elo-emerald {
+    color: #50C878;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    padding: 0;
+    text-align: center;
+    padding: 10px 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+.stat-value {
+    color: #fff;
+    font-size: 14px;
+}
+
+.stat-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    width: 100%;
+    margin: 15px 0;
+    margin-top: 15px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Reduced from 50px to bring numbers closer to letters */
+}
+
+.stat-label {
+    font-size: 18px; /* Made letters larger */
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    margin-top: -2px
+}
+
+#stats-wins, #stats-losses, #stats-kills, #stats-deaths, #stats-winrate {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: -2px; /* Added small negative margin to pull numbers up closer to letters */
+}
+
+/* ELO-based stat label colors */
+.elo-unranked .stat-label {
+    color: #808080; /* Gray */
+}
+
+.elo-bronze .stat-label {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-silver .stat-label {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+.elo-gold .stat-label {
+    color: #FFD700; /* Gold */
+}
+
+.elo-emerald .stat-label {
+    color: #50C878; /* Emerald */
+}
+
+/* Stats Grid Layout */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    width: 100%;
+    margin: 15px 0;
+    margin-top: 15px;
+}
+
+/* Next Rank Styling */
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* Add a border around the next rank stat */
+.next-rank {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Next Rank Item Styling - updated to make it more visible */
+.stat-item.next-rank {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 5px;
+}
+
+.next-rank .stat-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.next-rank .stat-value {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: -5px; /* Pull up closer to label */
+}
+
+.stat-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-top: 0px;
+}
+
+/* Color classes for next rank */
+.next-rank .elo-unranked {
+    color: #808080;
+}
+
+.next-rank .elo-bronze {
+    color: #CD7F32;
+}
+
+.next-rank .elo-silver {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+.next-rank .elo-gold {
+    color: #FFD700;
+}
+
+.next-rank .elo-emerald {
+    color: #50C878;
+}
+
+/* Remove old style as we're using a different approach now */
+.elo-progress-info {
+    display: none;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Reduced from 50px to bring numbers closer to letters */
+}
+
+.stat-label {
+    font-size: 18px; /* Made letters larger */
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+}
+
+#stats-matches,
+#stats-wins,
+#stats-losses,
+#stats-kda,
+#stats-winrate {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Stats display styling */
+.stats-section span[id^="stats-"] {
+    color: #fff !important; /* Force white color for all stat values */
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Remove any existing color classes that might affect the K/D ratio */
+#stats-kd {
+    color: #fff !important;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+/* ELO color classes */
+.elo-unranked .view-text {
+    color: #808080; /* Gray */
+}
+
+.elo-bronze .view-text {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-silver .view-text {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+.elo-gold .view-text {
+    color: #FFD700; /* Gold */
+}
+
+.elo-emerald .view-text {
+    color: #50C878; /* Emerald */
+}
+
+/* Remove any conflicting display: none */
+.profile-field .view-text {
+    display: block !important;
+}
+
+/* Add this to your existing CSS */
+.profile-ladder-toggle {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    gap: 2px; /* Reduced gap for tighter connection */
+    background: rgba(0, 0, 0, 0.3); /* Add background container */
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.ladder-toggle-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.ladder-toggle-btn.active {
+    background-color: #4CAF50;
+    font-weight: bold;
+}
+
+.ladder-toggle-btn:hover {
+    background-color: #555;
+}
+
+.profile-ladder-toggle button {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    border: none; /* Remove borders for cleaner look */
+    padding: 10px 20px; /* Slightly more padding */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 50px;
+}
+
+.profile-ladder-toggle button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateY(-1px); /* Subtle lift effect */
+}
+
+.profile-ladder-toggle button.active {
+    background-color: #464c47;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); /* Subtle glow */
+}
+
+.profile-ladder-toggle button.active:hover {
+    background-color: #2f3330;
+    transform: translateY(-1px);
+}
+
+/* Remove the old border-radius rules since we're using individual radius now */
+.profile-ladder-toggle button:first-child,
+.profile-ladder-toggle button:last-child {
+    border-radius: 6px; /* Same radius for all */
+}
+
+/* Status indicators for special player types */
+.profile-status {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.status-badge.non-participant {
+    background-color: #607D8B;
+    color: white;
+}
+
+.status-badge.former-player {
+    background-color: #9C27B0;
+    color: white;
+}
+
+.status-message {
+    font-size: 14px;
+    color: #AAA;
+}
+
+/* Container styles for special player types */
+.non-participant-profile {
+    opacity: 0.9;
+}
+
+.former-player-profile {
+    opacity: 0.95;
+}
+
+.non-participant-notice {
+    padding: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    color: #AAA;
+}
+
+/* Role badge styling */
+.role-badge {
+    display: inline-block;
+    padding: 5px 10px; /* Or your preferred padding */
+    border-radius: 4px;
+    font-size: 12px; /* Or your preferred size */
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1; /* Ensure consistent height */
+    text-align: center;
+}
+
+/* Style for when no role is assigned in admin table */
+.data-table .no-role {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Special container for roles */
+.role-container {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.trophies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.trophy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px; /* Reduced from 120px */
+    background-color: rgba(40, 40, 40, 0.3);
+    border-radius: 4px;
+    padding: 6px;
+    transition: transform 0.2s;
+    position: relative;
+    border: 1px solid transparent; /* Will be overridden by rarity classes */
+}
+
+.trophy:hover {
+    transform: translateY(-3px); /* Reduced from -5px */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.trophy-image {
+    width: 50px; /* Reduced from 75px */
+    height: 50px; /* Reduced from 75px */
+    margin-bottom: 4px;
+    object-fit: contain;
+}
+
+.trophy-name {
+    font-weight: 500;
+    font-size: 0.8em;
+    color: #ddd;
+    text-align: center;
+    margin: 0;
+}
+
+.trophy-date {
+    font-size: 0.65em;
+    color: #888;
+    margin-top: 2px;
+    text-align: center;
+}
+
+.empty-trophy-case {
+    color: #777;
+    font-style: italic;
+    padding: 15px 0;
+    font-size: 0.9em;
+}
+
+/* Trophy hover tooltip - more compact */
+.trophy .trophy-tooltip {
+    visibility: hidden;
+    background-color: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    padding: 6px 10px;
+    position: absolute;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    width: 180px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    font-size: 0.85em;
+}
+
+.trophy:hover .trophy-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Trophy rarity indicators - simplified to just borders */
+.trophy.legendary {
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.trophy.epic {
+    border-color: rgba(163, 53, 238, 0.6);
+}
+
+.trophy.rare {
+    border-color: rgba(0, 112, 221, 0.6);
+}
+
+.trophy.uncommon {
+    border-color: rgba(30, 255, 0, 0.6);
+}
+
+.trophy.common {
+    border-color: rgba(128, 128, 128, 0.6);
+}
+
+/* ELO History Container Styles */
+.elo-history-container {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto; /* Center with auto margins */
+    justify-content: center;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.elo-history-container h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.elo-chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.elo-history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.elo-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+}
+
+.elo-history-table th,
+.elo-history-table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.elo-history-table th {
+    background-color: rgba(0, 0, 0, 0.4);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: bold;
+    color: #a913ce;
+}
+
+.elo-history-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.elo-change-positive {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.elo-change-negative {
+    color: #F44336;
+    font-weight: bold;
+}
+
+.elo-change-neutral {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.elo-event {
+    display: inline-block;
+    font-size: 0.85em;
+    padding: 3px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.event-match {
+    background-color: rgba(33, 150, 243, 0.3);
+}
+
+.event-promotion {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+.event-demotion {
+    background-color: rgba(244, 67, 54, 0.3);
+}
+
+.event-adjustment {
+    background-color: rgba(255, 193, 7, 0.3);
+}
+
+/* Match the pagination controls to other sections */
+.elo-history-container .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.elo-history-container .page-btn {
+    background-color: #a913ce;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.elo-history-container .page-btn:hover:not(:disabled) {
+    background-color: #8e10b1;
+    transform: translateY(-2px);
+}
+
+.elo-history-container .page-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#elo-history-page-indicator {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Add to your existing profile-style.css */
+
+.elo-progress-info {
+    margin-top: 5px;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 500;
+    text-align: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ELO Rating Progress Color Classes - match the existing ELO classes */
+.elo-progress-info.elo-unranked {
+    color: #808080; /* Gray */
+}
+
+.elo-progress-info.elo-bronze {
+    color: #CD7F32; /* Bronze */
+}
+
+.elo-progress-info.elo-silver {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+.elo-progress-info.elo-gold {
+    color: #FFD700; /* Gold */
+}
+
+.elo-progress-info.elo-emerald {
+    color: #50C878; /* Emerald */
+}
+
+/* Ensure the stats row is displayed properly */
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.stats-column {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 5px;
+    min-width: 80px;
+}
+
+.stats-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.stats-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stats-progress {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+/* Add color classes for the next rank column */
+#next-rank-col .elo-unranked {
+    color: #808080; /* Gray */
+}
+
+#next-rank-col .elo-bronze {
+    color: #CD7F32; /* Bronze */
+}
+
+#next-rank-col .elo-silver {
+    color: #00FFFF; /* Changed from #C0C0C0 */
+}
+
+#next-rank-col .elo-gold {
+    color: #FFD700; /* Gold */
+}
+
+#next-rank-col .elo-emerald {
+    color: #50C878; /* Emerald */
+}
+
+/* Give the next rank column a slightly special appearance */
+#next-rank-col {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 8px 12px;
+}
+
+/* Form section styling */
+.form-section {
+    margin: 1.5rem 0;
+    padding: 0;
+}
+
+.form-section h4 {
+    color: #4CAF50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 0.5rem;
+}
+
+/* Subgame homes group styling - base styling for both standard and subgame homes */
+.subgame-homes-group {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+}
+
+.subgame-homes-group:last-child {
+    margin-bottom: 0;
+}
+
+.subgame-homes-group label {
+    color: #4CAF50;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-size: 0.95rem;
+}
+
+/* Home inputs row styling - used by both standard and subgame homes */
+.home-inputs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.home-inputs-row input {
+    padding: 0.6rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-inputs-row input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.home-inputs-row input::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+/* Dynamic subgame homes specific styling - overrides for orange theme */
+#favorite-subgame-homes {
+    border-left-color: #FF9800 !important; /* Orange border for subgame homes */
+}
+
+#favorite-subgame-homes label {
+    color: #FF9800 !important; /* Orange label color for subgame homes */
+}
+
+#favorite-subgame-homes input:focus {
+    border-color: #FF9800;
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+/* No homes message styling */
+.no-homes-message {
+    padding: 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+    color: #FFC107;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.no-homes-message i {
+    margin-right: 0.5rem;
+}
+
+.no-homes-message p {
+    margin: 0;
+    font-style: italic;
+}
+
+/* All homes display styling - for the profile view */
+.all-homes-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.homes-section {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.homes-section strong {
+    color: #4CAF50 !important; /* Force green color for all home section labels */
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+/* Ensure consistent styling for all home level text */
+.homes-section {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: white; /* Ensure the home level names are white */
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .home-inputs-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .subgame-homes-group {
+        padding: 0.75rem;
+    }
+    
+    .form-section h4 {
+        font-size: 1rem;
+    }
+    
+    .all-homes-display {
+        gap: 0.25rem;
+    }
+    
+    .homes-section {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subgame-homes-group {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .home-inputs-row input {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Legacy cleanup - hide conflicting elements */
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-section + br,
+.subgame-homes-group + br {
+    display: none;
+}

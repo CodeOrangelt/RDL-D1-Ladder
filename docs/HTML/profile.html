@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/profile-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <script type="module" src="../JS/themes.js"></script>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <div class="container">
+            <div class="content">
+                <div class="profile-container">
+                    <div class="profile-ladder-toggle">
+                        <button id="profile-d1-toggle" class="ladder-toggle-btn">D1</button>
+                        <button id="profile-d2-toggle" class="ladder-toggle-btn">D2</button>
+                        <button id="profile-d3-toggle" class="ladder-toggle-btn">D3</button>
+                        <button id="profile-duos-toggle" class="ladder-toggle-btn">Duos</button>
+                    </div>
+                    <div class="profile-content">
+                        <div class="profile-image-section">
+                            <img id="profile-preview" src="../images/shieldorb.png" alt="Profile Picture">
+                        </div>
+                        <div class="username-section">
+                            <h2 id="nickname"></h2>
+                            <p id="motto-view" class="motto-text"></p>
+                        </div>
+                        
+                        <!-- Simplified stats section -->
+                        <div class="stats-section">
+                            <span class="stat-item">
+                                <span class="stat-label">Matches:</span>
+                                <span id="stats-matches">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Wins:</span>
+                                <span id="stats-wins">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Losses:</span>
+                                <span id="stats-losses">-</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">K/D:</span>
+                                <span id="stats-kd">-</span>  <!-- Changed ID from stats-kda to stats-kd -->
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-label">Win Rate:</span>
+                                <span id="stats-winrate">-</span>
+                            </span>
+                            <div class="stat-item">
+                                <div class="stat-label">ELO RATING:</div>
+                                <div class="stat-value" id="stats-elo">--</div>
+                            </div>
+                        </div>
+                        
+                        <div class="trophy-case-container">
+                            <div id="trophy-container" class="trophies">
+                                <p class="empty-trophy-case">No trophies awarded yet</p>
+                            </div>
+                        </div>
+
+                        <div class="view-mode">
+                            <div class="profile-field">
+                                <label>Favorite Map</label>
+                                <span id="favorite-map-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Favorite Weapon</label>
+                                <span id="favorite-weapon-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Favorite Descent</label>
+                                <span id="division-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Timezone</label>
+                                <span id="timezone-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Availability</label>
+                                <span id="availability-view" class="view-text"></span>
+                            </div>
+                            <div class="profile-field">
+                                <span id="home-levels-view">Not set</span>
+                            </div>
+                            <div class="profile-field">
+                                <label>Favorite Subgame</label>
+                                <span id="favorite-subgame-view" class="view-text"></span>
+                            </div>
+
+                            <button id="edit-profile" class="edit-btn">Edit Profile</button>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <div class="edit-mode">
+                            <form id="profile-form">
+                                <div class="profile-field">
+                                    <label for="motto-edit">Motto:</label>
+                                    <input type="text" id="motto-edit" placeholder="Enter your motto">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-map-edit">Favorite Map:</label>
+                                    <input type="text" id="favorite-map-edit" placeholder="Enter favorite map">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-weapon-edit">Favorite Weapon:</label>
+                                    <input type="text" id="favorite-weapon-edit" placeholder="Enter favorite weapon">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="favorite-subgame-edit">Favorite Subgame:</label>
+                                    <select id="favorite-subgame-edit" name="favorite-subgame">
+                                        <option value="">None / Standard Match</option>
+                                        <option value="Fusion Match">Fusion Match</option>
+                                        <option value="≥6 Missiles">≥6 Missiles</option>
+                                        <option value="Weapon Imbalance">Weapon Imbalance</option>
+                                        <option value="Blind Match">Blind Match</option>
+                                        <option value="Rematch">Rematch</option>
+                                        <option value="Disorientation">Disorientation</option>
+                                        <option value="Ratting">Ratting</option>
+                                        <option value="Altered Powerups">Altered Powerups</option>
+                                        <option value="Mega Match">Mega Match</option>
+                                        <option value="Gauss and Mercs">Gauss and Mercs</option>
+                                        <option value="Misc">Misc (Not listed)</option>                                       
+                                    </select>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="timezone-edit">Timezone:</label>
+                                    <select id="timezone-edit" name="timezone">
+                                        <option value="">Select Timezone</option>
+                                        <option value="UTC-12">UTC-12</option>
+                                        <option value="UTC-11">UTC-11</option>
+                                        <option value="UTC-10">UTC-10</option>
+                                        <option value="UTC-9">UTC-9</option>
+                                        <option value="UTC-8">UTC-8 (PST)</option>
+                                        <option value="UTC-7">UTC-7 (MST)</option>
+                                        <option value="UTC-6">UTC-6 (CST)</option>
+                                        <option value="UTC-5">UTC-5 (EST)</option>
+                                        <option value="UTC-4">UTC-4</option>
+                                        <option value="UTC-3">UTC-3</option>
+                                        <option value="UTC-2">UTC-2</option>
+                                        <option value="UTC-1">UTC-1</option>
+                                        <option value="UTC+0">UTC+0</option>
+                                        <option value="UTC+1">UTC+1</option>
+                                        <option value="UTC+2">UTC+2</option>
+                                        <option value="UTC+3">UTC+3</option>
+                                        <option value="UTC+4">UTC+4</option>
+                                        <option value="UTC+5">UTC+5</option>
+                                        <option value="UTC+6">UTC+6</option>
+                                        <option value="UTC+7">UTC+7</option>
+                                        <option value="UTC+8">UTC+8</option>
+                                        <option value="UTC+9">UTC+9</option>
+                                        <option value="UTC+10">UTC+10</option>
+                                        <option value="UTC+11">UTC+11</option>
+                                        <option value="UTC+12">UTC+12</option>
+                                    </select>
+                                </div>
+                                <div class="profile-field">
+                                    <label for="division-edit">Favorite Descent:</label>
+                                    <select id="division-edit" name="division">
+                                        <option value="">Favorite Descent</option>
+                                        <option value="D1">D1</option>
+                                        <option value="D2">D2</option>
+                                        <option value="D3">D3</option>
+                                    </select>
+                                </div>
+
+                            <div class="profile-field">
+                                <label for="availability-days-edit">Availability:</label>
+                                <select id="availability-days-edit">
+                                    <option value="">Select Days</option>
+                                    <option value="weekdays">Weekdays (M-F)</option>
+                                    <option value="weekends">Weekends (Sat-Sun)</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                                <div id="availability-custom-days" style="display:none; margin: 6px 0;">
+                                    <label><input type="checkbox" value="Mon">Mon</label>
+                                    <label><input type="checkbox" value="Tue">Tue</label>
+                                    <label><input type="checkbox" value="Wed">Wed</label>
+                                    <label><input type="checkbox" value="Thu">Thu</label>
+                                    <label><input type="checkbox" value="Fri">Fri</label>
+                                    <label><input type="checkbox" value="Sat">Sat</label>
+                                    <label><input type="checkbox" value="Sun">Sun</label>
+                                </div>
+                                <input type="time" id="availability-start-edit" placeholder="Start Time">
+                                <input type="time" id="availability-end-edit" placeholder="End Time">
+                            </div>
+
+                                <div class="form-section">
+                                    <h4>Home Levels</h4>
+                                    
+                                    <!-- Standard/Default Homes -->
+                                    <div class="subgame-homes-group">
+                                        <label>Standard Match Homes:</label>
+                                        <div class="home-inputs-row">
+                                            <input type="text" id="home-level-1" placeholder="Primary home level" maxlength="50">
+                                            <input type="text" id="home-level-2" placeholder="Secondary home level" maxlength="50">
+                                            <input type="text" id="home-level-3" placeholder="Tertiary home level" maxlength="50">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Dynamic Favorite Subgame Homes -->
+                                    <div id="favorite-subgame-homes" class="subgame-homes-group" style="display: none;">
+                                        <label id="favorite-subgame-homes-label">Subgame Homes:</label>
+                                        <div id="subgame-homes-inputs" class="home-inputs-row">
+                                            <input type="text" id="favorite-subgame-home-1" placeholder="Primary subgame home" maxlength="50">
+                                            <input type="text" id="favorite-subgame-home-2" placeholder="Secondary subgame home" maxlength="50">
+                                            <input type="text" id="favorite-subgame-home-3" placeholder="Tertiary subgame home" maxlength="50">
+                                        </div>
+                                        <div id="no-homes-message" class="no-homes-message" style="display: none;">
+                                            <p><i class="fas fa-info-circle"></i> Homes do not apply to this Subgame.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label for="profile-image-url">Profile Image URL:</label>
+                                    <input type="url" id="profile-image-url" placeholder="https://example.com/your-image.jpg" class="form-control">
+                                    <small class="form-text">Enter URL to an image hosted online</small>
+                                    <div class="profile-image-preview-container">
+                                        <img id="profile-image-preview" alt="Profile Image Preview" class="profile-image-preview">
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <label for="country-selector">Country:</label>
+                                    <select id="country-selector" name="country">
+                                        <option value="">Select Country</option>
+                                        <option value="af">Afghanistan</option>
+                                        <option value="al">Albania</option>
+                                        <option value="dz">Algeria</option>
+                                        <option value="ad">Andorra</option>
+                                        <option value="ao">Angola</option>
+                                        <option value="ag">Antigua and Barbuda</option>
+                                        <option value="ar">Argentina</option>
+                                        <option value="am">Armenia</option>
+                                        <option value="au">Australia</option>
+                                        <option value="at">Austria</option>
+                                        <option value="az">Azerbaijan</option>
+                                        <option value="bs">Bahamas</option>
+                                        <option value="bh">Bahrain</option>
+                                        <option value="bd">Bangladesh</option>
+                                        <option value="bb">Barbados</option>
+                                        <option value="by">Belarus</option>
+                                        <option value="be">Belgium</option>
+                                        <option value="bz">Belize</option>
+                                        <option value="bj">Benin</option>
+                                        <option value="bt">Bhutan</option>
+                                        <option value="bo">Bolivia</option>
+                                        <option value="ba">Bosnia and Herzegovina</option>
+                                        <option value="bw">Botswana</option>
+                                        <option value="br">Brazil</option>
+                                        <option value="bn">Brunei</option>
+                                        <option value="bg">Bulgaria</option>
+                                        <option value="bf">Burkina Faso</option>
+                                        <option value="bi">Burundi</option>
+                                        <option value="cv">Cabo Verde</option>
+                                        <option value="kh">Cambodia</option>
+                                        <option value="cm">Cameroon</option>
+                                        <option value="ca">Canada</option>
+                                        <option value="cf">Central African Republic</option>
+                                        <option value="td">Chad</option>
+                                        <option value="cl">Chile</option>
+                                        <option value="cn">China</option>
+                                        <option value="co">Colombia</option>
+                                        <option value="km">Comoros</option>
+                                        <option value="cg">Congo</option>
+                                        <option value="cd">Congo (Democratic Republic)</option>
+                                        <option value="cr">Costa Rica</option>
+                                        <option value="hr">Croatia</option>
+                                        <option value="cu">Cuba</option>
+                                        <option value="cy">Cyprus</option>
+                                        <option value="cz">Czech Republic</option>
+                                        <option value="dk">Denmark</option>
+                                        <option value="dj">Djibouti</option>
+                                        <option value="dm">Dominica</option>
+                                        <option value="do">Dominican Republic</option>
+                                        <option value="ec">Ecuador</option>
+                                        <option value="eg">Egypt</option>
+                                        <option value="sv">El Salvador</option>
+                                        <option value="gq">Equatorial Guinea</option>
+                                        <option value="er">Eritrea</option>
+                                        <option value="ee">Estonia</option>
+                                        <option value="sz">Eswatini</option>
+                                        <option value="et">Ethiopia</option>
+                                        <option value="fj">Fiji</option>
+                                        <option value="fi">Finland</option>
+                                        <option value="fr">France</option>
+                                        <option value="ga">Gabon</option>
+                                        <option value="gm">Gambia</option>
+                                        <option value="ge">Georgia</option>
+                                        <option value="de">Germany</option>
+                                        <option value="gh">Ghana</option>
+                                        <option value="gr">Greece</option>
+                                        <option value="gd">Grenada</option>
+                                        <option value="gt">Guatemala</option>
+                                        <option value="gn">Guinea</option>
+                                        <option value="gw">Guinea-Bissau</option>
+                                        <option value="gy">Guyana</option>
+                                        <option value="ht">Haiti</option>
+                                        <option value="hn">Honduras</option>
+                                        <option value="hu">Hungary</option>
+                                        <option value="is">Iceland</option>
+                                        <option value="in">India</option>
+                                        <option value="id">Indonesia</option>
+                                        <option value="ir">Iran</option>
+                                        <option value="iq">Iraq</option>
+                                        <option value="ie">Ireland</option>
+                                        <option value="il">Israel</option>
+                                        <option value="it">Italy</option>
+                                        <option value="ci">Ivory Coast</option>
+                                        <option value="jm">Jamaica</option>
+                                        <option value="jp">Japan</option>
+                                        <option value="jo">Jordan</option>
+                                        <option value="kz">Kazakhstan</option>
+                                        <option value="ke">Kenya</option>
+                                        <option value="ki">Kiribati</option>
+                                        <option value="kp">North Korea</option>
+                                        <option value="kr">South Korea</option>
+                                        <option value="kw">Kuwait</option>
+                                        <option value="kg">Kyrgyzstan</option>
+                                        <option value="la">Laos</option>
+                                        <option value="lv">Latvia</option>
+                                        <option value="lb">Lebanon</option>
+                                        <option value="ls">Lesotho</option>
+                                        <option value="lr">Liberia</option>
+                                        <option value="ly">Libya</option>
+                                        <option value="li">Liechtenstein</option>
+                                        <option value="lt">Lithuania</option>
+                                        <option value="lu">Luxembourg</option>
+                                        <option value="mg">Madagascar</option>
+                                        <option value="mw">Malawi</option>
+                                        <option value="my">Malaysia</option>
+                                        <option value="mv">Maldives</option>
+                                        <option value="ml">Mali</option>
+                                        <option value="mt">Malta</option>
+                                        <option value="mh">Marshall Islands</option>
+                                        <option value="mr">Mauritania</option>
+                                        <option value="mu">Mauritius</option>
+                                        <option value="mx">Mexico</option>
+                                        <option value="fm">Micronesia</option>
+                                        <option value="md">Moldova</option>
+                                        <option value="mc">Monaco</option>
+                                        <option value="mn">Mongolia</option>
+                                        <option value="me">Montenegro</option>
+                                        <option value="ma">Morocco</option>
+                                        <option value="mz">Mozambique</option>
+                                        <option value="mm">Myanmar</option>
+                                        <option value="na">Namibia</option>
+                                        <option value="nr">Nauru</option>
+                                        <option value="np">Nepal</option>
+                                        <option value="nl">Netherlands</option>
+                                        <option value="nz">New Zealand</option>
+                                        <option value="ni">Nicaragua</option>
+                                        <option value="ne">Niger</option>
+                                        <option value="ng">Nigeria</option>
+                                        <option value="mk">North Macedonia</option>
+                                        <option value="no">Norway</option>
+                                        <option value="om">Oman</option>
+                                        <option value="pk">Pakistan</option>
+                                        <option value="pw">Palau</option>
+                                        <option value="pa">Panama</option>
+                                        <option value="pg">Papua New Guinea</option>
+                                        <option value="py">Paraguay</option>
+                                        <option value="pe">Peru</option>
+                                        <option value="ph">Philippines</option>
+                                        <option value="pl">Poland</option>
+                                        <option value="pt">Portugal</option>
+                                        <option value="qa">Qatar</option>
+                                        <option value="ro">Romania</option>
+                                        <option value="ru">Russia</option>
+                                        <option value="rw">Rwanda</option>
+                                        <option value="kn">Saint Kitts and Nevis</option>
+                                        <option value="lc">Saint Lucia</option>
+                                        <option value="vc">Saint Vincent and the Grenadines</option>
+                                        <option value="ws">Samoa</option>
+                                        <option value="sm">San Marino</option>
+                                        <option value="st">Sao Tome and Principe</option>
+                                        <option value="sa">Saudi Arabia</option>
+                                        <option value="sn">Senegal</option>
+                                        <option value="rs">Serbia</option>
+                                        <option value="sc">Seychelles</option>
+                                        <option value="sl">Sierra Leone</option>
+                                        <option value="sg">Singapore</option>
+                                        <option value="sk">Slovakia</option>
+                                        <option value="si">Slovenia</option>
+                                        <option value="sb">Solomon Islands</option>
+                                        <option value="so">Somalia</option>
+                                        <option value="za">South Africa</option>
+                                        <option value="ss">South Sudan</option>
+                                        <option value="es">Spain</option>
+                                        <option value="lk">Sri Lanka</option>
+                                        <option value="sd">Sudan</option>
+                                        <option value="sr">Suriname</option>
+                                        <option value="se">Sweden</option>
+                                        <option value="ch">Switzerland</option>
+                                        <option value="sy">Syria</option>
+                                        <option value="tj">Tajikistan</option>
+                                        <option value="tz">Tanzania</option>
+                                        <option value="th">Thailand</option>
+                                        <option value="tl">Timor-Leste</option>
+                                        <option value="tg">Togo</option>
+                                        <option value="to">Tonga</option>
+                                        <option value="tt">Trinidad and Tobago</option>
+                                        <option value="tn">Tunisia</option>
+                                        <option value="tr">Turkey</option>
+                                        <option value="tm">Turkmenistan</option>
+                                        <option value="tv">Tuvalu</option>
+                                        <option value="ug">Uganda</option>
+                                        <option value="ua">Ukraine</option>
+                                        <option value="ae">United Arab Emirates</option>
+                                        <option value="gb">United Kingdom</option>
+                                        <option value="us">United States</option>
+                                        <option value="uy">Uruguay</option>
+                                        <option value="uz">Uzbekistan</option>
+                                        <option value="vu">Vanuatu</option>
+                                        <option value="va">Vatican City</option>
+                                        <option value="ve">Venezuela</option>
+                                        <option value="vn">Vietnam</option>
+                                        <option value="ye">Yemen</option>
+                                        <option value="zm">Zambia</option>
+                                        <option value="zw">Zimbabwe</option>
+                                    </select>
+                                </div>
+                                <br>
+                                <div class="button-group">
+                                    <button type="submit" class="save-btn">Save Changes</button>
+                                    <button type="button" class="cancel-btn">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-placeholder"></div>
+    
+    <!-- Scripts -->
+    <script type="module" src="../JS/profile-viewer.js"></script>
+    <script>
+        // Load nav and footer
+        Promise.all([
+            fetch('../HTML/nav.html').then(response => response.text()),
+            fetch('../HTML/footer.html').then(response => response.text())
+        ]).then(([navData, footerData]) => {
+            document.getElementById('nav-placeholder').innerHTML = navData;
+            document.getElementById('footer-placeholder').innerHTML = footerData;
+        }).catch(error => {
+            console.error('Error loading nav/footer:', error);
+        });
+    </script>
+</body>
+</html>
