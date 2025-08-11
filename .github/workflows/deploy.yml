@@ -13,21 +13,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Prepare root files
-        run: |
-          # Copy all HTML files to root 
-          cp -r ./HTML/* ./
-          
-          # Update paths in HTML files
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
-          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
-          
-          # CRITICAL: Fix import paths in JavaScript files too
-          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
@@ -40,17 +25,13 @@ jobs:
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
       - name: Create distribution path
         run: |
-          mkdir -p distribution_path
-          # Copy all files to distribution path first, excluding the distribution_path itself
-          find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
-          # Remove the JS folder from distribution since we'll replace it with obfuscated version
-          rm -rf distribution_path/JS
+         mkdir -p distribution_path
       
-      - name: Low obfuscation of JavaScript
+      - name: Low obfuscation test
         uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
-          input_path: JS
-          output_path: distribution_path/JS
+          input_path: input_path
+          output_path: distribution_path
           compact: true
           control_flow_flattening: false
           dead_code_injection: false
@@ -59,12 +40,13 @@ jobs:
           log: false
           disable_console_output: true
           rename_globals: false
-          string_array_rotate: false
-          self_defending: false
+          string_array_rotate: true
+          self_defending: true
           string_array: true
-          string_array_threshold: 0.3
+          string_array_encoding: 'none'
+          string_array_threshold: 0.75
           unicode_escape_sequence: false
-          target: browser
+          target: node
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
