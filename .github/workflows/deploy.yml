@@ -43,4 +43,11 @@ jobs:
           git commit -m "Obfuscated JS files for deployment"
           git push --force origin obfuscated-deploy
 
-      # Add your deployment steps here (e.g., upload to server, trigger Netlify/Vercel, etc.)
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: .
+          production-branch: obfuscated-deploy
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
