@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redux Descent League</title>
+  <script>
+    // Check if we're already at the root URL
+    if (window.location.pathname.includes('/HTML/')) {
+      // Replace the URL in browser history without refreshing
+      const cleanUrl = window.location.href.replace('/HTML/index.html', '/');
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+    
+    // For any other page in the HTML directory
+    if (window.location.pathname.includes('/HTML/') && !window.location.pathname.endsWith('index.html')) {
+      const pageName = window.location.pathname.split('/HTML/')[1];
+      const cleanUrl = window.location.href.replace('/HTML/', '/');
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  </script>
+</head>
+<body>
+  <!-- Your regular HTML content goes here -->
+</body>
+</html>
