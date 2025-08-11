@@ -74,3 +74,4 @@ jobs:
         with:
           branch: gh-pages
           folder: distribution_path
+          clean: true
