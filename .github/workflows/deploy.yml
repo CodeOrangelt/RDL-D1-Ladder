@@ -16,6 +16,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Prepare root files
+        run: |
+          # Copy all HTML files to root 
+          cp -r ./HTML/* ./
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # CRITICAL: Fix import paths in JavaScript files too
+          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
+
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
@@ -27,23 +43,14 @@ jobs:
           sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
           sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
 
-      - name: Create distribution path (flatten HTML)
+      - name: Create distribution path
         run: |
-          rm -f index.html  # remove empty placeholder if present
           mkdir -p distribution_path
-          # Copy root items except special dirs
-          find . -maxdepth 1 -mindepth 1 \( -name ".git" -o -name ".github" -o -name "distribution_path" -o -name "HTML" \) -prune -o -exec cp -r {} distribution_path/ \;
-          # Flatten HTML contents into root
-          if [ -d HTML ]; then
-            cp -r HTML/* distribution_path/
-          fi
-          # Ensure an index.html exists
-          if [ ! -f distribution_path/index.html ]; then
-            echo "<!doctype html><html><head><meta charset='utf-8'><title>Site</title></head><body>No index.html found.</body></html>" > distribution_path/index.html
-          fi
-          # Remove JS to replace with obfuscated version
+          # Copy all files to distribution path first, excluding the distribution_path itself
+          find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
+          # Remove the JS folder from distribution since we'll replace it with obfuscated version
           rm -rf distribution_path/JS
-
+      
       - name: Low obfuscation of JavaScript
         uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
@@ -69,3 +76,4 @@ jobs:
         with:
           branch: gh-pages
           folder: distribution_path
+          reserved_names: ['approvedMatches', 'players', 'retroTracker']
