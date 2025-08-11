@@ -21,9 +21,6 @@ jobs:
           # Copy all HTML files to root 
           cp -r ./HTML/* ./
           
-          # Make a proper root index.html
-          cp ./HTML/index.html ./index.html
-          
           # Update paths in HTML files
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
           find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
