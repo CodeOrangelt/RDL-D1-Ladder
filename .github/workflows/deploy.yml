@@ -1,4 +1,4 @@
-name: Build and Deploy, Main Yml
+name: Build and Deploy
 on:
   push:
     branches: [ main ]
@@ -31,30 +31,24 @@ jobs:
           
           # CRITICAL: Fix import paths in JavaScript files too
           find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
-
       - name: Create Firebase Config
         run: |
           cp JS/firebase-config.template.js JS/firebase-config.js
-          sed -i "s/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g" JS/firebase-config.js
-          sed -i "s/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g" JS/firebase-config.js
-
+          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
       - name: Create distribution path
         run: |
           mkdir -p distribution_path
-          # Copy contents of HTML folder directly to distribution_path root
-          cp -r HTML/* distribution_path/
-          # Copy other folders needed for the site
-          cp -r CSS distribution_path/
-          cp -r images distribution_path/
-          cp index.html distribution_path/ || true
-          # Remove JS folder because we'll replace it with obfuscated version
+          # Copy all files to distribution path first, excluding the distribution_path itself
+          find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
+          # Remove the JS folder from distribution since we'll replace it with obfuscated version
           rm -rf distribution_path/JS
-
+      
       - name: Low obfuscation of JavaScript
         uses: KevinRohn/github-action-javascript-obfuscator@v1
         with:
