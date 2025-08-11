@@ -38,16 +38,16 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b obfuscated-deploy
+          git checkout -B obfuscated-deploy
           git add JS/
           git commit -m "Obfuscated JS files for deployment"
           git push --force origin obfuscated-deploy
 
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2
+      - name: Deploy from obfuscated-deploy branch
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          publish-dir: .
-          production-branch: obfuscated-deploy
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./
+          # Optionally, set source branch to obfuscated-deploy
+          # If using GitHub Pages, make sure your repo is set to deploy from gh-pages
