@@ -528,18 +528,18 @@ async function getPlayersLastEloChanges(usernames) {
 function createPlayerRowWithToken(player, stats, primaryToken) {
     const elo = parseFloat(player.elo) || 0;
 
-    // Update the rank color logic in createPlayerRow and createPlayerRowWithToken functions
+    // Update the color logic in createPlayerRow and createPlayerRowWithToken functions
     let usernameColor = '#DC143C'; // Default for unranked
     if (stats.totalMatches === 0) {
         usernameColor = '#DC143C'; // Unranked (0 games)
-    } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
-        usernameColor = '#50C878'; // Emerald (all requirements met)
+    } else if (stats.winRate >= 80 && stats.totalMatches >= 20) {
+        usernameColor = '#50C878'; // Emerald (special requirements)
     } else if (elo >= 700) {
-        usernameColor = '#FFD700'; // Gold (700-999)
+        usernameColor = '#FFD700'; // Gold (700+)
     } else if (elo >= 500) {
-        usernameColor = '#C0C0C0'; // Silver (500-699)
+        usernameColor = '#C0C0C0'; // Silver (500-700)
     } else if (elo >= 200) {
-        usernameColor = '#CD7F32'; // Bronze (200-499)
+        usernameColor = '#CD7F32'; // Bronze (200-500)
     }
 
     // Create flag HTML if player has country (comes AFTER username)
