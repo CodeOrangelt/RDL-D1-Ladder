@@ -1,0 +1,79 @@
+name: Build and Deploy
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare root files
+        run: |
+          # Copy all HTML files to root 
+          cp -r ./HTML/* ./
+          
+          # Make a proper root index.html
+          cp ./HTML/index.html ./index.html
+          
+          # Update paths in HTML files
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/CSS/\.\/CSS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/JS/\.\/JS/g' {} \;
+          find . -type f -name "*.html" -exec sed -i 's/\.\.\/images/\.\/images/g' {} \;
+          
+          # CRITICAL: Fix import paths in JavaScript files too
+          find ./JS -type f -name "*.js" -exec sed -i 's/from "JS\//from ".\/JS\//g' {} \;
+
+      - name: Create Firebase Config
+        run: |
+          cp JS/firebase-config.template.js JS/firebase-config.js
+          sed -i 's/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_AUTH_DOMAIN__/${{ secrets.FIREBASE_AUTH_DOMAIN }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_PROJECT_ID__/${{ secrets.FIREBASE_PROJECT_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_STORAGE_BUCKET__/${{ secrets.FIREBASE_STORAGE_BUCKET }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MESSAGING_SENDER_ID__/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_APP_ID__/${{ secrets.FIREBASE_APP_ID }}/g' JS/firebase-config.js
+          sed -i 's/__FIREBASE_MEASUREMENT_ID__/${{ secrets.FIREBASE_MEASUREMENT_ID }}/g' JS/firebase-config.js
+
+      - name: Create distribution path
+        run: |
+          mkdir -p distribution_path
+          # Copy all files to distribution path first, excluding the distribution_path itself
+          find . -maxdepth 1 -not -name "." -not -name "distribution_path" -not -name ".git" -not -name ".github" -exec cp -r {} distribution_path/ \;
+          # Remove the JS folder from distribution since we'll replace it with obfuscated version
+          rm -rf distribution_path/JS
+      
+      - name: Low obfuscation of JavaScript
+        uses: KevinRohn/github-action-javascript-obfuscator@v1
+        with:
+          input_path: JS
+          output_path: distribution_path/JS
+          compact: true
+          control_flow_flattening: false
+          dead_code_injection: false
+          debug_protection: false
+          debug_protection_interval: 0
+          log: false
+          disable_console_output: true
+          rename_globals: false
+          string_array_rotate: false
+          self_defending: false
+          string_array: true
+          string_array_threshold: 0.3
+          unicode_escape_sequence: false
+          target: browser
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: distribution_path
+          reserved_names: ['approvedMatches', 'players', 'retroTracker']
