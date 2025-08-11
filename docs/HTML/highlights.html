@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Match Highlights - RDL</title>
-    <link rel="icon" type="image/x-icon" href="./images/cloak.ico"/>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
     <!-- Core Styles -->
-    <link rel="stylesheet" href="./CSS/nav.css">
-    <link rel="stylesheet" href="./CSS/style.css">
-    <link rel="stylesheet" href="./CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
     <!-- Page Specific Styles -->
-    <link rel="stylesheet" href="./CSS/highlights.css">
+    <link rel="stylesheet" href="../CSS/highlights.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./CSS/themes.css">
-    <script type="module" src="./JS/themes.js"></script>
-    <script src="./JS/metadata.js"></script>
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <script type="module" src="../JS/themes.js"></script>
+    <script src="../JS/metadata.js"></script>
 </head>
 <body>
     <div id="nav-placeholder"></div>
@@ -56,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { firebaseConfig } from "./JS/firebase-config.js";
+        import { firebaseConfig } from "../JS/firebase-config.js";
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -255,7 +255,7 @@
                         ${creatorImage ? `
                         <div class="creator-image">
                             <img src="${creatorImage}" alt="${mapCreator}" 
-                                onerror="this.src='./images/default-creator.png';">
+                                onerror="this.src='../images/default-creator.png';">
                         </div>` : ''}
                         <div class="creator-info">
                             <p><strong>Map:</strong> ${map}</p>
@@ -311,7 +311,7 @@
                     ${achievementImage ? `
                     <div class="achievement-image">
                         <img src="${achievementImage}" alt="${achievementType}" 
-                            onerror="this.src='./images/default-achievement.png';">
+                            onerror="this.src='../images/default-achievement.png';">
                     </div>` : ''}
                     
                     <div class="achievement-info">
@@ -319,7 +319,7 @@
                             ${profileImage ? `
                             <div class="player-avatar">
                                 <img src="${profileImage}" alt="${player}" 
-                                    onerror="this.src='./images/default-player.png';">
+                                    onerror="this.src='../images/default-player.png';">
                             </div>` : ''}
                             <div class="player-details">
                                 <h3 class="player-name">${player}</h3>
