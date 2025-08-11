@@ -32,18 +32,30 @@ jobs:
           rm -rf docs
           mv docs_temp docs
           
-          # Copy all static assets
+          # Copy all static assets directly to docs
           cp -r CSS images docs/
           
-          # Copy HTML files
-          mkdir -p docs/HTML
-          cp -r HTML/* docs/HTML/
+          # Flatten structure: Copy all HTML files directly to docs root
+          cp -r HTML/*.html docs/
           
-          # Use the HTML/index.html file as the root index with a redirect
-          cp docs/HTML/index.html docs/index.html
+          # Fix all internal links and resource paths in HTML files
+          find docs -type f -name "*.html" -exec sed -i \
+            -e 's/\.\.\/CSS/\.\/CSS/g' \
+            -e 's/\.\.\/JS/\.\/JS/g' \
+            -e 's/\.\.\/images/\.\/images/g' \
+            -e 's/href="\.\/\([^"]*\.html\)"/href="\/\1"/g' \
+            {} \;
+          
+          # Update internal HTML links to reflect flattened structure
+          find docs -type f -name "*.html" -exec sed -i 's/href="\.\/\([^"]*\.html\)"/href="\/\1"/g' {} \;
           
           # Fix the limit issue in nav.html
-          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/HTML/nav.html
+          sed -i "s/const { collection, query, where, getDocs } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/const { collection, query, where, getDocs, limit } = await import('https:\/\/www.gstatic.com\/firebasejs\/10.8.0\/firebase-firestore.js');/g" docs/nav.html
+          
+          # Import files like nav.html and footer.html should be updated
+          # This fixes how HTML components are loaded from other HTML files
+          find docs -type f -name "*.html" -exec sed -i 's/fetch(\([\'"]\)\.\/HTML\//fetch(\1\.\//g' {} \;
+          find docs -type f -name "*.html" -exec sed -i 's/fetch(\([\'"]\)\.\//fetch(\1\.\//g' {} \;
 
       - name: Process Firebase Configuration
         run: |
@@ -84,6 +96,11 @@ jobs:
               --string-array-threshold 0.3 \
               --target browser
           done
+          
+          # Fix import paths in JavaScript files
+          find docs/JS -type f -name "*.js" -exec sed -i 's/from "\.\.\/JS\//from "\.\/JS\//g' {} \;
+          find docs/JS -type f -name "*.js" -exec sed -i 's/from "JS\//from "\.\/JS\//g' {} \;
+          find docs/JS -type f -name "*.js" -exec sed -i 's/import.*from.*\.\.\/JS\/firebase-config/import { auth, db } from ".\/firebase-config/g' {} \;
 
       - name: Commit changes
         run: |
