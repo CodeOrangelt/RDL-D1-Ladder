@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # or your main branch name
+      - main
 
 jobs:
   deploy:
@@ -19,16 +19,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16  # or your preferred version
+          node-version: 16
 
-      - name: Install dependencies (if needed)
+      - name: Install dependencies
         run: npm install # or yarn install
 
-      - name: Build (if needed)
-        run: npm run build # or yarn build
+      - name: Build the site
+        run: npm run build # or yarn build (This command depends on your static site generator)
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./HTML # changed from . to ./HTML
+          publish_dir: ./_site/HTML # changed from ./HTML to ./_site/HTML
