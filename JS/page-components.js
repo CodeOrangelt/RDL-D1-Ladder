@@ -36,6 +36,51 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.text())
             .then(html => {
                 footerPlaceholder.innerHTML = html;
+
+                // Inject music button styles if not already present
+                if (!document.getElementById('music-mini-btn-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'music-mini-btn-style';
+                    style.textContent = `
+                        .music-mini-btn {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 4px;
+                            background-color: rgba(187, 0, 0, 0.57); 
+                            color: #e0e0e0;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            border-color: transparent;
+                            font-size: 12px;
+                            font-weight: 500;
+                            text-decoration: none;
+                            transition: all 0.2s ease;
+                        }
+                        .music-mini-btn:hover {
+                            background-color: rgba(156, 0, 0, 0.57);
+                        }
+                        .music-mini-btn-icon {
+                            width: 12px;
+                            height: 12px;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                // Music button logic here
+                const audio = document.getElementById('site-music');
+                const btn = document.getElementById('music-mini-btn');
+                if (audio && btn) {
+                    btn.addEventListener('click', () => {
+                        if (audio.paused) {
+                            audio.play();
+                            btn.textContent = "Pause Music";
+                        } else {
+                            audio.pause();
+                            btn.textContent = "Play Music";
+                        }
+                    });
+                }
             })
             .catch(error => {
                 console.error('Error loading footer:', error);
