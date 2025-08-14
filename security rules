@@ -593,9 +593,8 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // More permissive userTokens rules
     match /userTokens/{userId} {
-      allow read: if request.auth != null;
+      allow read: if true; // Anyone (even signed out) can read
       allow write: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId;
