@@ -26,117 +26,112 @@ styleEl.textContent = `
 `;
 document.head.appendChild(styleEl);
 
-// Add caching system like in D1 ladder
-const playerCacheD3 = {
-    data: null,
-    timestamp: 0
-};
-const CACHE_DURATION = 30000; // 30 seconds cache validity
-//
-// Complete displayLadderD3 function implementation
+// Enhanced caching system with multiple cache types
+const playerCacheD3 = { data: null, timestamp: 0 };
+const profileCacheD3 = { data: null, timestamp: 0 };
+const matchStatsCacheD3 = { data: null, timestamp: 0 };
+const eloHistoryCacheD3 = { data: null, timestamp: 0 };
+
+// Cache durations
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const PROFILE_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const MATCH_STATS_CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
+const ELO_HISTORY_CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+/**
+ * Optimized D3 ladder data loading with parallel fetching and caching
+ */
+async function loadLadderDataOptimizedD3(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && playerCacheD3.data && (now - playerCacheD3.timestamp < CACHE_DURATION)) {
+        console.log('Using cached D3 ladder data');
+        const usernames = playerCacheD3.data.map(p => p.username);
+        const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
+        return { players: playerCacheD3.data, matchStatsBatch };
+    }
+
+    const [playersSnapshot, profilesSnapshot] = await Promise.all([
+        getDocs(collection(db, 'playersD3')),
+        getDocs(collection(db, 'userProfiles'))
+    ]);
+
+    const players = [];
+    playersSnapshot.forEach((doc) => {
+        const playerData = doc.data();
+        if (playerData.username) {
+            players.push({
+                ...playerData,
+                id: doc.id,
+                elo: playerData.eloRating || 0,
+                position: playerData.position || Number.MAX_SAFE_INTEGER
+            });
+        }
+    });
+
+    const profilesByUsername = new Map();
+    profilesSnapshot.forEach((doc) => {
+        const profileData = doc.data();
+        if (profileData.username) {
+            profilesByUsername.set(profileData.username.toLowerCase(), profileData);
+        }
+    });
+
+    for (const player of players) {
+        const username = player.username.toLowerCase();
+        if (profilesByUsername.has(username)) {
+            const profile = profilesByUsername.get(username);
+            if (profile.country) {
+                player.country = profile.country.toLowerCase();
+            }
+            player.points = profile.points || 0;
+        } else {
+            player.points = 0;
+        }
+    }
+
+    const usernames = players.map(p => p.username);
+    const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
+
+    players.sort((a, b) => {
+        const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
+        const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
+
+        if ((aMatches === 0) !== (bMatches === 0)) {
+            return aMatches === 0 ? 1 : -1;
+        }
+
+        return (a.position || 999) - (b.position || 999);
+    });
+
+    players.forEach((player, index) => {
+        player.position = index + 1;
+    });
+
+    playerCacheD3.data = players;
+    playerCacheD3.timestamp = now;
+
+    return { players, matchStatsBatch };
+}
+
+/**
+ * Main D3 ladder display function with progressive rendering
+ */
 async function displayLadderD3(forceRefresh = false) {
     const tableBody = document.querySelector('#ladder-d3 tbody');
     if (!tableBody) {
         console.error('D3 Ladder table body not found');
         return;
     }
-    
-    // Clear the table first to prevent duplicates
-    tableBody.innerHTML = '<tr><td colspan="8" class="loading-cell">Loading D3 ladder data...</td></tr>';
-    
-    try {
-        // Use cache if available and not expired
-        const now = Date.now();
-        if (!forceRefresh && playerCacheD3.data && (now - playerCacheD3.timestamp < CACHE_DURATION)) {
-            updateLadderDisplayD3(playerCacheD3.data);
-            return;
-        }
-        
-        // Query players
-        const playersRef = collection(db, 'playersD3');
-        const querySnapshot = await getDocs(playersRef);
-        
-        // Process players in a single pass
-        const players = [];
-        querySnapshot.forEach((doc) => {
-            const playerData = doc.data();
-            if (playerData.username) { // Ensure valid player
-                players.push({
-                    ...playerData,
-                    id: doc.id,
-                    elo: playerData.eloRating || 0,
-                    position: playerData.position || Number.MAX_SAFE_INTEGER
-                });
-            }
-        });
-                
-        // Fetch profiles for flags
-        const profilesRef = collection(db, 'userProfiles');
-        const profilesSnapshot = await getDocs(profilesRef);
-        
-        // Create a map of username -> profile data
-        const profilesByUsername = new Map();
-        profilesSnapshot.forEach((doc) => {
-            const profileData = doc.data();
-            if (profileData.username) {
-                profilesByUsername.set(profileData.username.toLowerCase(), profileData);
-            }
-        });
-        
-        // Match profiles to players
-        for (const player of players) {
-            const username = player.username.toLowerCase();
-            if (profilesByUsername.has(username)) {
-                const profile = profilesByUsername.get(username);
 
-                // Set country from profile
-                if (profile.country) {
-                    player.country = profile.country.toLowerCase();
-                }
-                // Add points from userProfile
-                player.points = profile.points || 0;
-            } else {
-                player.points = 0; // Default if no profile
-            }
-        }
-        
-        // Get all usernames for batch processing
-        const usernames = players.map(p => p.username);
-        
-        // Pre-fetch all match statistics in a single batch operation
-        const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
-        
-        // Sort players: players with 0 matches at the bottom
-        players.sort((a, b) => {
-            const aMatches = matchStatsBatch.get(a.username)?.totalMatches || 0;
-            const bMatches = matchStatsBatch.get(b.username)?.totalMatches || 0;
-            
-            // First check: put players with no matches at the bottom
-            if ((aMatches === 0) !== (bMatches === 0)) {
-                return aMatches === 0 ? 1 : -1;
-            }
-            
-            // Then sort by position for players in the same category
-            return (a.position || 999) - (b.position || 999);
-        });
-        
-        // Reassign positions sequentially
-        players.forEach((player, index) => {
-            player.position = index + 1;
-        });
-        
-        // Cache the results
-        playerCacheD3.data = players;
-        playerCacheD3.timestamp = now;
-        
-        // Update display
-        updateLadderDisplayD3(players);
-        
+    tableBody.innerHTML = '<tr><td colspan="9" class="loading-cell">Loading D3 ladder data...</td></tr>';
+
+    try {
+        const { players, matchStatsBatch } = await loadLadderDataOptimizedD3(forceRefresh);
+        await updateLadderDisplayD3(players, matchStatsBatch);
     } catch (error) {
         console.error("Error loading D3 ladder:", error);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align: center; color: red;">
+                <td colspan="9" style="text-align: center; color: red;">
                     Error loading D3 ladder data: ${error.message}
                 </td>
             </tr>
@@ -225,39 +220,18 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
     }
 }
 
-// Display ladder with ELO trend indicators
-async function updateLadderDisplayD3(ladderData) {
-    // Sort by position before displaying
-    ladderData.sort((a, b) => a.position - b.position);
-    
+/**
+ * Progressive D3 ladder display with immediate basic rendering and background enhancements
+ */
+async function updateLadderDisplayD3(ladderData, matchStatsBatch = null) {
     const tbody = document.querySelector('#ladder-d3 tbody');
-    if (!tbody) return;
-    
-    // Clear any existing content
-    tbody.innerHTML = '';
-    
-    // Get all usernames for batch processing
-    const usernames = ladderData.map(p => p.username);
-    
-    // Pre-fetch all match statistics in a single batch operation
-    const matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
-    
-    // Get tokens for all players
-    let userTokensMap = new Map();
-    try {
-        // Clear token cache before fetching to ensure fresh data
-        if (typeof clearTokenCache === 'function') {
-            clearTokenCache();
-        }
-        
-        userTokensMap = await getTokensByUsernames(usernames);
-    } catch (error) {
-        console.error('D3: Error fetching tokens:', error);
+    if (!tbody) {
+        console.error('D3 Ladder table body not found');
+        return;
     }
-    
-    // Update the table header with new columns
+
     const thead = document.querySelector('#ladder-d3 thead tr');
-    if (thead) {
+    if (thead && !thead.dataset.initialized) {
         thead.innerHTML = `
             <th>Rank</th>
             <th>Username</th>
@@ -269,92 +243,153 @@ async function updateLadderDisplayD3(ladderData) {
             <th>Win Rate</th>
             <th>Points</th>
         `;
+        thead.dataset.initialized = 'true';
     }
+
+    ladderData.sort((a, b) => a.position - b.position);
+
+    if (!matchStatsBatch) {
+        const usernames = ladderData.map(p => p.username);
+        matchStatsBatch = await fetchBatchMatchStatsD3(usernames);
+    }
+
+    const fragment = document.createDocumentFragment();
     
-    // Create all rows at once for better performance
-    const rowsHtml = ladderData.map(player => {
-        // Get pre-fetched stats from our batch operation
+    ladderData.forEach(player => {
         const stats = matchStatsBatch.get(player.username) || {
-            totalMatches: 0, wins: 0, losses: 0, 
-            kda: 0, winRate: 0, totalKills: 0, totalDeaths: 0
+            totalMatches: 0, wins: 0, losses: 0,
+            totalKills: 0, totalDeaths: 0, kda: 0, winRate: 0, points: 0
         };
+
+        const row = document.createElement('tr');
+        row.innerHTML = createPlayerRowD3(player, stats, null);
+        fragment.appendChild(row);
+    });
+
+    tbody.innerHTML = '';
+    tbody.appendChild(fragment);
+
+    const usernames = ladderData.map(p => p.username);
+    
+    loadTokensAsyncD3(tbody, ladderData, matchStatsBatch, usernames);
+    loadEloChangesAsyncD3(tbody, usernames);
+}
+
+/**
+ * Load tokens asynchronously for D3 ladder
+ */
+async function loadTokensAsyncD3(tbody, ladderData, matchStatsBatch, usernames) {
+    try {
+        const userTokensMap = await getTokensByUsernames(usernames);
+        enhanceLadderWithTokensD3(tbody, ladderData, matchStatsBatch, userTokensMap);
+    } catch (error) {
+        console.error('Error loading D3 tokens:', error);
+        return new Map();
+    }
+}
+
+/**
+ * Enhance existing D3 rows with tokens and flags
+ */
+function enhanceLadderWithTokensD3(tbody, ladderData, matchStatsBatch, userTokensMap) {
+    const rows = tbody.querySelectorAll('tr');
+    
+    ladderData.forEach((player, index) => {
+        if (index >= rows.length) return;
         
-        // Get user's tokens
+        const row = rows[index];
+        const flagPlaceholder = row.querySelector('.flag-placeholder');
+        const tokenPlaceholder = row.querySelector('.token-placeholder');
+        
+        if (player.country && flagPlaceholder) {
+            flagPlaceholder.innerHTML = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
+                alt="${player.country}" class="player-flag" 
+                style="margin-left: 5px; vertical-align: middle; width: 20px; height: auto;"
+                onerror="this.style.display='none'">`;
+        }
+        
         const userTokens = userTokensMap.get(player.username) || [];
         const primaryToken = getPrimaryDisplayToken(userTokens);
         
-        return createPlayerRowD3(player, stats, primaryToken);
-    }).join('');
-    
-    // Append all rows at once
-    tbody.innerHTML = rowsHtml;
-    
-    // Get all ELO changes and update indicators
+        if (primaryToken && tokenPlaceholder) {
+            tokenPlaceholder.innerHTML = `<img src="${primaryToken.tokenImage}" 
+                alt="${primaryToken.tokenName}" class="player-token" 
+                title="${primaryToken.tokenName} ${primaryToken.equipped ? '(Equipped)' : ''}" 
+                style="width: 35px; height: 35px; margin-left: 5px; vertical-align: middle; object-fit: contain;"
+                onerror="this.style.display='none'">`;
+        }
+    });
+}
+
+/**
+ * Load ELO changes asynchronously for D3
+ */
+function loadEloChangesAsyncD3(tbody, usernames) {
     getPlayersLastEloChangesD3(usernames)
         .then(changes => {
-            // Create a mapping of username to row for quick updates
-            const rowMap = new Map();
-            tbody.querySelectorAll('tr').forEach((row, index) => {
-                if (index < usernames.length) {
-                    rowMap.set(usernames[index], row);
-                }
-            });
+            const rows = tbody.querySelectorAll('tr');
             
             changes.forEach((change, username) => {
-                const row = rowMap.get(username);
-                if (row && change !== 0) {
+                const userIndex = usernames.indexOf(username);
+                if (userIndex !== -1 && userIndex < rows.length && change !== 0) {
+                    const row = rows[userIndex];
                     const eloCell = row.querySelector('td:nth-child(3)');
                     if (eloCell) {
-                        // Format the change value with + or - sign
-                        const formattedChange = change > 0 ? `+${change}` : `${change}`;
-                        
-                        // Find the indicator element that's already in the DOM
                         const indicator = eloCell.querySelector('.trend-indicator');
                         if (indicator) {
-                            // Update the existing indicator
+                            const formattedChange = change > 0 ? `+${change}` : `${change}`;
                             indicator.textContent = formattedChange;
                             indicator.style.color = change > 0 ? '#4CAF50' : '#F44336';
                             indicator.style.fontWeight = 'bold';
                             indicator.style.fontSize = '0.85em';
                             indicator.style.display = 'inline';
-                            indicator.style.visibility = 'visible';
-                            indicator.style.opacity = '1';
                         }
                     }
                 }
             });
         })
-        .catch(error => console.error('Error updating D3 ELO trend indicators:', error));
+        .catch(error => console.error('Error updating D3 ELO changes:', error));
 }
 
-// Helper function to fetch all match stats at once for D3
+/**
+ * Optimized batch match stats fetching with caching for D3
+ */
 async function fetchBatchMatchStatsD3(usernames) {
+    const now = Date.now();
+    
+    if (matchStatsCacheD3.data && (now - matchStatsCacheD3.timestamp < MATCH_STATS_CACHE_DURATION)) {
+        const cachedStats = new Map();
+        usernames.forEach(username => {
+            if (matchStatsCacheD3.data.has(username)) {
+                cachedStats.set(username, matchStatsCacheD3.data.get(username));
+            } else {
+                cachedStats.set(username, {
+                    totalMatches: 0, wins: 0, losses: 0,
+                    totalKills: 0, totalDeaths: 0, kda: 0, winRate: 0, points: 0
+                });
+            }
+        });
+        return cachedStats;
+    }
+
     const matchStats = new Map();
     
     try {
-        // Initialize stats for all players
         usernames.forEach(username => {
             matchStats.set(username, {
-                totalMatches: 0,
-                wins: 0,
-                losses: 0,
-                totalKills: 0,
-                totalDeaths: 0,
-                kda: 0,
-                winRate: 0
+                totalMatches: 0, wins: 0, losses: 0,
+                totalKills: 0, totalDeaths: 0, kda: 0, winRate: 0
             });
         });
         
         const approvedMatchesRef = collection(db, 'approvedMatchesD3');
         const allMatches = await getDocs(approvedMatchesRef);
         
-        // Process all matches in a single pass
         allMatches.forEach(doc => {
             const match = doc.data();
             const winnerUsername = match.winnerUsername;
             const loserUsername = match.loserUsername;
             
-            // Process winner stats
             if (usernames.includes(winnerUsername)) {
                 const stats = matchStats.get(winnerUsername);
                 stats.wins++;
@@ -363,7 +398,6 @@ async function fetchBatchMatchStatsD3(usernames) {
                 stats.totalDeaths += parseInt(match.loserScore) || 0;
             }
             
-            // Process loser stats
             if (usernames.includes(loserUsername)) {
                 const stats = matchStats.get(loserUsername);
                 stats.losses++;
@@ -373,18 +407,16 @@ async function fetchBatchMatchStatsD3(usernames) {
             }
         });
         
-        // Calculate derived stats for all users
         usernames.forEach(username => {
             const stats = matchStats.get(username);
-            
-            // Calculate KDA
             stats.kda = stats.totalDeaths > 0 ? 
                 (stats.totalKills / stats.totalDeaths).toFixed(2) : stats.totalKills;
-            
-            // Calculate win rate
             stats.winRate = stats.totalMatches > 0 ? 
                 ((stats.wins / stats.totalMatches) * 100).toFixed(1) : 0;
         });
+
+        matchStatsCacheD3.data = matchStats;
+        matchStatsCacheD3.timestamp = now;
         
     } catch (error) {
         console.error('Error fetching batch match stats for D3:', error);
@@ -410,27 +442,6 @@ function createPlayerRowD3(player, stats, primaryToken) {
         usernameColor = '#CD7F32'; // Bronze (200-499)
     }
 
-    // Create flag HTML if player has country
-    let flagHtml = '';
-    if (player.country) {
-        flagHtml = `<img src="../images/flags/${player.country.toLowerCase()}.png" 
-                        alt="${player.country}" 
-                        class="player-flag" 
-                        style="margin-left: 5px; vertical-align: middle; width: 20px; height: auto;"
-                        onerror="this.style.display='none'">`;
-    }
-    
-    // Create token HTML if player has tokens
-    let tokenHtml = '';
-    if (primaryToken) {
-        tokenHtml = `<img src="${primaryToken.tokenImage}" 
-                         alt="${primaryToken.tokenName}" 
-                         class="player-token" 
-                         title="${primaryToken.tokenName} ${primaryToken.equipped ? '(Equipped)' : ''}"
-                         style="width: 35px; height: 35px; margin-left: 5px; vertical-align: middle; object-fit: contain;"
-                         onerror="this.style.display='none'">`;
-    }
-    
     return `
     <tr>
         <td>${player.position}</td>
@@ -440,8 +451,8 @@ function createPlayerRowD3(player, stats, primaryToken) {
                    style="color: ${usernameColor}; text-decoration: none;">
                     ${player.username}
                 </a>
-                ${flagHtml}
-                ${tokenHtml}
+                <span class="flag-placeholder"></span>
+                <span class="token-placeholder"></span>
             </div>
         </td>
         <td style="color: ${usernameColor}; position: relative;">
