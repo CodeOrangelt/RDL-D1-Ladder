@@ -293,7 +293,7 @@ async function handleLogin(e) {
                         await setDoc(doc(db, collectionName, user.uid), {
                             username: pendingData.username,
                             email: user.email,
-                            eloRating: 1200,
+                            eloRating: 200,
                             position: nextPosition,
                             createdAt: serverTimestamp(),
                             isAdmin: false,

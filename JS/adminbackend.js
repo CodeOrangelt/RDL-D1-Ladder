@@ -1183,7 +1183,7 @@ async function addNewPlayer() {
         const eloInput = document.getElementById('new-player-elo');
         
         const username = usernameInput.value.trim();
-        const elo = parseInt(eloInput.value) || 1200;
+        const elo = parseInt(eloInput.value) || 200;
         
         if (!username) {
             alert('Please enter a valid username');

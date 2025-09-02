@@ -64,7 +64,7 @@ async function rebuildMembersList() {
             const member = membersMap.get(userId);
             member.ladders.push({
                 ladder: ladderName,
-                elo: playerData.eloRating || 1200,
+                elo: playerData.eloRating || 200,
                 active: playerData.active !== false
             });
         });
@@ -159,10 +159,10 @@ async function rebuildMembersList() {
 }
 
 function getPlayerRank(elo) {
-    if (elo >= 2000) return 'emerald';
-    if (elo >= 1800) return 'gold';
-    if (elo >= 1600) return 'silver';
-    if (elo >= 1400) return 'bronze';
+    if (elo >= 1000) return 'emerald';  
+    if (elo >= 700) return 'gold';      
+    if (elo >= 500) return 'silver';   
+    if (elo >= 200) return 'bronze';  
     return 'unranked';
 }
 

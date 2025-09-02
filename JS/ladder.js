@@ -928,7 +928,7 @@ async function findBestOpponent(currentLadder = 'd1') {
             }
 
             const playerData = playerSnapshot.docs[0].data();
-            const userElo = parseInt(playerData.eloRating) || 1200;
+            const userElo = parseInt(playerData.eloRating) || 200;
 
             // Check if user has a team
             if (playerData.hasTeam && playerData.teammate) {
@@ -950,7 +950,7 @@ async function findBestOpponent(currentLadder = 'd1') {
                 // Skip if they already have a team
                 if (potentialTeammate.hasTeam) return;
 
-                const teammateElo = parseInt(potentialTeammate.eloRating) || 1200;
+                const teammateElo = parseInt(potentialTeammate.eloRating) || 200;
                 const eloDifference = Math.abs(teammateElo - userElo);
 
                 // Calculate teammate compatibility score (closer ELO is better)
@@ -963,7 +963,7 @@ async function findBestOpponent(currentLadder = 'd1') {
             });
 
             if (bestTeammate) {
-                const teammateElo = parseInt(bestTeammate.eloRating) || 1200;
+                const teammateElo = parseInt(bestTeammate.eloRating) || 200;
 
                 // Set ELO-based colors
                 let usernameColor = 'gray';
