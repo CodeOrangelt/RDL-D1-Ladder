@@ -819,31 +819,6 @@ displayProfile(data) {
     let nextRank = '';
     let eloNeeded = 0;
     
-    if (!isNonParticipant) { // Skip for non-participants
-        if (eloRating >= 2000) {
-            eloClass = 'elo-emerald';
-            nextRank = 'Emerald';
-            eloNeeded = 0;
-        } else if (eloRating >= 1800) {
-            eloClass = 'elo-gold';
-            nextRank = 'Emerald';
-            eloNeeded = 2000 - eloRating;
-        } else if (eloRating >= 1600) {
-            eloClass = 'elo-silver';
-            nextRank = 'Gold';
-            eloNeeded = 1800 - eloRating;
-        } else if (eloRating >= 1400) {
-            eloClass = 'elo-bronze';
-            nextRank = 'Silver';
-            eloNeeded = 1600 - eloRating;
-        } else {
-            eloClass = 'elo-unranked';
-            nextRank = 'Bronze';
-            eloNeeded = 1400 - eloRating;
-        }
-        container.classList.add(eloClass);
-    }
-    
     // Format home levels for display using the new method
     let homeLevelsDisplay = this.formatAllHomesDisplay(data);
     
@@ -2304,7 +2279,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 totalKills: 0,
                 totalDeaths: 0,
                 totalMatches: matches.length
-            };
+            }; 
             
             // Process match data
             matches.forEach(match => {
@@ -2354,6 +2329,50 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 nextRank = 'Bronze';
                 eloNeeded = 1400 - eloRating;
                 eloClass = 'elo-unranked';
+            }
+
+            if (eloRating >= 1000 && stats?.totalMatches >= 20 && stats?.winRate >= 80) {
+                eloClass = 'elo-emerald';
+                nextRank = 'Highest rank.';
+                eloNeeded = 0;
+            } else if (eloRating >= 700) {
+                eloClass = 'elo-emerald';
+                nextRank = 'Emerald';
+                eloNeeded = 1000 - eloRating;
+                
+                // Add requirements for Emerald rank
+                const matchesNeeded = stats?.totalMatches < 20 ? (20 - stats?.totalMatches) : 0;
+                const hasWinRateIssue = stats?.winRate < 80;
+                
+                // Add extra HTML to show additional requirements
+                const nextRankElement = document.getElementById('next-rank-col');
+                if (nextRankElement) {
+                    let requirementsText = `${eloNeeded} ELO needed`;
+                    if (matchesNeeded > 0) {
+                        requirementsText += `<br>${matchesNeeded} more matches needed`;
+                    }
+                    if (hasWinRateIssue) {
+                        requirementsText += `<br>Win rate must be ≥80% (currently ${stats?.winRate || 0}%)`;
+                    }
+                    
+                    nextRankElement.innerHTML = `
+                        <div class="stats-label">NEXT RANK</div>
+                        <div id="next-rank-value" class="stats-value ${eloClass}">${nextRank}</div>
+                        <div class="stats-progress ${eloClass}">${requirementsText}</div>
+                    `;
+                }
+            } else if (eloRating >= 500) {
+                eloClass = 'elo-silver';
+                nextRank = 'Gold';
+                eloNeeded = 700 - eloRating;
+            } else if (eloRating >= 200) {
+                eloClass = 'elo-bronze';
+                nextRank = 'Silver';
+                eloNeeded = 500 - eloRating;
+            } else {
+                eloClass = 'elo-unranked';
+                nextRank = 'Bronze';
+                eloNeeded = 200 - eloRating;
             }
             
             // IMPORTANT: Check if we already have stats at the bottom of the page

@@ -448,6 +448,12 @@
     color: #50C878;
 }
 
+.stats-requirement {
+    font-size: 0.85em;
+    color: #ffb74d;
+    margin-top: 4px;
+}
+
 .stat-item {
     display: flex;
     align-items: center;
