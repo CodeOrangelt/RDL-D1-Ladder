@@ -102,14 +102,14 @@ function cachePage(key, data) {
     }
 }
 
-// --- Shared Helper Functions ---
 function getEloColor(elo) {
   const e = Number(elo);
-  if (e >= 2000) return "#50C878";      // Emerald
-  else if (e >= 1800) return "#FFD700"; // Gold
-  else if (e >= 1600) return "#b9f1fc"; // Silver
-  else if (e >= 1400) return "#CD7F32"; // Bronze
-  else return "#808080";              // Unranked/Default
+  // Simplified approach - use only ELO value
+  if (e >= 1000) return "#50C878"; // Emerald
+  else if (e >= 700) return "#FFD700"; // Gold
+  else if (e >= 500) return "#b9f1fc"; // Silver
+  else if (e >= 200) return "#CD7F32"; // Bronze
+  else return "#808080"; // Unranked/Default
 }
 
 function formatDate(timestamp, includeTime = false) {
@@ -590,7 +590,7 @@ async function renderMatchCards(docsData) {
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.textContent = match.loserUsername || 'Unknown';
-        loserNameEl.style.color = getEloColor(match.loserOldElo);
+        loserNameEl.style.color = getEloColor(match.losersOldElo || 0);
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
         
         // Add loser suicides
@@ -641,7 +641,7 @@ async function renderMatchCards(docsData) {
         }
         
         if (fullLoserComment && !isUsernameMuted(match.loserUsername)) {
-            loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo));
+            loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.losersOldElo));
         } else {
             loserCommentEl.textContent = filteredLoserComment === "Muted." ? "Muted." : "-";
             loserCommentEl.style.cursor = 'default';
@@ -1371,14 +1371,14 @@ async function submitCommentOrDemo(event) {
     }
 }
 
-// Add this helper function to get rank class from ELO
 function getEloRankClass(elo) {
-    const e = Number(elo);
-    if (e >= 2000) return "emerald";
-    else if (e >= 1800) return "gold";
-    else if (e >= 1600) return "silver";
-    else if (e >= 1400) return "bronze";
-    else return "unranked";
+  const e = Number(elo);
+  // Simplified approach - use only ELO value
+  if (e >= 1000) return "emerald";
+  else if (e >= 700) return "gold";
+  else if (e >= 500) return "silver";
+  else if (e >= 200) return "bronze";
+  else return "unranked";
 }
 
 function showPreviewCommentPopup(commentText, username, usernameColor = "#fff") {
