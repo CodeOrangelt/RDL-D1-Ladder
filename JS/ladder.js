@@ -1012,8 +1012,12 @@ async function findBestOpponent(currentLadder = 'd1') {
         allPlayersSnapshot.forEach(doc => {
             const potentialOpponent = doc.data();
 
-            // Skip if this is the current user
-            if (potentialOpponent.username === username) return;
+            // Skip if this is the current user - use normalized comparison
+            if (potentialOpponent.username && 
+                (potentialOpponent.username.toLowerCase().trim() === username.toLowerCase().trim() ||
+                potentialOpponent.userId === user.uid)) {
+                return;
+            }   
 
             const opponentElo = parseInt(potentialOpponent.eloRating) || 1500;
             const opponentRankTier = getPlayerRankName(opponentElo);
