@@ -114,6 +114,57 @@ class ProfileViewer {
     }
 }
 
+applyEloStylingToAllContainers() {
+    // Get the current ELO class
+    const container = document.querySelector('.profile-content');
+    if (!container) {
+        console.warn('No .profile-content found for ELO styling');
+        return;
+    }
+    
+    // Determine which ELO class is active
+    let eloClass = '';
+    if (container.classList.contains('elo-emerald')) eloClass = 'elo-emerald';
+    else if (container.classList.contains('elo-gold')) eloClass = 'elo-gold';
+    else if (container.classList.contains('elo-silver')) eloClass = 'elo-silver';
+    else if (container.classList.contains('elo-bronze')) eloClass = 'elo-bronze';
+    else if (container.classList.contains('elo-unranked')) eloClass = 'elo-unranked';
+    
+    if (!eloClass) {
+        console.warn('No ELO class found on .profile-content');
+        
+        // Set a default ELO class if none found
+        eloClass = 'elo-unranked';
+    }
+    
+    console.log(`Applying ELO styling: ${eloClass} to containers`);
+    
+    // Apply to ALL containers on the page - more comprehensive selector
+    const allContainers = document.querySelectorAll(
+        '.profile-container, .match-history-container, .elo-history-container, ' +
+        '.stats-grid, .trophy-container, .invitation-section, .role-container, ' +
+        '.profile-status, .profile-header, .profile-ladder-toggle, .profile-field, ' +
+        '.stats-content, .stat-item, .promotion-table, .stats-row, .username-section, ' +
+        '.rank-history-container, .match-stats-container, .player-matchups-container, ' +
+        '.match-history-container, .trophy-container, .elo-history-container'
+    );
+    
+    console.log(`Found ${allContainers.length} containers to style`);
+    
+    // Apply the ELO class and border styling to all containers
+    allContainers.forEach(element => {
+        if (element) {
+            // Remove any existing ELO classes
+            element.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            // Add new ELO class and bordered class
+            element.classList.add('elo-bordered', eloClass);
+        }
+    });
+    
+    // Force browser repaint by accessing offsetHeight
+    document.body.offsetHeight;
+}
+
 async displayRibbons(username) {
     try {
         // Check for non-participant
@@ -378,6 +429,8 @@ async loadProfile(username, ladder) {
         });
         
         contentContainer.appendChild(fragment);
+        
+         setTimeout(() => this.applyEloStylingToAllContainers(), 100);
     }
     
     async loadPlayerData(username) {
@@ -807,17 +860,63 @@ displayProfile(data) {
         }
         container.classList.remove('non-participant-profile', 'former-player-profile');
     }
+        let nextRank = '';
+        let eloNeeded = 0;
+        let eloClass = '';
     
-    // Handle ELO styling
-    const eloRating = parseInt(data.eloRating) || 0;
+        // Handle ELO styling - IMPORTANT
+        const eloRating = parseInt(data.eloRating) || 0;
+        const winRate = parseFloat(data.winRate) || 0;
+        const totalMatches = parseInt(data.totalMatches) || 0;
+
+        console.log(`Player stats for Emerald check:`);
+        console.log(`- ELO Rating: ${eloRating} (needs 1000+)`);
+        console.log(`- Win Rate: ${winRate}% (needs 80%+)`);
+        console.log(`- Total Matches: ${totalMatches} (needs 20+)`);
+
+        // Check emerald eligibility
+        const meetsEloRequirement = eloRating >= 1000;
+        const meetsWinrateRequirement = winRate >= 80;
+        const meetsMatchesRequirement = totalMatches >= 20;
+        const isEmeraldEligible = meetsEloRequirement && meetsWinrateRequirement && meetsMatchesRequirement;
+
+        console.log(`Emerald eligibility check: ${isEmeraldEligible ? 'ELIGIBLE' : 'NOT ELIGIBLE'}`);
+        console.log(`- ELO requirement met: ${meetsEloRequirement}`);
+        console.log(`- Winrate requirement met: ${meetsWinrateRequirement}`);
+        console.log(`- Matches requirement met: ${meetsMatchesRequirement}`);
+
+        // Remove existing classes
+        container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+
+// IMPORTANT: Check for 0 matches first to set as unranked regardless of ELO
+    if (totalMatches === 0) {
+        eloClass = 'elo-unranked';
+        console.log("Setting UNRANKED rank (0 matches played)");
+    }
+    // Otherwise determine ELO class based on rating and other requirements
+    else if (isEmeraldEligible) {
+        eloClass = 'elo-emerald';
+        console.log("Setting EMERALD rank!");
+    } else if (eloRating >= 700) {
+        eloClass = 'elo-gold';
+    } else if (eloRating >= 500) {
+        eloClass = 'elo-silver';
+    } else if (eloRating >= 200) {
+        eloClass = 'elo-bronze';
+    } else {
+        eloClass = 'elo-unranked';
+    }
     
-    // Remove existing classes
-    container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+    console.log(`Setting ELO class: ${eloClass}`); // Debug logging
     
-    // Add appropriate class
-    let eloClass;
-    let nextRank = '';
-    let eloNeeded = 0;
+    // Apply ELO class to container - THIS IS CRUCIAL
+    container.classList.add(eloClass);
+    
+    // Call this at the end of displayProfile to apply styling to all containers
+    setTimeout(() => {
+        this.applyEloStylingToAllContainers();
+    }, 100); // Small delay to ensure DOM is updated
+
     
     // Format home levels for display using the new method
     let homeLevelsDisplay = this.formatAllHomesDisplay(data);
@@ -884,6 +983,8 @@ displayProfile(data) {
             `;
         }
     }
+
+    setTimeout(() => this.applyEloStylingToAllContainers(), 0);
     
     // Check if this is another user's profile (not the current user's)
     const currentUser = auth.currentUser;
@@ -963,6 +1064,7 @@ displayProfile(data) {
     
 async displayTrophyCase(username) 
 {
+    this.applyEloStylingToAllContainers();
         try {
             const trophyContainer = document.getElementById('trophy-container');
             if (!trophyContainer) return;
@@ -1038,6 +1140,7 @@ async displayTrophyCase(username)
 }
 
 async displayMatchHistory(username, matches) {
+    this.applyEloStylingToAllContainers();
     try {
         const matchHistoryContainer = containerReferences['match-history'];
         if (!matchHistoryContainer) return;
@@ -1859,6 +1962,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
 }
     
     async displayMatchStats(username, matches) {
+        this.applyEloStylingToAllContainers();
         try {
             const statsContainer = containerReferences['match-stats'];
             if (!statsContainer) return;
@@ -1943,6 +2047,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
     }
     
     async displayPlayerMatchups(username, matches) {
+        this.applyEloStylingToAllContainers();
         try {
             const matchupsContainer = containerReferences['player-matchups'];
             if (!matchupsContainer) return;
@@ -2027,6 +2132,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
     }
     
     async displayPromotionHistory(username) {
+        this.applyEloStylingToAllContainers();
         try {
             const promotionContainer = containerReferences['rank-history'];
             if (!promotionContainer) {
@@ -2308,28 +2414,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             let nextRank = '';
             let eloNeeded = 0;
             let eloClass = '';
-            
-            if (eloRating >= 2000) {
-                nextRank = 'Emerald';
-                eloNeeded = 0;
-                eloClass = 'elo-emerald';
-            } else if (eloRating >= 1800) {
-                nextRank = 'Emerald';
-                eloNeeded = 2000 - eloRating;
-                eloClass = 'elo-gold';
-            } else if (eloRating >= 1600) {
-                nextRank = 'Gold';
-                eloNeeded = 1800 - eloRating;
-                eloClass = 'elo-silver';
-            } else if (eloRating >= 1400) {
-                nextRank = 'Silver';
-                eloNeeded = 1600 - eloRating;
-                eloClass = 'elo-bronze';
-            } else {
-                nextRank = 'Bronze';
-                eloNeeded = 1400 - eloRating;
-                eloClass = 'elo-unranked';
-            }
+
 
             if (eloRating >= 1000 && stats?.totalMatches >= 20 && stats?.winRate >= 80) {
                 eloClass = 'elo-emerald';
@@ -3088,6 +3173,7 @@ setupEditProfile() {
 
 
 addInvitationSection(profileData) {
+    this.applyEloStylingToAllContainers();
     // Remove existing invitation section if it exists
     const existingSection = document.querySelector('.invitation-section');
     if (existingSection) {
@@ -3223,8 +3309,8 @@ addInvitationSection(profileData) {
             }
             
             .invitation-section.elo-unranked {
-                border-color: #666;
-                box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+                border-color: #be0000ff;
+                box-shadow: 0 0 20px rgba(107, 13, 13, 0.1);
             }
             
             .invitation-header {
@@ -3281,7 +3367,8 @@ addInvitationSection(profileData) {
             }
             
             .rank-indicator.elo-unranked {
-                background: rgba(102, 102, 102, 0.2);
+                border-color: #be0000ff;
+                box-shadow: 0 0 20px rgba(107, 13, 13, 0.1);
                 color: #666;
                 border: 1px solid #666;
             }

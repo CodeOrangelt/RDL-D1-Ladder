@@ -214,23 +214,50 @@
 
 /* ELO Rating Color Classes */
 .elo-unranked {
-    color: #808080; /* Gray */
+    color: #be0000ff !important; /* Red instead of Gray */
+    border-color: #be0000ff;
 }
 
 .elo-bronze {
     color: #CD7F32; /* Bronze */
+    border-color: #CD7F32;
 }
 
 .elo-silver {
     color: #b9f1fc; /* Changed from #C0C0C0 */
+    border-color: #b9f1fc;
 }
 
 .elo-gold {
     color: #FFD700; /* Gold */
+    border-color: #FFD700;
 }
 
 .elo-emerald {
     color: #50C878; /* Emerald */
+    border-color: #50C878;
+}
+
+/* Add styling for ELO-bordered elements */
+.profile-container.elo-bordered {
+    border: 2px solid;
+}
+
+.match-history-container.elo-bordered {
+    border: 2px solid;
+}
+
+.profile-field.elo-bordered {
+    border-left: 3px solid;
+    padding-left: 12px;
+}
+
+/* Add specific styling for the username with ELO color */
+.username-section h2.elo-colored {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid;
 }
 
 /* Update text elements to inherit color */
@@ -429,7 +456,7 @@
 
 /* ELO rank colors */
 .next-rank .elo-unranked {
-    color: #808080;
+    color: #be0000ff !important; /* Red instead of Gray */
 }
 
 .next-rank .elo-bronze {
@@ -528,7 +555,7 @@
 
 /* ELO-based stat label colors */
 .elo-unranked .stat-label {
-    color: #808080; /* Gray */
+    color: #be0000ff !important;
 }
 
 .elo-bronze .stat-label {
@@ -596,7 +623,7 @@
 
 /* Color classes for next rank */
 .next-rank .elo-unranked {
-    color: #808080;
+    color: #be0000ff !important; /* Red instead of Gray */
 }
 
 .next-rank .elo-bronze {
@@ -665,7 +692,7 @@
 
 /* ELO color classes */
 .elo-unranked .view-text {
-    color: #808080; /* Gray */
+    color: #be0000ff !important; /* Red instead of Gray */
 }
 
 .elo-bronze .view-text {
@@ -1079,7 +1106,7 @@
 
 /* ELO Rating Progress Color Classes - match the existing ELO classes */
 .elo-progress-info.elo-unranked {
-    color: #808080; /* Gray */
+    color: #be0000ff !important; /* Red instead of Gray */
 }
 
 .elo-progress-info.elo-bronze {
@@ -1135,7 +1162,7 @@
 
 /* Add color classes for the next rank column */
 #next-rank-col .elo-unranked {
-    color: #808080; /* Gray */
+    color: #be0000ff; /* Red instead of Gray */
 }
 
 #next-rank-col .elo-bronze {
@@ -1328,4 +1355,62 @@
 .form-section + br,
 .subgame-homes-group + br {
     display: none;
+}
+
+/* Enhanced styling for Emerald rank to distinguish from Gold */
+
+/* Special username styling for emerald pilots */
+.username-section h2.elo-emerald {
+    color: #50C878 !important;
+    text-shadow: 0 0 8px rgba(80, 200, 120, 0.4);
+    position: relative;
+    display: inline-block;
+}
+
+/* Add emerald rank indicator badge */
+.username-section h2.elo-emerald::after {
+    content: "EMERALD";
+    position: absolute;
+    top: -15px;
+    right: -10px;
+    background-color: #50C878;
+    color: #000;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    transform: rotate(10deg);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.username-section h2.elo-gold {
+    color: #FFD700 !important;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+/* Add gold rank indicator badge */
+.username-section h2.elo-gold::after {
+    content: "GOLD";
+    position: absolute;
+    top: -12px;
+    right: -5px;
+    background-color: #FFD700;
+    color: #000;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    transform: rotate(5deg);
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation for emerald borders to make them more noticeable */
+@keyframes emeraldGlow {
+    0% { box-shadow: 0 0 10px rgba(80, 200, 120, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(80, 200, 120, 0.4); }
+    100% { box-shadow: 0 0 10px rgba(80, 200, 120, 0.2); }
+}
+
+.profile-container.elo-emerald {
+    animation: emeraldGlow 3s infinite;
 }
