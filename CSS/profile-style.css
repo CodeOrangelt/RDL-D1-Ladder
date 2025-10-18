@@ -81,13 +81,14 @@
 .username-section h2 {
     margin: 0;
     margin-bottom: 5px;
+    color: inherit !important; /* Force inherit to pick up ELO color */
 }
 
 .motto-text {
     font-weight: bold;
     font-style: italic;
     margin: 0;
-    color: inherit;
+    color: inherit !important; /* Force inherit to pick up ELO color */
     opacity: 0.9;
     margin-bottom: 5px;
 }
@@ -214,50 +215,23 @@
 
 /* ELO Rating Color Classes */
 .elo-unranked {
-    color: #be0000ff !important; /* Red instead of Gray */
-    border-color: #be0000ff;
+    color: #808080; /* Gray */
 }
 
 .elo-bronze {
     color: #CD7F32; /* Bronze */
-    border-color: #CD7F32;
 }
 
 .elo-silver {
     color: #b9f1fc; /* Changed from #C0C0C0 */
-    border-color: #b9f1fc;
 }
 
 .elo-gold {
     color: #FFD700; /* Gold */
-    border-color: #FFD700;
 }
 
 .elo-emerald {
     color: #50C878; /* Emerald */
-    border-color: #50C878;
-}
-
-/* Add styling for ELO-bordered elements */
-.profile-container.elo-bordered {
-    border: 2px solid;
-}
-
-.match-history-container.elo-bordered {
-    border: 2px solid;
-}
-
-.profile-field.elo-bordered {
-    border-left: 3px solid;
-    padding-left: 12px;
-}
-
-/* Add specific styling for the username with ELO color */
-.username-section h2.elo-colored {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 2px solid;
 }
 
 /* Update text elements to inherit color */
@@ -456,7 +430,7 @@
 
 /* ELO rank colors */
 .next-rank .elo-unranked {
-    color: #be0000ff !important; /* Red instead of Gray */
+    color: #808080;
 }
 
 .next-rank .elo-bronze {
@@ -473,12 +447,6 @@
 
 .next-rank .elo-emerald {
     color: #50C878;
-}
-
-.stats-requirement {
-    font-size: 0.85em;
-    color: #ffb74d;
-    margin-top: 4px;
 }
 
 .stat-item {
@@ -555,7 +523,7 @@
 
 /* ELO-based stat label colors */
 .elo-unranked .stat-label {
-    color: #be0000ff !important;
+    color: #808080; /* Gray */
 }
 
 .elo-bronze .stat-label {
@@ -623,7 +591,7 @@
 
 /* Color classes for next rank */
 .next-rank .elo-unranked {
-    color: #be0000ff !important; /* Red instead of Gray */
+    color: #808080;
 }
 
 .next-rank .elo-bronze {
@@ -692,7 +660,7 @@
 
 /* ELO color classes */
 .elo-unranked .view-text {
-    color: #be0000ff !important; /* Red instead of Gray */
+    color: #808080; /* Gray */
 }
 
 .elo-bronze .view-text {
@@ -1106,7 +1074,7 @@
 
 /* ELO Rating Progress Color Classes - match the existing ELO classes */
 .elo-progress-info.elo-unranked {
-    color: #be0000ff !important; /* Red instead of Gray */
+    color: #808080; /* Gray */
 }
 
 .elo-progress-info.elo-bronze {
@@ -1162,7 +1130,7 @@
 
 /* Add color classes for the next rank column */
 #next-rank-col .elo-unranked {
-    color: #be0000ff; /* Red instead of Gray */
+    color: #808080; /* Gray */
 }
 
 #next-rank-col .elo-bronze {
@@ -1357,60 +1325,83 @@
     display: none;
 }
 
-/* Enhanced styling for Emerald rank to distinguish from Gold */
-
-/* Special username styling for emerald pilots */
-.username-section h2.elo-emerald {
-    color: #50C878 !important;
-    text-shadow: 0 0 8px rgba(80, 200, 120, 0.4);
-    position: relative;
-    display: inline-block;
+/* Update ELO color classes to properly target username and motto within username-section */
+.username-section.elo-unranked h2,
+.username-section.elo-unranked .motto-text {
+    color: #808080 !important;
 }
 
-/* Add emerald rank indicator badge */
-.username-section h2.elo-emerald::after {
-    content: "EMERALD";
-    position: absolute;
-    top: -15px;
-    right: -10px;
-    background-color: #50C878;
-    color: #000;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: bold;
-    transform: rotate(10deg);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+.username-section.elo-bronze h2,
+.username-section.elo-bronze .motto-text {
+    color: #CD7F32 !important;
 }
 
-.username-section h2.elo-gold {
+.username-section.elo-silver h2,
+.username-section.elo-silver .motto-text {
+    color: #b9f1fc !important;
+}
+
+.username-section.elo-gold h2,
+.username-section.elo-gold .motto-text {
     color: #FFD700 !important;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
 }
 
-/* Add gold rank indicator badge */
-.username-section h2.elo-gold::after {
-    content: "GOLD";
-    position: absolute;
-    top: -12px;
-    right: -5px;
-    background-color: #FFD700;
-    color: #000;
-    font-size: 9px;
-    padding: 1px 6px;
-    border-radius: 8px;
-    font-weight: bold;
-    transform: rotate(5deg);
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+.username-section.elo-emerald h2,
+.username-section.elo-emerald .motto-text {
+    color: #50C878 !important;
 }
 
-/* Animation for emerald borders to make them more noticeable */
-@keyframes emeraldGlow {
-    0% { box-shadow: 0 0 10px rgba(80, 200, 120, 0.2); }
-    50% { box-shadow: 0 0 20px rgba(80, 200, 120, 0.4); }
-    100% { box-shadow: 0 0 10px rgba(80, 200, 120, 0.2); }
+/* Add these specific selectors for the username and motto elements */
+
+/* Target elements directly with ELO classes */
+#nickname.elo-unranked, 
+#motto-view.elo-unranked {
+    color: #808080 !important;
 }
 
-.profile-container.elo-emerald {
-    animation: emeraldGlow 3s infinite;
+#nickname.elo-bronze, 
+#motto-view.elo-bronze {
+    color: #CD7F32 !important;
 }
+
+#nickname.elo-silver, 
+#motto-view.elo-silver {
+    color: #b9f1fc !important;
+}
+
+#nickname.elo-gold, 
+#motto-view.elo-gold {
+    color: #FFD700 !important;
+}
+
+#nickname.elo-emerald, 
+#motto-view.elo-emerald {
+    color: #50C878 !important;
+}
+
+/* Also target via parent container for better coverage */
+.username-section.elo-unranked h2,
+.username-section.elo-unranked .motto-text {
+    color: #808080 !important;
+}
+
+.username-section.elo-bronze h2,
+.username-section.elo-bronze .motto-text {
+    color: #CD7F32 !important;
+}
+
+.username-section.elo-silver h2,
+.username-section.elo-silver .motto-text {
+    color: #b9f1fc !important;
+}
+
+.username-section.elo-gold h2,
+.username-section.elo-gold .motto-text {
+    color: #FFD700 !important;
+}
+
+.username-section.elo-emerald h2,
+.username-section.elo-emerald .motto-text {
+    color: #50C878 !important;
+}
+
