@@ -337,6 +337,43 @@
                     toggleEloButton.style.background = eloVisible ? '#6c757d' : '#28a745';
                     toggleEloButton.textContent = eloVisible ? 'Toggle ELO' : 'Show ELO';
                 }
+                
+                // Hide/show ELO recommendations based on toggle state
+                const recommendations = [
+                    'elo-recommendation-text-d1',
+                    'elo-recommendation-text-d2', 
+                    'elo-recommendation-text-d3',
+                    'elo-recommendation-text-duos'
+                ];
+                
+                recommendations.forEach(id => {
+                    const elem = document.getElementById(id);
+                    if (elem) {
+                        elem.style.display = 'none'; // Hide all first
+                    }
+                });
+
+                // Only show the active ladder's recommendation if ELO is visible
+                if (eloVisible) {
+                    const d1Active = document.getElementById('d1-ladder-container')?.classList.contains('active');
+                    const d2Active = document.getElementById('d2-ladder-container')?.classList.contains('active');
+                    const d3Active = document.getElementById('d3-ladder-container')?.classList.contains('active');
+                    const duosActive = document.getElementById('duos-ladder-container')?.classList.contains('active'); // Changed from style.display check
+                    
+                    if (d1Active) {
+                        const elem = document.getElementById('elo-recommendation-text-d1');
+                        if (elem && elem.textContent.trim()) elem.style.display = 'block';
+                    } else if (d2Active) {
+                        const elem = document.getElementById('elo-recommendation-text-d2');
+                        if (elem && elem.textContent.trim()) elem.style.display = 'block';
+                    } else if (d3Active) {
+                        const elem = document.getElementById('elo-recommendation-text-d3');
+                        if (elem && elem.textContent.trim()) elem.style.display = 'block';
+                    } else if (duosActive) {
+                        const elem = document.getElementById('elo-recommendation-text-duos');
+                        if (elem && elem.textContent.trim()) elem.style.display = 'block';
+                    }
+                }
             }
 
             // Use MutationObserver only, no polling
@@ -360,7 +397,10 @@
             }
 
             document.querySelectorAll('input[name="ladder"]').forEach(radio => {
-                radio.addEventListener('change', () => setTimeout(applyEloVisibility, 500));
+                radio.addEventListener('change', () => setTimeout(() => {
+                    applyEloVisibility();
+                    updateButtonAppearance();
+                }, 500));
             });
         });
     </script>
