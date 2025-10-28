@@ -82,7 +82,7 @@ service cloud.firestore {
                      (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Game Invitations Collection (for the inbox system and team invitations)
+        // Game Invitations Collection (for the inbox system and team invitations)
     match /gameInvitations/{invitationId} {
       // Users can read invitations sent to them or sent by them
       allow read: if request.auth != null && (
@@ -101,14 +101,14 @@ service cloud.firestore {
         request.resource.data.status == 'pending' &&
         request.resource.data.type is string &&
         (
-          // Original game invitation types
-          (request.resource.data.type in ['home', 'subgame', 'subgame-home'] &&
-           request.resource.data.keys().hasAll(['value'])) ||
+          // Original game invitation types (require 'value' field)
+          (request.resource.data.type in ['home', 'subgame', 'subgame-home', 'random-map'] &&
+          request.resource.data.keys().hasAll(['value'])) ||
           // Team invitation type
           (request.resource.data.type == 'team_invite' &&
-           request.resource.data.keys().hasAll(['teamData']) &&
-           request.resource.data.teamData.keys().hasAll(['proposedTeamName', 'teamColor', 'ladder']) &&
-           request.resource.data.teamData.ladder == 'duos')
+          request.resource.data.keys().hasAll(['teamData']) &&
+          request.resource.data.teamData.keys().hasAll(['proposedTeamName', 'teamColor', 'ladder']) &&
+          request.resource.data.teamData.ladder == 'duos')
         );
       
       // Users can update invitations sent to them (to change status) or sent by them
@@ -129,7 +129,6 @@ service cloud.firestore {
         isAdminEmail()
       );
     }
-
     // Player Collections
     match /players/{playerId} {
       allow read: if true;

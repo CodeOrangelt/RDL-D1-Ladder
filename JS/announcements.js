@@ -2,20 +2,26 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release 1.8.4", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.9 - THE ELO OVERHAUL",
+    id: "beta-release-1.9", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 1.9.5 - Connections!",
     content: `
-        <p1 style="color:#ffffff; font-weight: bold;">WHATS NEW:</p1><br></br>
-            <li style="color:#90EE90">ELO REHAUL</li>
-            <li style="color:#90EE90">Points Displayed on main page!</li>
-            <br>
-\
-        <p1 style="color:#ffffff; font-weight: bold;">ELO Format:</p1><br></br>
-             <li>ELO has now been overhauled! Bronze:200-499, 
-             <li> Silver: 500-599, </li>
-             <li> Gold: 700-999, </li>
-             <li> Emerald 1000+, 80%+ W/R, 20 match minimum. </li>
-        <p><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS:</p>
+        <ul style="list-style: none; padding-left: 20px;">
+            <li style="color:#90EE90; margin-bottom: 5px;">• Missions tab (DXMA integration)</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• Static, and dynamic consolidated view w/Downloads</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• Self/Community templates, share & play!</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• Index, filter and scan all DXMA maps</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• Localstorage, and non-scraping so extremely fast (download is direct URL to DXMA)</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• DXMA random roll now invitation function on profiles (currently limited to full-random d1/d2/d3)</li>
+            <li style="color:#90EE90; margin-bottom: 5px;">• 2025 Halloween Map Competition page published and on front page</li>
+        </ul>
+        <br>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUGS:</p>
+        <ul style="list-style: none; padding-left: 20px;">
+            <li style="color:#FFA07A; margin-bottom: 5px;">• Fixed ELO recommendation bug on front page</li>
+            <li style="color:#FFA07A; margin-bottom: 5px;">• Toggle ELO now also toggles recommendations</li>
+        </ul>
+        <p style="margin-top: 15px;"><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Let me in!"
 };

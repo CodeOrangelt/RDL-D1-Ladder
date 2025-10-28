@@ -2513,7 +2513,7 @@ getFavoriteSubgameHome(homeNumber) {
         'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
         'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
         'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
-        'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+        'Altered Powerups': ['alteredPowerUpsHome1', 'alteredPowerUpsHome2', 'alteredPowerUpsHome3'],
         'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
     };
     
@@ -2543,7 +2543,7 @@ getDynamicSubgameHomes() {
             'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
             'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
             'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
-            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Altered Powerups': ['alteredPowerUpsHome1', 'alteredPowerUpsHome2', 'alteredPowerUpsHome3'],
             'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
         };
         
@@ -2577,7 +2577,7 @@ formatAllHomesDisplay(data) {
             'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
             'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
             'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
-            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Altered Powerups': ['alteredPowerUpsHome1', 'alteredPowerUpsHome2', 'alteredPowerUpsHome3'],
             'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
         };
         
@@ -3054,7 +3054,7 @@ addInvitationSection(profileData) {
             'Weapon Imbalance': ['weaponImbalanceHome1', 'weaponImbalanceHome2', 'weaponImbalanceHome3'],
             'Disorientation': ['disorientationHome1', 'disorientationHome2', 'disorientationHome3'],
             'Ratting': ['rattingHome1', 'rattingHome2', 'rattingHome3'],
-            'Altered Powerups': ['alteredPowerupsHome1', 'alteredPowerupsHome2', 'alteredPowerupsHome3'],
+            'Altered Powerups': ['alteredPowerUpsHome1', 'alteredPowerUpsHome2', 'alteredPowerUpsHome3'],
             'Mega Match': ['megaMatchHome1', 'megaMatchHome2', 'megaMatchHome3']
         };
         
@@ -3093,34 +3093,69 @@ addInvitationSection(profileData) {
             icon: 'gamepad', 
             label: favoriteSubgame,
             category: 'Subgame'
-        }] : [])
+        }] : []),
+        
+        // Add Random Map option
+        {
+            type: 'random',
+            value: 'random',
+            icon: 'dice',
+            label: 'Random Map',
+            category: 'DXMA'
+        }
     ];
     
     if (allInvites.length === 0) return;
     
     const invitationSection = document.createElement('div');
-    invitationSection.className = `invitation-section`;
+    invitationSection.className = `invitation-section collapsed`;
         
     invitationSection.innerHTML = `
-        <div class="invitation-header">
+        <div class="invitation-header" id="invitation-header-toggle">
             <div class="invitation-title">
                 <i class="fas fa-paper-plane"></i>
                 <span>Invite ${profileData.username}</span>
+                <i class="fas fa-chevron-down invitation-toggle-icon"></i>
             </div>
             <p>Send an invitation for their preferred game settings</p>
         </div>
-        <div class="invitation-grid">
-            ${allInvites.map(invite => `
-                <button class="invite-btn" 
-                        data-type="${invite.type}" 
-                        data-value="${invite.value}"
-                        ${invite.subgameType ? `data-subgame-type="${invite.subgameType}"` : ''}
-                        title="${invite.category}: ${invite.label}">
-                    <i class="fas fa-${invite.icon}"></i>
-                    <span>${invite.label}</span>
-                    <small>${invite.category}</small>
-                </button>
-            `).join('')}
+        <div class="invitation-content">
+            <div class="invitation-grid">
+                ${allInvites.map(invite => `
+                    <button class="invite-btn ${invite.type === 'random' ? 'random-invite' : ''}" 
+                            data-type="${invite.type}" 
+                            data-value="${invite.value}"
+                            ${invite.subgameType ? `data-subgame-type="${invite.subgameType}"` : ''}
+                            title="${invite.category}: ${invite.label}">
+                        <i class="fas fa-${invite.icon}"></i>
+                        <span>${invite.label}</span>
+                        <small>${invite.category}</small>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+        
+        <!-- Game Selection Modal for Random Map -->
+        <div class="game-selection-modal" id="game-selection-modal" style="display: none;">
+            <div class="game-selection-content">
+                <h3>Select Descent Game</h3>
+                <p>Choose which Descent game for the random map:</p>
+                <div class="game-selection-buttons">
+                    <button class="game-select-btn d1-btn" data-game="D1">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Descent 1</span>
+                    </button>
+                    <button class="game-select-btn d2-btn" data-game="D2">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Descent 2</span>
+                    </button>
+                    <button class="game-select-btn d3-btn" data-game="D3">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Descent 3</span>
+                    </button>
+                </div>
+                <button class="cancel-game-selection">Cancel</button>
+            </div>
         </div>
     `;
     
@@ -3140,35 +3175,40 @@ addInvitationSection(profileData) {
                 transition: all 0.3s ease;
             }
             
-            /* Rank-based styling */
-            .invitation-section.elo-emerald {
-                border-color: #50C878;
-                box-shadow: 0 0 20px rgba(80, 200, 120, 0.1);
+            .invitation-section.collapsed .invitation-content {
+                max-height: 0;
+                opacity: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease, opacity 0.3s ease;
             }
             
-            .invitation-section.elo-gold {
-                border-color: #FFD700;
-                box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-            }
-            
-            .invitation-section.elo-silver {
-                border-color: #C0C0C0;
-                box-shadow: 0 0 20px rgba(192, 192, 192, 0.1);
-            }
-            
-            .invitation-section.elo-bronze {
-                border-color: #CD7F32;
-                box-shadow: 0 0 20px rgba(205, 127, 50, 0.1);
-            }
-            
-            .invitation-section.elo-unranked {
-                border-color: #666;
-                box-shadow: 0 0 20px rgba(102, 102, 102, 0.1);
+            .invitation-section:not(.collapsed) .invitation-content {
+                max-height: 2000px;
+                opacity: 1;
+                transition: max-height 0.5s ease, opacity 0.3s ease;
             }
             
             .invitation-header {
-                margin-bottom: 1rem;
-                text-align: center;
+                cursor: pointer;
+                user-select: none;
+                transition: background 0.2s ease;
+                padding: 0.5rem;
+                margin: -0.5rem;
+                border-radius: 8px;
+            }
+            
+            .invitation-header:hover {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            .invitation-toggle-icon {
+                margin-left: auto;
+                font-size: 1rem;
+                transition: transform 0.3s ease;
+            }
+            
+            .invitation-section:not(.collapsed) .invitation-toggle-icon {
+                transform: rotate(180deg);
             }
             
             .invitation-title {
@@ -3186,49 +3226,14 @@ addInvitationSection(profileData) {
                 font-size: 1.2rem;
             }
             
-            .rank-indicator {
-                padding: 0.25rem 0.75rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: bold;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            
-            .rank-indicator.elo-emerald {
-                background: rgba(80, 200, 120, 0.2);
-                color: #50C878;
-                border: 1px solid #50C878;
-            }
-            
-            .rank-indicator.elo-gold {
-                background: rgba(255, 215, 0, 0.2);
-                color: #FFD700;
-                border: 1px solid #FFD700;
-            }
-            
-            .rank-indicator.elo-silver {
-                background: rgba(192, 192, 192, 0.2);
-                color: #C0C0C0;
-                border: 1px solid #C0C0C0;
-            }
-            
-            .rank-indicator.elo-bronze {
-                background: rgba(205, 127, 50, 0.2);
-                color: #CD7F32;
-                border: 1px solid #CD7F32;
-            }
-            
-            .rank-indicator.elo-unranked {
-                background: rgba(102, 102, 102, 0.2);
-                color: #666;
-                border: 1px solid #666;
-            }
-            
             .invitation-header p {
                 margin: 0;
                 color: #aaa;
                 font-size: 0.9rem;
+            }
+            
+            .invitation-content {
+                margin-top: 1rem;
             }
             
             .invitation-grid {
@@ -3259,6 +3264,28 @@ addInvitationSection(profileData) {
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             }
             
+            .invite-btn.random-invite {
+                border-color: #9C27B0;
+                background: linear-gradient(135deg, #2a2a2a 0%, #3d1f4d 100%);
+            }
+            
+            .invite-btn.random-invite:hover {
+                border-color: #E040FB;
+                background: linear-gradient(135deg, #3d1f4d 0%, #5e2a6d 100%);
+                color: #E040FB;
+            }
+            
+            .invite-btn.random-invite i {
+                animation: dice-roll 0.5s ease-in-out;
+            }
+            
+            @keyframes dice-roll {
+                0%, 100% { transform: rotate(0deg); }
+                25% { transform: rotate(90deg); }
+                50% { transform: rotate(180deg); }
+                75% { transform: rotate(270deg); }
+            }
+            
             .invite-btn i {
                 font-size: 1.5rem;
                 margin-bottom: 0.25rem;
@@ -3270,57 +3297,6 @@ addInvitationSection(profileData) {
                 line-height: 1.2;
             }
             
-            /* Rank-based button styling */
-            .invite-btn.elo-emerald {
-                border-color: #50C878;
-            }
-            
-            .invite-btn.elo-emerald:hover {
-                background: rgba(80, 200, 120, 0.1);
-                border-color: #50C878;
-                color: #50C878;
-            }
-            
-            .invite-btn.elo-gold {
-                border-color: #FFD700;
-            }
-            
-            .invite-btn.elo-gold:hover {
-                background: rgba(255, 215, 0, 0.1);
-                border-color: #FFD700;
-                color: #FFD700;
-            }
-            
-            .invite-btn.elo-silver {
-                border-color: #C0C0C0;
-            }
-            
-            .invite-btn.elo-silver:hover {
-                background: rgba(192, 192, 192, 0.1);
-                border-color: #C0C0C0;
-                color: #C0C0C0;
-            }
-            
-            .invite-btn.elo-bronze {
-                border-color: #CD7F32;
-            }
-            
-            .invite-btn.elo-bronze:hover {
-                background: rgba(205, 127, 50, 0.1);
-                border-color: #CD7F32;
-                color: #CD7F32;
-            }
-            
-            .invite-btn.elo-unranked {
-                border-color: #666;
-            }
-            
-            .invite-btn.elo-unranked:hover {
-                background: rgba(102, 102, 102, 0.1);
-                border-color: #888;
-                color: #888;
-            }
-            
             .invite-btn:disabled {
                 background: #1a1a1a !important;
                 border-color: #333 !important;
@@ -3330,7 +3306,6 @@ addInvitationSection(profileData) {
                 box-shadow: none !important;
             }
             
-            /* Loading and success states */
             .invite-btn.loading {
                 pointer-events: none;
             }
@@ -3347,13 +3322,129 @@ addInvitationSection(profileData) {
                 color: #F44336 !important;
             }
             
+            /* Game Selection Modal Styles */
+            .game-selection-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.2s ease;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            .game-selection-content {
+                background: #2a2a2a;
+                padding: 2rem;
+                border-radius: 12px;
+                border: 2px solid #444;
+                max-width: 500px;
+                width: 90%;
+                animation: slideUp 0.3s ease;
+            }
+            
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            
+            .game-selection-content h3 {
+                margin: 0 0 0.5rem 0;
+                color: white;
+                text-align: center;
+                font-size: 1.5rem;
+            }
+            
+            .game-selection-content p {
+                margin: 0 0 1.5rem 0;
+                color: #aaa;
+                text-align: center;
+            }
+            
+            .game-selection-buttons {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .game-select-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 1.5rem 1rem;
+                background: #333;
+                border: 2px solid #555;
+                border-radius: 8px;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 1rem;
+            }
+            
+            .game-select-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            
+            .game-select-btn.d1-btn:hover {
+                border-color: #FF9800;
+                background: rgba(255, 152, 0, 0.1);
+                color: #FF9800;
+            }
+            
+            .game-select-btn.d2-btn:hover {
+                border-color: #2196F3;
+                background: rgba(33, 150, 243, 0.1);
+                color: #2196F3;
+            }
+            
+            .game-select-btn.d3-btn:hover {
+                border-color: #9C27B0;
+                background: rgba(156, 39, 176, 0.1);
+                color: #9C27B0;
+            }
+            
+            .game-select-btn i {
+                font-size: 2rem;
+            }
+            
+            .cancel-game-selection {
+                width: 100%;
+                padding: 0.75rem;
+                background: #555;
+                border: 1px solid #666;
+                border-radius: 6px;
+                color: white;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            
+            .cancel-game-selection:hover {
+                background: #666;
+            }
+            
             @media (max-width: 768px) {
                 .invitation-grid {
                     grid-template-columns: 1fr;
                 }
                 
+                .game-selection-buttons {
+                    grid-template-columns: 1fr;
+                }
+                
                 .invitation-title {
-                    flex-direction: column;
+                    flex-direction: row;
                     gap: 0.5rem;
                 }
                 
@@ -3372,19 +3463,104 @@ addInvitationSection(profileData) {
         document.head.appendChild(styleEl);
     }
     
-    // Add event listeners for invitation buttons with enhanced feedback
+    // Add toggle functionality for collapse/expand
+    const headerToggle = invitationSection.querySelector('#invitation-header-toggle');
+    headerToggle.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+        invitationSection.classList.toggle('collapsed');
+    });
+    
+    // Get modal elements
+    const gameModal = invitationSection.querySelector('#game-selection-modal');
+    const cancelModalBtn = invitationSection.querySelector('.cancel-game-selection');
+    
+    // Cancel modal
+    cancelModalBtn.addEventListener('click', () => {
+        gameModal.style.display = 'none';
+    });
+    
+    // Close modal on backdrop click
+    gameModal.addEventListener('click', (e) => {
+        if (e.target === gameModal) {
+            gameModal.style.display = 'none';
+        }
+    });
+    
+    // Add event listeners for invitation buttons
     invitationSection.querySelectorAll('.invite-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            
             const type = btn.dataset.type;
-            const value = btn.dataset.value;
+            let value = btn.dataset.value;
             const originalContent = btn.innerHTML;
             
+            // Handle random map selection - show game selector modal
+            if (type === 'random') {
+                gameModal.style.display = 'flex';
+                
+                // Add click handlers for game selection
+                invitationSection.querySelectorAll('.game-select-btn').forEach(gameBtn => {
+                    gameBtn.onclick = async () => {
+                        const selectedGame = gameBtn.dataset.game;
+                        gameModal.style.display = 'none';
+                        
+                        btn.disabled = true;
+                        btn.classList.add('loading');
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Rolling...</span>';
+                        
+                        try {
+                            const randomMap = await this.getRandomDXMAMap(selectedGame);
+                            
+                            if (randomMap) {
+                                value = randomMap.title;
+                                
+                                btn.classList.remove('loading');
+                                btn.innerHTML = `<i class="fas fa-dice"></i><span>${value}</span><small>${selectedGame} - Selected!</small>`;
+                                
+                                await new Promise(resolve => setTimeout(resolve, 1500));
+                                
+                                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>';
+                                
+                                await this.sendInvitation(profileData.username, profileData.userId, 'random-map', value, selectedGame);
+                                
+                                btn.classList.add('success');
+                                btn.innerHTML = '<i class="fas fa-check"></i><span>Sent!</span>';
+                                
+                                setTimeout(() => {
+                                    btn.disabled = false;
+                                    btn.classList.remove('success');
+                                    btn.innerHTML = originalContent;
+                                }, 3000);
+                            } else {
+                                throw new Error('No maps available');
+                            }
+                        } catch (error) {
+                            console.error('Error with random map:', error);
+                            
+                            btn.classList.remove('loading');
+                            btn.classList.add('error');
+                            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Error</span>';
+                            
+                            setTimeout(() => {
+                                btn.disabled = false;
+                                btn.classList.remove('error');
+                                btn.innerHTML = originalContent;
+                            }, 3000);
+                        }
+                    };
+                });
+                
+                return;
+            }
+            
+            // Normal invitation flow
             btn.disabled = true;
             btn.classList.add('loading');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>';
             
             try {
-                await this.sendInvitation(profileData.username, profileData.userId, type, value);
+                await this.sendInvitation(profileData.username, profileData.userId, type, value, btn.dataset.subgameType);
                 
                 btn.classList.remove('loading');
                 btn.classList.add('success');
@@ -3412,64 +3588,111 @@ addInvitationSection(profileData) {
         });
     });
     
-    // Insert after the profile content
     container.appendChild(invitationSection);
 }
-    // Update the sendInvitation method around line 2400
 
-    async sendInvitation(toUsername, toUserId, type, value, subgameType = null) {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            throw new Error('You must be logged in to send invitations');
+// Update the getRandomDXMAMap method to accept game parameter
+async getRandomDXMAMap(game = 'D1') {
+    try {
+        const response = await fetch('../Files/dxma_missions_complete_with_direct_links.csv');
+        const csvText = await response.text();
+        
+        const lines = csvText.trim().split('\n');
+        const missions = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            const values = [];
+            let currentValue = '';
+            let inQuotes = false;
+            
+            for (let char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(currentValue.trim());
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+            values.push(currentValue.trim());
+            
+            // Filter for multiplayer maps AND matching game
+            if (values.length >= 4 && values[2] === 'MP' && values[3] === game) {
+                missions.push({
+                    id: values[0],
+                    title: values[1],
+                    mode: values[2],
+                    game: values[3],
+                    date: values[4],
+                    author: values[5]
+                });
+            }
         }
         
-        // Get current user's profile for username
-        const userProfileRef = doc(db, 'userProfiles', currentUser.uid);
-        const userProfileSnap = await getDoc(userProfileRef);
-        const fromUsername = userProfileSnap.exists() ? 
-            userProfileSnap.data().username : 'Anonymous';
-        
-        // Create invitation message based on type
-        let message = '';
-        if (type === 'home') {
-            message = `${fromUsername} wants to play on your home level: ${value}`;
-        } else if (type === 'subgame-home') {
-            message = `${fromUsername} wants to play ${subgameType} on your home: ${value}`;
-        } else if (type === 'subgame') {
-            message = `${fromUsername} wants to play your favorite subgame: ${value}`;
+        if (missions.length > 0) {
+            const randomIndex = Math.floor(Math.random() * missions.length);
+            return missions[randomIndex];
         }
         
-        // Base invitation data
-        const invitationData = {
-            fromUserId: currentUser.uid,
-            fromUsername: fromUsername,
-            toUserId: toUserId,
-            toUsername: toUsername,
-            type: type,
-            value: value,
-            message: message,
-            status: 'pending',
-            createdAt: new Date()
-        };
-        
-        // Add subgameType field if it's a subgame-home invitation
-        if (type === 'subgame-home' && subgameType) {
-            invitationData.subgameType = subgameType;
-        }
-        
-        // DEBUG: Log the data being sent
-        console.log('Sending invitation data:', invitationData);
-        console.log('Invitation data keys:', Object.keys(invitationData));
-        
-        // Add to gameInvitations collection
-        try {
-            await addDoc(collection(db, 'gameInvitations'), invitationData);
-            console.log('Invitation sent successfully');
-        } catch (error) {
-            console.error('Failed to send invitation:', error);
-            throw error;
-        }
+        return null;
+    } catch (error) {
+        console.error('Error fetching DXMA maps:', error);
+        return null;
     }
+}
+
+// Update sendInvitation to handle game parameter for random-map
+async sendInvitation(toUsername, toUserId, type, value, subgameTypeOrGame = null) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        throw new Error('You must be logged in to send invitations');
+    }
+    
+    const userProfileRef = doc(db, 'userProfiles', currentUser.uid);
+    const userProfileSnap = await getDoc(userProfileRef);
+    const fromUsername = userProfileSnap.exists() ? 
+        userProfileSnap.data().username : 'Anonymous';
+    
+    let message = '';
+    if (type === 'home') {
+        message = `${fromUsername} wants to play on your home level: ${value}`;
+    } else if (type === 'subgame-home') {
+        message = `${fromUsername} wants to play ${subgameTypeOrGame} on your home: ${value}`;
+    } else if (type === 'subgame') {
+        message = `${fromUsername} wants to play your favorite subgame: ${value}`;
+    } else if (type === 'random-map') {
+        message = `${fromUsername} wants to play a random ${subgameTypeOrGame} map: ${value}`;
+    }
+    
+    const invitationData = {
+        fromUserId: currentUser.uid,
+        fromUsername: fromUsername,
+        toUserId: toUserId,
+        toUsername: toUsername,
+        type: type,
+        value: value,
+        message: message,
+        status: 'pending',
+        createdAt: new Date()
+    };
+    
+    // Add subgameType OR game field depending on invitation type
+    if (type === 'subgame-home' && subgameTypeOrGame) {
+        invitationData.subgameType = subgameTypeOrGame;
+    } else if (type === 'random-map' && subgameTypeOrGame) {
+        invitationData.game = subgameTypeOrGame; // Add game field for random maps
+    }
+    
+    try {
+        await addDoc(collection(db, 'gameInvitations'), invitationData);
+        console.log('✅ Invitation sent successfully:', type, value, subgameTypeOrGame);
+    } catch (error) {
+        console.error('❌ Failed to send invitation:', error);
+        throw error;
+    }
+}
 }
 
 // Also update the preview function

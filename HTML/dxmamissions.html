@@ -28,15 +28,16 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         
         .page-title {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            color: #f0f0f0;
+            color: var(--accent-color);
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
         
@@ -45,12 +46,368 @@
             font-size: 1.1rem;
         }
         
-        .filters-section {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
+        /* Random Roll Section */
+        .random-roll-section {
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .random-roll-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .random-roll-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+        
+        .random-roll-title i {
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .roll-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .roll-btn {
+            padding: 12px 24px;
+            background: rgb(88, 0, 88);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .roll-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .roll-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .roll-btn.secondary {
+            background: linear-gradient(135deg, #424242 0%, #303030 100%);
+        }
+        
+        .roll-btn.secondary:hover {
+            background: linear-gradient(135deg, #616161 0%, #424242 100%);
+        }
+        
+        .roll-btn.share {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+        }
+        
+        .roll-btn.share:hover {
+            background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
+        }
+        
+        .roll-result {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .roll-result.show {
+            display: block;
+        }
+        
+        .result-map-title {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .result-map-details {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        /* Templates Modal */
+        .templates-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .templates-modal.show {
+            display: flex;
+        }
+        
+        .templates-content {
+            background: #1a1a1a;
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 1000px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        /* Map Selection Modal */
+        .map-selection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            overflow-y: auto;
+        }
+        
+        .map-selection-modal.show {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .map-selection-content {
+            background: #1a1a1a;
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--accent-color);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+        
+        .selection-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .selection-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .map-list {
+            display: grid;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        .map-item-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .map-item-checkbox:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .map-item-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .map-item-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .map-item-title {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        /* Template Cards */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .template-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(156, 39, 176, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        
+        .template-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+        }
+        
+        .template-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+        
+        .template-details {
+            font-size: 0.9rem;
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .template-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .template-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .template-btn.use {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .template-btn.use:hover {
+            background: var(--accent-hover);
+        }
+        
+        .template-btn.preview {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .template-btn.preview:hover {
+            background: #1976D2;
+        }
+        
+        .filters-section {
+            background: rgba(30, 30, 30, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         
         .filters-grid {
@@ -86,7 +443,7 @@
         .filter-group input:focus,
         .filter-group select:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.4);
+            border-color: var(--accent-color);
             background: rgba(255, 255, 255, 0.15);
         }
         
@@ -316,6 +673,10 @@
                 padding: 15px;
             }
             
+            .roll-controls {
+                grid-template-columns: 1fr;
+            }
+            
             .missions-table {
                 font-size: 0.8rem;
             }
@@ -368,6 +729,130 @@
             <p class="page-subtitle" style="font-size: 0.85rem; margin-top: 5px; color: #777;">
                 RDL is not sponsored by or affiliated with SectorGame DXMA • Last updated 10/28/2025
             </p>
+        </div>
+
+        <!-- Random Roll Section -->
+        <div class="random-roll-section">
+            <div class="random-roll-header">
+                <div class="random-roll-title">
+                    <i class="fas fa-dice"></i>
+                    <span>Random Map Selector</span>
+                </div>
+            </div>
+            
+            <div class="roll-controls">
+                <button class="roll-btn" id="quick-roll-btn">
+                    <i class="fas fa-random"></i>
+                    Quick Random Roll
+                </button>
+                <button class="roll-btn secondary" id="custom-roll-btn">
+                    <i class="fas fa-sliders-h"></i>
+                    Custom Selection
+                </button>
+                <button class="roll-btn secondary" id="templates-btn">
+                    <i class="fas fa-bookmark"></i>
+                    Community Templates
+                </button>
+            </div>
+            
+            <div class="roll-result" id="roll-result">
+                <h3 class="result-map-title" id="result-title">Map Name</h3>
+                <div class="result-map-details" id="result-details"></div>
+                <div class="result-actions">
+                    <button class="roll-btn" id="roll-again-btn">
+                        <i class="fas fa-redo"></i>
+                        Roll Again
+                    </button>
+                    <a href="#" class="roll-btn secondary" id="download-result-btn" target="_blank">
+                        <i class="fas fa-download"></i>
+                        Download Map
+                    </a>
+                    <button class="roll-btn share" id="share-result-btn">
+                        <i class="fas fa-share-alt"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Modal -->
+        <div class="templates-modal" id="templates-modal">
+            <div class="templates-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-bookmark"></i>
+                        Community Templates
+                    </h3>
+                    <button class="modal-close" id="templates-close">&times;</button>
+                </div>
+                
+                <div class="template-grid" id="templates-list">
+                    <p style="color: #888; grid-column: 1/-1; text-align: center;">Loading templates...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Selection Modal -->
+        <div class="map-selection-modal" id="map-selection-modal">
+            <div class="map-selection-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <i class="fas fa-list-check"></i>
+                        Select Maps for Random Roll
+                    </h2>
+                    <button class="modal-close" id="close-modal">&times;</button>
+                </div>
+                
+                <div class="selection-actions">
+                    <button class="roll-btn" id="select-all-btn">
+                        <i class="fas fa-check-double"></i>
+                        Select All
+                    </button>
+                    <button class="roll-btn secondary" id="deselect-all-btn">
+                        <i class="fas fa-times"></i>
+                        Deselect All
+                    </button>
+                    <button class="roll-btn" id="roll-selected-btn" disabled>
+                        <i class="fas fa-dice"></i>
+                        Roll Selected (<span id="selected-count">0</span>)
+                    </button>
+                    <button class="roll-btn secondary" id="save-template-btn" disabled>
+                        <i class="fas fa-save"></i>
+                        Save as Template
+                    </button>
+                </div>
+                
+                <div class="selection-filters">
+                    <div class="filter-group">
+                        <label>Filter by Game</label>
+                        <select id="modal-game-filter">
+                            <option value="">All Games</option>
+                            <option value="D1">Descent 1</option>
+                            <option value="D2">Descent 2</option>
+                            <option value="D3">Descent 3</option>
+                            <option value="XL">Descent XL</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Filter by Mode</label>
+                        <select id="modal-mode-filter">
+                            <option value="">All Modes</option>
+                            <option value="SP">Singleplayer</option>
+                            <option value="MP">Multiplayer</option>
+                            <option value="CTF">Capture the Flag</option>
+                            <option value="T">Team</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Search Maps</label>
+                        <input type="text" id="modal-search" placeholder="Search by title or author...">
+                    </div>
+                </div>
+                
+                <div class="map-list" id="map-selection-list">
+                    <!-- Map checkboxes will be populated here -->
+                </div>
+            </div>
         </div>
 
         <div class="filters-section">
@@ -482,14 +967,19 @@
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     
-    <script>
+    <script type="module">
+        import { db, auth } from '../JS/firebase-config.js';
+        import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        
         // DXMA Missions Loader
         let allMissions = [];
         let filteredMissions = [];
+        let selectedMissions = new Set();
         let currentPage = 1;
         const missionsPerPage = 50;
         let sortColumn = 'id';
         let sortDirection = 'desc';
+        let currentRolledMap = null;
 
         // Parse CSV data
         function parseCSV(csv) {
@@ -532,7 +1022,7 @@
                 filteredMissions = [...allMissions];
                 
                 updateStats();
-                sortMissions(); // Initial sort
+                sortMissions();
                 renderTable();
                 
                 console.log(`✅ Loaded ${allMissions.length} missions from DXMA CSV`);
@@ -618,7 +1108,7 @@
             });
             
             currentPage = 1;
-            sortMissions(); // Re-apply current sort
+            sortMissions();
             document.getElementById('filtered-missions').textContent = filteredMissions.length;
             renderTable();
         }
@@ -628,24 +1118,17 @@
                 let aVal = a[sortColumn];
                 let bVal = b[sortColumn];
                 
-                // Handle numeric sorting for ID
                 if (sortColumn === 'id') {
                     aVal = parseInt(aVal) || 0;
                     bVal = parseInt(bVal) || 0;
-                }
-                // Handle date sorting
-                else if (sortColumn === 'date') {
+                } else if (sortColumn === 'date') {
                     aVal = new Date(aVal).getTime() || 0;
                     bVal = new Date(bVal).getTime() || 0;
-                }
-                // Handle all string fields (game, mode, author, title)
-                else {
-                    // Remove quotes from author names
+                } else {
                     aVal = String(aVal || '').replace(/^"|"$/g, '').toLowerCase();
                     bVal = String(bVal || '').replace(/^"|"$/g, '').toLowerCase();
                 }
                 
-                // Perform comparison
                 let comparison = 0;
                 if (aVal < bVal) {
                     comparison = -1;
@@ -653,13 +1136,11 @@
                     comparison = 1;
                 }
                 
-                // Apply sort direction
                 return sortDirection === 'asc' ? comparison : -comparison;
             });
         }
 
         function updateSortIndicators(clickedColumn) {
-            // Remove active class and reset all icons
             document.querySelectorAll('.sortable').forEach(th => {
                 th.classList.remove('active');
                 const icon = th.querySelector('i');
@@ -668,7 +1149,6 @@
                 }
             });
             
-            // Update clicked column
             const clickedTh = document.querySelector(`[data-sort="${clickedColumn}"]`);
             if (clickedTh) {
                 clickedTh.classList.add('active');
@@ -678,6 +1158,323 @@
                 }
             }
         }
+
+        // Random Roll Functions
+        function quickRoll() {
+            const mpMissions = allMissions.filter(m => m.mode === 'MP' || m.mode === 'CTF');
+            
+            if (mpMissions.length === 0) {
+                alert('No multiplayer missions available for random roll!');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * mpMissions.length);
+            const selectedMap = mpMissions[randomIndex];
+            
+            displayRollResult(selectedMap);
+        }
+
+        function displayRollResult(mission) {
+            currentRolledMap = mission;
+            const resultDiv = document.getElementById('roll-result');
+            const titleEl = document.getElementById('result-title');
+            const detailsEl = document.getElementById('result-details');
+            const downloadBtn = document.getElementById('download-result-btn');
+            
+            const author = mission.author.replace(/^"|"$/g, '');
+            
+            titleEl.textContent = mission.title;
+            detailsEl.innerHTML = `
+                <span class="game-badge game-${mission.game.toLowerCase()}">${mission.game}</span>
+                <span class="mode-badge">${mission.mode}</span>
+                <span style="color: #aaa;">by ${author}</span>
+                <span style="color: #aaa;">${mission.date}</span>
+            `;
+            
+            downloadBtn.href = mission.direct_download_url;
+            
+            resultDiv.classList.add('show');
+        }
+
+        function shareResult() {
+            if (!currentRolledMap) {
+                alert('No map to share!');
+                return;
+            }
+            
+            const shareUrl = `${window.location.origin}${window.location.pathname}?map=${currentRolledMap.id}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('✅ Share link copied to clipboard!');
+                }).catch(err => {
+                    prompt('Copy this link:', shareUrl);
+                });
+            } else {
+                prompt('Copy this link:', shareUrl);
+            }
+        }
+
+        function openCustomSelection() {
+            const modal = document.getElementById('map-selection-modal');
+            modal.classList.add('show');
+            populateMapList();
+        }
+
+        function populateMapList() {
+            const listContainer = document.getElementById('map-selection-list');
+            const gameFilter = document.getElementById('modal-game-filter').value;
+            const modeFilter = document.getElementById('modal-mode-filter').value;
+            const searchTerm = document.getElementById('modal-search').value.toLowerCase();
+            
+            let filteredForModal = allMissions.filter(m => {
+                const matchGame = !gameFilter || m.game === gameFilter;
+                const matchMode = !modeFilter || m.mode === modeFilter;
+                const matchSearch = !searchTerm || 
+                    m.title.toLowerCase().includes(searchTerm) || 
+                    m.author.toLowerCase().includes(searchTerm);
+                
+                return matchGame && matchMode && matchSearch;
+            });
+            
+            listContainer.innerHTML = filteredForModal.map(mission => {
+                const author = mission.author.replace(/^"|"$/g, '');
+                const isSelected = selectedMissions.has(mission.id);
+                
+                return `
+                    <label class="map-item-checkbox">
+                        <input type="checkbox" 
+                               data-mission-id="${mission.id}" 
+                               ${isSelected ? 'checked' : ''}>
+                        <div class="map-item-info">
+                            <span class="map-item-title">${mission.title}</span>
+                            <span class="game-badge game-${mission.game.toLowerCase()}">${mission.game}</span>
+                            <span class="mode-badge">${mission.mode}</span>
+                            <span style="color: #888; font-size: 0.85rem;">${author}</span>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+            
+            listContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', handleCheckboxChange);
+            });
+            
+            updateSelectedCount();
+        }
+
+        function handleCheckboxChange(e) {
+            const missionId = e.target.dataset.missionId;
+            
+            if (e.target.checked) {
+                selectedMissions.add(missionId);
+            } else {
+                selectedMissions.delete(missionId);
+            }
+            
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedMissions.size;
+            document.getElementById('selected-count').textContent = count;
+            document.getElementById('roll-selected-btn').disabled = count === 0;
+            document.getElementById('save-template-btn').disabled = count === 0;
+        }
+
+        function rollSelected() {
+            if (selectedMissions.size === 0) {
+                alert('Please select at least one mission!');
+                return;
+            }
+            
+            const selectedMissionObjects = allMissions.filter(m => selectedMissions.has(m.id));
+            const randomIndex = Math.floor(Math.random() * selectedMissionObjects.length);
+            const selectedMap = selectedMissionObjects[randomIndex];
+            
+            document.getElementById('map-selection-modal').classList.remove('show');
+            displayRollResult(selectedMap);
+        }
+
+        async function saveTemplate() {
+            if (selectedMissions.size === 0) {
+                alert('Please select at least one mission!');
+                return;
+            }
+            
+            if (!auth.currentUser) {
+                alert('You must be logged in to save templates!');
+                return;
+            }
+            
+            const templateName = prompt('Enter a name for this template:');
+            if (!templateName) return;
+            
+            try {
+                const selectedMissionObjects = allMissions.filter(m => selectedMissions.has(m.id));
+                
+                await addDoc(collection(db, 'mapTemplates'), {
+                    name: templateName,
+                    userId: auth.currentUser.uid,
+                    username: auth.currentUser.displayName || 'Anonymous',
+                    missions: selectedMissionObjects.map(m => ({
+                        id: m.id,
+                        title: m.title,
+                        game: m.game,
+                        mode: m.mode,
+                        author: m.author
+                    })),
+                    createdAt: Timestamp.now()
+                });
+                
+                alert('✅ Template saved successfully!');
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('❌ Failed to save template: ' + error.message);
+            }
+        }
+
+        function openTemplatesModal() {
+            const modal = document.getElementById('templates-modal');
+            modal.classList.add('show');
+            loadCommunityTemplates();
+        }
+
+        function closeTemplatesModal() {
+            document.getElementById('templates-modal').classList.remove('show');
+        }
+
+        async function loadCommunityTemplates() {
+            const listContainer = document.getElementById('templates-list');
+            listContainer.innerHTML = '<p style="color: #888; grid-column: 1/-1; text-align:center;">Loading templates...</p>';
+
+            try {
+                const templatesSnap = await getDocs(collection(db, 'mapTemplates'));
+                const templates = [];
+                templatesSnap.forEach(doc => templates.push({ id: doc.id, ...doc.data() }));
+
+                if (templates.length === 0) {
+                    listContainer.innerHTML = '<p style="color: #888; grid-column: 1/-1; text-align:center;">No templates found</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = templates.map(t => {
+                    // Try to get the best username display
+                    let displayName = 'Unknown Pilot';
+                    
+                    if (t.username) {
+                        // If username exists, use it
+                        displayName = t.username;
+                    } else if (t.userEmail) {
+                        // If no username but has email, extract name before @
+                        displayName = t.userEmail.split('@')[0];
+                    } else if (t.userId) {
+                        // If only userId exists, show truncated ID
+                        displayName = `Pilot ${t.userId.substring(0, 8)}`;
+                    }
+                    
+                    // Clean up email-based names if they look like emails
+                    if (displayName.includes('@')) {
+                        displayName = displayName.split('@')[0];
+                    }
+                    
+                    return `
+                        <div class="template-card">
+                            <div class="template-name">${t.name}</div>
+                            <div class="template-details">
+                                <span><i class="fas fa-map"></i> ${t.missions?.length || 0} maps</span>
+                                <span><i class="fas fa-user"></i> ${displayName}</span>
+                                ${t.createdAt ? `<span style="font-size: 0.8rem; color: #666;"><i class="fas fa-clock"></i> ${new Date(t.createdAt.seconds * 1000).toLocaleDateString()}</span>` : ''}
+                            </div>
+                            <div class="template-actions">
+                                <button class="template-btn use" onclick="window.useTemplateFromCommunity('${t.id}')">
+                                    <i class="fas fa-play"></i> Use
+                                </button>
+                                <button class="template-btn preview" onclick="window.viewTemplateDetails('${t.id}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading templates:', err);
+                listContainer.innerHTML = '<p style="color: #f44336; grid-column: 1/-1; text-align:center;">Failed to load templates</p>';
+            }
+        }
+
+        window.useTemplateFromCommunity = async function(templateId) {
+            try {
+                const templatesSnap = await getDocs(collection(db, 'mapTemplates'));
+                let template = null;
+                
+                templatesSnap.forEach(doc => {
+                    if (doc.id === templateId) {
+                        template = { id: doc.id, ...doc.data() };
+                    }
+                });
+                
+                if (!template || !template.missions) {
+                    alert('Template not found!');
+                    return;
+                }
+                
+                // Clear and populate selected missions
+                selectedMissions.clear();
+                template.missions.forEach(mission => {
+                    selectedMissions.add(mission.id);
+                });
+                
+                // Close templates modal
+                closeTemplatesModal();
+                
+                // Open custom selection modal with pre-selected missions
+                openCustomSelection();
+                
+                alert(`✅ Loaded template "${template.name}" with ${template.missions.length} maps!`);
+            } catch (error) {
+                console.error('Error using template:', error);
+                alert('❌ Failed to load template');
+            }
+        };
+
+        window.viewTemplateDetails = async function(templateId) {
+            try {
+                const templatesSnap = await getDocs(collection(db, 'mapTemplates'));
+                let template = null;
+                
+                templatesSnap.forEach(doc => {
+                    if (doc.id === templateId) {
+                        template = { id: doc.id, ...doc.data() };
+                    }
+                });
+                
+                if (!template) {
+                    alert('Template not found!');
+                    return;
+                }
+                
+                // Get best display name
+                let displayName = 'Unknown Pilot';
+                if (template.username) {
+                    displayName = template.username;
+                } else if (template.userEmail) {
+                    displayName = template.userEmail.split('@')[0];
+                } else if (template.userId) {
+                    displayName = `Pilot ${template.userId.substring(0, 8)}`;
+                }
+                
+                const createdDate = template.createdAt 
+                    ? new Date(template.createdAt.seconds * 1000).toLocaleDateString() 
+                    : 'Unknown date';
+                
+                const mapList = template.missions.map(m => `• ${m.title} (${m.game}) - ${m.mode}`).join('\n');
+                alert(`📋 Template: ${template.name}\n👤 By: ${displayName}\n📅 Created: ${createdDate}\n\n🗺️ Maps (${template.missions.length}):\n${mapList}`);
+            } catch (error) {
+                console.error('Error viewing template:', error);
+                alert('❌ Failed to load template details');
+            }
+        };
 
         function setupEventListeners() {
             // Filter inputs
@@ -716,7 +1513,7 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             
-            // Sorting - Improved event handling
+            // Sorting
             document.querySelectorAll('.sortable').forEach(th => {
                 th.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -724,7 +1521,6 @@
                     
                     const column = th.dataset.sort;
                     
-                    // Toggle direction if same column, otherwise reset to ascending
                     if (sortColumn === column) {
                         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
                     } else {
@@ -732,18 +1528,50 @@
                         sortDirection = 'asc';
                     }
                     
-                    // Update visual indicators
                     updateSortIndicators(column);
-                    
-                    // Apply sort and render
                     sortMissions();
                     renderTable();
-                    
-                    console.log(`📊 Sorted by ${column} (${sortDirection})`);
                 });
             });
             
-            // Initialize sort indicators
+            // Random Roll Events
+            document.getElementById('quick-roll-btn').addEventListener('click', quickRoll);
+            document.getElementById('custom-roll-btn').addEventListener('click', openCustomSelection);
+            document.getElementById('templates-btn').addEventListener('click', openTemplatesModal);
+            document.getElementById('roll-again-btn').addEventListener('click', quickRoll);
+            document.getElementById('share-result-btn').addEventListener('click', shareResult);
+            
+            // Modal Events
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('map-selection-modal').classList.remove('show');
+            });
+            
+            document.getElementById('templates-close').addEventListener('click', closeTemplatesModal);
+            
+            document.getElementById('select-all-btn').addEventListener('click', () => {
+                document.querySelectorAll('#map-selection-list input[type="checkbox"]').forEach(cb => {
+                    cb.checked = true;
+                    selectedMissions.add(cb.dataset.missionId);
+                });
+                updateSelectedCount();
+            });
+            
+            document.getElementById('deselect-all-btn').addEventListener('click', () => {
+                document.querySelectorAll('#map-selection-list input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                selectedMissions.clear();
+                updateSelectedCount();
+            });
+            
+            document.getElementById('roll-selected-btn').addEventListener('click', rollSelected);
+            document.getElementById('save-template-btn').addEventListener('click', saveTemplate);
+            
+            // Modal Filters
+            document.getElementById('modal-game-filter').addEventListener('change', populateMapList);
+            document.getElementById('modal-mode-filter').addEventListener('change', populateMapList);
+            document.getElementById('modal-search').addEventListener('input', populateMapList);
+            
             updateSortIndicators(sortColumn);
         }
 
