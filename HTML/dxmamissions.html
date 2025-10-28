@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DXMA Missions Archive - RDL</title>
+    <link rel="icon" type="image/x-icon" href="../images/cloak.ico"/>
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="../CSS/nav.css">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/themes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script type="module" src="../JS/themes.js"></script>
+    <script src="../JS/metadata.js"></script>
+    
+    <style>
+        .missions-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            color: white;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #f0f0f0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .page-subtitle {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        .filters-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            color: #ccc;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .filter-group input::placeholder {
+            color: #666;
+        }
+        
+        .filter-group select option {
+            background: #222;
+            color: white;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .missions-table-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .missions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .missions-table thead {
+            background: rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .missions-table th {
+            padding: 15px 10px;
+            text-align: left;
+            color: #f0f0f0;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        
+        .missions-table th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .missions-table th.sortable {
+            position: relative;
+            padding-right: 25px;
+        }
+        
+        .missions-table th.active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .missions-table th i {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+        
+        .missions-table th:hover i,
+        .missions-table th.active i {
+            opacity: 1;
+        }
+        
+        .missions-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+        
+        .missions-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .missions-table td {
+            padding: 12px 10px;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .mission-title {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .mission-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .mission-link:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+        
+        .game-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .game-d1 {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .game-d2 {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .game-d3 {
+            background: #9C27B0;
+            color: white;
+        }
+        
+        .game-xl {
+            background: #F44336;
+            color: white;
+        }
+        
+        .mode-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: rgb(90, 90, 90);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .download-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pagination button {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .missions-main {
+                padding: 15px;
+            }
+            
+            .missions-table {
+                font-size: 0.8rem;
+            }
+            
+            .missions-table th,
+            .missions-table td {
+                padding: 8px 5px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .page-subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .missions-table th:nth-child(5),
+            .missions-table td:nth-child(5),
+            .missions-table th:nth-child(6),
+            .missions-table td:nth-child(6) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+
+    <main class="missions-main">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-archive"></i> DXMA Missions Archive
+            </h1>
+            <p class="page-subtitle" style="font-size: 0.85rem; margin-top: 5px; color: #777;">
+                RDL is not sponsored by or affiliated with SectorGame DXMA • Last updated 10/28/2025
+            </p>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i> Search Title</label>
+                    <input type="text" id="search-title" placeholder="Search mission titles...">
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-user"></i> Author</label>
+                    <input type="text" id="search-author" placeholder="Search by author...">
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-gamepad"></i> Game</label>
+                    <select id="filter-game">
+                        <option value="">All Games</option>
+                        <option value="D1">Descent 1</option>
+                        <option value="D2">Descent 2</option>
+                        <option value="D3">Descent 3</option>
+                        <option value="XL">Descent XL</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-trophy"></i> Mode</label>
+                    <select id="filter-mode">
+                        <option value="">All Modes</option>
+                        <option value="SP">Singleplayer</option>
+                        <option value="MP">Multiplayer</option>
+                        <option value="CTF">Capture the Flag</option>
+                        <option value="T">Team</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-missions">0</div>
+                    <div class="stat-label">Total Missions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="filtered-missions">0</div>
+                    <div class="stat-label">Filtered Results</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="d1-count">0</div>
+                    <div class="stat-label">D1 Missions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="d2-count">0</div>
+                    <div class="stat-label">D2 Missions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="d3-count">0</div>
+                    <div class="stat-label">D3 Missions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="missions-table-container">
+            <table class="missions-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="id">
+                            ID <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="title">
+                            Title <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="game">
+                            Game <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="mode">
+                            Mode <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="author">
+                            Author <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="date">
+                            Date <i class="fas fa-sort"></i>
+                        </th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody id="missions-tbody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 10px;">Loading missions...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button id="first-page"><i class="fas fa-angle-double-left"></i></button>
+            <button id="prev-page"><i class="fas fa-angle-left"></i> Previous</button>
+            <span class="pagination-info">
+                Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+            </span>
+            <button id="next-page">Next <i class="fas fa-angle-right"></i></button>
+            <button id="last-page"><i class="fas fa-angle-double-right"></i></button>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="../JS/page-components.js"></script>
+    <script type="module" src="../JS/current-user.js"></script>
+    <script type="module" src="../JS/logout.js"></script>
+    
+    <script>
+        // DXMA Missions Loader
+        let allMissions = [];
+        let filteredMissions = [];
+        let currentPage = 1;
+        const missionsPerPage = 50;
+        let sortColumn = 'id';
+        let sortDirection = 'desc';
+
+        // Parse CSV data
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            
+            return lines.slice(1).map(line => {
+                const values = [];
+                let currentValue = '';
+                let inQuotes = false;
+                
+                for (let char of line) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue.trim());
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.trim());
+                
+                const mission = {};
+                headers.forEach((header, index) => {
+                    mission[header.trim()] = values[index] || '';
+                });
+                
+                return mission;
+            });
+        }
+
+        // Load missions from CSV file
+        async function loadMissions() {
+            try {
+                const response = await fetch('../Files/dxma_missions_complete_with_direct_links.csv');
+                const csvText = await response.text();
+                
+                allMissions = parseCSV(csvText);
+                filteredMissions = [...allMissions];
+                
+                updateStats();
+                sortMissions(); // Initial sort
+                renderTable();
+                
+                console.log(`✅ Loaded ${allMissions.length} missions from DXMA CSV`);
+            } catch (error) {
+                console.error('❌ Error loading missions:', error);
+                document.getElementById('missions-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 10px;">Error loading missions. Please try again later.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-missions').textContent = allMissions.length;
+            document.getElementById('filtered-missions').textContent = filteredMissions.length;
+            document.getElementById('d1-count').textContent = allMissions.filter(m => m.game === 'D1').length;
+            document.getElementById('d2-count').textContent = allMissions.filter(m => m.game === 'D2').length;
+            document.getElementById('d3-count').textContent = allMissions.filter(m => m.game === 'D3').length;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('missions-tbody');
+            const start = (currentPage - 1) * missionsPerPage;
+            const end = start + missionsPerPage;
+            const pageMissions = filteredMissions.slice(start, end);
+            
+            if (pageMissions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">No missions found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = pageMissions.map(mission => {
+                const author = mission.author.replace(/^"|"$/g, '');
+                
+                return `
+                    <tr>
+                        <td>${mission.id}</td>
+                        <td><span class="mission-title">${mission.title}</span></td>
+                        <td><span class="game-badge game-${mission.game.toLowerCase()}">${mission.game}</span></td>
+                        <td><span class="mode-badge">${mission.mode}</span></td>
+                        <td>${author}</td>
+                        <td>${mission.date}</td>
+                        <td>
+                            <a href="${mission.direct_download_url}" class="download-btn" target="_blank" rel="noopener">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredMissions.length / missionsPerPage) || 1;
+            document.getElementById('current-page').textContent = currentPage;
+            document.getElementById('total-pages').textContent = totalPages;
+            
+            document.getElementById('first-page').disabled = currentPage === 1;
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+            document.getElementById('last-page').disabled = currentPage === totalPages;
+        }
+
+        function applyFilters() {
+            const searchTitle = document.getElementById('search-title').value.toLowerCase();
+            const searchAuthor = document.getElementById('search-author').value.toLowerCase();
+            const filterGame = document.getElementById('filter-game').value;
+            const filterMode = document.getElementById('filter-mode').value;
+            
+            filteredMissions = allMissions.filter(mission => {
+                const matchTitle = mission.title.toLowerCase().includes(searchTitle);
+                const matchAuthor = mission.author.toLowerCase().includes(searchAuthor);
+                const matchGame = !filterGame || mission.game === filterGame;
+                const matchMode = !filterMode || mission.mode === filterMode;
+                
+                return matchTitle && matchAuthor && matchGame && matchMode;
+            });
+            
+            currentPage = 1;
+            sortMissions(); // Re-apply current sort
+            document.getElementById('filtered-missions').textContent = filteredMissions.length;
+            renderTable();
+        }
+
+        function sortMissions() {
+            filteredMissions.sort((a, b) => {
+                let aVal = a[sortColumn];
+                let bVal = b[sortColumn];
+                
+                // Handle numeric sorting for ID
+                if (sortColumn === 'id') {
+                    aVal = parseInt(aVal) || 0;
+                    bVal = parseInt(bVal) || 0;
+                }
+                // Handle date sorting
+                else if (sortColumn === 'date') {
+                    aVal = new Date(aVal).getTime() || 0;
+                    bVal = new Date(bVal).getTime() || 0;
+                }
+                // Handle all string fields (game, mode, author, title)
+                else {
+                    // Remove quotes from author names
+                    aVal = String(aVal || '').replace(/^"|"$/g, '').toLowerCase();
+                    bVal = String(bVal || '').replace(/^"|"$/g, '').toLowerCase();
+                }
+                
+                // Perform comparison
+                let comparison = 0;
+                if (aVal < bVal) {
+                    comparison = -1;
+                } else if (aVal > bVal) {
+                    comparison = 1;
+                }
+                
+                // Apply sort direction
+                return sortDirection === 'asc' ? comparison : -comparison;
+            });
+        }
+
+        function updateSortIndicators(clickedColumn) {
+            // Remove active class and reset all icons
+            document.querySelectorAll('.sortable').forEach(th => {
+                th.classList.remove('active');
+                const icon = th.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-sort';
+                }
+            });
+            
+            // Update clicked column
+            const clickedTh = document.querySelector(`[data-sort="${clickedColumn}"]`);
+            if (clickedTh) {
+                clickedTh.classList.add('active');
+                const icon = clickedTh.querySelector('i');
+                if (icon) {
+                    icon.className = sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            // Filter inputs
+            document.getElementById('search-title').addEventListener('input', applyFilters);
+            document.getElementById('search-author').addEventListener('input', applyFilters);
+            document.getElementById('filter-game').addEventListener('change', applyFilters);
+            document.getElementById('filter-mode').addEventListener('change', applyFilters);
+            
+            // Pagination
+            document.getElementById('first-page').addEventListener('click', () => {
+                currentPage = 1;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.getElementById('next-page').addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredMissions.length / missionsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.getElementById('last-page').addEventListener('click', () => {
+                currentPage = Math.ceil(filteredMissions.length / missionsPerPage);
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // Sorting - Improved event handling
+            document.querySelectorAll('.sortable').forEach(th => {
+                th.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const column = th.dataset.sort;
+                    
+                    // Toggle direction if same column, otherwise reset to ascending
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // Update visual indicators
+                    updateSortIndicators(column);
+                    
+                    // Apply sort and render
+                    sortMissions();
+                    renderTable();
+                    
+                    console.log(`📊 Sorted by ${column} (${sortDirection})`);
+                });
+            });
+            
+            // Initialize sort indicators
+            updateSortIndicators(sortColumn);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMissions();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
