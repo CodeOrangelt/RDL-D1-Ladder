@@ -339,18 +339,8 @@ async function updateAuthSection(user) {
 document.addEventListener('DOMContentLoaded', () => {
     const auth = getAuth();
     
-    // Force immediate check on page load
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-        console.log('User already signed in on load:', currentUser.email);
-        updateAuthSection(currentUser).catch(err => {
-            console.error('Error updating auth on load:', err);
-        });
-    }
-    
     // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
-        console.log('Auth state changed:', user ? user.email : 'signed out');
         await updateAuthSection(user);
         
         // Only check invitations once on auth state change

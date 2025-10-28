@@ -1,6 +1,6 @@
 // firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, initializeFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Import idle timeout functionality
@@ -18,13 +18,7 @@ export const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Set persistence to local (survives page refresh)
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-    console.error('Error setting auth persistence:', error);
-});
+export const auth = getAuth(app);
 
 // Initialize Firestore with settings for reduced network usage
 const firestoreSettings = {
@@ -33,7 +27,7 @@ const firestoreSettings = {
 };
 
 // Then initialize Firestore with optimized settings
-initializeFirestore(app, firestoreSettings);
+const db = initializeFirestore(app, firestoreSettings);
 
 // Enable offline persistence (careful with quota)
 enableIndexedDbPersistence(db)
@@ -46,7 +40,7 @@ enableIndexedDbPersistence(db)
   });
 
 // Export the optimized db instance
-export { app, db, auth, firebaseConfig };
+export { app, db };
 
 //debug lines for connection ping
 console.log('Firebase initialized:', !!app);
