@@ -15,7 +15,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const mutedUsers = [
-    { username: "Daz", muteFromDate: new Date("2025-07-02").getTime() }, // muted for 60 days. Varibale, depends on Behavior.
+   //unmuted 10/28/2025, forgot to unmute, but no mention from player. 
+   // { username: "Daz", muteFromDate: new Date("2025-07-02").getTime() }, // muted for 60 days. Varibale, depends on Behavior.
   ];
   
   // Function to check if a username should be muted
