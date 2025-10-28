@@ -299,7 +299,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const toggleEloButton = document.getElementById('toggle-elo-button');
             const eloToggleContainer = document.getElementById('elo-toggle-container');
-            let eloVisible = localStorage.getItem('eloVisible') !== 'false';
+            // Fix: Default to true if null/undefined, only hide if explicitly set to 'false'
+            let eloVisible = localStorage.getItem('eloVisible') === null ? true : localStorage.getItem('eloVisible') === 'true';
 
             function applyEloVisibility() {
                 const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'];
@@ -346,10 +347,11 @@
                     'elo-recommendation-text-duos'
                 ];
                 
+                // Hide all recommendations first
                 recommendations.forEach(id => {
                     const elem = document.getElementById(id);
                     if (elem) {
-                        elem.style.display = 'none'; // Hide all first
+                        elem.style.display = 'none';
                     }
                 });
 
@@ -358,7 +360,7 @@
                     const d1Active = document.getElementById('d1-ladder-container')?.classList.contains('active');
                     const d2Active = document.getElementById('d2-ladder-container')?.classList.contains('active');
                     const d3Active = document.getElementById('d3-ladder-container')?.classList.contains('active');
-                    const duosActive = document.getElementById('duos-ladder-container')?.classList.contains('active'); // Changed from style.display check
+                    const duosActive = document.getElementById('duos-ladder-container')?.classList.contains('active');
                     
                     if (d1Active) {
                         const elem = document.getElementById('elo-recommendation-text-d1');
