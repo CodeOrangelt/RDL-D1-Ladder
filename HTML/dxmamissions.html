@@ -214,7 +214,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 150%;
             background: rgba(0, 0, 0, 0.85);
             z-index: 10000;
             overflow-y: auto;
@@ -1208,16 +1208,17 @@
                 return;
             }
             
-            const shareUrl = `${window.location.origin}${window.location.pathname}?map=${currentRolledMap.id}`;
+            const downloadUrl = currentRolledMap.direct_download_url;
             
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('✅ Share link copied to clipboard!');
+                navigator.clipboard.writeText(downloadUrl).then(() => {
+                    alert('Download link copied to clipboard!');
                 }).catch(err => {
-                    prompt('Copy this link:', shareUrl);
+                    console.error('Failed to copy:', err);
+                    prompt('Copy this download link:', downloadUrl);
                 });
             } else {
-                prompt('Copy this link:', shareUrl);
+                prompt('Copy this download link:', downloadUrl);
             }
         }
 
