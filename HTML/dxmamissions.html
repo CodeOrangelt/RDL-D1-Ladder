@@ -963,23 +963,13 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- Load nav and footer first -->
     <script src="../JS/page-components.js"></script>
-    
-    <!-- Then load auth scripts -->
     <script type="module" src="../JS/current-user.js"></script>
     <script type="module" src="../JS/logout.js"></script>
     
-    <!-- Finally load page-specific scripts -->
     <script type="module">
         import { db, auth } from '../JS/firebase-config.js';
-        import { collection, addDoc, getDocs, deleteDoc, doc, query, where, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        
-        // Wait for auth to be ready before initializing
-        auth.onAuthStateChanged((user) => {
-            console.log('Auth state changed:', user ? user.email : 'not logged in');
-            // Your existing initialization code here
-        });
+        import { collection, addDoc, getDocs, deleteDoc, doc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
         
         // DXMA Missions Loader
         let allMissions = [];
@@ -1585,13 +1575,9 @@
             updateSortIndicators(sortColumn);
         }
 
-        // Initialize when DOM is ready AND auth is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            // Small delay to ensure nav is loaded
-            setTimeout(() => {
-                setupEventListeners();
-                loadMissions().then(() => checkSharedMap());
-            }, 500);
+            loadMissions();
+            setupEventListeners();
         });
     </script>
 </body>
