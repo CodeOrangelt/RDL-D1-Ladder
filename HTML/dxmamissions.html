@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/themes.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script type="module" src="../JS/themes.js"></script>
     <script src="../JS/metadata.js"></script>
@@ -981,6 +981,12 @@
         let sortDirection = 'desc';
         let currentRolledMap = null;
 
+        // Modal pagination state
+        let modalFilteredMissions = [];
+        let modalCurrentPage = 1;
+        const modalMissionsPerPage = 50;
+        let modalSearchTimeout = null;
+
         // Parse CSV data
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
@@ -1218,6 +1224,7 @@
         function openCustomSelection() {
             const modal = document.getElementById('map-selection-modal');
             modal.classList.add('show');
+            modalCurrentPage = 1;
             populateMapList();
         }
 
@@ -1227,7 +1234,8 @@
             const modeFilter = document.getElementById('modal-mode-filter').value;
             const searchTerm = document.getElementById('modal-search').value.toLowerCase();
             
-            let filteredForModal = allMissions.filter(m => {
+            // Filter missions (this is fast since it's just array filtering)
+            modalFilteredMissions = allMissions.filter(m => {
                 const matchGame = !gameFilter || m.game === gameFilter;
                 const matchMode = !modeFilter || m.mode === modeFilter;
                 const matchSearch = !searchTerm || 
@@ -1237,30 +1245,116 @@
                 return matchGame && matchMode && matchSearch;
             });
             
-            listContainer.innerHTML = filteredForModal.map(mission => {
+            renderModalPage();
+        }
+
+        function renderModalPage() {
+            const listContainer = document.getElementById('map-selection-list');
+            const start = (modalCurrentPage - 1) * modalMissionsPerPage;
+            const end = start + modalMissionsPerPage;
+            const pageMissions = modalFilteredMissions.slice(start, end);
+            
+            if (modalFilteredMissions.length === 0) {
+                listContainer.innerHTML = '<p style="color: #888; padding: 20px; text-align: center;">No missions found matching your filters</p>';
+                updateModalPagination();
+                return;
+            }
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            pageMissions.forEach(mission => {
                 const author = mission.author.replace(/^"|"$/g, '');
                 const isSelected = selectedMissions.has(mission.id);
                 
-                return `
-                    <label class="map-item-checkbox">
-                        <input type="checkbox" 
-                               data-mission-id="${mission.id}" 
-                               ${isSelected ? 'checked' : ''}>
-                        <div class="map-item-info">
-                            <span class="map-item-title">${mission.title}</span>
-                            <span class="game-badge game-${mission.game.toLowerCase()}">${mission.game}</span>
-                            <span class="mode-badge">${mission.mode}</span>
-                            <span style="color: #888; font-size: 0.85rem;">${author}</span>
-                        </div>
-                    </label>
+                const label = document.createElement('label');
+                label.className = 'map-item-checkbox';
+                
+                label.innerHTML = `
+                    <input type="checkbox" 
+                           data-mission-id="${mission.id}" 
+                           ${isSelected ? 'checked' : ''}>
+                    <div class="map-item-info">
+                        <span class="map-item-title">${mission.title}</span>
+                        <span class="game-badge game-${mission.game.toLowerCase()}">${mission.game}</span>
+                        <span class="mode-badge">${mission.mode}</span>
+                        <span style="color: #888; font-size: 0.85rem;">${author}</span>
+                    </div>
                 `;
-            }).join('');
-            
-            listContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                
+                // Add event listener directly
+                const checkbox = label.querySelector('input[type="checkbox"]');
                 checkbox.addEventListener('change', handleCheckboxChange);
+                
+                fragment.appendChild(label);
             });
             
+            listContainer.innerHTML = '';
+            listContainer.appendChild(fragment);
+            
+            updateModalPagination();
             updateSelectedCount();
+        }
+
+        function updateModalPagination() {
+            const totalPages = Math.ceil(modalFilteredMissions.length / modalMissionsPerPage) || 1;
+            
+            // Create or update pagination controls
+            let paginationDiv = document.getElementById('modal-pagination');
+            
+            if (!paginationDiv) {
+                paginationDiv = document.createElement('div');
+                paginationDiv.id = 'modal-pagination';
+                paginationDiv.className = 'pagination';
+                paginationDiv.style.marginTop = '15px';
+                
+                const listContainer = document.getElementById('map-selection-list');
+                listContainer.parentNode.insertBefore(paginationDiv, listContainer.nextSibling);
+            }
+            
+            paginationDiv.innerHTML = `
+                <button id="modal-first-page" ${modalCurrentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button id="modal-prev-page" ${modalCurrentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i> Previous
+                </button>
+                <span class="pagination-info">
+                    Page ${modalCurrentPage} of ${totalPages} 
+                    <span style="color: #666; font-size: 0.85rem;">(${modalFilteredMissions.length} maps)</span>
+                </span>
+                <button id="modal-next-page" ${modalCurrentPage === totalPages ? 'disabled' : ''}>
+                    Next <i class="fas fa-angle-right"></i>
+                </button>
+                <button id="modal-last-page" ${modalCurrentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            `;
+            
+            // Add event listeners
+            document.getElementById('modal-first-page')?.addEventListener('click', () => {
+                modalCurrentPage = 1;
+                renderModalPage();
+            });
+            
+            document.getElementById('modal-prev-page')?.addEventListener('click', () => {
+                if (modalCurrentPage > 1) {
+                    modalCurrentPage--;
+                    renderModalPage();
+                }
+            });
+            
+            document.getElementById('modal-next-page')?.addEventListener('click', () => {
+                if (modalCurrentPage < totalPages) {
+                    modalCurrentPage++;
+                    renderModalPage();
+                }
+            });
+            
+            document.getElementById('modal-last-page')?.addEventListener('click', () => {
+                modalCurrentPage = totalPages;
+                renderModalPage();
+            });
         }
 
         function handleCheckboxChange(e) {
@@ -1549,6 +1643,7 @@
             document.getElementById('templates-close').addEventListener('click', closeTemplatesModal);
             
             document.getElementById('select-all-btn').addEventListener('click', () => {
+                // Select all on current page only for better performance
                 document.querySelectorAll('#map-selection-list input[type="checkbox"]').forEach(cb => {
                     cb.checked = true;
                     selectedMissions.add(cb.dataset.missionId);
@@ -1557,6 +1652,7 @@
             });
             
             document.getElementById('deselect-all-btn').addEventListener('click', () => {
+                // Clear all selections
                 document.querySelectorAll('#map-selection-list input[type="checkbox"]').forEach(cb => {
                     cb.checked = false;
                 });
@@ -1567,10 +1663,25 @@
             document.getElementById('roll-selected-btn').addEventListener('click', rollSelected);
             document.getElementById('save-template-btn').addEventListener('click', saveTemplate);
             
-            // Modal Filters
-            document.getElementById('modal-game-filter').addEventListener('change', populateMapList);
-            document.getElementById('modal-mode-filter').addEventListener('change', populateMapList);
-            document.getElementById('modal-search').addEventListener('input', populateMapList);
+            // Modal Filters with debouncing for search
+            document.getElementById('modal-game-filter').addEventListener('change', () => {
+                modalCurrentPage = 1;
+                populateMapList();
+            });
+            
+            document.getElementById('modal-mode-filter').addEventListener('change', () => {
+                modalCurrentPage = 1;
+                populateMapList();
+            });
+            
+            document.getElementById('modal-search').addEventListener('input', (e) => {
+                // Debounce search for better performance
+                clearTimeout(modalSearchTimeout);
+                modalSearchTimeout = setTimeout(() => {
+                    modalCurrentPage = 1;
+                    populateMapList();
+                }, 300);
+            });
             
             updateSortIndicators(sortColumn);
         }
