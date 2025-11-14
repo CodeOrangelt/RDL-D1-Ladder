@@ -205,6 +205,13 @@ const TOKENS = {
         description: "The iconic Pyro-GX ship.",
         image: "../images/tokens/Pyro.gif",
         category: "ship"
+    },
+    architect: {
+        price: -1,
+        name: "Architect",
+        description: "The iconic Architect ship.",
+        image: "../images/tokens/allmap.gif",
+        category: "ship",
     }
 };
 
