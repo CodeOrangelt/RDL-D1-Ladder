@@ -436,7 +436,10 @@
             min-width: 60px;
             min-height: 60px;
         }
-        
+        .theme-icon-christmas { 
+            background: linear-gradient(180deg, #d32f2f 0%, #f44336 30%, #2e7d32 70%, #4caf50 100%);
+            border: 2px solid gray;
+        }
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .store-tabs {

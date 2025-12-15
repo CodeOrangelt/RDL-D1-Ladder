@@ -11,6 +11,7 @@ const THEMES = {
     OCEAN: 'ocean',
     VOLCANIC: 'volcanic',
     COCKPIT: 'cockpit',
+    CHRISTMAS: 'christmas'
 };
 
 // Theme storage key
@@ -90,3 +91,179 @@ window.ThemeSystem = {
 };
 
 console.log('Theme system loaded');
+
+// Realistic Snowfall Effect for Christmas Theme
+
+class SnowfallEffect {
+    constructor() {
+        this.container = null;
+        this.snowflakes = [];
+        this.isActive = false;
+        this.animationFrame = null;
+        this.snowflakeChars = ['❄', '❅', '❆', '•', '∗'];
+    }
+
+    init() {
+        // Only run for Christmas theme
+        if (!document.body.classList.contains('theme-christmas')) {
+            this.stop();
+            return;
+        }
+
+        if (this.isActive) return;
+
+        this.createContainer();
+        this.isActive = true;
+        this.spawnSnowflakes();
+        this.animate();
+    }
+
+    createContainer() {
+        // Remove existing container if present
+        const existing = document.getElementById('snowfall-container');
+        if (existing) existing.remove();
+
+        this.container = document.createElement('div');
+        this.container.id = 'snowfall-container';
+        this.container.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        `;
+        document.body.appendChild(this.container);
+    }
+
+    createSnowflake() {
+        const snowflake = document.createElement('div');
+        const size = Math.random() * 20 + 10; // 10-30px
+        const startX = Math.random() * window.innerWidth;
+        const char = this.snowflakeChars[Math.floor(Math.random() * this.snowflakeChars.length)];
+        const opacity = Math.random() * 0.6 + 0.2; // 0.2-0.8
+        const duration = Math.random() * 5 + 5; // 5-10 seconds fall time
+
+        snowflake.textContent = char;
+        snowflake.style.cssText = `
+            position: absolute;
+            color: rgba(255, 255, 255, ${opacity});
+            font-size: ${size}px;
+            left: ${startX}px;
+            top: -30px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            user-select: none;
+        `;
+
+        const snowflakeData = {
+            element: snowflake,
+            x: startX,
+            y: -30,
+            size: size,
+            speedY: Math.random() * 1.5 + 0.5, // Fall speed
+            speedX: Math.random() * 0.5 - 0.25, // Horizontal drift
+            wobbleSpeed: Math.random() * 0.02 + 0.01,
+            wobbleAmount: Math.random() * 30 + 10,
+            rotation: 0,
+            rotationSpeed: Math.random() * 2 - 1,
+            time: 0
+        };
+
+        this.container.appendChild(snowflake);
+        this.snowflakes.push(snowflakeData);
+    }
+
+    spawnSnowflakes() {
+        // Initial burst of snowflakes
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                if (this.isActive) this.createSnowflake();
+            }, i * 100);
+        }
+
+        // Continue spawning at random intervals
+        this.spawnInterval = setInterval(() => {
+            if (this.isActive && this.snowflakes.length < 80) {
+                this.createSnowflake();
+            }
+        }, Math.random() * 300 + 200); // 200-500ms between spawns
+    }
+
+    animate() {
+        if (!this.isActive) return;
+
+        this.snowflakes.forEach((flake, index) => {
+            flake.time += 0.016; // ~60fps
+
+            // Update position with wobble
+            flake.y += flake.speedY;
+            flake.x += flake.speedX + Math.sin(flake.time * flake.wobbleSpeed * 100) * 0.3;
+            flake.rotation += flake.rotationSpeed;
+
+            // Apply transforms
+            flake.element.style.transform = `
+                translate(${Math.sin(flake.time * flake.wobbleSpeed * 100) * flake.wobbleAmount}px, 0)
+                rotate(${flake.rotation}deg)
+            `;
+            flake.element.style.top = `${flake.y}px`;
+            flake.element.style.left = `${flake.x}px`;
+
+            // Remove if off screen
+            if (flake.y > window.innerHeight + 50) {
+                flake.element.remove();
+                this.snowflakes.splice(index, 1);
+            }
+        });
+
+        this.animationFrame = requestAnimationFrame(() => this.animate());
+    }
+
+    stop() {
+        this.isActive = false;
+        
+        if (this.spawnInterval) {
+            clearInterval(this.spawnInterval);
+            this.spawnInterval = null;
+        }
+        
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+
+        if (this.container) {
+            this.container.remove();
+            this.container = null;
+        }
+
+        this.snowflakes = [];
+    }
+}
+
+// Create global instance
+window.Snowfall = new SnowfallEffect();
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    window.Snowfall.init();
+});
+
+// Watch for theme changes
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+            if (document.body.classList.contains('theme-christmas')) {
+                window.Snowfall.init();
+            } else {
+                window.Snowfall.stop();
+            }
+        }
+    });
+});
+
+observer.observe(document.body, { attributes: true });
+
+console.log('Snowfall effect loaded');
+

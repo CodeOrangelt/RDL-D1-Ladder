@@ -26,7 +26,8 @@ const THEMES = {
     volcanic:  { price: 500,  name: "Red", description: "For the angry type." },
     gold:      { price: 800,  name: "Gold", description: "Only the best get this one" },
     emerald:   { price: 1000, name: "Emerald", description: "Emerald City!" },
-    cockpit:   { price: 1200, name: "Cockpit", description: "is that... Pfunk?" }
+    cockpit:   { price: 1200, name: "Cockpit", description: "is that... Pfunk?" },
+    christmas: { price: 0,  name: "Christmas", description: "Christmas 2025 Limited Theme. Taken off store Dec 31st" }
 };
 
 // Token configuration

@@ -780,3 +780,46 @@ body.theme-ocean .code-input:focus {
 body.theme-volcanic .code-input:focus {
     border-color: #f48fb1;
 }
+
+
+/* Christmas Theme - Festive holiday colors */
+body.theme-christmas {
+    background: linear-gradient(180deg, #0d1f0d 0%, #1a0f0f 25%, #0f1a0f 50%, #1f0d0d 75%, #0d1f0d 100%);
+    background-attachment: fixed;
+}
+
+body.theme-christmas::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJhIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMzAiIHI9IjAuNSIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA4KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==');
+    opacity: 0.4;
+    z-index: -1;
+    animation: gentle-snow 20s linear infinite;
+}
+
+body.theme-christmas nav,
+body.theme-christmas footer {
+    background: linear-gradient(to right, rgba(139, 0, 0, 0.9), rgba(0, 100, 0, 0.9));
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+@keyframes gentle-snow {
+    0% {
+        transform: translateY(-100vh) translateX(0);
+    }
+    100% {
+        transform: translateY(100vh) translateX(100px);
+    }
+}
+
+/* Remove old CSS snowfall - now handled by JavaScript */
+body.theme-christmas::before,
+body.theme-christmas::after {
+    display: none;
+}
+
