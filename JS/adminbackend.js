@@ -291,8 +291,8 @@ async function getUserTabPermissions(userEmail) {
         // Define role-based permissions
         // Make sure all role names are lowercase for consistency
         const rolePermissions = {
-            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
-            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons'],
+            'admin': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons', 'manage-store-inventory'],
+            'owner': ['dashboard', 'manage-players', 'manage-matches', 'manage-articles', 'manage-trophies', 'manage-ranks', 'inactive-players', 'settings', 'manage-trophies', 'elo-history', 'manage-highlights', 'user-roles-section', 'manage-matches', 'manage-points', 'manage-levels-ribbons', 'manage-ribbons', 'manage-store-inventory'],
             'council': ['dashboard', 'manage-players', 'manage-matches'],
             'creative lead': ['dashboard', 'manage-articles', 'manage-trophies', 'elo-history', 'manage-highlights']
         };
@@ -472,9 +472,12 @@ async function initializeAdminDashboard() {
             setupManagePointsSection();
         }
 
-        // Add ribbon management section initialization
         if (allowedTabs.includes('manage-ribbons')) {
             setupManageRibbonsSection();
+        }
+
+        if (allowedTabs.includes('manage-store-inventory')) {
+            setupManageStoreInventorySection();
         }
 
         setupDataLoadButtons(allowedTabs);
@@ -8151,6 +8154,712 @@ async function removeRibbon(ribbonName) {
         showNotification('Error removing ribbon', 'error');
     }
 }
+
+// Add this after the Ribbons management section (around line 7800)
+
+// ============================================================================
+// STORE INVENTORY MANAGEMENT
+// ============================================================================
+
+// Theme and Token definitions (matching redeem.js)
+const STORE_THEMES = {
+    'default': { name: 'Classic RDL', price: 0 },
+    'contrast': { name: 'Nightlight', price: 0 },
+    'purple': { name: 'Purple', price: 150 },
+    'ocean': { name: 'Blue', price: 300 },
+    'cyberpunk': { name: 'Yellow Orange', price: 400 },
+    'volcanic': { name: 'Red', price: 500 },
+    'gold': { name: 'Gold', price: 800 },
+    'emerald': { name: 'Emerald', price: 1000 },
+    'cockpit': { name: 'Cockpit', price: 1200 },
+    'christmas': { name: 'Christmas', price: 0 }
+};
+
+const STORE_TOKENS = {
+    'pwr01': { name: 'Energy', price: 100 },
+    'pwr02': { name: 'Shield', price: 100 },
+    'pwr03': { name: 'Laser', price: 100 },
+    'concussion': { name: 'Concussion Missile', price: 150 },
+    'homing': { name: 'Homing Missile', price: 200 },
+    'proxbomb': { name: 'Proximity Bomb', price: 200 },
+    'smartbomb': { name: 'Smart Bomb', price: 250 },
+    'megamissile': { name: 'Mega Missile', price: 300 },
+    'spreadfire': { name: 'Spreadfire Cannon', price: 300 },
+    'vulcan': { name: 'Vulcan Cannon', price: 300 },
+    'fusion': { name: 'Fusion Cannon', price: 350 },
+    'lock': { name: 'Lock', price: 450 },
+    'blob01': { name: 'Blob Token 1', price: 500 },
+    'plasma': { name: 'Plasma Cannon', price: 500 },
+    'cloak': { name: 'Cloaking Device', price: 500 },
+    'quadlaser': { name: 'Quad Laser', price: 600 },
+    'smartmine': { name: 'Smart Mine', price: 650 },
+    'gauss': { name: 'Gauss Cannon', price: 700 },
+    'helix': { name: 'Helix Cannon', price: 750 },
+    'earthshaker': { name: 'Earthshaker Missile', price: 850 },
+    'hostage': { name: 'Hostage', price: 900 },
+    'phoenix': { name: 'Phoenix Cannon', price: 950 },
+    'blob02': { name: 'Blob Token 2', price: 1000 },
+    'invuln': { name: 'Invulnerability', price: 1500 },
+    'blob03': { name: 'Blob Token 3', price: 2000 },
+    'reactor': { name: 'Reactor', price: 2000 },
+    'pyro': { name: 'Pyro', price: 3000 },
+    'architect': { name: 'Architect', price: -1 }
+};
+
+// Setup Store Inventory Management Section
+function setupManageStoreInventorySection() {
+    console.log('Setting up Store Inventory Management section');
+    
+    // Search button
+    const searchBtn = document.getElementById('search-store-inventory-user-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchStoreInventoryUser);
+    }
+    
+    // Search on Enter key
+    const searchInput = document.getElementById('store-inventory-user-search');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchStoreInventoryUser();
+            }
+        });
+    }
+    
+    // Scan discrepancies button
+    const scanBtn = document.getElementById('scan-store-discrepancies-btn');
+    if (scanBtn) {
+        scanBtn.addEventListener('click', scanStoreDiscrepancies);
+    }
+    
+    // Close discrepancies button
+    const closeBtn = document.getElementById('close-discrepancies-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeDiscrepanciesResults);
+    }
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchStoreInventoryUser();
+            }
+        });
+    }
+    
+    // Item type selector
+    const itemTypeSelect = document.getElementById('store-item-type');
+    if (itemTypeSelect) {
+        itemTypeSelect.addEventListener('change', updateStoreItemOptions);
+    }
+    
+    // Add item form
+    const addItemForm = document.getElementById('add-store-item-form');
+    if (addItemForm) {
+        addItemForm.addEventListener('submit', addStoreItemToUser);
+    }
+    
+    // Category filter buttons
+    document.querySelectorAll('.category-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            filterCurrentStoreItems(filter);
+        });
+    });
+}
+
+// Search for user by username
+async function searchStoreInventoryUser() {
+    const searchInput = document.getElementById('store-inventory-user-search');
+    const username = searchInput.value.trim();
+    
+    if (!username) {
+        showNotification('Please enter a username', 'warning');
+        return;
+    }
+    
+    try {
+        // Search in userProfiles
+        const profilesRef = collection(db, 'userProfiles');
+        const q = query(profilesRef, where('username', '==', username));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            showNotification(`User "${username}" not found`, 'error');
+            return;
+        }
+        
+        const userDoc = snapshot.docs[0];
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+        
+        // Display user's store inventory
+        await displayUserStoreInventory(userId, username, userData);
+        
+    } catch (error) {
+        console.error('Error searching for user:', error);
+        showNotification('Error searching for user: ' + error.message, 'error');
+    }
+}
+
+// Display user's store inventory
+async function displayUserStoreInventory(userId, username, userData) {
+    const managementContainer = document.getElementById('user-store-inventory-management');
+    const usernameDisplay = document.getElementById('current-store-inventory-user');
+    const pointsDisplay = document.getElementById('store-user-points-display');
+    const userIdInput = document.getElementById('store-target-user-id');
+    
+    // Show management container
+    managementContainer.style.display = 'block';
+    usernameDisplay.textContent = username;
+    pointsDisplay.textContent = (userData.points || 0).toLocaleString();
+    userIdInput.value = userId;
+    
+    // Get user's inventory
+    const inventory = userData.inventory || [];
+    const equippedToken = userData.equippedToken || null;
+    
+    // Get user's tokens from userTokens collection
+    let userTokens = [];
+    try {
+        const userTokensRef = doc(db, 'userTokens', userId);
+        const userTokensDoc = await getDoc(userTokensRef);
+        if (userTokensDoc.exists()) {
+            userTokens = userTokensDoc.data().tokens || [];
+        }
+    } catch (error) {
+        console.warn('Error loading userTokens:', error);
+    }
+    
+    // Display items
+    displayCurrentStoreItems(inventory, userTokens, equippedToken);
+}
+
+// Display current store items
+function displayCurrentStoreItems(inventory, userTokens, equippedToken) {
+    const listContainer = document.getElementById('current-store-items-list');
+    
+    if (!listContainer) return;
+    
+    if (inventory.length === 0 && userTokens.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty-items-state">
+                <i class="fas fa-shopping-cart"></i>
+                <p>No items in inventory</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let itemsHtml = '';
+    
+    // Parse inventory items (format: "theme_id" or "token_id")
+    inventory.forEach(item => {
+        const [type, itemId] = item.split('_');
+        let itemName = itemId;
+        let itemPrice = 0;
+        
+        if (type === 'theme' && STORE_THEMES[itemId]) {
+            itemName = STORE_THEMES[itemId].name;
+            itemPrice = STORE_THEMES[itemId].price;
+        } else if (type === 'token' && STORE_TOKENS[itemId]) {
+            itemName = STORE_TOKENS[itemId].name;
+            itemPrice = STORE_TOKENS[itemId].price;
+        }
+        
+        const isEquipped = type === 'token' && equippedToken === itemId;
+        const equippedBadge = isEquipped ? '<span class="store-item-equipped-badge"><i class="fas fa-check"></i> Equipped</span>' : '';
+        
+        itemsHtml += `
+            <div class="store-item-entry" data-item-type="${type}" data-item-id="${itemId}">
+                <div class="store-item-info">
+                    <div class="store-item-icon ${type}-icon">
+                        <i class="fas fa-${type === 'theme' ? 'palette' : 'coins'}"></i>
+                    </div>
+                    <div class="store-item-details">
+                        <div class="store-item-name">${itemName}${equippedBadge}</div>
+                        <div class="store-item-type">${type === 'theme' ? 'Theme' : 'Token'} • ${itemPrice} points</div>
+                    </div>
+                </div>
+                <button class="store-item-remove-btn" onclick="removeStoreItemFromUser('${type}', '${itemId}')">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        `;
+    });
+    
+    listContainer.innerHTML = itemsHtml;
+}
+
+// Update store item options based on type
+function updateStoreItemOptions() {
+    const typeSelect = document.getElementById('store-item-type');
+    const itemSelect = document.getElementById('store-item-id');
+    
+    if (!typeSelect || !itemSelect) return;
+    
+    const selectedType = typeSelect.value;
+    
+    if (!selectedType) {
+        itemSelect.disabled = true;
+        itemSelect.innerHTML = '<option value="">Select item type first...</option>';
+        return;
+    }
+    
+    itemSelect.disabled = false;
+    itemSelect.innerHTML = '<option value="">Select an item...</option>';
+    
+    if (selectedType === 'theme') {
+        Object.entries(STORE_THEMES).forEach(([id, theme]) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${theme.name} (${theme.price} pts)`;
+            itemSelect.appendChild(option);
+        });
+    } else if (selectedType === 'token') {
+        Object.entries(STORE_TOKENS).forEach(([id, token]) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `${token.name} (${token.price} pts)`;
+            itemSelect.appendChild(option);
+        });
+    }
+}
+
+// Add store item to user
+async function addStoreItemToUser(event) {
+    event.preventDefault();
+    
+    const userId = document.getElementById('store-target-user-id').value;
+    const itemType = document.getElementById('store-item-type').value;
+    const itemId = document.getElementById('store-item-id').value;
+    const reason = document.getElementById('store-item-reason').value.trim();
+    
+    if (!userId || !itemType || !itemId) {
+        showNotification('Please select an item to add', 'warning');
+        return;
+    }
+    
+    try {
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            showNotification('User not found', 'error');
+            return;
+        }
+        
+        const userData = userDoc.data();
+        const currentInventory = userData.inventory || [];
+        const itemKey = `${itemType}_${itemId}`;
+        
+        // Check if user already has this item
+        if (currentInventory.includes(itemKey)) {
+            showNotification('User already owns this item', 'warning');
+            return;
+        }
+        
+        // Add to inventory
+        const newInventory = [...currentInventory, itemKey];
+        
+        await updateDoc(userRef, {
+            inventory: newInventory
+        });
+        
+        // If it's a token, also add to userTokens collection
+        if (itemType === 'token') {
+            const tokenData = STORE_TOKENS[itemId];
+            const userTokensRef = doc(db, 'userTokens', userId);
+            const userTokensDoc = await getDoc(userTokensRef);
+            
+            let tokens = [];
+            if (userTokensDoc.exists()) {
+                tokens = userTokensDoc.data().tokens || [];
+            }
+            
+            tokens.push({
+                tokenId: itemId,
+                tokenName: tokenData.name,
+                category: 'admin-awarded',
+                purchasedAt: new Date(),
+                price: tokenData.price,
+                equipped: false
+            });
+            
+            await setDoc(userTokensRef, {
+                userId: userId,
+                username: userData.username,
+                tokens: tokens,
+                lastUpdated: serverTimestamp()
+            }, { merge: true });
+        }
+        
+        // Log transaction
+        await addDoc(collection(db, 'transactions'), {
+            userId: userId,
+            userEmail: userData.email || 'N/A',
+            itemId: itemKey,
+            itemTitle: itemType === 'theme' ? STORE_THEMES[itemId].name : STORE_TOKENS[itemId].name,
+            type: 'admin-award',
+            category: itemType,
+            reason: reason || 'Admin awarded',
+            adminEmail: auth.currentUser.email,
+            timestamp: serverTimestamp()
+        });
+        
+        showNotification(`Successfully added ${itemType} to user's inventory`, 'success');
+        
+        // Reload display
+        await displayUserStoreInventory(userId, userData.username, {
+            ...userData,
+            inventory: newInventory
+        });
+        
+        // Reset form
+        document.getElementById('add-store-item-form').reset();
+        document.getElementById('store-item-id').disabled = true;
+        
+    } catch (error) {
+        console.error('Error adding store item:', error);
+        showNotification('Failed to add item: ' + error.message, 'error');
+    }
+}
+
+// Remove store item from user
+window.removeStoreItemFromUser = async function(itemType, itemId) {
+    const userId = document.getElementById('store-target-user-id').value;
+    const itemKey = `${itemType}_${itemId}`;
+    const itemName = itemType === 'theme' ? STORE_THEMES[itemId]?.name : STORE_TOKENS[itemId]?.name;
+    
+    if (!confirm(`Are you sure you want to remove "${itemName}" from this user's inventory?`)) {
+        return;
+    }
+    
+    try {
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            showNotification('User not found', 'error');
+            return;
+        }
+        
+        const userData = userDoc.data();
+        const currentInventory = userData.inventory || [];
+        
+        // Remove from inventory
+        const newInventory = currentInventory.filter(item => item !== itemKey);
+        
+        const updateData = { inventory: newInventory };
+        
+        // If removing equipped token, unequip it
+        if (itemType === 'token' && userData.equippedToken === itemId) {
+            updateData.equippedToken = null;
+        }
+        
+        await updateDoc(userRef, updateData);
+        
+        // If it's a token, also remove from userTokens collection
+        if (itemType === 'token') {
+            const userTokensRef = doc(db, 'userTokens', userId);
+            const userTokensDoc = await getDoc(userTokensRef);
+            
+            if (userTokensDoc.exists()) {
+                const tokens = userTokensDoc.data().tokens || [];
+                const updatedTokens = tokens.filter(t => t.tokenId !== itemId);
+                
+                await updateDoc(userTokensRef, {
+                    tokens: updatedTokens,
+                    lastUpdated: serverTimestamp()
+                });
+            }
+        }
+        
+        // Log transaction
+        await addDoc(collection(db, 'transactions'), {
+            userId: userId,
+            userEmail: userData.email || 'N/A',
+            itemId: itemKey,
+            itemTitle: itemName,
+            type: 'admin-removal',
+            category: itemType,
+            reason: 'Admin removed item',
+            adminEmail: auth.currentUser.email,
+            timestamp: serverTimestamp()
+        });
+        
+        showNotification(`Successfully removed ${itemType} from user's inventory`, 'success');
+        
+        // Reload display
+        await displayUserStoreInventory(userId, userData.username, {
+            ...userData,
+            inventory: newInventory,
+            equippedToken: updateData.equippedToken !== undefined ? updateData.equippedToken : userData.equippedToken
+        });
+        
+    } catch (error) {
+        console.error('Error removing store item:', error);
+        showNotification('Failed to remove item: ' + error.message, 'error');
+    }
+};
+
+// Filter current store items
+function filterCurrentStoreItems(filter) {
+    const items = document.querySelectorAll('.store-item-entry');
+    
+    items.forEach(item => {
+        const itemType = item.dataset.itemType;
+        
+        if (filter === 'all' || itemType === filter) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Load store inventory data (overview of all users)
+async function loadStoreInventoryData() {
+    console.log('Loading store inventory overview...');
+    showNotification('Store inventory overview feature coming soon!', 'info');
+}
+
+// ============================================================================
+// STORE DISCREPANCIES SCANNING
+// ============================================================================
+
+// Scan for inventory discrepancies
+async function scanStoreDiscrepancies() {
+    console.log('Scanning for store inventory discrepancies...');
+    
+    const resultsContainer = document.getElementById('store-discrepancies-results');
+    const contentContainer = document.getElementById('discrepancies-content');
+    const userManagementSection = document.getElementById('user-store-inventory-management');
+    
+    // Hide user management section and show results
+    if (userManagementSection) {
+        userManagementSection.style.display = 'none';
+    }
+    resultsContainer.style.display = 'block';
+    
+    // Show loading state
+    contentContainer.innerHTML = `
+        <div class="discrepancy-loading">
+            <i class="fas fa-spinner"></i>
+            <p>Scanning all user inventories...</p>
+            <p style="font-size: 0.85rem; margin-top: 8px;">This may take a moment</p>
+        </div>
+    `;
+    
+    try {
+        // Get all users with inventory
+        const usersSnapshot = await getDocs(collection(db, 'userProfiles'));
+        const discrepancies = [];
+        let totalScanned = 0;
+        let totalWithInventory = 0;
+        
+        for (const userDoc of usersSnapshot.docs) {
+            totalScanned++;
+            const userData = userDoc.data();
+            const userId = userDoc.id;
+            const username = userData.username || userData.displayName || 'Unknown';
+            const inventory = userData.inventory || [];
+            
+            if (inventory.length === 0) continue;
+            
+            totalWithInventory++;
+            
+            // Get all transactions for this user
+            const transactionsQuery = query(
+                collection(db, 'transactions'),
+                where('userId', '==', userId)
+            );
+            const transactionsSnapshot = await getDocs(transactionsQuery);
+            const transactionItems = new Set();
+            
+            transactionsSnapshot.forEach(doc => {
+                const txData = doc.data();
+                if (txData.itemId) {
+                    transactionItems.add(txData.itemId);
+                }
+            });
+            
+            // Find items in inventory without transactions
+            const itemsWithoutTransactions = [];
+            
+            inventory.forEach(item => {
+                if (!transactionItems.has(item)) {
+                    const [type, itemId] = item.split('_');
+                    let itemName = itemId;
+                    
+                    if (type === 'theme' && STORE_THEMES[itemId]) {
+                        itemName = STORE_THEMES[itemId].name;
+                    } else if (type === 'token' && STORE_TOKENS[itemId]) {
+                        itemName = STORE_TOKENS[itemId].name;
+                    }
+                    
+                    itemsWithoutTransactions.push({
+                        fullId: item,
+                        type: type,
+                        itemId: itemId,
+                        name: itemName
+                    });
+                }
+            });
+            
+            if (itemsWithoutTransactions.length > 0) {
+                discrepancies.push({
+                    userId: userId,
+                    username: username,
+                    email: userData.email || 'N/A',
+                    items: itemsWithoutTransactions,
+                    totalItems: inventory.length,
+                    transactionCount: transactionsSnapshot.size
+                });
+            }
+        }
+        
+        // Display results
+        displayDiscrepancyResults(discrepancies, totalScanned, totalWithInventory);
+        
+    } catch (error) {
+        console.error('Error scanning for discrepancies:', error);
+        contentContainer.innerHTML = `
+            <div class="discrepancy-no-results">
+                <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+                <p>Error scanning for discrepancies</p>
+                <p style="font-size: 0.85rem; margin-top: 8px; color: var(--text-muted);">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Display discrepancy results
+function displayDiscrepancyResults(discrepancies, totalScanned, totalWithInventory) {
+    const contentContainer = document.getElementById('discrepancies-content');
+    
+    if (discrepancies.length === 0) {
+        contentContainer.innerHTML = `
+            <div class="discrepancy-no-results">
+                <i class="fas fa-check-circle"></i>
+                <p>No discrepancies found!</p>
+                <p style="font-size: 0.85rem; margin-top: 8px; color: var(--text-muted);">
+                    Scanned ${totalScanned} users, ${totalWithInventory} with inventory
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate total items without transactions
+    const totalDiscrepantItems = discrepancies.reduce((sum, d) => sum + d.items.length, 0);
+    
+    let html = `
+        <div class="discrepancies-summary">
+            <div class="discrepancy-stat">
+                <div class="discrepancy-stat-value">${discrepancies.length}</div>
+                <div class="discrepancy-stat-label">Users with Issues</div>
+            </div>
+            <div class="discrepancy-stat">
+                <div class="discrepancy-stat-value">${totalDiscrepantItems}</div>
+                <div class="discrepancy-stat-label">Items w/o Transactions</div>
+            </div>
+            <div class="discrepancy-stat">
+                <div class="discrepancy-stat-value">${totalScanned}</div>
+                <div class="discrepancy-stat-label">Users Scanned</div>
+            </div>
+        </div>
+        
+        <div class="discrepancies-list">
+    `;
+    
+    discrepancies.forEach(discrepancy => {
+        html += `
+            <div class="discrepancy-entry">
+                <div class="discrepancy-user-header">
+                    <div class="discrepancy-username">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${discrepancy.username}
+                    </div>
+                    <button class="discrepancy-view-btn" onclick="viewUserFromDiscrepancy('${discrepancy.userId}', '${discrepancy.username}')">
+                        <i class="fas fa-eye"></i> View Inventory
+                    </button>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    ${discrepancy.items.length} item(s) without transaction • ${discrepancy.transactionCount} total transactions • ${discrepancy.totalItems} total items
+                </div>
+                <div class="discrepancy-items-list">
+        `;
+        
+        discrepancy.items.forEach(item => {
+            const icon = item.type === 'theme' ? 'palette' : 'coins';
+            html += `
+                <div class="discrepancy-item-badge">
+                    <i class="fas fa-${icon}"></i>
+                    <span class="discrepancy-item-name">${item.name}</span>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    
+    contentContainer.innerHTML = html;
+}
+
+// View user from discrepancy results
+window.viewUserFromDiscrepancy = async function(userId, username) {
+    // Hide discrepancies results
+    const resultsContainer = document.getElementById('store-discrepancies-results');
+    resultsContainer.style.display = 'none';
+    
+    // Load user data
+    try {
+        const userRef = doc(db, 'userProfiles', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
+            showNotification('User not found', 'error');
+            return;
+        }
+        
+        const userData = userDoc.data();
+        
+        // Set the search input
+        const searchInput = document.getElementById('store-inventory-user-search');
+        if (searchInput) {
+            searchInput.value = username;
+        }
+        
+        // Display user's store inventory
+        await displayUserStoreInventory(userId, username, userData);
+        
+    } catch (error) {
+        console.error('Error loading user:', error);
+        showNotification('Error loading user: ' + error.message, 'error');
+    }
+};
+
+// Close discrepancies results
+function closeDiscrepanciesResults() {
+    const resultsContainer = document.getElementById('store-discrepancies-results');
+    resultsContainer.style.display = 'none';
+}
+
+// ============================================================================
+// END STORE DISCREPANCIES SCANNING
+// ============================================================================
+
+// ============================================================================
+// END STORE INVENTORY MANAGEMENT
+// ============================================================================
 
 // Edit user ribbons (called from table)
 function editUserRibbons(username, ladder) {

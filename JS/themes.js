@@ -17,13 +17,43 @@ const THEMES = {
 // Theme storage key
 const THEME_STORAGE_KEY = 'rdl_theme';
 
-// Get current theme from storage
-function getCurrentTheme() {
-    return localStorage.getItem(THEME_STORAGE_KEY) || THEMES.DEFAULT;
+// Theme expiration dates
+const THEME_EXPIRATION = {
+    christmas: new Date('2025-12-31T23:59:59')
+};
+
+// Check if theme is expired
+function isThemeExpired(theme) {
+    if (!THEME_EXPIRATION[theme]) {
+        return false; // No expiration date = never expires
+    }
+    
+    const now = new Date();
+    return now > THEME_EXPIRATION[theme];
 }
 
-// Apply theme to document
+// Get current theme from storage with expiration check
+function getCurrentTheme() {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || THEMES.DEFAULT;
+    
+    // Check if theme is expired
+    if (isThemeExpired(savedTheme)) {
+        console.log(`Theme ${savedTheme} has expired, reverting to default`);
+        localStorage.setItem(THEME_STORAGE_KEY, THEMES.DEFAULT);
+        return THEMES.DEFAULT;
+    }
+    
+    return savedTheme;
+}
+
+// Apply theme to document with expiration check
 function applyTheme(theme) {
+    // Check if theme is expired
+    if (isThemeExpired(theme)) {
+        console.log(`Cannot apply expired theme: ${theme}`);
+        theme = THEMES.DEFAULT;
+    }
+    
     // Remove all existing theme classes
     document.body.classList.forEach(cls => {
         if (cls.startsWith('theme-')) {
@@ -86,7 +116,9 @@ if (document.readyState !== 'loading') {
 // Export ThemeSystem globally
 window.ThemeSystem = {
     switchTheme,
+    applyTheme,
     getCurrentTheme,
+    isThemeExpired, // Add this
     THEMES
 };
 

@@ -400,6 +400,13 @@ export async function rejectFFAReport(reportId, reason = '') {
             throw new Error('You must be logged in to reject a match');
         }
 
+        // ✅ VERIFY: User is registered in FFA first
+        const userFFADoc = await getDoc(doc(db, 'playersFFA', currentUser.uid));
+        if (!userFFADoc.exists()) {
+            throw new Error('You must be registered in the FFA ladder to reject matches');
+        }
+        const currentUsername = userFFADoc.data().username;
+
         const reportRef = doc(db, 'pendingMatchesFFA', reportId);
         const reportSnapshot = await getDoc(reportRef);
 
@@ -409,8 +416,14 @@ export async function rejectFFAReport(reportId, reason = '') {
 
         const reportData = reportSnapshot.data();
 
-        // Check if user is a participant
-        const isParticipant = reportData.participants.some(p => p.odl_Id === currentUser.uid);
+        // ✅ FIX: Handle both 'players' and 'participants' field names
+        const participants = reportData.players || reportData.participants || [];
+
+        // Check if user is a participant (by both odl_Id AND username)
+        const isParticipant = participants.some(p => 
+            p.odl_Id === currentUser.uid || 
+            p.username === currentUsername
+        );
         
         if (!isParticipant) {
             // Check if admin
@@ -424,6 +437,8 @@ export async function rejectFFAReport(reportId, reason = '') {
         // Move to rejected matches
         const rejectedData = {
             ...reportData,
+            // ✅ Normalize to use 'participants' for consistency
+            participants: participants,
             status: 'rejected',
             rejectedAt: serverTimestamp(),
             rejectedBy: currentUser.uid,

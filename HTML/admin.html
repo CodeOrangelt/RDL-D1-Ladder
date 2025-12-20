@@ -96,6 +96,11 @@
                     <i class="fas fa-medal"></i>
                     <span>Manage Ribbons</span>
                 </button>
+
+                <button class="nav-item" data-section="manage-store-inventory">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Store Inventory</span>
+                </button>
             </nav>
             
             <div class="sidebar-footer">
@@ -1145,6 +1150,138 @@
     </div>
 </section>
 
+<!-- Add this section before the closing of main-content div (after manage-ribbons section) -->
+<!-- Store Inventory Management Section -->
+<section id="manage-store-inventory" class="admin-section" style="display: none;">
+    <div class="section-header">
+        <h1><i class="fas fa-shopping-bag"></i> Manage Store Inventory</h1>
+        <div class="header-actions">
+            <button id="load-store-inventory-data" class="load-data-btn">
+                <i class="fas fa-sync-alt"></i> Load Inventory Data
+            </button>
+            <button id="scan-store-discrepancies-btn" class="load-data-btn" style="margin-left: 10px; background: linear-gradient(135deg, #f39c12, #e74c3c);">
+                <i class="fas fa-exclamation-triangle"></i> Search Discrepancies
+            </button>
+        </div>
+    </div>
+    
+    <!-- User Search Card -->
+    <div class="store-inventory-search-card">
+        <h3><i class="fas fa-search"></i> Search for Player</h3>
+        <div class="ribbons-search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-user search-icon"></i>
+                <input type="text" id="store-inventory-user-search" class="search-input" placeholder="Search by username...">
+            </div>
+            <button id="search-store-inventory-user-btn" class="btn primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+    </div>
+    
+    <!-- Discrepancies Results -->
+    <div id="store-discrepancies-results" class="store-user-info-card" style="display: none;">
+        <div class="store-user-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i> 
+                Inventory Discrepancies
+            </h3>
+            <button id="close-discrepancies-btn" class="btn danger" style="padding: 8px 16px;">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+        <div id="discrepancies-content" class="discrepancies-content"></div>
+    </div>
+    
+    <!-- Selected User Store Inventory Management -->
+    <div id="user-store-inventory-management" class="store-user-info-card" style="display: none;">
+        <div class="store-user-header">
+            <h3>
+                <i class="fas fa-user-shield"></i> 
+                Managing Store for: 
+                <span id="current-store-inventory-user" class="username-highlight"></span>
+            </h3>
+            <div class="store-user-points">
+                <i class="fas fa-coins"></i>
+                <span class="points-amount" id="store-user-points-display">0</span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">points</span>
+            </div>
+        </div>
+        
+        <div class="store-inventory-grid">
+            <!-- Add Item Card -->
+            <div class="store-item-management-card">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle"></i>
+                    <h4>Add Store Item</h4>
+                </div>
+                <form id="add-store-item-form" class="add-item-form">
+                    <input type="hidden" id="store-target-user-id">
+                    
+                    <div class="form-group">
+                        <label for="store-item-type">
+                            <i class="fas fa-tag"></i> Item Type
+                        </label>
+                        <select id="store-item-type" class="form-control" required>
+                            <option value="">Select type...</option>
+                            <option value="theme">Theme</option>
+                            <option value="token">Token</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="store-item-id">
+                            <i class="fas fa-gift"></i> Item
+                        </label>
+                        <select id="store-item-id" class="form-control" required disabled>
+                            <option value="">Select item type first...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="store-item-reason">
+                            <i class="fas fa-comment"></i> Reason (Optional)
+                        </label>
+                        <input type="text" id="store-item-reason" class="form-control" placeholder="Why are you adding this item?">
+                    </div>
+                    
+                    <button type="submit" class="btn success full-width">
+                        <i class="fas fa-plus"></i> Add Item to Inventory
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Current Items Card -->
+            <div class="store-item-management-card">
+                <div class="card-header">
+                    <i class="fas fa-list"></i>
+                    <h4>Current Inventory</h4>
+                </div>
+                
+                <!-- Category Filter -->
+                <div class="item-category-filter">
+                    <button class="category-filter-btn active" data-filter="all">
+                        <i class="fas fa-th"></i> All
+                    </button>
+                    <button class="category-filter-btn" data-filter="theme">
+                        <i class="fas fa-palette"></i> Themes
+                    </button>
+                    <button class="category-filter-btn" data-filter="token">
+                        <i class="fas fa-coins"></i> Tokens
+                    </button>
+                </div>
+                
+                <div id="current-store-items-list" class="current-items-list-container">
+                    <div class="empty-items-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>No items in inventory</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
             <!-- Edit Player Modal -->
             <div id="edit-player-modal" class="modal">
                 <div class="modal-content">
@@ -2065,6 +2202,7 @@
         </form>
     </div>
 </div>
+
         </div>
     </div>
     

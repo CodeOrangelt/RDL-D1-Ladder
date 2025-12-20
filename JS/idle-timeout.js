@@ -259,6 +259,11 @@ function suspendSession() {
     // Suspend Firebase operations
     window.RDL_SESSION_SUSPENDED = true;
     firebaseIdle.suspendAllListeners();
+    
+    // ✅ NEW: Suspend RetroTracker monitoring
+    if (typeof window.suspendRetroTracker === 'function') {
+        window.suspendRetroTracker();
+    }
 }
 
 // Resume the session
@@ -276,6 +281,11 @@ function resumeSession() {
     
     // Resume Firebase listeners
     firebaseIdle.resumeAllListeners();
+    
+    // ✅ NEW: Resume RetroTracker monitoring
+    if (typeof window.resumeRetroTracker === 'function') {
+        window.resumeRetroTracker();
+    }
     
     // Force a page reload to ensure clean state if session was suspended for a long time
     if (idleTimer && Date.now() - (window.RDL_LAST_ACTIVITY || 0) > IDLE_TIMEOUT * 2) {

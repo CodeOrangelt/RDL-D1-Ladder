@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
+import firebaseIdle from './firebase-idle-wrapper.js';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -9,11 +10,13 @@ export class RetroTrackerMonitor {
     constructor() {
         this.lastUpdate = null;
         this.activeGames = new Map();
-        this.updateInterval = 300000; // 30 seconds
+        this.updateInterval = 300000; // 5 minutes (was 30 seconds, changed to match comment)
         this.isMainPage = window.location.pathname.endsWith('/whosplaying.html');
-        this.fetchAttempts = 0; // Add fetch attempt counter
-        this.maxFetchAttempts = 3; // Maximum number of fetch attempts
-        this.fetchingDisabled = false; // Flag to disable fetching after max attempts
+        this.fetchAttempts = 0;
+        this.maxFetchAttempts = 3;
+        this.fetchingDisabled = false;
+        this.monitoringInterval = null; // ✅ Store interval ID for cleanup
+        this.gameRotationInterval = null;
     }
 
     async initialize() {
@@ -58,25 +61,46 @@ export class RetroTrackerMonitor {
         document.body.appendChild(banner);
     }
 
+    // ✅ NEW: Check if session is active before making requests
+    checkSessionActive() {
+        if (window.RDL_SESSION_SUSPENDED === true) {
+            console.log('[RetroTracker] Operation blocked - session idle');
+            return false;
+        }
+        
+        if (window.RDL_NETWORK_ERROR === true) {
+            console.log('[RetroTracker] Operation blocked - network error');
+            return false;
+        }
+        
+        return true;
+    }
+
     // Optimize game data extraction
     async fetchGameData() {
+        // ✅ Check session status before fetching
+        if (!this.checkSessionActive()) {
+            console.log('[RetroTracker] Skipping fetch - session inactive');
+            return null;
+        }
+
         // Check if fetching is disabled due to max attempts reached
         if (this.fetchingDisabled) {
-            console.log('Fetching disabled after max attempts reached');
+            console.log('[RetroTracker] Fetching disabled after max attempts reached');
             return null;
         }
 
         // Check if we've reached max attempts
         if (this.fetchAttempts >= this.maxFetchAttempts) {
-            console.log(`Maximum fetch attempts (${this.maxFetchAttempts}) reached. Disabling further attempts.`);
+            console.log(`[RetroTracker] Maximum fetch attempts (${this.maxFetchAttempts}) reached. Disabling further attempts.`);
             this.fetchingDisabled = true;
             this.displayError('Unable to fetch game data after multiple attempts.');
             return null;
         }
 
         try {
-            this.fetchAttempts++; // Increment attempt counter
-            console.log(`Fetch attempt ${this.fetchAttempts}/${this.maxFetchAttempts}`);
+            this.fetchAttempts++;
+            console.log(`[RetroTracker] Fetch attempt ${this.fetchAttempts}/${this.maxFetchAttempts}`);
 
             const proxyUrl = 'https://api.allorigins.win/get?url=';
             const targetUrl = encodeURIComponent('https://retro-tracker.game-server.cc/');
@@ -116,13 +140,12 @@ export class RetroTrackerMonitor {
                         timestamp: new Date().toISOString()
                     };
                 })
-                .filter(Boolean); // Remove null entries
+                .filter(Boolean);
 
             return this.processGameData(games);
         } catch (error) {
-            console.error(`Error fetching game data (attempt ${this.fetchAttempts}/${this.maxFetchAttempts}):`, error);
+            console.error(`[RetroTracker] Error fetching game data (attempt ${this.fetchAttempts}/${this.maxFetchAttempts}):`, error);
             
-            // Only show error message after all attempts are exhausted
             if (this.fetchAttempts >= this.maxFetchAttempts) {
                 this.fetchingDisabled = true;
                 this.displayError('Unable to fetch game data after multiple attempts.');
@@ -141,19 +164,16 @@ export class RetroTrackerMonitor {
     findPlayers(detailsTable) {
         if (!detailsTable) return [];
         
-        // Find Score Board section using standard selectors
         const scoreBoardHeaders = Array.from(detailsTable.querySelectorAll('td[bgcolor="#D0D0D0"]'))
             .find(td => td.textContent.includes('Score Board'));
         
         if (!scoreBoardHeaders) return [];
 
-        // Get the score board table that follows the header
         const scoreBoardTable = scoreBoardHeaders.closest('tr').nextElementSibling?.querySelector('table');
         if (!scoreBoardTable) return [];
 
-        // Process player rows
         return Array.from(scoreBoardTable.querySelectorAll('tr'))
-            .slice(1) // Skip header row
+            .slice(1)
             .filter(row => row.getAttribute('style')?.includes('color:#7878B8'))
             .map(row => {
                 const cells = row.querySelectorAll('td');
@@ -168,7 +188,7 @@ export class RetroTrackerMonitor {
                     timeInGame: cells[5]?.textContent?.trim() || ''
                 };
             })
-            .filter(Boolean); // Remove any null entries
+            .filter(Boolean);
     }
 
     // Optimize score finding
@@ -196,7 +216,7 @@ export class RetroTrackerMonitor {
     // Optimize game data processing
     processGameData(data) {
         if (!data?.length) {
-            console.log('No games data received');
+            console.log('[RetroTracker] No games data received');
             return;
         }
 
@@ -223,7 +243,6 @@ export class RetroTrackerMonitor {
                 if (parts.length > 1) {
                     let value = parts[1].trim();
                     
-                    // Handle specific fields
                     switch(label) {
                         case 'Game Name:':
                             return value.split('Mission:')[0].trim();
@@ -243,19 +262,23 @@ export class RetroTrackerMonitor {
     }
 
     storeGameData(game) {
-        if (!game.host || !game.players) {
-            console.error('Invalid game data:', game);
+        // ✅ Check session status before storing
+        if (!this.checkSessionActive()) {
+            console.log('[RetroTracker] Skipping store - session inactive');
             return;
         }
 
-        // Add directly to local tracking first
+        if (!game.host || !game.players) {
+            console.error('[RetroTracker] Invalid game data:', game);
+            return;
+        }
+
         this.activeGames.set(game.host, game);
         
-        // Then store in Firebase
-        addDoc(collection(db, 'retroTracker'), game)
+        // ✅ Use firebaseIdle wrapper for Firebase operations
+        firebaseIdle.addDocument(collection(db, 'retroTracker'), game)
             .catch(error => {
-                console.error('Error storing game data:', error);
-                // Don't display error to user, just log it
+                console.error('[RetroTracker] Error storing game data:', error);
             });
             
         this.updateDisplay();
@@ -288,7 +311,7 @@ export class RetroTrackerMonitor {
                         <span class="host">Host: ${game.host}</span>
                     </div>
                     <div class="game-info">
-                        <span class="game-type">${game.gameType}</span>
+                        <span class="game-type">${game.gameType || 'Unknown'}</span>
                         <span class="game-status">${game.status}</span>
                     </div>
                     <div class="players-list">
@@ -320,23 +343,70 @@ export class RetroTrackerMonitor {
                 `Last updated: ${new Date().toLocaleTimeString()}`;
         }
 
-        // Update the banner at the end
         this.updateBanner();
     }
 
-    startMonitoring() {
-        // Only start monitoring if fetching is not disabled
-        if (!this.fetchingDisabled) {
-            setInterval(() => {
-                if (!this.fetchingDisabled) {
-                    this.fetchGameData();
-                }
-            }, this.updateInterval);
-            this.fetchGameData(); // Initial fetch
+    // ✅ NEW: Method to stop monitoring
+    stopMonitoring() {
+        console.log('[RetroTracker] Stopping monitoring');
+        
+        if (this.monitoringInterval) {
+            clearInterval(this.monitoringInterval);
+            this.monitoringInterval = null;
+        }
+        
+        if (this.gameRotationInterval) {
+            clearInterval(this.gameRotationInterval);
+            this.gameRotationInterval = null;
         }
     }
 
-    // Add error display method
+    // ✅ NEW: Method to resume monitoring
+    resumeMonitoring() {
+        console.log('[RetroTracker] Resuming monitoring');
+        
+        // Don't resume if fetching is disabled
+        if (!this.fetchingDisabled) {
+            // Clear any existing interval
+            if (this.monitoringInterval) {
+                clearInterval(this.monitoringInterval);
+            }
+            
+            // Start fresh
+            this.monitoringInterval = setInterval(() => {
+                if (!this.fetchingDisabled && this.checkSessionActive()) {
+                    this.fetchGameData();
+                }
+            }, this.updateInterval);
+            
+            // Do an immediate fetch if session is active
+            if (this.checkSessionActive()) {
+                this.fetchGameData();
+            }
+        }
+    }
+
+    startMonitoring() {
+        // ✅ Only start if session is active
+        if (!this.checkSessionActive()) {
+            console.log('[RetroTracker] Session inactive, delaying monitoring start');
+            return;
+        }
+
+        if (!this.fetchingDisabled) {
+            this.monitoringInterval = setInterval(() => {
+                if (!this.fetchingDisabled && this.checkSessionActive()) {
+                    this.fetchGameData();
+                }
+            }, this.updateInterval);
+            
+            // Initial fetch only if session is active
+            if (this.checkSessionActive()) {
+                this.fetchGameData();
+            }
+        }
+    }
+
     displayError(message) {
         const gamesList = document.getElementById('games-list');
         if (gamesList) {
@@ -348,31 +418,26 @@ export class RetroTrackerMonitor {
         }
     }
 
-    // Add new method to update banner
     updateBanner() {
         const banner = document.querySelector('.game-banner');
         const bannerText = document.querySelector('.game-banner-text');
         
         if (!banner || !bannerText) return;
 
-        // Hide banner if no games
         if (this.activeGames.size === 0) {
             banner.style.display = 'none';
             return;
         }
 
-        // Show banner and start cycling through games
         banner.style.display = 'block';
         
         const games = Array.from(this.activeGames.values());
         let currentGameIndex = 0;
 
-        // Clear any existing game rotation interval
         if (this.gameRotationInterval) {
             clearInterval(this.gameRotationInterval);
         }
 
-        // Function to update the banner text
         const updateBannerText = () => {
             const game = games[currentGameIndex];
             if (game) {
@@ -382,15 +447,12 @@ export class RetroTrackerMonitor {
                 
                 bannerText.textContent = text;
                 
-                // Move to next game
                 currentGameIndex = (currentGameIndex + 1) % games.length;
             }
         };
 
-        // Set initial text
         updateBannerText();
 
-        // If multiple games, rotate every 10 seconds
         if (games.length > 1) {
             this.gameRotationInterval = setInterval(updateBannerText, 10000);
         }
@@ -524,12 +586,39 @@ const styleSheet = document.createElement('style');
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
 
+// ✅ Store global reference to monitor for idle timeout integration
+let globalRetroTrackerMonitor = null;
+
 // Initialize the monitor
 document.addEventListener('DOMContentLoaded', () => {
     const monitor = new RetroTrackerMonitor();
+    globalRetroTrackerMonitor = monitor;
+    
     if (window.location.pathname.endsWith('whosplaying.html')) {
         monitor.initialize();
     } else {
         monitor.initializeBannerOnly();
     }
+    
+    // ✅ Integrate with idle timeout system
+    if (window.suspendRetroTracker) {
+        console.warn('[RetroTracker] suspendRetroTracker already exists, overwriting');
+    }
+    
+    window.suspendRetroTracker = () => {
+        console.log('[RetroTracker] Suspending from idle timeout');
+        if (globalRetroTrackerMonitor) {
+            globalRetroTrackerMonitor.stopMonitoring();
+        }
+    };
+    
+    window.resumeRetroTracker = () => {
+        console.log('[RetroTracker] Resuming from idle timeout');
+        if (globalRetroTrackerMonitor) {
+            globalRetroTrackerMonitor.resumeMonitoring();
+        }
+    };
 });
+
+// ✅ Export for use in other modules
+export { globalRetroTrackerMonitor };

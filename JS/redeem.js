@@ -342,13 +342,35 @@ async function loadUserData(user) {
     }
 }
 
-// Check if user owns a theme
+// Check if user owns a theme (with expiration check)
 function userOwnsTheme(themeId) {
-    // Free themes are always "owned"
-    if (THEMES[themeId]?.price === 0) return true;
+    // Always check inventory first (all themes must be "purchased" to be owned)
+    const ownsTheme = userData.inventory.includes(`theme_${themeId}`);
     
-    // Check inventory
-    return userData.inventory.includes(`theme_${themeId}`);
+    if (!ownsTheme) {
+        return false;
+    }
+    
+    // Check if it's expired (for limited-time themes)
+    if (isThemeExpired(themeId)) {
+        return false;
+    }
+    
+    return true;
+}
+
+// Check if a theme has expired
+function isThemeExpired(themeId) {
+    const THEME_EXPIRATION = {
+        'christmas': new Date('2025-12-31T23:59:59') // Christmas theme expires Dec 31st, 2025
+    };
+    
+    if (!THEME_EXPIRATION[themeId]) {
+        return false; // Theme has no expiration
+    }
+    
+    const now = new Date();
+    return now > THEME_EXPIRATION[themeId];
 }
 
 // Check if user owns a token
@@ -380,8 +402,8 @@ async function purchaseTheme(themeId) {
         return false;
     }
     
-    // Verify user can afford it
-    if (userData.points < theme.price) {
+    // Verify user can afford it (0-cost items are always affordable)
+    if (theme.price > 0 && userData.points < theme.price) {
         showMessage(`Not enough points. You need ${theme.price - userData.points} more points.`, 'error');
         return false;
     }
@@ -389,6 +411,12 @@ async function purchaseTheme(themeId) {
     // Verify user doesn't already own it
     if (userOwnsTheme(themeId)) {
         showMessage(`You already own the ${theme.name} theme`, 'info');
+        return false;
+    }
+    
+    // Check if theme is expired before allowing purchase
+    if (isThemeExpired(themeId)) {
+        showMessage(`The ${theme.name} theme is no longer available`, 'error');
         return false;
     }
     
@@ -454,8 +482,8 @@ async function processPurchase(itemId, item, type) {
         const currentPoints = freshData.points || 0;
         const currentInventory = freshData.inventory || [];
         
-        // Double-check funds and ownership
-        if (currentPoints < item.price) {
+        // Double-check funds and ownership (allow 0-cost purchases)
+        if (item.price > 0 && currentPoints < item.price) {
             showMessage('Insufficient points', 'error');
             return false;
         }
@@ -1152,6 +1180,27 @@ function updateThemeButtons() {
         const theme = THEMES[themeId];
         
         if (!theme) return;
+        
+        // Check if theme is expired
+        const expired = isThemeExpired(themeId);
+        
+        if (expired) {
+            button.textContent = 'Expired';
+            button.classList.add('cannot-afford');
+            button.disabled = true;
+            button.style.opacity = '0.5';
+            button.style.cursor = 'not-allowed';
+            
+            // Add expired message to card
+            const expiredMsg = themeCard.querySelector('.expired-message') || document.createElement('div');
+            expiredMsg.className = 'expired-message';
+            expiredMsg.textContent = 'This limited-time theme has expired';
+            expiredMsg.style.cssText = 'color: #ff6b6b; font-size: 0.85rem; margin-top: 0.5rem; font-style: italic;';
+            if (!themeCard.querySelector('.expired-message')) {
+                themeCard.appendChild(expiredMsg);
+            }
+            return;
+        }
         
         // Reset button styling
         button.disabled = false;
