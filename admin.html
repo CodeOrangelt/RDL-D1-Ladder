@@ -1,0 +1,50 @@
+<!-- Add this modal after the edit-player-modal -->
+
+<!-- Change Username Modal -->
+<div id="change-username-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeChangeUsernameModal()">&times;</span>
+        <h2 id="change-username-modal-title">Change Username</h2>
+        
+        <div class="username-change-info">
+            <div class="info-row">
+                <strong>Current Username:</strong>
+                <span id="change-username-current"></span>
+            </div>
+            <div class="info-row">
+                <strong>Ladder:</strong>
+                <span id="change-username-ladder-display"></span>
+            </div>
+            <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> This will update the username across ALL collections including matches, ELO history, trophies, and ribbons.
+            </div>
+        </div>
+        
+        <form id="change-username-form">
+            <div class="form-group">
+                <label for="change-username-new">New Username*</label>
+                <input 
+                    type="text" 
+                    id="change-username-new" 
+                    required 
+                    minlength="3" 
+                    maxlength="20"
+                    pattern="[a-zA-Z0-9_-]+"
+                    placeholder="Enter new username"
+                    title="Username can only contain letters, numbers, underscores and hyphens (3-20 characters)"
+                >
+                <small>Only letters, numbers, underscores and hyphens (3-20 characters)</small>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" id="save-username-btn" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" id="cancel-username-btn" class="btn btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

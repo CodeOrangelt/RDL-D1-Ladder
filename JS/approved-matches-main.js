@@ -49,29 +49,35 @@ const mutedUsers = [
 
 // --- State for PREVIEW SECTION ---
 const previewState = {
-  currentMode: "D1",
+  currentMode: "D1",  // Can now be "D1", "D2", "D3", or "FFA"
   currentPage: 1,
   matchesPerPage: 5,
-  lastVisible: null, // Firestore DocumentSnapshot for pagination
-  firstVisible: null, // Firestore DocumentSnapshot for pagination
+  lastVisible: null,
+  firstVisible: null,
   isLoading: false,
-  // Filter State
   filterUsername: '',
-  // Enhanced filters
   enhancedFilters: {
     pilots: '',
     levels: '',
     subgames: [],
   },
-  // Jump navigation
   totalPages: 1,
-  hasReachedEnd: false
+  hasReachedEnd: false,
+  // New: Store filtered match IDs for semi-lazy loading
+  filteredMatchIds: null,
+  allMatchesLoaded: false
 };
 
 // --- Cache Helper Functions ---
 function getCacheKey(mode, page, filters) {
-    // Include filters in cache key to store filtered results separately
-    const filterString = `u:${filters.filterUsername || ''}`;
+    // Include all filters in cache key to store filtered results separately
+    const filterParts = [
+        `u:${filters.filterUsername || ''}`,
+        `p:${filters.enhancedFilters?.pilots || ''}`,
+        `l:${filters.enhancedFilters?.levels || ''}`,
+        `s:${filters.enhancedFilters?.subgames?.join(',') || ''}`
+    ];
+    const filterString = filterParts.join('|');
     return `previewCache_${mode}_p${page}_${filterString}`;
 }
 
@@ -105,12 +111,11 @@ function cachePage(key, data) {
 
 function getEloColor(elo) {
   const e = Number(elo);
-  // Simplified approach - use only ELO value
-  if (e >= 1000) return "#50C878"; // Emerald
-  else if (e >= 700) return "#FFD700"; // Gold
-  else if (e >= 500) return "#b9f1fc"; // Silver
-  else if (e >= 200) return "#CD7F32"; // Bronze
-  else return "#808080"; // Unranked/Default
+  if (e >= 1000) return "#50C878";      // Emerald
+  else if (e >= 700) return "#FFD700";  // Gold
+  else if (e >= 500) return "#C0C0C0";  // Silver
+  else if (e >= 200) return "#CD7F32";  // Bronze
+  else return "#DC143C";                 // Unranked (Crimson)
 }
 
 function formatDate(timestamp, includeTime = false) {
@@ -154,11 +159,13 @@ export function updatePreviewLadderModeUI() {
     const d1Button = document.getElementById('preview-d1-button');
     const d2Button = document.getElementById('preview-d2-button');
     const d3Button = document.getElementById('preview-d3-button');
+    const ffaButton = document.getElementById('preview-ffa-button');
     
     if (ladderModeSpan) ladderModeSpan.textContent = previewState.currentMode;
     if (d1Button) d1Button.classList.toggle('active', previewState.currentMode === 'D1');
     if (d2Button) d2Button.classList.toggle('active', previewState.currentMode === 'D2');
     if (d3Button) d3Button.classList.toggle('active', previewState.currentMode === 'D3');
+    if (ffaButton) ffaButton.classList.toggle('active', previewState.currentMode === 'FFA');
 }
 
 function updatePreviewPaginationControls(hasNextPage) {
@@ -202,12 +209,28 @@ function setPreviewLoadingState(isLoading) {
     if (clearFilterBtn) clearFilterBtn.disabled = isLoading;
 }
 
+function applyClientFiltersForFFA(docsData) {
+    if (!previewState.filterUsername) {
+        return docsData; // No filter applied
+    }
+    const searchTerm = previewState.filterUsername.toLowerCase();
+    return docsData.filter(matchData => {
+        // For FFA, check if any participant matches the search term
+        const participants = matchData.participants || [];
+        return participants.some(p => 
+            (p.username || '').toLowerCase().includes(searchTerm)
+        );
+    });
+}
+
+// ✅ ADD THIS MISSING FUNCTION for D1/D2/D3 matches
 function applyClientFilters(docsData) {
     if (!previewState.filterUsername) {
         return docsData; // No filter applied
     }
     const searchTerm = previewState.filterUsername.toLowerCase();
     return docsData.filter(matchData => {
+        // For regular matches, check if winner or loser matches the search term
         const winner = (matchData.winnerUsername || '').toLowerCase();
         const loser = (matchData.loserUsername || '').toLowerCase();
         return winner.includes(searchTerm) || loser.includes(searchTerm);
@@ -215,7 +238,7 @@ function applyClientFilters(docsData) {
 }
 
 // Add enhanced filter functions after the existing applyClientFilters function
-function applyEnhancedClientFilters(docsData) {
+function applyEnhancedClientFilters(docsData, isFFA = false) {
     if (!hasEnhancedFilters()) {
         return docsData;
     }
@@ -224,10 +247,21 @@ function applyEnhancedClientFilters(docsData) {
         // Pilots filter
         if (previewState.enhancedFilters.pilots) {
             const pilotsSearch = previewState.enhancedFilters.pilots.toLowerCase();
-            const winner = (matchData.winnerUsername || '').toLowerCase();
-            const loser = (matchData.loserUsername || '').toLowerCase();
-            if (!winner.includes(pilotsSearch) && !loser.includes(pilotsSearch)) {
-                return false;
+            
+            if (isFFA) {
+                // For FFA matches, check all participants
+                const participants = matchData.participants || [];
+                const hasMatch = participants.some(p => 
+                    (p.username || '').toLowerCase().includes(pilotsSearch)
+                );
+                if (!hasMatch) return false;
+            } else {
+                // For regular matches, check winner and loser
+                const winner = (matchData.winnerUsername || '').toLowerCase();
+                const loser = (matchData.loserUsername || '').toLowerCase();
+                if (!winner.includes(pilotsSearch) && !loser.includes(pilotsSearch)) {
+                    return false;
+                }
             }
         }
         
@@ -323,18 +357,31 @@ function jumpToPage(direction) {
 
 export async function loadRecentMatchesPreview(direction = 'current') {
     const container = document.getElementById('recent-matches-preview');
-    const template = document.getElementById('match-card-template');
+    const template = previewState.currentMode === 'FFA' 
+        ? document.getElementById('ffa-match-card-template')
+        : document.getElementById('match-card-template');
+    
     if (previewState.isLoading || !container || !template) return;
 
     // Clear the page cache when filtering or changing modes
     if (direction === 'current') {
         console.log("Clearing cache for refresh/reset");
-        // Optional: clear session storage for this mode to force fresh data
         Object.keys(sessionStorage).forEach(key => {
             if (key.includes(`previewCache_${previewState.currentMode}`)) {
                 sessionStorage.removeItem(key);
             }
         });
+        // Reset filtered state when starting fresh
+        previewState.filteredMatchIds = null;
+        previewState.allMatchesLoaded = false;
+    }
+    
+    // Check if we have active filters
+    const hasActiveFilters = previewState.filterUsername || hasEnhancedFilters();
+    
+    // If filters are active and we haven't loaded all matches yet, do a full scan
+    if (hasActiveFilters && !previewState.allMatchesLoaded) {
+        await loadAndFilterAllMatches();
     }
     
     // Calculate target page number based on navigation direction
@@ -344,25 +391,23 @@ export async function loadRecentMatchesPreview(direction = 'current') {
     } else if (direction === 'prev') {
         targetPage--;
     } else if (direction === 'current') {
-        targetPage = 1; // Reset to page 1 for mode change or filter
-        // Reset cursors for fresh start
+        targetPage = 1;
         previewState.firstVisible = null;
         previewState.lastVisible = null;
     }
     
-    // Ensure page is never less than 1
     if (targetPage < 1) targetPage = 1;
     
-    // Before checking cache or fetching, update the page number in state
-    // This ensures UI is consistent even during loading
     const previousPage = previewState.currentPage;
     previewState.currentPage = targetPage;
     
-    // Update UI to reflect the new page number immediately
-    updatePreviewPaginationControls(true); // Temporarily assume there's a next page
+    updatePreviewPaginationControls(true);
     
-    // Try loading from cache (except on explicit refresh with 'current')
-    const currentFilters = { filterUsername: previewState.filterUsername };
+    // Try loading from cache
+    const currentFilters = { 
+        filterUsername: previewState.filterUsername,
+        enhancedFilters: previewState.enhancedFilters
+    };
     const cacheKey = getCacheKey(previewState.currentMode, targetPage, currentFilters);
     const cachedData = (direction !== 'current') ? getCachedPage(cacheKey) : null;
     
@@ -370,158 +415,579 @@ export async function loadRecentMatchesPreview(direction = 'current') {
         console.log(`Rendering page ${targetPage} from cache`);
         setPreviewLoadingState(true);
         
-        // Render the cached data
-        renderMatchCards(cachedData.docsData);
+        if (previewState.currentMode === 'FFA') {
+            renderFFAMatchCards(cachedData.docsData);
+        } else {
+            renderMatchCards(cachedData.docsData);
+        }
         updatePreviewPaginationControls(cachedData.hasNextPage);
         
         setPreviewLoadingState(false);
         return;
     }
     
-    // Cache miss - need to fetch from Firestore
     console.log(`Cache miss for page ${targetPage}, fetching from Firestore`);
     setPreviewLoadingState(true);
     container.innerHTML = '<div class="matches-loading">Loading recent matches...</div>';
     
-    const collectionName = 
-        previewState.currentMode === "D1" ? "approvedMatches" : 
-        previewState.currentMode === "D2" ? "approvedMatchesD2" : "approvedMatchesD3";
+    // If we have filtered IDs, use them; otherwise load normally
+    if (hasActiveFilters && previewState.filteredMatchIds) {
+        await loadFilteredPage(targetPage, previousPage);
+    } else {
+        await loadUnfilteredPage(targetPage, previousPage);
+    }
+}
+
+// Load and filter ALL matches from the database (lightweight scan)
+async function loadAndFilterAllMatches() {
+    const container = document.getElementById('recent-matches-preview');
+    container.innerHTML = '<div class="matches-loading">Scanning all matches for filters... This may take a moment.</div>';
     
-    const orderField = 
-        previewState.currentMode === "D1" ? "createdAt" : "approvedAt";
+    console.log("Loading all matches for filtering...");
+    
+    // Determine collection based on mode
+    let collectionName, orderField;
+    
+    if (previewState.currentMode === 'FFA') {
+        collectionName = 'approvedMatchesFFA';
+        orderField = 'approvedAt';
+    } else {
+        collectionName = previewState.currentMode === "D1" ? "approvedMatches" : 
+                         previewState.currentMode === "D2" ? "approvedMatchesD2" : "approvedMatchesD3";
+        orderField = previewState.currentMode === "D1" ? "createdAt" : "approvedAt";
+    }
+    
+    try {
+        const matchesRef = collection(window.db, collectionName);
+        const q = query(matchesRef, orderBy(orderField, "desc"));
+        const snapshot = await getDocs(q);
+        
+        console.log(`Loaded ${snapshot.docs.length} total matches`);
+        
+        // Extract lightweight data for filtering
+        const allMatches = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        // Apply filters
+        let filteredMatches = previewState.currentMode === 'FFA' 
+            ? applyClientFiltersForFFA(allMatches)
+            : applyClientFilters(allMatches);
+        
+        filteredMatches = applyEnhancedClientFilters(filteredMatches, previewState.currentMode === 'FFA');
+        
+        console.log(`Filtered down to ${filteredMatches.length} matches`);
+        
+        // Store the filtered match data (not just IDs, but full data for rendering)
+        previewState.filteredMatchIds = filteredMatches;
+        previewState.allMatchesLoaded = true;
+        previewState.totalPages = Math.ceil(filteredMatches.length / previewState.matchesPerPage);
+        
+        console.log(`Total pages after filtering: ${previewState.totalPages}`);
+        
+    } catch (error) {
+        console.error("Error loading all matches:", error);
+        container.innerHTML = `<div class="matches-loading" style="color: red;">Error scanning matches: ${error.message}</div>`;
+        throw error;
+    }
+}
+
+// Load a specific page from filtered results
+async function loadFilteredPage(targetPage, previousPage) {
+    const container = document.getElementById('recent-matches-preview');
+    
+    if (!previewState.filteredMatchIds || previewState.filteredMatchIds.length === 0) {
+        const filterInfo = [];
+        if (previewState.filterUsername) filterInfo.push(`Username: "${previewState.filterUsername}"`);
+        if (previewState.enhancedFilters.pilots) filterInfo.push(`Pilots: "${previewState.enhancedFilters.pilots}"`);
+        if (previewState.enhancedFilters.levels) filterInfo.push(`Levels: "${previewState.enhancedFilters.levels}"`);
+        if (previewState.enhancedFilters.subgames.length > 0) filterInfo.push(`Subgames: ${previewState.enhancedFilters.subgames.join(', ')}`);
+        container.innerHTML = `<div class="matches-loading">No matches found matching filters: ${filterInfo.join(' | ')}</div>`;
+        setPreviewLoadingState(false);
+        return;
+    }
+    
+    // Calculate pagination
+    const startIdx = (targetPage - 1) * previewState.matchesPerPage;
+    const endIdx = startIdx + previewState.matchesPerPage;
+    const pageMatches = previewState.filteredMatchIds.slice(startIdx, endIdx);
+    
+    if (pageMatches.length === 0) {
+        console.log("No results on this page");
+        previewState.currentPage = previousPage;
+        updatePreviewPaginationControls(false);
+        container.innerHTML = '<div class="matches-loading">No more matches to display.</div>';
+        setPreviewLoadingState(false);
+        return;
+    }
+    
+    console.log(`Rendering page ${targetPage} with ${pageMatches.length} matches from filtered results`);
+    
+    // Render the page
+    if (previewState.currentMode === 'FFA') {
+        renderFFAMatchCards(pageMatches);
+    } else {
+        renderMatchCards(pageMatches);
+    }
+    
+    const hasNextPage = endIdx < previewState.filteredMatchIds.length;
+    updatePreviewPaginationControls(hasNextPage);
+    
+    // Cache the page
+    const currentFilters = { 
+        filterUsername: previewState.filterUsername,
+        enhancedFilters: previewState.enhancedFilters
+    };
+    const pageDataToCache = {
+        docsData: pageMatches,
+        hasNextPage: hasNextPage
+    };
+    cachePage(getCacheKey(previewState.currentMode, targetPage, currentFilters), pageDataToCache);
+    
+    setPreviewLoadingState(false);
+}
+
+// Load unfiltered page (original behavior)
+async function loadUnfilteredPage(targetPage, previousPage) {
+    const container = document.getElementById('recent-matches-preview');
+    
+    // Determine collection based on mode
+    let collectionName, orderField;
+    
+    if (previewState.currentMode === 'FFA') {
+        collectionName = 'approvedMatchesFFA';
+        orderField = 'approvedAt';
+    } else {
+        collectionName = previewState.currentMode === "D1" ? "approvedMatches" : 
+                         previewState.currentMode === "D2" ? "approvedMatchesD2" : "approvedMatchesD3";
+        orderField = previewState.currentMode === "D1" ? "createdAt" : "approvedAt";
+    }
     
     try {
         const matchesRef = collection(window.db, collectionName);
         let queryConstraints = [orderBy(orderField, "desc")];
         
-        // Special case for page 1 - always fetch from beginning
-        if (targetPage === 1) {
-            console.log("Loading first page from Firestore");
-            queryConstraints.push(limit(previewState.matchesPerPage));
-        }
-        // For next page navigation with valid lastVisible cursor
-        else if (direction === 'next' && previewState.lastVisible) {
-            console.log("Loading next page using cursor");
-            queryConstraints.push(startAfter(previewState.lastVisible));
-            queryConstraints.push(limit(previewState.matchesPerPage));
-        }
-        // For other cases (e.g., direct navigation, prev without cache)
-        // We need to rebuild the pagination chain
-        else {
-            console.log("No valid cursor, fetching from beginning and skipping pages");
-            // This is the key part: reset to page 1 and fetch enough docs to reach target page
-            // Since Firestore doesn't have OFFSET, we'll need to fetch (targetPage * pageSize) 
-            // docs and take the last pageSize
-            
-            // For moderate pagination (small pages), we can fetch all at once
-            const docsToFetch = targetPage * previewState.matchesPerPage;
-            queryConstraints.push(limit(docsToFetch));
-            
-            // After fetch, we'll need to slice to get just the current page
-            // This is handled below
-        }
+        // Simple pagination for unfiltered results
+        const startIdx = (targetPage - 1) * previewState.matchesPerPage;
+        queryConstraints.push(limit(previewState.matchesPerPage + startIdx + 1));
         
-        // Execute the query
         const q = query(matchesRef, ...queryConstraints);
         const snapshot = await getDocs(q);
         let docs = snapshot.docs;
         
-        // If we're fetching multiple pages worth of data, extract just the target page
-        if (targetPage > 1 && direction !== 'next') {
-            // Calculate the start index for the current page
-            const startIdx = (targetPage - 1) * previewState.matchesPerPage;
-            // Slice to get just the current page's docs
-            // If not enough docs, this will return what's available
-            docs = docs.slice(startIdx, startIdx + previewState.matchesPerPage);
-        }
+        // Slice to get the specific page
+        docs = docs.slice(startIdx, startIdx + previewState.matchesPerPage);
         
-        // If we got no results for this page
         if (docs.length === 0) {
             console.log("No results found for this page");
-            // If we were trying to go forward but there's nothing there,
-            // go back to the previous page
-            if (direction === 'next') {
-                previewState.currentPage = previousPage;
-                updatePreviewPaginationControls(false); // No next page
-            }
-            container.innerHTML = `<div class="matches-loading">No more matches to display${previewState.filterUsername ? ' matching filters' : ''}.</div>`;
+            previewState.currentPage = previousPage;
+            updatePreviewPaginationControls(false);
+            container.innerHTML = '<div class="matches-loading">No more matches to display.</div>';
             setPreviewLoadingState(false);
             return;
         }
-
-        // Update our cursors for next/prev navigation
-        previewState.firstVisible = docs[0];
-        previewState.lastVisible = docs[docs.length - 1];
         
-        // Extract data for rendering
         const fetchedDocsData = docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Check if there's another page after this one
-        let hasNextPage = false;
-        if (docs.length === previewState.matchesPerPage) { // If we got a full page
-            const nextCheckQ = query(
-                matchesRef,
-                orderBy(orderField, "desc"),
-                startAfter(previewState.lastVisible),
-                limit(1)
-            );
-            const nextCheckSnap = await getDocs(nextCheckQ);
-            hasNextPage = !nextCheckSnap.empty;
+        // Check if there's a next page
+        const hasNextPage = snapshot.docs.length > startIdx + previewState.matchesPerPage;
+        
+        // Render
+        if (previewState.currentMode === 'FFA') {
+            renderFFAMatchCards(fetchedDocsData);
+        } else {
+            renderMatchCards(fetchedDocsData);
         }
         
-        // Apply any client-side filtering
-        const filteredDocsData = applyClientFilters(fetchedDocsData);
+        updatePreviewPaginationControls(hasNextPage);
         
-        // Cache the results
+        // Cache
+        const currentFilters = { 
+            filterUsername: previewState.filterUsername,
+            enhancedFilters: previewState.enhancedFilters
+        };
         const pageDataToCache = {
             docsData: fetchedDocsData,
             hasNextPage: hasNextPage
         };
-        cachePage(getCacheKey(previewState.currentMode, previewState.currentPage, currentFilters), pageDataToCache);
+        cachePage(getCacheKey(previewState.currentMode, targetPage, currentFilters), pageDataToCache);
         
-        // Also cache adjacent pages for smoother navigation
-        if (targetPage > 1 && direction !== 'next') {
-            // If we fetched multiple pages, we can cache the preceding pages too
-            for (let p = 1; p < targetPage; p++) {
-                const pageStartIdx = (p - 1) * previewState.matchesPerPage;
-                const pageEndIdx = pageStartIdx + previewState.matchesPerPage;
-                const pageSlice = snapshot.docs.slice(pageStartIdx, pageEndIdx);
-                
-                if (pageSlice.length > 0) {
-                    const pageData = pageSlice.map(doc => ({ id: doc.id, ...doc.data() }));
-                    const pageHasNext = true; // We know there's a next page since we're viewing a later page
-                    cachePage(getCacheKey(previewState.currentMode, p, currentFilters), {
-                        docsData: pageData,
-                        hasNextPage: pageHasNext
-                    });
-                    console.log(`Cached intermediary page ${p}`);
-                }
-            }
-        }
-        
-        // Render the filtered data
-        if (filteredDocsData.length === 0 && previewState.filterUsername) {
-            container.innerHTML = `<div class="matches-loading">No matches found matching filter: "${previewState.filterUsername}"</div>`;
-        } else {
-            renderMatchCards(filteredDocsData);
-        }
-        
-        updatePreviewPaginationControls(hasNextPage);
+        setPreviewLoadingState(false);
         
     } catch (error) {
         console.error(`Error fetching ${previewState.currentMode} matches:`, error);
         container.innerHTML = `<div class="matches-loading" style="color: red;">Error loading matches: ${error.message}</div>`;
         updatePreviewPaginationControls(false);
-        
-        // Revert to previous page on error
         previewState.currentPage = previousPage;
-        
-    } finally {
         setPreviewLoadingState(false);
     }
 }
 
-// Update the renderMatchCards function to use enhanced filters
+/**
+ * Render FFA match cards
+ */
+async function renderFFAMatchCards(docsData) {
+    const container = document.getElementById('recent-matches-preview');
+    const template = document.getElementById('ffa-match-card-template');
+    
+    if (!container || !template) {
+        console.error('FFA template or container not found');
+        return;
+    }
+
+    if (!container.querySelector('.matches-loading[style*="color: red"]')) {
+        container.innerHTML = '';
+    }
+
+    if (!docsData || docsData.length === 0) {
+        if (!container.querySelector('.matches-loading[style*="color: red"]')) {
+            container.innerHTML = `<div class="matches-loading">No FFA matches found.</div>`;
+        }
+        return;
+    }
+
+    // Fetch comments for all matches
+    const allCommentsPromises = docsData.map(match => getAllCommentsForMatchFFA(match.id));
+    let allCommentsResults = [];
+
+    try {
+        allCommentsResults = await Promise.all(allCommentsPromises);
+    } catch (error) {
+        console.error("Error fetching FFA comments batch:", error);
+        allCommentsResults = docsData.map(() => []);
+    }
+
+    const commentsMap = {};
+    allCommentsResults.forEach((comments, index) => {
+        commentsMap[docsData[index].id] = comments || [];
+    });
+
+    docsData.forEach(match => {
+        const cardClone = template.content.cloneNode(true);
+        const wrapper = cardClone.querySelector('.match-display-wrapper');
+        const card = cardClone.querySelector('.match-card.ffa-card');
+        const cardTemplate = document.getElementById('ffa-match-card-template');
+
+                // Add game version data attribute for border color
+        const gameVersion = match.gameVersion || 'D1';
+        card.setAttribute('data-game-version', gameVersion);
+
+        // Populate header
+        const mapEl = card.querySelector('.match-map');
+        if (mapEl) mapEl.textContent = match.mapPlayed || 'Unknown Map';
+        
+        const dateEl = card.querySelector('.match-date');
+        if (dateEl) dateEl.textContent = formatDate(match.approvedAt || match.createdAt);
+        
+        // Game version badge (D1 or D2)
+        const gameVersionBadge = card.querySelector('.ffa-game-version-badge');
+        if (gameVersionBadge) {
+            const gameVersion = match.gameVersion || 'D1';
+            gameVersionBadge.textContent = gameVersion;
+            gameVersionBadge.classList.add(gameVersion.toLowerCase());
+        }
+        
+        // Player count
+        const playerCountEl = card.querySelector('.player-count-number');
+        const participants = match.participants || [];
+        if (playerCountEl) {
+            playerCountEl.textContent = participants.length;
+        }
+
+        // Populate placements
+        const placementsContainer = card.querySelector('.ffa-placements');
+        if (placementsContainer && participants.length > 0) {
+            placementsContainer.innerHTML = '';
+            
+            // Sort participants by placement
+            const sortedParticipants = [...participants].sort((a, b) => a.placement - b.placement);
+            
+            sortedParticipants.forEach(participant => {
+                const row = createFFAPlacementRow(participant, match);
+                placementsContainer.appendChild(row);
+            });
+        }
+
+        // Match notes
+        const notesEl = card.querySelector('.ffa-match-notes');
+        if (notesEl) {
+            if (match.matchNotes) {
+                notesEl.textContent = match.matchNotes;
+            } else {
+                notesEl.style.display = 'none';
+            }
+        }
+
+                const eloTooltip = document.createElement('div');
+        eloTooltip.className = 'elo-info-tooltip';
+        eloTooltip.innerHTML = `<span class="elo-info-icon">?</span>`;
+        eloTooltip.setAttribute('data-tooltip', getFFAEloExplanation(match));
+        card.appendChild(eloTooltip);
+        
+        wrapper.appendChild(card);
+        container.appendChild(wrapper);
+
+         // ✅ UPDATED: Handle community comments using unified function
+        const commentsSection = wrapper?.querySelector('.community-comments-section');
+        if (commentsSection) {
+            const commentsContainer = commentsSection.querySelector('.comments-container');
+            const noCommentsMsg = commentsContainer?.querySelector('.no-comments-message');
+            const addCommentBtn = commentsSection.querySelector('.add-comment-btn');
+
+            if (commentsContainer) {
+                while (commentsContainer.firstChild && commentsContainer.firstChild !== noCommentsMsg) {
+                    commentsContainer.removeChild(commentsContainer.firstChild);
+                }
+
+                // ✅ USE UNIFIED FUNCTION: showAddCommentPopup now handles FFA automatically
+                if (addCommentBtn) {
+                    addCommentBtn.addEventListener('click', () => {
+                        showAddCommentPopup(match.id);
+                    });
+                }
+
+                const matchComments = commentsMap[match.id] || [];
+
+                if (matchComments.length > 0) {
+                    if (noCommentsMsg) noCommentsMsg.style.display = 'none';
+                    
+                    const truncateToWords = (text, maxWords) => {
+                        const words = text.split(' ');
+                        if (words.length <= maxWords) return text;
+                        return words.slice(0, maxWords).join(' ') + '...';
+                    };
+                    
+                    matchComments.forEach(comment => {
+                        const commentEl = document.createElement('div');
+                        
+                        if (comment.type === 'demo') {
+                            commentEl.className = 'demo-link';
+                            commentEl.innerHTML = `
+                                <a href="${comment.demoLink}" target="_blank" class="play-icon">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                                    </svg>
+                                </a>
+                                <div class="demo-info">
+                                    <div class="demo-author">Demo from ${comment.username}</div>
+                                    <div class="demo-description">${comment.description || 'No description'}</div>
+                                </div>
+                            `;
+                        } else {
+                            commentEl.className = 'comment-item';
+                            const isMuted = isUsernameMuted(comment.username, comment.timestamp);
+                            const displayText = isMuted ? "Muted." : truncateToWords(comment.text || "", 15);
+                            const username = comment.username || 'Anonymous';
+                            
+                            const currentUser = window.auth?.currentUser;
+                            const isOwnComment = currentUser && comment.userId === currentUser.uid;
+                            
+                            let deleteButton = '';
+                            if (isOwnComment) {
+                                deleteButton = '<button class="delete-comment-btn" aria-label="Delete comment">×</button>';
+                            }
+                            
+                            commentEl.innerHTML = `${deleteButton}<strong>${username}:</strong> "${displayText}"`;
+                            
+                            if (isOwnComment) {
+                                const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+                                if (deleteBtn) {
+                                    deleteBtn.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        deleteCommentFFA(comment.id, commentEl);
+                                    });
+                                }
+                            }
+                            
+                            if (!isMuted) {
+                                commentEl.addEventListener('click', () => {
+                                    showFullCommentLightbox(comment);
+                                });
+                            } else {
+                                commentEl.style.cursor = 'default';
+                            }
+                        }
+                        
+                        commentsContainer.insertBefore(commentEl, commentsContainer.firstChild);
+                    });
+                } else {
+                    if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+                }
+            }
+        }
+
+        container.appendChild(cardClone);
+    });
+}
+
+function createFFAPlacementRow(participant, match) {
+    const row = document.createElement('div');
+    row.className = 'ffa-placement-row';
+    
+    // Rating change display
+    let ratingChangeHtml = '';
+    const displayChange = participant.eloChange || 
+        (participant.newDisplayRating - participant.previousDisplayRating) || 
+        (participant.newElo - participant.oldElo) || 0;
+    
+    if (displayChange !== 0) {
+        const changeClass = displayChange >= 0 ? 'positive' : 'negative';
+        const changeSign = displayChange >= 0 ? '+' : '';
+        ratingChangeHtml = `<span class="ffa-elo-change ${changeClass}">${changeSign}${Math.round(displayChange)}</span>`;
+    }
+    
+    // Current display rating
+    const currentRating = participant.newDisplayRating || participant.newElo || participant.oldElo || 1000;
+    
+    // Points earned
+    const pointsEarned = participant.pointsEarned || getFFAPointsForPlacement(participant.placement);
+    
+    row.innerHTML = `
+        <span class="ffa-placement">${participant.placement}.</span>
+        <a href="profile.html?username=${encodeURIComponent(participant.username)}&ladder=ffa" 
+           class="ffa-username">
+            ${participant.username || 'Unknown'}
+        </a>
+        <span class="ffa-rating">
+            ${Math.round(currentRating)}
+            ${ratingChangeHtml}
+        </span>
+        <span class="ffa-score">Score: ${participant.score || 0}</span>
+        <span class="ffa-points">+${pointsEarned}pts</span>
+    `;
+    
+    return row;
+}
+
+function getFFAEloExplanation(match) {
+    const participants = match.participants || match.players || [];
+    const isTrueSkill = participants.some(p => p.newMu !== undefined);
+    
+    if (isTrueSkill) {
+        let lines = [
+            'TrueSkill Rating System:',
+            '',
+            'Each player\'s skill is modeled as:',
+            '  μ (mu) = estimated skill level',
+            '  σ (sigma) = uncertainty in estimate',
+            '',
+            'Display Rating = 1000 + (μ - 3σ) × 40',
+            '',
+            'Player Updates:'
+        ];
+        
+        const sorted = [...participants].sort((a, b) => a.placement - b.placement);
+        sorted.forEach(p => {
+            const muChange = p.muChange ? (p.muChange > 0 ? '+' : '') + p.muChange.toFixed(2) : '?';
+            const sigmaChange = p.sigmaChange ? p.sigmaChange.toFixed(2) : '?';
+            const displayChange = p.eloChange || (p.newElo - p.oldElo) || 0;
+            const sign = displayChange >= 0 ? '+' : '';
+            
+            lines.push(`  ${p.placement}. ${p.username}: ${sign}${displayChange} (Δμ:${muChange}, Δσ:${sigmaChange})`);
+        });
+        
+        return lines.join('\n');
+    }
+    
+    // Legacy ELO explanation
+    return 'ELO Rating System\n\nEach match affects all players based on their finishing position relative to others.';
+}
+
+/**
+ * Get FFA points for placement (matches ladderalgorithm-ffa.js)
+ */
+function getFFAPointsForPlacement(placement) {
+    const pointsConfig = {
+        1: 100,
+        2: 75,
+        3: 55,
+        4: 40,
+        5: 30,
+        6: 20,
+        7: 15,
+        8: 10
+    };
+    return pointsConfig[placement] || 5;
+}
+
+/**
+ * Fetch comments for FFA matches
+ */
+async function getAllCommentsForMatchFFA(matchId) {
+    if (!matchId) return [];
+    
+    try {
+        const commentsRef = collection(window.db, "matchComments");
+        const q = query(commentsRef, 
+                        where("matchId", "==", matchId),
+                        orderBy("timestamp", "desc"));
+        
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            return [];
+        }
+        
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+    } catch (error) {
+        console.error("Error fetching FFA comments:", error);
+        return [];
+    }
+}
+
+/**
+ * Delete FFA comment
+ */
+async function deleteCommentFFA(commentId, commentElement) {
+    const currentUser = window.auth?.currentUser;
+    if (!currentUser) {
+        alert("You need to be signed in to delete comments");
+        return;
+    }
+    
+    if (!confirm("Are you sure you want to delete this comment?")) {
+        return;
+    }
+    
+    try {
+        const commentRef = doc(window.db, "matchComments", commentId);
+        
+        const commentSnap = await getDoc(commentRef);
+        if (!commentSnap.exists()) {
+            alert("Comment not found.");
+            return;
+        }
+        
+        const commentData = commentSnap.data();
+        if (commentData.userId !== currentUser.uid) {
+            alert("You can only delete your own comments");
+            return;
+        }
+        
+        await deleteDoc(commentRef);
+        
+        if (commentElement && commentElement.parentNode) {
+            commentElement.parentNode.removeChild(commentElement);
+            
+            const commentsContainer = commentElement.closest('.comments-container');
+            if (commentsContainer && !commentsContainer.querySelector('.comment-item')) {
+                const noCommentsMsg = commentsContainer.querySelector('.no-comments-message');
+                if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+            }
+        }
+        
+        console.log("FFA comment deleted successfully");
+    } catch (error) {
+        console.error("Error deleting FFA comment:", error);
+        alert(`Failed to delete comment: ${error.message}`);
+    }
+}
+
+// --- Update the renderMatchCards function to use enhanced filters
 async function renderMatchCards(docsData) {
     const container = document.getElementById('recent-matches-preview');
     const template = document.getElementById('match-card-template');
@@ -591,7 +1057,7 @@ async function renderMatchCards(docsData) {
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.textContent = match.loserUsername || 'Unknown';
-        loserNameEl.style.color = getEloColor(match.losersOldElo || 0);
+        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0);
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
         
         // Add loser suicides
@@ -840,7 +1306,7 @@ function getSubgameClass(subgameType) {
         'Rematch': 'rematch',
         'Disorientation': 'disorientation',
         'Ratting': 'ratting',
-        'Altered Powerups': 'altered-powerups',  // Fixed: no hyphen
+        'Altered Powerups': 'altered-power-ups',  // Fixed: no hyphen
         'Mega Match': 'mega-match', 
         'Dogfight': 'dogfight',          
         'Gauss and Mercs': 'gauss-and-mercs',  
@@ -1374,12 +1840,11 @@ async function submitCommentOrDemo(event) {
 
 function getEloRankClass(elo) {
   const e = Number(elo);
-  // Simplified approach - use only ELO value
-  if (e >= 1000) return "emerald";
-  else if (e >= 700) return "gold";
-  else if (e >= 500) return "silver";
-  else if (e >= 200) return "bronze";
-  else return "unranked";
+  if (e >= 1000) return "emerald";      // 1000+
+  else if (e >= 700) return "gold";     // 700-999
+  else if (e >= 500) return "silver";   // 500-699
+  else if (e >= 200) return "bronze";   // 200-499
+  else return "unranked";                // 0-199
 }
 
 function showPreviewCommentPopup(commentText, username, usernameColor = "#fff") {
@@ -1528,11 +1993,12 @@ export function setupPreviewEventListeners() {
     const d1Button = document.getElementById('preview-d1-button');
     const d2Button = document.getElementById('preview-d2-button');
     const d3Button = document.getElementById('preview-d3-button');
+    const ffaButton = document.getElementById('preview-ffa-button');
     const filterToggleBtn = document.getElementById('filter-toggle-button');
     const enhancedFilterSection = document.getElementById('enhanced-filter-section');
     
-    if (!prevButton || !nextButton || !d1Button || !d2Button || !d3Button || !filterToggleBtn || !enhancedFilterSection) {
-        console.warn("Preview UI or Filter elements not found, cannot attach listeners.");
+    if (!prevButton || !nextButton || !d1Button || !d2Button || !d3Button) {
+        console.warn("Preview UI elements not found, cannot attach listeners.");
         return;
     }
 
@@ -1564,6 +2030,17 @@ export function setupPreviewEventListeners() {
             loadRecentMatchesPreview('current');
         }
     });
+    
+    // FFA Button listener
+    if (ffaButton) {
+        ffaButton.addEventListener('click', () => {
+            if (previewState.currentMode !== 'FFA' && !previewState.isLoading) {
+                previewState.currentMode = 'FFA';
+                updatePreviewLadderModeUI();
+                loadRecentMatchesPreview('current');
+            }
+        });
+    }
 
     // Enhanced filter toggle
     if (filterToggleBtn && enhancedFilterSection) {
@@ -1580,17 +2057,14 @@ export function setupPreviewEventListeners() {
     
     if (applyEnhancedBtn) {
         applyEnhancedBtn.addEventListener('click', () => {
-            // Get filter values
             previewState.enhancedFilters.pilots = document.getElementById('filter-pilots').value.trim();
             previewState.enhancedFilters.levels = document.getElementById('filter-levels').value.trim();
             
-            // Get selected subgames
             const subgamesSelect = document.getElementById('filter-subgames');
             previewState.enhancedFilters.subgames = Array.from(subgamesSelect.selectedOptions)
                 .map(option => option.value)
                 .filter(value => value !== '');
             
-            // Apply filters and reload
             loadRecentMatchesPreview('current');
         });
     }
@@ -1619,13 +2093,12 @@ export function setupPreviewEventListeners() {
         });
     }
 
-    // Existing comment popup listeners...
+    // Comment popup listeners
     const closeBtn = document.getElementById('closeCommentPopupPreview');
     const overlay = document.getElementById('commentOverlayPreview');
     if (closeBtn) closeBtn.addEventListener('click', closePreviewCommentPopup);
     if (overlay) overlay.addEventListener('click', closePreviewCommentPopup);
 
-    // Add comment popup event listeners
     const closeAddCommentBtn = document.getElementById('closeAddCommentPopup');
     const addCommentOverlay = document.getElementById('commentAddOverlay');
     const addCommentForm = document.getElementById('addCommentForm');
@@ -1634,7 +2107,6 @@ export function setupPreviewEventListeners() {
     if (addCommentOverlay) addCommentOverlay.addEventListener('click', closeAddCommentPopup);
     if (addCommentForm) addCommentForm.addEventListener('submit', submitComment);
 
-    // Use the parameterized version of setupWordCounter instead of the duplicate one
     const commentText = document.getElementById('commentText');
     const wordCount = document.getElementById('wordCount');
     if (commentText && wordCount) {
@@ -1646,5 +2118,3 @@ export function setupPreviewEventListeners() {
 window.showAddCommentPopup = showAddCommentPopup;
 window.closeAddCommentPopup = closeAddCommentPopup;
 window.submitComment = submitComment;
-
-// --- END: Preview Section Functions ---

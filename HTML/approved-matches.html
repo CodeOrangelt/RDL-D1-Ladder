@@ -25,13 +25,13 @@
 </head>
 <body>
   <div id="nav-placeholder"></div>
-  <br><br>
   <div class="container">
     <div class="recent-matches-section">
         <div class="action-bar preview-action-bar">
             <button id="preview-d1-button" class="toggle-button active">D1</button>
             <button id="preview-d2-button" class="toggle-button">D2</button>
             <button id="preview-d3-button" class="toggle-button">D3</button>
+            <button id="preview-ffa-button" class="toggle-button ffa-toggle">FFA</button>
             <button id="filter-toggle-button" class="toggle-button filter-toggle">
                 <i class="fas fa-filter"></i> Filters
             </button>
@@ -153,6 +153,40 @@
                         <div class="no-comments-message">No comments yet</div>
                     </div>
                     <button class="add-comment-btn">Add Comment</button>
+                </div>
+            </div>
+        </template>
+        
+        <!-- FFA Match Card Template -->
+        <template id="ffa-match-card-template">
+            <div class="match-display-wrapper">
+                <div class="match-card ffa-card">
+                    <!-- Wrap main content -->
+                    <div class="ffa-match-content">
+                        <div class="match-header">
+                            <div class="match-info">
+                                <div class="match-map">Map Name</div>
+                                <div class="match-date">Date</div>
+                                <span class="ffa-game-version-badge">D1</span>
+                            </div>
+                            <div class="player-count">
+                                <span class="player-count-number">0</span> Players
+                            </div>
+                        </div>
+                        
+                        <div class="ffa-placements">
+                            <!-- Placement rows go here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Comments section on the right -->
+                    <div class="community-comments-section">
+                        <h4>Community Comments</h4>
+                        <div class="comments-container">
+                            <div class="no-comments-message">No comments yet</div>
+                        </div>
+                        <button class="add-comment-btn">Add Comment</button>
+                    </div>
                 </div>
             </div>
         </template>

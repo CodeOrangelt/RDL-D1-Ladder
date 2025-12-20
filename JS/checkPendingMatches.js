@@ -34,14 +34,16 @@ export async function checkPendingMatches(forceCheck = false) {
     }
     
     try {
-        // Use Promise.all for parallel queries
-        const [pendingD1, pendingD2, pendingD3] = await Promise.all([
+        // ✅ ADD FFA to the parallel queries
+        const [pendingD1, pendingD2, pendingD3, pendingFFA] = await Promise.all([
             checkForPendingMatchesInCollection(user, 'pendingMatches'),
             checkForPendingMatchesInCollection(user, 'pendingMatchesD2'),
-            checkForPendingMatchesInCollection(user, 'pendingMatchesD3')
+            checkForPendingMatchesInCollection(user, 'pendingMatchesD3'),
+            checkForPendingFFAMatches(user) // ✅ NEW: Check FFA matches
         ]);
         
-        const hasPendingMatches = pendingD1 || pendingD2 || pendingD3;
+        // ✅ UPDATED: Include FFA in the check
+        const hasPendingMatches = pendingD1 || pendingD2 || pendingD3 || pendingFFA;
         
         // Update UI and cache the result
         updateNotificationDot(hasPendingMatches);
@@ -253,3 +255,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check periodically but less frequently (1 minute)
     setInterval(() => checkPendingMatches(), 60000);
 });
+
+async function checkForPendingFFAMatches(user) {
+    try {
+        // First, get the current user's FFA username
+        const userFFADoc = await getDoc(doc(db, 'playersFFA', user.uid));
+        let ffaUsername = null;
+        
+        if (userFFADoc.exists()) {
+            ffaUsername = userFFADoc.data().username;
+        }
+        
+        if (!ffaUsername) {
+            // User is not registered in FFA ladder
+            return false;
+        }
+        
+        const pendingFFARef = collection(db, 'pendingMatchesFFA');
+        const snapshot = await getDocs(pendingFFARef);
+        
+        // Check if user has any unconfirmed FFA matches
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const players = data.players || [];
+            const reporterUID = data.submittedByUID || data.reporterId;
+            
+            // Skip if user is the reporter (they already "confirmed" by submitting)
+            if (reporterUID === user.uid) {
+                continue;
+            }
+            
+            // Check if current user is a participant who hasn't confirmed
+            const userIsParticipant = players.some(p => 
+                p.username === ffaUsername || p.odl_Id === user.uid
+            );
+            
+            // Check confirmation status
+            const confirmedBy = data.confirmedBy || [];
+            const userHasConfirmed = confirmedBy.includes(user.uid) || confirmedBy.includes(ffaUsername);
+            
+            if (userIsParticipant && !userHasConfirmed) {
+                console.log('Found pending FFA match requiring confirmation:', docSnap.id);
+                return true;
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking pending FFA matches:', error);
+        return false;
+    }
+}

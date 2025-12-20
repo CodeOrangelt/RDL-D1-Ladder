@@ -23,6 +23,7 @@
                         <button id="profile-d2-toggle" class="ladder-toggle-btn">D2</button>
                         <button id="profile-d3-toggle" class="ladder-toggle-btn">D3</button>
                         <button id="profile-duos-toggle" class="ladder-toggle-btn">Duos</button>
+                        <button id="profile-ffa-toggle" class="ladder-toggle-btn ffa">FFA</button>
                     </div>
                     <div class="profile-content">
                         <div class="profile-image-section">
@@ -61,12 +62,13 @@
                             </div>
                         </div>
                         
+                        <!-- Ribbons section - populated by JS -->
+                        <div id="ribbons-section"></div>
                         <div class="trophy-case-container">
-                            <div id="trophy-container" class="trophies">
-                                <p class="empty-trophy-case">No trophies awarded yet</p>
-                            </div>
+                            <div id="trophy-container" class="trophies"></div>
                         </div>
 
+                        <!-- View mode with collapsible fields -->
                         <div class="view-mode">
                             <div class="profile-field">
                                 <label>Favorite Map</label>
@@ -89,6 +91,7 @@
                                 <span id="availability-view" class="view-text"></span>
                             </div>
                             <div class="profile-field">
+                                <label>Home Levels</label>
                                 <span id="home-levels-view">Not set</span>
                             </div>
                             <div class="profile-field">
@@ -99,8 +102,8 @@
                             <button id="edit-profile" class="edit-btn">Edit Profile</button>
                         </div>
 
-                        <!-- Edit Mode -->
-                        <div class="edit-mode">
+                        <!-- Edit Mode - hidden by default -->
+                        <div class="edit-mode" style="display: none;">
                             <form id="profile-form">
                                 <div class="profile-field">
                                     <label for="motto-edit">Motto:</label>

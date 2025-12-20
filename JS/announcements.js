@@ -2,29 +2,44 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release-1.9", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 1.9.5 - Connections!",
+    id: "beta-release-2.0", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 2.0 - The First League",
     content: `
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS:</p>
-        <ul style="list-style: none; padding-left: 20px;">
-            <li style="color:#90EE90; margin-bottom: 5px;">• Missions tab (DXMA integration)</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• Static, and dynamic consolidated view w/Downloads</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• Self/Community templates, share & play!</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• Index, filter and scan all DXMA maps</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• Localstorage, and non-scraping so extremely fast (download is direct URL to DXMA)</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• DXMA random roll now invitation function on profiles (currently limited to full-random d1/d2/d3)</li>
-            <li style="color:#90EE90; margin-bottom: 5px;">• 2025 Halloween Map Competition page published and on front page</li>
-        </ul>
-        <br>
-        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUGS:</p>
-        <ul style="list-style: none; padding-left: 20px;">
-            <li style="color:#FFA07A; margin-bottom: 5px;">• Fixed ELO recommendation bug on front page</li>
-            <li style="color:#FFA07A; margin-bottom: 5px;">• Toggle ELO now also toggles recommendations</li>
-        </ul>
+            <ul style="list-style: none; padding-left: 20px;">
+                <li style="color:#75C35C;">• <span style="animation: highlight 1s infinite;">FFA LEAGUE!</span> Reporting, Multi-ELO Cross-Descent suport AND MORE!</li>
+                <li style="color:#75C35C;">• Restructures profiles</li>
+                <li style="color:#75C35C;">• Free limited-time christmas theme -> EXP: Dec 31st </li>
+                <li style="color:#75C35C;">• Fixed Approved matches displaying issue</li>
+                <li style="color:#75C35C;">• Various improvements to general UI on profile</li>
+                <li style="color:#75C35C;">• Optimized report form to be more forgiving to mobile users</li>
+                <li style="color:#75C35C;">• Various backend optimizations and improvements</li>
+                <li style="color:#75C35C;">• Improved UI for NAV bar by moving stuff around</li>
+                <li style="color:#75C35C;">• Overhauled admin backend... to include FFA league</li>
+                <li style="color:#75C35C;">• Improved markdown for news articles</li>
+            </ul>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUGS I AM AWARE OF:</p>
+            <ul style="list-style: none; padding-left: 20px;">
+                <li style="color:#FFA07A;">• D2 Recent Matches incorrect display of ELO (calculation still fine)</li>
+                <li style="color:#FFA07A;">• Non-Participant weird username assignment? (DM me.)</li>
+                <li style="color:#FFA07A;">• Rare but present ELO abnormality post-match</li>   
+                <li style="color:#FFA07A;">• Filter tool not working properly on approved matches page (WIP)</li>
+            </ul>
         <p style="margin-top: 15px;"><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
     buttonText: "Let me in!"
 };
+
+// Add the animation CSS
+const styleEl = document.createElement('style');
+styleEl.textContent = `
+    @keyframes highlight {
+        0% { color: #75C35C; text-shadow: 0 0 5px #75C35C; }
+        50% { color: #ffffff; text-shadow: 0 0 10px #ffffff; }
+        100% { color: #75C35C; text-shadow: 0 0 5px #75C35C; }
+    }
+`;
+document.head.appendChild(styleEl);
 
 // Create and show lightbox when document is ready
 document.addEventListener('DOMContentLoaded', function() {

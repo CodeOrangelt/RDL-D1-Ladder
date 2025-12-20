@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../CSS/themes.css">
     <script type="module" src="../JS/themes.js"></script>
     <script type="module" src="../JS/firebase-config.js"></script>
+    <script type="module" src="../JS/FFA/report-ffa.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -24,11 +25,12 @@
 
     <main>
         <div class="container">           
-            <!-- Game Mode Toggle Buttons -->
+            <!-- Game Mode Toggle Buttons - Updated to include FFA -->
             <div class="game-mode-toggle" id="game-mode-toggle">
                 <button id="d1-mode" class="active">D1</button>
                 <button id="d2-mode">D2</button>
                 <button id="d3-mode">D3</button>
+                <button id="ffa-mode">FFA</button>
             </div>
             
             <div id="auth-warning" class="auth-warning">You must be signed in to report a game.</div>
@@ -54,7 +56,7 @@
                 </div>
             </div>
             
-            <!-- Report Form -->
+            <!-- Standard 1v1 Report Form (D1/D2/D3) -->
             <form id="report-form" class="form" style="display: none;">
                 <div class="form-group">
                     <span id="loser-username" class="username-display"></span>
@@ -106,7 +108,71 @@
                     </div>
                 </div>
             </form>
+            
+            <form id="ffa-report-form" class="form ffa-form" style="display: none;">        
+                        
+                <!-- Game Version Selection -->
+                <div class="form-group ffa-game-version">
+                    <label>Game Version:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="ffa-game-version" value="D1" checked>
+                            <span>Descent 1</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="ffa-game-version" value="D2">
+                            <span>Descent 2</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Map Played -->
+                <div class="form-group">
+                    <label for="ffa-map-played">Map Played:</label>
+                    <input type="text" id="ffa-map-played" placeholder="e.g., Minerva, Nysa, Asylum" required>
+                </div>
+                
+                <!-- Number of Participants -->
+                <div class="form-group">
+                    <label for="ffa-participant-count">Number of Participants:</label>
+                    <select id="ffa-participant-count" required>
+                        <option value="" selected>Select number of players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4">4 Players</option>
+                        <option value="5">5 Players</option>
+                        <option value="6">6 Players</option>
+                        <option value="7">7 Players</option>
+                        <option value="8">8 Players</option>
+                    </select>
+                </div>
+                
+                <!-- Participants Container - Dynamically populated -->
+                <div id="ffa-participants-container" class="ffa-participants-container">
+                    <!-- Participant rows will be added here dynamically -->
+                </div>
+                
+                <!-- Match Notes -->
+                <div class="form-group">
+                    <label for="ffa-match-notes">Match Notes (Optional):</label>
+                    <textarea id="ffa-match-notes" placeholder="Any additional notes about the match"></textarea>
+                </div>
+                
+                <!-- Demo Link -->
+                <div class="form-group">
+                    <label for="ffa-demo-link">Demo Link (Optional):</label>
+                    <input type="text" id="ffa-demo-link" placeholder="Link to match recording/demo">
+                </div>
+                
+                <div class="button-container">
+                    <button type="submit" class="btn">Report Game</button>
+                    <div id="view-outstanding-ffa-container" style="display: none;">
+                        <button type="button" id="view-outstanding-ffa-btn" class="btn">View Outstanding Reports</button>
+                    </div>
+                </div>
+            </form>
+            
             <div id="report-error" class="error"></div>
+            <div id="ffa-report-error" class="error"></div>
 
             <div id="report-lightbox" class="report-lightbox">
                 <div class="lightbox-content">

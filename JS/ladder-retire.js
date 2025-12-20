@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return 'playersD3';
             case 'DUOS':
                 return 'playersDuos';
-            case 'CTF':
-                return 'playersCTF';
+            case 'FFA':
+                return 'playersFFA';
             default:
                 return 'players';
         }

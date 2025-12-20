@@ -207,7 +207,7 @@ async function handleLogin(e) {
             "playersD2",
             "playersD3",
             "playersDuos",
-            "playersCTF", 
+            "playersFFA", 
             "nonParticipants"
         ];
         
@@ -274,8 +274,8 @@ async function handleLogin(e) {
                             case "Duos":
                                 collectionName = "playersDuos";
                                 break;
-                            case "CTF":
-                                collectionName = "playersCTF";
+                            case "FFA":
+                                collectionName = "playersFFA";
                                 break;
                             default:
                                 collectionName = "players"; // fallback

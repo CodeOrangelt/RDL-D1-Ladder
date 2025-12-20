@@ -19,6 +19,7 @@ import {
 } from './services/firebaseService.js';
 import { displayLadderDuos } from './ladderduos.js';
 import { getTokensByUsernames, getPrimaryDisplayToken } from './tokens.js';
+import { displayLadderFFA } from './FFA/ladderffa.js';
 
 const auth = getAuth();
 
@@ -720,12 +721,13 @@ function initLadderToggles() {
     const d2Toggle = document.getElementById('d2-switch');
     const d3Toggle = document.getElementById('d3-switch');
     const duosToggle = document.getElementById('duos-switch');
-
+    const ffaToggle = document.getElementById('ffa-switch');
 
     const d1Container = document.getElementById('d1-ladder-container');
     const d2Container = document.getElementById('d2-ladder-container');
     const d3Container = document.getElementById('d3-ladder-container');
     const duosContainer = document.getElementById('duos-ladder-container');
+    const ffaContainer = document.getElementById('ffa-ladder-container');
 
     function hideAllLadders() {
         // First, remove active class from all containers
@@ -733,6 +735,7 @@ function initLadderToggles() {
         if (d2Container) d2Container.classList.remove('active');
         if (d3Container) d3Container.classList.remove('active');
         if (duosContainer) duosContainer.style.display = 'none';
+        if (ffaContainer) ffaContainer.style.display = 'none';
 
         // Also ensure display is none (as a fallback)
         if (d1Container) d1Container.style.display = 'none';
@@ -838,6 +841,34 @@ function initLadderToggles() {
             document.getElementById('elo-recommendation-text-d3').style.display = 'none'; 
         });
     }
+
+    // FFA button event listener
+    if (ffaToggle) {
+        ffaToggle.addEventListener('click', () => {
+            console.log("FFA toggle clicked");
+            hideAllLadders();
+
+            // Show FFA container
+            if (ffaContainer) {
+                ffaContainer.style.display = 'block';
+            }
+
+            // Load FFA ladder data
+            displayLadderFFA();
+            findBestOpponent('ffa');
+
+            // Show FFA recommendation, hide others
+            document.getElementById('elo-recommendation-text-d1').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d2').style.display = 'none';
+            document.getElementById('elo-recommendation-text-d3').style.display = 'none';
+            if (document.getElementById('elo-recommendation-text-duos')) {
+                document.getElementById('elo-recommendation-text-duos').style.display = 'none';
+            }
+            if (document.getElementById('elo-recommendation-text-ffa')) {
+                document.getElementById('elo-recommendation-text-ffa').style.display = 'block';
+            }
+        });
+    }
 }
 
 /**
@@ -909,6 +940,9 @@ async function findBestOpponent(currentLadder = 'd1') {
                 break;
             case 'duos':
                 ladderCollection = 'playersDuos';
+                break;
+            case 'ffa':
+            ladderCollection = 'playersFFA';
                 break;
             default:
                 ladderCollection = 'players';
@@ -1098,8 +1132,9 @@ auth.onAuthStateChanged(user => {
     const d2Active = document.getElementById('d2-ladder-container') && document.getElementById('d2-ladder-container').style.display !== 'none';
     const d3Active = document.getElementById('d3-ladder-container') && document.getElementById('d3-ladder-container').style.display !== 'none';
     const duosActive = document.getElementById('duos-ladder-container') && document.getElementById('duos-ladder-container').style.display !== 'none';
+    const ffaActive = document.getElementById('ffa-ladder-container') && document.getElementById('ffa-ladder-container').style.display !== 'none';
 
-    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : 'd1';
+    const currentLadder = d1Active ? 'd1' : d2Active ? 'd2' : d3Active ? 'd3' : duosActive ? 'duos' : ffaActive ? 'ffa' : 'd1'; 
     findBestOpponent(currentLadder);
 });
 

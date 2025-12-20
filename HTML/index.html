@@ -18,11 +18,11 @@
 <body>
     <div id="nav-placeholder"></div>
     
-    <div id="mapping-competition-popup" class="mapping-competition-popup hidden">
+    <div id="mapping-competition-popup" class="mapping-competition-popup hidden" style="display: none;"> <!--CODE, THIS IS KEEPING IT HIDDEN :)-->
         <div class="mapping-popup-header">
             <h3 class="mapping-popup-title">
-                <i class="fas fa-map" style="font-size: 0.8rem;"></i> RDL Map Competition<br>
-                <span style="color: goldenrod; font-size: 0.8em;">HALLOWEEN 2025</span>
+                <i class="fas fa-map small-icon"></i> RDL Map Competition<br>
+                <span class="golden-text">HALLOWEEN 2025</span>
             </h3>
             <button class="mapping-popup-close" onclick="closeMappingPopup()" title="Close">
                 <i class="fas fa-times"></i>
@@ -34,7 +34,7 @@
             </p>
         </div>
         <button class="mapping-popup-button" onclick="goToMappingCompetition()">
-            <i style="font-size: 0.7rem;"></i> Take Me There!
+            <i class="tiny-icon"></i> Take Me There!
         </button>
     </div>
 
@@ -53,8 +53,8 @@
             <input type="radio" id="duos-switch" name="ladder" value="DUOS">
             <label for="duos-switch">Duo's</label>
             
-            <input type="radio" id="ctf-switch" name="ladder" value="CTF" disabled>
-            <label for="ctf-switch" class="coming-soon">CTF</label>
+            <input type="radio" id="ffa-switch" name="ladder" value="FFA">
+            <label for="ffa-switch">FFA</label>
         </div>
 
         <div class="outer-container">
@@ -111,6 +111,26 @@
                             <th>Losses</th>
                             <th>K/D</th>
                             <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="ffa-ladder-container" class="ladder-container table-container" style="display: none;">
+                <table id="ladder-ffa">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>ELO</th>
+                            <th>Matches</th>
+                            <th>Wins</th>
+                            <th>Top 3</th>
+                            <th>Avg Place</th>
+                            <th>K/D</th>
+                            <th>FFA Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,6 +204,9 @@
         <p id="elo-recommendation-text-d2" class="elo-recommendation-text ladder-d2" style="display: none;"></p>
         <p id="elo-recommendation-text-d3" class="elo-recommendation-text ladder-d3" style="display: none;"></p>
         <p id="elo-recommendation-text-duos" class="elo-recommendation-text ladder-duos" style="display: none;"></p>
+        <p id="elo-recommendation-text-ffa" class="elo-recommendation-text ladder-ffa" style="display: none;"></p>
+        <p id="elo-recommendation-text-ffa" class="elo-recommendation-text ladder-ffa" style="display: none;"></p>
+
 
         <div class="queue-section">
             <div id="queue-container">
@@ -295,7 +318,7 @@
         });
     </script>
 
-    <script>
+      <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toggleEloButton = document.getElementById('toggle-elo-button');
             const eloToggleContainer = document.getElementById('elo-toggle-container');
@@ -303,7 +326,7 @@
             let eloVisible = localStorage.getItem('eloVisible') === null ? true : localStorage.getItem('eloVisible') === 'true';
 
             function applyEloVisibility() {
-                const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'];
+                const tables = ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos', '#ladder-ffa'];
                 tables.forEach(tableSelector => {
                     const table = document.querySelector(tableSelector);
                     if (table) {
@@ -344,7 +367,8 @@
                     'elo-recommendation-text-d1',
                     'elo-recommendation-text-d2', 
                     'elo-recommendation-text-d3',
-                    'elo-recommendation-text-duos'
+                    'elo-recommendation-text-duos',
+                    'elo-recommendation-text-ffa'
                 ];
                 
                 // Hide all recommendations first
@@ -361,6 +385,7 @@
                     const d2Active = document.getElementById('d2-ladder-container')?.classList.contains('active');
                     const d3Active = document.getElementById('d3-ladder-container')?.classList.contains('active');
                     const duosActive = document.getElementById('duos-ladder-container')?.classList.contains('active');
+                    const ffaActive = document.getElementById('ffa-ladder-container')?.classList.contains('active'); // ✅ ADDED
                     
                     if (d1Active) {
                         const elem = document.getElementById('elo-recommendation-text-d1');
@@ -374,13 +399,16 @@
                     } else if (duosActive) {
                         const elem = document.getElementById('elo-recommendation-text-duos');
                         if (elem && elem.textContent.trim()) elem.style.display = 'block';
+                    } else if (ffaActive) {
+                        const elem = document.getElementById('elo-recommendation-text-ffa');
+                        if (elem && elem.textContent.trim()) elem.style.display = 'block';
                     }
                 }
             }
 
             // Use MutationObserver only, no polling
             const observer = new MutationObserver(applyEloVisibility);
-            ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos'].forEach(sel => {
+            ['#ladder', '#ladder-d2', '#ladder-d3', '#ladder-duos', '#ladder-ffa'].forEach(sel => {
                 const tbody = document.querySelector(sel + ' tbody');
                 if (tbody) observer.observe(tbody, { childList: true, subtree: true });
             });

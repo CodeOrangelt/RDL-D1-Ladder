@@ -90,16 +90,22 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
     const authSection = document.getElementById('auth-section');
     if (!authSection) return;
     
-    // Show admin links immediately if we know they're an admin
-    if (user && isAdmin) {
-        document.querySelectorAll('.admin-only').forEach(link => {
-            link.style.display = 'block';
-        });
-    } else if (!user) {
-        document.querySelectorAll('.admin-only').forEach(link => {
-            link.style.display = 'none';
-        });
-    }
+    // Handle admin link visibility
+    document.querySelectorAll('.admin-only').forEach(link => {
+        if (isAdmin) {
+            if (link.closest('li')) {
+                link.closest('li').style.display = 'block';
+            } else {
+                link.style.display = 'block';
+            }
+        } else {
+            if (link.closest('li')) {
+                link.closest('li').style.display = 'none';
+            } else {
+                link.style.display = 'none';
+            }
+        }
+    });
     
     // Update auth section UI
     if (user) {
@@ -110,36 +116,71 @@ function updateAuthSectionImmediate(user, isAdmin = false) {
         // Use the specific role if available, otherwise use "(Admin)" if they're an admin
         const roleDisplay = userCache.role ? ` (${userCache.role})` : (isAdmin ? ' (Admin)' : '');
         
+        // Build admin link HTML if user is admin
+        const adminLinkHtml = isAdmin ? '<a href="./admin.html"><i class="fas fa-shield-alt"></i> Admin</a>' : '';
+        
         authSection.innerHTML = `
             <div class="nav-dropdown">
-                <a href="#" class="nav-username">${displayName}${roleDisplay}</a>
-                <div class="nav-dropdown-content">
-                    <a href="profile.html?username=${encodeURIComponent(displayName)}">Profile</a>
-                    <a href="./inbox.html" class="nav-notification">
-                        Inbox 
-                        <span id="inbox-notification" class="notification-dot"></span>
-                    </a>
-                    <a href="members.html">Members</a>
-                    <a href="./redeem.html"><i class="fas fa-gift"></i>Store</a>
-                    <a href="#" id="logout-link">Sign Out</a>
-                </div>
+            <a href="#" class="nav-username">${displayName}${roleDisplay}</a>
+            <div class="nav-dropdown-content">
+                <a href="profile.html?username=${encodeURIComponent(displayName)}"><i class="fas fa-user"></i> Profile</a>
+                <a href="./inbox.html" class="nav-notification">
+                <i class="fas fa-inbox"></i>&nbsp;Inbox 
+                <span id="inbox-notification" class="notification-dot" style="display: none;"></span>
+                </a>
+                <a href="./highlights.html"><i class="fas fa-star"></i> Highlights</a>
+                <a href="./articles.html"><i class="fas fa-newspaper"></i> News</a>
+                <a href="members.html"><i class="fas fa-users"></i> Members</a>
+                <a href="./redeem.html"><i class="fas fa-gift"></i> Store</a>
+                ${adminLinkHtml}
+                <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+            </div>
             </div>
         `;
         
-        // Set up logout handler
+        // Update the logout handler to be more robust (around line 123)
         const logoutLink = document.getElementById('logout-link');
         if (logoutLink) {
-            logoutLink.addEventListener('click', (e) => {
+            // Remove any existing listeners to prevent duplicates
+            const newLogoutLink = logoutLink.cloneNode(true);
+            logoutLink.parentNode.replaceChild(newLogoutLink, logoutLink);
+            
+            newLogoutLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const auth = getAuth();
-                
-                // Don't reload - just update UI first
-                updateAuthSectionImmediate(null);
-                
-                // Then sign out
-                auth.signOut().catch(error => {
+                try {
+                    const auth = getAuth();
+                    
+                    // Clear all caches BEFORE signing out
+                    userCache.uid = null;
+                    userCache.username = null;
+                    userCache.isAdmin = false;
+                    userCache.hasCheckedCollections = false;
+                    userCache.role = null;
+                    invitationCache.lastCheck = 0;
+                    invitationCache.pendingCount = 0;
+                    
+                    // Clear localStorage and sessionStorage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Update UI immediately to show logged out state
+                    updateAuthSectionImmediate(null, false);
+                    
+                    // Sign out from Firebase
+                    await auth.signOut();
+                    
+                    // Wait a bit to ensure Firebase state has propagated
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Redirect to index page
+                    window.location.href = './index.html';
+                } catch (error) {
                     console.error('Error signing out:', error);
-                });
+                    // Even if there's an error, try to clear everything and reload
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = './index.html';
+                }
             });
         }
         
@@ -278,13 +319,8 @@ async function updateAuthSection(user) {
             userCache.isAdmin = hasAdminRole;
             userCache.role = role;
             
-            // Update admin links if role check found admin privileges
+            // Update the UI immediately with the role if admin
             if (hasAdminRole) {
-                document.querySelectorAll('.admin-only').forEach(link => {
-                    link.style.display = 'block';
-                });
-                
-                // Update the UI immediately with the role
                 updateAuthSectionImmediate(user, true);
             }
         }

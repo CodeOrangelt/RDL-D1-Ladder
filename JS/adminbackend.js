@@ -1,18 +1,165 @@
 import { 
     collection, getDocs, query, orderBy, addDoc, deleteDoc, where, doc, getDoc,
     serverTimestamp, setDoc, updateDoc, writeBatch, limit, startAfter, endBefore,
-    limitToLast, onSnapshot, deleteField, or, Timestamp
+    limitToLast, onSnapshot, deleteField, or, Timestamp, getCountFromServer
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
 import { isAdmin } from './admin-check.js';
 
-// At the top of adminbackend.js with other global variables
+// ============================================================================
+// HELPER FUNCTIONS - Consolidated utilities to reduce code duplication
+// ============================================================================
+
+/**
+ * Get collection names based on the current ladder (D1, D2, or D3)
+ * @param {string} ladder - The ladder to get collection names for (defaults to currentLadder)
+ * @returns {Object} Object containing all collection names for the specified ladder
+ */
+function getCollectionNames(ladder = null) {
+    const l = ladder || currentLadder;
+    
+    // Add FFA collections
+    if (l === 'FFA') {
+        return {
+            players: 'playersFFA',
+            approvedMatches: 'approvedMatchesFFA',
+            pendingMatches: 'pendingMatchesFFA',
+            eloHistory: 'eloHistoryFFA',
+            rejected: 'RejectedFFA',
+            playerRibbons: 'playerRibbonsFFA'
+        };
+    }
+
+    if (l === 'D1') {
+        return {
+            players: 'players',
+            approvedMatches: 'approvedMatches',
+            pendingMatches: 'pendingMatches',
+            eloHistory: 'eloHistory',
+            rejected: 'RejectedD1',
+            playerRibbons: 'playerRibbons'
+        };
+    }
+    
+    // For D2 and D3 - use the ladder suffix
+    return {
+        players: `players${l}`,
+        approvedMatches: `approvedMatches${l}`,
+        pendingMatches: `pendingMatches${l}`,
+        eloHistory: `eloHistory${l}`,
+        rejected: `Rejected${l}`,
+        playerRibbons: `playerRibbons${l}`
+    };
+}
+
+/**
+ * Setup a load button with standard loading/error states
+ * @param {string} buttonId - The ID of the button element
+ * @param {Function} loadFunction - Async function to call on click
+ * @param {string} defaultText - The default button text (with icon)
+ */
+function setupLoadButton(buttonId, loadFunction, defaultText) {
+    const btn = document.getElementById(buttonId);
+    if (!btn) return;
+    
+    // Remove any existing click handlers to prevent duplicates
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', async function() {
+        console.log(`${buttonId} clicked`);
+        this.classList.add('loading');
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        
+        try {
+            await loadFunction();
+            this.classList.remove('loading');
+            this.innerHTML = defaultText;
+        } catch (error) {
+            console.error(`Error loading data for ${buttonId}:`, error);
+            this.classList.remove('loading');
+            this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+            setTimeout(() => {
+                this.innerHTML = defaultText;
+            }, 3000);
+        }
+    });
+}
+
+/**
+ * Open a modal by ID with optional setup callback
+ * @param {string} modalId - The ID of the modal element
+ * @param {Function} setupCallback - Optional callback to run before showing
+ */
+function openModal(modalId, setupCallback = null) {
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.error(`Modal ${modalId} not found`);
+        return;
+    }
+    if (setupCallback) setupCallback(modal);
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+}
+
+/**
+ * Close a modal by ID
+ * @param {string} modalId - The ID of the modal element
+ */
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Set table loading/empty/error state
+ * @param {string} tableBodyId - The ID of the table body element
+ * @param {string} state - 'loading', 'empty', or 'error'
+ * @param {number} colspan - Number of columns to span
+ * @param {string} message - Optional custom message
+ */
+function setTableState(tableBodyId, state, colspan, message = null) {
+    const tableBody = document.getElementById(tableBodyId);
+    if (!tableBody) return;
+    
+    const stateClasses = { loading: 'loading-cell', empty: 'empty-state', error: 'error-state' };
+    const defaultMessages = { loading: 'Loading...', empty: 'No data found', error: 'Error loading data' };
+    
+    tableBody.innerHTML = `<tr><td colspan="${colspan}" class="${stateClasses[state]}">${message || defaultMessages[state]}</td></tr>`;
+}
+
+/**
+ * Generic table filter function
+ * @param {string} tableBodyId - The ID of the table body element
+ * @param {string} searchTerm - The search term to filter by
+ * @param {string[]} columnSelectors - CSS selectors for columns to search in
+ */
+function filterTable(tableBodyId, searchTerm, columnSelectors) {
+    const term = searchTerm.toLowerCase();
+    document.querySelectorAll(`#${tableBodyId} tr`).forEach(row => {
+        const matches = columnSelectors.some(selector => 
+            row.querySelector(selector)?.textContent.toLowerCase().includes(term)
+        );
+        row.style.display = matches ? '' : 'none';
+    });
+}
+
+// ============================================================================
+// END HELPER FUNCTIONS
+// ============================================================================
+
+// At the top with other global variables
 let matchesPagination = { 
     d1: { page: 1, lastVisible: null, firstVisible: null }, 
     d2: { page: 1, lastVisible: null, firstVisible: null },
-    d3: { page: 1, lastVisible: null, firstVisible: null }
+    d3: { page: 1, lastVisible: null, firstVisible: null },
+    ffa: { page: 1, lastVisible: null, firstVisible: null } // Add FFA
 };
+
 
 // Helper function to determine text color based on background
 function getContrastColor(hexColor) {
@@ -36,10 +183,12 @@ const DEFAULT_TROPHY_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgA
 // Initialize charts container
 const charts = {};
 let currentLadder = 'D1'; // Default ladder mode
+
 let eloHistoryPagination = { 
     d1: { page: 1, lastVisible: null, firstVisible: null }, 
     d2: { page: 1, lastVisible: null, firstVisible: null },
-    d3: { page: 1, lastVisible: null, firstVisible: null } // Add D3 pagination
+    d3: { page: 1, lastVisible: null, firstVisible: null },
+    ffa: { page: 1, lastVisible: null, firstVisible: null } // Add FFA
 };
 const PAGE_SIZE = 15; // Items per page for history tables
 
@@ -266,7 +415,12 @@ async function initializeAdminDashboard() {
         
         // Store permissions globally for reference in other functions
         window.userAllowedTabs = allowedTabs;
-        
+
+        window.searchUsername = searchUsername;
+        window.handleChangeUsername = handleChangeUsername;
+        window.changeUsernameInWorkspace = changeUsernameInWorkspace;
+        window.scanAndAwardTopRankRibbons = scanAndAwardTopRankRibbons;
+
         // Initialize sidebar navigation WITH permissions
         setupSidebarNavigation(allowedTabs);
         
@@ -330,585 +484,29 @@ async function initializeAdminDashboard() {
     }
 }
 
-// Fix setupDataLoadButtons function to include trophies
-function setupDataLoadButtons(allowedTabs = []) {
-    // Default to showing dashboard only if no permissions provided
-    if (!allowedTabs || allowedTabs.length === 0) {
-        allowedTabs = ['dashboard'];
-    }
-    
-    // Dashboard load button - always available since dashboard is the minimum
-    const loadDashboardBtn = document.getElementById('load-dashboard-data');
-    if (loadDashboardBtn) {
-        loadDashboardBtn.addEventListener('click', function() {
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            
-            loadDashboardOverview()
-                .then(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
-                })
-                .catch(error => {
-                    console.error('Error loading dashboard:', error);
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                    setTimeout(() => {
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Dashboard Data';
-                    }, 3000);
-                });
-        });
-    }
-    
-    // Trophy management load button
-    if (allowedTabs.includes('manage-trophies')) {
-        const loadTrophiesBtn = document.getElementById('load-trophies-data');
-        if (loadTrophiesBtn) {
-            loadTrophiesBtn.addEventListener('click', function() {
-                console.log('Load trophies data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadTrophyDefinitions()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading trophies:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Trophies Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-    
-    // Players load button
-    if (allowedTabs.includes('manage-players')) {
-        const loadPlayersBtn = document.getElementById('load-players-data');
-        if (loadPlayersBtn) {
-            loadPlayersBtn.addEventListener('click', function() {
-                console.log('Load players data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadPlayersData()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading players:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Players Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-    
-    // ELO history load button
-    if (allowedTabs.includes('elo-history')) {
-        const loadHistoryBtn = document.getElementById('load-elo-history-data');
-        if (loadHistoryBtn) {
-            loadHistoryBtn.addEventListener('click', function() {
-                console.log('Load history data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadEloHistory(1)
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading history:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load History Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-    
-    // Articles load button
-    if (allowedTabs.includes('manage-articles')) {
-        const loadArticlesBtn = document.getElementById('load-articles-data');
-        if (loadArticlesBtn) {
-            loadArticlesBtn.addEventListener('click', function() {
-                console.log('Load articles data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadArticles()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading articles:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Articles Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-    
-    // Users load button
-    if (allowedTabs.includes('user-roles-section')) {
-        const loadUsersBtn = document.getElementById('load-users-data');
-        if (loadUsersBtn) {
-            loadUsersBtn.addEventListener('click', function() {
-                console.log('Load users data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadUsersWithRoles()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading users:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Users Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
+// Add this function BEFORE setupDataLoadButtons (around line 450)
 
-        // Add inside setupDataLoadButtons function
-    if (allowedTabs.includes('inactive-players')) {
-        const loadInactiveBtn = document.getElementById('load-inactive-players-data');
-        if (loadInactiveBtn) {
-            loadInactiveBtn.addEventListener('click', function() {
-                console.log('Load inactive players data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadInactivePlayersData()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
-                    })
-                    .catch(error => {
-                        console.error('Error loading inactive players:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Inactive Players';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-
-    // Add highlights load button
-    if (allowedTabs.includes('manage-highlights')) {
-        const loadHighlightsBtn = document.getElementById('load-highlights-data');
-        if (loadHighlightsBtn) {
-            loadHighlightsBtn.addEventListener('click', function() {
-                console.log('Load highlights data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadHighlightsAdmin()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
-                    })
-                    .catch(error => {
-                        console.error('Error loading highlights:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Highlights';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-
-     // Matches load button and create test match button
-    if (allowedTabs.includes('manage-matches')) {
-        const loadMatchesBtn = document.getElementById('load-matches-data');
-        if (loadMatchesBtn) {
-            loadMatchesBtn.addEventListener('click', function() {
-                console.log('Load matches data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadMatchesData(1)
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
-                    })
-                    .catch(error => {
-                        console.error('Error loading matches:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Matches';
-                        }, 3000);
-                    });
-            });
-        }
-        
-        // IMPORTANT: Set up the create test match button here too
-        setupCreateTestMatchButton();
-        setupCreateTestMatchModal();
-    }
-
-    // Ribbons management load button
-    if (allowedTabs.includes('manage-ribbons')) {
-        const loadRibbonsBtn = document.getElementById('load-ribbons-data');
-        if (loadRibbonsBtn) {
-            loadRibbonsBtn.addEventListener('click', function() {
-                console.log('Load ribbons data clicked');
-                this.classList.add('loading');
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-                
-                loadRibbonsData()
-                    .then(() => {
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
-                    })
-                    .catch(error => {
-                        console.error('Error loading ribbons:', error);
-                        this.classList.remove('loading');
-                        this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-                        setTimeout(() => {
-                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Load Ribbons Data';
-                        }, 3000);
-                    });
-            });
-        }
-    }
-
-    
-    console.log('Data load buttons initialized based on permissions');
-}
-
-
-// Add new setupDashboardSection function 
-function setupDashboardSection() {
-    // Just set up the UI without loading data
-    document.getElementById('player-count').textContent = '-';
-    document.getElementById('match-count').textContent = '-';
-    document.getElementById('pending-count').textContent = '-';
-    document.getElementById('rejected-count').textContent = '-';
-}
-
-// Modify setupLadderSelector function to not auto-load data
-function setupLadderSelector() {
-    const ladderSwitches = document.querySelectorAll('.ladder-switch input');
-    
-    ladderSwitches.forEach(switchInput => {
-        switchInput.addEventListener('change', () => {
-            currentLadder = switchInput.value;
-            document.body.setAttribute('data-ladder', currentLadder);
-            
-            // Update the current ladder display for adding players
-            const currentLadderDisplay = document.getElementById('current-ladder-display');
-            if (currentLadderDisplay) {
-                currentLadderDisplay.textContent = currentLadder;
-            }
-            
-            // Reset dashboard stats without loading
-            document.getElementById('player-count').textContent = '-';
-            document.getElementById('match-count').textContent = '-';
-            document.getElementById('pending-count').textContent = '-';
-            document.getElementById('rejected-count').textContent = '-';
-            
-            // Reset charts
-            if (charts.rankDistribution) {
-                charts.rankDistribution.destroy();
-                charts.rankDistribution = null;
-            }
-            
-            if (charts.activity) {
-                charts.activity.destroy();
-                charts.activity = null;
-            }
-            
-            // No automatic data loading
-            showNotification(`Switched to ${currentLadder} ladder. Click "Load Data" to refresh.`, 'info');
-        });
-    });
-    
-    // Initialize the display with the current ladder
-    const currentLadderDisplay = document.getElementById('current-ladder-display');
-    if (currentLadderDisplay) {
-        currentLadderDisplay.textContent = currentLadder;
-    }
-}
-
-// Update loadDashboardOverview function
-async function loadDashboardOverview() {
-    try {
-        console.log('Loading dashboard overview data...');
-        
-        // Show loading placeholders
-        document.getElementById('player-count').textContent = '-';
-        document.getElementById('match-count').textContent = '-';
-        document.getElementById('pending-count').textContent = '-';
-        document.getElementById('rejected-count').textContent = '-';
-
-        // Get collection names based on current ladder
-        const playerCollection = 
-            currentLadder === 'D1' ? 'players' : 
-            currentLadder === 'D2' ? 'playersD2' : 'playersD3';
-            
-        const matchesCollection = 
-            currentLadder === 'D1' ? 'approvedMatches' : 
-            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
-            
-        const pendingCollection = 
-            currentLadder === 'D1' ? 'pendingMatches' : 
-            currentLadder === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
-            
-        const rejectedCollection = 
-            currentLadder === 'D1' ? 'RejectedD1' : 
-            currentLadder === 'D2' ? 'RejectedD2' : 'RejectedD3';
-        
-        console.log(`Using collections for ${currentLadder}: ${playerCollection}, ${matchesCollection}`);
-        
-        // Get player count
-        const playersSnapshot = await getDocs(collection(db, playerCollection));
-        const playerCount = playersSnapshot.size;
-        
-        // Get match count
-        const matchesSnapshot = await getDocs(collection(db, matchesCollection));
-        const matchCount = matchesSnapshot.size;
-        
-        // Get pending matches count
-        const pendingSnapshot = await getDocs(collection(db, pendingCollection));
-        const pendingCount = pendingSnapshot.size;
-        
-        // Get rejected matches count
-        const rejectedSnapshot = await getDocs(collection(db, rejectedCollection));
-        const rejectedCount = rejectedSnapshot.size;
-        
-        // Update stat cards
-        document.getElementById('player-count').textContent = playerCount;
-        document.getElementById('match-count').textContent = matchCount;
-        document.getElementById('pending-count').textContent = pendingCount;
-        document.getElementById('rejected-count').textContent = rejectedCount;
-        
-        // Create dashboard charts
-        await createRankDistributionChart();
-        await createActivityChart();
-        
-        console.log('Dashboard data loaded successfully');
-        return true;
-        
-    } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        throw error;
-    }
-}
-
-async function createRankDistributionChart() {
-    try {
-        // Determine collection based on ladder selection
-        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
-        const querySnapshot = await getDocs(playersRef);
-
-        // Count players in each rank
-        const rankCounts = {
-            'Unranked': 0,
-            'Bronze': 0,
-            'Silver': 0,
-            'Gold': 0,
-            'Emerald': 0
-        };
-        
-        querySnapshot.forEach(doc => {
-            const player = doc.data();
-            const elo = player.eloRating || 1200;
-            
-            if (elo >= 2000) rankCounts['Emerald']++;
-            else if (elo >= 1800) rankCounts['Gold']++;
-            else if (elo >= 1600) rankCounts['Silver']++;
-            else if (elo >= 1400) rankCounts['Bronze']++;
-            else rankCounts['Unranked']++;
-        });
-        
-        const chartContainer = document.getElementById('rank-distribution-chart');
-        
-        // Destroy existing chart if it exists
-        if (charts.rankDistribution) {
-            charts.rankDistribution.destroy();
-        }
-        
-        // Create chart
-        charts.rankDistribution = new Chart(chartContainer, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(rankCounts),
-                datasets: [{
-                    data: Object.values(rankCounts),
-                    backgroundColor: [
-                        '#808080', // Unranked - Gray
-                        '#CD7F32', // Bronze
-                        '#C0C0C0', // Silver
-                        '#FFD700', // Gold
-                        '#50C878'  // Emerald
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#e0e0e0'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: `${currentLadder} Rank Distribution`,
-                        color: '#e0e0e0',
-                        font: {
-                            size: 16
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error creating rank distribution chart:", error);
-        document.getElementById('rank-distribution-chart').innerHTML = 
-            '<div class="chart-error">Error loading chart data</div>';
-    }
-}
-
-async function createActivityChart() {
-    try {
-        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-        const matchesRef = collection(db, matchesCollection);
-        
-        // Get last 7 days of data
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
-        const q = query(
-            matchesRef,
-            where('approvedAt', '>=', sevenDaysAgo),
-            orderBy('approvedAt', 'asc')
-        );
-        
-        const querySnapshot = await getDocs(q);
-        
-        // Organize data by day of week
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const activityByDay = dayNames.reduce((acc, day) => ({...acc, [day]: 0}), {});
-        
-        querySnapshot.forEach(doc => {
-            const match = doc.data();
-            if (match.approvedAt) {
-                const dayOfWeek = dayNames[new Date(match.approvedAt.seconds * 1000).getDay()];
-                activityByDay[dayOfWeek]++;
-            }
-        });
-        
-        // Create chart
-        const chartContainer = document.getElementById('activity-chart');
-        
-        // Destroy existing chart if it exists
-        if (charts.activity) {
-            charts.activity.destroy();
-        }
-        
-        charts.activity = new Chart(chartContainer, {
-            type: 'bar',
-            data: {
-                labels: dayNames,
-                datasets: [{
-                    label: 'Matches Played',
-                    data: dayNames.map(day => activityByDay[day]),
-                    backgroundColor: currentLadder === 'D1' ? 'rgba(211, 47, 47, 0.7)' : 'rgba(25, 118, 210, 0.7)',
-                    borderColor: currentLadder === 'D1' ? '#d32f2f' : '#1976d2',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: '#e0e0e0'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#e0e0e0'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#e0e0e0'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: `${currentLadder} Weekly Activity`,
-                        color: '#e0e0e0',
-                        font: {
-                            size: 16
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error creating activity chart:", error);
-        document.getElementById('activity-chart').innerHTML = 
-            '<div class="chart-error">Error loading chart data</div>';
-    }
-}
+// Add flag to prevent concurrent loads
+let isLoadingPlayers = false;
 
 async function loadPlayersData() {
+    // Prevent concurrent calls
+    if (isLoadingPlayers) {
+        console.log('Players already loading, skipping duplicate call');
+        return;
+    }
+    
     const playerTable = document.getElementById('players-table-body');
     if (!playerTable) return;
     
-    playerTable.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading players...</td></tr>';
+    isLoadingPlayers = true;
+    console.log('=== START loadPlayersData ===');
+    
+    setTableState('players-table-body', 'loading', 6, 'Loading players...');
     
     try {
-        // Modified to handle D3 correctly
-        let playerCollection = 'players'; // Default to D1
-        
-        if (currentLadder === 'D2') {
-            playerCollection = 'playersD2';
-        } else if (currentLadder === 'D3') {
-            playerCollection = 'playersD3';
-        }
+        const { players: playerCollection } = getCollectionNames();
+        const isFFA = currentLadder === 'FFA';
         
         console.log(`Loading players from ${playerCollection} collection...`);
         const playersRef = collection(db, playerCollection);
@@ -917,65 +515,523 @@ async function loadPlayersData() {
         
         if (querySnapshot.empty) {
             playerTable.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>';
+            isLoadingPlayers = false;
             return;
         }
         
+        console.log(`Clearing table and adding ${querySnapshot.size} players...`);
         playerTable.innerHTML = '';
         let position = 1;
         
         querySnapshot.forEach(doc => {
             const player = doc.data();
-            const rank = getRankFromElo(player.eloRating || 1200);
-            const rankStyle = getRankStyle(player.eloRating || 1200);
-            
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="position">${position}</td>
-                <td class="username" style="color: ${rankStyle.color}">
-                    ${player.username || 'Unknown'}
-                </td>
-                <td class="elo">${player.eloRating || 1200}</td>
-                <td class="rank">
-                    <span class="rank-badge" style="background-color: ${rankStyle.color}">
-                        ${rank}
-                    </span>
-                </td>
-                <td class="stats">
-                    ${player.wins || 0}W / ${player.losses || 0}L
-                </td>
-                <td class="actions">
-                    <button class="edit-btn" data-id="${doc.id}">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <button class="delete-btn" data-id="${doc.id}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
+            
+            const rank = getRankFromElo(player.eloRating || 1200);
+            const timestamp = player.createdAt 
+                ? new Date(player.createdAt.seconds * 1000).toLocaleDateString() 
+                : 'N/A';
+            
+            // Different stats display for FFA
+            if (isFFA) {
+                const matches = player.totalMatches || 0;
+                const wins = player.firstPlaceWins || 0;
+                const topThree = player.topThreeFinishes || 0;
+                const avgPlace = player.averagePlacement ? player.averagePlacement.toFixed(2) : 'N/A';
+                
+                row.innerHTML = `
+                    <td>${position}</td>
+                    <td class="username">${player.username || 'Unknown'}</td>
+                    <td><span class="rank-badge ${rank.toLowerCase()}">${rank}</span></td>
+                    <td>${Math.round(player.eloRating || 1200)}</td>
+                    <td>Matches: ${matches} | Wins: ${wins} | Top 3: ${topThree} | Avg: ${avgPlace}</td>
+                    <td class="actions">
+                        <button class="edit-btn" data-id="${doc.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" data-id="${doc.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            } else {
+                // Regular ladder display
+                row.innerHTML = `
+                    <td>${position}</td>
+                    <td class="username">${player.username || 'Unknown'}</td>
+                    <td><span class="rank-badge ${rank.toLowerCase()}">${rank}</span></td>
+                    <td>${Math.round(player.eloRating || 1200)}</td>
+                    <td>${player.wins || 0} - ${player.losses || 0}</td>
+                    <td class="actions">
+                        <button class="edit-btn" data-id="${doc.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" data-id="${doc.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            }
+            
             playerTable.appendChild(row);
             position++;
         });
         
-        // Add event listeners to edit and delete buttons
         setupPlayerActionButtons();
+        console.log(`=== END loadPlayersData: Added ${position - 1} players ===`);
         
     } catch (error) {
         console.error("Error loading players:", error);
-        playerTable.innerHTML = `
-            <tr>
-                <td colspan="6" class="error-state">
-                    Error loading players: ${error.message}
-                </td>
-            </tr>
-        `;
+        playerTable.innerHTML = `<tr><td colspan="6" class="error-state">Error loading players: ${error.message}</td></tr>`;
+    } finally {
+        isLoadingPlayers = false;
     }
 }
 
+// Refactored setupDataLoadButtons - uses setupLoadButton helper to eliminate duplicate code
+function setupDataLoadButtons(allowedTabs = []) {
+    // Default to showing dashboard only if no permissions provided
+    if (!allowedTabs || allowedTabs.length === 0) {
+        allowedTabs = ['dashboard'];
+    }
+    
+    // Dashboard load button - always available since dashboard is the minimum
+    setupLoadButton('load-dashboard-data', loadDashboardOverview, '<i class="fas fa-sync-alt"></i> Load Dashboard Data');
+    
+    // Define button configurations: [buttonId, permission, loadFunction, buttonText]
+    const buttonConfigs = [
+        ['load-trophies-data', 'manage-trophies', loadTrophyDefinitions, '<i class="fas fa-sync-alt"></i> Load Trophies Data'],
+        ['load-players-data', 'manage-players', loadPlayersData, '<i class="fas fa-sync-alt"></i> Load Players Data'],
+        ['load-elo-history-data', 'elo-history', () => loadEloHistory(1), '<i class="fas fa-sync-alt"></i> Load History Data'],
+        ['load-articles-data', 'manage-articles', loadArticles, '<i class="fas fa-sync-alt"></i> Load Articles Data'],
+        ['load-users-data', 'user-roles-section', loadUsersWithRoles, '<i class="fas fa-sync-alt"></i> Load Users Data'],
+        ['load-inactive-players-data', 'inactive-players', loadInactivePlayersData, '<i class="fas fa-sync-alt"></i> Load Inactive Players'],
+        ['load-highlights-data', 'manage-highlights', loadHighlightsAdmin, '<i class="fas fa-sync-alt"></i> Load Highlights'],
+        ['load-matches-data', 'manage-matches', () => loadMatchesData(1), '<i class="fas fa-sync-alt"></i> Load Matches'],
+        ['load-ribbons-data', 'manage-ribbons', loadRibbonsData, '<i class="fas fa-sync-alt"></i> Load Ribbons Data']
+    ];
+    
+    // Setup each button if user has permission
+    buttonConfigs.forEach(([buttonId, permission, loadFn, buttonText]) => {
+        if (allowedTabs.includes(permission)) {
+            setupLoadButton(buttonId, loadFn, buttonText);
+        }
+    });
+    
+    // Special setup for matches section
+    if (allowedTabs.includes('manage-matches')) {
+        setupCreateTestMatchButton();
+        setupCreateTestMatchModal();
+    }
+    
+    console.log('Data load buttons initialized based on permissions');
+}
+
+
+// Add new setupDashboardSection function 
+function setupDashboardSection() {
+    // Set placeholders
+    const statElements = ['player-count', 'match-count', 'pending-count', 'rejected-count'];
+    statElements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '-';
+    });
+    
+    // Setup refresh button (remove existing listener first to prevent duplicates)
+    const refreshBtn = document.getElementById('refresh-dashboard-btn');
+    if (refreshBtn) {
+        // Clone and replace to remove all existing listeners
+        const newRefreshBtn = refreshBtn.cloneNode(true);
+        refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+        newRefreshBtn.addEventListener('click', () => loadDashboardOverview(true));
+    }
+    
+    console.log('Dashboard section initialized');
+}
+
+function setupLadderSelector() {
+    const ladderSwitches = document.querySelectorAll('.ladder-switch input');
+    
+    ladderSwitches.forEach(switchInput => {
+        switchInput.addEventListener('change', () => {
+            if (switchInput.checked) {
+                currentLadder = switchInput.value; // 'D1', 'D2', 'D3', or 'FFA'
+                document.body.dataset.ladder = currentLadder;
+                
+                // Clear dashboard cache when switching ladders
+                clearDashboardCache();
+                
+                const currentLadderDisplay = document.getElementById('current-ladder-display');
+                if (currentLadderDisplay) {
+                    currentLadderDisplay.textContent = currentLadder;
+                }
+                
+                console.log(`Switched to ${currentLadder} ladder`);
+            }
+        });
+    });
+    
+    const currentLadderDisplay = document.getElementById('current-ladder-display');
+    if (currentLadderDisplay) {
+        currentLadderDisplay.textContent = currentLadder;
+    }
+}
+
+/**
+ * Set dashboard loading state
+ */
+function setDashboardLoadingState() {
+    document.getElementById('player-count').textContent = '-';
+    document.getElementById('match-count').textContent = '-';
+    document.getElementById('pending-count').textContent = '-';
+    document.getElementById('rejected-count').textContent = '-';
+}
+
+/**
+ * Set dashboard error state
+ */
+function setDashboardErrorState(error) {
+    console.error('Dashboard error:', error);
+    document.getElementById('player-count').textContent = 'Error';
+    document.getElementById('match-count').textContent = 'Error';
+    document.getElementById('pending-count').textContent = 'Error';
+    document.getElementById('rejected-count').textContent = 'Error';
+}
+
+// ============================================================================
+// DASHBOARD OVERVIEW - COMPLETELY REWRITTEN
+// ============================================================================
+
+let dashboardRankChart = null;
+let dashboardActivityChart = null;
+let dashboardIsLoading = false;
+let dashboardCache = { data: null, timestamp: null, ttl: 300000 };
+
+async function loadDashboardOverview(forceRefresh = false) {
+    if (dashboardIsLoading) {
+        console.log('🛑 Dashboard load already in progress - BLOCKED');
+        return;
+    }
+
+    dashboardIsLoading = true;
+    console.log('🔄 Dashboard load started');
+
+    try {
+        // Check cache
+        if (!forceRefresh && dashboardCache.data && (Date.now() - dashboardCache.timestamp) < dashboardCache.ttl) {
+            console.log('📦 Using cached dashboard data');
+            updateDashboardStats(dashboardCache.data);
+            await rebuildDashboardCharts();
+            return;
+        }
+
+        // Show loading
+        ['player-count', 'match-count', 'pending-count', 'rejected-count'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '⏳';
+        });
+
+        // Fetch data
+        const collections = getCollectionNames();
+        const counts = await Promise.all([
+            getCountFromServer(collection(db, collections.players)),
+            getCountFromServer(collection(db, collections.approvedMatches)),
+            getCountFromServer(collection(db, collections.pendingMatches)),
+            currentLadder !== 'FFA' ? getCountFromServer(collection(db, collections.rejected)) : Promise.resolve({ data: () => ({ count: 0 }) })
+        ]);
+
+        const data = {
+            playerCount: counts[0].data().count,
+            matchCount: counts[1].data().count,
+            pendingCount: counts[2].data().count,
+            rejectedCount: counts[3].data().count
+        };
+
+        // Cache it
+        dashboardCache.data = data;
+        dashboardCache.timestamp = Date.now();
+
+        // Update UI
+        updateDashboardStats(data);
+        await rebuildDashboardCharts();
+
+        console.log('✅ Dashboard loaded successfully');
+
+    } catch (error) {
+        console.error('❌ Dashboard load error:', error);
+        ['player-count', 'match-count', 'pending-count', 'rejected-count'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '❌';
+        });
+    } finally {
+        dashboardIsLoading = false;
+        console.log('🏁 Dashboard load finished');
+    }
+}
+
+function updateDashboardStats(data) {
+    document.getElementById('player-count').textContent = data.playerCount;
+    document.getElementById('match-count').textContent = data.matchCount;
+    document.getElementById('pending-count').textContent = data.pendingCount;
+    document.getElementById('rejected-count').textContent = data.rejectedCount;
+}
+
+async function rebuildDashboardCharts() {
+    console.log('📊 Rebuilding charts...');
+    
+    // DESTROY old charts completely
+    if (dashboardRankChart) {
+        dashboardRankChart.destroy();
+        dashboardRankChart = null;
+        console.log('🗑️ Rank chart destroyed');
+    }
+    
+    if (dashboardActivityChart) {
+        dashboardActivityChart.destroy();
+        dashboardActivityChart = null;
+        console.log('🗑️ Activity chart destroyed');
+    }
+
+    // Build new charts
+    try {
+        await buildRankChart();
+        await buildActivityChart();
+        console.log('✅ Charts rebuilt');
+    } catch (error) {
+        console.error('❌ Chart build error:', error);
+    }
+}
+
+async function buildRankChart() {
+    const { players: playerCollection } = getCollectionNames();
+    const snapshot = await getDocs(collection(db, playerCollection));
+    
+    const isFFA = currentLadder === 'FFA';
+    let chartData, chartLabels, chartColors;
+    
+    if (isFFA) {
+        // FFA: Show ELO ranges instead of ranks
+        const eloRanges = {
+            '1700+': 0,
+            '1500-1699': 0,
+            '1300-1499': 0,
+            '1200-1299': 0,
+            '<1200': 0
+        };
+        
+        snapshot.forEach(doc => {
+            const elo = doc.data().eloRating || 1200;
+            if (elo >= 1700) eloRanges['1700+']++;
+            else if (elo >= 1500) eloRanges['1500-1699']++;
+            else if (elo >= 1300) eloRanges['1300-1499']++;
+            else if (elo >= 1200) eloRanges['1200-1299']++;
+            else eloRanges['<1200']++;
+        });
+        
+        chartLabels = Object.keys(eloRanges);
+        chartData = Object.values(eloRanges);
+        chartColors = ['#50C878', '#FFD700', '#C0C0C0', '#CD7F32', '#808080'];
+    } else {
+        // D1/D2/D3: Show actual rank tiers from player data
+        const rankCounts = { 'Unranked': 0, 'Bronze': 0, 'Silver': 0, 'Gold': 0, 'Emerald': 0 };
+        
+        snapshot.forEach(doc => {
+            const player = doc.data();
+            const elo = player.eloRating || 1200;
+            const matches = player.matches || player.totalMatches || 0;
+            const wins = player.wins || 0;
+            const winRate = matches > 0 ? (wins / matches) * 100 : 0;
+            
+            // Use getRankFromElo but with additional context
+            let rank = getRankFromElo(elo);
+            
+            // Additional logic for Emerald rank (needs high win rate)
+            if (rank === 'Emerald' && (matches < 20 || winRate < 80)) {
+                rank = 'Gold';
+            }
+            
+            rankCounts[rank]++;
+        });
+        
+        chartLabels = Object.keys(rankCounts);
+        chartData = Object.values(rankCounts);
+        chartColors = ['#808080', '#CD7F32', '#C0C0C0', '#FFD700', '#50C878'];
+    }
+
+    const canvas = document.getElementById('rank-distribution-chart');
+    if (!canvas) {
+        console.error('❌ Rank chart canvas not found');
+        return;
+    }
+
+    const title = isFFA ? `${currentLadder} ELO Distribution` : `${currentLadder} Rank Distribution`;
+
+    dashboardRankChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                data: chartData,
+                backgroundColor: chartColors,
+                borderWidth: 2,
+                borderColor: '#1a1a1a'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.5,
+            plugins: {
+                legend: { 
+                    position: 'right', 
+                    labels: { 
+                        color: '#e0e0e0',
+                        font: { size: 13 },
+                        padding: 12
+                    } 
+                },
+                title: { 
+                    display: true, 
+                    text: title, 
+                    color: '#e0e0e0', 
+                    font: { size: 16, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
+                }
+            }
+        }
+    });
+    console.log('✅ Rank chart created');
+}
+
+async function buildActivityChart() {
+    const { approvedMatches: matchesCollection } = getCollectionNames();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const snapshot = await getDocs(query(
+        collection(db, matchesCollection),
+        where('approvedAt', '>=', Timestamp.fromDate(sevenDaysAgo)),
+        orderBy('approvedAt', 'asc')
+    ));
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const activityByDay = dayNames.reduce((acc, day) => ({ ...acc, [day]: 0 }), {});
+    
+    let totalMatches = 0;
+    let peakDay = '';
+    let peakCount = 0;
+    
+    snapshot.forEach(doc => {
+        const match = doc.data();
+        if (match.approvedAt) {
+            const dayName = dayNames[match.approvedAt.toDate().getDay()];
+            activityByDay[dayName]++;
+            totalMatches++;
+            
+            if (activityByDay[dayName] > peakCount) {
+                peakCount = activityByDay[dayName];
+                peakDay = dayName;
+            }
+        }
+    });
+
+    const canvas = document.getElementById('activity-chart');
+    if (!canvas) {
+        console.error('❌ Activity chart canvas not found');
+        return;
+    }
+
+    const colors = {
+        'D1': { bg: 'rgba(211, 47, 47, 0.7)', border: '#d32f2f' },
+        'D2': { bg: 'rgba(25, 118, 210, 0.7)', border: '#1976d2' },
+        'D3': { bg: 'rgba(76, 175, 80, 0.7)', border: '#4caf50' },
+        'FFA': { bg: 'rgba(255, 87, 34, 0.7)', border: '#ff5722' }
+    }[currentLadder] || { bg: 'rgba(211, 47, 47, 0.7)', border: '#d32f2f' };
+
+    const subtitle = totalMatches > 0 
+        ? `${totalMatches} matches | Peak: ${peakDay} (${peakCount})`
+        : 'No matches this week';
+
+    dashboardActivityChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: dayNames,
+            datasets: [{
+                label: currentLadder === 'FFA' ? 'FFA Matches' : 'Matches Played',
+                data: dayNames.map(day => activityByDay[day]),
+                backgroundColor: colors.bg,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { 
+                        color: '#e0e0e0', 
+                        stepSize: 1,
+                        font: { size: 12 }
+                    }, 
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: { 
+                    ticks: { 
+                        color: '#e0e0e0',
+                        font: { size: 12 }
+                    }, 
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            },
+            plugins: {
+                legend: { 
+                    display: false
+                },
+                title: { 
+                    display: true, 
+                    text: [`${currentLadder} Weekly Activity`, subtitle],
+                    color: '#e0e0e0', 
+                    font: { size: 16, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const matches = context.parsed.y;
+                            const percentage = totalMatches > 0 ? ((matches / totalMatches) * 100).toFixed(1) : 0;
+                            return `${matches} matches (${percentage}% of week)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    console.log('✅ Activity chart created');
+}
+
+function clearDashboardCache() {
+    dashboardCache = { data: null, timestamp: null, ttl: 300000 };
+    if (dashboardRankChart) { dashboardRankChart.destroy(); dashboardRankChart = null; }
+    if (dashboardActivityChart) { dashboardActivityChart.destroy(); dashboardActivityChart = null; }
+    dashboardIsLoading = false;
+    console.log('🧹 Dashboard cache cleared');
+}
+
+// ============================================================================
+// END DASHBOARD OVERVIEW
+// ============================================================================
+
 function getRankFromElo(elo) {
-    if (elo >= 2000) return 'Emerald';
-    if (elo >= 1800) return 'Gold';
-    if (elo >= 1600) return 'Silver';
-    if (elo >= 1400) return 'Bronze';
+    // D1 rank thresholds based on actual ladder system
+    if (elo >= 1000) return 'Emerald';  // 1000+ with 80% win rate requirement
+    if (elo >= 700) return 'Gold';
+    if (elo >= 500) return 'Silver';
+    if (elo >= 200) return 'Bronze';
     return 'Unranked';
 }
 
@@ -999,7 +1055,7 @@ function setupPlayerActionButtons() {
 
 async function openEditPlayerModal(playerId) {
     try {
-        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const { players: playerCollection } = getCollectionNames();
         const playerRef = doc(db, playerCollection, playerId);
         const playerSnap = await getDoc(playerRef);
         
@@ -1060,7 +1116,7 @@ async function saveEditedPlayer() {
         }
         
         // Update player data
-        const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+        const { players: playerCollection, eloHistory: historyCollection } = getCollectionNames();
         const playerRef = doc(db, playerCollection, playerId);
         
         // Get current player data for ELO history tracking
@@ -1080,7 +1136,6 @@ async function saveEditedPlayer() {
         
         // If ELO changed, record in history
         if (elo !== currentElo) {
-            const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
             await addDoc(collection(db, historyCollection), {
                 player: username,
                 previousElo: currentElo,
@@ -1115,7 +1170,7 @@ function closeEditPlayerModal() {
 async function confirmDeletePlayer(playerId) {
     if (confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
         try {
-            const playerCollection = currentLadder === 'D1' ? 'players' : 'playersD2';
+            const { players: playerCollection } = getCollectionNames();
             await deleteDoc(doc(db, playerCollection, playerId));
             
             // Refresh player data
@@ -1255,17 +1310,6 @@ async function addNewPlayer() {
     }
 }
 
-// Make sure the event listener is connected properly
-document.addEventListener('DOMContentLoaded', () => {
-    const addPlayerForm = document.getElementById('add-player-form');
-    if (addPlayerForm) {
-        addPlayerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            addNewPlayer();
-        });
-    }
-});
-
 function filterPlayerTable() {
     const searchTerm = document.getElementById('player-search').value.toLowerCase();
     const rows = document.querySelectorAll('#players-table-body tr');
@@ -1304,24 +1348,21 @@ function debounce(func, wait) {
 
 async function loadEloHistory(page = 1) {
     const historyTable = document.getElementById('elo-history-table-body');
-    const ladderPrefix = currentLadder.toLowerCase(); // d1 or d2 or d3
+    const ladderPrefix = currentLadder.toLowerCase(); // d1, d2, d3, or ffa
     
     if (!historyTable) return;
     
-    historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading history...</td></tr>';
+    setTableState('elo-history-table-body', 'loading', 7, 'Loading history...');
     
     try {
-        // Update this line to handle D3
-        const historyCollection = 
-            currentLadder === 'D1' ? 'eloHistory' : 
-            currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+        // Get collection name from helper
+        const { eloHistory: historyCollection } = getCollectionNames();
         
         const historyRef = collection(db, historyCollection);
         
         let q;
         
         if (page > eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].lastVisible) {
-            // Next page
             q = query(
                 historyRef,
                 orderBy('timestamp', 'desc'),
@@ -1329,7 +1370,6 @@ async function loadEloHistory(page = 1) {
                 limit(PAGE_SIZE)
             );
         } else if (page < eloHistoryPagination[ladderPrefix].page && eloHistoryPagination[ladderPrefix].firstVisible) {
-            // Previous page
             q = query(
                 historyRef,
                 orderBy('timestamp', 'desc'),
@@ -1337,7 +1377,6 @@ async function loadEloHistory(page = 1) {
                 limitToLast(PAGE_SIZE)
             );
         } else {
-            // First page or reset
             q = query(
                 historyRef,
                 orderBy('timestamp', 'desc'),
@@ -1348,119 +1387,80 @@ async function loadEloHistory(page = 1) {
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
-            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No ELO history found</td></tr>';
-            document.getElementById(`${ladderPrefix}-page-indicator`).textContent = 'Page 1';
+            historyTable.innerHTML = '<tr><td colspan="7" class="empty-state">No history records found</td></tr>';
             return;
-        }   
+        }
         
         // Update pagination controls
         eloHistoryPagination[ladderPrefix].page = page;
-        
-        // Store first and last documents for pagination
         eloHistoryPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
         eloHistoryPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
         
-        // Create a cache for userId-to-username lookups to avoid repeated queries
-        const usernameCache = new Map();
-        
-        // Render table
         historyTable.innerHTML = '';
         
-        // Function to convert userIds to usernames if needed
-        const resolveUsername = async (playerField) => {
-            // If it's already clearly a username (contains non-alphanumeric chars or is short)
-            if (typeof playerField !== 'string' || 
-                playerField.length < 20 || // Most userIds are longer than typical usernames
-                /[^a-zA-Z0-9-_]/.test(playerField)) { // Contains special chars
-                return playerField;
-            }
-            
-            // Check if we've already resolved this ID
-            if (usernameCache.has(playerField)) {
-                return usernameCache.get(playerField);
-            }
-            
-            // Try to find the username in multiple collections
-            try {
-                // Try all player collections 
-                for (const collection of ['players', 'playersD2', 'playersD3', 'nonParticipants']) {
-                    const userDoc = await getDoc(doc(db, collection, playerField));
-                    if (userDoc.exists() && userDoc.data().username) {
-                        const username = userDoc.data().username;
-                        usernameCache.set(playerField, username);
-                        return username;
-                    }
-                }
-                
-                // If we get here, we couldn't resolve the username
-                return playerField;
-            } catch (error) {
-                console.warn(`Error resolving username for ${playerField}:`, error);
-                return playerField;
-            }
-        };
-        
-        // Process entries and render rows with proper username resolution
-        for (const doc of querySnapshot.docs) {
+        querySnapshot.forEach(doc => {
             const history = doc.data();
             const row = document.createElement('tr');
             
-            const timestamp = history.timestamp 
-                ? new Date(history.timestamp.seconds * 1000).toLocaleString() 
+            const date = history.timestamp?.toDate?.() 
+                ? history.timestamp.toDate().toLocaleString() 
                 : 'N/A';
             
-            const eloChange = history.newElo - history.previousElo;
-            const changeClass = eloChange > 0 ? 'positive-change' : eloChange < 0 ? 'negative-change' : '';
-            const changeSign = eloChange > 0 ? '+' : '';
+            const player = history.player || history.username || 'Unknown';
+            const previousElo = Math.round(history.previousElo || 0);
+            const newElo = Math.round(history.newElo || 0);
+            const change = newElo - previousElo;
+            const changeClass = change > 0 ? 'positive' : change < 0 ? 'negative' : '';
+            const changeSymbol = change > 0 ? '+' : '';
             
-            // Try to resolve the player name if it might be a userId
-            const playerNameField = history.player || history.username || history.userId || 'N/A';
-            const playerName = await resolveUsername(playerNameField);
+            // Format type based on ladder
+            let type = formatHistoryType(history.type);
+            if (currentLadder === 'FFA' && history.placement) {
+                type += ` (${history.placement}${getOrdinalSuffix(history.placement)})`;
+            }
             
             row.innerHTML = `
-                <td class="timestamp">${timestamp}</td>
-                <td class="player">${playerName}</td>
-                <td class="previous-elo">${history.previousElo || 'N/A'}</td>
-                <td class="new-elo">${history.newElo || 'N/A'}</td>
-                <td class="elo-change ${changeClass}">${changeSign}${eloChange}</td>
-                <td class="type">${formatHistoryType(history.type)}</td>
-                <td class="admin-action">
-                    ${history.modifiedBy || history.promotedBy || history.demotedBy || 'System'}
-                </td>
+                <td>${date}</td>
+                <td>${player}</td>
+                <td>${previousElo}</td>
+                <td>${newElo}</td>
+                <td class="${changeClass}">${changeSymbol}${change}</td>
+                <td>${type}</td>
+                <td>${history.modifiedBy || history.placedBy || history.adminEmail || 'System'}</td>
             `;
             
             historyTable.appendChild(row);
-        }
+        });
         
-        // Update page indicator
-        document.getElementById(`${ladderPrefix}-page-indicator`).textContent = `Page ${page}`;
-        
-        // Enable/disable pagination buttons
-        const prevButton = document.getElementById(`${ladderPrefix}-prev-page`);
-        const nextButton = document.getElementById(`${ladderPrefix}-next-page`);
-        
-        if (prevButton) prevButton.disabled = page <= 1;
-        
-        // Check if there are more records
-        const nextPageCheck = query(
-            historyRef, 
-            orderBy('timestamp', 'desc'),
-            startAfter(eloHistoryPagination[ladderPrefix].lastVisible),
-            limit(1)
-        );
-        const nextPageSnapshot = await getDocs(nextPageCheck);
-        
-        if (nextButton) nextButton.disabled = nextPageSnapshot.empty;
+        // Update pagination button states
+        updateHistoryPaginationButtons(page, querySnapshot.docs.length);
         
     } catch (error) {
         console.error("Error loading ELO history:", error);
-        historyTable.innerHTML = `
-            <tr>
-                <td colspan="7" class="error-state">
-                    Error loading history: ${error.message}
-                </td>
-            </tr>
-        `;
+        setTableState('elo-history-table-body', 'error', 7, error.message);
+    }
+}
+
+// Helper function for ordinal suffix
+function getOrdinalSuffix(n) {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// Update pagination buttons
+function updateHistoryPaginationButtons(currentPage, resultCount) {
+    const ladderPrefix = currentLadder.toLowerCase();
+    
+    const prevBtn = document.getElementById(`${ladderPrefix}-prev-page`);
+    const nextBtn = document.getElementById(`${ladderPrefix}-next-page`);
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = resultCount < PAGE_SIZE;
     }
 }
 
@@ -1482,21 +1482,40 @@ function formatHistoryType(type) {
 }
 
 function setupEloHistorySection() {
-    // Existing D1 and D2 pagination buttons
-    document.getElementById('d1-prev-page').addEventListener('click', () => {
-        loadEloHistory(eloHistoryPagination.d1.page - 1);
+    // D1 pagination buttons
+    document.getElementById('d1-prev-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D1') loadEloHistory(eloHistoryPagination.d1.page - 1);
     });
     
-    document.getElementById('d1-next-page').addEventListener('click', () => {
-        loadEloHistory(eloHistoryPagination.d1.page + 1);
+    document.getElementById('d1-next-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D1') loadEloHistory(eloHistoryPagination.d1.page + 1);
     });
     
-    document.getElementById('d2-prev-page').addEventListener('click', () => {
-        loadEloHistory(eloHistoryPagination.d2.page - 1);
+    // D2 pagination buttons
+    document.getElementById('d2-prev-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D2') loadEloHistory(eloHistoryPagination.d2.page - 1);
     });
     
-    document.getElementById('d2-next-page').addEventListener('click', () => {
-        loadEloHistory(eloHistoryPagination.d2.page + 1);
+    document.getElementById('d2-next-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D2') loadEloHistory(eloHistoryPagination.d2.page + 1);
+    });
+    
+    // D3 pagination buttons
+    document.getElementById('d3-prev-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D3') loadEloHistory(eloHistoryPagination.d3.page - 1);
+    });
+    
+    document.getElementById('d3-next-page')?.addEventListener('click', () => {
+        if (currentLadder === 'D3') loadEloHistory(eloHistoryPagination.d3.page + 1);
+    });
+    
+    // FFA pagination buttons
+    document.getElementById('ffa-prev-page')?.addEventListener('click', () => {
+        if (currentLadder === 'FFA') loadEloHistory(eloHistoryPagination.ffa.page - 1);
+    });
+    
+    document.getElementById('ffa-next-page')?.addEventListener('click', () => {
+        if (currentLadder === 'FFA') loadEloHistory(eloHistoryPagination.ffa.page + 1);
     });
     
     // Add D3 pagination buttons if they exist in your HTML
@@ -1573,7 +1592,7 @@ async function applyEloHistoryFilters() {
     historyTable.innerHTML = '<tr><td colspan="7" class="loading-cell">Applying filters...</td></tr>';
     
     try {
-        const historyCollection = currentLadder === 'D1' ? 'eloHistory' : 'eloHistoryD2';
+        const { eloHistory: historyCollection } = getCollectionNames();
         const historyRef = collection(db, historyCollection);
         
         // Build query constraints
@@ -1675,213 +1694,487 @@ function resetEloHistoryFilters() {
 }
 
 function setupRankControls() {
-    // Promote player modal
-    const promoteBtn = document.getElementById('promote-player-btn');
-    const promoteModal = document.getElementById('promote-modal');
-    const promoteForm = document.getElementById('promote-form');
+    const modal = document.getElementById('rank-manager-modal');
+    const openBtn = document.getElementById('open-rank-manager-btn');
+    const closeBtn = document.getElementById('close-rank-manager');
     
-    if (promoteBtn && promoteModal && promoteForm) {
-        promoteBtn.addEventListener('click', () => {
-            promoteModal.classList.add('active');
-        });
-        
-        // Close when clicking outside
-        promoteModal.addEventListener('click', (e) => {
-            if (e.target === promoteModal) {
-                promoteModal.classList.remove('active');
-            }
-        });
-        
-        // Handle form submit
-        promoteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const usernameInput = document.getElementById('promote-username');
-            const ladderSelect = document.getElementById('promote-ladder');
-            
-            const username = usernameInput.value.trim();
-            const ladder = ladderSelect.value;
-            
-            if (!username) {
-                showNotification('Please enter a username', 'error');
-                return;
-            }
-            
-            try {
-                await promotePlayer(username, ladder);
-                promoteModal.classList.remove('active');
-                usernameInput.value = '';
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        });
-        
-        // Cancel button
-        document.getElementById('cancel-promote-btn').addEventListener('click', () => {
-            promoteModal.classList.remove('active');
-        });
-    }
-    
-    // Demote player modal
-    const demoteBtn = document.getElementById('demote-player-btn');
-    const demoteModal = document.getElementById('demote-modal');
-    const demoteForm = document.getElementById('demote-form');
-    
-    if (demoteBtn && demoteModal && demoteForm) {
-        demoteBtn.addEventListener('click', () => {
-            demoteModal.classList.add('active');
-        });
-        
-        // Close when clicking outside
-        demoteModal.addEventListener('click', (e) => {
-            if (e.target === demoteModal) {
-                demoteModal.classList.remove('active');
-            }
-        });
-        
-        // Handle form submit
-        demoteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const usernameInput = document.getElementById('demote-username');
-            const ladderSelect = document.getElementById('demote-ladder');
-            
-            const username = usernameInput.value.trim();
-            const ladder = ladderSelect.value;
-            
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            try {
-                await demotePlayer(username, ladder);
-                document.getElementById('demote-modal').classList.remove('active');
-                document.getElementById('demote-username').value = '';
-            } catch (error) {
-                console.error('Error in demotion:', error);
-            }
-        });
-    }
-    
-    // Set custom ELO modal
-    const setEloBtn = document.getElementById('set-elo-btn');
-    const setEloModal = document.getElementById('set-elo-modal');
-    const setEloForm = document.getElementById('set-elo-form');
-    
-    if (setEloBtn && setEloModal && setEloForm) {
-        setEloBtn.addEventListener('click', () => {
-            setEloModal.classList.add('active');
-        });
-        
-        // Close when clicking outside
-        setEloModal.addEventListener('click', (e) => {
-            if (e.target === setEloModal) {
-                setEloModal.classList.remove('active');
-            }
-        });
-        
-        // Handle form submit
-setEloForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const usernameInput = document.getElementById('set-elo-username');
-    const eloInput = document.getElementById('set-elo-value');
-    
-    // Fix: Check if it's a radio button group instead of a select element
-    let ladder;
-    const ladderSelect = document.getElementById('set-elo-ladder');
-    const ladderRadio = document.querySelector('input[name="set-elo-ladder"]:checked');
-    
-    if (ladderSelect) {
-        ladder = ladderSelect.value;
-    } else if (ladderRadio) {
-        ladder = ladderRadio.value;
-    } else {
-        ladder = 'D1'; // Default to D1 if no selection found
-    }
-    
-    if (!usernameInput || !eloInput) {
-        showNotification('Form elements are missing', 'error');
+    if (!modal || !openBtn) {
+        console.warn('Rank manager elements not found');
         return;
     }
     
-    const username = usernameInput.value.trim();
-    const elo = parseInt(eloInput.value);
+    // Setup each tab's functionality first
+    const reloadPromotePlayers = setupPromoteTab();
+    const reloadDemotePlayers = setupDemoteTab();
+    const reloadSetEloPlayers = setupSetEloTab();
     
-    if (!username || isNaN(elo)) {
-        showNotification('Please enter valid username and ELO', 'error');
-        return;
+    // Open modal and load initial data
+    openBtn.addEventListener('click', () => {
+        modal.classList.add('active');
+        // Wait for modal to render before loading players
+        setTimeout(() => {
+            reloadPromotePlayers();
+        }, 100);
+    });
+    
+    // Close modal handlers
+    const closeModal = () => {
+        modal.classList.remove('active');
+        // Clear all forms
+        document.getElementById('promote-form')?.reset();
+        document.getElementById('demote-form')?.reset();
+        document.getElementById('set-elo-form-new')?.reset();
+        // Hide info boxes
+        document.getElementById('promote-player-info').style.display = 'none';
+        document.getElementById('demote-player-info').style.display = 'none';
+        document.getElementById('setelo-player-info').style.display = 'none';
+    };
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
     }
     
-    try {
-        await setCustomElo(username, elo, ladder);
-        setEloModal.classList.remove('active');
-        usernameInput.value = '';
-        eloInput.value = '';
-    } catch (error) {
-        showNotification(error.message, 'error');
-    }
-});
-        
-        // Cancel button
-        document.getElementById('cancel-set-elo-btn').addEventListener('click', () => {
-            setEloModal.classList.remove('active');
-        });
-    }
-    
-    // Role assignment modal (Update this part)
-    const setRoleModal = document.getElementById('set-role-modal');
-    const setRoleForm = document.getElementById('set-role-form');
-
-    if (setRoleModal && setRoleForm) {
-        // Close when clicking outside
-        setRoleModal.addEventListener('click', (e) => {
-            if (e.target === setRoleModal) {
-                closeModalHandler();
-            }
-        });
-
-        // Handle form submit
-        setRoleForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const usernameInput = document.getElementById('role-username');
-            const roleNameInput = document.getElementById('role-name'); // New input
-            const roleColorInput = document.getElementById('role-color'); // New input
-
-            const username = usernameInput.value.trim();
-            const roleName = roleNameInput.value.trim(); // Get custom name
-            const roleColor = roleColorInput.value; // Get custom color
-
-            if (!username) { // Only username is strictly required to identify the user
-                showNotification('Username is missing', 'error');
-                return;
-            }
-
-            try {
-                // Call updated function
-                await setUserRole(username, roleName, roleColor);
-                closeModalHandler();
-                loadUsersWithRoles(); // Refresh the table
-            } catch (error) {
-                // Error is already handled in setUserRole
-            }
-        });
-
-        // Cancel button (ensure closeModalHandler is used)
-        const cancelBtn = document.getElementById('cancel-role-btn');
-        if (cancelBtn) {
-            cancelBtn.removeEventListener('click', closeModalHandler);
-            cancelBtn.addEventListener('click', closeModalHandler);
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
         }
+    });
+    
+    // Tab switching with player reload
+    const tabButtons = modal.querySelectorAll('.tab-button');
+    const tabPanels = modal.querySelectorAll('.tab-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.dataset.tab;
+            
+            // Update active states
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            button.classList.add('active');
+            const targetPanel = modal.querySelector(`[data-panel="${targetTab}"]`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            // Load players for the switched tab
+            if (targetTab === 'promote') {
+                setTimeout(() => reloadPromotePlayers(), 50);
+            } else if (targetTab === 'demote') {
+                setTimeout(() => reloadDemotePlayers(), 50);
+            } else if (targetTab === 'set-elo') {
+                setTimeout(() => reloadSetEloPlayers(), 50);
+            }
+        });
+    });
+    
+    // Setup cancel buttons
+    document.getElementById('cancel-promote')?.addEventListener('click', closeModal);
+    document.getElementById('cancel-demote')?.addEventListener('click', closeModal);
+    document.getElementById('cancel-setelo')?.addEventListener('click', closeModal);
+}
+
+// Helper function to get rank thresholds based on ladder
+function getRankThresholds(ladder) {
+    if (ladder === 'D1') {
+        return [
+            { name: 'Unranked', min: 0, max: 199 },
+            { name: 'Bronze', min: 200, max: 499 },
+            { name: 'Silver', min: 500, max: 699 },
+            { name: 'Gold', min: 700, max: 999 },
+            { name: 'Emerald', min: 1000, max: Infinity }
+        ];
+    } else {
+        // D2, D3, FFA use standard thresholds
+        return [
+            { name: 'Unranked', min: 0, max: 1399 },
+            { name: 'Bronze', min: 1400, max: 1599 },
+            { name: 'Silver', min: 1600, max: 1799 },
+            { name: 'Gold', min: 1800, max: 1999 },
+            { name: 'Emerald', min: 2000, max: Infinity }
+        ];
     }
 }
 
-// Replace the promotePlayer function with this implementation
-async function promotePlayer(username, ladder) {
+// Helper to determine rank from ELO
+function getRankFromEloValue(elo, ladder) {
+    const thresholds = getRankThresholds(ladder);
+    for (const threshold of thresholds) {
+        if (elo >= threshold.min && elo <= threshold.max) {
+            return threshold.name;
+        }
+    }
+    return 'Unranked';
+}
+
+// Helper to fetch player data
+async function fetchPlayerData(username, ladder) {
     try {
-        console.log(`Attempting to promote ${username} in ${ladder} ladder`);
+        const { players: collectionName } = getCollectionNames(ladder);
+        const playersRef = collection(db, collectionName);
+        const q = query(playersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            return null;
+        }
+        
+        const playerDoc = querySnapshot.docs[0];
+        return {
+            id: playerDoc.id,
+            data: playerDoc.data()
+        };
+    } catch (error) {
+        console.error('Error fetching player:', error);
+        throw error;
+    }
+}
+
+// Helper function to load players for a dropdown
+async function loadPlayersForDropdown(ladder, dropdownId) {
+    console.log(`Loading players for dropdown ${dropdownId} with ladder ${ladder}`);
+    const dropdown = document.getElementById(dropdownId);
+    
+    if (!dropdown) {
+        console.error(`Dropdown element not found: ${dropdownId}`);
+        console.log('Available elements:', document.querySelectorAll('select[id*="username"]'));
+        return;
+    }
+    
+    console.log('Dropdown element found:', dropdown);
+    console.log('Dropdown current HTML before:', dropdown.innerHTML);
+    
+    try {
+        dropdown.innerHTML = '<option value="">Loading players...</option>';
+        
+        const { players: collectionName } = getCollectionNames(ladder);
+        console.log(`Using collection: ${collectionName}`);
+        
+        const playersRef = collection(db, collectionName);
+        const querySnapshot = await getDocs(playersRef);
+        
+        console.log(`Found ${querySnapshot.size} players in ${collectionName}`);
+        
+        if (querySnapshot.empty) {
+            dropdown.innerHTML = '<option value="">No players found</option>';
+            return;
+        }
+        
+        // Build array and sort client-side
+        const players = [];
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.username) {
+                const elo = data.eloRating || 0;
+                const rank = getRankFromEloValue(elo, ladder);
+                players.push({
+                    username: data.username,
+                    elo: elo,
+                    rank: rank
+                });
+            }
+        });
+        
+        console.log(`Processed ${players.length} valid players`);
+        
+        // Sort alphabetically
+        players.sort((a, b) => a.username.localeCompare(b.username));
+        
+        // Build options
+        const options = ['<option value="">-- Select a player --</option>'];
+        players.forEach(player => {
+            options.push(`<option value="${player.username}">${player.username} (${player.rank} - ${player.elo} ELO)</option>`);
+        });
+        
+        const htmlContent = options.join('');
+        console.log('Setting dropdown innerHTML, first 200 chars:', htmlContent.substring(0, 200));
+        dropdown.innerHTML = htmlContent;
+        console.log('Dropdown HTML after update:', dropdown.innerHTML.substring(0, 200));
+        console.log(`Successfully loaded ${players.length} players into ${dropdownId}`);
+    } catch (error) {
+        console.error('Error loading players:', error);
+        dropdown.innerHTML = `<option value="">Error: ${error.message}</option>`;
+        showNotification(`Failed to load players: ${error.message}`, 'error');
+    }
+}
+
+// Setup Promote Tab
+function setupPromoteTab() {
+    const form = document.getElementById('promote-form');
+    const usernameSelect = document.getElementById('promote-username');
+    const ladderSelect = document.getElementById('promote-ladder');
+    const infoBox = document.getElementById('promote-player-info');
+    
+    if (!form) return () => {};
+    
+    // Load players on ladder change
+    const loadPlayers = () => loadPlayersForDropdown(ladderSelect.value, 'promote-username');
+    ladderSelect.addEventListener('change', loadPlayers);
+    
+    // Update player info when selection changes
+    usernameSelect.addEventListener('change', async () => {
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        
+        if (!username) {
+            infoBox.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const player = await fetchPlayerData(username, ladder);
+            if (player) {
+                const currentElo = player.data.eloRating || 0;
+                const currentRank = getRankFromEloValue(currentElo, ladder);
+                const thresholds = getRankThresholds(ladder);
+                
+                // Find next rank threshold
+                let nextElo = currentElo;
+                let newRank = currentRank;
+                for (const threshold of thresholds) {
+                    if (currentElo < threshold.min) {
+                        nextElo = threshold.min;
+                        newRank = threshold.name;
+                        break;
+                    }
+                }
+                
+                // Update display
+                document.getElementById('promote-current-elo').textContent = currentElo;
+                document.getElementById('promote-current-rank').textContent = currentRank;
+                document.getElementById('promote-current-rank').className = `value rank-badge ${currentRank}`;
+                document.getElementById('promote-new-elo').textContent = nextElo;
+                document.getElementById('promote-new-rank').textContent = newRank;
+                document.getElementById('promote-new-rank').className = `value rank-badge highlight ${newRank}`;
+                
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error looking up player:', error);
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        
+        if (!username) {
+            showNotification('Please select a player', 'error');
+            return;
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Promoting...';
+        
+        try {
+            await promotePlayer(username, ladder);
+            showNotification(`Successfully promoted ${username}`, 'success');
+            form.reset();
+            infoBox.style.display = 'none';
+            await loadPlayers(); // Reload the list
+        } catch (error) {
+            showNotification(error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-arrow-up"></i> Promote Player';
+        }
+    });
+    
+    return loadPlayers;
+}
+
+// Setup Demote Tab
+function setupDemoteTab() {
+    const form = document.getElementById('demote-form');
+    const usernameSelect = document.getElementById('demote-username');
+    const ladderSelect = document.getElementById('demote-ladder');
+    const infoBox = document.getElementById('demote-player-info');
+    
+    if (!form) return () => {};
+    
+    // Load players on ladder change
+    const loadPlayers = () => loadPlayersForDropdown(ladderSelect.value, 'demote-username');
+    ladderSelect.addEventListener('change', loadPlayers);
+    
+    // Update player info when selection changes
+    usernameSelect.addEventListener('change', async () => {
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        
+        if (!username) {
+            infoBox.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const player = await fetchPlayerData(username, ladder);
+            if (player) {
+                const currentElo = player.data.eloRating || 0;
+                const currentRank = getRankFromEloValue(currentElo, ladder);
+                const thresholds = getRankThresholds(ladder);
+                
+                // Find previous rank threshold
+                let nextElo = currentElo;
+                let newRank = currentRank;
+                for (let i = thresholds.length - 1; i >= 0; i--) {
+                    if (currentElo > thresholds[i].max) {
+                        nextElo = thresholds[i].max;
+                        newRank = thresholds[i].name;
+                        break;
+                    }
+                }
+                
+                // Update display
+                document.getElementById('demote-current-elo').textContent = currentElo;
+                document.getElementById('demote-current-rank').textContent = currentRank;
+                document.getElementById('demote-current-rank').className = `value rank-badge ${currentRank}`;
+                document.getElementById('demote-new-elo').textContent = nextElo;
+                document.getElementById('demote-new-rank').textContent = newRank;
+                document.getElementById('demote-new-rank').className = `value rank-badge highlight ${newRank}`;
+                
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error looking up player:', error);
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        
+        if (!username) {
+            showNotification('Please select a player', 'error');
+            return;
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Demoting...';
+        
+        try {
+            await demotePlayer(username, ladder);
+            showNotification(`Successfully demoted ${username}`, 'success');
+            form.reset();
+            infoBox.style.display = 'none';
+            await loadPlayers(); // Reload the list
+        } catch (error) {
+            showNotification(error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Demote Player';
+        }
+    });
+    
+    return loadPlayers;
+}
+
+// Setup Set ELO Tab
+function setupSetEloTab() {
+    const form = document.getElementById('set-elo-form-new');
+    const usernameSelect = document.getElementById('setelo-username');
+    const ladderSelect = document.getElementById('setelo-ladder');
+    const eloInput = document.getElementById('setelo-value');
+    const infoBox = document.getElementById('setelo-player-info');
+    
+    if (!form) return () => {};
+    
+    // Load players on ladder change
+    const loadPlayers = () => loadPlayersForDropdown(ladderSelect.value, 'setelo-username');
+    ladderSelect.addEventListener('change', loadPlayers);
+    
+    // Update player info when selection or ELO changes
+    const updatePlayerInfo = async () => {
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        const newElo = parseInt(eloInput.value);
+        
+        if (!username) {
+            infoBox.style.display = 'none';
+            return;
+        }
+        
+        try {
+            const player = await fetchPlayerData(username, ladder);
+            if (player) {
+                const currentElo = player.data.eloRating || 0;
+                const currentRank = getRankFromEloValue(currentElo, ladder);
+                const newRank = !isNaN(newElo) ? getRankFromEloValue(newElo, ladder) : '-';
+                
+                // Update display
+                document.getElementById('setelo-current-elo').textContent = currentElo;
+                document.getElementById('setelo-current-rank').textContent = currentRank;
+                document.getElementById('setelo-current-rank').className = `value rank-badge ${currentRank}`;
+                document.getElementById('setelo-new-rank').textContent = newRank;
+                document.getElementById('setelo-new-rank').className = `value rank-badge highlight ${newRank}`;
+                
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error looking up player:', error);
+        }
+    };
+    
+    usernameSelect.addEventListener('change', updatePlayerInfo);
+    eloInput.addEventListener('input', updatePlayerInfo);
+    
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = usernameSelect.value;
+        const ladder = ladderSelect.value;
+        const elo = parseInt(eloInput.value);
+        
+        if (!username || isNaN(elo)) {
+            showNotification('Please select a player and enter valid ELO', 'error');
+            return;
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting ELO...';
+        
+        try {
+            await setCustomElo(username, elo, ladder);
+            showNotification(`Successfully set ${username}'s ELO to ${elo}`, 'success');
+            form.reset();
+            infoBox.style.display = 'none';
+            await loadPlayers(); // Reload the list
+        } catch (error) {
+            showNotification(error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Set Custom ELO';
+        }
+    });
+    
+    return loadPlayers;
+}
+
+// Consolidated function for both promotion and demotion
+async function changePlayerRank(username, ladder, direction = 'promote') {
+    const isPromotion = direction === 'promote';
+    const actionName = isPromotion ? 'promote' : 'demote';
+    const actionPastTense = isPromotion ? 'promoted' : 'demoted';
+    
+    try {
+        console.log(`Attempting to ${actionName} ${username} in ${ladder} ladder`);
         
         // Check if current user is admin
         const user = auth.currentUser;
@@ -1890,8 +2183,7 @@ async function promotePlayer(username, ladder) {
         }
         
         // Determine which collection to use
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+        const { players: collectionName, eloHistory: historyCollection } = getCollectionNames(ladder);
         
         // Get player data
         console.log(`Searching for player in ${collectionName}`);
@@ -1900,72 +2192,69 @@ async function promotePlayer(username, ladder) {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            alert(`Player not found in ${ladder} ladder`);
             throw new Error(`Player not found in ${ladder} ladder`);
         }
 
         const playerDoc = querySnapshot.docs[0];
         const playerData = playerDoc.data();
-        const currentElo = playerData.eloRating || 1200;
+        const currentElo = playerData.eloRating || (ladder === 'D1' ? 0 : 1200);
         const playerId = playerDoc.id;
         
         console.log(`Found player with current ELO: ${currentElo}`);
 
-        // Define ELO thresholds
-        const thresholds = [
-            { name: 'Bronze', elo: 1400 },
-            { name: 'Silver', elo: 1600 },
-            { name: 'Gold', elo: 1800 },
-            { name: 'Emerald', elo: 2000 }
-        ];
-
-        // Find next threshold
-        let nextThreshold = thresholds.find(t => t.elo > currentElo);
+        // Get ladder-specific thresholds
+        const allThresholds = getRankThresholds(ladder);
         
-        if (!nextThreshold) {
-            alert(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
-            throw new Error(`Player is already at maximum rank (Emerald) in ${ladder} ladder`);
+        // Define ELO thresholds (ordered for promotion, find logic differs for demotion)
+        const thresholds = isPromotion 
+            ? allThresholds.filter(t => t.min > currentElo).map(t => ({ name: t.name, elo: t.min }))
+            : allThresholds.filter(t => t.max < currentElo).reverse().map(t => ({ name: t.name, elo: t.max }));
+
+        // Find target threshold based on direction
+        const targetThreshold = thresholds[0];
+        
+        if (!targetThreshold) {
+            const limitRank = isPromotion ? 'maximum rank (Emerald)' : 'minimum rank (Unranked)';
+            throw new Error(`Player is already at ${limitRank} in ${ladder} ladder`);
         }
         
-        console.log(`Promoting player to ${nextThreshold.name} (${nextThreshold.elo})`);
+        console.log(`${isPromotion ? 'Promoting' : 'Demoting'} player to ${targetThreshold.name} (${targetThreshold.elo})`);
         
-        // Update player document
-        await updateDoc(doc(db, collectionName, playerDoc.id), {
-            eloRating: nextThreshold.elo,
-            lastPromotedAt: serverTimestamp(),
-            promotedBy: user.email || 'admin'
-        });
+        // Update player document with direction-specific fields
+        const updateFields = {
+            eloRating: targetThreshold.elo,
+            [isPromotion ? 'lastPromotedAt' : 'lastDemotedAt']: serverTimestamp(),
+            [isPromotion ? 'promotedBy' : 'demotedBy']: user.email || 'admin'
+        };
+        await updateDoc(doc(db, collectionName, playerDoc.id), updateFields);
 
         // Add history entry
-        await addDoc(collection(db, historyCollection), {
+        const historyEntry = {
             player: username,
             previousElo: currentElo,
-            newElo: nextThreshold.elo,
+            newElo: targetThreshold.elo,
             timestamp: serverTimestamp(),
-            type: 'promotion',
-            rankAchieved: nextThreshold.name,
-            promotedBy: user.email || 'admin',
+            type: isPromotion ? 'promotion' : 'demotion',
+            rankAchieved: targetThreshold.name,
+            [isPromotion ? 'promotedBy' : 'demotedBy']: user.email || 'admin',
             gameMode: ladder
-        });
+        };
+        await addDoc(collection(db, historyCollection), historyEntry);
 
-        // Add new code to send Discord notification for promotions
+        // Send Discord notification
         try {
-            // Import the promotion manager
             const { promotionManager } = await import('./promotions.js');
+            const oldRank = getRankFromEloValue(currentElo, ladder);
+            const newRank = targetThreshold.name;
             
-            // Get old and new rank names
-            const oldRank = promotionManager.getRankName(currentElo);
-            const newRank = nextThreshold.name;
-            
-            // Send notification to Discord bot
             await promotionManager.sendPromotionNotification(
                 playerId,
                 username,
                 currentElo,
-                nextThreshold.elo,
+                targetThreshold.elo,
                 oldRank,
                 newRank,
-                'promotion',
+                isPromotion ? 'promotion' : 'demotion',
                 {
                     displayName: username,
                     source: 'admin',
@@ -1973,197 +2262,28 @@ async function promotePlayer(username, ladder) {
                     ladder: ladder
                 }
             );
-            console.log('Promotion notification sent to Discord bot');
+            console.log(`${isPromotion ? 'Promotion' : 'Demotion'} notification sent to Discord bot`);
         } catch (notificationError) {
             console.error('Failed to send Discord notification:', notificationError);
-            // Continue execution even if notification fails
         }
 
-        // Show success message
-        alert(`Successfully promoted ${username} to ${nextThreshold.name} (${nextThreshold.elo})`);
+        showNotification(`Successfully ${actionPastTense} ${username} to ${targetThreshold.name} (${targetThreshold.elo})`, 'success');
         
-        // Refresh relevant data
-        if (currentLadder === ladder) {
-            loadPlayersData();
-            loadEloHistory(1);
+        if (typeof currentLadder !== 'undefined' && currentLadder === ladder) {
+            if (typeof loadPlayersData === 'function') loadPlayersData();
+            if (typeof loadEloHistory === 'function') loadEloHistory(1);
         }
 
         return true;
     } catch (error) {
-        console.error('Error promoting player:', error);
-        alert(`Error promoting player: ${error.message}`);
+        console.error(`Error ${actionName.replace('e', '')}ing player:`, error);
         throw error;
     }
 }
 
-// Ensure the promote form is properly connected
-document.addEventListener('DOMContentLoaded', () => {
-    const promoteForm = document.getElementById('promote-form');
-    if (promoteForm) {
-        promoteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('promote-username').value.trim();
-            const ladder = document.querySelector('input[name="promote-ladder"]:checked').value;
-            
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            try {
-                await promotePlayer(username, ladder);
-                document.getElementById('promote-modal').classList.remove('active');
-                document.getElementById('promote-username').value = '';
-            } catch (error) {
-                console.error('Error in promotion:', error);
-            }
-        });
-    }
-});
-
-// Replace the demotePlayer function with this implementation
-async function demotePlayer(username, ladder) {
-    try {
-        console.log(`Attempting to demote ${username} in ${ladder} ladder`);
-        
-        // Check if current user is admin
-        const user = auth.currentUser;
-        if (!user) {
-            throw new Error('You must be logged in to perform this action');
-        }
-        
-        // Determine which collection to use
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
-        
-        // Get player data
-        console.log(`Searching for player in ${collectionName}`);
-        const playersRef = collection(db, collectionName);
-        const q = query(playersRef, where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            alert(`Player not found in ${ladder} ladder`);
-            throw new Error(`Player not found in ${ladder} ladder`);
-        }
-
-        const playerDoc = querySnapshot.docs[0];
-        const playerData = playerDoc.data();
-        const currentElo = playerData.eloRating || 1200;
-        
-        console.log(`Found player with current ELO: ${currentElo}`);
-
-        // Define ELO thresholds (in reverse order for demotion)
-        const thresholds = [
-            { name: 'Gold', elo: 1800 },
-            { name: 'Silver', elo: 1600 },
-            { name: 'Bronze', elo: 1400 },
-            { name: 'Unranked', elo: 1200 }
-        ];
-
-        // Find previous threshold
-        let prevThreshold = thresholds.find(t => t.elo < currentElo);
-        
-        if (!prevThreshold) {
-            alert(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
-            throw new Error(`Player is already at minimum rank (Unranked) in ${ladder} ladder`);
-        }
-
-        console.log(`Demoting player to ${prevThreshold.name} (${prevThreshold.elo})`);
-        
-        // Update player document
-        await updateDoc(doc(db, collectionName, playerDoc.id), {
-            eloRating: prevThreshold.elo,
-            lastDemotedAt: serverTimestamp(),
-            demotedBy: user.email || 'admin'
-        });
-
-        // Add history entry
-        await addDoc(collection(db, historyCollection), {
-            player: username,
-            previousElo: currentElo,
-            newElo: prevThreshold.elo,
-            timestamp: serverTimestamp(),
-            type: 'demotion',
-            rankAchieved: prevThreshold.name,
-            demotedBy: user.email || 'admin',
-            gameMode: ladder
-        });
-
-        // Add new code to send Discord notification for demotions
-        try {
-            // Import the promotion manager
-            const { promotionManager } = await import('./promotions.js');
-            
-            // Get old and new rank names
-            const oldRank = promotionManager.getRankName(currentElo);
-            const newRank = prevThreshold.name;
-            
-            // Send notification to Discord bot
-            await promotionManager.sendPromotionNotification(
-                playerDoc.id,
-                username,
-                currentElo,
-                prevThreshold.elo,
-                oldRank,
-                newRank,
-                'demotion',
-                {
-                    displayName: username,
-                    source: 'admin',
-                    adminUser: user.email,
-                    ladder: ladder
-                }
-            );
-            console.log('Demotion notification sent to Discord bot');
-        } catch (notificationError) {
-            console.error('Failed to send Discord notification:', notificationError);
-            // Continue execution even if notification fails
-        }
-
-        // Show success message
-        alert(`Successfully demoted ${username} to ${prevThreshold.name} (${prevThreshold.elo})`);
-        
-        // Refresh relevant data
-        if (currentLadder === ladder) {
-            loadPlayersData();
-            loadEloHistory(1);
-        }
-
-        return true;
-    } catch (error) {
-        console.error('Error demoting player:', error);
-        alert(`Error demoting player: ${error.message}`);
-        throw error;
-    }
-}
-
-// Ensure the demote form is properly connected
-document.addEventListener('DOMContentLoaded', () => {
-    const demoteForm = document.getElementById('demote-form');
-    if (demoteForm) {
-        demoteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('demote-username').value.trim();
-            const ladder = document.querySelector('input[name="demote-ladder"]:checked').value;
-            
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            try {
-                await demotePlayer(username, ladder);
-                document.getElementById('demote-modal').classList.remove('active');
-                document.getElementById('demote-username').value = '';
-            } catch (error) {
-                console.error('Error in demotion:', error);
-            }
-        });
-    }
-});
+// Wrapper functions for backward compatibility
+const promotePlayer = (username, ladder) => changePlayerRank(username, ladder, 'promote');
+const demotePlayer = (username, ladder) => changePlayerRank(username, ladder, 'demote');
 
 async function setCustomElo(username, elo, ladder) {
     try {
@@ -2174,8 +2294,7 @@ async function setCustomElo(username, elo, ladder) {
         }
 
         // Determine which collection to use
-        const collectionName = ladder === 'D2' ? 'playersD2' : 'players';
-        const historyCollection = ladder === 'D2' ? 'eloHistoryD2' : 'eloHistory';
+        const { players: collectionName, eloHistory: historyCollection } = getCollectionNames(ladder);
 
         // Get player data
         const playersRef = collection(db, collectionName)        
@@ -2406,7 +2525,7 @@ async function loadUsersWithRoles() {
     const tableBody = document.getElementById('users-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading users...</td></tr>';
+    setTableState('users-table-body', 'loading', 5, 'Loading users...');
     
     try {
         // Get all users from various collections
@@ -2744,7 +2863,7 @@ async function loadArticles() {
     const articlesTable = document.getElementById('articles-table-body');
     if (!articlesTable) return;
     
-    articlesTable.innerHTML = '<tr><td colspan="4" class="loading-cell">Loading articles...</td></tr>';
+    setTableState('articles-table-body', 'loading', 4, 'Loading articles...');
     
     try {
         const articlesRef = collection(db, 'articles');
@@ -2829,6 +2948,18 @@ function openArticleModal(articleId = null) {
     form.reset();
     idInput.value = '';
     
+    // Reset to editor tab
+    switchArticleTab('editor');
+    
+    // Setup character counters
+    setupCharacterCounters();
+    
+    // Setup live preview
+    setupLivePreview();
+    
+    // Setup tab switching
+    setupArticleTabs();
+    
     if (articleId) {
         // Edit existing article
         titleElement.textContent = 'Edit Article';
@@ -2840,20 +2971,219 @@ function openArticleModal(articleId = null) {
         // Create new article
         titleElement.textContent = 'Create Article';
         
-        // Pre-fill author with current user if available
-        const user = auth.currentUser;
-        if (user) {
-            const authorInput = document.getElementById('article-author');
-            if (authorInput && user.displayName) {
-                authorInput.value = user.displayName;
-            } else if (authorInput) {
-                authorInput.value = user.email;
-            }
-        }
+        // Don't pre-fill author - let them enter their own username
+        
+        // Update character counters
+        updateCharacterCounters();
     }
     
     // Show modal
     modal.classList.add('active');
+}
+
+// Setup article tab switching
+function setupArticleTabs() {
+    const tabButtons = document.querySelectorAll('.article-tab-button');
+    
+    // Remove any existing listeners by cloning
+    tabButtons.forEach(button => {
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // Add new listeners
+    document.querySelectorAll('.article-tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchArticleTab(tabName);
+            
+            // Update preview when switching to preview tab
+            if (tabName === 'preview') {
+                updateArticlePreview();
+            }
+        });
+    });
+}
+
+// Switch between editor and preview tabs
+function switchArticleTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.article-tab-button').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update content
+    document.querySelectorAll('.article-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(`${tabName}-tab`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+}
+
+// Setup character counters
+function setupCharacterCounters() {
+    const titleInput = document.getElementById('article-title');
+    const contentTextarea = document.getElementById('article-content');
+    
+    if (titleInput) {
+        // Remove existing listeners by cloning
+        const newTitleInput = titleInput.cloneNode(true);
+        titleInput.parentNode.replaceChild(newTitleInput, titleInput);
+        
+        newTitleInput.addEventListener('input', updateCharacterCounters);
+    }
+    
+    if (contentTextarea) {
+        // Remove existing listeners by cloning
+        const newContentTextarea = contentTextarea.cloneNode(true);
+        contentTextarea.parentNode.replaceChild(newContentTextarea, contentTextarea);
+        
+        newContentTextarea.addEventListener('input', updateCharacterCounters);
+    }
+}
+
+// Update character counters
+function updateCharacterCounters() {
+    const titleInput = document.getElementById('article-title');
+    const contentTextarea = document.getElementById('article-content');
+    const titleCounter = document.getElementById('title-char-count');
+    const contentCounter = document.getElementById('content-char-count');
+    
+    if (titleInput && titleCounter) {
+        titleCounter.textContent = titleInput.value.length;
+    }
+    
+    if (contentTextarea && contentCounter) {
+        contentCounter.textContent = contentTextarea.value.length;
+    }
+}
+
+// Setup live preview updates
+function setupLivePreview() {
+    const titleInput = document.getElementById('article-title');
+    const authorInput = document.getElementById('article-author');
+    const imageInput = document.getElementById('article-image-url');
+    const contentTextarea = document.getElementById('article-content');
+    const categorySelect = document.getElementById('article-category');
+    
+    const inputs = [titleInput, authorInput, imageInput, contentTextarea, categorySelect];
+    
+    inputs.forEach(input => {
+        if (input) {
+            // Remove existing listeners by cloning
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // Add input listener
+            newInput.addEventListener('input', () => {
+                // Only update if preview tab is active
+                const previewTab = document.getElementById('preview-tab');
+                if (previewTab && previewTab.classList.contains('active')) {
+                    updateArticlePreview();
+                }
+            });
+        }
+    });
+}
+
+// Update the article preview
+function updateArticlePreview() {
+    const title = document.getElementById('article-title').value.trim();
+    const author = document.getElementById('article-author').value.trim();
+    const imageUrl = document.getElementById('article-image-url').value.trim();
+    const content = document.getElementById('article-content').value.trim();
+    const category = document.getElementById('article-category').value;
+    
+    // Update preview title
+    const previewTitle = document.getElementById('preview-title');
+    if (previewTitle) {
+        previewTitle.textContent = title || 'Untitled Article';
+    }
+    
+    // Update preview author
+    const previewAuthor = document.getElementById('preview-author');
+    if (previewAuthor) {
+        previewAuthor.textContent = author || 'Unknown Author';
+    }
+    
+    // Update preview category
+    const previewCategory = document.querySelector('.preview-category');
+    if (previewCategory) {
+        const categoryNames = {
+            'news': 'News & Announcements',
+            'guide': 'Guides & Tips',
+            'tournament': 'Tournament Reports',
+            'community': 'Community Spotlight',
+            'update': 'Update Notes'
+        };
+        previewCategory.textContent = categoryNames[category] || 'News';
+    }
+    
+    // Update preview date
+    const previewDate = document.querySelector('.preview-date');
+    if (previewDate) {
+        const now = new Date();
+        previewDate.textContent = now.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+    
+    // Update preview image
+    const previewImageContainer = document.getElementById('preview-image-container');
+    const previewImage = document.getElementById('preview-image');
+    if (imageUrl && previewImageContainer && previewImage) {
+        previewImage.src = imageUrl;
+        previewImageContainer.style.display = 'block';
+        
+        // Handle image load errors
+        previewImage.onerror = () => {
+            previewImageContainer.style.display = 'none';
+        };
+    } else if (previewImageContainer) {
+        previewImageContainer.style.display = 'none';
+    }
+    
+    // Update preview content
+    const previewContent = document.getElementById('preview-content');
+    if (previewContent) {
+        if (content) {
+            // Basic sanitization - allow common HTML tags
+            const sanitizedContent = content
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/&lt;p&gt;/g, '<p>')
+                .replace(/&lt;\/p&gt;/g, '</p>')
+                .replace(/&lt;strong&gt;/g, '<strong>')
+                .replace(/&lt;\/strong&gt;/g, '</strong>')
+                .replace(/&lt;em&gt;/g, '<em>')
+                .replace(/&lt;\/em&gt;/g, '</em>')
+                .replace(/&lt;h3&gt;/g, '<h3>')
+                .replace(/&lt;\/h3&gt;/g, '</h3>')
+                .replace(/&lt;ul&gt;/g, '<ul>')
+                .replace(/&lt;\/ul&gt;/g, '</ul>')
+                .replace(/&lt;ol&gt;/g, '<ol>')
+                .replace(/&lt;\/ol&gt;/g, '</ol>')
+                .replace(/&lt;li&gt;/g, '<li>')
+                .replace(/&lt;\/li&gt;/g, '</li>')
+                .replace(/&lt;br&gt;/g, '<br>')
+                .replace(/&lt;br\/&gt;/g, '<br/>')
+                .replace(/&lt;a href="([^"]+)"&gt;/g, '<a href="$1">')
+                .replace(/&lt;\/a&gt;/g, '</a>');
+            
+            previewContent.innerHTML = sanitizedContent;
+        } else {
+            previewContent.innerHTML = '<p class="preview-placeholder">Your article content will appear here...</p>';
+        }
+    }
 }
 
 // Load article data for editing
@@ -2875,6 +3205,17 @@ async function loadArticleData(articleId) {
         document.getElementById('article-image-url').value = article.imageUrl || '';
         document.getElementById('article-content').value = article.content || '';
         
+        // Set category if it exists, otherwise default to 'news'
+        const categorySelect = document.getElementById('article-category');
+        if (categorySelect && article.category) {
+            categorySelect.value = article.category;
+        } else if (categorySelect) {
+            categorySelect.value = 'news';
+        }
+        
+        // Update character counters after loading data
+        updateCharacterCounters();
+        
     } catch (error) {
         console.error("Error loading article data:", error);
         showNotification('Failed to load article data', 'error');
@@ -2889,9 +3230,15 @@ async function saveArticle() {
         const author = document.getElementById('article-author').value.trim();
         const imageUrl = document.getElementById('article-image-url').value.trim();
         const content = document.getElementById('article-content').value.trim();
+        const category = document.getElementById('article-category').value;
         
         if (!title || !content) {
             showNotification('Title and content are required', 'error');
+            return;
+        }
+        
+        if (!author) {
+            showNotification('Author name is required', 'error');
             return;
         }
         
@@ -2907,6 +3254,7 @@ async function saveArticle() {
             author,
             imageUrl: imageUrl || null,
             content,
+            category: category || 'news',
             lastModifiedAt: serverTimestamp(),
             lastModifiedBy: user.email
         };
@@ -3114,7 +3462,7 @@ async function loadTrophyDefinitions() {
     const trophiesTable = document.getElementById('trophies-table-body');
     if (!trophiesTable) return;
     
-    trophiesTable.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading trophies...</td></tr>';
+    setTableState('trophies-table-body', 'loading', 5, 'Loading trophies...');
     
     try {
         const trophiesRef = collection(db, 'trophyDefinitions');
@@ -3582,7 +3930,7 @@ async function loadInactivePlayersData() {
     const tableBody = document.getElementById('inactive-players-table-body');
     if (!tableBody) return;
 
-    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading inactive players...</td></tr>';
+    setTableState('inactive-players-table-body', 'loading', 7, 'Loading inactive players...');
 
     try {
         // Get minimum days threshold from filter if it exists
@@ -3590,7 +3938,8 @@ async function loadInactivePlayersData() {
         const minInactiveDays = daysFilter ? parseInt(daysFilter.value) || 0 : 0;
         
         // Fetch all players from the current ladder
-        const playersRef = collection(db, currentLadder === 'D1' ? 'players' : 'playersD2');
+        const { players: playersCollectionName, approvedMatches: matchesCollection } = getCollectionNames();
+        const playersRef = collection(db, playersCollectionName);
         const playersSnapshot = await getDocs(playersRef);
 
         if (playersSnapshot.empty) {
@@ -3611,74 +3960,74 @@ async function loadInactivePlayersData() {
 
         console.log(`Found ${players.length} total players in the ${currentLadder} ladder`);
 
-        // Fetch last match for each player
-        const matchesCollection = currentLadder === 'D1' ? 'approvedMatches' : 'approvedMatchesD2';
-        const lastMatchPromises = players.map(async player => {
-            try {
-                const matchesRef = collection(db, matchesCollection);
-                const q = query(
-                    matchesRef,
-                    or(
-                        where('winnerUsername', '==', player.username),
-                        where('loserUsername', '==', player.username)
-                    ),
-                    orderBy('approvedAt', 'desc'),
-                    limit(1)
-                );
+        // Fetch ALL matches at once (more efficient than querying per player)
+        const matchesRef = collection(db, matchesCollection);
+        const matchesQuery = query(matchesRef, orderBy('approvedAt', 'desc'));
+        const matchesSnapshot = await getDocs(matchesQuery);
+        
+        console.log(`Fetched ${matchesSnapshot.size} total matches from ${matchesCollection}`);
+        
+        // Build a map of username -> last match
+        const lastMatchMap = new Map();
+        
+        matchesSnapshot.forEach(doc => {
+            const match = doc.data();
+            const winner = match.winnerUsername;
+            const loser = match.loserUsername;
+            
+            // Process winner's match if not already recorded
+            if (winner && !lastMatchMap.has(winner)) {
+                const matchDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : null;
+                const now = new Date();
+                const daysSinceMatch = matchDate ? 
+                    Math.floor((now - matchDate) / (1000 * 60 * 60 * 24)) : null;
                 
-                const matchSnap = await getDocs(q);
+                lastMatchMap.set(winner, {
+                    date: matchDate ? matchDate.toLocaleDateString() : 'N/A',
+                    opponent: loser || 'Unknown',
+                    result: 'Won',
+                    timestamp: matchDate || new Date(0),
+                    daysSinceMatch: daysSinceMatch !== null ? daysSinceMatch : Number.MAX_SAFE_INTEGER
+                });
+            }
+            
+            // Process loser's match if not already recorded
+            if (loser && !lastMatchMap.has(loser)) {
+                const matchDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : null;
+                const now = new Date();
+                const daysSinceMatch = matchDate ? 
+                    Math.floor((now - matchDate) / (1000 * 60 * 60 * 24)) : null;
                 
-                if (!matchSnap.empty) {
-                    const match = matchSnap.docs[0].data();
-                    const matchDate = match.approvedAt ? new Date(match.approvedAt.seconds * 1000) : null;
-                    const now = new Date();
-                    const daysSinceMatch = matchDate ? 
-                        Math.floor((now - matchDate) / (1000 * 60 * 60 * 24)) : null;
-                    
-                    const opponent = match.winnerUsername === player.username ? 
-                        match.loserUsername : match.winnerUsername;
-                    
-                    const result = match.winnerUsername === player.username ? 'Won' : 'Lost';
-                    
-                    return { 
-                        ...player, 
-                        lastMatch: { 
-                            date: matchDate ? matchDate.toLocaleDateString() : 'N/A',
-                            opponent: opponent || 'Unknown',
-                            result,
-                            timestamp: matchDate || new Date(0),
-                            daysSinceMatch: daysSinceMatch || Number.MAX_SAFE_INTEGER
-                        } 
-                    };
-                } else {
-                    // No matches found for this player
-                    return { 
-                        ...player, 
-                        lastMatch: { 
-                            date: 'Never played',
-                            opponent: 'N/A',
-                            result: 'N/A',
-                            timestamp: new Date(0),
-                            daysSinceMatch: Number.MAX_SAFE_INTEGER
-                        } 
-                    };
-                }
-            } catch (error) {
-                console.error(`Error fetching matches for ${player.username}:`, error);
-                return { 
-                    ...player, 
-                    lastMatch: { 
-                        date: 'Error',
-                        opponent: 'Error',
-                        result: 'Error',
+                lastMatchMap.set(loser, {
+                    date: matchDate ? matchDate.toLocaleDateString() : 'N/A',
+                    opponent: winner || 'Unknown',
+                    result: 'Lost',
+                    timestamp: matchDate || new Date(0),
+                    daysSinceMatch: daysSinceMatch !== null ? daysSinceMatch : Number.MAX_SAFE_INTEGER
+                });
+            }
+        });
+        
+        // Combine player data with match data
+        let playersWithLastMatch = players.map(player => {
+            const lastMatch = lastMatchMap.get(player.username);
+            
+            if (lastMatch) {
+                return { ...player, lastMatch };
+            } else {
+                // Player has never played
+                return {
+                    ...player,
+                    lastMatch: {
+                        date: 'Never played',
+                        opponent: 'N/A',
+                        result: 'N/A',
                         timestamp: new Date(0),
-                        daysSinceMatch: 0
-                    } 
+                        daysSinceMatch: Number.MAX_SAFE_INTEGER
+                    }
                 };
             }
         });
-
-        let playersWithLastMatch = await Promise.all(lastMatchPromises);
         
         // Sort by days since last match (most inactive first)
         playersWithLastMatch.sort((a, b) => b.lastMatch.daysSinceMatch - a.lastMatch.daysSinceMatch);
@@ -4119,14 +4468,27 @@ async function loadHighlightsAdmin() {
     const tableBody = document.getElementById('highlights-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading highlights...</td></tr>';
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="loading-cell">
+                <i class="fas fa-spinner fa-spin"></i> Loading highlights...
+            </td>
+        </tr>
+    `;
     
     try {
         const q = query(collection(db, 'highlights'), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No highlights found</td></tr>';
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <div>No highlights found</div>
+                    </td>
+                </tr>
+            `;
             return;
         }
         
@@ -4139,36 +4501,36 @@ async function loadHighlightsAdmin() {
             const createdDate = data.createdAt ? 
                 new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
                 
-            // Format type for display
+            // Format type for display with emojis
             let typeDisplay = 'Unknown';
             let typeClass = '';
             
             switch(data.type) {
                 case 'match':
-                    typeDisplay = 'Match';
+                    typeDisplay = '🎮 Match';
                     typeClass = 'match-type';
                     break;
                 case 'creator':
-                    typeDisplay = 'Creator';
+                    typeDisplay = '🗺️ Creator';
                     typeClass = 'creator-type';
                     break;
                 case 'achievement':
-                    typeDisplay = 'Achievement';
+                    typeDisplay = '🏆 Achievement';
                     typeClass = 'achievement-type';
                     break;
             }
             
             row.innerHTML = `
                 <td>${data.title || 'Untitled'}</td>
-                <td><span class="highlight-type ${typeClass}">${typeDisplay}</span></td>
+                <td><span class="highlight-type-badge ${typeClass}">${typeDisplay}</span></td>
                 <td>${createdDate}</td>
                 <td>${data.submittedBy || 'Unknown'}</td>
-                <td>${data.videoId ? '<i class="fas fa-video"></i> Yes' : '<i class="fas fa-times"></i> No'}</td>
+                <td class="video-status">${data.videoId ? '<i class="fas fa-video" style="color: #4CAF50;"></i> Yes' : '<i class="fas fa-times" style="color: #999;"></i> No'}</td>
                 <td class="actions">
-                    <button class="edit-highlight-btn" data-id="${doc.id}" title="Edit">
+                    <button class="edit-highlight-btn action-btn edit-btn" data-id="${doc.id}" title="Edit Highlight">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="delete-highlight-btn" data-id="${doc.id}" title="Delete">
+                    <button class="delete-highlight-btn action-btn delete-btn" data-id="${doc.id}" title="Delete Highlight">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -4190,15 +4552,19 @@ async function loadHighlightsAdmin() {
             });
         });
         
+        showNotification(`Loaded ${querySnapshot.size} highlights`, 'success');
+        
     } catch (error) {
         console.error("Error loading highlights:", error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="6" class="error-state">
-                    Error loading highlights: ${error.message}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>Error loading highlights: ${error.message}</div>
                 </td>
             </tr>
         `;
+        showNotification(`Failed to load highlights: ${error.message}`, 'error');
     }
 }
 
@@ -4604,91 +4970,75 @@ function setupCreateTestMatchButton() {
 
 
 
-// Load matches data with pagination
 async function loadMatchesData(page = 1) {
     const tableBody = document.getElementById('matches-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Loading matches...</td></tr>';
+    // Show loading state with icon
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="7" class="loading-cell">
+                <i class="fas fa-spinner fa-spin"></i> Loading matches...
+            </td>
+        </tr>
+    `;
     
     try {
+        const { approvedMatches: matchesCollection } = getCollectionNames();
+        const isFFA = currentLadder === 'FFA';
         const ladderPrefix = currentLadder.toLowerCase();
-        const pagination = matchesPagination[ladderPrefix];
-        
-        // Collection name based on ladder
-        const matchesCollection = 
-            currentLadder === 'D1' ? 'approvedMatches' : 
-            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
         
         const matchesRef = collection(db, matchesCollection);
         
-        // Reset pagination if going back to page 1
-        if (page <= 1) {
-            pagination.page = 1;
-            pagination.firstVisible = null;
-            pagination.lastVisible = null;
+        let q;
+        if (page > matchesPagination[ladderPrefix].page && matchesPagination[ladderPrefix].lastVisible) {
+            q = query(
+                matchesRef,
+                orderBy('approvedAt', 'desc'),
+                startAfter(matchesPagination[ladderPrefix].lastVisible),
+                limit(PAGE_SIZE)
+            );
+        } else if (page < matchesPagination[ladderPrefix].page && matchesPagination[ladderPrefix].firstVisible) {
+            q = query(
+                matchesRef,
+                orderBy('approvedAt', 'desc'),
+                endBefore(matchesPagination[ladderPrefix].firstVisible),
+                limitToLast(PAGE_SIZE)
+            );
         } else {
-            pagination.page = page;
-        }
-        
-        // Apply filters if any
-        const filters = getMatchesFilters();
-        let q = matchesRef;
-        
-        if (filters.startDate || filters.endDate || filters.searchTerm) {
-            // Create query with filters
-            let queryConstraints = [];
-            
-            if (filters.startDate && filters.endDate) {
-                queryConstraints.push(
-                    where('approvedAt', '>=', filters.startDate),
-                    where('approvedAt', '<=', filters.endDate)
-                );
-                q = query(matchesRef, ...queryConstraints);
-            } else {
-                q = query(matchesRef, orderBy('approvedAt', 'desc'));
-            }
-        } else {
-            // Default ordering
-            q = query(matchesRef, orderBy('approvedAt', 'desc'));
-        }
-        
-        // Add pagination
-        if (page > 1 && pagination.lastVisible) {
-            q = query(q, startAfter(pagination.lastVisible), limit(PAGE_SIZE));
-        } else {
-            q = query(q, limit(PAGE_SIZE));
+            q = query(
+                matchesRef,
+                orderBy('approvedAt', 'desc'),
+                limit(PAGE_SIZE)
+            );
         }
         
         const querySnapshot = await getDocs(q);
         
-        // Update pagination state
-        if (!querySnapshot.empty) {
-            pagination.firstVisible = querySnapshot.docs[0];
-            pagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <div>No matches found for ${currentLadder}</div>
+                    </td>
+                </tr>
+            `;
+            return;
         }
         
-        // Check if there are more records for next page
-        let hasNextPage = false;
-        if (!querySnapshot.empty) {
-            const nextPageQuery = query(q, startAfter(pagination.lastVisible), limit(1));
-            const nextPageSnapshot = await getDocs(nextPageQuery);
-            hasNextPage = !nextPageSnapshot.empty;
-        }
+        matchesPagination[ladderPrefix].page = page;
+        matchesPagination[ladderPrefix].firstVisible = querySnapshot.docs[0];
+        matchesPagination[ladderPrefix].lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
         
-        // Enable/disable pagination buttons
+        // Update pagination controls
         const prevBtn = document.getElementById('matches-prev-page');
         const nextBtn = document.getElementById('matches-next-page');
         const pageIndicator = document.getElementById('matches-page-indicator');
         
-        if (prevBtn) prevBtn.disabled = pagination.page <= 1;
-        if (nextBtn) nextBtn.disabled = !hasNextPage;
-        if (pageIndicator) pageIndicator.textContent = `Page ${pagination.page}`;
-        
-        if (querySnapshot.empty) {
-            tableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found</td></tr>';
-            return;
-        }
+        if (prevBtn) prevBtn.disabled = page === 1;
+        if (nextBtn) nextBtn.disabled = querySnapshot.docs.length < PAGE_SIZE;
+        if (pageIndicator) pageIndicator.textContent = `Page ${page}`;
         
         tableBody.innerHTML = '';
         
@@ -4696,56 +5046,73 @@ async function loadMatchesData(page = 1) {
             const match = doc.data();
             const row = document.createElement('tr');
             
-            // Format date
-            const dateStr = match.approvedAt ? 
-                new Date(match.approvedAt.seconds * 1000).toLocaleDateString() : 'N/A';
-            
-            // IMPORTANT: Set data attributes for the action buttons
-            row.setAttribute('data-id', doc.id);
+            // Add ladder as data attribute to the row
             row.setAttribute('data-ladder', currentLadder);
             
-            // Add a class to identify match rows
-            row.classList.add('match-row');
+            const date = match.approvedAt?.toDate?.() 
+                ? match.approvedAt.toDate().toLocaleDateString() 
+                : 'N/A';
             
-            row.innerHTML = `
-                <td>${dateStr}</td>
-                <td class="winner-cell">${match.winnerUsername || 'Unknown'}</td>
-                <td class="loser-cell">${match.loserUsername || 'Unknown'}</td>
-                <td class="score-cell">${match.winnerScore || 0} - ${match.loserScore || 0}</td>
-                <td class="map-cell">${match.mapPlayed || 'N/A'}</td>
-                <td class="ladder-cell">${currentLadder}</td>
-                <td class="actions">
-                    <button class="edit-match-btn btn-small" data-id="${doc.id}" title="Edit Match">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <button class="delete-match-btn btn-small btn-danger" data-id="${doc.id}" title="Delete Match">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
+            if (isFFA) {
+                // FFA match display
+                const participants = match.players || match.participants || [];
+                const winner = participants.find(p => p.placement === 1);
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${winner?.username || 'N/A'}</td>
+                    <td colspan="2">FFA - ${participants.length} Players</td>
+                    <td>${match.mapPlayed || 'Unknown'}</td>
+                    <td>${currentLadder}</td>
+                    <td class="actions">
+                        <button class="edit-match-btn" data-id="${doc.id}" title="Edit match">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-match-btn" data-id="${doc.id}" title="Delete match">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            } else {
+                // Regular 1v1 match display
+                const winnerScore = match.winnerScore || match.winner_score || 0;
+                const loserScore = match.loserScore || match.loser_score || 0;
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${match.winnerUsername || match.winner || 'Unknown'}</td>
+                    <td>${match.loserUsername || match.loser || 'Unknown'}</td>
+                    <td>${winnerScore} - ${loserScore}</td>
+                    <td>${match.mapPlayed || 'Unknown'}</td>
+                    <td>${currentLadder}</td>
+                    <td class="actions">
+                        <button class="edit-match-btn" data-id="${doc.id}" title="Edit match">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-match-btn" data-id="${doc.id}" title="Delete match">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            }
             
             tableBody.appendChild(row);
         });
         
-        // IMPORTANT: Set up action buttons AFTER adding all rows
         setupMatchesActionButtons();
-        
-        // Apply search filter if there's a term
-        if (filters.searchTerm) {
-            filterMatchesTable();
-        }
-        
-        console.log(`Loaded ${querySnapshot.size} matches for ${currentLadder} ladder, page ${pagination.page}`);
+        showNotification(`Loaded ${querySnapshot.size} matches for ${currentLadder}`, 'success');
         
     } catch (error) {
-        console.error('Error loading matches:', error);
+        console.error("Error loading matches:", error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="7" class="error-state">
-                    Error loading matches: ${error.message}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>Error loading matches: ${error.message}</div>
                 </td>
             </tr>
         `;
+        showNotification(`Failed to load matches: ${error.message}`, 'error');
     }
 }
 
@@ -4761,9 +5128,7 @@ async function deleteMatch(matchId, ladder) {
         }
         
         // Collection name based on ladder
-        const matchesCollection = 
-            ladder === 'D1' ? 'approvedMatches' : 
-            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames(ladder);
         
         console.log(`Using collection: ${matchesCollection}`);
         
@@ -4831,17 +5196,18 @@ function filterMatchesTable() {
     let visibleCount = 0;
     
     rows.forEach(row => {
-        if (row.classList.contains('loading-cell') || 
-            row.classList.contains('empty-state') || 
-            row.classList.contains('error-state')) {
+        // Skip special state rows
+        const firstCell = row.querySelector('td');
+        if (!firstCell || firstCell.classList.contains('loading-cell') || 
+            firstCell.classList.contains('empty-state') || 
+            firstCell.classList.contains('error-state')) {
             return;
         }
         
-        const winner = row.cells[1].textContent.toLowerCase();
-        const loser = row.cells[2].textContent.toLowerCase();
-        const map = row.cells[4].textContent.toLowerCase();
+        const cells = Array.from(row.cells);
+        const searchableText = cells.slice(0, 5).map(cell => cell.textContent.toLowerCase()).join(' ');
         
-        if (winner.includes(searchTerm) || loser.includes(searchTerm) || map.includes(searchTerm)) {
+        if (searchableText.includes(searchTerm)) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -4857,7 +5223,12 @@ function filterMatchesTable() {
         if (!hasNoResultsRow) {
             const noResultsRow = document.createElement('tr');
             noResultsRow.className = 'no-results';
-            noResultsRow.innerHTML = `<td colspan="7">No matches found matching '${searchTerm}'</td>`;
+            noResultsRow.innerHTML = `
+                <td colspan="7">
+                    <i class="fas fa-search"></i>
+                    No matches found matching "${searchTerm}"
+                </td>
+            `;
             tableBody.appendChild(noResultsRow);
         }
     } else {
@@ -4908,12 +5279,19 @@ function resetMatchesFilters() {
     document.getElementById('matches-end-date').value = '';
     document.getElementById('matches-search').value = '';
     
+    // Clear no-results message
+    const noResultsRow = document.querySelector('.no-results');
+    if (noResultsRow) {
+        noResultsRow.remove();
+    }
+    
     // Reset pagination
     const ladderPrefix = currentLadder.toLowerCase();
     matchesPagination[ladderPrefix] = { page: 1, lastVisible: null, firstVisible: null };
     
     // Reload matches
     loadMatchesData(1);
+    showNotification('Filters cleared', 'info');
 }
 
 // Open edit match modal
@@ -4956,6 +5334,19 @@ async function openEditMatchModal(matchId, ladder) {
         // Update title
         document.getElementById('edit-match-title').textContent = `Edit Match: ${match.winnerUsername} vs ${match.loserUsername}`;
         
+        // Setup close button
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.onclick = closeEditMatchModal;
+        }
+        
+        // Close on background click
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeEditMatchModal();
+            }
+        };
+        
         // Show the modal
         modal.classList.add('active');
         
@@ -4985,9 +5376,7 @@ async function saveEditedMatch() {
         }
         
         // Collection name based on ladder
-        const matchesCollection = 
-            ladder === 'D1' ? 'approvedMatches' : 
-            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames(ladder);
         
         // Get form values
         const winnerUsername = document.getElementById('edit-match-winner').value.trim();
@@ -5041,9 +5430,7 @@ async function saveEditedMatch() {
 async function openDeleteMatchModal(matchId, ladder) {
     try {
         // Collection name based on ladder
-        const matchesCollection = 
-            ladder === 'D1' ? 'approvedMatches' : 
-            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames(ladder);
         
         // Get match data
         const matchRef = doc(db, matchesCollection, matchId);
@@ -5109,9 +5496,7 @@ async function confirmDeleteMatch() {
     
     try {
         // Collection name based on ladder
-        const matchesCollection = 
-            ladder === 'D1' ? 'approvedMatches' : 
-            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames(ladder);
         
         // Delete the match
         await deleteDoc(doc(db, matchesCollection, matchId));
@@ -5125,104 +5510,6 @@ async function confirmDeleteMatch() {
     } catch (error) {
         console.error('Error deleting match:', error);
         showNotification('Failed to delete match: ' + error.message, 'error');
-    }
-}
-
-async function saveHighlightChanges() {
-    const highlightId = document.getElementById('edit-highlight-id').value;
-    const type = document.getElementById('edit-highlight-type-select').value;
-
-    // Base data object with common fields
-    let highlightData = {
-        title: document.getElementById('edit-highlight-title-input').value.trim(),
-        type: type,
-        description: document.getElementById('edit-highlight-description-input').value.trim(),
-        videoId: document.getElementById('edit-highlight-videoId-input').value.trim(),
-        submittedBy: auth.currentUser.email,
-        // Timestamps will be handled below (createdAt for new, updatedAt for existing)
-    };
-
-    // Populate fields based on type and nullify irrelevant ones
-    if (type === 'match') {
-        highlightData.matchInfo = document.getElementById('edit-highlight-matchInfo-input').value.trim();
-        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim();
-        const matchDateValue = document.getElementById('edit-highlight-matchDate-input').value;
-        highlightData.matchDate = matchDateValue ? Timestamp.fromDate(new Date(matchDateValue)) : null;
-        highlightData.winnerName = document.getElementById('edit-highlight-winnerName-input').value.trim();
-        highlightData.winnerScore = document.getElementById('edit-highlight-winnerScore-input').value.trim();
-        highlightData.loserName = document.getElementById('edit-highlight-loserName-input').value.trim();
-        highlightData.loserScore = document.getElementById('edit-highlight-loserScore-input').value.trim();
-        highlightData.matchLink = document.getElementById('edit-highlight-matchLink-input').value.trim();
-
-        // Nullify creator/achievement specific fields
-        highlightData.mapCreator = null;
-        highlightData.mapVersion = null;
-        highlightData.creatorImageUrl = null;
-        highlightData.achievementPlayer = null;
-        highlightData.achievementType = null;
-        highlightData.achievementDetails = null;
-        highlightData.playerProfileUrl = null;
-
-    } else if (type === 'creator') {
-        highlightData.map = document.getElementById('edit-highlight-map-input').value.trim(); // Map name is relevant for creator
-        highlightData.mapCreator = document.getElementById('edit-highlight-mapCreator-input').value.trim();
-        highlightData.mapVersion = document.getElementById('edit-highlight-mapVersion-input').value.trim();
-        highlightData.creatorImageUrl = document.getElementById('edit-highlight-creatorImageUrl-input').value.trim();
-
-        // Nullify match/achievement specific fields
-        highlightData.matchInfo = null;
-        highlightData.matchDate = null;
-        highlightData.winnerName = null;
-        highlightData.winnerScore = null;
-        highlightData.loserName = null;
-        highlightData.loserScore = null;
-        highlightData.matchLink = null;
-        highlightData.achievementPlayer = null;
-        highlightData.achievementType = null;
-        highlightData.achievementDetails = null;
-        highlightData.playerProfileUrl = null;
-
-    } else if (type === 'achievement') {
-        highlightData.achievementPlayer = document.getElementById('edit-highlight-achievementPlayer-input').value.trim();
-        highlightData.achievementType = document.getElementById('edit-highlight-achievementType-input').value.trim();
-        highlightData.achievementDetails = document.getElementById('edit-highlight-achievementDetails-input').value.trim();
-        highlightData.playerProfileUrl = document.getElementById('edit-highlight-playerProfileUrl-input').value.trim();
-
-        // Nullify match/creator specific fields
-        highlightData.matchInfo = null;
-        highlightData.map = null; // Map name might not be relevant here, nullifying
-        highlightData.matchDate = null;
-        highlightData.winnerName = null;
-        highlightData.winnerScore = null;
-        highlightData.loserName = null;
-        highlightData.loserScore = null;
-        highlightData.matchLink = null;
-        highlightData.mapCreator = null;
-        highlightData.mapVersion = null;
-        highlightData.creatorImageUrl = null;
-    }
-
-    try {
-        if (highlightId) {
-            highlightData.updatedAt = serverTimestamp();
-            // To preserve createdAt on update, ensure it's not overwritten if not changed.
-            // If your form doesn't allow editing createdAt, this is fine.
-            // Otherwise, you might need to fetch the original doc to keep original createdAt.
-            const highlightRef = doc(db, 'highlights', highlightId);
-            await updateDoc(highlightRef, highlightData);
-            showNotification('Highlight updated successfully!', 'success');
-        } else {
-            highlightData.createdAt = serverTimestamp();
-            // For new documents, `updatedAt` is often omitted or set to the same as `createdAt`.
-            // highlightData.updatedAt = serverTimestamp(); // Optional: if you want updatedAt on creation too
-            await addDoc(collection(db, 'highlights'), highlightData);
-            showNotification('Highlight added successfully!', 'success');
-        }
-        closeEditHighlightModal();
-        loadHighlightsAdmin(); // Refresh the admin list of highlights
-    } catch (error) {
-        console.error('Error saving highlight:', error);
-        showNotification(`Error saving highlight: ${error.message}`, 'error');
     }
 }
 
@@ -5245,9 +5532,7 @@ async function resimulateMatch() {
         }
         
         // Determine collection based on current ladder
-        const matchesCollection = 
-            currentLadder === 'D1' ? 'approvedMatches' : 
-            currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames();
         
         // Validate match exists in approved matches
         const matchRef = doc(db, matchesCollection, matchId);
@@ -5518,9 +5803,7 @@ async function confirmResimulateMatch() {
         }
         
         // Update match record to indicate resimulation
-        const matchesCollection = 
-            ladder === 'D1' ? 'approvedMatches' : 
-            ladder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3';
+        const { approvedMatches: matchesCollection } = getCollectionNames(ladder);
             
         const matchRef = doc(db, matchesCollection, matchId);
         batch.update(matchRef, {
@@ -6014,7 +6297,7 @@ async function loadPointsHistory() {
     const tableBody = document.getElementById('points-history-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">Loading history...</td></tr>';
+    setTableState('points-history-table-body', 'loading', 6, 'Loading history...');
     
     try {
         const historyRef = collection(db, 'pointsHistory');
@@ -6629,6 +6912,36 @@ async function bulkAwardMatchPoints() {
         } else {
             console.error('Quick edit form not found!');
         }
+
+        // Change username button
+        const changeUsernameBtn = document.getElementById('change-username-btn');
+        if (changeUsernameBtn) {
+            changeUsernameBtn.addEventListener('click', () => {
+                openChangeUsernameModal();
+            });
+        }
+        
+        // Change username modal events
+        const changeUsernameModal = document.getElementById('change-username-modal');
+        if (changeUsernameModal) {
+            // Close button
+            const closeBtn = changeUsernameModal.querySelector('.close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeChangeUsernameModal);
+            }
+            
+            // Cancel button
+            const cancelBtn = document.getElementById('cancel-change-username-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeChangeUsernameModal);
+            }
+            
+            // Form submission
+            const changeUsernameForm = document.getElementById('change-username-form');
+            if (changeUsernameForm) {
+                changeUsernameForm.addEventListener('submit', handleChangeUsername);
+            }
+        }
         
         // Modal background click to close
         quickEditModal.addEventListener('click', function(e) {
@@ -6793,6 +7106,374 @@ async function awardPointsToAllPilots() {
     }
 }
 
+// Open change username modal
+function openChangeUsernameModal() {
+    const modal = document.getElementById('change-username-modal');
+    if (!modal) {
+        console.error('Change username modal not found');
+        return;
+    }
+    
+    // Clear form
+    const form = document.getElementById('change-username-form');
+    if (form) {
+        form.reset();
+    }
+    
+    // Clear results
+    document.getElementById('username-search-results').innerHTML = '';
+    document.getElementById('username-change-summary').style.display = 'none';
+    
+    // Show modal
+    modal.classList.add('active');
+}
+
+// Close change username modal
+function closeChangeUsernameModal() {
+    const modal = document.getElementById('change-username-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Search for username across all collections
+async function searchUsername() {
+    const searchUsername = document.getElementById('search-username').value.trim();
+    const resultsContainer = document.getElementById('username-search-results');
+    
+    if (!searchUsername) {
+        showNotification('Please enter a username to search', 'error');
+        return;
+    }
+    
+    resultsContainer.innerHTML = '<div class="loading">Searching all collections...</div>';
+    
+    try {
+        // Collections to search
+        const collections = [
+            { name: 'players', displayName: 'D1 Players' },
+            { name: 'playersD2', displayName: 'D2 Players' },
+            { name: 'playersD3', displayName: 'D3 Players' },
+            { name: 'nonParticipants', displayName: 'Non-Participants' },
+            { name: 'userProfiles', displayName: 'User Profiles' }
+        ];
+        
+        const foundIn = [];
+        
+        // Search each collection
+        for (const collectionInfo of collections) {
+            const q = query(
+                collection(db, collectionInfo.name),
+                where('username', '==', searchUsername)
+            );
+            const snapshot = await getDocs(q);
+            
+            if (!snapshot.empty) {
+                snapshot.forEach(doc => {
+                    foundIn.push({
+                        collection: collectionInfo.name,
+                        displayName: collectionInfo.displayName,
+                        docId: doc.id,
+                        data: doc.data()
+                    });
+                });
+            }
+        }
+        
+        // Also search in match collections
+        const matchCollections = [
+            { name: 'approvedMatches', displayName: 'D1 Approved Matches' },
+            { name: 'approvedMatchesD2', displayName: 'D2 Approved Matches' },
+            { name: 'approvedMatchesD3', displayName: 'D3 Approved Matches' },
+            { name: 'pendingMatches', displayName: 'D1 Pending Matches' },
+            { name: 'pendingMatchesD2', displayName: 'D2 Pending Matches' },
+            { name: 'pendingMatchesD3', displayName: 'D3 Pending Matches' }
+        ];
+        
+        let matchCount = 0;
+        for (const matchCollection of matchCollections) {
+            const winnerQuery = query(
+                collection(db, matchCollection.name),
+                where('winnerUsername', '==', searchUsername)
+            );
+            const loserQuery = query(
+                collection(db, matchCollection.name),
+                where('loserUsername', '==', searchUsername)
+            );
+            
+            const [winnerSnap, loserSnap] = await Promise.all([
+                getDocs(winnerQuery),
+                getDocs(loserQuery)
+            ]);
+            
+            const totalMatches = winnerSnap.size + loserSnap.size;
+            if (totalMatches > 0) {
+                foundIn.push({
+                    collection: matchCollection.name,
+                    displayName: matchCollection.displayName,
+                    matchCount: totalMatches,
+                    isMatches: true
+                });
+                matchCount += totalMatches;
+            }
+        }
+        
+        // Display results
+        if (foundIn.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <p>Username "${searchUsername}" not found in any collection</p>
+                </div>
+            `;
+            return;
+        }
+        
+        resultsContainer.innerHTML = `
+            <div class="search-results-header">
+                <h4>Found "${searchUsername}" in ${foundIn.length} location(s)</h4>
+            </div>
+            <div class="results-list">
+                ${foundIn.map(result => `
+                    <div class="result-item ${result.isMatches ? 'matches-result' : ''}">
+                        <i class="fas ${result.isMatches ? 'fa-trophy' : 'fa-user'}"></i>
+                        <div class="result-info">
+                            <strong>${result.displayName}</strong>
+                            ${result.isMatches ? 
+                                `<span class="match-count">${result.matchCount} matches</span>` : 
+                                `<span class="doc-id">ID: ${result.docId}</span>`
+                            }
+                        </div>
+                        <i class="fas fa-check-circle found-icon"></i>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="results-summary">
+                <p><strong>Total matches found:</strong> ${matchCount}</p>
+            </div>
+        `;
+        
+        // Store results for the change operation
+        window.usernameSearchResults = {
+            username: searchUsername,
+            foundIn: foundIn,
+            matchCount: matchCount
+        };
+        
+        showNotification(`Found username in ${foundIn.length} locations`, 'success');
+        
+    } catch (error) {
+        console.error('Error searching username:', error);
+        resultsContainer.innerHTML = `
+            <div class="error-state">
+                Error searching: ${error.message}
+            </div>
+        `;
+        showNotification('Error searching username', 'error');
+    }
+}
+
+// Handle change username form submission
+async function handleChangeUsername(e) {
+    e.preventDefault();
+    
+    const oldUsername = document.getElementById('search-username').value.trim();
+    const newUsername = document.getElementById('new-username').value.trim();
+    
+    if (!oldUsername || !newUsername) {
+        showNotification('Please enter both old and new usernames', 'error');
+        return;
+    }
+    
+    if (oldUsername === newUsername) {
+        showNotification('New username must be different from old username', 'error');
+        return;
+    }
+    
+    // Check if search was performed
+    if (!window.usernameSearchResults || window.usernameSearchResults.username !== oldUsername) {
+        showNotification('Please search for the username first', 'error');
+        return;
+    }
+    
+    // Confirm the change
+    const foundIn = window.usernameSearchResults.foundIn.length;
+    const matchCount = window.usernameSearchResults.matchCount;
+    
+    if (!confirm(
+        `This will change username "${oldUsername}" to "${newUsername}" in:\n\n` +
+        `- ${foundIn} collection(s)\n` +
+        `- ${matchCount} match(es)\n\n` +
+        `This action cannot be easily undone. Continue?`
+    )) {
+        return;
+    }
+    
+    // Show progress
+    const summaryDiv = document.getElementById('username-change-summary');
+    summaryDiv.style.display = 'block';
+    summaryDiv.innerHTML = '<div class="loading">Changing username...</div>';
+    
+    try {
+        const results = await changeUsernameInWorkspace(oldUsername, newUsername);
+        
+        // Display success summary
+        summaryDiv.innerHTML = `
+            <div class="success-summary">
+                <i class="fas fa-check-circle"></i>
+                <h4>Username Changed Successfully!</h4>
+                <div class="change-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${results.playersUpdated}</span>
+                        <span class="stat-label">Player Records</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${results.matchesUpdated}</span>
+                        <span class="stat-label">Matches</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${results.historyUpdated}</span>
+                        <span class="stat-label">History Entries</span>
+                    </div>
+                </div>
+                <p class="success-note">All references to "${oldUsername}" have been updated to "${newUsername}"</p>
+            </div>
+        `;
+        
+        showNotification('Username changed successfully across all collections', 'success');
+        
+        // Refresh player data if on that tab
+        if (document.getElementById('manage-players').style.display !== 'none') {
+            setTimeout(() => {
+                loadPlayersData();
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('Error changing username:', error);
+        summaryDiv.innerHTML = `
+            <div class="error-summary">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>Error Changing Username</h4>
+                <p>${error.message}</p>
+            </div>
+        `;
+        showNotification('Failed to change username: ' + error.message, 'error');
+    }
+}
+
+// Change username across all collections
+async function changeUsernameInWorkspace(oldUsername, newUsername) {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error('You must be logged in');
+    }
+    
+    let playersUpdated = 0;
+    let matchesUpdated = 0;
+    let historyUpdated = 0;
+    
+    // Update player collections
+    const playerCollections = ['players', 'playersD2', 'playersD3', 'nonParticipants', 'userProfiles'];
+    
+    for (const collectionName of playerCollections) {
+        const q = query(collection(db, collectionName), where('username', '==', oldUsername));
+        const snapshot = await getDocs(q);
+        
+        for (const docSnapshot of snapshot.docs) {
+            await updateDoc(doc(db, collectionName, docSnapshot.id), {
+                username: newUsername,
+                usernameChangedAt: serverTimestamp(),
+                usernameChangedBy: user.email,
+                previousUsername: oldUsername
+            });
+            playersUpdated++;
+        }
+    }
+    
+    // Update match collections
+    const matchCollections = [
+        'approvedMatches', 'approvedMatchesD2', 'approvedMatchesD3',
+        'pendingMatches', 'pendingMatchesD2', 'pendingMatchesD3',
+        'RejectedD1', 'RejectedD2', 'RejectedD3'
+    ];
+    
+    for (const collectionName of matchCollections) {
+        // Update winner username
+        const winnerQuery = query(collection(db, collectionName), where('winnerUsername', '==', oldUsername));
+        const winnerSnapshot = await getDocs(winnerQuery);
+        
+        for (const docSnapshot of winnerSnapshot.docs) {
+            await updateDoc(doc(db, collectionName, docSnapshot.id), {
+                winnerUsername: newUsername,
+                usernameChangedAt: serverTimestamp(),
+                usernameChangedBy: user.email
+            });
+            matchesUpdated++;
+        }
+        
+        // Update loser username
+        const loserQuery = query(collection(db, collectionName), where('loserUsername', '==', oldUsername));
+        const loserSnapshot = await getDocs(loserQuery);
+        
+        for (const docSnapshot of loserSnapshot.docs) {
+            await updateDoc(doc(db, collectionName, docSnapshot.id), {
+                loserUsername: newUsername,
+                usernameChangedAt: serverTimestamp(),
+                usernameChangedBy: user.email
+            });
+            matchesUpdated++;
+        }
+    }
+    
+    // Update ELO history collections
+    const historyCollections = ['eloHistory', 'eloHistoryD2', 'eloHistoryD3'];
+    
+    for (const collectionName of historyCollections) {
+        const q = query(collection(db, collectionName), where('player', '==', oldUsername));
+        const snapshot = await getDocs(q);
+        
+        for (const docSnapshot of snapshot.docs) {
+            await updateDoc(doc(db, collectionName, docSnapshot.id), {
+                player: newUsername,
+                usernameChangedAt: serverTimestamp(),
+                usernameChangedBy: user.email
+            });
+            historyUpdated++;
+        }
+        
+        // Also update opponent field
+        const opponentQuery = query(collection(db, collectionName), where('opponent', '==', oldUsername));
+        const opponentSnapshot = await getDocs(opponentQuery);
+        
+        for (const docSnapshot of opponentSnapshot.docs) {
+            await updateDoc(doc(db, collectionName, docSnapshot.id), {
+                opponent: newUsername,
+                usernameChangedAt: serverTimestamp(),
+                usernameChangedBy: user.email
+            });
+            historyUpdated++;
+        }
+    }
+    
+    // Log the username change
+    await addDoc(collection(db, 'usernameChangeLog'), {
+        oldUsername: oldUsername,
+        newUsername: newUsername,
+        changedBy: user.email,
+        changedAt: serverTimestamp(),
+        playersUpdated: playersUpdated,
+        matchesUpdated: matchesUpdated,
+        historyUpdated: historyUpdated
+    });
+    
+    return {
+        playersUpdated,
+        matchesUpdated,
+        historyUpdated
+    };
+}
+
 // Setup manage ribbons section
 function setupManageRibbonsSection() {
     console.log('Setting up Manage Ribbons section');
@@ -6824,8 +7505,305 @@ function setupManageRibbonsSection() {
             }
         });
     }
-    
+
+    setupTopRankScanButton();
+
     console.log('Manage Ribbons section initialized');
+}
+
+// Add this function after the setupManageRibbonsSection function (around line 7600)
+
+// Scan all ladders for top players in each rank and award ribbons
+async function scanAndAwardTopRankRibbons() {
+    const scanBtn = document.getElementById('scan-top-ranks-btn');
+    if (!scanBtn) return;
+    
+    const originalText = scanBtn.innerHTML;
+    scanBtn.disabled = true;
+    scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+    
+    try {
+        const results = {
+            scanned: 0,
+            awarded: 0,
+            skipped: 0,
+            errors: [],
+            details: []
+        };
+        
+        // Define ladders and their player collections
+        const ladders = [
+            { name: 'D1', collection: 'players', ribbonCollection: 'playerRibbons' },
+            { name: 'D2', collection: 'playersD2', ribbonCollection: 'playerRibbonsD2' },
+            { name: 'D3', collection: 'playersD3', ribbonCollection: 'playerRibbonsD3' }
+        ];
+        
+        // Define rank tiers with ELO thresholds - MUST match ranks.js
+        // Thresholds: Bronze=200, Silver=500, Gold=700, Emerald=1000
+        // Emerald requires: winRate >= 80% AND matchCount >= 20
+        // Same thresholds apply to ALL ladders (D1, D2, D3)
+        const getRankTier = (elo, matchCount, winRate) => {
+            // Unranked if no matches played
+            if (!matchCount || matchCount === 0) {
+                return { tier: 0, name: 'Unranked' };
+            }
+            
+            // Standard tier checks based on ELO
+            if (elo < 200) return { tier: 0, name: 'Unranked' };
+            if (elo < 500) return { tier: 1, name: 'Bronze' };
+            if (elo < 700) return { tier: 2, name: 'Silver' };
+            if (elo < 1000) return { tier: 3, name: 'Gold' };
+            
+            // Emerald tier: 1000+ ELO, requires 80% win rate AND 20+ matches
+            if (elo >= 1000 && winRate >= 80 && matchCount >= 20) {
+                return { tier: 4, name: 'Emerald' };
+            }
+            
+            // Default to Gold if 1000+ ELO but Emerald requirements not met
+            return { tier: 3, name: 'Gold' };
+        };
+        
+        // Get list of players on hiatus
+        const hiatusSnapshot = await getDocs(collection(db, 'playerHiatus'));
+        const hiatusPlayers = new Map();
+        hiatusSnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.username && data.fromLadder) {
+                const key = `${data.username}-${data.fromLadder}`;
+                hiatusPlayers.set(key, true);
+            }
+        });
+        
+        console.log(`📋 Found ${hiatusPlayers.size} players on hiatus`);
+        
+        for (const ladder of ladders) {
+            console.log(`\n🔍 Scanning ${ladder.name} ladder...`);
+            
+            // Get all active players from this ladder
+            const playersSnapshot = await getDocs(collection(db, ladder.collection));
+            const players = [];
+            
+            playersSnapshot.forEach(doc => {
+                const data = doc.data();
+                const username = data.username;
+                const elo = data.eloRating || 0;
+                const matchCount = data.matchesPlayed || 0;
+                const winRate = data.winPercentage || 0;
+                
+                // Check if player is on hiatus for this ladder
+                const hiatusKey = `${username}-${ladder.name}`;
+                const isOnHiatus = hiatusPlayers.has(hiatusKey);
+                
+                if (!isOnHiatus && username) {
+                    const rankInfo = getRankTier(elo, matchCount, winRate);
+                    players.push({
+                        username,
+                        elo,
+                        matchCount,
+                        winRate,
+                        tier: rankInfo.tier,
+                        tierName: rankInfo.name
+                    });
+                }
+            });
+            
+            console.log(`  Found ${players.length} active players`);
+            results.scanned += players.length;
+            
+            // Group players by rank tier
+            const tierGroups = {
+                1: [], // Bronze
+                2: [], // Silver
+                3: [], // Gold
+                4: []  // Emerald
+            };
+            
+            players.forEach(player => {
+                if (player.tier >= 1 && player.tier <= 4) {
+                    tierGroups[player.tier].push(player);
+                }
+            });
+            
+            // Find top player in each tier and award ribbon
+            for (const [tierNum, tierPlayers] of Object.entries(tierGroups)) {
+                if (tierPlayers.length === 0) continue;
+                
+                // Sort by ELO descending to find the top player
+                tierPlayers.sort((a, b) => b.elo - a.elo);
+                const topPlayer = tierPlayers[0];
+                const tierName = topPlayer.tierName;
+                const ribbonName = `Top ${tierName} Pilot`;
+                
+                console.log(`  ${tierName}: ${tierPlayers.length} players, Top: ${topPlayer.username} (${topPlayer.elo} ELO, ${topPlayer.winRate}% WR, ${topPlayer.matchCount} matches)`);
+                
+                // Check if player already has this ribbon
+                const ribbonRef = doc(db, ladder.ribbonCollection, topPlayer.username);
+                const ribbonDoc = await getDoc(ribbonRef);
+                const currentRibbons = ribbonDoc.exists() ? (ribbonDoc.data().ribbons || {}) : {};
+                
+                if (currentRibbons[ribbonName]) {
+                    console.log(`    ✅ ${topPlayer.username} already has ${ribbonName}`);
+                    results.skipped++;
+                    results.details.push({
+                        ladder: ladder.name,
+                        username: topPlayer.username,
+                        ribbon: ribbonName,
+                        status: 'already_has'
+                    });
+                } else {
+                    // Award the ribbon
+                    currentRibbons[ribbonName] = {
+                        level: 1,
+                        awardedAt: serverTimestamp(),
+                        rank: tierName,
+                        achievedAt: serverTimestamp(),
+                        permanent: true,
+                        awardedBy: 'admin_scan'
+                    };
+                    
+                    await setDoc(ribbonRef, {
+                        username: topPlayer.username,
+                        ladder: ladder.name,
+                        ribbons: currentRibbons,
+                        lastUpdated: serverTimestamp()
+                    }, { merge: true });
+                    
+                    console.log(`    🏆 Awarded ${ribbonName} to ${topPlayer.username}`);
+                    results.awarded++;
+                    results.details.push({
+                        ladder: ladder.name,
+                        username: topPlayer.username,
+                        ribbon: ribbonName,
+                        elo: topPlayer.elo,
+                        status: 'awarded'
+                    });
+                }
+            }
+        }
+        
+        // Show results modal
+        showTopRankScanResults(results);
+        
+    } catch (error) {
+        console.error('Error scanning top ranks:', error);
+        showNotification('Error scanning top ranks: ' + error.message, 'error');
+    } finally {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = originalText;
+    }
+}
+
+// Display scan results in a modal or notification
+function showTopRankScanResults(results) {
+    const awardedDetails = results.details
+        .filter(d => d.status === 'awarded')
+        .map(d => `• ${d.username} → ${d.ribbon} (${d.ladder}, ${d.elo} ELO)`)
+        .join('\n');
+    
+    const skippedDetails = results.details
+        .filter(d => d.status === 'already_has')
+        .map(d => `• ${d.username} already has ${d.ribbon} (${d.ladder})`)
+        .join('\n');
+    
+    let message = `Top Rank Scan Complete!\n\n`;
+    message += `📊 Players Scanned: ${results.scanned}\n`;
+    message += `🏆 Ribbons Awarded: ${results.awarded}\n`;
+    message += `⏭️ Already Had Ribbon: ${results.skipped}\n`;
+    
+    if (results.awarded > 0) {
+        message += `\n🆕 Newly Awarded:\n${awardedDetails}`;
+    }
+    
+    if (results.errors.length > 0) {
+        message += `\n\n❌ Errors: ${results.errors.length}`;
+    }
+    
+    // Create a styled modal for results
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'top-rank-results-modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;"><i class="fas fa-crown" style="color: gold;"></i> Top Rank Scan Results</h2>
+                <button class="close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888;">&times;</button>
+            </div>
+            
+            <div class="scan-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #4CAF50;">${results.scanned}</div>
+                    <div style="color: #888; font-size: 0.9rem;">Players Scanned</div>
+                </div>
+                <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #FFD700;">${results.awarded}</div>
+                    <div style="color: #888; font-size: 0.9rem;">Ribbons Awarded</div>
+                </div>
+                <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #888;">${results.skipped}</div>
+                    <div style="color: #888; font-size: 0.9rem;">Already Had</div>
+                </div>
+            </div>
+            
+            ${results.awarded > 0 ? `
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="color: #4CAF50; margin-bottom: 0.5rem;"><i class="fas fa-trophy"></i> Newly Awarded</h3>
+                    <div style="background: #1a1a1a; padding: 1rem; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                        ${results.details
+                            .filter(d => d.status === 'awarded')
+                            .map(d => `
+                                <div style="padding: 0.5rem; border-bottom: 1px solid #333; display: flex; justify-content: space-between;">
+                                    <span><strong>${d.username}</strong></span>
+                                    <span style="color: #FFD700;">${d.ribbon}</span>
+                                    <span style="color: #888;">${d.ladder} • ${d.elo} ELO</span>
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${results.skipped > 0 ? `
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="color: #888; margin-bottom: 0.5rem;"><i class="fas fa-check-circle"></i> Already Had Ribbon</h3>
+                    <div style="background: #1a1a1a; padding: 1rem; border-radius: 8px; max-height: 150px; overflow-y: auto; font-size: 0.9rem;">
+                        ${results.details
+                            .filter(d => d.status === 'already_has')
+                            .map(d => `
+                                <div style="padding: 0.3rem; color: #666;">
+                                    ${d.username} - ${d.ribbon} (${d.ladder})
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="modal-buttons" style="text-align: center; margin-top: 1rem;">
+                <button class="btn btn-primary close-results-btn" style="padding: 0.75rem 2rem;">
+                    <i class="fas fa-check"></i> Done
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close handlers
+    modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+    modal.querySelector('.close-results-btn').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    
+    // Refresh ribbons data
+    loadRibbonsData();
+}
+
+// Add to setupManageRibbonsSection or call separately
+function setupTopRankScanButton() {
+    const scanBtn = document.getElementById('scan-top-ranks-btn');
+    if (scanBtn) {
+        scanBtn.addEventListener('click', scanAndAwardTopRankRibbons);
+    }
 }
 
 // Update the modifyUserPoints function to ensure user has points field
@@ -6893,7 +7871,7 @@ async function loadPointsOverview() {
     const tableBody = document.getElementById('points-overview-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading user points...</td></tr>';
+    setTableState('points-overview-table-body', 'loading', 5, 'Loading user points...');
     
     try {
         const usersRef = collection(db, 'userProfiles');
@@ -6950,7 +7928,7 @@ async function loadRibbonsData() {
     const tableBody = document.getElementById('ribbons-overview-table-body');
     if (!tableBody) return;
     
-    tableBody.innerHTML = '<tr><td colspan="5" class="loading-cell">Loading ribbons data...</td></tr>';
+    setTableState('ribbons-overview-table-body', 'loading', 5, 'Loading ribbons data...');
     
     try {
         // Load from all ribbon collections

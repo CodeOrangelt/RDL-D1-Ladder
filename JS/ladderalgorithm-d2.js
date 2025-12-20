@@ -15,9 +15,11 @@ import {
 import { db, auth } from './firebase-config.js';
 import { recordEloChangeD2 } from './elo-history-d2.js';
 import { promotionManager } from './promotions.js';
-import firebaseIdle from './firebase-idle-wrapper.js';
+import { checkAndAwardTopRankRibbon } from './ribbons.js';
 
-// Same ELO calculation formula as D1
+// ===================================
+// ELO CALCULATION - Same formula as D1
+// ===================================
 export function calculateEloD2(winnerRating, loserRating, kFactor = 32) {
     const expectedScoreWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
     const expectedScoreLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
@@ -30,14 +32,15 @@ export function calculateEloD2(winnerRating, loserRating, kFactor = 32) {
         newLoserRating: Math.round(newLoserRating)
     };
 }
-//
-// D2-specific ELO update function
+
+// ===================================
+// ELO UPDATE FUNCTION
+// ===================================
 export async function updateEloRatingsD2(winnerId, loserId, matchId) {
     try {
-        // Get batch instance
         const batch = writeBatch(db);
 
-        // Get player references - note the collection is playersD2
+        // Get player references
         const winnerRef = doc(db, 'playersD2', winnerId);
         const loserRef = doc(db, 'playersD2', loserId);
 
@@ -59,10 +62,10 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
         const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
 
         // Calculate new ELO ratings
-        const { newWinnerRating, newLoserRating } = calculateEloD2(
-            winnerData.eloRating || 1200,
-            loserData.eloRating || 1200
-        );
+        const winnerOldElo = winnerData.eloRating || 1200;
+        const loserOldElo = loserData.eloRating || 1200;
+        
+        const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
 
         // Handle position updating based on ladder rules
         let newWinnerPosition = winnerPosition;
@@ -94,11 +97,10 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
                 }
             }
         } else {
-            // Winner was already ranked higher than loser, positions stay the same
             console.log('D2 Winner already ranked higher - keeping positions');
         }
 
-        // Update the documents with the limited field set
+        // Update winner document
         batch.update(winnerRef, {
             eloRating: newWinnerRating,
             lastMatchDate: serverTimestamp(),
@@ -106,6 +108,7 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
             lastMatchId: matchId
         });
 
+        // Update loser document
         batch.update(loserRef, {
             eloRating: newLoserRating,
             lastMatchDate: serverTimestamp(),
@@ -118,11 +121,11 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
 
         console.log('D2 ELO ratings updated successfully');
 
-        // Create ELO history entries using D2-specific function
+        // Create ELO history entries
         await Promise.all([
             recordEloChangeD2({
                 playerId: winnerId,
-                previousElo: winnerData.eloRating || 1200,
+                previousElo: winnerOldElo,
                 newElo: newWinnerRating,
                 opponentId: loserId,
                 matchResult: 'win',
@@ -134,7 +137,7 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
             }),
             recordEloChangeD2({
                 playerId: loserId,
-                previousElo: loserData.eloRating || 1200,
+                previousElo: loserOldElo,
                 newElo: newLoserRating,
                 opponentId: winnerId,
                 matchResult: 'loss',
@@ -146,13 +149,13 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
             })
         ]);
 
-        // Record promotions/demotions with D2 source
-        await promotionManager.checkAndRecordPromotion(winnerId, newWinnerRating, winnerData.eloRating, {
+        // Record promotions/demotions
+        await promotionManager.checkAndRecordPromotion(winnerId, newWinnerRating, winnerOldElo, {
             source: 'match-d2',
             matchId: matchId
         });
 
-        await promotionManager.checkAndRecordPromotion(loserId, newLoserRating, loserData.eloRating, {
+        await promotionManager.checkAndRecordPromotion(loserId, newLoserRating, loserOldElo, {
             source: 'match-d2',
             matchId: matchId
         });
@@ -164,11 +167,36 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
     }
 }
 
-// D2-specific match approval function
+function getDisplayElo(elo, timestamp) {
+    const cutoffDate = new Date('2025-12-02T00:00:00');
+    let matchDate = null;
+    
+    if (timestamp) {
+        if (timestamp.toDate) {
+            matchDate = timestamp.toDate();
+        } else if (timestamp.seconds) {
+            matchDate = new Date(timestamp.seconds * 1000);
+        } else if (timestamp instanceof Date) {
+            matchDate = timestamp;
+        }
+    }
+    
+    // If match is before cutoff date, subtract 600 for display
+    if (matchDate && matchDate < cutoffDate) {
+        return Math.max(0, (Number(elo) || 0) - 600);
+    }
+    
+    return Number(elo) || 0;
+}
+
+// ===================================
+// MATCH APPROVAL FUNCTION
+// ===================================
 export async function approveReportD2(reportId, winnerScore, winnerSuicides, winnerComment) {
     try {
         console.log('Starting approveReportD2 function with:', { reportId, winnerScore, winnerSuicides, winnerComment });
 
+        // Verify user is logged in
         const currentUser = auth.currentUser;
         if (!currentUser) {
             console.log('No user logged in');
@@ -181,7 +209,7 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
         const currentUsername = userDoc.exists() ? userDoc.data().username : null;
         console.log('Current username:', currentUsername);
 
-        // Get the pending match - using pendingMatchesD2 collection
+        // Get the pending match
         const pendingMatchRef = doc(db, 'pendingMatchesD2', reportId);
         const reportSnapshot = await getDoc(pendingMatchRef);
 
@@ -198,27 +226,7 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
             throw new Error('Only the winner can approve D2 matches');
         }
 
-        // Add winner details to report data
-        const updatedReportData = {
-            ...reportData,
-            winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides,
-            winnerComment: winnerComment,
-            approved: true,
-            approvedAt: serverTimestamp(),
-            approvedBy: currentUsername,
-            createdAt: reportData.createdAt || serverTimestamp(),
-            winnerUsername: reportData.winnerUsername,
-            loserUsername: reportData.loserUsername
-        };
-
-        // Move match to approved collection first - using approvedMatchesD2 collection
-        await setDoc(doc(db, 'approvedMatchesD2', reportId), updatedReportData);
-        await deleteDoc(pendingMatchRef);
-
-        console.log('D2 Match moved to approved collection');
-
-        // Get player IDs - using D2-specific player collection
+        // Get player documents BEFORE updating ELO
         const [winnerDocs, loserDocs] = await Promise.all([
             getDocs(query(collection(db, 'playersD2'), where('username', '==', reportData.winnerUsername))),
             getDocs(query(collection(db, 'playersD2'), where('username', '==', reportData.loserUsername)))
@@ -230,9 +238,54 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
 
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
+        const winnerData = winnerDocs.docs[0].data();
+        const loserData = loserDocs.docs[0].data();
 
-        // Update ELO ratings using D2-specific function
+        // Store pre-match ELO values
+        const winnerOldElo = winnerData.eloRating || 1200;
+        const loserOldElo = loserData.eloRating || 1200;
+
+        // Calculate new ELO values
+        const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
+
+        // Build the approved match document with ALL ELO values
+        const approvedMatchData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides,
+            winnerComment: winnerComment,
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: currentUsername,
+            createdAt: reportData.createdAt || serverTimestamp(),
+            winnerUsername: reportData.winnerUsername,
+            loserUsername: reportData.loserUsername,
+            winnerId: winnerId,
+            loserId: loserId,
+            // Store ELO values - matching D1/D3 field names
+            winnerOldElo: winnerOldElo,
+            loserOldElo: loserOldElo,
+            losersOldElo: loserOldElo,  // Legacy field name for compatibility
+            winnerNewElo: newWinnerRating,
+            loserNewElo: newLoserRating
+        };
+
+        // Move match to approved collection
+        await setDoc(doc(db, 'approvedMatchesD2', reportId), approvedMatchData);
+        await deleteDoc(pendingMatchRef);
+
+        console.log('D2 Match moved to approved collection');
+
+        // Update ELO ratings
         await updateEloRatingsD2(winnerId, loserId, reportId);
+
+        // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
+        try {
+            await checkAndAwardTopRankRibbon(reportData.winnerUsername, 'D2');
+            console.log(`Checked Top Rank ribbon for D2 winner: ${reportData.winnerUsername}`);
+        } catch (ribbonError) {
+            console.warn('Top Rank ribbon check failed, but match approval continues:', ribbonError);
+        }
 
         console.log('D2 Match successfully approved and ELO updated');
         return true;

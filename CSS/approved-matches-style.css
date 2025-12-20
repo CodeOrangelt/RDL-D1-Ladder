@@ -64,6 +64,187 @@ body {
     background-color: #49104b;
 }
 
+/* ===================================
+   FFA MATCH CARD STYLES
+   =================================== */
+
+/* FFA Match Card Container */
+.ffa-match-wrapper {
+    margin-bottom: 20px;
+}
+
+.ffa-match-container {
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #FF4500;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.ffa-match-card {
+    padding: 0;
+}
+
+/* FFA Match Header */
+.ffa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(255, 69, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 69, 0, 0.3);
+}
+
+.ffa-header .match-map {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.ffa-game-version-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.ffa-game-version-badge.d1 {
+    background: #FF9800;
+    color: white;
+}
+
+.ffa-game-version-badge.d2 {
+    background: #2196F3;
+    color: white;
+}
+
+.ffa-player-count {
+    background: rgba(255, 69, 0, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    color: #FF6347;
+}
+
+.ffa-player-count .player-count-number {
+    font-weight: bold;
+    color: #FF4500;
+}
+
+/* FFA Match Body - Placements */
+.ffa-body {
+    padding: 20px;
+}
+
+.ffa-placements {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ffa-placement-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px 80px 70px;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ffa-placement-row:last-child {
+    border-bottom: none;
+}
+
+.ffa-placement {
+    font-weight: bold;
+    color: #888;
+    text-align: left;
+}
+
+.ffa-username {
+    color: #fff;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ffa-username:hover {
+    text-decoration: underline;
+    color: #4CAF50;
+}
+
+.ffa-rating {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    color: #aaa;
+}
+
+/* Stats display - inline */
+.ffa-stats {
+    min-width: 70px;
+    text-align: center;
+    color: #888;
+    font-size: 0.9em;
+}
+
+/* Points display - compact */
+.ffa-points {
+    text-align: right;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+/* ELO change indicators - inline */
+.ffa-elo-change {
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.ffa-elo-change.positive {
+    color: #4CAF50;
+}
+
+.ffa-elo-change.negative {
+    color: #F44336;
+}
+
+/* Remove any box styling */
+.ffa-placement-badge {
+    display: none; /* Remove the circular badge */
+}
+
+.ffa-player-info,
+.ffa-stat {
+    display: none; /* Remove the old structured layout */
+}
+
+/* Responsive - allow some wrapping on very small screens */
+@media (max-width: 768px) {
+    .ffa-placement-row {
+        grid-template-columns: 25px 1fr 70px 65px 60px;
+        gap: 10px;
+        font-size: 0.9em;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ffa-placement-row {
+        grid-template-columns: 20px 1fr 60px 55px;
+        gap: 8px;
+        font-size: 0.85em;
+    }
+    
+    .ffa-score {
+        display: none; /* Hide score on very small screens */
+    }
+}
+
+/* Matches section - general styles */
 .matches-preview-container {
     display: flex;
     flex-direction: column;
@@ -136,12 +317,6 @@ body {
 }
 .match-card.winner-bronze { border-color: #CD7F32; }
 .match-card.winner-unranked { border-color: #80808000; }
-
-.match-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    border-color: #555;
-}
 
 /* Create a visual seam at the connection point */
 .match-container::after {
@@ -1186,16 +1361,302 @@ body {
     fill: white;
 }
 
-.demo-info {
-    flex-grow: 1;
+/* Add/update these styles for flatter, simpler FFA cards with game mode border colors */
+
+/* FFA Card Layout */
+.match-card.ffa-card {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 3px solid #666; /* Default border */
 }
 
-.demo-author {
-    font-size: 11px;
+/* Game mode border colors */
+.match-card.ffa-card[data-game-version="D1"] {
+    border-color: #ff8c00; /* Orange for D1 */
+}
+
+.match-card.ffa-card[data-game-version="D2"] {
+    border-color: #1e90ff; /* Blue for D2 */
+}
+
+.match-card.ffa-card[data-game-version="D3"] {
+    border-color: #32cd32; /* Green for D3 */
+}
+
+/* FFA Match Content (left side) */
+.match-card.ffa-card .ffa-match-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Flatten the header */
+.match-card.ffa-card .match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+}
+
+.match-card.ffa-card .match-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.match-card.ffa-card .match-map {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.match-card.ffa-card .match-date {
     color: #999;
-    margin-bottom: 3px;
+    font-size: 0.9em;
 }
 
-.demo-description {
-    font-size: 13px;
+/* Simplified game version badge */
+.ffa-game-version-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.ffa-game-version-badge[data-version="D1"] {
+    background: rgba(255, 140, 0, 0.2);
+    color: #ff8c00;
+}
+
+.ffa-game-version-badge[data-version="D2"] {
+    background: rgba(30, 144, 255, 0.2);
+    color: #1e90ff;
+}
+
+.ffa-game-version-badge[data-version="D3"] {
+    background: rgba(50, 205, 50, 0.2);
+    color: #32cd32;
+}
+
+.match-card.ffa-card .player-count {
+    color: #999;
+    font-size: 0.9em;
+}
+
+/* Flatten placements table */
+.ffa-placements {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ffa-placement-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px 80px 70px;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ffa-placement-row:last-child {
+    border-bottom: none;
+}
+
+.ffa-placement {
+    font-weight: bold;
+    color: #888;
+    text-align: left;
+}
+
+.ffa-username {
+    color: #fff;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ffa-username:hover {
+    text-decoration: underline;
+    color: #4CAF50;
+}
+
+.ffa-rating {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    color: #aaa;
+}
+
+.ffa-score {
+    text-align: right;
+    color: #888;
+}
+
+.ffa-points {
+    text-align: right;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+/* Comments section on the right */
+.match-card.ffa-card .community-comments-section {
+    width: 300px;
+    flex-shrink: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.match-card.ffa-card .community-comments-section h4 {
+    margin: 0 0 15px 0;
+    color: #fff;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.match-card.ffa-card .comments-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px;
+    margin-bottom: 10px;
+}
+
+.match-card.ffa-card .comment-item {
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.match-card.ffa-card .no-comments-message {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 10px;
+}
+
+.match-card.ffa-card .add-comment-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Match notes */
+.ffa-match-notes {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    color: #999;
+    font-size: 0.9em;
+}
+
+/* Regular match cards - add game mode borders too */
+.match-card[data-game-mode="D1"] {
+    border: 3px solid #ff8c00;
+}
+
+.match-card[data-game-mode="D2"] {
+    border: 3px solid #1e90ff;
+}
+
+.match-card[data-game-mode="D3"] {
+    border: 3px solid #32cd32;
+}
+
+.elo-info-tooltip {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    z-index: 100; /* Increased from 10 */
+}
+
+.elo-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid #ffffff;
+    border-radius: 50%;
+    cursor: help;
+    opacity: 0.4;
+}
+
+.elo-info-tooltip:hover .elo-info-icon {
+    opacity: 0.8;
+    color: #888;
+    border-color: #666;
+}
+
+.elo-info-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 6px;
+    padding: 8px 10px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 10px;
+    font-family: monospace;
+    line-height: 1.4;
+    white-space: pre;
+    min-width: 200px;
+    max-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 200; /* Changed from 0 to 200 - must be higher than parent */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.elo-info-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure match cards have relative positioning and proper overflow */
+.match-card {
+    position: relative;
+    overflow: visible; /* Changed from hidden to visible */
+}
+
+.match-card.ffa-card {
+    position: relative;
+    overflow: visible; /* Changed from hidden to visible */
+}
+
+/* Ensure wrappers don't clip the tooltip */
+.match-display-wrapper {
+    overflow: visible;
+}
+
+.ffa-match-wrapper {
+    overflow: visible;
 }

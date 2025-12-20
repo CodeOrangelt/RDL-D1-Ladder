@@ -17,6 +17,7 @@ import { recordEloChange } from './elo-history.js';
 import { promotionManager, checkAndRecordPromotion } from './promotions.js';
 import { isAdmin } from './admin-check.js';
 import { RANKS, getRankStyle } from './ranks.js';
+import { checkAndAwardTopRankRibbon } from './ribbons.js';
 
 // ladderalgorithm.js
 export function calculateElo(winnerRating, loserRating, kFactor = 32) {
@@ -244,6 +245,14 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         const loserId = loserDocs.docs[0].id;
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
+
+        // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
+        try {
+            await checkAndAwardTopRankRibbon(reportData.winnerUsername, 'D1');
+            console.log(`Checked Top Rank ribbon for winner: ${reportData.winnerUsername}`);
+        } catch (ribbonError) {
+            console.warn('Top Rank ribbon check failed, but match approval continues:', ribbonError);
+        }
 
         try {
             const subgameType = reportData.subgameType || 'Standard';

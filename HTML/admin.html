@@ -21,17 +21,19 @@
             <div class="ladder-selector">
                 <p>Select Ladder</p>
                 <div class="ladder-switch">
-                    <input type="radio" id="d1-switch" name="ladder" value="D1" checked>
+                    <input type="radio" name="ladder" id="d1-switch" value="D1" checked>
                     <label for="d1-switch">D1</label>
                     
-                    <input type="radio" id="d2-switch" name="ladder" value="D2">
+                    <input type="radio" name="ladder" id="d2-switch" value="D2">
                     <label for="d2-switch">D2</label>
                     
-                    <input type="radio" id="d3-switch" name="ladder" value="D3">
+                    <input type="radio" name="ladder" id="d3-switch" value="D3">
                     <label for="d3-switch">D3</label>
                     
-                    <div class="ladder-background"></div>
+                    <input type="radio" name="ladder" id="ffa-switch" value="FFA">
+                    <label for="ffa-switch">FFA</label>
                 </div>
+                <p class="current-ladder-text">Current: <span id="current-ladder-display">D1</span></p>
             </div>
             
             <nav class="sidebar-nav">
@@ -60,20 +62,20 @@
                     <span>Manage Articles</span>
                 </button>
 
-                <div class="nav-item" data-section="user-roles-section">
+                <button class="nav-item" data-section="user-roles-section">
                     <i class="fas fa-user-tag"></i>
                     <span>User Roles</span>
-                </div>
+                </button>
 
                 <button class="nav-item" data-section="manage-trophies">
                     <i class="fas fa-award"></i>
                     <span>Trophy Management</span>
                 </button>
 
-                <div class="nav-item" data-section="inactive-players">
+                <button class="nav-item" data-section="inactive-players">
                     <i class="fas fa-user-clock"></i>
                     <span>Inactive Players</span>
-                </div>
+                </button>
 
                 <button class="nav-item" data-section="manage-matches">
                     <i class="fas fa-gamepad"></i>
@@ -97,8 +99,7 @@
             </nav>
             
             <div class="sidebar-footer">
-                  Be Reliable - Activity logged.
-                </a>
+                Be Reliable - Activity logged.
             </div>
         </div>
         
@@ -164,12 +165,16 @@
                 <div class="dashboard-charts">
                     <div class="chart-container">
                         <h3>Rank Distribution</h3>
-                        <canvas id="rank-distribution-chart"></canvas>
+                        <div style="position: relative; height: 350px;">
+                            <canvas id="rank-distribution-chart"></canvas>
+                        </div>
                     </div>
                     
                     <div class="chart-container">
                         <h3>Weekly Activity</h3>
-                        <canvas id="activity-chart"></canvas>
+                        <div style="position: relative; height: 350px;">
+                            <canvas id="activity-chart"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -178,16 +183,16 @@
             <section id="manage-players" class="admin-section" style="display: none;">
                 <div class="section-header">
                     <h1>Manage Players</h1>
-                    <button id="load-players-data" class="load-data-btn">
-                        <i class="fas fa-sync-alt"></i> Load Players Data
-                    </button>
+                    <div class="header-actions">
+                        <button id="load-players-data" class="load-data-btn">
+                            <i class="fas fa-sync-alt"></i> Load Players Data
+                        </button>
+                        <button id="change-username-btn" class="btn btn-warning">
+                            <i class="fas fa-exchange-alt"></i> Change Username
+                        </button>
+                    </div>
                 </div>
                 
-            <!-- Manage Matches -->
-            <button class="nav-item" data-section="manage-matches">
-                <i class="fas fa-gamepad"></i>
-                <span>Manage Matches</span>
-            </button>    
                 <!-- Add Player Form -->
                 <div class="add-player-form-container">
                     <form id="add-player-form">
@@ -333,42 +338,39 @@
                 </div>
                 
                 <div class="rank-controls">
-                    <button id="promote-player-btn" class="action-button promote">
-                        <i class="fas fa-arrow-up"></i> Promote Player
-                    </button>
-                    
-                    <button id="demote-player-btn" class="action-button demote">
-                        <i class="fas fa-arrow-down"></i> Demote Player
-                    </button>
-                    
-                    <button id="set-elo-btn" class="action-button set-elo">
-                        <i class="fas fa-edit"></i> Set Custom ELO
+                    <button id="open-rank-manager-btn" class="action-button primary">
+                        <i class="fas fa-crown"></i> Open Rank Manager
                     </button>
                 </div>
                 
                 <div class="rank-info">
-                    <h3>Rank Thresholds</h3>
+                    <h3>Rank Thresholds - D1 Ladder</h3>
                     <div class="rank-thresholds">
                         <div class="rank-item unranked">
                             <span class="rank-name">Unranked</span>
-                            <span class="rank-value">Below 1400 ELO</span>
+                            <span class="rank-value">0-199 ELO</span>
                         </div>
                         <div class="rank-item bronze">
                             <span class="rank-name">Bronze</span>
-                            <span class="rank-value">1400-1599 ELO</span>
+                            <span class="rank-value">200-499 ELO</span>
                         </div>
                         <div class="rank-item silver">
                             <span class="rank-name">Silver</span>
-                            <span class="rank-value">1600-1799 ELO</span>
+                            <span class="rank-value">500-699 ELO</span>
                         </div>
                         <div class="rank-item gold">
                             <span class="rank-name">Gold</span>
-                            <span class="rank-value">1800-1999 ELO</span>
+                            <span class="rank-value">700-999 ELO</span>
                         </div>
                         <div class="rank-item emerald">
                             <span class="rank-name">Emerald</span>
-                            <span class="rank-value">2000+ ELO</span>
+                            <span class="rank-value">1000+ ELO</span>
                         </div>
+                    </div>
+                    
+                    <div class="rank-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Note: D2 and D3 ladders use different ELO ranges (1200-2000+)</span>
                     </div>
                 </div>
             </section>
@@ -376,55 +378,71 @@
             <!-- Add this section before the closing main-content div -->
             <section id="manage-matches" class="admin-section" style="display: none;">
                 <div class="section-header">
-                    <h1>Manage Matches</h1>
+                    <h1><i class="fas fa-trophy"></i> Manage Matches</h1>
                     <div class="header-actions">
                         <button id="load-matches-data" class="load-data-btn">
                             <i class="fas fa-sync-alt"></i> Load Matches
                         </button>
-                        <!-- Move the create test match button here -->
                         <button id="create-test-match-btn" class="btn btn-primary" style="display: none;">
                             <i class="fas fa-plus"></i> Create Test Match
+                        </button>
+                        <button id="resimulate-match-btn" class="btn btn-warning">
+                            <i class="fas fa-redo"></i> Resimulate Match
                         </button>
                     </div>
                 </div>
                 
                 <!-- Filter controls -->
-                <div class="filter-controls">
-                    <div class="search-box">
-                        <input type="text" id="matches-search" placeholder="Search players...">
+                <div class="filter-controls matches-filter-controls">
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="matches-search" placeholder="Search players, maps...">
+                        </div>
+                        
+                        <div class="date-filter-group">
+                            <div class="date-filter">
+                                <label><i class="fas fa-calendar-alt"></i> From:</label>
+                                <input type="date" id="matches-start-date">
+                            </div>
+                            
+                            <div class="date-filter">
+                                <label><i class="fas fa-calendar-alt"></i> To:</label>
+                                <input type="date" id="matches-end-date">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button id="apply-matches-filters" class="filter-btn">
+                                <i class="fas fa-filter"></i> Apply
+                            </button>
+                            <button id="reset-matches-filters" class="reset-filters-btn">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div class="date-filter">
-                        <label>From:</label>
-                        <input type="date" id="matches-start-date">
-                    </div>
-                    
-                    <div class="date-filter">
-                        <label>To:</label>
-                        <input type="date" id="matches-end-date">
-                    </div>
-                    
-                    <button id="apply-matches-filters" class="filter-btn">Apply Filters</button>
-                    <button id="reset-matches-filters" class="reset-filters-btn">
-                        <i class="fas fa-undo"></i> Reset
-                    </button>
                 </div>
                 
                 <div class="table-container">
-                    <table class="data-table">
+                    <table class="data-table matches-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Winner</th>
-                                <th>Loser</th>
-                                <th>Score</th>
-                                <th>Map</th>
-                                <th>Ladder</th>
-                                <th>Actions</th>
+                                <th><i class="fas fa-calendar"></i> Date</th>
+                                <th><i class="fas fa-trophy"></i> Winner</th>
+                                <th><i class="fas fa-times"></i> Loser</th>
+                                <th><i class="fas fa-hashtag"></i> Score</th>
+                                <th><i class="fas fa-map"></i> Map</th>
+                                <th><i class="fas fa-layer-group"></i> Ladder</th>
+                                <th><i class="fas fa-cog"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody id="matches-table-body">
-                            <!-- Match data will be loaded here -->
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    Click "Load Matches" to view match data
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -433,22 +451,9 @@
                     <button id="matches-prev-page" class="page-btn" disabled>
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <span id="matches-page-indicator">Page 1</span>
+                    <span id="matches-page-indicator" class="page-indicator">Page 1</span>
                     <button id="matches-next-page" class="page-btn">
                         <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-
-                <!-- Add this new section for match actions -->
-                <div class="matches-actions" style="margin-bottom: 20px;">
-                    <!-- Your existing buttons -->
-                    <button id="create-test-match-btn" class="btn btn-primary">
-                        ➕ Create Test Match
-                    </button>
-                    
-                    <!-- ADD THIS NEW BUTTON -->
-                    <button id="resimulate-match-btn" class="btn btn-warning">
-                        🔄 Resimulate Match
                     </button>
                 </div>
             </section>
@@ -662,41 +667,53 @@
             </section>
 
             <!-- Manage Highlights Section -->
-            <div id="manage-highlights" class="admin-section">
-                <div class="content-header">
-                    <h1>Manage Highlights</h1>
-                    <button id="load-highlights-data" class="load-data-btn"><i class="fas fa-sync-alt"></i> Load Highlights</button>
+            <section id="manage-highlights" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1><i class="fas fa-star"></i> Manage Highlights</h1>
+                    <div class="header-actions">
+                        <button id="load-highlights-data" class="load-data-btn">
+                            <i class="fas fa-sync-alt"></i> Load Highlights
+                        </button>
+                    </div>
                 </div>
+                
                 <div class="section-controls">
                     <div class="highlight-type-buttons">
-                        <button id="create-match-highlight-btn" class="create-btn">
+                        <button id="create-match-highlight-btn" class="create-btn match-btn">
                             <i class="fas fa-gamepad"></i> New Match Highlight
                         </button>
-                        <button id="create-creator-highlight-btn" class="create-btn">
+                        <button id="create-creator-highlight-btn" class="create-btn creator-btn">
                             <i class="fas fa-paint-brush"></i> New Featured Creator
                         </button>
-                        <button id="create-achievement-highlight-btn" class="create-btn">
+                        <button id="create-achievement-highlight-btn" class="create-btn achievement-btn">
                             <i class="fas fa-medal"></i> New Player Achievement
                         </button>
                     </div>
                 </div>
+                
                 <div class="table-container">
-                    <table id="highlights-table">
+                    <table id="highlights-table" class="data-table">
                         <thead>
                             <tr>
-                                <th>Title</th>
-                                <th>Date Created</th>
-                                <th>Video ID</th>
-                                <th>Submitted By</th>
-                                <th>Actions</th>
+                                <th><i class="fas fa-heading"></i> Title</th>
+                                <th><i class="fas fa-tag"></i> Type</th>
+                                <th><i class="fas fa-calendar"></i> Date Created</th>
+                                <th><i class="fas fa-user"></i> Submitted By</th>
+                                <th><i class="fas fa-video"></i> Video</th>
+                                <th><i class="fas fa-cog"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody id="highlights-table-body">
-                            <tr><td colspan="5" class="loading-cell">Click "Load Highlights" to view data.</td></tr>
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    Click "Load Highlights" to view data
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
 
             <!-- MODALS SHOULD BE HERE (or near end of body) -->
             <div id="set-role-modal" class="modal">
@@ -723,36 +740,151 @@
                 </div>
             </div>
 
+            <!-- Article Modal -->
             <div id="article-modal" class="modal">
-                <div class="modal-content large">
+                <div class="modal-content article-modal-content">
                     <span class="close-btn">&times;</span>
                     <h2 id="article-modal-title">Create Article</h2>
+                    
+                    <!-- Tab Navigation -->
+                    <div class="article-tabs">
+                        <button type="button" class="article-tab-button active" data-tab="editor">
+                            <i class="fas fa-edit"></i> Editor
+                        </button>
+                        <button type="button" class="article-tab-button" data-tab="preview">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                    
                     <form id="article-form">
                         <input type="hidden" id="article-id">
+                        
+                        <!-- Editor Tab -->
+                        <div id="editor-tab" class="article-tab-content active">
+                            <div class="article-form-grid">
+                                <div class="form-group">
+                                    <label for="article-title">
+                                        Article Title <span class="required">*</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="article-title" 
+                                        placeholder="Enter a compelling article title..." 
+                                        required
+                                        maxlength="150"
+                                    >
+                                    <small class="field-hint">
+                                        <span id="title-char-count">0</span>/150 characters
+                                    </small>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="article-title">Title:</label>
-                            <input type="text" id="article-title" placeholder="Enter article title" required>
+                                <div class="article-meta-row">
+                                    <div class="form-group">
+                                        <label for="article-author">
+                                            Author Name <span class="required">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="article-author" 
+                                            placeholder="Enter author name" 
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="article-category">
+                                            Category
+                                        </label>
+                                        <select id="article-category">
+                                            <option value="news">News & Announcements</option>
+                                            <option value="guide">Guides & Tips</option>
+                                            <option value="tournament">Tournament Reports</option>
+                                            <option value="community">Community Spotlight</option>
+                                            <option value="update">Update Notes</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="article-image-url">
+                                        Header Image URL
+                                    </label>
+                                    <input 
+                                        type="url" 
+                                        id="article-image-url" 
+                                        placeholder="https://example.com/image.png"
+                                    >
+                                    <small class="field-hint">
+                                        <i class="fas fa-info-circle"></i> Optional banner image displayed at the top of the article
+                                    </small>
+                                </div>
+
+                                <div class="form-group article-content-group">
+                                    <label for="article-content">
+                                        Article Content <span class="required">*</span>
+                                    </label>
+                                    <div class="content-editor-wrapper">
+                                        <div class="editor-toolbar">
+                                            <span class="toolbar-hint">
+                                                <i class="fas fa-code"></i> HTML formatting supported
+                                            </span>
+                                            <span class="content-char-count">
+                                                <span id="content-char-count">0</span> characters
+                                            </span>
+                                        </div>
+                                        <textarea 
+                                            id="article-content" 
+                                            rows="15" 
+                                            placeholder="Write your article content here. You can use basic HTML tags like <p>, <strong>, <em>, <h3>, <ul>, <li>, etc."
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <small class="field-hint">
+                                        <i class="fas fa-lightbulb"></i> 
+                                        <strong>Tip:</strong> Use &lt;p&gt; for paragraphs, &lt;strong&gt; for bold, and &lt;em&gt; for italics
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="article-author">Author Name:</label>
-                            <input type="text" id="article-author" placeholder="Enter author name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="article-image-url">Header Image URL (Optional):</label>
-                            <input type="url" id="article-image-url" placeholder="https://example.com/image.png">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="article-content">Content:</label>
-                            <textarea id="article-content" rows="15" placeholder="Enter article content here. Basic HTML is allowed."></textarea>
+                        
+                        <!-- Preview Tab -->
+                        <div id="preview-tab" class="article-tab-content">
+                            <div class="article-preview-container">
+                                <div class="preview-header">
+                                    <h3>Article Preview</h3>
+                                    <p class="preview-note">
+                                        <i class="fas fa-info-circle"></i> 
+                                        This is how your article will appear to readers
+                                    </p>
+                                </div>
+                                
+                                <div class="article-preview-card">
+                                    <div id="preview-image-container" class="preview-image" style="display: none;">
+                                        <img id="preview-image" src="" alt="Article header">
+                                    </div>
+                                    
+                                    <div class="preview-content">
+                                        <div class="preview-meta">
+                                            <span class="preview-category"></span>
+                                            <span class="preview-date"></span>
+                                        </div>
+                                        <h1 id="preview-title" class="preview-title">Untitled Article</h1>
+                                        <p class="preview-author">By <span id="preview-author">Unknown Author</span></p>
+                                        <div id="preview-content" class="preview-text">
+                                            <p class="preview-placeholder">Your article content will appear here...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="modal-buttons">
-                            <button type="submit" id="save-article-btn" class="button primary">Save Article</button>
-                            <button type="button" id="cancel-article-btn" class="button">Cancel</button>
+                            <button type="submit" id="save-article-btn" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Article
+                            </button>
+                            <button type="button" id="cancel-article-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -889,87 +1021,127 @@
 <!-- Add this section to your admin.html after the manage-points section -->
 <section id="manage-ribbons" class="admin-section" style="display: none;">
     <div class="section-header">
-        <h1>Manage Player Ribbons</h1>
-        <button id="load-ribbons-data" class="load-data-btn">
-            <i class="fas fa-sync-alt"></i> Load Ribbons Data
-        </button>
+        <h1><i class="fas fa-award"></i> Manage Player Ribbons</h1>
+        <div class="header-actions">
+            <button id="load-ribbons-data" class="load-data-btn">
+                <i class="fas fa-sync-alt"></i> Load Ribbons Data
+            </button>
+            <button id="scan-top-ranks-btn" class="load-data-btn" style="margin-left: 10px; background: linear-gradient(135deg, #f39c12, #e74c3c);">
+                <i class="fas fa-crown"></i> Scan & Award Top Ranks
+            </button>
+        </div>
     </div>
     
-    <!-- User Search -->
-    <div class="search-container">
-        <input type="text" id="ribbon-user-search" placeholder="Search by username...">
-        <button id="search-ribbon-user-btn" class="btn btn-primary">Search</button>
+    <!-- User Search Card -->
+    <div class="ribbons-search-card">
+        <h3><i class="fas fa-search"></i> Search for Player</h3>
+        <div class="ribbons-search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-user search-icon"></i>
+                <input type="text" id="ribbon-user-search" class="search-input" placeholder="Search by username...">
+            </div>
+            <button id="search-ribbon-user-btn" class="btn primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
     </div>
     
-    <!-- Selected User Ribbons -->
-    <div id="user-ribbon-management" style="display: none;">
-        <h3>Managing Ribbons for: <span id="current-ribbon-user"></span></h3>
+    <!-- Selected User Ribbons Management -->
+    <div id="user-ribbon-management" class="ribbon-management-container" style="display: none;">
+        <div class="ribbon-user-header">
+            <h3>
+                <i class="fas fa-user-shield"></i> 
+                Managing Ribbons for: 
+                <span id="current-ribbon-user" class="username-highlight"></span>
+            </h3>
+        </div>
         
-        <!-- Add Ribbon Form -->
-        <div class="ribbon-form-section">
-            <h4>Add/Modify Ribbon</h4>
-            <form id="add-ribbon-form">
-                <input type="hidden" id="ribbon-target-user">
-                <input type="hidden" id="ribbon-target-ladder">
-                
-                <div class="form-row">
+        <div class="ribbon-management-grid">
+            <!-- Add Ribbon Form -->
+            <div class="ribbon-form-card">
+                <div class="card-header">
+                    <h4><i class="fas fa-plus-circle"></i> Add/Modify Ribbon</h4>
+                </div>
+                <form id="add-ribbon-form" class="ribbon-form">
+                    <input type="hidden" id="ribbon-target-user">
+                    <input type="hidden" id="ribbon-target-ladder">
+                    
                     <div class="form-group">
-                        <label>Ribbon Type:</label>
-                        <select id="ribbon-type-select" required>
+                        <label for="ribbon-type-select">
+                            <i class="fas fa-medal"></i> Ribbon Type
+                        </label>
+                        <select id="ribbon-type-select" class="form-control" required>
                             <option value="">Select Ribbon</option>
-                            <option value="Overachiever Ribbon">Overachiever Ribbon</option>
-                            <option value="Rematch Ribbon">Rematch Ribbon</option>
-                            <option value="Sub-Gamer Ribbon">Sub-Gamer Ribbon</option>
-                            <option value="Explorer Ribbon">Explorer Ribbon</option>
-                            <option value="Socialite Ribbon">Socialite Ribbon</option>
-                            <option value="Brick Wall">Brick Wall</option>
-                            <option value="Collector Ribbon">Collector Ribbon</option>
-                            <option value="Underdog Ribbon">Underdog Ribbon</option>
-                            <option value="Domination Ribbon">Domination Ribbon</option>
-                            <option value="Top Bronze Pilot">Top Bronze Pilot</option>
-                            <option value="Top Silver Pilot">Top Silver Pilot</option>
-                            <option value="Top Gold Pilot">Top Gold Pilot</option>
-                            <option value="Top Emerald Pilot">Top Emerald Pilot</option>
+                            <option value="Overachiever Ribbon">🏆 Overachiever Ribbon</option>
+                            <option value="Rematch Ribbon">🔄 Rematch Ribbon</option>
+                            <option value="Sub-Gamer Ribbon">🎮 Sub-Gamer Ribbon</option>
+                            <option value="Explorer Ribbon">🗺️ Explorer Ribbon</option>
+                            <option value="Socialite Ribbon">💬 Socialite Ribbon</option>
+                            <option value="Brick Wall">🛡️ Brick Wall</option>
+                            <option value="Collector Ribbon">📦 Collector Ribbon</option>
+                            <option value="Underdog Ribbon">🐕 Underdog Ribbon</option>
+                            <option value="Domination Ribbon">👑 Domination Ribbon</option>
+                            <option value="Top Bronze Pilot">🥉 Top Bronze Pilot</option>
+                            <option value="Top Silver Pilot">🥈 Top Silver Pilot</option>
+                            <option value="Top Gold Pilot">🥇 Top Gold Pilot</option>
+                            <option value="Top Emerald Pilot">💎 Top Emerald Pilot</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label>Level:</label>
-                        <input type="number" id="ribbon-level" min="1" max="10" value="1">
+                        <label for="ribbon-level">
+                            <i class="fas fa-layer-group"></i> Level (1-10)
+                        </label>
+                        <input type="number" id="ribbon-level" class="form-control" min="1" max="10" value="1">
+                    </div>
+                    
+                    <button type="submit" class="btn success full-width">
+                        <i class="fas fa-check"></i> Add/Update Ribbon
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Current Ribbons Display -->
+            <div class="current-ribbons-card">
+                <div class="card-header">
+                    <h4><i class="fas fa-list"></i> Current Ribbons</h4>
+                </div>
+                <div id="current-ribbons-list" class="ribbons-list-container">
+                    <div class="empty-ribbons-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No ribbons assigned yet</p>
                     </div>
                 </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success">Add/Update Ribbon</button>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Current Ribbons Display -->
-        <div class="current-ribbons-section">
-            <h4>Current Ribbons</h4>
-            <div id="current-ribbons-list" class="ribbons-list">
-                <!-- Ribbons will be displayed here -->
             </div>
         </div>
     </div>
     
     <!-- All Users Ribbons Overview -->
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Ladder</th>
-                    <th>Total Ribbons</th>
-                    <th>Last Updated</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="ribbons-overview-table-body">
-                <tr><td colspan="5" class="loading-cell">Click Load Ribbons Data to view</td></tr>
-            </tbody>
-        </table>
+    <div class="ribbons-table-section">
+        <div class="table-section-header">
+            <h3><i class="fas fa-users"></i> All Player Ribbons</h3>
+        </div>
+        <div class="table-container">
+            <table class="data-table ribbons-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Username</th>
+                        <th><i class="fas fa-layer-group"></i> Ladder</th>
+                        <th><i class="fas fa-award"></i> Total Ribbons</th>
+                        <th><i class="fas fa-clock"></i> Last Updated</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ribbons-overview-table-body">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Click "Load Ribbons Data" to view all player ribbons</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </section>
 
@@ -1070,7 +1242,7 @@
                         
                         <div class="form-group">
                             <label for="set-elo-value">ELO Rating:</label>
-                            <input type="number" id="set-elo-value" min="1000" max="3000" required>
+                            <input type="number" id="set-elo-value" min="0" max="3000" required>
                         </div>
                         
                         <div class="form-group ladder-selection">
@@ -1091,6 +1263,211 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Unified Rank Manager Modal -->
+            <div id="rank-manager-modal" class="modal">
+                <div class="modal-content rank-manager">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-crown"></i> Rank Manager</h2>
+                        <button class="close-modal" id="close-rank-manager">&times;</button>
+                    </div>
+                    
+                    <div class="rank-manager-tabs">
+                        <button class="tab-button active" data-tab="promote">
+                            <i class="fas fa-arrow-up"></i> Promote
+                        </button>
+                        <button class="tab-button" data-tab="demote">
+                            <i class="fas fa-arrow-down"></i> Demote
+                        </button>
+                        <button class="tab-button" data-tab="set-elo">
+                            <i class="fas fa-edit"></i> Set ELO
+                        </button>
+                    </div>
+                    
+                    <div class="rank-manager-content">
+                        <!-- Promote Tab -->
+                        <div class="tab-panel active" data-panel="promote">
+                            <form id="promote-form" class="rank-form">
+                                <div class="form-group">
+                                    <label for="promote-ladder">
+                                        <i class="fas fa-trophy"></i> Ladder
+                                    </label>
+                                    <select id="promote-ladder" required>
+                                        <option value="D1">D1 Ladder</option>
+                                        <option value="D2">D2 Ladder</option>
+                                        <option value="D3">D3 Ladder</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="promote-username">
+                                        <i class="fas fa-user"></i> Player Username
+                                    </label>
+                                    <select id="promote-username" required>
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="player-info-box" id="promote-player-info" style="display: none;">
+                                    <h4>Current Status</h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="label">Current ELO:</span>
+                                            <span class="value" id="promote-current-elo">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">Current Rank:</span>
+                                            <span class="value rank-badge" id="promote-current-rank">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">New ELO:</span>
+                                            <span class="value highlight" id="promote-new-elo">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">New Rank:</span>
+                                            <span class="value rank-badge highlight" id="promote-new-rank">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-arrow-up"></i> Promote Player
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-promote">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Demote Tab -->
+                        <div class="tab-panel" data-panel="demote">
+                            <form id="demote-form" class="rank-form">
+                                <div class="form-group">
+                                    <label for="demote-ladder">
+                                        <i class="fas fa-trophy"></i> Ladder
+                                    </label>
+                                    <select id="demote-ladder" required>
+                                        <option value="D1">D1 Ladder</option>
+                                        <option value="D2">D2 Ladder</option>
+                                        <option value="D3">D3 Ladder</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="demote-username">
+                                        <i class="fas fa-user"></i> Player Username
+                                    </label>
+                                    <select id="demote-username" required>
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="player-info-box" id="demote-player-info" style="display: none;">
+                                    <h4>Current Status</h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="label">Current ELO:</span>
+                                            <span class="value" id="demote-current-elo">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">Current Rank:</span>
+                                            <span class="value rank-badge" id="demote-current-rank">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">New ELO:</span>
+                                            <span class="value highlight" id="demote-new-elo">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">New Rank:</span>
+                                            <span class="value rank-badge highlight" id="demote-new-rank">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-arrow-down"></i> Demote Player
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-demote">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Set ELO Tab -->
+                        <div class="tab-panel" data-panel="set-elo">
+                            <form id="set-elo-form-new" class="rank-form">
+                                <div class="form-group">
+                                    <label for="setelo-ladder">
+                                        <i class="fas fa-trophy"></i> Ladder
+                                    </label>
+                                    <select id="setelo-ladder" required>
+                                        <option value="D1">D1 Ladder</option>
+                                        <option value="D2">D2 Ladder</option>
+                                        <option value="D3">D3 Ladder</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="setelo-username">
+                                        <i class="fas fa-user"></i> Player Username
+                                    </label>
+                                    <select id="setelo-username" required>
+                                        <option value="">Loading players...</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="setelo-value">
+                                        <i class="fas fa-chart-line"></i> New ELO Rating
+                                    </label>
+                                    <input type="number" 
+                                           id="setelo-value" 
+                                           min="0" 
+                                           max="3000" 
+                                           step="1"
+                                           placeholder="Enter ELO value" 
+                                           required>
+                                    <small class="form-hint">
+                                        D1: 0-199 Unranked, 200-499 Bronze, 500-699 Silver, 700-999 Gold, 1000+ Emerald
+                                    </small>
+                                </div>
+                                
+                                <div class="player-info-box" id="setelo-player-info" style="display: none;">
+                                    <h4>Current Status</h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="label">Current ELO:</span>
+                                            <span class="value" id="setelo-current-elo">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">Current Rank:</span>
+                                            <span class="value rank-badge" id="setelo-current-rank">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">New Rank:</span>
+                                            <span class="value rank-badge highlight" id="setelo-new-rank">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Set Custom ELO
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-setelo">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Edit Match Modal -->
             <div id="edit-match-modal" class="modal">
@@ -1218,18 +1595,22 @@
             <!-- Manage Points Section -->
             <section id="manage-points" class="admin-section" style="display: none;">
                 <div class="section-header">
-                    <h1>Manage User Points & Store Items</h1>
-                    <button id="load-points-data" class="load-data-btn">
-                        <i class="fas fa-sync-alt"></i> Load Points Data
-                    </button>
+                    <h1><i class="fas fa-coins"></i> Manage User Points</h1>
+                    <div class="header-actions">
+                        <button id="load-points-data" class="load-data-btn">
+                            <i class="fas fa-sync-alt"></i> Load Points Data
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- User Search Section -->
-                <div class="points-user-search-container">
-                    <h3>Search Users</h3>
-                    <div class="search-box">
-                        <input type="text" id="points-user-search" placeholder="Search by email or display name...">
-                        <i class="fas fa-search"></i>
+                <div class="points-user-search-card">
+                    <h3><i class="fas fa-search"></i> Search Users</h3>
+                    <div class="search-box-container">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="points-user-search" placeholder="Search by email or display name..." class="search-input">
+                        </div>
                     </div>
                     <div id="user-search-results" class="user-search-results">
                         <!-- Search results will appear here -->
@@ -1237,75 +1618,88 @@
                 </div>
                 
                 <!-- Selected User Info -->
-                <div id="selected-user-info" class="selected-user-info" style="display: none;">
-                    <h3>Selected User</h3>
-                    <div class="user-info-card">
-                        <div class="user-details">
-                            <strong id="selected-user-name">No user selected</strong>
-                            <div class="points-display">
-                                <span id="selected-user-points">0</span> Points
+                <div id="selected-user-info" class="selected-user-card" style="display: none;">
+                    <div class="user-card-header">
+                        <h3><i class="fas fa-user-circle"></i> Selected User</h3>
+                    </div>
+                    <div class="user-card-body">
+                        <div class="user-info-display">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-details">
+                                <strong id="selected-user-name" class="user-name">No user selected</strong>
+                                <div class="points-badge">
+                                    <i class="fas fa-coins"></i>
+                                    <span id="selected-user-points" class="points-value">0</span>
+                                    <span class="points-label">Points</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Points Management Forms -->
-                <div id="points-management-forms" style="display: none;">
+                <div id="points-management-forms" class="points-forms-container" style="display: none;">
                     <input type="hidden" id="selected-user-id">
                     
                     <!-- Modify Points Section -->
-                    <div class="management-section">
-                        <h3><i class="fas fa-coins"></i> Modify Points</h3>
-                        <form id="modify-points-form" class="admin-form">
+                    <div class="points-management-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-edit"></i> Modify Points</h3>
+                        </div>
+                        <form id="modify-points-form" class="points-form">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Action:</label>
-                                    <select id="points-action" required>
-                                        <option value="add">Add Points</option>
-                                        <option value="subtract">Subtract Points</option>
-                                        <option value="set">Set Points</option>
+                                    <label for="points-action"><i class="fas fa-cog"></i> Action</label>
+                                    <select id="points-action" class="form-control" required>
+                                        <option value="add">➕ Add Points</option>
+                                        <option value="subtract">➖ Subtract Points</option>
+                                        <option value="set">⚙️ Set Points</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Amount:</label>
-                                    <input type="number" id="points-amount" min="0" max="999999" required>
+                                    <label for="points-amount"><i class="fas fa-hashtag"></i> Amount</label>
+                                    <input type="number" id="points-amount" class="form-control" min="0" max="999999" placeholder="Enter amount" required>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label>Reason (Optional):</label>
-                                <input type="text" id="points-reason" placeholder="Enter reason for points modification...">
+                                <label for="points-reason"><i class="fas fa-comment"></i> Reason (Optional)</label>
+                                <input type="text" id="points-reason" class="form-control" placeholder="Enter reason for points modification...">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Apply Changes
+                            <button type="submit" class="btn primary">
+                                <i class="fas fa-check"></i> Apply Changes
                             </button>
                         </form>
                     </div>
                     
                     <!-- Award Store Items Section -->
-                    <div class="management-section">
-                        <h3><i class="fas fa-gift"></i> Award Store Items</h3>
-                        <form id="award-item-form" class="admin-form">
+                    <div class="points-management-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-gift"></i> Award Store Items</h3>
+                        </div>
+                        <form id="award-item-form" class="points-form">
                             <div class="form-group">
-                                <label>Store Item:</label>
-                                <select id="store-item-select" required>
+                                <label for="store-item-select"><i class="fas fa-shopping-bag"></i> Store Item</label>
+                                <select id="store-item-select" class="form-control" required>
                                     <option value="">Select an item...</option>
-                                    <option value="vip-role">VIP Discord Role (500 pts)</option>
-                                    <option value="background-pack">Background Pack (750 pts)</option>
-                                    <option value="glow-effects">Glow Effects (300 pts)</option>
-                                    <option value="veteran-title">Veteran Player (100 pts)</option>
-                                    <option value="hot-streak">Hot Streak (250 pts)</option>
-                                    <option value="destroyer">Destroyer (350 pts)</option>
+                                    <option value="vip-role">🌟 VIP Discord Role (500 pts)</option>
+                                    <option value="background-pack">🎨 Background Pack (750 pts)</option>
+                                    <option value="glow-effects">✨ Glow Effects (300 pts)</option>
+                                    <option value="veteran-title">🏅 Veteran Player (100 pts)</option>
+                                    <option value="hot-streak">🔥 Hot Streak (250 pts)</option>
+                                    <option value="destroyer">💥 Destroyer (350 pts)</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
-                                <label>Award Reason:</label>
-                                <input type="text" id="award-reason" placeholder="Reason for awarding this item...">
+                                <label for="award-reason"><i class="fas fa-comment"></i> Award Reason</label>
+                                <input type="text" id="award-reason" class="form-control" placeholder="Reason for awarding this item...">
                             </div>
                             
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn success">
                                 <i class="fas fa-gift"></i> Award Item
                             </button>
                         </form>
@@ -1313,23 +1707,28 @@
                 </div>
                 
                 <!-- Points History Table -->
-                <div class="table-section">
-                    <h3>Recent Points History</h3>
+                <div class="points-table-section">
+                    <div class="table-section-header">
+                        <h3><i class="fas fa-history"></i> Recent Points History</h3>
+                    </div>
                     <div class="table-container">
-                        <table class="data-table">
+                        <table class="data-table points-history-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>User</th>
-                                    <th>Action</th>
-                                    <th>Amount</th>
-                                    <th>Reason</th>
-                                    <th>Admin</th>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-user"></i> User</th>
+                                    <th><i class="fas fa-bolt"></i> Action</th>
+                                    <th><i class="fas fa-coins"></i> Amount</th>
+                                    <th><i class="fas fa-comment"></i> Reason</th>
+                                    <th><i class="fas fa-user-shield"></i> Admin</th>
                                 </tr>
                             </thead>
                             <tbody id="points-history-table-body">
                                 <tr>
-                                    <td colspan="6" class="empty-state">No history data available</td>
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>No history data available</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1337,126 +1736,147 @@
                 </div>
 
                 <!-- User Points Overview Table -->
-                <div class="table-section">
-                    <div class="section-header">
-                        <h3>All User Points</h3>
-                        <div class="points-overview-controls">
-                            <input type="text" id="points-overview-search" placeholder="Search users..." class="search-input">
+                <div class="points-table-section">
+                    <div class="table-section-header">
+                        <h3><i class="fas fa-users"></i> All User Points</h3>
+                        <div class="table-controls">
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="points-overview-search" placeholder="Search users..." class="search-input">
+                            </div>
                             <select id="points-sort-order" class="sort-select">
-                                <option value="points-desc">Highest Points First</option>
-                                <option value="points-asc">Lowest Points First</option>
-                                <option value="name-asc">Name A-Z</option>
-                                <option value="name-desc">Name Z-A</option>
+                                <option value="points-desc">💰 Highest Points</option>
+                                <option value="points-asc">📊 Lowest Points</option>
+                                <option value="name-asc">🔤 Name A-Z</option>
+                                <option value="name-desc">🔤 Name Z-A</option>
                             </select>
-                            <button id="refresh-points-overview" class="btn btn-secondary">
+                            <button id="refresh-points-overview" class="btn secondary">
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
                     </div>
                     <div class="table-container">
-                        <table class="data-table">
+                        <table class="data-table points-overview-table">
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Email</th>
-                                    <th>Current Points</th>
-                                    <th>Last Modified</th>
-                                    <th>Actions</th>
+                                    <th><i class="fas fa-user"></i> User</th>
+                                    <th><i class="fas fa-envelope"></i> Email</th>
+                                    <th><i class="fas fa-coins"></i> Points</th>
+                                    <th><i class="fas fa-clock"></i> Last Modified</th>
+                                    <th><i class="fas fa-cog"></i> Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="points-overview-table-body">
                                 <tr>
-                                    <td colspan="5" class="empty-state">Click "Load Points Data" to view all users</td>
+                                    <td colspan="5" class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>Click "Load Points Data" to view all users</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="management-section">
-                        <h3><i class="fas fa-coins"></i> Bulk Points Operations</h3>
-                        <button id="bulk-award-points-btn" class="btn btn-primary">
-                            <i class="fas fa-coins"></i> Award Points for All Matches
-                        </button>
-                        <p class="help-text">This will process all approved matches and award points based on subgame type.</p>
+                </div>
+
+                <!-- Bulk Operations Card -->
+                <div class="points-management-card bulk-operations-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-tasks"></i> Bulk Points Operations</h3>
                     </div>
-//
-                    <div class="management-section">
-                        <h3><i class="fas fa-coins"></i> Bulk Points Operations</h3>
-                        <!-- Existing bulk award points button -->
-                        <button id="bulk-award-points-btn" class="btn btn-primary">
-                            <i class="fas fa-coins"></i> Award Points for All Matches
-                        </button>
-                        <!-- New button for awarding points to all pilots -->
-                        <button id="award-all-pilots-btn" class="btn btn-success">
-                            <i class="fas fa-users"></i> Award Fixed Points to ALL Pilots
-                        </button>
-                        <p class="help-text">The top button awards points based on match types. The bottom button awards a fixed amount to all pilots across all ladders.</p>
+                    <div class="bulk-operations-body">
+                        <div class="bulk-operation-item">
+                            <button id="bulk-award-points-btn" class="btn primary large">
+                                <i class="fas fa-trophy"></i>
+                                <span class="btn-text">
+                                    <strong>Award Points for All Matches</strong>
+                                    <small>Awards points based on match types</small>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="bulk-operation-item">
+                            <button id="award-all-pilots-btn" class="btn success large">
+                                <i class="fas fa-users"></i>
+                                <span class="btn-text">
+                                    <strong>Award Fixed Points to ALL Pilots</strong>
+                                    <small>Awards fixed amount to all pilots across all ladders</small>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Quick Edit Points Modal -->
             <div id="quick-edit-points-modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 id="quick-edit-user-title">Edit User Points</h3>
-                        <button class="close-btn">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" id="quick-edit-user-id">
-                        
-                        <div class="user-info-display">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
+                <div class="modal-content quick-edit-modal">
+                    <span class="close-btn">&times;</span>
+                    <h2 id="quick-edit-user-title"><i class="fas fa-edit"></i> Edit User Points</h2>
+                    
+                    <input type="hidden" id="quick-edit-user-id">
+                    
+                    <div class="modal-user-info">
+                        <div class="user-avatar-large">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-info-text">
+                            <h4 id="quick-edit-display-name" class="user-display-name">User Name</h4>
+                            <p id="quick-edit-email" class="user-email">user@example.com</p>
+                            <div class="current-points-display">
+                                <i class="fas fa-coins"></i>
+                                <span class="points-label">Current Points:</span>
+                                <span id="quick-edit-current-points" class="points-number">0</span>
                             </div>
-                            <div class="user-details">
-                                <h4 id="quick-edit-display-name">User Name</h4>
-                                <p id="quick-edit-email">user@example.com</p>
-                                <p class="current-points">Current Points: <span id="quick-edit-current-points">0</span></p>
+                        </div>
+                    </div>
+                    
+                    <form id="quick-edit-points-form" class="quick-edit-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-cog"></i> Action</label>
+                            <div class="radio-button-group">
+                                <label class="radio-option">
+                                    <input type="radio" id="quick-add" name="quick-action" value="add" checked>
+                                    <span class="radio-label">
+                                        <i class="fas fa-plus-circle"></i> Add Points
+                                    </span>
+                                </label>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" id="quick-subtract" name="quick-action" value="subtract">
+                                    <span class="radio-label">
+                                        <i class="fas fa-minus-circle"></i> Subtract Points
+                                    </span>
+                                </label>
+                                
+                                <label class="radio-option">
+                                    <input type="radio" id="quick-set" name="quick-action" value="set">
+                                    <span class="radio-label">
+                                        <i class="fas fa-sync-alt"></i> Set Points
+                                    </span>
+                                </label>
                             </div>
                         </div>
                         
-                        <form id="quick-edit-points-form" class="quick-edit-form">
-                            <div class="form-group">
-                                <label>Action:</label>
-                                <div class="radio-group">
-                                    <input type="radio" id="quick-add" name="quick-action" value="add" checked>
-                                    <label for="quick-add">Add Points</label>
-                                    
-                                    <input type="radio" id="quick-subtract" name="quick-action" value="subtract">
-                                    <label for="quick-subtract">Subtract Points</label>
-                                    
-                                    <input type="radio" id="quick-set" name="quick-action" value="set">
-                                    <label for="quick-set">Set Points</label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="quick-points-amount">Amount:</label>
-                                <input type="number" id="quick-points-amount" min="0" max="999999" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="quick-points-reason">Reason (Optional):</label>
-                                <input type="text" id="quick-points-reason" placeholder="Enter reason for points modification...">
-                            </div>
-                            
-                            <div class="modal-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                                <button type="button" id="cancel-quick-edit" class="btn btn-secondary">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="form-group">
+                            <label for="quick-points-amount"><i class="fas fa-hashtag"></i> Amount</label>
+                            <input type="number" id="quick-points-amount" class="form-control" min="0" max="999999" placeholder="Enter amount" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="quick-points-reason"><i class="fas fa-comment"></i> Reason (Optional)</label>
+                            <input type="text" id="quick-points-reason" class="form-control" placeholder="Enter reason for points modification...">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn primary">
+                                <i class="fas fa-check"></i> Save Changes
+                            </button>
+                            <button type="button" id="cancel-quick-edit" class="btn secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <!-- Create Test Match Button (Initially hidden) -->
-            <button id="create-test-match-btn" class="btn btn-primary" style="display: none;">
-                <i class="fas fa-plus"></i> Create Test Match
-            </button>
 
             <!-- Create Test Match Modal -->
             <div id="create-test-match-modal" class="modal">
@@ -1599,38 +2019,84 @@
         </div>
     </div>
 </div>
+
+<!-- Add this modal at the end of your HTML, before closing </body> -->
+<div id="change-username-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-exchange-alt"></i> Change Username</h2>
+            <button class="close-btn">&times;</button>
+        </div>
+        
+        <form id="change-username-form">
+            <div class="form-section">
+                <h3>Search for Username</h3>
+                <div class="form-row">
+                    <div class="form-group flex-grow">
+                        <label for="search-username">Current Username</label>
+                        <input type="text" id="search-username" placeholder="Enter username to change" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="searchUsername()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                
+                <div id="username-search-results" class="search-results"></div>
+            </div>
+            
+            <div class="form-section">
+                <h3>New Username</h3>
+                <div class="form-group">
+                    <label for="new-username">New Username</label>
+                    <input type="text" id="new-username" placeholder="Enter new username" required>
+                </div>
+            </div>
+            
+            <div id="username-change-summary" class="change-summary" style="display: none;"></div>
+            
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Change Username
+                </button>
+                <button type="button" id="cancel-change-username-btn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
         </div>
     </div>
-    <script type="module" src="../JS/adminbackend.js"></script> 
+    
+    <script>
+        // Privacy-enhanced YouTube embedding
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all video placeholders
+            const videoContainers = document.querySelectorAll('.youtube-player');
+            
+            videoContainers.forEach(function(container) {
+                const videoId = container.getAttribute('data-video-id');
+                if (!videoId) return;
+                
+                // Create iframe directly instead of using the API
+                const iframe = document.createElement('iframe');
+                iframe.setAttribute('src', `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`);
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allowfullscreen', '');
+                iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                // Privacy enhanced attributes
+                iframe.setAttribute('loading', 'lazy');
+                
+                // Clear the container and add the iframe
+                container.innerHTML = '';
+                container.appendChild(iframe);
+                
+                // Set dimensions
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+            });
+        });
+    </script>
+    <script type="module" src="../JS/adminbackend.js"></script>
 </body>
-
-<script>
-    // Privacy-enhanced YouTube embedding
-    document.addEventListener('DOMContentLoaded', function() {
-      // Find all video placeholders
-      const videoContainers = document.querySelectorAll('.youtube-player');
-      
-      videoContainers.forEach(function(container) {
-        const videoId = container.getAttribute('data-video-id');
-        if (!videoId) return;
-        
-        // Create iframe directly instead of using the API
-        const iframe = document.createElement('iframe');
-        iframe.setAttribute('src', `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`);
-        iframe.setAttribute('frameborder', '0');
-        iframe.setAttribute('allowfullscreen', '');
-        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-        // Privacy enhanced attributes
-        iframe.setAttribute('loading', 'lazy');
-        
-        // Clear the container and add the iframe
-        container.innerHTML = '';
-        container.appendChild(iframe);
-        
-        // Set dimensions
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-      });
-    });
-  </script>
 </html>

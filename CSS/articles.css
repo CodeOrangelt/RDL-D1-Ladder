@@ -1,116 +1,272 @@
 /* filepath: c:\Descent Nexus Repo\RDL-D1-Ladder\CSS\articles.css */
+
+/* Variables for consistency */
+:root {
+    --article-bg-primary: #0f1419;
+    --article-bg-card: #1e2936;
+    --article-bg-secondary: #1a2332;
+    --article-primary: #6a3de8;
+    --article-border: rgba(255, 255, 255, 0.08);
+    --article-text-primary: #ffffff;
+    --article-text-secondary: #b8c5d6;
+    --article-text-muted: #6b7c93;
+    --article-shadow: rgba(0, 0, 0, 0.3);
+}
+
 .articles-main {
-    max-width: 900px;
-    margin: 40px auto; /* Increased top/bottom margin */
-    padding: 30px; /* Increased padding */
-    background-color: rgba(5, 5, 10, 0.85); /* Darker, slightly more opaque background */
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6); /* Slightly stronger shadow */
-    border: 2px solid #f0f0f0; /* Bright white border */
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 0 24px 60px 24px;
 }
 
 .articles-main h1 {
     text-align: center;
-    padding: 10px 0; /* Add some padding */
-    border-radius: 5px; /* Optional: round corners */
-    margin-bottom: 40px; /* Increased spacing */
-    color: #ffffff; /* Pure white for max contrast */
-    font-size: 2.5em; /* Larger heading */
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Slightly stronger text shadow */
+    margin-bottom: 48px;
+    color: var(--article-text-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.articles-main h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--article-primary), #5534c2);
+    border-radius: 2px;
 }
 
 .articles-container {
     display: flex;
     flex-direction: column;
-    gap: 40px; /* Increased gap */
+    gap: 32px;
 }
 
 .article-card {
-    background-color: var(--background-secondary, #2a2a2e); /* Slightly lighter secondary bg */
-    border: 1px solid #555; /* Add a subtle border to the card itself */
-    border-radius: 8px;
+    background: var(--article-bg-card);
+    border: 1px solid var(--article-border);
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); /* Darker shadow for card */
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 4px 12px var(--article-shadow);
+    transition: all 0.3s ease;
 }
 
 .article-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Stronger hover shadow */
-    border-color: #777; /* Slightly lighter border on hover */
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    border-color: rgba(106, 61, 232, 0.3);
 }
 
 .article-header img {
     width: 100%;
-    max-height: 300px;
+    height: 300px;
     object-fit: cover;
     display: block;
-    border-bottom: 1px solid #444; /* Add back a subtle separator */
 }
 
 .article-body {
-    padding: 25px;
-    color: var(--text-primary, #f0f0f0); /* Bright primary text */
-}
-
-.article-body h2 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: var(--text-highlight, #ffffff); /* Pure white highlight */
-    font-size: 1.8em;
+    padding: 32px;
 }
 
 .article-meta {
-    font-size: 0.9em;
-    color: var(--text-muted, #cccccc); /* Lighter muted gray */
-    margin-bottom: 20px;
-    border-bottom: 1px dashed var(--border-color, #555); /* Slightly more visible dashed line */
-    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.article-category {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--article-primary);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.article-date,
+.article-author {
+    color: var(--article-text-muted);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.article-author {
+    font-weight: 500;
+}
+
+.article-author::before {
+    content: '•';
+    color: var(--article-text-muted);
+}
+
+.article-body h2 {
+    margin: 0 0 16px 0;
+    color: var(--article-text-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
 }
 
 .article-content {
-    line-height: 1.7;
-    color: var(--text-primary, #f0f0f0); /* Bright primary text */
-    margin-top: 15px;
+    line-height: 1.8;
+    color: var(--article-text-secondary);
+    margin-top: 24px;
+    font-size: 1.05rem;
 }
 
-/* Allow basic HTML within content */
+/* Typography within content */
 .article-content p {
-    margin-bottom: 1em;
-    color: inherit; /* Inherit from .article-content */
+    margin-bottom: 16px;
+    color: var(--article-text-secondary);
 }
+
+.article-content h3 {
+    color: var(--article-text-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 32px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--article-border);
+}
+
 .article-content ul,
 .article-content ol {
-    margin-left: 20px;
-    margin-bottom: 1em;
-    color: inherit; /* Ensure list items also inherit color */
+    margin-left: 24px;
+    margin-bottom: 16px;
+    color: var(--article-text-secondary);
 }
 
-/* Style links within content */
+.article-content li {
+    margin-bottom: 8px;
+}
+
+.article-content strong {
+    color: var(--article-text-primary);
+    font-weight: 600;
+}
+
+.article-content em {
+    font-style: italic;
+    color: var(--article-text-secondary);
+}
+
+/* Links within content */
 .article-content a {
-    color: var(--accent-color, #cda4ff); /* Brighter accent color */
+    color: var(--article-primary);
     text-decoration: none;
-    border-bottom: 1px dotted var(--accent-color, #cda4ff);
-    transition: color 0.2s, border-bottom-color 0.2s;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .article-content a:hover {
-    color: var(--text-highlight, #ffffff); /* White on hover */
-    border-bottom-color: var(--text-highlight, #ffffff);
+    color: #8b5cf6;
+    border-bottom-color: #8b5cf6;
 }
 
-/* Style images within content */
+/* Images within content */
 .article-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 4px;
-    margin: 15px 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4); /* Slightly stronger shadow */
+    border-radius: 8px;
+    margin: 24px 0;
+    box-shadow: 0 4px 12px var(--article-shadow);
+    border: 1px solid var(--article-border);
 }
 
+/* Loading and error states */
 .loading-message,
-.error-message {
+.error-message,
+.empty-message {
     text-align: center;
-    padding: 20px;
-    color: var(--text-muted, #cccccc); /* Use lighter muted color */
+    padding: 60px 20px;
+    color: var(--article-text-muted);
+    font-size: 1.1rem;
+}
+
+.loading-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.loading-message::before {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--article-border);
+    border-top-color: var(--article-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 32px;
+}
+
+.empty-message {
+    background: var(--article-bg-card);
+    border: 1px solid var(--article-border);
+    border-radius: 8px;
+    padding: 60px 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .articles-main {
+        margin: 40px auto;
+        padding: 0 16px 40px 16px;
+    }
+    
+    .articles-main h1 {
+        font-size: 2rem;
+        margin-bottom: 32px;
+    }
+    
+    .article-card {
+        border-radius: 8px;
+    }
+    
+    .article-header img {
+        height: 200px;
+    }
+    
+    .article-body {
+        padding: 24px;
+    }
+    
+    .article-body h2 {
+        font-size: 1.5rem;
+    }
+    
+    .article-content {
+        font-size: 1rem;
+    }
+    
+    .article-content h3 {
+        font-size: 1.2rem;
+        margin: 24px 0 12px 0;
+    }
 }

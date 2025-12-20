@@ -32,6 +32,9 @@
                     <button class="toggle-btn" data-game="d3">
                         Descent 3
                     </button>
+                    <button class="toggle-btn" data-game="ffa">
+                        FFA
+                    </button>
                 </div>
                 <div class="summary">
                     <span id="total-matches">0</span> matches • 
@@ -57,13 +60,19 @@
                     </table>
                 </div>
 
-                <!-- Top Players by Tier -->
-                <div class="stats-section">
-                    <h2>Top Players by Tier</h2>
+                <!-- FFA Temperature Section (replaces Top Players by Tier for FFA) -->
+                <div class="stats-section" id="ffa-temperature-section" style="display: none;">
+                    <h2>Player Temperatures</h2>
                     <table>
-                        <tr><th>Tier</th><th>Player</th><th>ELO</th><th>Rank</th></tr>
-                        <tbody id="tier-table">
-                            <tr><td colspan="4" class="loading">Loading players...</td></tr>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>ELO</th>
+                            <th>Temperature</th>
+                            <th>Top-Half Rate</th>
+                        </tr>
+                        <tbody id="ffa-temperature-table">
+                            <tr><td colspan="5" class="loading">Loading temperatures...</td></tr>
                         </tbody>
                     </table>
                 </div>

@@ -73,8 +73,8 @@ function getCollectionName(ladderType) {
         case 'DUOS':
         case 'DUO':
             return 'playersDuos';
-        case 'CTF':
-            return 'playersCTF';
+        case 'FFA':
+            return 'playersFFA';
         default:
             console.warn(`Unknown ladder type: ${ladderType}, defaulting to D1`);
             return 'players';
@@ -190,7 +190,7 @@ async function handleJoinLadder() {
         // First, find the user's actual username across collections
         let actualUsername = '';
         let userData = null;
-        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersCTF', 'nonParticipants'];
+        const collections = ['players', 'playersD2', 'playersD3', 'playersDuos', 'playersFFA', 'nonParticipants'];
         
         for (const collection of collections) {
             try {

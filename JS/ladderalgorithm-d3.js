@@ -14,6 +14,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db, auth } from './firebase-config.js';
 import { recordEloChangeD3 } from './elo-history-d3.js';
+import { checkAndAwardTopRankRibbon } from './ribbons.js';
 
 // EXACT SAME ELO calculation as D1/D2
 export function calculateEloD3(winnerRating, loserRating, kFactor = 32) {
@@ -221,6 +222,14 @@ export async function approveReportD3(reportId, winnerScore, winnerSuicides, win
 
         // Update ELO ratings using D3-specific function
         await updateEloRatingsD3(winnerId, loserId, reportId);
+
+        // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
+        try {
+            await checkAndAwardTopRankRibbon(reportData.winnerUsername, 'D3');
+            console.log(`Checked Top Rank ribbon for D3 winner: ${reportData.winnerUsername}`);
+        } catch (ribbonError) {
+            console.warn('Top Rank ribbon check failed, but match approval continues:', ribbonError);
+        }
 
         console.log('D3 Match successfully approved and ELO updated');
         return true;

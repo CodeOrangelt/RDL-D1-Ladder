@@ -60,8 +60,23 @@ async function loadArticles() {
         snapshot.forEach(doc => {
             const article = doc.data();
             const articleId = doc.id;
-            const createdAt = article.createdAt?.toDate ? article.createdAt.toDate().toLocaleDateString() : 'Date unknown';
+            const createdAt = article.createdAt?.toDate ? article.createdAt.toDate().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }) : 'Date unknown';
             const author = article.author || 'Anonymous';
+            const category = article.category || 'news';
+            
+            // Map category values to display names
+            const categoryNames = {
+                'news': 'News & Announcements',
+                'guide': 'Guides & Tips',
+                'tournament': 'Tournament Reports',
+                'community': 'Community Spotlight',
+                'update': 'Update Notes'
+            };
+            const categoryDisplay = categoryNames[category] || 'News';
 
             const articleCard = document.createElement('div');
             articleCard.className = 'article-card';
@@ -85,10 +100,12 @@ async function loadArticles() {
             articleCard.innerHTML = `
                 ${headerHtml}
                 <div class="article-body">
-                    <h2>${escapeHtml(article.title)}</h2>
                     <div class="article-meta">
-                        <span>By ${escapeHtml(author)}</span> | <span>${createdAt}</span>
+                        <span class="article-category">${escapeHtml(categoryDisplay)}</span>
+                        <span class="article-date">${createdAt}</span>
+                        <span class="article-author">By ${escapeHtml(author)}</span>
                     </div>
+                    <h2>${escapeHtml(article.title)}</h2>
                     <div class="article-content">
                         ${safeContent} 
                     </div>

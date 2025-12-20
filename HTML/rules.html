@@ -452,7 +452,7 @@
                 <div class="rules-nav-item active" data-target="general">General</div>
                 <div class="rules-nav-item" data-target="solo">Solos</div>
                 <div class="rules-nav-item" data-target="duos">Duos</div>
-                <div class="rules-nav-item" data-target="ctf">CTF</div>
+                <div class="rules-nav-item" data-target="ffa">FFA</div>
                 <div class="rules-nav-item" data-target="ribbons">Ribbons</div>
                 <div class="rules-nav-item" data-target="sandbox">ELO Calculator</div>
             </div>
@@ -1029,19 +1029,138 @@
                 </div>
             </div>
 
-            <!-- CTF section - MOVE THIS OUTSIDE -->
-            <div id="ctf" class="rules-section">
+            <!-- FFA section -->
+            <div id="ffa" class="rules-section">
                 <div class="rule-item">
-                    <h4>Capture The Flag - COMING SOON POST BETA</h4>
+                    <h4>Free For All (FFA) Ladder</h4>
                     <div>
-                        <p>CTF matches have unique requirements:</p>
+                        <p>The FFA ladder is a competitive ranking system for multi-player free-for-all matches where 2-8+ players compete simultaneously. Unlike traditional 1v1 matches, FFA games have multiple placements (1st, 2nd, 3rd, etc.), creating a more dynamic competitive environment.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Match Reporting</h4>
+                    <div>
+                        <h5>Reporting Process</h5>
                         <ul>
-                            <!-- Future CTF rules go here -->
+                            <li><strong>Winner Reports:</strong> Only the 1st place finisher can submit the match report</li>
+                            <li><strong>Required Information:</strong>
+                                <ul>
+                                    <li>All player placements (1st, 2nd, 3rd, etc.)</li>
+                                    <li>Kills and deaths for each participant</li>
+                                    <li>Map played</li>
+                                    <li>Optional: Demo link, match notes</li>
+                                </ul>
+                            </li>
+                            <li><strong>Participant Confirmation:</strong> Only ONE other participant needs to confirm the results for the match to be approved</li>
+                            <li><strong>Auto-Approval:</strong> Match automatically approves after receiving 1 confirmation (reporter's confirmation counts automatically)</li>
+                            <li><strong>Corrections:</strong> Confirmers can correct their own statistics if needed during confirmation</li>
+                            <li><strong>Disputes:</strong> Any participant can reject suspicious results, triggering admin review</li>
+                        </ul>
+
+                        <h5>Match Requirements</h5>
+                        <ul>
+                            <li>Minimum 2 players (4-8 recommended for best experience)</li>
+                            <li>All participants must be registered in the FFA ladder</li>
+                            <li>Clear placement order (no ties allowed)</li>
+                            <li>Kill/death statistics must be recorded</li>
                         </ul>
                     </div>
                 </div>
-            </div>
-            
+
+                <div class="rule-item">
+                    <h4>ELO Rating System</h4>
+                    <div>
+                        <h5>Multi-ELO Calculation</h5>
+                        <p>FFA uses a sophisticated multi-ELO system where each player's rating is calculated against ALL other players in the match, not just one opponent.</p>
+                        
+                        <ul>
+                            <li><strong>Pairwise Comparison:</strong> Your performance is evaluated against every other participant
+                                <ul>
+                                    <li>Example: In a 4-player match, you are compared against 3 opponents</li>
+                                    <li>Each better placement counts as a "win" against that player</li>
+                                    <li>Your total performance determines ELO change</li>
+                                </ul>
+                            </li>
+                            <li><strong>Expected vs Actual Performance:</strong> ELO changes are based on how you performed compared to expectations
+                                <ul>
+                                    <li>Beat higher-rated players = larger ELO gains</li>
+                                    <li>Lose to lower-rated players = larger ELO losses</li>
+                                    <li>Match predictions affect the magnitude of change</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h5>Position Multipliers</h5>
+                        <p>ELO changes are adjusted based on your final placement:</p>
+                        <ul>
+                            <li><strong>1st Place:</strong> 1.5× multiplier (bigger rewards and risks)</li>
+                            <li><strong>Top 3:</strong> 1.2× multiplier (moderate volatility)</li>
+                            <li><strong>Bottom Half:</strong> 0.8× multiplier (reduced punishment)</li>
+                        </ul>
+
+                        <h5>No Tier System</h5>
+                        <ul>
+                            <li>Unlike D1/D2/D3 ladders, FFA does not use Bronze/Silver/Gold/Emerald tiers</li>
+                            <li>Players are ranked purely by ELO rating</li>
+                            <li>Ladder position determined solely by your ELO value</li>
+                            <li>Simpler, more transparent competitive structure</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>RDL Points System</h4>
+                    <div>
+                        <h5>Points Per Placement</h5>
+                        <p>Players earn Rocket Descent League (RDL) points based on their finishing position:</p>
+                        
+                        <ul>
+                            <li><strong>1st Place:</strong> 100 points</li>
+                            <li><strong>2nd Place:</strong> 75 points</li>
+                            <li><strong>3rd Place:</strong> 55 points</li>
+                            <li><strong>4th Place:</strong> 40 points</li>
+                            <li><strong>5th Place:</strong> 30 points</li>
+                            <li><strong>6th Place:</strong> 20 points</li>
+                            <li><strong>7th Place:</strong> 15 points</li>
+                            <li><strong>8th Place:</strong> 10 points</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <h4>Temperature System (HOT/COLD)</h4>
+                    <div>
+                        <h5>What Is It?</h5>
+                        <p>The temperature system tracks your recent performance over the last 7 days and colors your username on the ladder accordingly. This provides visual feedback on player momentum and recent form.</p>
+
+                        <h5>Temperature Tiers</h5>
+                        <ul>
+                            <li><span style="color: #FF4500;"><strong>BLAZING:</strong></span> 80%+ top-half finishes (5+ matches) - Exceptional recent performance</li>
+                            <li><span style="color: #FF6347;"><strong>HOT:</strong></span> 65%+ top-half finishes (3+ matches) - Strong recent performance</li>
+                            <li><span style="color: #FFA500;"><strong>WARM:</strong></span> 50%+ top-half finishes (2+ matches) - Good recent performance</li>
+                            <li><span style="color: #808080;"><strong>NEUTRAL:</strong></span> Average or no recent activity</li>
+                            <li><span style="color: #87CEEB;"><strong>COOL:</strong></span> 40% or less top-half finishes - Below average</li>
+                            <li><span style="color: #4169E1;"><strong>COLD:</strong></span> 25% or less top-half finishes - Poor recent form</li>
+                            <li><span style="color: #00BFFF;"><strong>FROZEN:</strong></span> 15% or less top-half finishes (5+ matches) - Very poor recent performance</li>
+                        </ul>
+
+                        <h5>How It's Calculated</h5>
+                        <ul>
+                            <li><strong>Top-Half Finish:</strong> Finishing in the upper 50% of placements
+                                <ul>
+                                    <li>8-player match: Top 4 = top-half</li>
+                                    <li>6-player match: Top 3 = top-half</li>
+                                    <li>5-player match: Top 2-3 = top-half</li>
+                                </ul>
+                            </li>
+                            <li><strong>Recent Window:</strong> Only matches from the last 7 days are counted</li>
+                            <li><strong>Minimum Matches:</strong> Some temperatures require a minimum number of matches to achieve</li>
+                        </ul>
+                    </div>
+                </div>
+
+            <!-- Ribbons section - MOVE THIS OUTSIDE -->
             <div id="ribbons" class="rules-section">
                 <div class="rule-item">
                         <div class="ribbon-info-box">

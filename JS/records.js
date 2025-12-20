@@ -1,9 +1,10 @@
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
+import { RANKS, getRankStyle } from './ranks.js';
 
 const state = {
     currentGameMode: 'D1',
-    cache: { D1: {}, D2: {}, D3: {} }
+    cache: { D1: {}, D2: {}, D3: {}, FFA: {} } // Add FFA to cache
 };
 
 // Cache configuration
@@ -195,6 +196,16 @@ async function getGameModeData(gameMode) {
     return { playerSnapshot, matchSnapshot };
 }
 
+// Add helper function to get FFA data
+async function getFFAGameModeData() {
+    const [playerSnapshot, matchSnapshot] = await Promise.all([
+        getDocs(collection(db, 'playersFFA')),
+        getDocs(collection(db, 'approvedMatchesFFA'))
+    ]);
+
+    return { playerSnapshot, matchSnapshot };
+}
+
 function processData(playerSnapshot, matchSnapshot) {
     const playerStats = new Map();
     const playerMatchesMap = new Map();
@@ -317,6 +328,93 @@ function processData(playerSnapshot, matchSnapshot) {
     return { playerStats, subgameStats, mapStats };
 }
 
+function processFFAData(playerSnapshot, matchSnapshot) {
+    const playerStats = new Map();
+    
+    // Initialize player stats from playersFFA collection
+    playerSnapshot.forEach(playerDoc => {
+        const player = playerDoc.data();
+        if (player.username) {
+            playerStats.set(player.username, {
+                wins: 0,
+                totalMatches: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                totalPlacements: 0,
+                firstPlaceWins: 0,
+                topThreeFinishes: 0,
+                eloRating: player.eloRating || 1000,
+                position: player.position || player.rank || 999,
+                matchIds: new Set() // Track unique matches
+            });
+        }
+    });
+
+    const mapStats = new Map();
+    // ✅ FIXED: Correct Map initialization
+    const gameVersionStats = new Map();
+    gameVersionStats.set('D1', 0);
+    gameVersionStats.set('D2', 0);
+
+    // Process FFA matches
+    matchSnapshot.forEach(matchDoc => {
+        const match = matchDoc.data();
+        const participants = match.participants || [];
+        const matchId = matchDoc.id;
+        
+        if (participants.length === 0) return;
+
+        // Track map stats
+        const map = match.mapPlayed || 'Unknown';
+        mapStats.set(map, (mapStats.get(map) || 0) + 1);
+
+        // Track game version
+        const gameVersion = match.gameVersion || 'D1';
+        gameVersionStats.set(gameVersion, (gameVersionStats.get(gameVersion) || 0) + 1);
+
+        // Process each participant
+        participants.forEach(participant => {
+            const stats = playerStats.get(participant.username);
+            if (!stats) return;
+
+            // Only count this match once per player
+            if (stats.matchIds.has(matchId)) return;
+            stats.matchIds.add(matchId);
+
+            stats.totalMatches++;
+            stats.totalKills += parseInt(participant.kills) || 0;
+            stats.totalDeaths += parseInt(participant.deaths) || 0;
+            stats.totalPlacements += participant.placement;
+
+            if (participant.placement === 1) {
+                stats.wins++;
+                stats.firstPlaceWins++;
+            }
+
+            if (participant.placement <= 3) {
+                stats.topThreeFinishes++;
+            }
+        });
+    });
+
+    // Calculate derived stats
+    for (const [username, stats] of playerStats) {
+        if (stats.totalMatches > 0) {
+            stats.averagePlacement = (stats.totalPlacements / stats.totalMatches).toFixed(2);
+            stats.winRate = parseFloat(((stats.wins / stats.totalMatches) * 100).toFixed(1));
+            stats.topThreeRate = parseFloat(((stats.topThreeFinishes / stats.totalMatches) * 100).toFixed(1));
+            stats.kdRatio = stats.totalDeaths > 0 ? parseFloat((stats.totalKills / stats.totalDeaths).toFixed(2)) : stats.totalKills;
+        } else {
+            stats.averagePlacement = 0;
+            stats.winRate = 0;
+            stats.topThreeRate = 0;
+            stats.kdRatio = 0;
+        }
+    }
+
+    return { playerStats, mapStats, gameVersionStats };
+}
+
 // Enhanced data loading function with caching
 async function loadStats(forceRefresh = false) {
     const currentMode = state.currentGameMode;
@@ -355,8 +453,8 @@ async function loadStats(forceRefresh = false) {
             });
         }
 
-        // Restore subgameStats Maps
-        if (cachedData.subgameStats) {
+        // Restore subgameStats Maps (only for non-FFA modes)
+        if (cachedData.subgameStats && currentMode !== 'FFA') {
             if (cachedData.subgameStats.totalCounts) {
                 Object.entries(cachedData.subgameStats.totalCounts).forEach(([key, value]) => {
                     restoredSubgameStats.totalCounts.set(key, value);
@@ -395,11 +493,21 @@ async function loadStats(forceRefresh = false) {
         };
 
         // Update displays with restored cached data
-        updatePlayerRecords(restoredPlayerStats);
-        updateTopPlayers(mockPlayerSnapshot);
-        updateMapStats(restoredMapStats);
-        updateSubgameStats(restoredSubgameStats, currentMode);
-        updateTopPointEarners(currentMode); // Add this line
+        if (currentMode === 'FFA') {
+            updateFFAPlayerRecords(restoredPlayerStats);
+            updateMapStats(restoredMapStats);
+            // Hide subgame stats for FFA
+            const subgameSection = document.querySelector('#subgame-table').closest('.stats-section');
+            if (subgameSection) subgameSection.style.display = 'none';
+        } else {
+            updatePlayerRecords(restoredPlayerStats);
+            updateMapStats(restoredMapStats);
+            updateSubgameStats(restoredSubgameStats, currentMode);
+            const subgameSection = document.querySelector('#subgame-table').closest('.stats-section');
+            if (subgameSection) subgameSection.style.display = 'block';
+        }
+        
+        updateTopPointEarners(currentMode);
         updateSummary(mockPlayerSnapshot, mockMatchSnapshot);
         
         return;
@@ -420,6 +528,10 @@ async function loadStats(forceRefresh = false) {
         case 'D3':
             playersCollection = 'playersD3';
             matchesCollection = 'approvedMatchesD3';
+            break;
+        case 'FFA':
+            playersCollection = 'playersFFA';
+            matchesCollection = 'approvedMatchesFFA';
             break;
         default:
             playersCollection = 'players';
@@ -447,8 +559,28 @@ async function loadStats(forceRefresh = false) {
             return;
         }
 
-        // Process data
-        const { playerStats, subgameStats, mapStats } = processData(playerSnapshot, matchSnapshot);
+        // Process data differently for FFA vs regular modes
+        let playerStats, mapStats, subgameStats, gameVersionStats;
+        
+        if (currentMode === 'FFA') {
+            const ffaData = processFFAData(playerSnapshot, matchSnapshot);
+            playerStats = ffaData.playerStats;
+            mapStats = ffaData.mapStats;
+            gameVersionStats = ffaData.gameVersionStats;
+            
+            // Hide subgame stats section for FFA
+            const subgameSection = document.querySelector('#subgame-table').closest('.stats-section');
+            if (subgameSection) subgameSection.style.display = 'none';
+        } else {
+            const regularData = processData(playerSnapshot, matchSnapshot);
+            playerStats = regularData.playerStats;
+            subgameStats = regularData.subgameStats;
+            mapStats = regularData.mapStats;
+            
+            // Show subgame stats section for regular modes
+            const subgameSection = document.querySelector('#subgame-table').closest('.stats-section');
+            if (subgameSection) subgameSection.style.display = 'block';
+        }
 
         // Extract player data for caching
         const playerData = [];
@@ -459,15 +591,6 @@ async function loadStats(forceRefresh = false) {
         // Store in cache with timestamp
         const cacheEntry = {
             playerStats: Object.fromEntries(playerStats),
-            subgameStats: {
-                totalCounts: Object.fromEntries(subgameStats.totalCounts),
-                playerPerformance: Object.fromEntries(
-                    Array.from(subgameStats.playerPerformance.entries()).map(([key, value]) => [
-                        key, 
-                        Object.fromEntries(value)
-                    ])
-                )
-            },
             mapStats: Object.fromEntries(mapStats),
             playerData: playerData,
             timestamp: Date.now(),
@@ -476,6 +599,19 @@ async function loadStats(forceRefresh = false) {
                 matches: matchSnapshot.size
             }
         };
+
+        // Only cache subgame stats for non-FFA modes
+        if (currentMode !== 'FFA' && subgameStats) {
+            cacheEntry.subgameStats = {
+                totalCounts: Object.fromEntries(subgameStats.totalCounts),
+                playerPerformance: Object.fromEntries(
+                    Array.from(subgameStats.playerPerformance.entries()).map(([key, value]) => [
+                        key, 
+                        Object.fromEntries(value)
+                    ])
+                )
+            };
+        }
         
         state.cache[currentMode] = cacheEntry;
         
@@ -487,11 +623,15 @@ async function loadStats(forceRefresh = false) {
         updateCacheStatusDisplay(cacheStatus);
 
         // Update displays
-        updatePlayerRecords(playerStats);
-        updateTopPlayers(playerSnapshot);
+        if (currentMode === 'FFA') {
+            updateFFAPlayerRecords(playerStats);
+        } else {
+            updatePlayerRecords(playerStats);
+            updateSubgameStats(subgameStats, currentMode);
+        }
+        
         updateMapStats(mapStats);
-        updateSubgameStats(subgameStats, currentMode);
-        updateTopPointEarners(currentMode); // Add this line
+        updateTopPointEarners(currentMode);
         updateSummary(playerSnapshot, matchSnapshot);
 
         console.log(`${currentMode} data cached successfully`);
@@ -607,61 +747,182 @@ function updatePlayerRecords(playerStats) {
     updateRecordOrNoData('least-suicides', records.leastSuicides, ' avg'); // Changed from '%' to ' avg'
 }
 
-function updateTopPlayers(playerSnapshot) {
-    const tiers = {
-        emerald: { min: 2000, players: [] },
-        gold: { min: 1800, players: [] },
-        silver: { min: 1600, players: [] },
-        bronze: { min: 1400, players: [] }
+// ✅ ADD: FFA-specific player records update function
+function updateFFAPlayerRecords(playerStats) {
+    if (playerStats.size === 0) {
+        const recordElements = [
+            'most-wins', 'best-winrate', 'best-kd', 'most-matches',
+            'best-differential', 'most-kills', 'best-elo', 'least-suicides'
+        ];
+        
+        recordElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = 'No data';
+                element.classList.remove('loading');
+                if (element.nextElementSibling) {
+                    element.nextElementSibling.textContent = '-';
+                }
+            }
+        });
+        return;
+    }
+
+    const MIN_MATCHES = 5; // Lower threshold for FFA
+
+    const records = {
+        mostWins: { username: 'N/A', value: 0, elo: 0 },
+        bestWinRate: { username: 'N/A', value: 0, elo: 0 },
+        bestKD: { username: 'N/A', value: 0, elo: 0 },
+        mostMatches: { username: 'N/A', value: 0, elo: 0 },
+        bestAvgPlacement: { username: 'N/A', value: Infinity, elo: 0 },
+        mostKills: { username: 'N/A', value: 0, elo: 0 },
+        bestElo: { username: 'N/A', value: 0, elo: 0 },
+        mostTopThree: { username: 'N/A', value: 0, elo: 0 }
     };
 
-    if (playerSnapshot && playerSnapshot.forEach) {
-        playerSnapshot.forEach(doc => {
-            const player = doc.data();
-            if (!player.username) return;
-            
-            const elo = player.eloRating || player.elo || 1200;
-            const position = player.position || player.rank || 999;
-            
-            const playerData = { username: player.username, elo, position };
+    for (const [username, stats] of playerStats) {
+        const elo = stats.eloRating;
+        const hasMinMatches = stats.totalMatches >= MIN_MATCHES;
 
-            if (elo >= tiers.emerald.min) tiers.emerald.players.push(playerData);
-            else if (elo >= tiers.gold.min) tiers.gold.players.push(playerData);
-            else if (elo >= tiers.silver.min) tiers.silver.players.push(playerData);
-            else if (elo >= tiers.bronze.min) tiers.bronze.players.push(playerData);
-        });
-    }
+        // Most first place wins
+        if (stats.firstPlaceWins > records.mostWins.value) {
+            records.mostWins = { username, value: stats.firstPlaceWins, elo };
+        }
 
-    const tbody = document.getElementById('tier-table');
-    let html = '';
+        // Most matches
+        if (stats.totalMatches > records.mostMatches.value) {
+            records.mostMatches = { username, value: stats.totalMatches, elo };
+        }
 
-    for (const [tierName, tierData] of Object.entries(tiers)) {
-        if (tierData.players.length > 0) {
-            tierData.players.sort((a, b) => {
-                if (a.position !== b.position) return a.position - b.position;
-                return b.elo - a.elo;
-            });
+        // Most kills
+        if (stats.totalKills > records.mostKills.value) {
+            records.mostKills = { username, value: stats.totalKills, elo };
+        }
 
-            const topPlayer = tierData.players[0];
-            const displayRank = topPlayer.position < 999 ? topPlayer.position : 1;
-            
-            html += `
-                <tr>
-                    <td>${tierName.charAt(0).toUpperCase() + tierName.slice(1)}</td>
-                    <td>
-                        <a href="profile.html?username=${encodeURIComponent(topPlayer.username)}" 
-                           class="player-link tier-${tierName}">
-                            ${topPlayer.username}
-                        </a>
-                    </td>
-                    <td>${Math.round(topPlayer.elo)}</td>
-                    <td>#${displayRank}</td>
-                </tr>
-            `;
+        // Highest ELO
+        if (stats.eloRating > records.bestElo.value) {
+            records.bestElo = { username, value: Math.round(stats.eloRating), elo };
+        }
+
+        // Most top 3 finishes
+        if (stats.topThreeFinishes > records.mostTopThree.value) {
+            records.mostTopThree = { username, value: stats.topThreeFinishes, elo };
+        }
+
+        if (hasMinMatches) {
+            // Best win rate (1st place rate)
+            if (stats.winRate > records.bestWinRate.value) {
+                records.bestWinRate = { username, value: stats.winRate, elo };
+            }
+
+            // Best K/D ratio
+            if (stats.kdRatio > records.bestKD.value) {
+                records.bestKD = { username, value: stats.kdRatio, elo };
+            }
+
+            // Best average placement (lowest is best)
+            const avgPlacement = parseFloat(stats.averagePlacement);
+            if (avgPlacement < records.bestAvgPlacement.value && avgPlacement > 0) {
+                records.bestAvgPlacement = { username, value: avgPlacement, elo };
+            }
         }
     }
+        const ffaTemperatureSection = document.getElementById('ffa-temperature-section');
+    const ffaTemperatureTable = document.getElementById('ffa-temperature-table');
 
-    tbody.innerHTML = html || '<tr><td colspan="4">No ranked players found</td></tr>';
+    // Ensure the FFA temperature section is visible
+    if (ffaTemperatureSection) ffaTemperatureSection.style.display = 'block';
+
+    // Clear the table before populating
+    ffaTemperatureTable.innerHTML = '';
+
+    if (playerStats.size === 0) {
+        ffaTemperatureTable.innerHTML = '<tr><td colspan="5">No data available</td></tr>';
+        return;
+    }
+
+    // Prepare data for the table
+    const players = Array.from(playerStats.entries()).map(([username, stats]) => {
+        const elo = stats.eloRating || 1000;
+        const topHalfRate = stats.topThreeRate || 0; // Assuming top 3 rate is used for top-half rate
+        const temperature = getPlayerTemperature(topHalfRate); // Helper function to determine temperature
+        const color = getTemperatureColor(temperature); // Get color for the temperature
+        return { username, elo, temperature, topHalfRate, color };
+    });
+
+    // Sort players by temperature descending
+    players.sort((a, b) => {
+        const temperatureOrder = ['Blazing', 'Hot', 'Warm', 'Cool', 'Cold', 'Frozen'];
+        return temperatureOrder.indexOf(a.temperature) - temperatureOrder.indexOf(b.temperature);
+    });
+
+    // Populate the table
+    players.forEach((player, index) => {
+        const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    <a href="profile.html?username=${encodeURIComponent(player.username)}" class="player-link">
+                        ${player.username}
+                    </a>
+                </td>
+                <td>${Math.round(player.elo)}</td>
+                <td style="color: ${player.color};">${player.temperature}</td>
+                <td>${player.topHalfRate.toFixed(1)}%</td>
+            </tr>
+        `;
+        ffaTemperatureTable.innerHTML += row;
+    });
+
+    const updateRecordOrNoData = (elementId, record, unit = '', formatSign = false) => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        if (record.username === 'N/A' || (record.value === 0 && elementId !== 'best-elo') || 
+            record.value === -Infinity || record.value === Infinity) {
+            element.textContent = 'No data';
+            element.classList.remove('loading');
+            if (element.nextElementSibling) {
+                element.nextElementSibling.textContent = '-';
+            }
+        } else {
+            updateRecordRow(elementId, record, unit, formatSign);
+        }
+    };
+
+    // Update records with FFA-specific stats
+    updateRecordOrNoData('most-wins', records.mostWins, ' (1st)'); // Show it's first place wins
+    updateRecordOrNoData('best-winrate', records.bestWinRate, '%');
+    updateRecordOrNoData('best-kd', records.bestKD);
+    updateRecordOrNoData('most-matches', records.mostMatches);
+    updateRecordOrNoData('best-differential', records.bestAvgPlacement, ' avg'); // Changed to avg placement
+    updateRecordOrNoData('most-kills', records.mostKills);
+    updateRecordOrNoData('best-elo', records.bestElo);
+    updateRecordOrNoData('least-suicides', records.mostTopThree, ' top-3'); // Changed to top-3 finishes
+}
+
+// Helper function to determine player temperature based on streak
+function getPlayerTemperature(streak) {
+    if (streak >= 10) return 'Blazing';
+    if (streak >= 7) return 'Hot';
+    if (streak >= 5) return 'Warm';
+    if (streak >= 3) return 'Cool';
+    if (streak >= 1) return 'Cold';
+    return 'Frozen';
+}
+
+// Helper function to get temperature color
+function getTemperatureColor(temperature) {
+    switch (temperature) {
+        case 'Blazing': return '#FF4500'; // Orange-Red
+        case 'Hot': return '#FF6347'; // Tomato
+        case 'Warm': return '#FFD700'; // Gold
+        case 'Cool': return '#1E90FF'; // Dodger Blue
+        case 'Cold': return '#00CED1'; // Dark Turquoise
+        case 'Frozen': return '#4682B4'; // Steel Blue
+        default: return '#000000'; // Default Black
+    }
 }
 
 function updateMapStats(mapStats) {

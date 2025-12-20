@@ -1062,7 +1062,7 @@ tr:nth-child(even) {
 }
 
 /* Same fix for CTF button */
-.ladder-switch label[for="ctf-switch"].coming-soon::after {
+.ladder-switch label[for="ffa-switch"].coming-soon::after {
     content: "Coming Soon";
     position: absolute;
     bottom: -20px;
@@ -1076,6 +1076,22 @@ tr:nth-child(even) {
     opacity: 0;
     transition: opacity 0.3s ease;
     display: block !important; /* Force display */
+}
+
+.ladder-switch label[for="ffa-switch"]:hover {
+    animation: rainbow-border .5s infinite;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes rainbow-border {
+    0% { border-color: #ff0000; }
+    16.66% { border-color: #ff8800; }
+    33.33% { border-color: #ffff00; }
+    50% { border-color: #00ff00; }
+    66.66% { border-color: #0088ff; }
+    83.33% { border-color: #8800ff; }
+    100% { border-color: #ff0000; }
 }
 
 .ladder-switch label[for="ctf-switch"].coming-soon:hover::after {
@@ -1638,4 +1654,34 @@ tr:nth-child(even) {
 
         .ladder-container.active {
             display: block;
+        }
+
+        /* FFA Temperature Styling */
+        .ladder-switch label[for="ffa-switch"]:hover {
+            border-color: #FF4500;
+            box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+        }
+
+        /* FFA Ladder specific styles */
+        #ladder-ffa th,
+        #ladder-ffa td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        #ladder-ffa .elo-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Temperature indicator animations */
+        @keyframes blazing-glow {
+            0%, 100% { text-shadow: 0 0 5px #FF4500; }
+            50% { text-shadow: 0 0 15px #FF4500, 0 0 25px #FF6347; }
+        }
+
+        /* FFA Points column styling */
+        #ladder-ffa td:last-child {
+            font-weight: bold;
         }

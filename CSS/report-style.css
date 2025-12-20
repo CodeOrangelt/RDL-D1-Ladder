@@ -434,3 +434,398 @@ textarea {
         min-width: 120px;
     }
 }
+
+/* ===================================
+   FFA REPORT FORM STYLES
+   =================================== */
+
+.ffa-form {
+    background: transparent;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: none;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.ffa-form-title {
+    color: #b026b9;
+    font-size: 1.5em;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.ffa-form-subtitle {
+    color: #aaa;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+/* Game Version Selection */
+.ffa-game-version {
+    background: rgba(176, 38, 185, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.ffa-game-version > label {
+    display: block;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.ffa-game-version .radio-group {
+    display: flex;
+    gap: 15px;
+}
+
+.ffa-game-version .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 15px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.ffa-game-version .radio-label:hover {
+    border-color: #b026b9;
+    background: rgba(176, 38, 185, 0.1);
+}
+
+.ffa-game-version input[type="radio"]:checked + span {
+    color: #b026b9;
+    font-weight: bold;
+}
+
+/* Participants Container */
+.ffa-participants-container {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.ffa-participants-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 100px;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(176, 38, 185, 0.2);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #d896db;
+    font-size: 0.9em;
+}
+
+.ffa-participant-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 100px;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.ffa-participant-row.winner-row {
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid #FFD700;
+}
+
+/* Placement Badge */
+.ffa-placement {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+.ffa-placement.place-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.ffa-placement.place-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+    color: #000;
+}
+
+.ffa-placement.place-3 {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    color: #fff;
+}
+
+.ffa-placement.place-other {
+    background: #444;
+    color: #fff;
+}
+
+/* Participant Inputs */
+.ffa-participant-row select,
+.ffa-participant-row input {
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+.ffa-participant-row select:focus,
+.ffa-participant-row input:focus {
+    border-color: #b026b9;
+    outline: none;
+}
+
+.ffa-participant-row input[type="number"] {
+    width: 100%;
+    text-align: center;
+}
+
+.ffa-participant-row select {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.9);
+    width: 100%;
+}
+
+.ffa-participant-row select option {
+    color: black;
+    background-color: white;
+}
+
+/* Points Preview */
+.ffa-points-preview {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.ffa-points-preview h4 {
+    color: #FFD700;
+    margin: 0 0 10px 0;
+    font-size: 1em;
+}
+
+.ffa-points-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.ffa-points-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.ffa-points-item .place {
+    color: #888;
+}
+
+.ffa-points-item .points {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* Winner Note */
+.winner-note {
+    display: block;
+    color: #FFD700 !important;
+    grid-column: 1 / -1;
+    margin-top: 5px;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+/* Error Messages */
+#ffa-report-error {
+    color: #a94442;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* FFA Mode Button */
+#ffa-mode.active {
+    background-color: #b026b9;
+    border-color: #b026b9;
+}
+
+/* FFA Confirmation Modal */
+.ffa-confirmation-modal {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.ffa-modal-content {
+    background-color: #222;
+    border: 2px solid #b026b9;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.ffa-modal-content h2 {
+    color: #b026b9;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ffa-confirm-participants {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.ffa-confirm-participants h4 {
+    color: #FFD700;
+    margin-bottom: 10px;
+}
+
+.ffa-confirm-participant {
+    display: grid;
+    grid-template-columns: 60px 1fr 80px 40px;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.ffa-confirm-participant.highlight {
+    background: rgba(176, 38, 185, 0.2);
+    border: 1px solid #b026b9;
+}
+
+.ffa-confirm-participant .placement {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.ffa-confirm-participant .username {
+    color: #fff;
+}
+
+.ffa-confirm-participant .kd {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.ffa-confirm-participant .status {
+    text-align: center;
+}
+
+.ffa-confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.ffa-confirm-actions .btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.ffa-confirm-actions .btn-success:hover {
+    background: #218838;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ffa-participants-header,
+    .ffa-participant-row {
+        grid-template-columns: 50px 1fr 80px 80px;
+        gap: 8px;
+    }
+    
+    .ffa-placement {
+        width: 35px;
+        height: 35px;
+        font-size: 1em;
+    }
+    
+    .ffa-points-list {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .ffa-game-version .radio-group {
+        flex-direction: column;
+    }
+    
+    .ffa-confirm-participant {
+        grid-template-columns: 50px 1fr 70px 30px;
+        font-size: 0.9em;
+    }
+}
+
+
+.ffa-participant-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 15px;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.participant-number-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.participant-profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.participant-number {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FF6B35;
+    text-align: center;
+    min-width: 30px;
+}
+

@@ -2,6 +2,9 @@ import { approveReport } from './ladderalgorithm.js';
 import { approveReportD2 } from './ladderalgorithm-d2.js';
 import { approveReportD3 } from './ladderalgorithm-d3.js';
 import { checkPendingMatches, updatePendingMatchNotification, updateNotificationDot } from './checkPendingMatches.js';
+import { submitFFAReport, confirmFFAReport, rejectFFAReport, FFA_PLACEMENT_POINTS } from './FFA/ladderalgorithm-ffa.js';
+import { initializeFFAForm, ffaState } from './FFA/report-ffa.js';
+
 import { 
     collection, getDocs, query, where, 
     orderBy, serverTimestamp, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc 
@@ -18,77 +21,135 @@ let currentGameMode = 'D1'; // Add global variable to track current game mode
 // Outstanding matches state variables
 let outstandingMatches = [];
 
+// FFA state variables
+let ffaRegisteredPlayers = [];
+let isFFAMode = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const elements = {
         authWarning: document.getElementById('auth-warning'),
         reportForm: document.getElementById('report-form'),
-        winnerUsername: document.getElementById('winner-username'),
-        loserUsername: document.getElementById('loser-username'),
-        loserScore: document.getElementById('loser-score'),
-        suicides: document.getElementById('suicides'),
-        mapPlayed: document.getElementById('map-played'),
-        loserComment: document.getElementById('loser-comment'),
-        reportError: document.getElementById('report-error'),
-        reportLightbox: document.getElementById('report-lightbox')
+        ffaForm: document.getElementById('ffa-report-form'),
+        reportError: document.getElementById('report-error'), // Add the error message element
+        d1Button: document.getElementById('d1-mode'),
+        d2Button: document.getElementById('d2-mode'),
+        d3Button: document.getElementById('d3-mode'),
+        ffaButton: document.getElementById('ffa-mode'),
     };
 
-    // Log which elements were not found
-    Object.entries(elements).forEach(([key, value]) => {
-        if (!value) {
-            console.warn(`Element '${key}' not found in the DOM`);
+    // Function to toggle tabs
+    function toggleTab(selectedTab) {
+        const tabs = ['d1-mode', 'd2-mode', 'd3-mode', 'ffa-mode'];
+        const sections = ['report-form', 'report-form', 'report-form', 'ffa-report-form'];
+
+        tabs.forEach((tab, index) => {
+            const button = document.getElementById(tab);
+            const section = document.getElementById(sections[index]);
+
+            if (tab === selectedTab) {
+                button.classList.add('active');
+                if (section) section.style.display = 'block';
+            } else {
+                button.classList.remove('active');
+                if (section) section.style.display = 'none';
+            }
+        });
+
+        // Clear error message when switching tabs
+        if (elements.reportError) {
+            elements.reportError.textContent = ''; // Clear the error message
+            elements.reportError.style.display = 'none'; // Hide the error message container
         }
-    });
+    }
 
-    // Game mode toggle buttons
-    const d1Button = document.getElementById('d1-mode');
-    const d2Button = document.getElementById('d2-mode');
-    const d3Button = document.getElementById('d3-mode');
+    // Setup event listeners for tabs
+    if (elements.d1Button) {
+        elements.d1Button.addEventListener('click', () => {
+            toggleTab('d1-mode');
+            setGameMode('D1');
+        });
+    }
 
-    // Setup toggle button event listeners
-    d1Button.addEventListener('click', () => {
-        setGameMode('D1');
-        d1Button.classList.add('active');
-        d2Button.classList.remove('active');
-        d3Button.classList.remove('active');
-    });
+    if (elements.d2Button) {
+        elements.d2Button.addEventListener('click', () => {
+            toggleTab('d2-mode');
+            setGameMode('D2');
+        });
+    }
 
-    d2Button.addEventListener('click', () => {
-        setGameMode('D2');
-        d2Button.classList.add('active');
-        d1Button.classList.remove('active');
-        d3Button.classList.remove('active');
-    });
+    if (elements.d3Button) {
+        elements.d3Button.addEventListener('click', () => {
+            toggleTab('d3-mode');
+            setGameMode('D3');
+        });
+    }
 
-    d3Button.addEventListener('click', () => {
-        setGameMode('D3');
-        d3Button.classList.add('active');
-        d1Button.classList.remove('active');
-        d2Button.classList.remove('active');
-    });
+    if (elements.ffaButton) {
+        elements.ffaButton.addEventListener('click', () => {
+            toggleTab('ffa-mode');
+            setGameMode('FFA');
+            toggleFFAMode(true);
+        });
+    }
 
-    // Function to change the game mode and reload opponents
-    function setGameMode(mode) {
-        currentGameMode = mode;
-        console.log(`Game mode set to: ${currentGameMode}`);
+    // Initialize the default tab
+    toggleTab('d1-mode');
+});
+
+function toggleFFAMode(enabled) {
+    const duelSection = document.getElementById('report-form');
+    const ffaSection = document.getElementById('ffa-report-form');
+    const authWarning = document.getElementById('auth-warning');
+    
+    if (enabled) {
+        // Hide duel form, show FFA form
+        if (duelSection) duelSection.style.display = 'none';
+        if (authWarning) authWarning.style.display = 'none';
         
-        // If user is logged in, check if they belong in this ladder and reload opponents
-        if (auth.currentUser) {
+        if (ffaSection) {
+            ffaSection.style.display = 'block';
+            
+            // Initialize FFA form with delay to ensure DOM is ready
+            setTimeout(() => {
+                try {
+                    initializeFFAForm();
+                } catch (error) {
+                    console.error('❌ Error initializing FFA form:', error);
+                }
+            }, 100);
+        } else {
+            console.error('❌ FFA form section not found!');
+        }
+        
+        isFFAMode = true;
+    } else {
+        // Show duel form, hide FFA form
+        if (duelSection) duelSection.style.display = 'block';
+        if (ffaSection) ffaSection.style.display = 'none';
+        if (authWarning && !auth.currentUser) authWarning.style.display = 'block';
+        isFFAMode = false;
+    }
+}
+
+// Function to change the game mode and reload opponents
+function setGameMode(mode) {
+    currentGameMode = mode;
+    isFFAMode = (mode === 'FFA');
+    
+    // Update ffaState in report-ffa.js
+    if (isFFAMode && ffaState) {
+        ffaState.currentLadder = 'D1'; // FFA uses D1 ladder by default
+    }
+    
+    // If user is logged in, check if they belong in this ladder and reload opponents
+    if (auth.currentUser) {
+        if (mode === 'FFA') {
+            toggleFFAMode(true);
+        } else {
             checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
         }
     }
-
-    setupAuthStateListener(elements);
-    setupReportForm(elements);
-    
-    // ADD THIS CODE: Immediately check ladder status if user is already logged in
-    if (auth.currentUser) {
-        console.log("User already logged in, checking D1 ladder status");
-        // D1 is the default mode, so just check that ladder
-        checkUserInLadderAndLoadOpponents(auth.currentUser.uid);
-    } else {
-        console.log("No user logged in yet, waiting for auth state change");
-    }
-});
+}
 
 function setupAuthStateListener(elements) {
     onAuthStateChanged(auth, async (user) => {
@@ -875,9 +936,9 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         const reportForm = document.getElementById('report-form');
         const authWarning = document.getElementById('auth-warning');
         
-        // Show "checking" message
-        reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
-        reportError.style.color = 'white';
+        // Clear the checking message - don't show it
+        // reportError.textContent = `Checking if you are registered in ${currentGameMode} ladder...`;
+        // reportError.style.color = 'white';
         
         // Get current user's document from the appropriate collection
         const playersCollection = 
@@ -890,16 +951,19 @@ async function checkUserInLadderAndLoadOpponents(userUid) {
         const currentUserDoc = await getDoc(doc(db, playersCollection, userUid));
         
         if (!currentUserDoc.exists()) {
-            // User is not in this ladder
+            // User is not in this ladder - only show the small red error message
             reportError.textContent = `You are not registered in the ${currentGameMode} ladder.`;
             reportError.style.color = 'red';
             loserUsername.textContent = 'Not registered in this ladder';
             winnerUsername.disabled = true;
             winnerUsername.innerHTML = '<option value="">Select Opponent</option>';
             
-            // Show warning about not being in the ladder
-            authWarning.style.display = 'block';
-            authWarning.textContent = `You are not registered in the ${currentGameMode} ladder.`;
+            // HIDE the big auth warning banner
+            authWarning.style.display = 'none';
+            
+            // Still show the form so user can see the error message
+            reportForm.style.display = 'block';
+            
             return false;
         }
         
@@ -945,11 +1009,18 @@ export async function fetchOutstandingMatches() {
     try {
         const matches = [];
         
+        // Handle FFA matches separately
+        if (currentGameMode === 'FFA') {
+            return await fetchOutstandingFFAMatches(user);
+        }
+        
         // Determine which collection to use based on game mode
         const pendingCollection = 
             currentGameMode === 'D1' ? 'pendingMatches' : 
-            currentGameMode === 'D2' ? 'pendingMatchesD2' : 'pendingMatchesD3';
+            currentGameMode === 'D2' ? 'pendingMatchesD2' : 
+            currentGameMode === 'D3' ? 'pendingMatchesD3' : 'pendingMatches';
         
+        // ...existing code for 1v1 matches...
         const pendingMatchesRef = collection(db, pendingCollection);
         
         // Define our queries - focus on both reports the user initiated and reports against the user
@@ -973,7 +1044,6 @@ export async function fetchOutstandingMatches() {
         
         if (!userDoc.empty) {
             username = userDoc.docs[0].data().username;
-            // Add query by username
             if (username) {
                 userQueries.push(
                     query(pendingMatchesRef, where('loserUsername', '==', username), where('approved', '==', false)),
@@ -987,7 +1057,6 @@ export async function fetchOutstandingMatches() {
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
                 snapshot.forEach(doc => {
-                    // Add document if not already in the array
                     if (!matches.some(match => match.id === doc.id)) {
                         matches.push({
                             id: doc.id,
@@ -1002,7 +1071,7 @@ export async function fetchOutstandingMatches() {
         matches.sort((a, b) => {
             const dateA = a.createdAt?.toDate() || new Date(0);
             const dateB = b.createdAt?.toDate() || new Date(0);
-            return dateB - dateA; // Most recent first
+            return dateB - dateA;
         });
         
         outstandingMatches = matches;
@@ -1098,6 +1167,354 @@ export function renderOutstandingMatches() {
             }
         });
     });
+}
+
+export function renderOutstandingMatchesFFA() {
+    const matchesList = document.getElementById('outstanding-matches-list');
+    
+    if (outstandingMatches.length === 0) {
+        matchesList.innerHTML = '<p>No outstanding FFA matches found.</p>';
+        return;
+    }
+    
+    let html = '';
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    
+    outstandingMatches.forEach(match => {
+        const date = match.submittedAt?.toDate?.() 
+            ? match.submittedAt.toDate().toLocaleDateString() 
+            : match.reportedAt?.toDate?.()
+            ? match.reportedAt.toDate().toLocaleDateString()
+            : 'Unknown date';
+        
+        const playerCount = match.players?.length || match.participants?.length || '?';
+        const mapPlayed = match.mapPlayed || 'Unknown Map';
+        
+        // Check user's role in this match
+        const isReporter = match.isReporter;
+        const needsConfirmation = match.needsConfirmation;
+        
+        html += `
+        <div class="match-item ffa-match-item" data-id="${match.id}">
+            <h3>FFA Match - ${mapPlayed}</h3>
+            <div class="match-details">
+                <span class="match-detail-item">Players: ${playerCount}</span>
+                <span class="match-detail-item">Date: ${date}</span>
+                <span class="match-detail-item">Status: ${match.status || 'pending'}</span>
+                ${needsConfirmation ? '<span class="match-detail-item" style="color: #ff9800; font-weight: bold;">⚠️ Needs Your Confirmation</span>' : ''}
+            </div>
+            <div class="match-actions">
+                <button class="btn view-ffa-detail-btn" data-id="${match.id}">View Details</button>
+                ${needsConfirmation ? `
+                <button class="btn confirm-ffa-btn" data-id="${match.id}" style="background-color: #4CAF50;">Confirm Match</button>
+                <button class="btn danger-button reject-ffa-btn" data-id="${match.id}">Reject Match</button>
+                ` : ''}
+                ${isReporter ? `
+                <button class="btn danger-button rescind-ffa-report-btn" data-id="${match.id}">Rescind Report</button>
+                ` : ''}
+            </div>
+        </div>
+        `;
+    });
+    
+    matchesList.innerHTML = html;
+    
+    // Add event listeners for FFA buttons
+    document.querySelectorAll('.view-ffa-detail-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const matchId = this.getAttribute('data-id');
+            const match = outstandingMatches.find(m => m.id === matchId);
+            document.getElementById('outstanding-modal').classList.remove('show');
+            showFFAMatchLightbox(match);
+        });
+    });
+    
+    // ✅ NEW: Confirm FFA match button
+    document.querySelectorAll('.confirm-ffa-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const matchId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to confirm this FFA match?')) {
+                try {
+                    await confirmFFAReport(matchId);
+                    alert('FFA match confirmed successfully!');
+                    document.getElementById('outstanding-modal').classList.remove('show');
+                    // Refresh notification
+                    updatePendingMatchNotification();
+                    location.reload();
+                } catch (error) {
+                    console.error('Error confirming FFA match:', error);
+                    alert('Failed to confirm match: ' + error.message);
+                }
+            }
+        });
+    });
+    
+    // ✅ NEW: Reject FFA match button
+    document.querySelectorAll('.reject-ffa-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const matchId = this.getAttribute('data-id');
+            const reason = prompt('Please provide a reason for rejecting this match:');
+            if (reason !== null) {
+                try {
+                    await rejectFFAReport(matchId, reason);
+                    alert('FFA match rejected.');
+                    document.getElementById('outstanding-modal').classList.remove('show');
+                    updatePendingMatchNotification();
+                    location.reload();
+                } catch (error) {
+                    console.error('Error rejecting FFA match:', error);
+                    alert('Failed to reject match: ' + error.message);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('.rescind-ffa-report-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const matchId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to rescind this FFA match report?')) {
+                await rescindFFAReport(matchId);
+            }
+        });
+    });
+}
+
+// ✅ NEW: Helper function to rescind FFA report
+async function rescindFFAReport(matchId) {
+    try {
+        const reportRef = doc(db, 'pendingMatchesFFA', matchId);
+        await deleteDoc(reportRef);
+        alert('FFA report has been rescinded.');
+        await fetchOutstandingMatches();
+        renderOutstandingMatchesFFA();
+    } catch (error) {
+        console.error('Error rescinding FFA report:', error);
+        alert('Failed to rescind report: ' + error.message);
+    }
+}
+
+async function fetchOutstandingFFAMatches(user) {
+    try {
+        const matches = [];
+        
+        // Get user's FFA username
+        const userFFADoc = await getDoc(doc(db, 'playersFFA', user.uid));
+        let ffaUsername = null;
+        
+        if (userFFADoc.exists()) {
+            ffaUsername = userFFADoc.data().username;
+        }
+        
+        // Get all pending FFA matches
+        const pendingFFARef = collection(db, 'pendingMatchesFFA');
+        const snapshot = await getDocs(pendingFFARef);
+        
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const players = data.players || [];
+            const reporterUID = data.submittedByUID || data.reporterId;
+            
+            // Check if user is the reporter
+            const isReporter = reporterUID === user.uid;
+            
+            // Check if user is a participant
+            const isParticipant = players.some(p => 
+                p.username === ffaUsername || p.odl_Id === user.uid
+            );
+            
+            // Check if user needs to confirm
+            const confirmedBy = data.confirmedBy || [];
+            const needsToConfirm = isParticipant && 
+                !isReporter && 
+                !confirmedBy.includes(user.uid) && 
+                !confirmedBy.includes(ffaUsername);
+            
+            // Include if user is reporter OR needs to confirm
+            if (isReporter || needsToConfirm) {
+                matches.push({
+                    id: docSnap.id,
+                    ...data,
+                    isReporter: isReporter,
+                    needsConfirmation: needsToConfirm
+                });
+            }
+        });
+        
+        // Sort by submission date
+        matches.sort((a, b) => {
+            const dateA = a.submittedAt?.toDate?.() || a.reportedAt?.toDate?.() || new Date(0);
+            const dateB = b.submittedAt?.toDate?.() || b.reportedAt?.toDate?.() || new Date(0);
+            return dateB - dateA;
+        });
+        
+        outstandingMatches = matches;
+        return matches;
+        
+    } catch (error) {
+        console.error('Error fetching outstanding FFA matches:', error);
+        return [];
+    }
+}
+
+function showFFAMatchLightbox(match) {
+    const players = match.players || match.participants || [];
+    const mapPlayed = match.mapPlayed || 'Unknown Map';
+    const gameVersion = match.gameVersion || 'D1';
+    const matchNotes = match.matchNotes || '';
+    const demoLink = match.demoLink || '';
+    const submittedAt = match.submittedAt?.toDate?.() 
+        ? match.submittedAt.toDate().toLocaleString() 
+        : match.reportedAt?.toDate?.()
+        ? match.reportedAt.toDate().toLocaleString()
+        : 'Unknown';
+
+    // Sort players by placement/score
+    const sortedPlayers = [...players].sort((a, b) => {
+        // Sort by placement if available, otherwise by score (descending)
+        if (a.placement && b.placement) {
+            return a.placement - b.placement;
+        }
+        return (b.score || 0) - (a.score || 0);
+    });
+
+    // Create modal HTML
+    const modalHtml = `
+        <div id="ffa-details-modal" class="ffa-confirmation-modal" style="display: flex;">
+            <div class="ffa-modal-content">
+                <h2>FFA Match Details</h2>
+                
+                <div class="ffa-match-info" style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                    <p><strong>Map:</strong> ${mapPlayed}</p>
+                    <p><strong>Game Version:</strong> ${gameVersion}</p>
+                    <p><strong>Submitted:</strong> ${submittedAt}</p>
+                    <p><strong>Status:</strong> ${match.status || 'pending'}</p>
+                    ${matchNotes ? `<p><strong>Notes:</strong> ${matchNotes}</p>` : ''}
+                    ${demoLink ? `<p><strong>Demo:</strong> <a href="${demoLink}" target="_blank" style="color: #4CAF50;">View Demo</a></p>` : ''}
+                </div>
+                
+                <div class="ffa-confirm-participants">
+                    <h4>Placements & Scores</h4>
+                    ${sortedPlayers.map((p, index) => {
+                        const placement = p.placement || (index + 1);
+                        const score = p.score !== undefined ? p.score : '?';
+                        const kills = p.kills !== undefined ? p.kills : '?';
+                        const deaths = p.deaths !== undefined ? p.deaths : '?';
+                        const confirmed = (match.confirmedBy || []).includes(p.odl_Id) || 
+                                         (match.confirmedBy || []).includes(p.username);
+                        const isReporter = p.odl_Id === (match.submittedByUID || match.reporterId) ||
+                                          p.username === match.reporterUsername;
+                        
+                        return `
+                            <div class="ffa-confirm-participant ${placement <= 3 ? 'highlight' : ''}" 
+                                 style="display: grid; grid-template-columns: 50px 1fr 80px 80px 60px; gap: 10px; padding: 10px; 
+                                        background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 5px; align-items: center;">
+                                <span class="placement" style="color: ${placement === 1 ? '#FFD700' : placement === 2 ? '#C0C0C0' : placement === 3 ? '#CD7F32' : '#888'}; font-weight: bold; font-size: 1.2em;">
+                                    ${getOrdinalSuffix(placement)}
+                                </span>
+                                <span class="username" style="color: #fff;">
+                                    ${p.username || 'Unknown'}
+                                    ${isReporter ? '<span style="color: #888; font-size: 0.8em;"> (Reporter)</span>' : ''}
+                                </span>
+                                <span class="score" style="color: #4CAF50; font-weight: bold;">
+                                    Score: ${score}
+                                </span>
+                                <span class="kd" style="color: #888; font-size: 0.9em;">
+                                    K: ${kills} / D: ${deaths}
+                                </span>
+                                <span class="status" style="text-align: center;">
+                                    ${confirmed || isReporter ? '✅' : '⏳'}
+                                </span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                
+                <div class="ffa-confirm-actions" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                    <button id="close-ffa-details-btn" class="btn" style="background-color: #6a1b9a;">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if present
+    const existingModal = document.getElementById('ffa-details-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Add close handler
+    document.getElementById('close-ffa-details-btn').addEventListener('click', () => {
+        document.getElementById('ffa-details-modal').remove();
+    });
+
+    // Close on background click
+    document.getElementById('ffa-details-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'ffa-details-modal') {
+            document.getElementById('ffa-details-modal').remove();
+        }
+    });
+}
+
+// Helper function for ordinal suffix
+function getOrdinalSuffix(n) {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+async function checkForPendingFFAMatches(user) {
+    try {
+        // First, get the current user's FFA username
+        const userFFADoc = await getDoc(doc(db, 'playersFFA', user.uid));
+        let ffaUsername = null;
+        
+        if (userFFADoc.exists()) {
+            ffaUsername = userFFADoc.data().username;
+        }
+        
+        if (!ffaUsername) {
+            // User is not registered in FFA ladder
+            return false;
+        }
+        
+        const pendingFFARef = collection(db, 'pendingMatchesFFA');
+        const snapshot = await getDocs(pendingFFARef);
+        
+        // Check if user has any unconfirmed FFA matches
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const players = data.players || [];
+            const reporterUID = data.submittedByUID || data.reporterId;
+            
+            // Skip if user is the reporter (they already "confirmed" by submitting)
+            if (reporterUID === user.uid) {
+                continue;
+            }
+            
+            // Check if current user is a participant who hasn't confirmed
+            const userIsParticipant = players.some(p => 
+                p.username === ffaUsername || p.odl_Id === user.uid
+            );
+            
+            // Check confirmation status
+            const confirmedBy = data.confirmedBy || [];
+            const userHasConfirmed = confirmedBy.includes(user.uid) || confirmedBy.includes(ffaUsername);
+            
+            if (userIsParticipant && !userHasConfirmed) {
+                console.log('Found pending FFA match requiring confirmation:', docSnap.id);
+                return true;
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking pending FFA matches:', error);
+        return false;
+    }
 }
 
 // Function to rescind (delete) a report
@@ -1241,34 +1658,43 @@ export function setCurrentGameMode(mode) {
     currentGameMode = mode;
 }
 
-// Initialize outstanding matches functionality
 export function initOutstandingMatches() {
     document.addEventListener('DOMContentLoaded', () => {
-        // Elements
+        // Elements for standard 1v1 form
         const viewOutstandingBtn = document.getElementById('view-outstanding-btn');
         const viewOutstandingContainer = document.getElementById('view-outstanding-container');
+        
+        // Elements for FFA form
+        const viewOutstandingFFABtn = document.getElementById('view-outstanding-ffa-btn');
+        const viewOutstandingFFAContainer = document.getElementById('view-outstanding-ffa-container');
+        
         const outstandingModal = document.getElementById('outstanding-modal');
         const closeOutstandingBtn = document.getElementById('close-outstanding-btn');
         const regularCancelButton = document.getElementById('cancel-button');
         const d1Button = document.getElementById('d1-mode');
         const d2Button = document.getElementById('d2-mode');
         const d3Button = document.getElementById('d3-mode');
+        const ffaButton = document.getElementById('ffa-mode');
 
         // Update game mode when buttons are clicked
         if (d1Button) d1Button.addEventListener('click', () => { setCurrentGameMode('D1'); });
         if (d2Button) d2Button.addEventListener('click', () => { setCurrentGameMode('D2'); });
         if (d3Button) d3Button.addEventListener('click', () => { setCurrentGameMode('D3'); });
+        if (ffaButton) ffaButton.addEventListener('click', () => { setCurrentGameMode('FFA'); });
 
-        // Listen for auth state changes to show/hide the button
+
+        // Listen for auth state changes to show/hide the buttons
         auth.onAuthStateChanged(user => {
             if (user) {
-                viewOutstandingContainer.style.display = 'block';
+                if (viewOutstandingContainer) viewOutstandingContainer.style.display = 'block';
+                if (viewOutstandingFFAContainer) viewOutstandingFFAContainer.style.display = 'block';
             } else {
-                viewOutstandingContainer.style.display = 'none';
+                if (viewOutstandingContainer) viewOutstandingContainer.style.display = 'none';
+                if (viewOutstandingFFAContainer) viewOutstandingFFAContainer.style.display = 'none';
             }
         });
 
-        // Button click handler
+        // Button click handler for standard form
         if (viewOutstandingBtn) {
             viewOutstandingBtn.addEventListener('click', async () => {
                 outstandingModal.classList.add('show');
@@ -1277,6 +1703,21 @@ export function initOutstandingMatches() {
                 
                 await fetchOutstandingMatches();
                 renderOutstandingMatches();
+            });
+        }
+        
+        // Button click handler for FFA form
+        if (viewOutstandingFFABtn) {
+            viewOutstandingFFABtn.addEventListener('click', async () => {
+                // Ensure we're checking FFA matches
+                setCurrentGameMode('FFA');
+                
+                outstandingModal.classList.add('show');
+                document.getElementById('outstanding-matches-list').innerHTML = 
+                    '<div class="loading">Loading your FFA matches...</div>';
+                
+                await fetchOutstandingMatches();
+                renderOutstandingMatchesFFA();
             });
         }
         

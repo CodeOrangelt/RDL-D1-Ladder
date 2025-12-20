@@ -827,16 +827,20 @@ class RibbonSystem {
                 return null;
             }
             
-            const playerRating = playerData.eloRating; // Use eloRating directly
-            const playerTier = getPlayerRankTier(playerRating);
+            const playerRating = playerData.eloRating;
+            const playerMatchCount = playerData.matchesPlayed || 0;
+            const playerWinRate = playerData.winPercentage || 0;
+            
+            // Get player's tier using proper thresholds with matchCount/winRate check
+            const playerTier = getPlayerRankTier(playerRating, playerMatchCount, playerWinRate);
             const playerTierName = getRankTierName(playerTier);
             
             if (playerTierName === 'Unranked') {
-                console.log(`❌ ${playerUsername} is Unranked (${playerRating} ELO)`);
+                console.log(`❌ ${playerUsername} is Unranked (${playerRating} ELO, ${playerMatchCount} matches)`);
                 return null;
             }
             
-            console.log(`🔍 Checking Top ${playerTierName} status for ${playerUsername} (${playerRating} ELO)`);
+            console.log(`🔍 Checking Top ${playerTierName} status for ${playerUsername} (${playerRating} ELO, ${playerWinRate}% WR, ${playerMatchCount} matches)`);
             
             // Get all players in the same rank tier
             const playersRef = collection(db, playersCollection);
@@ -848,8 +852,12 @@ class RibbonSystem {
             
             allPlayersSnapshot.forEach(doc => {
                 const data = doc.data();
-                const rating = data.eloRating || 0; // Use eloRating consistently
-                const tier = getPlayerRankTier(rating);
+                const rating = data.eloRating || 0;
+                const matchCount = data.matchesPlayed || 0;
+                const winRate = data.winPercentage || 0;
+                
+                // Use proper tier calculation with matchCount/winRate
+                const tier = getPlayerRankTier(rating, matchCount, winRate);
                 
                 // Only consider players in the same rank tier
                 if (tier === playerTier) {
@@ -872,42 +880,42 @@ class RibbonSystem {
         }
     }
 
-    // Fixed Top Rank evaluation - Only award once per achievement period
+    // Fixed Top Rank evaluation - Award permanently when player reaches #1
+    // Once awarded, the ribbon is NEVER removed (historical achievement)
     async evaluateTopRankRibbon(playerUsername, ladder, currentRibbons) {
         const topRank = await this.checkTopRankStatus(playerUsername, ladder);
         const updates = {};
         
-        // If player currently holds #1 in their rank
+        // FIRST: Preserve ALL existing Top Rank ribbons (they are permanent achievements)
+        Object.keys(currentRibbons).forEach(ribbonName => {
+            if (ribbonName.startsWith('Top ') && ribbonName.endsWith(' Pilot')) {
+                // Always preserve existing top rank ribbons - they're permanent
+                updates[ribbonName] = currentRibbons[ribbonName];
+                console.log(`✅ Preserving permanent ${ribbonName} for ${playerUsername}`);
+            }
+        });
+        
+        // SECOND: If player currently holds #1 in their rank, award that ribbon if not already owned
         if (topRank) {
             const ribbonName = `Top ${topRank} Pilot`;
             if (RIBBON_DEFINITIONS[ribbonName]) {
-                // Check if player already has this ribbon
-                const current = currentRibbons[ribbonName];
-                
-                if (!current) {
-                    // First time achieving #1 in this rank - award the ribbon
-                    console.log(`👑 NEW Top Rank Achievement: ${playerUsername} earned ${ribbonName}!`);
+                // Check if player already has this specific ribbon
+                if (!currentRibbons[ribbonName] && !updates[ribbonName]) {
+                    // First time achieving #1 in this rank - award the ribbon permanently
+                    console.log(`👑 NEW Top Rank Achievement: ${playerUsername} earned ${ribbonName}! (This is permanent)`);
                     
                     updates[ribbonName] = {
-                        level: 1, // Always level 1 for display consistency
+                        level: 1,
                         awardedAt: new Date(),
                         rank: topRank,
-                        achievedAt: new Date()
+                        achievedAt: new Date(),
+                        permanent: true // Mark as permanent achievement
                     };
                 } else {
-                    console.log(`✅ ${playerUsername} already has ${ribbonName} - No changes needed`);
+                    console.log(`✅ ${playerUsername} already has ${ribbonName}`);
                 }
             }
         }
-        
-        // Preserve all existing Top Rank ribbons (they never get removed)
-        Object.keys(currentRibbons).forEach(ribbonName => {
-            if (ribbonName.startsWith('Top ') && ribbonName.endsWith(' Pilot')) {
-                if (!updates[ribbonName]) {
-                    console.log(`✅ Preserving existing ${ribbonName}`);
-                }
-            }
-        });
         
         return updates;
     }
@@ -1368,7 +1376,9 @@ class RibbonSystem {
 }
 
 // Helper functions for rank tiers
-function getPlayerRankTier(eloRating) {
+// Thresholds MUST match ranks.js: Bronze=200, Silver=500, Gold=700, Emerald=1000
+// Emerald requires: winRate >= 80% AND matchCount >= 20
+function getPlayerRankTier(eloRating, matchCount = null, winRate = null) {
     if (eloRating === undefined || eloRating === null) {
         return 0; // Unranked
     }
@@ -1377,11 +1387,28 @@ function getPlayerRankTier(eloRating) {
         return 0;
     }
 
-    if (elo >= 2000) return 4; // Emerald
-    if (elo >= 1800) return 3; // Gold  
-    if (elo >= 1600) return 2; // Silver
-    if (elo >= 1400) return 1; // Bronze
-    return 0; // Unranked/Default
+    // If matchCount is provided and is 0, player is Unranked
+    if (matchCount !== null && matchCount === 0) {
+        return 0; // Unranked
+    }
+
+    // Check tiers based on ELO thresholds from ranks.js
+    if (elo < 200) return 0; // Unranked
+    if (elo < 500) return 1; // Bronze
+    if (elo < 700) return 2; // Silver
+    if (elo < 1000) return 3; // Gold
+    
+    // Emerald tier: 1000+ ELO, but requires special conditions
+    // If winRate/matchCount data available, check Emerald requirements
+    if (winRate !== null && matchCount !== null) {
+        if (winRate >= 80 && matchCount >= 20) {
+            return 4; // Emerald - meets all requirements
+        }
+        return 3; // Gold - 1000+ ELO but doesn't meet Emerald requirements
+    }
+    
+    // If no winRate/matchCount data, assume they meet requirements for simple tier lookup
+    return 4; // Emerald
 }
 
 function getRankTierName(tier) {
@@ -1404,6 +1431,40 @@ if (typeof window !== 'undefined') {
 
 export async function evaluatePlayerRibbons(playerUsername, ladder = 'D1') {
     return await ribbonSystem.evaluateAllRibbonsForPlayerOptimized(playerUsername, ladder);
+}
+
+// Export function to check and award Top Rank ribbon immediately after a match
+// This should be called from ladder algorithm when a player wins a match
+export async function checkAndAwardTopRankRibbon(playerUsername, ladder = 'D1') {
+    try {
+        // Get current ribbons
+        const currentRibbons = await ribbonSystem.getPlayerRibbonsCached(playerUsername, ladder);
+        
+        // Evaluate Top Rank status and get any updates
+        const topRankUpdates = await ribbonSystem.evaluateTopRankRibbon(playerUsername, ladder, currentRibbons);
+        
+        // If there are new Top Rank ribbons to award, save them
+        if (Object.keys(topRankUpdates).length > 0) {
+            // Check if any are NEW ribbons (not just preserved ones)
+            const newRibbons = {};
+            for (const [ribbonName, ribbonData] of Object.entries(topRankUpdates)) {
+                if (!currentRibbons[ribbonName]) {
+                    newRibbons[ribbonName] = ribbonData;
+                }
+            }
+            
+            if (Object.keys(newRibbons).length > 0) {
+                await ribbonSystem.savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder);
+                console.log(`🎖️ Awarded Top Rank ribbon(s) to ${playerUsername}:`, Object.keys(newRibbons));
+                return newRibbons;
+            }
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error checking/awarding Top Rank ribbon:', error);
+        return null;
+    }
 }
 
 export function getRibbonHTML(ribbonName, ribbonData) {

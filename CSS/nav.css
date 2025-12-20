@@ -417,28 +417,11 @@ body {
 }
 
 /* Notification indicator styles */
-.nav-notification {
-  position: relative;
-  display: inline-block;
-}
-
-.notification-dot {
-  position: absolute;
-  top: 0;
-  right: -6px;
-  width: 8px;
-  height: 8px;
-  background-color: #ff3b30;
-  border-radius: 50%;
-  display: none; /* Hidden by default */
-}
-
-/* Notification dots for current-user system */
+/* Notification indicator styles */
 .nav-notification {
     position: relative !important;
     display: inline-flex !important;
     align-items: center;
-    justify-content: space-between;
 }
 
 .notification-dot {
@@ -450,7 +433,7 @@ body {
     background-color: #ff3b30 !important;
     border-radius: 50% !important;
     border: 2px solid white !important;
-    display: none;  /* Hidden by default */
+    display: none;
     z-index: 999 !important;
     font-size: 8px !important;
     color: white !important;
@@ -463,7 +446,7 @@ body {
 .nav-dropdown-content .nav-notification {
     display: flex !important;
     align-items: center;
-    justify-content: space-between;
+    gap: 0;
     position: relative;
 }
 
@@ -471,8 +454,7 @@ body {
     position: relative !important;
     top: 0 !important;
     right: 0 !important;
-    margin-left: 8px;
-    min-width: 12px;
+    margin-left: 0;
 }
 
 /* Dropdown styling improvements */
