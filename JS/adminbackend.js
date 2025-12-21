@@ -5,7 +5,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 import { getRankStyle } from './ranks.js';
-import { isAdmin } from './admin-check.js';
+import { isAdmin, isAdminWithRoles } from './admin-check.js';
 
 // ============================================================================
 // HELPER FUNCTIONS - Consolidated utilities to reduce code duplication
@@ -2292,7 +2292,7 @@ async function setCustomElo(username, elo, ladder) {
     try {
         // Check if current user is admin
         const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
+        if (!user || !(await isAdminWithRoles(user))) {
             throw new Error('Unauthorized: Admin access required');
         }
 
@@ -2357,7 +2357,7 @@ async function setCustomElo(username, elo, ladder) {
 async function setUserRole(username, roleName, roleColor) {
     try {
         const user = auth.currentUser;
-        if (!user || !isAdmin(user.email)) {
+        if (!user || !(await isAdminWithRoles(user))) {
             throw new Error('Unauthorized: Admin access required');
         }
 
