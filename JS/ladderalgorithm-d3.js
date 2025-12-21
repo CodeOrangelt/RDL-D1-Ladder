@@ -59,8 +59,8 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
 
         // Calculate new ELO ratings - SAME AS D1/D2
         const { newWinnerRating, newLoserRating } = calculateEloD3(
-            winnerData.eloRating || 1200,
-            loserData.eloRating || 1200
+            winnerData.eloRating || 200,
+            loserData.eloRating || 200
         );
 
         // Handle position updating based on ladder rules - SAME AS D1/D2
@@ -121,7 +121,7 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
         await Promise.all([
             recordEloChangeD3({
                 playerId: winnerId,
-                previousElo: winnerData.eloRating || 1200,
+                previousElo: winnerData.eloRating || 200,
                 newElo: newWinnerRating,
                 opponentId: loserId,
                 matchResult: 'win',
@@ -133,7 +133,7 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
             }),
             recordEloChangeD3({
                 playerId: loserId,
-                previousElo: loserData.eloRating || 1200,
+                previousElo: loserData.eloRating || 200,
                 newElo: newLoserRating,
                 opponentId: winnerId,
                 matchResult: 'loss',

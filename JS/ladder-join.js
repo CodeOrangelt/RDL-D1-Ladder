@@ -273,11 +273,29 @@ async function handleJoinLadder() {
             nextPosition = (highestPositionDoc.position || 0) + 1;
         }
         
+        // Check if this player previously existed in this ladder (unhiatus case)
+        let previousElo = null;
+        if (userData) {
+            // If we found userData from another collection, check if they have ladder-specific ELO
+            previousElo = userData.eloRating;
+        }
+        
+        // Determine starting ELO based on ladder type
+        let startingElo;
+        if (currentLadder === 'FFA') {
+            startingElo = 1200; // FFA starts at 1200
+        } else {
+            startingElo = 200; // D1, D2, D3, DUOS start at 200
+        }
+        
+        // If player is returning from hiatus and has a valid previous ELO, use it
+        const finalElo = (previousElo && previousElo > 0) ? previousElo : startingElo;
+        
             // Create a proper playerData variable first
         const playerData = {
             username: username,
             email: user.email,
-            eloRating: 1200,
+            eloRating: finalElo,
             position: nextPosition,
             createdAt: serverTimestamp(),
             isAdmin: false,

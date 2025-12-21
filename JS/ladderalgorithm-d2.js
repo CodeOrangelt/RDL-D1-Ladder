@@ -62,8 +62,8 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
         const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
 
         // Calculate new ELO ratings
-        const winnerOldElo = winnerData.eloRating || 1200;
-        const loserOldElo = loserData.eloRating || 1200;
+        const winnerOldElo = winnerData.eloRating || 200;
+        const loserOldElo = loserData.eloRating || 200;
         
         const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
 
@@ -242,8 +242,8 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
         const loserData = loserDocs.docs[0].data();
 
         // Store pre-match ELO values
-        const winnerOldElo = winnerData.eloRating || 1200;
-        const loserOldElo = loserData.eloRating || 1200;
+        const winnerOldElo = winnerData.eloRating || 200;
+        const loserOldElo = loserData.eloRating || 200;
 
         // Calculate new ELO values
         const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
