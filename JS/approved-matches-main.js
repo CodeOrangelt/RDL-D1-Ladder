@@ -114,8 +114,8 @@ function getEloColor(elo) {
   if (e >= 1000) return "#50C878";      // Emerald
   else if (e >= 700) return "#FFD700";  // Gold
   else if (e >= 500) return "#C0C0C0";  // Silver
-  else if (e >= 200) return "#CD7F32";  // Bronze
-  else return "#DC143C";                 // Unranked (Crimson)
+  else if (e >= 1) return "#CD7F32";    // Bronze (includes 1-199, players with matches)
+  else return "#DC143C";                 // Unranked (Crimson) - only ELO 0
 }
 
 function formatDate(timestamp, includeTime = false) {
@@ -1843,8 +1843,8 @@ function getEloRankClass(elo) {
   if (e >= 1000) return "emerald";      // 1000+
   else if (e >= 700) return "gold";     // 700-999
   else if (e >= 500) return "silver";   // 500-699
-  else if (e >= 200) return "bronze";   // 200-499
-  else return "unranked";                // 0-199
+  else if (e >= 1) return "bronze";     // 1-499 (players with matches)
+  else return "unranked";                // 0 (no matches played)
 }
 
 function showPreviewCommentPopup(commentText, username, usernameColor = "#fff") {
