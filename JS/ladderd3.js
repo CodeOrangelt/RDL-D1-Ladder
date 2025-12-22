@@ -432,6 +432,8 @@ function createPlayerRowD3(player, stats, primaryToken) {
     let usernameColor = '#DC143C'; // Default for unranked
     if (stats.totalMatches === 0) {
         usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (stats.totalMatches >= 5 && elo < 200) {
+        usernameColor = '#CD7F32'; // Bronze (5+ matches rule)
     } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
         usernameColor = '#50C878'; // Emerald (special requirements)
     } else if (elo >= 700) {

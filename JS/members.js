@@ -158,7 +158,12 @@ async function rebuildMembersList() {
 
 }
 
-function getPlayerRank(elo) {
+function getPlayerRank(elo, matchCount = 0) {
+    if (matchCount === 0) return 'unranked';
+    
+    // 5+ matches rule: minimum Bronze rank
+    if (matchCount >= 5 && elo < 200) return 'bronze';
+    
     if (elo >= 1000) return 'emerald';  
     if (elo >= 700) return 'gold';      
     if (elo >= 500) return 'silver';   

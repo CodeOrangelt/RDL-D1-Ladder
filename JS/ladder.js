@@ -325,6 +325,10 @@ async function fetchBatchMatchStats(usernames) {
 // Update getPlayerRankName function
 function getPlayerRankName(elo, matchCount = 0, winRate = 0) {
     if (matchCount === 0) return 'Unranked';
+    
+    // 5+ matches rule: minimum Bronze rank
+    if (matchCount >= 5 && elo < 200) return 'Bronze';
+    
     if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return 'Emerald';
     if (elo >= 700) return 'Gold';
     if (elo >= 500) return 'Silver';
@@ -340,6 +344,10 @@ function getPlayerRankName(elo, matchCount = 0, winRate = 0) {
  */
 function getUsernameColor(elo, stats) {
     if (stats.totalMatches === 0) return '#DC143C'; // Unranked (0 games)
+    
+    // 5+ matches rule: minimum Bronze color
+    if (stats.totalMatches >= 5 && elo < 200) return '#CD7F32'; // Bronze
+    
     if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) return '#50C878'; // Emerald
     if (elo >= 700) return '#FFD700'; // Gold
     if (elo >= 500) return '#C0C0C0'; // Silver

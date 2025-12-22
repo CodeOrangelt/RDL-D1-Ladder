@@ -1029,9 +1029,14 @@ function clearDashboardCache() {
 // END DASHBOARD OVERVIEW
 // ============================================================================
 
-function getRankFromElo(elo) {
+function getRankFromElo(elo, matchCount = 0, winRate = 0) {
     // D1 rank thresholds based on actual ladder system
-    if (elo >= 1000) return 'Emerald';  // 1000+ with 80% win rate requirement
+    if (matchCount === 0) return 'Unranked';
+    
+    // 5+ matches rule: minimum Bronze rank
+    if (matchCount >= 5 && elo < 200) return 'Bronze';
+    
+    if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return 'Emerald';
     if (elo >= 700) return 'Gold';
     if (elo >= 500) return 'Silver';
     if (elo >= 200) return 'Bronze';

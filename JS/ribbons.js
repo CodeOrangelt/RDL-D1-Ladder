@@ -1410,6 +1410,11 @@ function getPlayerRankTier(eloRating, matchCount = null, winRate = null) {
         return 0; // Unranked
     }
 
+    // 5+ matches rule: minimum Bronze tier
+    if (matchCount !== null && matchCount >= 5 && elo < 200) {
+        return 1; // Bronze
+    }
+
     // Check tiers based on ELO thresholds from ranks.js
     if (elo < 200) return 0; // Unranked
     if (elo < 500) return 1; // Bronze

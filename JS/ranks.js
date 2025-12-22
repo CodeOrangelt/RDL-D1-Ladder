@@ -10,6 +10,11 @@ export function getRankStyle(eloRating, matchCount = 0, winRate = 0) {
     // Unranked if no matches played
     if (matchCount === 0) return RANKS.UNRANKED;
 
+    // 5+ matches rule: minimum Bronze rank
+    if (matchCount >= 5 && eloRating < 200) {
+        return RANKS.BRONZE;
+    }
+
     // Standard tier checks
     if (eloRating < 200) return RANKS.UNRANKED;
     if (eloRating < 500) return RANKS.BRONZE;

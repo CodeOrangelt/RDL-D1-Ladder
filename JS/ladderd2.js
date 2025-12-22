@@ -217,6 +217,10 @@ async function updatePlayerPositions(winnerUsername, loserUsername) {
 // Update the getPlayerRankNameD2 function
 function getPlayerRankNameD2(elo, matchCount = 0, winRate = 0) {
     if (matchCount === 0) return 'Unranked';
+    
+    // 5+ matches rule: minimum Bronze rank
+    if (matchCount >= 5 && elo < 200) return 'Bronze';
+    
     if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return 'Emerald';
     if (elo >= 700) return 'Gold';
     if (elo >= 500) return 'Silver';
@@ -372,6 +376,8 @@ function createPlayerRowWithTokenD2(player, stats, primaryToken) {
     let usernameColor = '#DC143C'; // Default for unranked
     if (stats.totalMatches === 0) {
         usernameColor = '#DC143C'; // Unranked (0 games)
+    } else if (stats.totalMatches >= 5 && elo < 200) {
+        usernameColor = '#CD7F32'; // Bronze (5+ matches rule)
     } else if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) {
         usernameColor = '#50C878'; // Emerald (special requirements)
     } else if (elo >= 700) {
