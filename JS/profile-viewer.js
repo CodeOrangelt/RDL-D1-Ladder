@@ -1196,6 +1196,7 @@ displayFFAProfile(data) {
         matches.forEach(match => {
             const playerData = match.playerData;
             const playerPlacement = playerData.placement;
+            const playerKills = parseInt(playerData.kills) || 0;
             
             match.participants?.forEach(participant => {
                 if (participant.username === username) return;
@@ -1206,11 +1207,13 @@ displayFFAProfile(data) {
                         encounters: 0,
                         beatenBy: 0,
                         beaten: 0,
-                        tied: 0
+                        tied: 0,
+                        totalKills: 0
                     };
                 }
                 
                 opponentStats[opponent].encounters++;
+                opponentStats[opponent].totalKills += playerKills;
                 
                 if (participant.placement < playerPlacement) {
                     opponentStats[opponent].beatenBy++;
@@ -1226,6 +1229,34 @@ displayFFAProfile(data) {
             .sort((a, b) => b[1].encounters - a[1].encounters)
             .slice(0, 20); // Top 20 opponents
         
+        // Identify rivals and toughest opponent (minimum 3 encounters)
+        let rivalOpponent = null;
+        let toughestOpponent = null;
+        let smallestDifference = Infinity;
+        let lowestWinRate = 100;
+        
+        // First pass: find rival (closest to 50/50 in finishes)
+        sortedOpponents.forEach(([opponent, stats]) => {
+            if (stats.encounters >= 3) {
+                const difference = Math.abs(stats.beaten - stats.beatenBy);
+                if (difference < smallestDifference) {
+                    smallestDifference = difference;
+                    rivalOpponent = opponent;
+                }
+            }
+        });
+        
+        // Second pass: find toughest opponent (lowest win rate, excluding rival)
+        sortedOpponents.forEach(([opponent, stats]) => {
+            if (stats.encounters >= 3 && opponent !== rivalOpponent) {
+                const winRate = (stats.beaten / stats.encounters) * 100;
+                if (winRate < lowestWinRate) {
+                    lowestWinRate = winRate;
+                    toughestOpponent = opponent;
+                }
+            }
+        });
+        
         matchupsContainer.innerHTML = `
             <h2>FFA Opponents</h2>
             <table class="match-history-table">
@@ -1235,24 +1266,40 @@ displayFFAProfile(data) {
                         <th>Encounters</th>
                         <th>Finished Above</th>
                         <th>Finished Below</th>
+                        <th>Avg Kills</th>
                         <th>Win Rate</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${sortedOpponents.length === 0 ?
-                        '<tr><td colspan="5">No opponents found</td></tr>' :
+                        '<tr><td colspan="6">No opponents found</td></tr>' :
                         sortedOpponents.map(([opponent, stats]) => {
                             const winRate = ((stats.beaten / stats.encounters) * 100).toFixed(1);
+                            const avgKills = (stats.totalKills / stats.encounters).toFixed(1);
+                            
+                            // Determine special class
+                            let rowClass = '';
+                            let badge = '';
+                            if (opponent === rivalOpponent && stats.encounters >= 3) {
+                                rowClass = 'rival-opponent';
+                                badge = '<span class="matchup-badge rival-badge" title="Closest matches">Rival</span>';
+                            } else if (opponent === toughestOpponent && stats.encounters >= 3) {
+                                rowClass = 'toughest-opponent';
+                                badge = '<span class="matchup-badge toughest-badge" title="Toughest opponent">Toughest</span>';
+                            }
+                            
                             return `
-                                <tr>
+                                <tr class="${rowClass}">
                                     <td>
                                         <a href="profile.html?username=${encodeURIComponent(opponent)}&ladder=ffa" class="player-link">
                                             ${opponent}
                                         </a>
+                                        ${badge}
                                     </td>
                                     <td>${stats.encounters}</td>
                                     <td class="wins">${stats.beaten}</td>
                                     <td class="losses">${stats.beatenBy}</td>
+                                    <td>${avgKills}</td>
                                     <td>${winRate}%</td>
                                 </tr>
                             `;
@@ -3102,13 +3149,15 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             const matchups = matches.reduce((acc, match) => {
                 const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
                 const isWin = match.winnerUsername === username;
+                const playerScore = match.winnerUsername === username ? match.winnerScore : match.loserScore;
                 
                 if (!acc[opponent]) {
-                    acc[opponent] = { wins: 0, losses: 0, total: 0 };
+                    acc[opponent] = { wins: 0, losses: 0, total: 0, totalScore: 0 };
                 }
                 
                 acc[opponent].total++;
                 acc[opponent][isWin ? 'wins' : 'losses']++;
+                acc[opponent].totalScore += parseInt(playerScore) || 0;
                 
                 return acc;
             }, {});
@@ -3116,6 +3165,34 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             // Sort by most played
             const sortedMatchups = Object.entries(matchups)
                 .sort((a, b) => b[1].total - a[1].total);
+            
+            // Identify rivals and toughest opponent (minimum 3 games)
+            let rivalOpponent = null;
+            let toughestOpponent = null;
+            let smallestDifference = Infinity;
+            let lowestWinRate = 100;
+            
+            // First pass: find rival (closest to 50/50)
+            sortedMatchups.forEach(([opponent, stats]) => {
+                if (stats.total >= 3) {
+                    const difference = Math.abs(stats.wins - stats.losses);
+                    if (difference < smallestDifference) {
+                        smallestDifference = difference;
+                        rivalOpponent = opponent;
+                    }
+                }
+            });
+            
+            // Second pass: find toughest opponent (lowest win rate, excluding rival)
+            sortedMatchups.forEach(([opponent, stats]) => {
+                if (stats.total >= 3 && opponent !== rivalOpponent) {
+                    const winRate = (stats.wins / stats.total) * 100;
+                    if (winRate < lowestWinRate) {
+                        lowestWinRate = winRate;
+                        toughestOpponent = opponent;
+                    }
+                }
+            });
             
             // Get season information
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
@@ -3132,25 +3209,41 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                             <th>Games Played</th>
                             <th>Wins</th>
                             <th>Losses</th>
+                            <th>Average Score</th>
                             <th>Win Rate</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${sortedMatchups.length === 0 ?
-                            '<tr><td colspan="5">No matchups found</td></tr>' :
+                            '<tr><td colspan="6">No matchups found</td></tr>' :
                             sortedMatchups.map(([opponent, stats]) => {
                                 const winRate = ((stats.wins / stats.total) * 100).toFixed(1);
+                                const avgScore = (stats.totalScore / stats.total).toFixed(1);
+                                
+                                // Determine special class
+                                let rowClass = '';
+                                let badge = '';
+                                if (opponent === rivalOpponent && stats.total >= 3) {
+                                    rowClass = 'rival-opponent';
+                                    badge = '<span class="matchup-badge rival-badge" title="Closest matches">Rival</span>';
+                                } else if (opponent === toughestOpponent && stats.total >= 3) {
+                                    rowClass = 'toughest-opponent';
+                                    badge = '<span class="matchup-badge toughest-badge" title="Toughest opponent">Toughest</span>';
+                                }
+                                
                                 return `
-                                    <tr>
+                                    <tr class="${rowClass}">
                                         <td>
                                             <a href="profile.html?username=${encodeURIComponent(opponent)}"
                                                class="player-link">
                                                 ${opponent}
                                             </a>
+                                            ${badge}
                                         </td>
                                         <td>${stats.total}</td>
                                         <td class="wins">${stats.wins}</td>
                                         <td class="losses">${stats.losses}</td>
+                                        <td>${avgScore}</td>
                                         <td>${winRate}%</td>
                                     </tr>
                                 `;

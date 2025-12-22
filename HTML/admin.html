@@ -731,7 +731,17 @@
                         </div>
                         <div class="form-group">
                             <label for="role-name">Role Name:</label>
-                            <input type="text" id="role-name" placeholder="e.g., Moderator, VIP (leave blank to remove)">
+                            <input type="text" id="role-name" list="role-suggestions" placeholder="e.g., Moderator, VIP (leave blank to remove)" autocomplete="off">
+                            <datalist id="role-suggestions">
+                                <option value="owner">Owner</option>
+                                <option value="admin">Admin</option>
+                                <option value="council">Council</option>
+                                <option value="creative lead">Creative Lead</option>
+                                <option value="moderator">Moderator</option>
+                            </datalist>
+                            <small class="field-hint">
+                                <i class="fas fa-info-circle"></i> Select from suggested roles or type a custom role name
+                            </small>
                         </div>
                         <div class="form-group">
                             <label for="role-color">Role Color:</label>

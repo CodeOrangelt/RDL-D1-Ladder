@@ -2352,7 +2352,7 @@ async function setCustomElo(username, elo, ladder) {
     }
 }
 
-// Update setUserRole function to focus on players collections
+// Update setUserRole function to only update userProfiles collection
 
 async function setUserRole(username, roleName, roleColor) {
     try {
@@ -2365,56 +2365,72 @@ async function setUserRole(username, roleName, roleColor) {
         const finalRoleName = roleName ? roleName.trim() : null;
         const finalRoleColor = finalRoleName ? (roleColor || '#808080') : null;
 
-        // UPDATED: Prioritize looking in player collections
-        const [d1Query, d2Query] = await Promise.all([
-            getDocs(query(collection(db, 'players'), where('username', '==', username))),
-            getDocs(query(collection(db, 'playersD2'), where('username', '==', username)))
-        ]);
-
-        const userDocs = [];
+        // First, find the userId from player collections
+        let userId = null;
         
-        // Store player doc references if found
-        if (!d1Query.empty) userDocs.push({ref: d1Query.docs[0].ref, source: 'D1'});
-        if (!d2Query.empty) userDocs.push({ref: d2Query.docs[0].ref, source: 'D2'});
+        const collections = ['players', 'playersD2', 'playersD3', 'playersFFA', 'nonParticipants'];
         
-        // If no player docs found, check other collections as backup
-        if (userDocs.length === 0) {
-            const [nonParticipantQuery, userProfilesQuery] = await Promise.all([
-                getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
-                getDocs(query(collection(db, 'userProfiles'), where('username', '==', username)))
-            ]);
+        for (const collectionName of collections) {
+            const snapshot = await getDocs(
+                query(collection(db, collectionName), where('username', '==', username), limit(1))
+            );
             
-            if (!nonParticipantQuery.empty) userDocs.push({ref: nonParticipantQuery.docs[0].ref, source: 'NonParticipant'});
-            if (!userProfilesQuery.empty) userDocs.push({ref: userProfilesQuery.docs[0].ref, source: 'UserProfile'});
-        }
-
-        if (userDocs.length === 0) {
-            throw new Error(`User "${username}" not found in any collection`);
-        }
-
-        const batch = writeBatch(db);
-
-        userDocs.forEach(docInfo => {
-            console.log(`Updating role for ${username} in ${docInfo.source}`);
-            
-            if (!finalRoleName) {
-                batch.update(docInfo.ref, {
-                    roleName: deleteField(),
-                    roleColor: deleteField(),
-                    roleAssignedBy: deleteField(),
-                    roleAssignedAt: deleteField()
-                });
-            } else {
-                batch.update(docInfo.ref, {
-                    roleName: finalRoleName,
-                    roleColor: finalRoleColor,
-                    roleAssignedBy: user.email,
-                    roleAssignedAt: serverTimestamp()
-                });
+            if (!snapshot.empty) {
+                userId = snapshot.docs[0].id;
+                console.log(`Found userId ${userId} for ${username} in ${collectionName}`);
+                break;
             }
-        });
+        }
 
-        await batch.commit();
+        // If not found in player collections, try userProfiles as fallback
+        if (!userId) {
+            const profileSnapshot = await getDocs(
+                query(collection(db, 'userProfiles'), where('username', '==', username), limit(1))
+            );
+            
+            if (!profileSnapshot.empty) {
+                userId = profileSnapshot.docs[0].id;
+                console.log(`Found userId ${userId} for ${username} in userProfiles`);
+            }
+        }
+
+        if (!userId) {
+            throw new Error(`User "${username}" not found in any collection. Cannot assign role.`);
+        }
+
+        // Now update the userProfiles document using the userId
+        const profileRef = doc(db, 'userProfiles', userId);
+        
+        // Check if profile exists, create if it doesn't
+        const profileDoc = await getDoc(profileRef);
+        
+        if (!profileDoc.exists()) {
+            // Create a basic profile if it doesn't exist
+            await setDoc(profileRef, {
+                username: username,
+                createdAt: serverTimestamp()
+            });
+            console.log(`Created new profile for ${username} (${userId})`);
+        }
+        
+        console.log(`Updating role for ${username} in userProfiles (${userId})`);
+        
+        // Update only the userProfiles collection
+        if (!finalRoleName) {
+            await updateDoc(profileRef, {
+                roleName: deleteField(),
+                roleColor: deleteField(),
+                roleAssignedBy: deleteField(),
+                roleAssignedAt: deleteField()
+            });
+        } else {
+            await updateDoc(profileRef, {
+                roleName: finalRoleName,
+                roleColor: finalRoleColor,
+                roleAssignedBy: user.email,
+                roleAssignedAt: serverTimestamp()
+            });
+        }
 
         const actionMessage = finalRoleName ? `Role "${finalRoleName}" set` : "Role removed";
         showNotification(`${actionMessage} for user "${username}"`, 'success');
@@ -2521,6 +2537,32 @@ function setupUserRolesSection() {
     if (roleFilter) {
         roleFilter.addEventListener('change', filterUsersTable);
     }
+    
+    // Set up form submission handler
+    const roleForm = document.getElementById('set-role-form');
+    if (roleForm) {
+        roleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('role-username').value;
+            const roleName = document.getElementById('role-name').value.trim();
+            const roleColor = document.getElementById('role-color').value;
+            
+            if (!username) {
+                showNotification('Username is required', 'error');
+                return;
+            }
+            
+            try {
+                await setUserRole(username, roleName || null, roleColor);
+                closeModalHandler();
+                await loadUsersWithRoles(); // Refresh the table
+            } catch (error) {
+                console.error('Error in form submission:', error);
+                // Error notification already shown by setUserRole
+            }
+        });
+    }
 }
 
 // Function to load users with roles
@@ -2531,13 +2573,29 @@ async function loadUsersWithRoles() {
     setTableState('users-table-body', 'loading', 5, 'Loading users...');
     
     try {
-        // Get all users from various collections
-        const [d1Players, d2Players, nonParticipants, userProfiles] = await Promise.all([
+        // Get all users from various collections to show who exists
+        const [d1Players, d2Players, d3Players, ffaPlayers, nonParticipants, userProfiles] = await Promise.all([
             getDocs(collection(db, 'players')),
             getDocs(collection(db, 'playersD2')),
+            getDocs(collection(db, 'playersD3')),
+            getDocs(collection(db, 'playersFFA')),
             getDocs(collection(db, 'nonParticipants')),
             getDocs(collection(db, 'userProfiles'))
         ]);
+        
+        // Build a map of userId -> userProfile for role lookups
+        const profileRolesMap = new Map();
+        userProfiles.forEach(doc => {
+            const data = doc.data();
+            if (data.roleName) {
+                profileRolesMap.set(doc.id, {
+                    roleName: data.roleName,
+                    roleColor: data.roleColor,
+                    roleAssignedBy: data.roleAssignedBy,
+                    roleAssignedAt: data.roleAssignedAt
+                });
+            }
+        });
         
         // Consolidate users into a map with username as key
         const usersMap = new Map();
@@ -2546,33 +2604,25 @@ async function loadUsersWithRoles() {
         function processDocuments(snapshot, source) {
             snapshot.forEach(doc => {
                 const data = doc.data();
+                const userId = doc.id;
                 if (!data.username) return;
 
                 if (!usersMap.has(data.username)) {
                     usersMap.set(data.username, {
                         username: data.username,
-                        roleName: data.roleName || null,
-                        roleColor: data.roleColor || null,
-                        roleAssignedBy: data.roleAssignedBy || null,
-                        roleAssignedAt: data.roleAssignedAt || null,
+                        userId: userId,
+                        roleName: null,
+                        roleColor: null,
+                        roleAssignedBy: null,
+                        roleAssignedAt: null,
                         sources: [source]
                     });
                 } else {
                     const user = usersMap.get(data.username);
-                    
-                    // UPDATED: Prioritize roles from players collections over other sources
-                    // This ensures D1/D2 player roles take precedence
-                    if (data.roleName && (
-                        !user.roleName || 
-                        source === 'D1' || 
-                        source === 'D2'
-                    )) {
-                        user.roleName = data.roleName;
-                        user.roleColor = data.roleColor;
-                        user.roleAssignedBy = data.roleAssignedBy;
-                        user.roleAssignedAt = data.roleAssignedAt;
+                    // Store first found userId if not set
+                    if (!user.userId) {
+                        user.userId = userId;
                     }
-                    
                     if (!user.sources.includes(source)) {
                         user.sources.push(source);
                     }
@@ -2580,11 +2630,24 @@ async function loadUsersWithRoles() {
             });
         }
 
-        // Process all collections
+        // Process all collections to get list of users
         processDocuments(d1Players, 'D1');
         processDocuments(d2Players, 'D2');
+        processDocuments(d3Players, 'D3');
+        processDocuments(ffaPlayers, 'FFA');
         processDocuments(nonParticipants, 'Non-Participant');
         processDocuments(userProfiles, 'Profile');
+        
+        // Now apply roles from userProfiles ONLY
+        usersMap.forEach(user => {
+            if (user.userId && profileRolesMap.has(user.userId)) {
+                const roleData = profileRolesMap.get(user.userId);
+                user.roleName = roleData.roleName;
+                user.roleColor = roleData.roleColor;
+                user.roleAssignedBy = roleData.roleAssignedBy;
+                user.roleAssignedAt = roleData.roleAssignedAt;
+            }
+        });
         
         // Convert map to array and sort by username
         const usersArray = Array.from(usersMap.values()).sort((a, b) => 
@@ -2626,7 +2689,7 @@ async function loadUsersWithRoles() {
                     </button>
                     ${user.roleName ? `
                         <button class="remove-role-btn" data-username="${user.username}" title="Remove Role">
-                            <i class="fas fa-times"></i> <!-- Changed icon -->
+                            <i class="fas fa-times"></i>
                         </button>
                     ` : ''}
                 </td>
@@ -2663,17 +2726,18 @@ async function loadUsersWithRoles() {
 
 // Modify openRoleEditModal
 function openRoleEditModal(username) {
-    console.log('Attempting to open role edit modal for:', username); // Log start
+    console.log('Attempting to open role edit modal for:', username);
     const modal = document.getElementById('set-role-modal');
     const usernameInput = document.getElementById('role-username');
-    const roleSelect = document.getElementById('user-role');
+    const roleNameInput = document.getElementById('role-name');
+    const roleColorInput = document.getElementById('role-color');
 
     if (!modal) {
         console.error('CRITICAL: Role modal element (#set-role-modal) not found in the DOM!');
-        alert('Error: Could not find the role editing dialog.'); // User feedback
+        alert('Error: Could not find the role editing dialog.');
         return;
     }
-    console.log('Modal element found:', modal); // Log success
+    console.log('Modal element found:', modal);
 
     // Pre-fill the username
     if (usernameInput) {
@@ -2683,16 +2747,25 @@ function openRoleEditModal(username) {
         console.warn('Username input field (#role-username) not found in modal.');
     }
 
-    // Find current role from table row data attribute
+    // Find current role from table row data attributes
     const userRow = document.querySelector(`#users-table-body tr[data-username="${username}"]`);
-    if (userRow && roleSelect) {
-        const currentRole = userRow.dataset.role;
-        roleSelect.value = currentRole === 'none' ? '' : currentRole;
-        console.log(`Role select set to: ${roleSelect.value} (based on data-role: ${currentRole})`);
+    if (userRow) {
+        const currentRoleName = userRow.dataset.roleName || '';
+        const currentRoleColor = userRow.dataset.roleColor || '#808080';
+        
+        if (roleNameInput) {
+            roleNameInput.value = currentRoleName;
+            console.log(`Role name input set to: ${currentRoleName}`);
+        }
+        
+        if (roleColorInput) {
+            roleColorInput.value = currentRoleColor;
+            console.log(`Role color input set to: ${currentRoleColor}`);
+        }
     } else {
-        if (!userRow) console.warn(`Table row for user ${username} not found.`);
-        if (!roleSelect) console.warn('Role select field (#user-role) not found in modal.');
-        if (roleSelect) roleSelect.value = ''; // Default to empty if row not found
+        console.warn(`Table row for user ${username} not found.`);
+        if (roleNameInput) roleNameInput.value = '';
+        if (roleColorInput) roleColorInput.value = '#808080';
     }
 
     // Show the modal using only the active class

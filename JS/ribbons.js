@@ -1206,8 +1206,26 @@ class RibbonSystem {
             const snapshot = await getDocs(q);
             
             if (snapshot.empty) {
-                console.log(`❌ No player data found for ${playerUsername} in ${playersCollection}`);
-                return null;
+                // Check hiatus collection (all ladders use same collection)
+                const hiatusRef = collection(db, 'playerHiatus');
+                const hiatusQuery = query(hiatusRef, where('username', '==', playerUsername), limit(1));
+                const hiatusSnapshot = await getDocs(hiatusQuery);
+                
+                if (hiatusSnapshot.empty) {
+                    console.log(`❌ No player data found for ${playerUsername} in ${playersCollection} or ${hiatusCollection}`);
+                    return null;
+                }
+                
+                // Found in hiatus
+                const playerData = hiatusSnapshot.docs[0].data();
+                
+                // Map eloRating to rating for consistency with ribbon system
+                if (playerData.eloRating !== undefined) {
+                    playerData.rating = playerData.eloRating;
+                }
+                
+                console.log(`✅ Found player data for ${playerUsername} in hiatus: ELO ${playerData.eloRating}, Position ${playerData.position}`);
+                return playerData;
             }
             
             const playerData = snapshot.docs[0].data();

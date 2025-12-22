@@ -30,7 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         authWarning: document.getElementById('auth-warning'),
         reportForm: document.getElementById('report-form'),
         ffaForm: document.getElementById('ffa-report-form'),
-        reportError: document.getElementById('report-error'), // Add the error message element
+        reportError: document.getElementById('report-error'),
+        winnerUsername: document.getElementById('winner-username'),
+        loserScore: document.getElementById('loser-score'),
+        suicides: document.getElementById('suicides'),
+        mapPlayed: document.getElementById('map-played'),
+        loserComment: document.getElementById('loser-comment'),
+        loserUsername: document.getElementById('loser-username'),
         d1Button: document.getElementById('d1-mode'),
         d2Button: document.getElementById('d2-mode'),
         d3Button: document.getElementById('d3-mode'),
@@ -57,8 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Clear error message when switching tabs
         if (elements.reportError) {
-            elements.reportError.textContent = ''; // Clear the error message
-            elements.reportError.style.display = 'none'; // Hide the error message container
+            elements.reportError.textContent = '';
+            elements.reportError.style.display = 'none';
         }
     }
 
@@ -94,6 +100,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize the default tab
     toggleTab('d1-mode');
+    
+    // Setup form submission handler
+    setupReportForm(elements);
+    
+    // Setup authentication state listener
+    setupAuthStateListener(elements);
 });
 
 function toggleFFAMode(enabled) {

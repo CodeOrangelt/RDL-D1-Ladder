@@ -63,16 +63,16 @@ service cloud.firestore {
         request.auth.uid == userId || 
         canManageArticles(request.auth.uid) ||
         (
-          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
+          (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner', 'council'])) &&
           request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['points', 'inventory', 'equippedToken', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt'])
+            .hasAny(['points', 'inventory', 'equippedToken', 'lastModified', 'lastModifiedBy', 'lastPointsModified', 'pointsInitializedAt', 'role', 'roleName'])
         ) ||
         // Allow username changes by admin
-        (isAdmin() && 
+        ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) && 
          request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['username', 'usernameChangedAt', 'usernameChangedBy', 'previousUsername']))
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     // Match Comments Collection
@@ -136,8 +136,8 @@ service cloud.firestore {
     }
     
     match /usernameChangeLog/{logId} {
-      allow read: if request.auth != null && isAdmin();
-      allow create: if request.auth != null && isAdmin() &&
+      allow read: if request.auth != null && (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
+      allow create: if request.auth != null && (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
                     request.resource.data.keys().hasAll([
                       'oldUsername', 'newUsername', 'changedBy', 
                       'changedAt', 'playersUpdated', 'matchesUpdated', 
@@ -152,15 +152,16 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow update: if request.auth != null && (
         isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.auth.uid == playerId ||
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['eloRating', 'lastMatchDate', 'position', 'lastMatchId', 'wins', 'losses']) ||
         // Allow username changes by admin
-        (isAdmin() && 
+        ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) && 
          request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['username', 'usernameChangedAt', 'usernameChangedBy', 'previousUsername']))
       );
-      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playersD2/{playerId} {
@@ -168,13 +169,14 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow update: if request.auth != null && (
         isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.auth.uid == playerId ||
         // Allow username changes by admin
-        (isAdmin() && 
+        ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) && 
          request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['name', 'usernameChangedAt', 'usernameChangedBy', 'previousUsername']))
       );
-      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playersD3/{playerId} {
@@ -182,15 +184,16 @@ service cloud.firestore {
       allow create: if isVerifiedUser();
       allow update: if request.auth != null && (
         isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.auth.uid == playerId ||
         request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['eloRating', 'lastMatch', 'wins', 'losses', 'lastEloChange', 'position']) ||
         // Allow username changes by admin
-        (isAdmin() && 
+        ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) && 
          request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['username', 'usernameChangedAt', 'usernameChangedBy', 'previousUsername']))
       );
-      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin());
+      allow delete: if request.auth != null && (request.auth.uid == playerId || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playersDuos/{playerId} {
@@ -198,20 +201,25 @@ service cloud.firestore {
       allow create: if isVerifiedUser();
       allow update: if request.auth != null && (
                    isAdmin() ||
+                   hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
                    request.auth.uid == playerId ||
                    (request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['tierValue', 'lastMatchDate', 'position', 'teamId', 'teamName', 'teammate', 'hasTeam', 'teamColor'])) ||
-                   (isAdmin() &&
+                   ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
                     request.resource.data.diff(resource.data).affectedKeys()
                     .hasAny(['tierValue', 'lastPromotedAt', 'promotedBy']))
                    );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
     
     // FFA Players collection
     match /playersFFA/{odl_Id} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == odl_Id;
+      allow write: if request.auth != null && (
+        request.auth.uid == odl_Id ||
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
+      );
     }
     
     match /pendingMatchesFFA/{matchId} {
@@ -220,7 +228,8 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/playersFFA/$(request.auth.uid));
       allow update: if request.auth != null;
       allow delete: if request.auth != null && (
-        isAdmin() || 
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         exists(/databases/$(database)/documents/playersFFA/$(request.auth.uid))
       );
     }
@@ -237,10 +246,11 @@ service cloud.firestore {
       allow create: if request.auth != null && 
         exists(/databases/$(database)/documents/playersFFA/$(request.auth.uid));
       allow update: if request.auth != null && (
-        isAdmin() || 
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         exists(/databases/$(database)/documents/playersFFA/$(request.auth.uid))
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
     
     // FFA ELO History
@@ -266,29 +276,30 @@ service cloud.firestore {
         request.resource.data.reporterId == request.auth.uid ||
         (exists(/databases/$(database)/documents/playersFFA/$(request.auth.uid)) &&
          request.resource.data.reporterUsername == get(/databases/$(database)/documents/playersFFA/$(request.auth.uid)).data.username) ||
-        isAdmin()
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
       );
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /playerRibbonsFFA/{userId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerSeasonStatsFFA/{statsId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     // Match Collections
@@ -301,7 +312,7 @@ service cloud.firestore {
     match /approvedMatches/{matchId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner', 'council']);
     }
 
     match /pendingMatchesD2/{matchId} {
@@ -313,7 +324,7 @@ service cloud.firestore {
     match /approvedMatchesD2/{matchId} {
       allow read: if true;
       allow create, update: if request.auth != null;
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /pendingMatchesD3/{matchId} {
@@ -357,21 +368,22 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isVerifiedUser();
       allow update: if request.auth != null && (
-        isAdmin() || 
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.auth.uid == userId ||
         // Allow username changes by admin
-        (isAdmin() && 
+        ((isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) && 
          request.resource.data.diff(resource.data).affectedKeys()
           .hasAny(['username', 'usernameChangedAt', 'usernameChangedBy', 'previousUsername']))
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /pendingRegistrations/{registrationId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update: if request.auth != null && (request.auth.uid == registrationId || isAdmin());
-      allow delete: if isAdmin();
+      allow update: if request.auth != null && (request.auth.uid == registrationId || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner', 'council']));
+      allow delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /nexus_users/{userId} {
@@ -398,7 +410,7 @@ service cloud.firestore {
 
     match /playerStats/{userId} {
       allow read: if true;
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner', 'council']));
     }
 
     match /system/{document} {
@@ -408,7 +420,7 @@ service cloud.firestore {
     match /eloHistory/{historyId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /eloHistoryD2/{document=**} {
@@ -430,12 +442,12 @@ service cloud.firestore {
 
     match /metadata/seasonCount {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /seasons/{seasonId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /promotionViews/{docId} {
@@ -452,12 +464,12 @@ service cloud.firestore {
 
     match /season0/{document=**} {
       allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /season0records/{document} {
       allow read: if request.auth != null;
-      allow write: if isAdmin() &&
+      allow write: if (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner'])) &&
                   request.resource.data.keys().hasAll(['records', 'archivedAt']) &&
                   request.resource.data.records is list;
     }
@@ -505,9 +517,10 @@ service cloud.firestore {
         request.resource.data.winnerEmail == request.auth.token.email ||
         (exists(/databases/$(database)/documents/players/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/players/$(request.auth.uid)).data.username) ||
-        isAdmin()
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
       );
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /RejectedD2/{matchId} {
@@ -517,9 +530,10 @@ service cloud.firestore {
         request.resource.data.winnerEmail == request.auth.token.email ||
         (exists(/databases/$(database)/documents/playersD2/$(request.auth.uid)) &&
          request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD2/$(request.auth.uid)).data.username) ||
-        isAdmin()
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
       );
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /RejectedD3/{matchId} {
@@ -529,22 +543,24 @@ service cloud.firestore {
         request.resource.data.winnerEmail == request.auth.token.email ||
         (exists(/databases/$(database)/documents/playersD3/$(request.auth.uid)) &&
         request.resource.data.winnerUsername == get(/databases/$(database)/documents/playersD3/$(request.auth.uid)).data.username) ||
-        isAdmin()
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
       );
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
 
     match /userTrophies/{trophyId} {
       allow read: if true;
       allow create, update: if request.auth != null && 
-                              (isAdmin() || 
+                              (isAdmin() ||
+                               hasRole(request.auth.uid, ['admin', 'owner', 'creative lead']) ||
                                request.auth.token.email == request.resource.data.awardedBy);
-      allow delete: if request.auth != null && isAdmin();
+      allow delete: if request.auth != null && (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
     
     match /trophyDefinitions/{trophyId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && isAdmin();
+      allow create, update, delete: if request.auth != null && (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner', 'creative lead']));
     }
     
     match /promotionNotifications/{document=**} {
@@ -557,18 +573,26 @@ service cloud.firestore {
     
     match /highlights/{highlightId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, update: if request.auth != null && (
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'creative lead'])
+      );
+      allow delete: if request.auth != null && (
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
+      );
     }
     
     match /aggregatedMembers/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && isAdmin();
+      allow write: if request.auth != null && (isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }    
 
     match /storeItems/{itemId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && (
-        isAdmin() || 
+        isAdmin() ||
+        hasRole(request.auth.uid, ['admin', 'owner']) ||
         (exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.isAdmin == true)
       );
@@ -577,11 +601,12 @@ service cloud.firestore {
     match /pointsHistory/{historyId} {
       allow read: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
+        resource.data.userId == request.auth.uid
       );
       allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner', 'council'])) ||
+        (request.resource.data.userId == request.auth.uid)
       ) && request.resource.data.keys().hasAll([
         'userId', 'previousPoints', 'newPoints', 'action', 
         'amount', 'timestamp'
@@ -592,11 +617,11 @@ service cloud.firestore {
     match /itemAwardHistory/{awardId} {
       allow read: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
       allow create: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       ) && request.resource.data.keys().hasAll([
         'userId', 'itemId', 'itemTitle', 'timestamp', 'awardedBy'
       ]);
@@ -607,60 +632,60 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerRibbonsD2/{userId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerRibbonsD3/{userId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'ladder', 'ribbons', 'lastUpdated'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerSeasonStats/{statsId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerSeasonStatsD2/{statsId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
 
     match /playerSeasonStatsD3/{statsId} {
       allow read: if true;
       allow create, update: if request.auth != null && (
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner']) ||
+        hasRole(request.auth.uid, ['admin', 'owner', 'council']) ||
         request.resource.data.keys().hasAll(['username', 'season', 'ladder'])
       );
-      allow delete: if request.auth != null && isAdminEmail();
+      allow delete: if request.auth != null && (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
     
     match /eventVotes/{voteId}/votes/{userId} {
@@ -691,14 +716,14 @@ service cloud.firestore {
     match /badComments/{docId} {
       allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null && 
-        (request.auth.uid == resource.data.reportedBy || hasAdminRole());
+        (request.auth.uid == resource.data.reportedBy || isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']));
     }
     
     match /playerHiatus/{userId} {
       allow read: if request.auth != null && (
         request.auth.uid == userId || 
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
       allow write: if request.auth != null && request.auth.uid == userId;
       allow delete: if request.auth != null && request.auth.uid == userId;
@@ -709,17 +734,17 @@ service cloud.firestore {
       allow write: if request.auth != null && (
         request.auth.uid == userId ||
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
       allow create: if request.auth != null && (
         request.auth.uid == userId ||
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
       allow update: if request.auth != null && (
         request.auth.uid == userId ||
         isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner'])
+        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
     }
     
@@ -735,25 +760,26 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid;
       allow delete: if request.auth != null && (
         resource.data.userId == request.auth.uid || 
-        isAdminEmail()
+        isAdminEmail() ||
+        hasRole(request.auth.uid, ['admin', 'owner'])
       );
     }
 
     match /transactions/{docId} {
           allow read: if request.auth != null && (
             isAdminEmail() || 
-            hasRole(request.auth.uid, ['admin', 'owner'])
+            hasRole(request.auth.uid, ['admin', 'owner', 'council'])
           );
           allow write: if request.auth != null && (
             isAdminEmail() || 
-            hasRole(request.auth.uid, ['admin', 'owner'])
+            hasRole(request.auth.uid, ['admin', 'owner', 'council'])
           );
         }
       }
 
     // King of Kings Events Collection
     match /events/{document} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin() || hasRole(request.auth.uid, ['admin', 'owner']);
     }
     
     // Crown History Collection  
