@@ -230,7 +230,7 @@ let authWarning;
 
 // Initialize after DOM loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏪 Redeem store initializing...');
+    // Redeem store initializing...
     
     // Get DOM elements
     storeContainer = document.getElementById('store-content');
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            console.log('✅ User authenticated:', user.displayName || user.email);
+            // User authenticated: ${user.displayName || user.email}
             
             // Show store content
             if (authWarning) authWarning.style.display = 'none';
@@ -262,7 +262,7 @@ function initAuthListener() {
             updateTokenButtons();
             
         } else {
-            console.log('❌ User not authenticated');
+            // User not authenticated
             
             // Show auth warning
             if (authWarning) authWarning.style.display = 'block';
@@ -305,13 +305,13 @@ async function loadUserData(user) {
             window.isUserAdmin = userData.isAdmin;
             
             if (userData.isAdmin) {
-                console.log('👑 Admin controls enabled');
+                // Admin controls enabled
                 window.dispatchEvent(new CustomEvent('adminStatusChanged', { 
                     detail: { isAdmin: true } 
                 }));
             }
             
-            console.log(`User data loaded - Points: ${userData.points}, Inventory: ${userData.inventory.length} items, Equipped: ${userData.equippedToken || 'none'}`);
+            // User data loaded - Points: ${userData.points}, Inventory: ${userData.inventory.length} items, Equipped: ${userData.equippedToken || 'none'}
             
         } else {
             // Create new user profile
@@ -335,7 +335,7 @@ async function loadUserData(user) {
             }
             
             window.isUserAdmin = false;
-            console.log('New user profile created');
+            // New user profile created
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -541,14 +541,14 @@ async function processPurchase(itemId, item, type) {
                     clearTokenCache(user.uid);
                 }
                 
-                console.log(`✅ Token ${itemId} saved to userTokens collection (not equipped)`);
+                // Token ${itemId} saved to userTokens collection (not equipped)
             } catch (tokenError) {
                 // Log the error but don't show it to user since main purchase succeeded
                 console.warn('Token collection update had an issue, but purchase completed:', tokenError);
                 
                 // Only show error if it's a serious permission issue
                 if (tokenError.code === 'permission-denied') {
-                    console.log('🔧 Token permissions issue detected, but purchase was successful');
+                    // Token permissions issue detected, but purchase was successful
                     // Don't show error message since the purchase worked
                 } else {
                     console.error('Unexpected token error:', tokenError);
@@ -590,7 +590,7 @@ async function processPurchase(itemId, item, type) {
             updateThemeButtons();
         }
         
-        console.log(`✅ Purchased ${item.name} for ${item.price} points`);
+        // Purchased ${item.name} for ${item.price} points
         showMessage(`Successfully purchased ${item.name}! Use the "Equip" button to show it on the ladder.`, 'success');
         return true;
         
@@ -677,7 +677,7 @@ async function equipToken(tokenId) {
         // Trigger ladder refresh if available
         setTimeout(() => {
             if (window.displayLadder && typeof window.displayLadder === 'function') {
-                console.log('🔄 Refreshing ladder to show equipped token');
+                // Refreshing ladder to show equipped token
                 window.displayLadder(true);
             }
             
@@ -686,7 +686,7 @@ async function equipToken(tokenId) {
             }
         }, 500);
         
-        console.log(`✅ Equipped token: ${token.name}`);
+        // Equipped token: ${token.name}
         showMessage(`${token.name} equipped! Ladder will refresh shortly.`, 'success');
         return true;
         
@@ -758,7 +758,7 @@ async function unequipToken() {
         // NEW: Trigger ladder refresh if available
         setTimeout(() => {
             if (window.displayLadder && typeof window.displayLadder === 'function') {
-                console.log('🔄 Refreshing ladder to remove unequipped token');
+                // Refreshing ladder to remove unequipped token
                 window.displayLadder(true); // Force refresh
             }
             
@@ -768,7 +768,7 @@ async function unequipToken() {
             }
         }, 500); // Small delay to ensure Firestore updates are processed
         
-        console.log('✅ Token unequipped');
+        // Token unequipped
         showMessage('Token unequipped! Ladder will refresh shortly.', 'success');
         return true;
         
@@ -873,7 +873,7 @@ async function sellToken(tokenId) {
             clearTokenCache(user.uid);
         }
         
-        console.log(`✅ Sold token ${token.name} for ${refundAmount} points`);
+        // Sold token ${token.name} for ${refundAmount} points
         showMessage(`Sold ${token.name} for ${refundAmount} points (50% refund)`, 'success');
         return true;
         
@@ -1016,7 +1016,7 @@ function setupThemeButtons() {
                 return;
             }
             
-            console.log(`Theme clicked: ${theme.name} (${themeId})`);
+            // Theme clicked: ${theme.name} (${themeId})
             
             // Check if button is disabled
             if (button.disabled) {
@@ -1090,7 +1090,7 @@ function setupTokenButtons() {
                 return;
             }
             
-            console.log(`Token clicked: ${token.name} (${tokenId})`);
+            // Token clicked: ${token.name} (${tokenId})
             
             // Check if button is disabled
             if (button.disabled) {
@@ -1396,4 +1396,4 @@ window.RedeemStore = {
     purchaseToken
 };
 
-console.log('🏪 Redeem store loaded');
+// Redeem store loaded

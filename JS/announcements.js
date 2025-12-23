@@ -2,23 +2,24 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release-2.0", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 2.0 - The First League",
+    id: "beta-release-2.1", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 2.1 - Profile & Ranking Updates",
     content: `
-        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS:</p>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS & IMPROVEMENTS:</p>
             <ul style="list-style: none; padding-left: 20px;">
-                <li style="color:#75C35C;">• <span style="animation: highlight 1s infinite;">FFA LEAGUE!</span> Reporting, Multi-ELO Cross-Descent suport AND MORE!</li>
-                <li style="color:#75C35C;">• Restructures profiles</li>
-                <li style="color:#75C35C;">• Free limited-time christmas theme -> EXP: Dec 31st </li>
-                <li style="color:#75C35C;">• Fixed Approved matches displaying issue</li>
-                <li style="color:#75C35C;">• Various improvements to general UI on profile</li>
-                <li style="color:#75C35C;">• Optimized report form to be more forgiving to mobile users</li>
-                <li style="color:#75C35C;">• Various backend optimizations and improvements</li>
-                <li style="color:#75C35C;">• Improved UI for NAV bar by moving stuff around</li>
-                <li style="color:#75C35C;">• Overhauled admin backend... to include FFA league</li>
-                <li style="color:#75C35C;">• Improved markdown for news articles</li>
+                <li style="color:#75C35C;">• New (Legacy technically) Unified Silver Color!</li>
+                <li style="color:#75C35C;">• Implemented 5+ matches = Bronze rule (automatic Bronze rank after 5 matches, regardless of ELO)</li>
+                <li style="color:#75C35C;">• Added scorecard on profile (adjusts for "match inflation")</li>
+                <li style="color:#75C35C;">• Fixed profile container styling to show rank-based borders in all states</li>
+                <li style="color:#75C35C;">• Improved profile loading performance</li>
             </ul>
-        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUGS I AM AWARE OF:</p>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUG FIXES:</p>
+            <ul style="list-style: none; padding-left: 20px;">
+                <li style="color:#4bc0c0;">• Fixed unranked players displaying incorrect colors on profiles</li>
+                <li style="color:#4bc0c0;">• Changed Unranked color from gray to red on profile for better visibility</li>
+
+            </ul>
+        <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">KNOWN ISSUES:</p>
             <ul style="list-style: none; padding-left: 20px;">
                 <li style="color:#FFA07A;">• D2 Recent Matches incorrect display of ELO (calculation still fine)</li>
                 <li style="color:#FFA07A;">• Non-Participant weird username assignment? (DM me.)</li>
@@ -27,7 +28,7 @@ const ANNOUNCEMENT = {
             </ul>
         <p style="margin-top: 15px;"><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
-    buttonText: "Let me in!"
+    buttonText: "Got it!"
 };
 
 // Add the animation CSS

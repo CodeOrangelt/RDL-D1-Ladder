@@ -8,6 +8,27 @@
     border: 1px solid white; /* Add white border to match report.html */
 }
 
+/* Profile container rank-based borders */
+.profile-container.elo-unranked {
+    border-color: #DC143C;
+}
+
+.profile-container.elo-bronze {
+    border-color: #CD7F32;
+}
+
+.profile-container.elo-silver {
+    border-color: #b9f1fc;
+}
+
+.profile-container.elo-gold {
+    border-color: #FFD700;
+}
+
+.profile-container.elo-emerald {
+    border-color: #50C878;
+}
+
 .profile-content {
     display: flex;
     flex-direction: column;
@@ -215,7 +236,7 @@
 
 /* ELO Rating Color Classes */
 .elo-unranked {
-    color: #808080; /* Gray */
+    color: #DC143C; /* Gray */
 }
 
 .elo-bronze {
@@ -251,6 +272,27 @@
     border-radius: 10px;
     border: 1px solid white;
     position: relative;  /* Add this to contain absolute positioned season label */
+}
+
+/* Match history container rank-based borders */
+.match-history-container.elo-unranked {
+    border-color: #DC143C;
+}
+
+.match-history-container.elo-bronze {
+    border-color: #CD7F32;
+}
+
+.match-history-container.elo-silver {
+    border-color: #b9f1fc;
+}
+
+.match-history-container.elo-gold {
+    border-color: #FFD700;
+}
+
+.match-history-container.elo-emerald {
+    border-color: #50C878;
 }
 
 .match-history-container h2 {
@@ -552,7 +594,7 @@
 
 /* ELO rank colors */
 .next-rank .elo-unranked {
-    color: #808080;
+    color: #DC143C;
 }
 
 .next-rank .elo-bronze {
@@ -560,7 +602,7 @@
 }
 
 .next-rank .elo-silver {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Changed from #C0C0C0 */
 }
 
 .next-rank .elo-gold {
@@ -645,7 +687,7 @@
 
 /* ELO-based stat label colors */
 .elo-unranked .stat-label {
-    color: #808080; /* Gray */
+    color: #DC143C; /* Gray */
 }
 
 .elo-bronze .stat-label {
@@ -653,7 +695,7 @@
 }
 
 .elo-silver .stat-label {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Uniform silver color */
 }
 
 .elo-gold .stat-label {
@@ -713,7 +755,7 @@
 
 /* Color classes for next rank */
 .next-rank .elo-unranked {
-    color: #808080;
+    color: #DC143C;
 }
 
 .next-rank .elo-bronze {
@@ -721,7 +763,7 @@
 }
 
 .next-rank .elo-silver {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Changed from #C0C0C0 */
 }
 
 .next-rank .elo-gold {
@@ -782,7 +824,7 @@
 
 /* ELO color classes */
 .elo-unranked .view-text {
-    color: #808080; /* Gray */
+    color: #DC143C; /* Gray */
 }
 
 .elo-bronze .view-text {
@@ -790,7 +832,7 @@
 }
 
 .elo-silver .view-text {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Uniform silver color */
 }
 
 .elo-gold .view-text {
@@ -1198,7 +1240,7 @@
 
 /* ELO Rating Progress Color Classes - match the existing ELO classes */
 .elo-progress-info.elo-unranked {
-    color: #808080; /* Gray */
+    color: #DC143C; /* Gray */
 }
 
 .elo-progress-info.elo-bronze {
@@ -1206,7 +1248,7 @@
 }
 
 .elo-progress-info.elo-silver {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Uniform silver color */
 }
 
 .elo-progress-info.elo-gold {
@@ -1254,7 +1296,7 @@
 
 /* Add color classes for the next rank column */
 #next-rank-col .elo-unranked {
-    color: #808080; /* Gray */
+    color: #DC143C; /* Gray */
 }
 
 #next-rank-col .elo-bronze {
@@ -1262,7 +1304,7 @@
 }
 
 #next-rank-col .elo-silver {
-    color: #00FFFF; /* Changed from #C0C0C0 */
+    color: #b9f1fc; /* Uniform silver color */
 }
 
 #next-rank-col .elo-gold {
@@ -1452,7 +1494,7 @@
 /* Update ELO color classes to properly target username and motto within username-section */
 .username-section.elo-unranked h2,
 .username-section.elo-unranked .motto-text {
-    color: #808080 !important;
+    color: #DC143C !important;
 }
 
 .username-section.elo-bronze h2,
@@ -1480,7 +1522,7 @@
 /* Target elements directly with ELO classes */
 #nickname.elo-unranked, 
 #motto-view.elo-unranked {
-    color: #808080 !important;
+    color: #DC143C !important;
 }
 
 #nickname.elo-bronze, 
@@ -1506,7 +1548,7 @@
 /* Also target via parent container for better coverage */
 .username-section.elo-unranked h2,
 .username-section.elo-unranked .motto-text {
-    color: #808080 !important;
+    color: #DC143C !important;
 }
 
 .username-section.elo-bronze h2,
@@ -1633,3 +1675,5 @@
 .ffa-placement-cell.place-3 { color: #CD7F32; }
 
 /* ...existing code... */
+
+

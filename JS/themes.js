@@ -38,7 +38,7 @@ function getCurrentTheme() {
     
     // Check if theme is expired
     if (isThemeExpired(savedTheme)) {
-        console.log(`Theme ${savedTheme} has expired, reverting to default`);
+        // Theme expired, reverting to default
         localStorage.setItem(THEME_STORAGE_KEY, THEMES.DEFAULT);
         return THEMES.DEFAULT;
     }
@@ -50,7 +50,7 @@ function getCurrentTheme() {
 function applyTheme(theme) {
     // Check if theme is expired
     if (isThemeExpired(theme)) {
-        console.log(`Cannot apply expired theme: ${theme}`);
+        // Cannot apply expired theme: ${theme}
         theme = THEMES.DEFAULT;
     }
     
@@ -67,7 +67,7 @@ function applyTheme(theme) {
     // Store in localStorage
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     
-    console.log(`Theme applied: ${theme}`);
+    // Theme applied: ${theme}
     return true;
 }
 
@@ -102,7 +102,7 @@ function switchTheme(theme) {
 function initTheme() {
     const currentTheme = getCurrentTheme();
     applyTheme(currentTheme);
-    console.log('Theme system initialized');
+    // Theme system initialized
 }
 
 // Apply initial theme
@@ -122,7 +122,7 @@ window.ThemeSystem = {
     THEMES
 };
 
-console.log('Theme system loaded');
+// Theme system loaded
 
 // Realistic Snowfall Effect for Christmas Theme
 
@@ -297,5 +297,5 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.body, { attributes: true });
 
-console.log('Snowfall effect loaded');
+// Snowfall effect loaded
 

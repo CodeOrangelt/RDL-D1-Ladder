@@ -224,12 +224,12 @@ tr:nth-child(even) {
     --gold-color: #FFD700;
     --gold-bg: rgba(255, 215, 0, 0.15);
     --silver-color: #b9f1fc; /* Changed from #C0C0C0 to light-cyan */
-    --silver-bg: rgba(0, 255, 255, 0.15);
+    --silver-bg: rgba(185, 241, 252, 0.15);
     --bronze-color: #CD7F32;
     --bronze-bg: rgba(205, 127, 50, 0.15);
     --emerald-color: #50C878;
     --emerald-bg: rgba(80, 200, 120, 0.15);
-    --unranked-color: #808080;
+    --unranked-color: #DC143C;
     --unranked-bg: rgba(128, 128, 128, 0.15);
 }
 

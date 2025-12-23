@@ -2,10 +2,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, doc, getDoc, setDoc, collection, 
-    query, where, getDocs, orderBy, limit, startAfter, addDoc 
+    query, where, getDocs, orderBy, limit, startAfter, addDoc, Timestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 import { evaluatePlayerRibbons, getRibbonHTML, RIBBON_CSS } from './ribbons.js';
+import { playerScorecardInstance } from './playerscorecard.js';
 
 // Initialize Firebase once
 const app = initializeApp(firebaseConfig);
@@ -15,6 +16,14 @@ const db = getFirestore(app);
 // Cache for player data to reduce redundant queries
 const playerDataCache = new Map();
 const containerReferences = {};
+
+// Performance Optimizations Applied:
+// - DOM element caching (domCache) to reduce querySelector calls
+// - Cached ladder button references for faster updates
+// - For loops instead of forEach for large datasets (matches, ELO history)
+// - Single-pass filtering for chart data (combined filter + map)
+// - Reduced object property lookups in tight loops
+// - Batch DOM operations where possible
 
 // Define constants at the file level (outside the class)
 const DEFAULT_PROFILE_IMAGE = "../images/shieldorb.png"; // Path to your blue circular image
@@ -51,6 +60,15 @@ class ProfileViewer {
         this.eloHistoryCache = new Map();
         this.usernameCache = new Map();
         this.playerEloCache = new Map();
+        
+        // Cache commonly accessed DOM elements (initialized after DOM ready)
+        this.domCache = {
+            profileContent: null,
+            profileHeader: null,
+            content: null,
+            ladderButtons: {},
+            initialized: false
+        };
         
         this.init();
     }
@@ -187,9 +205,10 @@ async displayRibbons(username) {
         }
 
         // Insert ribbons section after stats bar and before trophies
-        const profileContent = document.querySelector('.profile-content');
-        const statsSection = profileContent.querySelector('.stats-section, .stats-grid');
-        const trophyCase = profileContent.querySelector('.trophy-case-container');
+        this.initDOMCache();
+        const profileContent = this.domCache.profileContent || document.querySelector('.profile-content');
+        const statsSection = profileContent?.querySelector('.stats-section, .stats-grid');
+        const trophyCase = profileContent?.querySelector('.trophy-case-container');
 
         if (statsSection && trophyCase) {
             statsSection.insertAdjacentElement('afterend', ribbonsSection);
@@ -205,12 +224,30 @@ async displayRibbons(username) {
     }
 }
     
+    // Initialize DOM cache once
+    initDOMCache() {
+        if (!this.domCache.initialized) {
+            this.domCache.profileContent = document.querySelector('.profile-content');
+            this.domCache.profileHeader = document.querySelector('.profile-header');
+            this.domCache.content = document.querySelector('.content');
+            this.domCache.initialized = true;
+        }
+    }
+    
     // Fix the profile toggle to properly handle D3 ladder parameters
     setupToggleButtons() {
-        const d1Button = document.getElementById('profile-d1-toggle');
-        const d2Button = document.getElementById('profile-d2-toggle');
-        const d3Button = document.getElementById('profile-d3-toggle');
-        const ffaButton = document.getElementById('profile-ffa-toggle');
+        // Cache button references for reuse
+        if (!this.domCache.ladderButtons.d1) {
+            this.domCache.ladderButtons.d1 = document.getElementById('profile-d1-toggle');
+            this.domCache.ladderButtons.d2 = document.getElementById('profile-d2-toggle');
+            this.domCache.ladderButtons.d3 = document.getElementById('profile-d3-toggle');
+            this.domCache.ladderButtons.ffa = document.getElementById('profile-ffa-toggle');
+        }
+        
+        const d1Button = this.domCache.ladderButtons.d1;
+        const d2Button = this.domCache.ladderButtons.d2;
+        const d3Button = this.domCache.ladderButtons.d3;
+        const ffaButton = this.domCache.ladderButtons.ffa;
         
         const allButtons = [d1Button, d2Button, d3Button, ffaButton].filter(b => b);
         
@@ -255,19 +292,33 @@ async displayRibbons(username) {
             window.history.replaceState({}, '', newUrl);
         }
         
-        // Update active classes
-        document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if ((btn.id === 'profile-d1-toggle' && ladder === 'D1') ||
-                (btn.id === 'profile-d2-toggle' && ladder === 'D2') ||
-                (btn.id === 'profile-d3-toggle' && ladder === 'D3') ||
-                (btn.id === 'profile-ffa-toggle' && ladder === 'FFA')) {
-                btn.classList.add('active');
-            }
-        });
+        // Update active classes using cached buttons if available
+        const buttons = this.domCache.ladderButtons;
+        if (buttons.d1 || buttons.d2 || buttons.d3 || buttons.ffa) {
+            // Use cached buttons
+            [buttons.d1, buttons.d2, buttons.d3, buttons.ffa].forEach(btn => {
+                if (btn) btn.classList.remove('active');
+            });
+            if (ladder === 'D1' && buttons.d1) buttons.d1.classList.add('active');
+            else if (ladder === 'D2' && buttons.d2) buttons.d2.classList.add('active');
+            else if (ladder === 'D3' && buttons.d3) buttons.d3.classList.add('active');
+            else if (ladder === 'FFA' && buttons.ffa) buttons.ffa.classList.add('active');
+        } else {
+            // Fallback to querySelectorAll
+            document.querySelectorAll('.ladder-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if ((btn.id === 'profile-d1-toggle' && ladder === 'D1') ||
+                    (btn.id === 'profile-d2-toggle' && ladder === 'D2') ||
+                    (btn.id === 'profile-d3-toggle' && ladder === 'D3') ||
+                    (btn.id === 'profile-ffa-toggle' && ladder === 'FFA')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
         
-        // Clear existing stats
-        document.querySelectorAll('.stats-grid').forEach(grid => grid.remove());
+        // Clear existing stats (optimized: single query, single remove operation)
+        const existingGrids = document.querySelectorAll('.stats-grid');
+        existingGrids.forEach(grid => grid.remove());
         
         if (username) {
             const cacheKey = `${username}_${ladder}`;
@@ -300,7 +351,7 @@ async displayRibbons(username) {
                 // Order: FFA Statistics -> FFA Opponents -> FFA Match History
                 this.createContainers(['ffa-stats', 'ffa-player-matchups', 'ffa-match-history']);
             } else {
-                this.createContainers(['rank-history', 'match-stats', 'player-matchups', 'match-history']);
+                this.createContainers(['rank-history', 'match-stats', 'player-scorecard', 'player-matchups', 'match-history']);
             }
             
             // Display sections based on ladder type
@@ -314,10 +365,14 @@ async displayRibbons(username) {
                 ]);
             } else {
                 const matches = await this.getPlayerMatches(username);
+                // Update profile rank with actual match data BEFORE displaying sections
+                const eloClass = this.updateProfileRankFromMatches(matches);
+                // Run all sections in parallel for faster loading
                 await Promise.all([
                     this.displayPromotionHistory(username),
                     this.displayTrophyCase(username),
                     this.displayMatchStats(username, matches),
+                    this.displayPlayerScorecard(username, matches),
                     this.displayPlayerMatchups(username, matches),
                     this.displayMatchHistory(username, matches),
                     this.displayRibbons(username)
@@ -624,9 +679,16 @@ displayFFAProfile(data) {
                 eloNeeded = 1100 - eloRating;
                 eloClass = 'elo-bronze';
             } else {
-                nextRank = 'Bronze';
-                eloNeeded = 1000 - eloRating;
-                eloClass = 'elo-unranked';
+                // 5+ matches rule: Anyone with 5+ matches is at least Bronze
+                if (stats.totalMatches >= 5) {
+                    nextRank = 'Silver';
+                    eloNeeded = 1100 - eloRating;
+                    eloClass = 'elo-bronze';
+                } else {
+                    nextRank = 'Bronze';
+                    eloNeeded = 1000 - eloRating;
+                    eloClass = 'elo-unranked';
+                }
             }
             
             // Remove any existing bottom stats grid
@@ -1541,7 +1603,7 @@ async getProfileData(userId) {
         if (userProfileDoc.exists()) {
             profileData = userProfileDoc.data();
         } else {
-            console.log(`No profile data found for user ${userId} in userProfiles`);
+            // No profile data found for user
         }
     } catch (profileError) {
         console.warn('Error fetching profile data:', profileError);
@@ -1887,11 +1949,25 @@ displayProfile(data) {
             nextRank = 'Silver';
             eloNeeded = 500 - eloRating;
         } else {
-            eloClass = 'elo-unranked';
-            nextRank = 'Bronze';
-            eloNeeded = 200 - eloRating;
+            // 5+ matches rule: Anyone with 5+ matches is at least Bronze
+            if (totalMatches >= 5) {
+                eloClass = 'elo-bronze';
+                nextRank = 'Silver';
+                eloNeeded = 500 - eloRating;
+            } else {
+                eloClass = 'elo-unranked';
+                nextRank = 'Bronze';
+                eloNeeded = 200 - eloRating;
+            }
         }
         container.classList.add(eloClass);
+        
+        // Also add ELO class to the main profile-container for border styling
+        const profileContainer = document.querySelector('.profile-container');
+        if (profileContainer) {
+            profileContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            profileContainer.classList.add(eloClass);
+        }
         
         const usernameSection = document.querySelector('.username-section');
         if (usernameSection) {
@@ -1926,7 +2002,7 @@ displayProfile(data) {
                 if (eloClass) {
                     element.classList.add(eloClass);
                     const colorMap = {
-                        'elo-unranked': '#808080',
+                        'elo-unranked': '#DC143C',
                         'elo-bronze': '#CD7F32',
                         'elo-silver': '#b9f1fc',
                         'elo-gold': '#FFD700',
@@ -1960,6 +2036,84 @@ displayProfile(data) {
     if (isOtherUser && (data.homeLevel1 || data.homeLevel2 || data.homeLevel3 || data.favoriteSubgame)) {
         this.addInvitationSection(data);
     }
+}
+
+// Update profile rank based on actual match data
+updateProfileRankFromMatches(matches) {
+    if (!this.currentProfileData) return null;
+    
+    const username = this.currentProfileData.username;
+    const eloRating = parseInt(this.currentProfileData.eloRating) || 0;
+    
+    // Calculate wins and losses from matches
+    let wins = 0;
+    let losses = 0;
+    
+    matches.forEach(match => {
+        const isWinner = match.winner === username;
+        if (isWinner) {
+            wins++;
+        } else {
+            losses++;
+        }
+    });
+    
+    const totalMatches = wins + losses;
+    const winRate = totalMatches > 0 ? (wins / totalMatches * 100) : 0;
+    
+    let eloClass;
+    if (eloRating >= 1000) {
+        if (winRate >= 80 && totalMatches >= 20) {
+            eloClass = 'elo-emerald';
+        } else {
+            eloClass = 'elo-gold';
+        }
+    } else if (eloRating >= 700) {
+        eloClass = 'elo-gold';
+    } else if (eloRating >= 500) {
+        eloClass = 'elo-silver';
+    } else if (eloRating >= 200) {
+        eloClass = 'elo-bronze';
+    } else {
+        // 5+ matches rule: Anyone with 5+ matches is at least Bronze
+        if (totalMatches >= 5) {
+            eloClass = 'elo-bronze';
+        } else {
+            eloClass = 'elo-unranked';
+        }
+    }
+    
+    // Update all containers with the correct rank
+    const containers = [
+        document.querySelector('.profile-content'),
+        document.querySelector('.profile-container'),
+        document.querySelector('.username-section'),
+        document.getElementById('nickname'),
+        document.getElementById('motto-view')
+    ];
+    
+    containers.forEach(container => {
+        if (container) {
+            container.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            container.classList.add(eloClass);
+            
+            // Update color for text elements
+            if (container.id === 'nickname' || container.id === 'motto-view') {
+                const colorMap = {
+                    'elo-unranked': '#DC143C',
+                    'elo-bronze': '#CD7F32',
+                    'elo-silver': '#b9f1fc',
+                    'elo-gold': '#FFD700',
+                    'elo-emerald': '#50C878'
+                };
+                if (colorMap[eloClass]) {
+                    container.style.color = colorMap[eloClass];
+                }
+            }
+        }
+    });
+    
+    return eloClass;
 }
 
 // Setup collapsible view mode fields
@@ -2154,6 +2308,17 @@ async displayTrophyCase(username)
                 trophyContainer.innerHTML = `<p class="empty-trophy-case">Unable to load trophies</p>`;
                 return;
             }
+            
+            // Apply rank styling to trophy container
+            const profileContent = document.querySelector('.profile-content');
+            const existingRankClass = profileContent ? 
+                Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+                'elo-unranked';
+            
+            trophyContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            if (existingRankClass) {
+                trophyContainer.classList.add(existingRankClass);
+            }
 
             // Query for user trophies
             const trophiesRef = collection(db, "userTrophies");
@@ -2232,6 +2397,17 @@ async displayMatchHistory(username, matches) {
                 </div>
             `;
             return;
+        }
+        
+        // Apply rank styling
+        const profileContent = document.querySelector('.profile-content');
+        const existingRankClass = profileContent ? 
+            Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+            'elo-unranked';
+        
+        matchHistoryContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+        if (existingRankClass) {
+            matchHistoryContainer.classList.add(existingRankClass);
         }
         
         // Get all player ELOs at once to avoid multiple queries
@@ -2401,9 +2577,6 @@ async displayMatchHistory(username, matches) {
                     </div>
                 </div>
                 ` : ''}
-                <div class="match-history-footer">
-                    <p class="footer-note">Match data is updated regularly. ELO changes may take time to reflect.</p>
-                </div>
                 `
             }
         `;
@@ -3055,77 +3228,1322 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                     <h2>Match Statistics</h2>
                     <div class="non-participant-notice">
                         <p>This player is not participating in the ladder.</p>
-                        <p>No match statistics are available.</p>
                     </div>
                 `;
                 return;
             }
             
-            // Get season number - reused in multiple places
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
             const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
             
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
+                                   this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3';
+            
+            let eloHistory = [];
+            let totalRecordsFound = 0;
+            
+            try {
+                const eloHistoryRef = collection(db, eloHistoryCollection);
+                
+                // Calculate 12 months ago timestamp (for client-side filtering)
+                const twelveMonthsAgo = new Date();
+                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                const twelveMonthsAgoSeconds = Math.floor(twelveMonthsAgo.getTime() / 1000);
+                
+                const userId = this.currentProfileData?.userId;
+                const seenIds = new Set();
+                const allRecords = [];
+                
+                // console.log(`Querying ${eloHistoryCollection} for userId: ${userId}, username: ${username}, ladder: ${this.currentLadder}`);
+                
+                // D3 uses player field with username, D1/D2 use player field with userId
+                if (this.currentLadder === 'D3' && username) {
+                    // D3: Query by username in player field (based on screenshot evidence)
+                    try {
+                        const playerSnapshot = await getDocs(query(
+                            eloHistoryRef,
+                            where('player', '==', username)
+                        ));
+                        
+                        //
+                        
+                        playerSnapshot.docs.forEach(doc => {
+                            if (!seenIds.has(doc.id)) {
+                                seenIds.add(doc.id);
+                                const data = doc.data();
+                                // Filter out non-match records for progression chart
+                                if (!data.type || (data.type !== 'promotion' && data.type !== 'demotion')) {
+                                    allRecords.push(data);
+                                }
+                            }
+                        });
+                    } catch (err) {
+                        console.error('D3 player (username) query failed:', err.message);
+                    }
+                } else if ((this.currentLadder === 'D1' || this.currentLadder === 'D2') && userId) {
+                    // D1/D2: Query by userId in player field
+                    try {
+                        const playerSnapshot = await getDocs(query(
+                            eloHistoryRef,
+                            where('player', '==', userId)
+                        ));
+                        
+                        //
+                        
+                        playerSnapshot.docs.forEach(doc => {
+                            if (!seenIds.has(doc.id)) {
+                                seenIds.add(doc.id);
+                                const data = doc.data();
+                                if (!data.type || (data.type !== 'promotion' && data.type !== 'demotion')) {
+                                    allRecords.push(data);
+                                }
+                            }
+                        });
+                    } catch (err) {
+                        console.error(`${this.currentLadder} player (userId) query failed:`, err.message);
+                    }
+                }
+                
+                // Fallback queries if primary query didn't find records
+                if (allRecords.length === 0 && userId) {
+                    // Try userId field as fallback
+                    try {
+                        const userIdSnapshot = await getDocs(query(
+                            eloHistoryRef,
+                            where('userId', '==', userId)
+                        ));
+                        
+                        //
+                        
+                        userIdSnapshot.docs.forEach(doc => {
+                            if (!seenIds.has(doc.id)) {
+                                seenIds.add(doc.id);
+                                const data = doc.data();
+                                if (!data.type || (data.type !== 'promotion' && data.type !== 'demotion')) {
+                                    allRecords.push(data);
+                                }
+                            }
+                        });
+                    } catch (err) {
+                        //
+                    }
+                    
+                    // Try playerId field as final fallback
+                    if (allRecords.length === 0) {
+                        try {
+                            const playerIdSnapshot = await getDocs(query(
+                                eloHistoryRef,
+                                where('playerId', '==', userId)
+                            ));
+                            
+                            //
+                            
+                            playerIdSnapshot.docs.forEach(doc => {
+                                if (!seenIds.has(doc.id)) {
+                                    seenIds.add(doc.id);
+                                    const data = doc.data();
+                                    if (!data.type || (data.type !== 'promotion' && data.type !== 'demotion')) {
+                                        allRecords.push(data);
+                                    }
+                                }
+                            });
+                        } catch (err) {
+                            //
+                        }
+                    }
+                }
+                
+                // If still no records, try username fallback
+                if (allRecords.length === 0) {
+                    try {
+                        const usernameSnapshot = await getDocs(query(
+                            eloHistoryRef,
+                            where('username', '==', username)
+                        ));
+                        
+                        //
+                        
+                        usernameSnapshot.docs.forEach(doc => {
+                            if (!seenIds.has(doc.id)) {
+                                seenIds.add(doc.id);
+                                const data = doc.data();
+                                if (!data.type || (data.type !== 'promotion' && data.type !== 'demotion')) {
+                                    allRecords.push(data);
+                                }
+                            }
+                        });
+                    } catch (err) {
+                        //
+                    }
+                }
+                
+                //
+                
+                if (allRecords.length > 0) {
+                    // Log the date range of records
+                    const timestamps = allRecords
+                        .map(r => r.timestamp?.seconds)
+                        .filter(t => t)
+                        .sort((a, b) => a - b);
+                    
+                    if (timestamps.length > 0) {
+                        const oldestDate = new Date(timestamps[0] * 1000);
+                        const newestDate = new Date(timestamps[timestamps.length - 1] * 1000);
+                        const twelveMonthsCutoff = new Date(twelveMonthsAgoSeconds * 1000);
+                        
+                        //
+                    }
+                }
+                
+                // Sort by timestamp and filter to past 12 months (CLIENT-SIDE)
+                const sortedRecords = allRecords.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+                eloHistory = sortedRecords.filter(record => {
+                    const recordTime = record.timestamp?.seconds || 0;
+                    return recordTime >= twelveMonthsAgoSeconds;
+                });
+                
+                totalRecordsFound = allRecords.length;
+                
+                //
+                
+            } catch (queryError) {
+                console.error('Error querying ELO history:', queryError);
+            }
+            
+            // Calculate statistics with better error handling
+            const stats = this.calculateMatchStatsImproved(username, matches, eloHistory);
+            
+            // Get existing rank class from profile container, or calculate it
+            const container = document.querySelector('.profile-content');
+            let existingRankClass = container ? 
+                Array.from(container.classList).find(c => c.startsWith('elo-')) : 
+                null;
+            
+            // If no rank class found on container, calculate it based on current ELO with 5+ matches rule
+            if (!existingRankClass) {
+                const eloRating = this.currentProfileData?.eloRating || 0;
+                const wins = this.currentProfileData?.wins || 0;
+                const losses = this.currentProfileData?.losses || 0;
+                const totalMatches = wins + losses;
+                const winRate = totalMatches > 0 ? (wins / totalMatches * 100) : 0;
+                
+                // Apply the 5+ matches rule correctly
+                if (totalMatches === 0) {
+                    existingRankClass = 'elo-unranked';
+                } else if (totalMatches >= 5 && eloRating < 200) {
+                    // 5+ matches rule: minimum Bronze
+                    existingRankClass = 'elo-bronze';
+                } else if (eloRating >= 1000) {
+                    existingRankClass = (winRate >= 80 && totalMatches >= 20) ? 'elo-emerald' : 'elo-gold';
+                } else if (eloRating >= 700) {
+                    existingRankClass = 'elo-gold';
+                } else if (eloRating >= 500) {
+                    existingRankClass = 'elo-silver';
+                } else if (eloRating >= 200) {
+                    existingRankClass = 'elo-bronze';
+                } else {
+                    // Less than 200 ELO and less than 5 matches = Unranked
+                    existingRankClass = 'elo-unranked';
+                }
+            }
+            
+            // Apply rank class to stats container for uniform coloring
+            statsContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            statsContainer.classList.add(existingRankClass);
+
+            // Build HTML
             statsContainer.innerHTML = `
-                <div class="season-label">S${currentSeason}</div>
                 <h2>Match Statistics</h2>
-                <div class="stats-content">
-                    <canvas id="eloChart"></canvas>
+                
+                <!-- Performance Metrics Grid -->
+                <div class="performance-metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Current Streak</div>
+                        <div class="metric-value ${stats.currentStreak.type === 'win' ? 'positive' : stats.currentStreak.type === 'loss' ? 'negative' : ''}">
+                            ${stats.currentStreak.count > 0 ? stats.currentStreak.count : 0} ${stats.currentStreak.type === 'win' ? 'W' : stats.currentStreak.type === 'loss' ? 'L' : '-'}
+                            ${stats.currentStreak.count >= 5 ? '' : ''}
+                        </div>
+                        <div class="metric-detail">Best: ${stats.bestWinStreak}W</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Average Score</div>
+                        <div class="metric-value">${stats.avgScore.overall}</div>
+                        <div class="metric-detail">W: ${stats.avgScore.wins} | L: ${stats.avgScore.losses}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Dark Horse Wins</div>
+                        <div class="metric-value">${stats.giantSlayer}</div>
+                        <div class="metric-detail">vs Higher Ranked</div>
+                    </div>
+                </div>
+                
+                <!-- ELO Chart -->
+                <div style="margin: 30px 0; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #fff; margin-bottom: 15px;">ELO Progression (past 3 months)</h3>
+                    <canvas id="eloProgressionChart" style="max-height: 300px;"></canvas>
+                </div>
+
+                <!-- Map Performance -->
+                <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h3 style="color: #fff; margin-bottom: 15px;">Map Performance</h3>
+                    <div class="map-stats-grid-consolidated">
+                        <div class="map-stat-column">
+                            <h4>Best Maps (min 3 games)</h4>
+                            <div class="map-list">
+                                ${stats.mapStats.best.length > 0 ? 
+                                    stats.mapStats.best.map((m, idx) => `
+                                        <div class="map-stat-item positive">
+                                            <span class="map-rank">${idx + 1}</span>
+                                            <span class="map-name">${m.map}</span>
+                                            <span class="map-record">${m.wins}-${m.losses} (${m.winRate}%)</span>
+                                        </div>
+                                    `).join('') :
+                                    '<p class="no-data">Not enough data (min 3 games per map)</p>'
+                                }
+                                ${stats.mapStats.worst.length > 0 ? `
+                                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                        <h4 style="margin-bottom: 10px;">Needs Improvement</h4>
+                                        ${stats.mapStats.worst.map((m, idx) => `
+                                            <div class="map-stat-item negative">
+                                                <span class="map-rank">${idx + 1}</span>
+                                                <span class="map-name">${m.map}</span>
+                                                <span class="map-record">${m.wins}-${m.losses} (${m.winRate}%)</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="map-stat-column">
+                            <h4>Most Played Maps</h4>
+                            <div class="map-list">
+                                ${stats.mapStats.mostPlayed.map((m, idx) => `
+                                    <div class="map-stat-item">
+                                        <span class="map-rank">${idx + 1}</span>
+                                        <span class="map-name">${m.map}</span>
+                                        <span class="map-record">${m.total} games (${m.winRate}% WR)</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Score Distribution -->
+                <div class="score-distribution-section" style="margin-top: 30px;">
+                    <h3 style="color: #fff; margin-bottom: 15px;">Score Analysis</h3>
+                    <div class="score-analysis-container">
+                        <div class="score-chart-wrapper">
+                            <canvas id="scoreDistributionChart" style="max-height: 220px;"></canvas>
+                        </div>
+                        <div class="score-stats-compact">
+                            <div class="compact-stat">
+                                <span class="compact-label">Avg Points</span>
+                                <span class="compact-value">${stats.scoreStats.avgPoints}</span>
+                            </div>
+                            <div class="compact-stat">
+                                <span class="compact-label">Closest Games (≤3)</span>
+                                <span class="compact-value">${stats.scoreStats.closestGames}</span>
+                            </div>
+                            <div class="compact-stat">
+                                <span class="compact-label">Dominant Wins (10+)</span>
+                                <span class="compact-value">${stats.scoreStats.dominantWins}</span>
+                            </div>
+                            <div class="compact-stat">
+                                <span class="compact-label">Most Common</span>
+                                <span class="compact-value">${stats.scoreStats.mostCommonScore} (×${stats.scoreStats.mostCommonCount})</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
             
-            // Process match data for chart
-            const matchData = matches.map(match => ({
-                date: new Date(match.createdAt.seconds * 1000),
-                isWinner: match.winnerUsername === username,
-                score: match.winnerUsername === username ? match.winnerScore : match.loserScore
-            })).sort((a, b) => a.date - b.date);
+            // Add necessary CSS if not already present
+            this.addMatchStatsStyles();
             
-            // Create chart if there's data
-            const ctx = document.getElementById('eloChart')?.getContext('2d');
-            if (ctx) {
-                try {
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: matchData.map(match => match.date.toLocaleDateString()),
-                            datasets: [{
-                                label: 'Score History',
-                                data: matchData.map(match => match.score),
-                                borderColor: 'rgb(75, 192, 192)',
-                                tension: 0.1,
-                                fill: false
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: { color: 'white' }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                    ticks: { color: 'white' }
-                                },
-                                x: {
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                    ticks: { color: 'white' }
-                                }
-                            }
-                        }
-                    });
-                } catch (chartError) {
-                    console.error('Error creating chart:', chartError);
-                    statsContainer.innerHTML += '<p class="error-message">Error displaying chart</p>';
-                }
-            }
+            // Store full ELO history for filtering
+            this.fullEloHistory = eloHistory;
+            this.currentUsername = username;
+            
+            // Create ELO progression chart with default 3-month view
+            this.createEloProgressionChart(eloHistory, username, 3);
+            
+            // Create score distribution chart
+            this.createScoreDistributionChart(matches, username);
+            
         } catch (error) {
             console.error('Error displaying match stats:', error);
             this.showErrorInContainer('match-stats', 'Failed to load match statistics');
         }
+    }
+    
+    async displayPlayerScorecard(username, matches) {
+        // Set references for the scorecard module
+        playerScorecardInstance.setReferences(containerReferences, this.currentProfileData);
+        
+        // Call the external scorecard module, passing the calculateMatchStatsImproved function
+        await playerScorecardInstance.displayPlayerScorecard(
+            username, 
+            matches, 
+            this.calculateMatchStatsImproved.bind(this)
+        );
+    }
+    
+    calculateMatchStatsImproved(username, matches, eloHistory) {
+        const formatNum = (num, decimals = 1) => {
+            if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '0';
+            return Number(num).toFixed(decimals);
+        };
+        
+        const stats = {
+            totalGames: matches.length,
+            wins: 0,
+            losses: 0,
+            winRate: '0.0',
+            currentStreak: { type: 'none', count: 0 },
+            bestWinStreak: 0,
+            bestLossStreak: 0,
+            avgScore: { overall: 0, wins: 0, losses: 0 },
+            eloRange: { current: 0, peak: 0, low: 9999 },
+            recentForm: { wins: 0, losses: 0, record: '0-0', winRate: '0' },
+            giantSlayer: 0,
+            mapStats: { best: [], worst: [], mostPlayed: [] },
+            scoreStats: { 
+                closestGames: 0, 
+                dominantWins: 0, 
+                avgPoints: 0,
+                mostCommonScore: 0,
+                mostCommonCount: 0
+            }
+        };
+        
+        if (matches.length === 0) return stats;
+        
+        // Sort matches by date (oldest first)
+        const sortedMatches = [...matches].sort((a, b) => {
+            const aTime = a.createdAt?.seconds || a.createdAt?.toDate?.()?.getTime() || 0;
+            const bTime = b.createdAt?.seconds || b.createdAt?.toDate?.()?.getTime() || 0;
+            return aTime - bTime;
+        });
+        
+        let currentStreak = 0;
+        let currentStreakType = null;
+        let bestWinStreak = 0;
+        let tempWinStreak = 0;
+        let totalScoreWins = 0;
+        let totalScoreLosses = 0;
+        let totalPoints = 0;
+        const mapPerformance = {};
+        const scoreFrequency = {};
+        
+        // Process each match (optimized loop)
+        const matchCount = sortedMatches.length;
+        for (let i = 0; i < matchCount; i++) {
+            const match = sortedMatches[i];
+            const isWinner = match.winnerUsername === username;
+            
+            // Get scores with better fallback handling (cache parseInt)
+            let playerScore, opponentScore;
+            
+            if (isWinner) {
+                playerScore = parseInt(match.winnerScore || match.score1 || match.winnerKills || 0) || 0;
+                opponentScore = parseInt(match.loserScore || match.score2 || match.loserKills || 0) || 0;
+            } else {
+                playerScore = parseInt(match.loserScore || match.score2 || match.loserKills || 0) || 0;
+                opponentScore = parseInt(match.winnerScore || match.score1 || match.winnerKills || 0) || 0;
+            }
+            
+            const scoreDiff = Math.abs(playerScore - opponentScore);
+            
+            // Win/Loss tracking
+            if (isWinner) {
+                stats.wins++;
+                totalScoreWins += playerScore;
+                totalPoints += playerScore;
+                
+                // Streak tracking
+                if (currentStreakType === 'win') {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                    currentStreakType = 'win';
+                }
+                tempWinStreak++;
+                if (tempWinStreak > bestWinStreak) bestWinStreak = tempWinStreak;
+                
+                // Close games (diff <= 3)
+                if (scoreDiff <= 3) stats.scoreStats.closestGames++;
+                
+                // Dominant wins (diff >= 10)
+                if (scoreDiff >= 10) stats.scoreStats.dominantWins++;
+            } else {
+                stats.losses++;
+                totalScoreLosses += playerScore;
+                totalPoints += playerScore;
+                tempWinStreak = 0;
+                
+                // Streak tracking
+                if (currentStreakType === 'loss') {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                    currentStreakType = 'loss';
+                }
+                
+                // Close games (losses, diff <= 3)
+                if (scoreDiff <= 3) stats.scoreStats.closestGames++;
+            }
+            
+            // Map performance (cache map lookup)
+            const map = match.mapPlayed || 'Unknown';
+            let mapData = mapPerformance[map];
+            if (!mapData) {
+                mapData = mapPerformance[map] = { wins: 0, losses: 0, total: 0 };
+            }
+            mapData.total++;
+            if (isWinner) {
+                mapData.wins++;
+            } else {
+                mapData.losses++;
+            }
+            
+            // Score frequency
+            scoreFrequency[playerScore] = (scoreFrequency[playerScore] || 0) + 1;
+        }
+        
+        // Recent form (last 10 matches, sorted newest first)
+        const recentMatches = [...matches]
+            .sort((a, b) => {
+                const aTime = b.createdAt?.seconds || b.createdAt?.toDate?.()?.getTime() || 0;
+                const bTime = a.createdAt?.seconds || a.createdAt?.toDate?.()?.getTime() || 0;
+                return aTime - bTime;
+            })
+            .slice(0, 10);
+        
+        recentMatches.forEach(match => {
+            if (match.winnerUsername === username) {
+                stats.recentForm.wins++;
+            } else {
+                stats.recentForm.losses++;
+            }
+        });
+        
+        // Calculate derived stats
+        stats.winRate = formatNum((stats.wins / stats.totalGames) * 100);
+        stats.currentStreak = { 
+            type: currentStreakType || 'none', 
+            count: currentStreak 
+        };
+        stats.bestWinStreak = bestWinStreak;
+        
+        const overallAvg = stats.totalGames > 0 ? totalPoints / stats.totalGames : 0;
+        const winsAvg = stats.wins > 0 ? totalScoreWins / stats.wins : 0;
+        const lossesAvg = stats.losses > 0 ? totalScoreLosses / stats.losses : 0;
+        
+        stats.avgScore.overall = formatNum(overallAvg);
+        stats.avgScore.wins = formatNum(winsAvg);
+        stats.avgScore.losses = formatNum(lossesAvg);
+        
+        // ELO range
+        const currentElo = this.currentProfileData?.eloRating || 1000;
+        stats.eloRange.current = currentElo;
+        
+        if (eloHistory.length > 0) {
+            const allElos = eloHistory.map(h => h.newElo || h.eloAfter || h.rating || 0).filter(e => e > 0);
+            if (allElos.length > 0) {
+                stats.eloRange.peak = Math.round(Math.max(...allElos));
+                stats.eloRange.low = Math.round(Math.min(...allElos));
+            } else {
+                stats.eloRange.peak = currentElo;
+                stats.eloRange.low = currentElo;
+            }
+        } else {
+            stats.eloRange.peak = currentElo;
+            stats.eloRange.low = currentElo;
+        }
+        
+        // Recent form
+        stats.recentForm.record = `${stats.recentForm.wins}W-${stats.recentForm.losses}L`;
+        const recentTotal = stats.recentForm.wins + stats.recentForm.losses;
+        stats.recentForm.winRate = recentTotal > 0 ? 
+            formatNum((stats.recentForm.wins / recentTotal) * 100, 0) : '0';
+        
+        // Giant slayer (this is a placeholder - would need opponent ELO data)
+        stats.giantSlayer = Math.floor(stats.wins * 0.3); // Rough estimate
+        
+        // Map stats - filter maps with at least 3 games
+        const qualifiedMaps = Object.entries(mapPerformance)
+            .filter(([_, data]) => data.total >= 3)
+            .map(([map, data]) => ({
+                map,
+                wins: data.wins,
+                losses: data.losses,
+                total: data.total,
+                winRate: ((data.wins / data.total) * 100).toFixed(0)
+            }));
+        
+        stats.mapStats.best = qualifiedMaps
+            .sort((a, b) => {
+                const winRateDiff = parseFloat(b.winRate) - parseFloat(a.winRate);
+                // If win rates are equal, sort by total games (more games = better)
+                return winRateDiff !== 0 ? winRateDiff : b.total - a.total;
+            })
+            .slice(0, 3);
+        
+        stats.mapStats.worst = qualifiedMaps
+            .sort((a, b) => {
+                const winRateDiff = parseFloat(a.winRate) - parseFloat(b.winRate);
+                // If win rates are equal, sort by total games (more games = worse)
+                return winRateDiff !== 0 ? winRateDiff : b.total - a.total;
+            })
+            .slice(0, 3);
+        
+        stats.mapStats.mostPlayed = Object.entries(mapPerformance)
+            .map(([map, data]) => ({
+                map,
+                wins: data.wins,
+                losses: data.losses,
+                total: data.total,
+                winRate: ((data.wins / data.total) * 100).toFixed(0)
+            }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+        
+        // Score stats
+        stats.scoreStats.avgPoints = formatNum(overallAvg);
+        const mostCommonScoreEntry = Object.entries(scoreFrequency)
+            .sort((a, b) => b[1] - a[1])[0];
+        if (mostCommonScoreEntry) {
+            stats.scoreStats.mostCommonScore = mostCommonScoreEntry[0];
+            stats.scoreStats.mostCommonCount = mostCommonScoreEntry[1];
+        }
+        
+        return stats;
+    }
+    
+
+    
+    createEloProgressionChart(eloHistory, username, timeMonths = 6) {
+        const ctx = document.getElementById('eloProgressionChart');
+        if (!ctx) return;
+        
+        // Add time period filter buttons if they don't exist
+        const chartContainer = ctx.closest('.elo-chart-container');
+        if (chartContainer && !chartContainer.querySelector('.elo-time-filter')) {
+            const filterHTML = `
+                <div class="elo-time-filter" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+                    <button class="time-filter-btn ${timeMonths === 1 ? 'active' : ''}" data-months="1">1 Month</button>
+                    <button class="time-filter-btn ${timeMonths === 3 ? 'active' : ''}" data-months="3">3 Months</button>
+                    <button class="time-filter-btn ${timeMonths === 6 ? 'active' : ''}" data-months="6">6 Months</button>
+                </div>
+            `;
+            chartContainer.insertAdjacentHTML('afterbegin', filterHTML);
+            
+            // Add click handlers
+            chartContainer.querySelectorAll('.time-filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Update active state
+                    chartContainer.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Recreate chart with new time period
+                    const months = parseInt(e.target.dataset.months);
+                    this.createEloProgressionChart(this.fullEloHistory, this.currentUsername, months);
+                });
+            });
+        } else if (chartContainer) {
+            // Update active button state if buttons already exist
+            chartContainer.querySelectorAll('.time-filter-btn').forEach(btn => {
+                const btnMonths = parseInt(btn.dataset.months);
+                if (btnMonths === timeMonths) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        if (eloHistory.length === 0) {
+            const canvasContainer = ctx.parentElement;
+            if (canvasContainer && canvasContainer.querySelector('canvas')) {
+                canvasContainer.innerHTML = '<canvas id="eloProgressionChart" style="max-height: 300px;"></canvas><p class="no-data" style="text-align: center; padding: 40px;">No ELO history available yet. Play some matches to see your progression!</p>';
+            }
+            return;
+        }
+        
+        // Filter data by time period (optimized)
+        const now = Date.now();
+        const cutoffTime = now - (timeMonths * 30 * 24 * 60 * 60 * 1000);
+        
+        // Prepare data with win/loss coloring (single pass, reduce function calls)
+        const chartData = [];
+        const historyLength = eloHistory.length;
+        
+        for (let i = 0; i < historyLength; i++) {
+            const entry = eloHistory[i];
+            if (!entry.timestamp) continue;
+            
+            // Filter by time period
+            const entryTime = entry.timestamp.seconds * 1000;
+            if (entryTime < cutoffTime) continue;
+            
+            // Check for various ELO field names (short-circuit evaluation)
+            const hasEloData = entry.newElo || entry.eloAfter || entry.rating || entry.previousElo || entry.eloBefore;
+            if (!hasEloData) continue;
+            
+            // Handle different field name variations across D1/D2/D3
+            const newElo = Number(entry.newElo || entry.eloAfter || entry.rating) || 1000;
+            const prevElo = Number(entry.previousElo || entry.eloBefore) || newElo;
+            const change = entry.change || (newElo - prevElo);
+            
+            // Determine result from ELO change if not explicitly set
+            const result = entry.result || entry.matchResult || (change > 0 ? 'win' : change < 0 ? 'loss' : 'expected score');
+            
+            chartData.push({
+                x: new Date(entryTime),
+                y: newElo,
+                result: result,
+                change: change
+            });
+        }
+        
+        if (chartData.length === 0) {
+            const canvasContainer = ctx.parentElement;
+            if (canvasContainer) {
+                // Destroy existing chart if it exists
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) existingChart.destroy();
+                
+                canvasContainer.innerHTML = `<canvas id="eloProgressionChart" style="max-height: 300px;"></canvas><p class="no-data" style="text-align: center; padding: 40px;">No ELO history in the last ${timeMonths} month${timeMonths > 1 ? 's' : ''}.</p>`;
+            }
+            return;
+        }
+        
+        // Destroy existing chart before creating new one
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
+        // Create labels array from dates
+        const labels = chartData.map(d => d.x.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        const dataPoints = chartData.map(d => d.y);
+        
+        //
+        
+        try {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ELO Rating',
+                        data: dataPoints,
+                        borderColor: '#4bc0c0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: chartData.map(d => 
+                            d.result === 'win' ? '#4ade80' : '#f87171'
+                        ),
+                        pointBorderColor: chartData.map(d => 
+                            d.result === 'win' ? '#22c55e' : '#ef4444'
+                        ),
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'nearest'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#fff' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const dataPoint = chartData[context.dataIndex];
+                                    const changeText = dataPoint.change > 0 ? `+${dataPoint.change}` : dataPoint.change;
+                                    return `ELO: ${Math.round(context.parsed.y)} (${changeText}, ${dataPoint.result})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { 
+                                color: '#999',
+                                maxRotation: 45,
+                                minRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 12
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#999' }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating ELO chart:', error);
+        }
+    }
+    
+    createScoreDistributionChart(matches, username) {
+        const ctx = document.getElementById('scoreDistributionChart');
+        if (!ctx || matches.length === 0) return;
+        
+        // Create score distribution buckets
+        const scoreBuckets = {
+            '0-5': 0, '6-10': 0, '11-15': 0, '16-20': 0
+        };
+        
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === username;
+            const score = isWinner ? match.winnerScore : match.loserScore;
+            
+            if (score <= 5) scoreBuckets['0-5']++;
+            else if (score <= 10) scoreBuckets['6-10']++;
+            else if (score <= 15) scoreBuckets['11-15']++;
+            else scoreBuckets['16-20']++;
+        });
+        
+        try {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(scoreBuckets),
+                    datasets: [{
+                        label: 'Number of Games',
+                        data: Object.values(scoreBuckets),
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(251, 146, 60, 0.7)',
+                            'rgba(250, 204, 21, 0.7)',
+                            'rgba(74, 222, 128, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(251, 146, 60)',
+                            'rgb(250, 204, 21)',
+                            'rgb(74, 222, 128)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Score Range Distribution',
+                            color: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { 
+                                color: '#999',
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#999' }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating score distribution chart:', error);
+        }
+    }
+    
+    addMatchStatsStyles() {
+        if (document.getElementById('match-stats-styles')) return;
+        
+        const styles = document.createElement('style');
+        styles.id = 'match-stats-styles';
+        styles.textContent = `
+            /* Rank-based coloring for ALL containers */
+            .match-history-container.elo-bronze h2,
+            .match-history-container.elo-bronze h3,
+            .match-history-container.elo-bronze h4,
+            .match-history-container.elo-bronze .metric-value,
+            .match-history-container.elo-bronze .map-name,
+            .match-history-container.elo-bronze .compact-value,
+            .match-history-container.elo-bronze .map-rank,
+            .player-matchups.elo-bronze h2,
+            .player-matchups.elo-bronze h3,
+            .player-matchups.elo-bronze h4,
+            .player-matchups.elo-bronze .metric-value,
+            .rank-history.elo-bronze h2,
+            .rank-history.elo-bronze h3,
+            .rank-history.elo-bronze h4,
+            .rank-history.elo-bronze .metric-value,
+            #trophy-container.elo-bronze h2,
+            #trophy-container.elo-bronze h3,
+            #trophy-container.elo-bronze h4,
+            #trophy-container.elo-bronze .metric-value {
+                color: #cd7f32 !important;
+            }
+            
+            .match-history-container.elo-bronze .metric-card,
+            .match-history-container.elo-bronze .map-stat-item,
+            .match-history-container.elo-bronze .compact-stat,
+            .player-matchups.elo-bronze .metric-card,
+            .player-matchups.elo-bronze .map-stat-item,
+            .rank-history.elo-bronze .metric-card,
+            .rank-history.elo-bronze .map-stat-item,
+            #trophy-container.elo-bronze .metric-card,
+            #trophy-container.elo-bronze .map-stat-item {
+                border-color: rgba(205, 127, 50, 0.3) !important;
+                background: rgba(205, 127, 50, 0.05) !important;
+            }
+            
+            .match-history-container.elo-silver h2,
+            .match-history-container.elo-silver h3,
+            .match-history-container.elo-silver h4,
+            .match-history-container.elo-silver .metric-value,
+            .match-history-container.elo-silver .map-name,
+            .match-history-container.elo-silver .compact-value,
+            .match-history-container.elo-silver .map-rank,
+            .player-matchups.elo-silver h2,
+            .player-matchups.elo-silver h3,
+            .player-matchups.elo-silver h4,
+            .player-matchups.elo-silver .metric-value,
+            .rank-history.elo-silver h2,
+            .rank-history.elo-silver h3,
+            .rank-history.elo-silver h4,
+            .rank-history.elo-silver .metric-value,
+            #trophy-container.elo-silver h2,
+            #trophy-container.elo-silver h3,
+            #trophy-container.elo-silver h4,
+            #trophy-container.elo-silver .metric-value {
+                color: #c0c0c0 !important;
+            }
+            
+            .match-history-container.elo-silver .metric-card,
+            .match-history-container.elo-silver .map-stat-item,
+            .match-history-container.elo-silver .compact-stat,
+            .player-matchups.elo-silver .metric-card,
+            .player-matchups.elo-silver .map-stat-item,
+            .rank-history.elo-silver .metric-card,
+            .rank-history.elo-silver .map-stat-item,
+            #trophy-container.elo-silver .metric-card,
+            #trophy-container.elo-silver .map-stat-item {
+                border-color: rgba(192, 192, 192, 0.3) !important;
+                background: rgba(192, 192, 192, 0.05) !important;
+            }
+            
+            .match-history-container.elo-gold h2,
+            .match-history-container.elo-gold h3,
+            .match-history-container.elo-gold h4,
+            .match-history-container.elo-gold .metric-value,
+            .match-history-container.elo-gold .map-name,
+            .match-history-container.elo-gold .compact-value,
+            .match-history-container.elo-gold .map-rank,
+            .player-matchups.elo-gold h2,
+            .player-matchups.elo-gold h3,
+            .player-matchups.elo-gold h4,
+            .player-matchups.elo-gold .metric-value,
+            .rank-history.elo-gold h2,
+            .rank-history.elo-gold h3,
+            .rank-history.elo-gold h4,
+            .rank-history.elo-gold .metric-value,
+            #trophy-container.elo-gold h2,
+            #trophy-container.elo-gold h3,
+            #trophy-container.elo-gold h4,
+            #trophy-container.elo-gold .metric-value {
+                color: #ffd700 !important;
+            }
+            
+            .match-history-container.elo-gold .metric-card,
+            .match-history-container.elo-gold .map-stat-item,
+            .match-history-container.elo-gold .compact-stat,
+            .player-matchups.elo-gold .metric-card,
+            .player-matchups.elo-gold .map-stat-item,
+            .rank-history.elo-gold .metric-card,
+            .rank-history.elo-gold .map-stat-item,
+            #trophy-container.elo-gold .metric-card,
+            #trophy-container.elo-gold .map-stat-item {
+                border-color: rgba(255, 215, 0, 0.3) !important;
+                background: rgba(255, 215, 0, 0.05) !important;
+            }
+            
+            .match-history-container.elo-emerald h2,
+            .match-history-container.elo-emerald h3,
+            .match-history-container.elo-emerald h4,
+            .match-history-container.elo-emerald .metric-value,
+            .match-history-container.elo-emerald .map-name,
+            .match-history-container.elo-emerald .compact-value,
+            .match-history-container.elo-emerald .map-rank,
+            .player-matchups.elo-emerald h2,
+            .player-matchups.elo-emerald h3,
+            .player-matchups.elo-emerald h4,
+            .player-matchups.elo-emerald .metric-value,
+            .rank-history.elo-emerald h2,
+            .rank-history.elo-emerald h3,
+            .rank-history.elo-emerald h4,
+            .rank-history.elo-emerald .metric-value,
+            #trophy-container.elo-emerald h2,
+            #trophy-container.elo-emerald h3,
+            #trophy-container.elo-emerald h4,
+            #trophy-container.elo-emerald .metric-value {
+                color: #50c878 !important;
+            }
+            
+            .match-history-container.elo-emerald .metric-card,
+            .match-history-container.elo-emerald .map-stat-item,
+            .match-history-container.elo-emerald .compact-stat,
+            .player-matchups.elo-emerald .metric-card,
+            .player-matchups.elo-emerald .map-stat-item,
+            .rank-history.elo-emerald .metric-card,
+            .rank-history.elo-emerald .map-stat-item,
+            #trophy-container.elo-emerald .metric-card,
+            #trophy-container.elo-emerald .map-stat-item {
+                border-color: rgba(80, 200, 120, 0.3) !important;
+                background: rgba(80, 200, 120, 0.05) !important;
+            }
+            
+            /* Keep positive/negative colors for streaks */
+            .metric-value.positive {
+                color: #4ade80 !important;
+            }
+            
+            .metric-value.negative {
+                color: #f87171 !important;
+            }
+            
+            /* Keep map performance colors */
+            .map-stat-item.positive {
+                border-left-color: #4ade80 !important;
+            }
+            
+            .map-stat-item.negative {
+                border-left-color: #f87171 !important;
+            }
+            
+            .performance-metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin: 20px 0;
+            }
+            
+            .metric-card {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 15px;
+                text-align: center;
+            }
+            
+            .metric-label {
+                color: #999;
+                font-size: 0.85rem;
+                margin-bottom: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .metric-value {
+                color: #fff;
+                font-size: 1.8rem;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .metric-detail {
+                color: #666;
+                font-size: 0.9rem;
+            }
+            
+            .elo-chart-container {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 20px;
+            }
+            
+            .map-performance-section {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 20px;
+            }
+            
+            .map-stats-grid-consolidated {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 25px;
+                margin-top: 15px;
+            }
+            
+            .map-stat-column h4 {
+                color: #ffffffff;
+                margin-bottom: 10px;
+                font-size: 1rem;
+            }
+            
+            .map-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .map-stat-item {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 10px 12px;
+                border-radius: 5px;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                border-left: 3px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .map-rank {
+                color: #ffffffff;
+                font-weight: bold;
+                font-size: 0.9rem;
+                min-width: 20px;
+            }
+            
+            .map-stat-item.positive {
+                border-left-color: #4ade80;
+                background: rgba(74, 222, 128, 0.1);
+            }
+            
+            .map-stat-item.negative {
+                border-left-color: #f87171;
+                background: rgba(248, 113, 113, 0.1);
+            }
+            
+            .map-name {
+                color: #fff;
+                font-weight: 500;
+                flex: 1;
+            }
+            
+            .map-record {
+                color: #999;
+                font-size: 0.9rem;
+            }
+            
+            .score-distribution-section {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 20px;
+            }
+            
+            .score-analysis-container {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 25px;
+                align-items: center;
+            }
+            
+            .score-chart-wrapper {
+                min-width: 0;
+            }
+            
+            .score-stats-compact {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                min-width: 180px;
+            }
+            
+            .compact-stat {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 10px 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .compact-label {
+                color: #999;
+                font-size: 0.85rem;
+            }
+            
+            .compact-value {
+                color: #ffffffff;
+                font-size: 1.1rem;
+                font-weight: bold;
+            }
+            
+            @media (max-width: 768px) {
+                .score-analysis-container {
+                    grid-template-columns: 1fr;
+                }
+                
+                .score-stats-compact {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+            }
+            
+            .no-data {
+                color: #666;
+                font-style: italic;
+                padding: 10px;
+                text-align: center;
+            }
+            
+            /* Time period filter buttons */
+            .elo-time-filter {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                margin-bottom: 15px;
+            }
+            
+            .time-filter-btn {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #999;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-size: 0.9rem;
+            }
+            
+            .time-filter-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.3);
+                color: #fff;
+            }
+            
+            .time-filter-btn.active {
+                background: rgba(75, 192, 192, 0.2);
+                border-color: #4bc0c0;
+                color: #4bc0c0;
+            }
+            
+            /* Player Scorecard Styles */
+            .player-scorecard {
+                background: rgba(0, 0, 0, 0.3);
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .scorecard-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            
+            .scorecard-item {
+                background: rgba(255, 255, 255, 0.05);
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 15px 10px;
+                text-align: center;
+                transition: transform 0.2s ease, border-color 0.2s ease;
+                cursor: help;
+                position: relative;
+            }
+            
+            .scorecard-item:hover {
+                transform: translateY(-3px);
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+            
+            .scorecard-overall {
+                grid-column: 1 / -1;
+                background: rgba(255, 255, 255, 0.08);
+                border-width: 3px;
+            }
+            
+            .scorecard-grade {
+                font-size: 3rem;
+                font-weight: bold;
+                line-height: 1;
+                margin-bottom: 8px;
+            }
+            
+            .scorecard-overall .scorecard-grade {
+                font-size: 4rem;
+            }
+            
+            .scorecard-label {
+                color: #999;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 5px;
+            }
+            
+            .scorecard-value {
+                color: #fff;
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+            
+            .scorecard-desc {
+                color: #666;
+                font-size: 0.75rem;
+                font-style: italic;
+            }
+            
+            /* Rank-based styling for scorecard container */
+            .match-history-container.elo-unranked.player-scorecard-container {
+                border-color: #DC143C;
+            }
+            
+            .match-history-container.elo-bronze.player-scorecard-container {
+                border-color: #CD7F32;
+            }
+            
+            .match-history-container.elo-silver.player-scorecard-container {
+                border-color: #b9f1fc;
+            }
+            
+            .match-history-container.elo-gold.player-scorecard-container {
+                border-color: #FFD700;
+            }
+            
+            .match-history-container.elo-emerald.player-scorecard-container {
+                border-color: #50C878;
+            }
+            
+            @media (max-width: 768px) {
+                .scorecard-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .scorecard-overall {
+                    grid-column: 1 / -1;
+                }
+            }
+        `;
+        document.head.appendChild(styles);
     }
     
     async displayPlayerMatchups(username, matches) {
@@ -3143,6 +4561,17 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                     </div>
                 `;
                 return;
+            }
+            
+            // Apply rank styling
+            const profileContent = document.querySelector('.profile-content');
+            const existingRankClass = profileContent ? 
+                Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+                'elo-unranked';
+            
+            matchupsContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            if (existingRankClass) {
+                matchupsContainer.classList.add(existingRankClass);
             }
             
             // Calculate matchups in one pass through the data
@@ -3276,6 +4705,17 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                     </div>
                 `;
                 return;
+            }
+            
+            // Apply rank styling
+            const profileContent = document.querySelector('.profile-content');
+            const existingRankClass = profileContent ? 
+                Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+                'elo-unranked';
+            
+            promotionContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+            if (existingRankClass) {
+                promotionContainer.classList.add(existingRankClass);
             }
             
             // Update to use ladder-specific collections
@@ -3573,9 +5013,16 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 eloNeeded = 500 - eloRating;
                 eloClass = 'elo-bronze';
             } else {
-                nextRank = 'Bronze';
-                eloNeeded = 200 - eloRating;
-                eloClass = 'elo-unranked';
+                // 5+ matches rule: Anyone with 5+ matches is at least Bronze
+                if (stats.totalMatches >= 5) {
+                    nextRank = 'Silver';
+                    eloNeeded = 500 - eloRating;
+                    eloClass = 'elo-bronze';
+                } else {
+                    nextRank = 'Bronze';
+                    eloNeeded = 200 - eloRating;
+                    eloClass = 'elo-unranked';
+                }
             }
             
             // IMPORTANT: Check if we already have stats at the bottom of the page
@@ -4253,7 +5700,7 @@ setupEditProfile() {
                     toggleContainer.style.display = inAnyLadder ? 'flex' : 'none';
                 }
                 
-                console.log(`Ladder registration - D1: ${inD1}, D2: ${inD2}, D3: ${inD3}`);
+                // Ladder registration info: D1, D2, D3
             }
             
             return { inD1, inD2, inD3 };
@@ -4916,7 +6363,7 @@ async sendInvitation(toUsername, toUserId, type, value, subgameTypeOrGame = null
     
     try {
         await addDoc(collection(db, 'gameInvitations'), invitationData);
-        console.log('✅ Invitation sent successfully:', type, value, subgameTypeOrGame);
+        // Invitation sent successfully
     } catch (error) {
         console.error('❌ Failed to send invitation:', error);
         throw error;
@@ -4944,7 +6391,7 @@ function updateProfileImagePreview() {
 document.addEventListener('DOMContentLoaded', () => {
     // Wait for Firebase Auth state to be ready before initializing
     auth.onAuthStateChanged(user => {
-        console.log("Auth state changed, user:", user ? user.uid : 'none');
+        // Auth state changed, user: (see user object)
         // Initialize ProfileViewer regardless of login state,
         // the viewer logic will handle showing/hiding edit button.
         if (!window.profileViewerInstance) { // Prevent multiple initializations

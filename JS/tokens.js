@@ -150,10 +150,10 @@ export function clearTokenCache(userId = null) {
     if (userId) {
         const cacheKey = `tokens_${userId}`;
         tokenCache.delete(cacheKey);
-        console.log(`🗑️ Cleared token cache for user: ${userId}`);
+        // Cleared token cache for user: ${userId}
     } else {
         tokenCache.clear();
-        console.log('🗑️ Cleared all token cache');
+        // Cleared all token cache
     }
 }
 

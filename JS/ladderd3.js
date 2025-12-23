@@ -439,7 +439,7 @@ function createPlayerRowD3(player, stats, primaryToken) {
     } else if (elo >= 700) {
         usernameColor = '#FFD700'; // Gold (700-999)
     } else if (elo >= 500) {
-        usernameColor = '#C0C0C0'; // Silver (500-699)
+        usernameColor = '#b9f1fc'; // Silver (500-699)
     } else if (elo >= 200) {
         usernameColor = '#CD7F32'; // Bronze (200-499)
     }

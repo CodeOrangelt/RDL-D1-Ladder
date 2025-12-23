@@ -71,7 +71,7 @@
         .tier-badge {color: #fff}
         .tier-badge.masters, .tier-badge.emerald {background: #50C878}
         .tier-badge.gold {background: #FFD700; color: #000}
-        .tier-badge.silver {background: #C0C0C0; color: #000}
+        .tier-badge.silver {background: var(--silver-color); color: #000}
         .tier-badge.bronze {background: #CD7F32}
         
         /* Header with stats */
@@ -477,11 +477,11 @@
         .theme-gold .btn-sm, .theme-gold .btn-primary {background: #D4AF37}
         .theme-gold .btn-sm:hover, .theme-gold .btn-primary:hover {background: #BB9830}
         
-        .theme-silver {border-color: #C0C0C0}
-        .theme-silver .card-title {color: #A0A0A0}
-        .theme-silver .team-info-item i {color: #A0A0A0}
-        .theme-silver .btn-sm, .theme-silver .btn-primary {background: #A0A0A0}
-        .theme-silver .btn-sm:hover, .theme-silver .btn-primary:hover {background: #888888}
+        .theme-silver {border-color: var(--silver-color)}
+        .theme-silver .card-title {color: var(--silver-color)}
+        .theme-silver .team-info-item i {color: var(--silver-color)}
+        .theme-silver .btn-sm, .theme-silver .btn-primary {background: var(--silver-color)}
+        .theme-silver .btn-sm:hover, .theme-silver .btn-primary:hover {background: #7fd0e0}
         
         .theme-bronze {border-color: #CD7F32}
         .theme-bronze .card-title {color: #CD7F32}
@@ -511,5 +511,5 @@
         .theme-masters .tab-active {border-bottom-color: #50C878 !important;}
         .theme-emerald .tab-active {border-bottom-color: #50C878 !important;}
         .theme-gold .tab-active {border-bottom-color: #D4AF37 !important;}
-        .theme-silver .tab-active {border-bottom-color: #A0A0A0 !important;}
+        .theme-silver .tab-active {border-bottom-color: var(--silver-color) !important;}
         .theme-bronze .tab-active {border-bottom-color: #CD7F32 !important;}

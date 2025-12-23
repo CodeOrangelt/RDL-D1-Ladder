@@ -435,7 +435,7 @@ class RibbonCacheManager {
         if (this.memoryCache.has(cacheKey)) {
             const cached = this.memoryCache.get(cacheKey);
             if (Date.now() - cached.timestamp < this.CACHE_DURATION) {
-                console.log(`🚀 Cache hit (memory) for ${username}`);
+                // Cache hit (memory) for ${username}
                 return cached.data;
             }
             this.memoryCache.delete(cacheKey);
@@ -451,7 +451,7 @@ class RibbonCacheManager {
                         timestamp: data.timestamp,
                         matchCount: data.matchCount
                     });
-                    console.log(`💾 Cache hit (localStorage) for ${username}`);
+                    // Cache hit (localStorage) for ${username}
                     return data.ribbons;
                 }
                 localStorage.removeItem(cacheKey);
@@ -518,7 +518,7 @@ class RibbonCacheManager {
         const cacheKey = this.getCacheKey(username, ladder);
         this.memoryCache.delete(cacheKey);
         localStorage.removeItem(cacheKey);
-        console.log(`🗑️ Invalidated cache for ${username} (${ladder}) - new match detected`);
+        // Invalidated cache for ${username} (${ladder}) - new match detected
     }
 
     autoCleanup() {
@@ -601,7 +601,7 @@ class MatchCacheManager {
         const cached = this.matchCache.get(key);
         
         if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-            console.log(`🎯 Cache hit (matches) for ${username}`);
+            // Cache hit (matches) for ${username}
             return cached.matches;
         }
         
@@ -669,7 +669,7 @@ class RibbonSystem {
             }
         });
         
-        console.log(`📊 Bulk loaded ${playerMap.size} players from ${playersCollection}`);
+        // Bulk loaded ${playerMap.size} players from ${playersCollection}
         return playerMap;
     }
 
@@ -698,12 +698,12 @@ class RibbonSystem {
         });
         
         // Bulk load ALL player data once instead of individual lookups
-        console.log(`🚀 Bulk loading ${opponents.size} player records for underdog calculations...`);
+        // Bulk loading ${opponents.size} player records for underdog calculations...
         const allPlayerData = await this.bulkLoadPlayerData([...opponents, playerUsername], ladder);
         const currentPlayerData = allPlayerData.get(playerUsername);
         
         if (!currentPlayerData) {
-            console.log(`⚠️ No current player data found for ${playerUsername}`);
+            // No current player data found for ${playerUsername}
         }
         
         // Track victories by rank tier for domination calculation
@@ -760,8 +760,8 @@ class RibbonSystem {
             }
         });
 
-        console.log(`🎯 Found ${stats.underdogWins} underdog victories for ${playerUsername}`);
-        console.log(`👑 Dominated ${stats.dominatedRanks.size} ranks: [${Array.from(stats.dominatedRanks).map(tier => getRankTierName(tier)).join(', ')}]`);
+        // Found ${stats.underdogWins} underdog victories for ${playerUsername}
+        // Dominated ${stats.dominatedRanks.size} ranks: [${Array.from(stats.dominatedRanks).map(tier => getRankTierName(tier)).join(', ')}]
 
         const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
 
@@ -804,7 +804,7 @@ class RibbonSystem {
                 rankNames.push(getRankTierName(i));
             }
             
-            console.log(`👑 Domination Ribbon awarded: Level ${current.level} → ${dominatedRankCount} (Dominated: ${rankNames.join(', ')})`);
+            // Domination Ribbon awarded: Level ${current.level} → ${dominatedRankCount} (Dominated: ${rankNames.join(', ')})
             return { 
                 level: dominatedRankCount, 
                 awardedAt: new Date(),
@@ -823,7 +823,7 @@ class RibbonSystem {
             // Get player's current data
             const playerData = await this.getPlayerDataCached(playerUsername, ladder);
             if (!playerData || playerData.eloRating === undefined) {
-                console.log(`❌ No ELO rating data for ${playerUsername}`);
+                // No ELO rating data for ${playerUsername}
                 return null;
             }
             
@@ -836,11 +836,11 @@ class RibbonSystem {
             const playerTierName = getRankTierName(playerTier);
             
             if (playerTierName === 'Unranked') {
-                console.log(`❌ ${playerUsername} is Unranked (${playerRating} ELO, ${playerMatchCount} matches)`);
+                // ${playerUsername} is Unranked (${playerRating} ELO, ${playerMatchCount} matches)
                 return null;
             }
             
-            console.log(`🔍 Checking Top ${playerTierName} status for ${playerUsername} (${playerRating} ELO, ${playerWinRate}% WR, ${playerMatchCount} matches)`);
+            // Checking Top ${playerTierName} status for ${playerUsername} (${playerRating} ELO, ${playerWinRate}% WR, ${playerMatchCount} matches)
             
             // Get all players in the same rank tier
             const playersRef = collection(db, playersCollection);
@@ -870,7 +870,7 @@ class RibbonSystem {
             });
             
             const isTopPlayer = topPlayer === playerUsername;
-            console.log(`📊 ${playerTierName} Tier: ${playersInTier} players, Top: ${topPlayer} (${highestRating} ELO), ${playerUsername} is #1: ${isTopPlayer}`);
+            // ${playerTierName} Tier: ${playersInTier} players, Top: ${topPlayer} (${highestRating} ELO), ${playerUsername} is #1: ${isTopPlayer}
             
             return isTopPlayer ? playerTierName : null;
             
@@ -891,7 +891,7 @@ class RibbonSystem {
             if (ribbonName.startsWith('Top ') && ribbonName.endsWith(' Pilot')) {
                 // Always preserve existing top rank ribbons - they're permanent
                 updates[ribbonName] = currentRibbons[ribbonName];
-                console.log(`✅ Preserving permanent ${ribbonName} for ${playerUsername}`);
+                // Preserving permanent ${ribbonName} for ${playerUsername}
             }
         });
         
@@ -902,7 +902,7 @@ class RibbonSystem {
                 // Check if player already has this specific ribbon
                 if (!currentRibbons[ribbonName] && !updates[ribbonName]) {
                     // First time achieving #1 in this rank - award the ribbon permanently
-                    console.log(`👑 NEW Top Rank Achievement: ${playerUsername} earned ${ribbonName}! (This is permanent)`);
+                    // NEW Top Rank Achievement: ${playerUsername} earned ${ribbonName}! (This is permanent)
                     
                     updates[ribbonName] = {
                         level: 1,
@@ -912,7 +912,7 @@ class RibbonSystem {
                         permanent: true // Mark as permanent achievement
                     };
                 } else {
-                    console.log(`✅ ${playerUsername} already has ${ribbonName}`);
+                    // ${playerUsername} already has ${ribbonName}
                 }
             }
         }
@@ -928,7 +928,7 @@ class RibbonSystem {
                 // Always check for new top rank achievements, even with cache
                 const topRankRibbons = await this.evaluateTopRankRibbon(playerUsername, ladder, cachedRibbons);
                 if (Object.keys(topRankRibbons).length > 0) {
-                    console.log(`🆕 New top rank achievements found for cached player ${playerUsername}`);
+                    // New top rank achievements found for cached player ${playerUsername}
                     await this.savePlayerRibbonsOptimized(playerUsername, topRankRibbons, ladder);
                     const updatedRibbons = { ...cachedRibbons, ...topRankRibbons };
                     ribbonCache.setCachedData(playerUsername, ladder, updatedRibbons, 0);
@@ -971,7 +971,7 @@ class RibbonSystem {
             Object.assign(newRibbons, topRankRibbons);
 
             if (Object.keys(newRibbons).length > 0) {
-                console.log(`💾 Saving ${Object.keys(newRibbons).length} new/updated ribbons for ${playerUsername}`);
+                // Saving ${Object.keys(newRibbons).length} new/updated ribbons for ${playerUsername}
                 await this.savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder);
             }
 
@@ -1000,7 +1000,7 @@ class RibbonSystem {
         ]);
 
         if (!playerData || !opponentData) {
-            console.log(`⚠️ Missing player data for ${playerUsername} or ${opponent}`);
+            // Missing player data for ${playerUsername} or ${opponent}
             return false;
         }
 
@@ -1011,15 +1011,15 @@ class RibbonSystem {
         const playerTier = getPlayerRankTier(playerRating);
         const opponentTier = getPlayerRankTier(opponentRating);
         
-        console.log(`🔍 Checking underdog: Winner(${playerUsername}): ${playerRating} ELO (${getRankTierName(playerTier)}) vs Loser(${opponent}): ${opponentRating} ELO (${getRankTierName(opponentTier)})`);
+        // Checking underdog: Winner(${playerUsername}): ${playerRating} ELO (${getRankTierName(playerTier)}) vs Loser(${opponent}): ${opponentRating} ELO (${getRankTierName(opponentTier)})
         
         // For underdog victory, winner must be from a lower rank tier than loser
         if (opponentTier > playerTier) {
-            console.log(`🎯 UNDERDOG VICTORY: ${getRankTierName(playerTier)} beat ${getRankTierName(opponentTier)}!`);
+            // UNDERDOG VICTORY: ${getRankTierName(playerTier)} beat ${getRankTierName(opponentTier)}!
             return true;
         }
         
-        console.log(`❌ Not underdog: ${getRankTierName(playerTier)} vs ${getRankTierName(opponentTier)}`);
+        // Not underdog: ${getRankTierName(playerTier)} vs ${getRankTierName(opponentTier)}
         return false;
     }
 
@@ -1044,7 +1044,7 @@ class RibbonSystem {
         
         // For underdog victory, winner must be from a lower rank tier than loser
         if (opponentTier > playerTier) {
-            console.log(`🎯 UNDERDOG: ${getRankTierName(playerTier)}(${playerRating}) beat ${getRankTierName(opponentTier)}(${opponentRating})`);
+            // UNDERDOG: ${getRankTierName(playerTier)}(${playerRating}) beat ${getRankTierName(opponentTier)}(${opponentRating})
             return true;
         }
         
@@ -1075,12 +1075,12 @@ class RibbonSystem {
         });
         
         // Bulk load ALL player data once instead of individual lookups
-        console.log(`🚀 Bulk loading ${opponents.size} player records for underdog calculations...`);
+        // Bulk loading ${opponents.size} player records for underdog calculations...
         const allPlayerData = await this.bulkLoadPlayerData([...opponents, playerUsername], ladder);
         const currentPlayerData = allPlayerData.get(playerUsername);
         
         if (!currentPlayerData) {
-            console.log(`⚠️ No current player data found for ${playerUsername}`);
+            // No current player data found for ${playerUsername}
         }
         
         // Now process all matches with cached data (MUCH faster)
@@ -1113,7 +1113,7 @@ class RibbonSystem {
             }
         });
 
-        console.log(`🎯 Found ${stats.underdogWins} underdog victories for ${playerUsername}`);
+        // Found ${stats.underdogWins} underdog victories for ${playerUsername}
 
         const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
 
@@ -1212,7 +1212,7 @@ class RibbonSystem {
                 const hiatusSnapshot = await getDocs(hiatusQuery);
                 
                 if (hiatusSnapshot.empty) {
-                    console.log(`❌ No player data found for ${playerUsername} in ${playersCollection} or ${hiatusCollection}`);
+                    // No player data found for ${playerUsername} in ${playersCollection} or playerHiatus
                     return null;
                 }
                 
@@ -1224,7 +1224,7 @@ class RibbonSystem {
                     playerData.rating = playerData.eloRating;
                 }
                 
-                console.log(`✅ Found player data for ${playerUsername} in hiatus: ELO ${playerData.eloRating}, Position ${playerData.position}`);
+                // Found player data for ${playerUsername} in hiatus: ELO ${playerData.eloRating}, Position ${playerData.position}
                 return playerData;
             }
             
@@ -1235,7 +1235,7 @@ class RibbonSystem {
                 playerData.rating = playerData.eloRating;
             }
             
-            console.log(`✅ Found player data for ${playerUsername}: ELO ${playerData.eloRating}, Position ${playerData.position}`);
+            // Found player data for ${playerUsername}: ELO ${playerData.eloRating}, Position ${playerData.position}
             return playerData;
         } catch (error) {
             console.error(`Error getting player data for ${playerUsername}:`, error);
@@ -1336,7 +1336,7 @@ class RibbonSystem {
     evaluateBrickWallRibbonFromWinRate(winRate, currentRibbons, totalMatches) {
         // Require at least 50 matches before awarding Brick Wall ribbon
         if (totalMatches < 50) {
-            console.log(`⚠️ Brick Wall ribbon requires 50+ matches (player has ${totalMatches})`);
+            // Brick Wall ribbon requires 50+ matches (player has ${totalMatches})
             return null;
         }
 
@@ -1346,7 +1346,7 @@ class RibbonSystem {
         const targetLevel = newLevel === -1 ? levels.length : newLevel;
 
         if (targetLevel > current.level) {
-            console.log(`🏆 Brick Wall ribbon awarded: ${winRate.toFixed(1)}% win rate over ${totalMatches} matches`);
+            // Brick Wall ribbon awarded: ${winRate.toFixed(1)}% win rate over ${totalMatches} matches
             return { 
                 level: targetLevel, 
                 awardedAt: new Date(),
@@ -1386,7 +1386,7 @@ class RibbonSystem {
         }
 
         if (targetLevel > current.level) {
-            console.log(`🏆 Underdog Ribbon upgrade: Level ${current.level} → ${targetLevel} (${underdogWins} underdog wins)`);
+            // Underdog Ribbon upgrade: Level ${current.level} → ${targetLevel} (${underdogWins} underdog wins)
             return { level: targetLevel, awardedAt: new Date() };
         }
         return null;
@@ -1478,7 +1478,7 @@ export async function checkAndAwardTopRankRibbon(playerUsername, ladder = 'D1') 
             
             if (Object.keys(newRibbons).length > 0) {
                 await ribbonSystem.savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder);
-                console.log(`🎖️ Awarded Top Rank ribbon(s) to ${playerUsername}:`, Object.keys(newRibbons));
+                // Awarded Top Rank ribbon(s) to ${playerUsername}: ${Object.keys(newRibbons)}
                 return newRibbons;
             }
         }

@@ -350,7 +350,7 @@ function getUsernameColor(elo, stats) {
     
     if (elo >= 1000 && stats.winRate >= 80 && stats.totalMatches >= 20) return '#50C878'; // Emerald
     if (elo >= 700) return '#FFD700'; // Gold
-    if (elo >= 500) return '#C0C0C0'; // Silver
+    if (elo >= 500) return '#b9f1fc'; // Silver
     if (elo >= 200) return '#CD7F32'; // Bronze
     return '#DC143C'; // Default unranked
 }
@@ -1014,7 +1014,7 @@ async function findBestOpponent(currentLadder = 'd1') {
                 } else if (teammateElo >= 1800) {
                     usernameColor = '#FFD700'; // Gold
                 } else if (teammateElo >= 1600) {
-                    usernameColor = '#C0C0C0'; // Silver
+                    usernameColor = '#b9f1fc'; // Silver
                 } else if (teammateElo >= 1400) {
                     usernameColor = '#CD7F32'; // Bronze
                 } else {
@@ -1117,7 +1117,7 @@ async function findBestOpponent(currentLadder = 'd1') {
             } else if (opponentElo >= 700) {
                 usernameColor = '#FFD700'; // Gold (700+)
             } else if (opponentElo >= 500) {
-                usernameColor = '#C0C0C0'; // Silver (500-700)
+                usernameColor = '#b9f1fc'; // Silver (500-700)
             } else if (opponentElo >= 200) {
                 usernameColor = '#CD7F32'; // Bronze (200-500)
             }
