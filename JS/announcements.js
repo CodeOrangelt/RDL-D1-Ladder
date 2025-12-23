@@ -3,14 +3,14 @@
 // Configuration
 const ANNOUNCEMENT = {
     id: "beta-release-2.1", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 2.1 - Profile & Ranking Updates",
+    title: "Redux Descent League Beta Release 2.1 - Profile & Rank UI Updates",
     content: `
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS & IMPROVEMENTS:</p>
             <ul style="list-style: none; padding-left: 20px;">
                 <li style="color:#75C35C;">• New (Legacy technically) Unified Silver Color!</li>
                 <li style="color:#75C35C;">• Implemented 5+ matches = Bronze rule (automatic Bronze rank after 5 matches, regardless of ELO)</li>
                 <li style="color:#75C35C;">• Added scorecard on profile (adjusts for "match inflation")</li>
-                <li style="color:#75C35C;">• Fixed profile container styling to show rank-based borders in all states</li>
+                <li style="color:#75C35C;">• Fixed profile container styling to show rank-based borders</li>
                 <li style="color:#75C35C;">• Improved profile loading performance</li>
             </ul>
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUG FIXES:</p>
