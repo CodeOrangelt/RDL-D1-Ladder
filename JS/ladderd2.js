@@ -283,6 +283,12 @@ async function updateLadderDisplayD2(ladderData, matchStatsBatch = null) {
         fragment.appendChild(row);
     });
 
+    // Add spacer row for Toggle ELO button gap
+    const spacerRow = document.createElement('tr');
+    spacerRow.style.height = '60px';
+    spacerRow.innerHTML = '<td colspan="9"></td>';
+    fragment.appendChild(spacerRow);
+
     tbody.innerHTML = '';
     tbody.appendChild(fragment);
 

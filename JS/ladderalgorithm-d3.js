@@ -117,6 +117,9 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
 
         console.log('D3 ELO ratings updated successfully');
 
+        // Create shared timestamp for both ELO history entries
+        const matchTimestamp = serverTimestamp();
+
         // Create ELO history entries using D3-specific function - SAME PATTERN AS D1/D2
         await Promise.all([
             recordEloChangeD3({
@@ -129,7 +132,7 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
                 newPosition: newWinnerPosition,
                 isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
-                timestamp: serverTimestamp()
+                timestamp: matchTimestamp  // ✅ SHARED timestamp
             }),
             recordEloChangeD3({
                 playerId: loserId,
@@ -141,7 +144,7 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
                 newPosition: newLoserPosition,
                 isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
-                timestamp: serverTimestamp()
+                timestamp: matchTimestamp  // ✅ SHARED timestamp
             })
         ]);
 

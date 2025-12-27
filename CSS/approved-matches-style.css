@@ -602,6 +602,28 @@ body {
     white-space: nowrap;
 }
 
+/* ELO change display */
+.player-elo-change {
+    font-size: 0.75em;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: none; /* Hidden by default, shown via JS when data available */
+    white-space: nowrap;
+}
+
+.player-elo-change.positive {
+    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.15);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.player-elo-change.negative {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.15);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
 /* For winner, put suicides to the right of score */
 .player.winner .player-score-container {
     flex-direction: row; /* Score first, then suicides */

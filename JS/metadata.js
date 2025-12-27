@@ -46,13 +46,26 @@ async function generateProfileMetadata(username, ladder = 'D1') {
         
         const playerData = querySnapshot.docs[0].data();
         const eloRating = playerData.eloRating || 0;
+        const matchCount = playerData.matches || playerData.matchesPlayed || 0;
+        const wins = playerData.wins || 0;
+        const winRate = matchCount > 0 ? (wins / matchCount * 100) : 0;
         
-        // Get rank
+        // Get rank using universal thresholds
+        // Unranked = less than 5 matches on record
         let rank = 'Unranked';
-        if (eloRating >= 2000) rank = 'Emerald';
-        else if (eloRating >= 1800) rank = 'Gold';
-        else if (eloRating >= 1600) rank = 'Silver';
-        else if (eloRating >= 1400) rank = 'Bronze';
+        if (matchCount < 5) {
+            rank = 'Unranked';
+        } else if (matchCount >= 5 && eloRating < 500) {
+            rank = 'Bronze';
+        } else if (eloRating < 700) {
+            rank = 'Silver';
+        } else if (eloRating < 1000) {
+            rank = 'Gold';
+        } else if (eloRating >= 1000 && winRate >= 80 && matchCount >= 20) {
+            rank = 'Emerald';
+        } else {
+            rank = 'Gold';
+        }
         
         // Generate dynamic metadata
         const title = `${username} - ${rank} Player | ${ladder} Ladder | RDL`;

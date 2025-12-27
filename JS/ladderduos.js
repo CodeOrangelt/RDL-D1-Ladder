@@ -460,6 +460,9 @@ async function updateLadderDisplayDuos(ladderData) {
         });
     }
 
+    // Add spacer row for Toggle ELO button gap
+    rowsHtml += `<tr style="height: 60px;"><td colspan="9"></td></tr>`;
+
     tbody.innerHTML = rowsHtml;
 }
 

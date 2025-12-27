@@ -137,7 +137,10 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
 
         console.log('ELO ratings updated successfully');
 
-        // Create ELO history entries
+        // Create shared timestamp for both ELO history entries
+        const matchTimestamp = serverTimestamp();
+
+        // Create ELO history entries with shared timestamp
         await Promise.all([
             recordEloChange({
                 playerId: winnerId,
@@ -149,7 +152,7 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 newPosition: newWinnerPosition,
                 isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
-                timestamp: serverTimestamp()
+                timestamp: matchTimestamp  // ✅ SHARED timestamp
             }),
             recordEloChange({
                 playerId: loserId,
@@ -161,7 +164,7 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 newPosition: newLoserPosition,
                 isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
-                timestamp: serverTimestamp()
+                timestamp: matchTimestamp  // ✅ SHARED timestamp
             })
         ]);
 
@@ -243,8 +246,43 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
+        
+        // Get current ELO and match stats before updating
+        const winnerData = winnerDocs.docs[0].data();
+        const loserData = loserDocs.docs[0].data();
+        const winnerOldElo = winnerData.eloRating || 200;
+        const loserOldElo = loserData.eloRating || 200;
+        
+        // Calculate match counts at time of match (BEFORE this match)
+        const winnerMatchCount = (winnerData.wins || 0) + (winnerData.losses || 0);
+        const loserMatchCount = (loserData.wins || 0) + (loserData.losses || 0);
+        
+        // Calculate win rates at time of match (BEFORE this match)
+        const winnerWinRate = winnerMatchCount > 0 ? ((winnerData.wins || 0) / winnerMatchCount * 100) : 0;
+        const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
+        
         // Update ELO ratings
         await updateEloRatings(winnerId, loserId, reportId);
+        
+        // Get new ELO after updating
+        const [updatedWinnerDoc, updatedLoserDoc] = await Promise.all([
+            getDoc(doc(db, 'players', winnerId)),
+            getDoc(doc(db, 'players', loserId))
+        ]);
+        const winnerNewElo = updatedWinnerDoc.data().eloRating;
+        const loserNewElo = updatedLoserDoc.data().eloRating;
+        
+        // Add ELO changes and rank data to the match document
+        updatedReportData.winnerOldElo = winnerOldElo;
+        updatedReportData.winnerNewElo = winnerNewElo;
+        updatedReportData.winnerEloChange = winnerNewElo - winnerOldElo;
+        updatedReportData.winnerMatchCount = winnerMatchCount;
+        updatedReportData.winnerWinRate = winnerWinRate;
+        updatedReportData.loserOldElo = loserOldElo;
+        updatedReportData.loserNewElo = loserNewElo;
+        updatedReportData.loserEloChange = loserNewElo - loserOldElo;
+        updatedReportData.loserMatchCount = loserMatchCount;
+        updatedReportData.loserWinRate = loserWinRate;
 
         // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
         try {

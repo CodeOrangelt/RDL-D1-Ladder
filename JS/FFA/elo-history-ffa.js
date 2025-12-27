@@ -63,11 +63,13 @@ export async function recordEloChangeFFA({
         const historyEntry = {
             player: playerId,
             username: username,
+            playerUsername: username,        // ✅ NEW: Compatibility field
             previousElo: previousElo,
             newElo: newElo,
             change: newElo - previousElo,
             matchId: matchId,
             matchType: 'FFA',
+            gameMode: 'FFA',                 // ✅ NEW: Ladder identifier
             placement: placement,
             totalPlayers: totalPlayers,
             opponentsSummary: opponentsSummary,

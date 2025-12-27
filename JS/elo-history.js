@@ -12,14 +12,7 @@ import {
     getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
-
-// Add these threshold constants at the top of the file
-const ELO_THRESHOLDS = [
-    { name: 'Gold', elo: 1800 },
-    { name: 'Silver', elo: 1600 },
-    { name: 'Bronze', elo: 1400 },
-    { name: 'Unranked', elo: 1200 }
-];
+import { getRankStyle } from './ranks.js';
 
 async function getUsernameById(userId) {
     try {
@@ -43,38 +36,46 @@ export async function recordEloChange({
     newPosition,
     isPromotion = false,
     isDemotion = false,
+    matchId,
     timestamp
 }) {
     try {
         const historyRef = doc(collection(db, 'eloHistory'));
+        
+        // Fetch username to store alongside userId for faster lookups
+        const username = await getUsernameById(playerId);
+        const opponentUsername = opponentId ? await getUsernameById(opponentId) : null;
         
         // Determine the type and rank
         let type = 'match';
         if (isPromotion) type = 'promotion';
         if (isDemotion) type = 'demotion';
         
-        // Calculate rank based on new ELO
-        let rankAchieved = 'Unranked';
-        if (newElo >= 2100) rankAchieved = 'Emerald';
-        else if (newElo >= 1800) rankAchieved = 'Gold';
-        else if (newElo >= 1600) rankAchieved = 'Silver';
-        else if (newElo >= 1400) rankAchieved = 'Bronze';
+        // Calculate rank based on new ELO using universal thresholds
+        // Note: We don't have match count/win rate here, so Emerald won't be granted in history
+        const rank = getRankStyle(newElo, 0, 0);
+        const rankAchieved = rank.name;
 
         await setDoc(historyRef, {
             type,
             player: playerId,
+            username: username,              // ✅ NEW: Direct username for fast lookups
+            playerUsername: username,        // ✅ NEW: Compatibility field
             opponent: opponentId,
+            opponentUsername: opponentUsername, // ✅ NEW: Opponent username
             previousElo,
             newElo,
             change: newElo - previousElo,
             matchResult,
             previousPosition,
             newPosition,
-            rankAchieved, // Make sure this is set for both promotions and demotions
+            rankAchieved,
+            gameMode: 'D1',                 // ✅ NEW: Ladder identifier
+            matchId: matchId,               // ✅ NEW: Link to match document
             timestamp
         });
 
-        console.log(`ELO history recorded for ${playerId}`);
+        console.log(`ELO history recorded for ${username} (${playerId})`);
         return true;
     } catch (error) {
         console.error('Error recording ELO history:', error);

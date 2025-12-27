@@ -409,23 +409,24 @@ async function getPlayersLastEloChanges(usernames) {
 
         // Process entries and group by username
         const entriesByUsername = new Map();
+        const entriesByMatchId = new Map(); // ✅ NEW: Track entries by matchId
         let matchCount = 0;
 
         eloSnapshot.forEach(doc => {
             const entry = doc.data();
             let username = null;
 
-            // First try: Direct user ID match in the player field
-            if (entry.player && userIdToUsername.has(entry.player)) {
-                username = userIdToUsername.get(entry.player);
-            }
-            // Second try: Look for username field in case some entries use that
-            else if (entry.username && usernameToUserId.has(entry.username.toLowerCase())) {
+            // ✅ IMPROVED: Try username field FIRST (new format)
+            if (entry.username && usernameToUserId.has(entry.username.toLowerCase())) {
                 username = entry.username;
             }
-            // Third try: Try playerUsername field
+            // Try playerUsername field (new format)
             else if (entry.playerUsername && usernameToUserId.has(entry.playerUsername.toLowerCase())) {
                 username = entry.playerUsername;
+            }
+            // Fallback: Direct user ID match in the player field (old format)
+            else if (entry.player && userIdToUsername.has(entry.player)) {
+                username = userIdToUsername.get(entry.player);
             }
 
             if (username && usernames.includes(username)) {
@@ -435,10 +436,53 @@ async function getPlayersLastEloChanges(usernames) {
                     entriesByUsername.set(username, []);
                 }
 
-                entriesByUsername.get(username).push({
+                const entryData = {
                     ...entry,
-                    timestamp: entry.timestamp?.seconds || 0
-                });
+                    timestamp: entry.timestamp?.seconds || 0,
+                    resolvedUsername: username  // Store resolved username
+                };
+
+                entriesByUsername.get(username).push(entryData);
+
+                // ✅ NEW: Also index by matchId to link both players
+                if (entry.matchId) {
+                    if (!entriesByMatchId.has(entry.matchId)) {
+                        entriesByMatchId.set(entry.matchId, []);
+                    }
+                    entriesByMatchId.get(entry.matchId).push(entryData);
+                }
+            }
+        });
+
+        // ✅ NEW: For players without entries, check if their opponent has an entry
+        // and we can derive their change from the same match
+        usernames.forEach(username => {
+            if (!entriesByUsername.has(username)) {
+                const userId = usernameToUserId.get(username.toLowerCase());
+                if (userId) {
+                    // Look through matchId-grouped entries
+                    for (const [matchId, matchEntries] of entriesByMatchId) {
+                        const relatedEntry = matchEntries.find(e => 
+                            e.opponent === userId || 
+                            (e.opponentUsername && e.opponentUsername.toLowerCase() === username.toLowerCase())
+                        );
+                        if (relatedEntry) {
+                            // Found the opponent's entry for a match involving this player
+                            // The other entry in this matchId group should be this player's
+                            const playerEntry = matchEntries.find(e => 
+                                e.player === userId || 
+                                (e.username && e.username.toLowerCase() === username.toLowerCase())
+                            );
+                            if (playerEntry) {
+                                if (!entriesByUsername.has(username)) {
+                                    entriesByUsername.set(username, []);
+                                }
+                                entriesByUsername.get(username).push(playerEntry);
+                            }
+                            break; // Found the most recent match
+                        }
+                    }
+                }
             }
         });
 
@@ -612,6 +656,12 @@ function renderBasicLadder(tbody, ladderData, matchStatsBatch) {
         const row = createBasicPlayerRow(player, stats);
         fragment.appendChild(row);
     });
+    
+    // Add spacer row for Toggle ELO button gap
+    const spacerRow = document.createElement('tr');
+    spacerRow.style.height = '60px';
+    spacerRow.innerHTML = '<td colspan="9"></td>';
+    fragment.appendChild(spacerRow);
     
     tbody.innerHTML = '';
     tbody.appendChild(fragment);

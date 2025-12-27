@@ -14,6 +14,8 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+import { getRankStyle } from './ranks.js';
+
 const mutedUsers = [
    //unmuted 10/28/2025, forgot to unmute, but no mention from player. 
    // { username: "Daz", muteFromDate: new Date("2025-07-02").getTime() }, // muted for 60 days. Varibale, depends on Behavior.
@@ -109,13 +111,9 @@ function cachePage(key, data) {
     }
 }
 
-function getEloColor(elo) {
-  const e = Number(elo);
-  if (e >= 1000) return "#50C878";      // Emerald
-  else if (e >= 700) return "#FFD700";  // Gold
-  else if (e >= 500) return "#C0C0C0";  // Silver
-  else if (e >= 1) return "#CD7F32";    // Bronze (includes 1-199, players with matches)
-  else return "#DC143C";                 // Unranked (Crimson) - only ELO 0
+function getEloColor(elo, matchCount = null, winRate = 0) {
+  const rank = getRankStyle(Number(elo), matchCount, winRate);
+  return rank.color;
 }
 
 function formatDate(timestamp, includeTime = false) {
@@ -1032,13 +1030,14 @@ async function renderMatchCards(docsData) {
         commentsMap[filteredData[index].id] = comments || [];
     });
 
-    filteredData.forEach(match => {
+    // Render cards sequentially to ensure ELO changes appear immediately
+    for (const match of filteredData) {
         const cardClone = template.content.cloneNode(true);
         const wrapper = cardClone.querySelector('.match-display-wrapper');
         const card = cardClone.querySelector('.match-card');
 
         // Add winner rank border class to the card
-        const winnerRankClass = getEloRankClass(match.winnerOldElo);
+        const winnerRankClass = getEloRankClass(match.winnerOldElo, match.winnerMatchCount, match.winnerWinRate);
         card.classList.add(`winner-${winnerRankClass}`);
 
         // Populate match card as before
@@ -1047,7 +1046,7 @@ async function renderMatchCards(docsData) {
 
         const winnerNameEl = card.querySelector('.player.winner .player-name');
         winnerNameEl.textContent = match.winnerUsername || 'Unknown';
-        winnerNameEl.style.color = getEloColor(match.winnerOldElo);
+        winnerNameEl.style.color = getEloColor(match.winnerOldElo, match.winnerMatchCount, match.winnerWinRate);
         card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
         
         // Add winner suicides
@@ -1057,13 +1056,16 @@ async function renderMatchCards(docsData) {
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.textContent = match.loserUsername || 'Unknown';
-        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0);
+        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, match.loserMatchCount, match.loserWinRate);
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
         
         // Add loser suicides
         const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
         const loserSuicides = match.loserSuicides || 0;
         loserSuicidesEl.textContent = `S: ${loserSuicides}`;
+
+        // Display ELO changes before appending to DOM
+        await displayEloChanges(card, match);
 
         // Add subgame type display
         const subgameEl = card.querySelector('.match-subgame');
@@ -1293,7 +1295,89 @@ async function renderMatchCards(docsData) {
         }
 
         container.appendChild(cardClone);
-    });
+    }
+}
+
+/**
+ * Display ELO changes for both players on a match card
+ * PRIMARY: Use match document fields (most reliable)
+ * FALLBACK: Query eloHistory if fields missing (backward compatibility)
+ */
+async function displayEloChanges(card, match) {
+    const winnerEloChangeEl = card.querySelector('.player.winner .player-elo-change');
+    const loserEloChangeEl = card.querySelector('.player.loser .player-elo-change');
+    
+    if (!winnerEloChangeEl || !loserEloChangeEl) return;
+    
+    let winnerChange = null;
+    let loserChange = null;
+    
+    // Try to get ELO changes from match document fields (most reliable)
+    if (match.winnerEloChange !== undefined) {
+        winnerChange = match.winnerEloChange;
+    } else if (match.winnerNewElo !== undefined && match.winnerOldElo !== undefined) {
+        winnerChange = match.winnerNewElo - match.winnerOldElo;
+    }
+    
+    if (match.loserEloChange !== undefined) {
+        loserChange = match.loserEloChange;
+    } else if (match.loserNewElo !== undefined && (match.loserOldElo || match.losersOldElo) !== undefined) {
+        const loserOldElo = match.loserOldElo || match.losersOldElo;
+        loserChange = match.loserNewElo - loserOldElo;
+    }
+    
+    // If we don't have both changes, try querying eloHistory (backward compatibility)
+    if (winnerChange === null || loserChange === null) {
+        try {
+            const mode = previewState.currentMode;
+            const collectionName = mode === 'D1' ? 'eloHistory' : 
+                                  mode === 'D2' ? 'eloHistoryD2' : 
+                                  mode === 'D3' ? 'eloHistoryD3' : 'eloHistory';
+            
+            const historyQuery = query(
+                collection(window.db, collectionName),
+                where('matchId', '==', match.id),
+                limit(2)
+            );
+            const historySnapshot = await getDocs(historyQuery);
+            
+            historySnapshot.forEach(doc => {
+                const entry = doc.data();
+                const username = entry.username || entry.playerUsername;
+                const change = entry.change || (entry.newElo - entry.previousElo);
+                
+                if (username === match.winnerUsername && winnerChange === null) {
+                    winnerChange = change;
+                } else if (username === match.loserUsername && loserChange === null) {
+                    loserChange = change;
+                }
+            });
+        } catch (error) {
+            // Silently fail for old matches without eloHistory
+        }
+    }
+    
+    // Display winner ELO change
+    if (winnerChange !== null && !isNaN(winnerChange)) {
+        const rounded = Math.round(winnerChange);
+        const sign = rounded >= 0 ? '+' : '';
+        winnerEloChangeEl.textContent = `${sign}${rounded}`;
+        winnerEloChangeEl.className = 'player-elo-change ' + (rounded >= 0 ? 'positive' : 'negative');
+        winnerEloChangeEl.style.display = 'inline-block';
+    } else {
+        winnerEloChangeEl.style.display = 'none';
+    }
+    
+    // Display loser ELO change
+    if (loserChange !== null && !isNaN(loserChange)) {
+        const rounded = Math.round(loserChange);
+        const sign = rounded >= 0 ? '+' : '';
+        loserEloChangeEl.textContent = `${sign}${rounded}`;
+        loserEloChangeEl.className = 'player-elo-change ' + (rounded >= 0 ? 'positive' : 'negative');
+        loserEloChangeEl.style.display = 'inline-block';
+    } else {
+        loserEloChangeEl.style.display = 'none';
+    }
 }
 
 function getSubgameClass(subgameType) {
@@ -1838,13 +1922,9 @@ async function submitCommentOrDemo(event) {
     }
 }
 
-function getEloRankClass(elo) {
-  const e = Number(elo);
-  if (e >= 1000) return "emerald";      // 1000+
-  else if (e >= 700) return "gold";     // 700-999
-  else if (e >= 500) return "silver";   // 500-699
-  else if (e >= 1) return "bronze";     // 1-499 (players with matches)
-  else return "unranked";                // 0 (no matches played)
+function getEloRankClass(elo, matchCount = null, winRate = 0) {
+  const rank = getRankStyle(Number(elo), matchCount, winRate);
+  return rank.name.toLowerCase();
 }
 
 function showPreviewCommentPopup(commentText, username, usernameColor = "#fff") {

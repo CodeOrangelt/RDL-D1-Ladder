@@ -6,6 +6,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
 
+import { getRankStyle } from './ranks.js';
+
 class ELOCalculator {
     constructor() {
         this.currentLadder = 'D1';
@@ -215,20 +217,14 @@ ${result.winnerChange < 5 ? 'Low ELO gain.' : ''}
         document.getElementById('calculation-details').style.display = 'block';
     }
 
-    getELOColor(elo) {
-        if (elo >= 2000) return '#50C878';      // Emerald
-        else if (elo >= 1800) return '#FFD700'; // Gold
-        else if (elo >= 1600) return '#C0C0C0'; // Silver
-        else if (elo >= 1400) return '#CD7F32'; // Bronze
-        else return '#808080';                  // Unranked/Default
+    getELOColor(elo, matchCount = null, winRate = 0) {
+        const rank = getRankStyle(Number(elo), matchCount, winRate);
+        return rank.color;
     }
 
-    getELORankClass(elo) {
-        if (elo >= 2000) return 'emerald';
-        else if (elo >= 1800) return 'gold';
-        else if (elo >= 1600) return 'silver';
-        else if (elo >= 1400) return 'bronze';
-        else return 'unranked';
+    getELORankClass(elo, matchCount = null, winRate = 0) {
+        const rank = getRankStyle(Number(elo), matchCount, winRate);
+        return rank.name.toLowerCase();
     }
 }
 
