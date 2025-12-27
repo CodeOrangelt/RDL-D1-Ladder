@@ -2014,6 +2014,12 @@ export function setupPreviewEventListeners() {
             previewState.currentMode = 'D1';
             updatePreviewLadderModeUI();
             loadRecentMatchesPreview('current');
+            
+            // If notable matches is active, refresh it
+            const notableSection = document.getElementById('notable-matches-section');
+            if (notableSection && notableSection.style.display !== 'none') {
+                generateNotableMatches();
+            }
         }
     });
     d2Button.addEventListener('click', () => {
@@ -2021,6 +2027,12 @@ export function setupPreviewEventListeners() {
             previewState.currentMode = 'D2';
             updatePreviewLadderModeUI();
             loadRecentMatchesPreview('current');
+            
+            // If notable matches is active, refresh it
+            const notableSection = document.getElementById('notable-matches-section');
+            if (notableSection && notableSection.style.display !== 'none') {
+                generateNotableMatches();
+            }
         }
     });
     d3Button.addEventListener('click', () => {
@@ -2028,6 +2040,12 @@ export function setupPreviewEventListeners() {
             previewState.currentMode = 'D3';
             updatePreviewLadderModeUI();
             loadRecentMatchesPreview('current');
+            
+            // If notable matches is active, refresh it
+            const notableSection = document.getElementById('notable-matches-section');
+            if (notableSection && notableSection.style.display !== 'none') {
+                generateNotableMatches();
+            }
         }
     });
     
@@ -2038,6 +2056,12 @@ export function setupPreviewEventListeners() {
                 previewState.currentMode = 'FFA';
                 updatePreviewLadderModeUI();
                 loadRecentMatchesPreview('current');
+                
+                // If notable matches is active, refresh it
+                const notableSection = document.getElementById('notable-matches-section');
+                if (notableSection && notableSection.style.display !== 'none') {
+                    generateNotableMatches();
+                }
             }
         });
     }
@@ -2048,6 +2072,32 @@ export function setupPreviewEventListeners() {
             const isVisible = enhancedFilterSection.style.display !== 'none';
             enhancedFilterSection.style.display = isVisible ? 'none' : 'block';
             filterToggleBtn.classList.toggle('active', !isVisible);
+        });
+    }
+
+    // Notable matches toggle
+    const summaryToggleBtn = document.getElementById('summary-toggle-button');
+    const notableMatchesSection = document.getElementById('notable-matches-section');
+    const regularMatchesContainer = document.getElementById('recent-matches-preview');
+    
+    if (summaryToggleBtn && notableMatchesSection && regularMatchesContainer) {
+        summaryToggleBtn.addEventListener('click', () => {
+            const isVisible = notableMatchesSection.style.display !== 'none';
+            
+            if (isVisible) {
+                // Hide notable matches, show regular matches
+                notableMatchesSection.style.display = 'none';
+                regularMatchesContainer.style.display = 'block';
+                summaryToggleBtn.classList.remove('active');
+            } else {
+                // Show notable matches, hide regular matches
+                notableMatchesSection.style.display = 'block';
+                regularMatchesContainer.style.display = 'none';
+                summaryToggleBtn.classList.add('active');
+                
+                // Generate notable matches
+                generateNotableMatches();
+            }
         });
     }
 
@@ -2118,3 +2168,555 @@ export function setupPreviewEventListeners() {
 window.showAddCommentPopup = showAddCommentPopup;
 window.closeAddCommentPopup = closeAddCommentPopup;
 window.submitComment = submitComment;
+
+// ===================================
+// NOTABLE MATCHES FUNCTIONS
+// ===================================
+
+export async function generateNotableMatches() {
+  const contentEl = document.getElementById('notable-matches-content');
+  const periodText = document.getElementById('summary-period-text');
+  
+  if (!contentEl) return;
+  
+  try {
+    contentEl.innerHTML = '<div class="summary-loading">Finding interesting matches...</div>';
+    
+    // Get matches from the last 3 months
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    const threeMonthsAgoTimestamp = Timestamp.fromDate(threeMonthsAgo);
+    
+    // Use existing pattern for collection name
+    const collectionName = previewState.currentMode === 'FFA' ? 'approvedMatchesFFA' :
+                          previewState.currentMode === 'D2' ? 'approvedMatchesD2' :
+                          previewState.currentMode === 'D3' ? 'approvedMatchesD3' :
+                          'approvedMatches';
+    const matchesRef = collection(window.db, collectionName);
+    const q = query(
+      matchesRef,
+      where('createdAt', '>=', threeMonthsAgoTimestamp),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const snapshot = await getDocs(q);
+    const allMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    if (allMatches.length === 0) {
+      contentEl.innerHTML = '<div class="summary-empty">No matches found in the past 3 months.</div>';
+      return;
+    }
+    
+    // Find notable matches
+    const notableMatches = findNotableMatches(allMatches);
+    
+    if (notableMatches.length === 0) {
+      contentEl.innerHTML = '<div class="summary-empty">No notable matches found.</div>';
+      return;
+    }
+    
+    // Update period text
+    if (periodText) {
+      periodText.textContent = `(${notableMatches.length} notable matches from the last 3 months.)`;
+    }
+    
+    // Render match cards
+    await renderNotableMatchCards(notableMatches, contentEl);
+    
+  } catch (error) {
+    console.error('Error generating notable matches:', error);
+    contentEl.innerHTML = '<div class="summary-empty">Unable to load notable matches.</div>';
+  }
+}
+
+function analyzeMatches(matches) {
+  const playerStats = {};
+  const upsets = [];
+  
+  matches.forEach(match => {
+    const winner = match.winnerUsername;
+    const loser = match.loserUsername;
+    const winnerElo = match.winnerPreviousElo || match.winnerRating || 0;
+    const loserElo = match.loserPreviousElo || match.loserRating || 0;
+    const eloChange = Math.abs((match.winnerNewElo || winnerElo) - winnerElo);
+    
+    // Track player stats
+    if (!playerStats[winner]) {
+      playerStats[winner] = { wins: 0, losses: 0, eloGain: 0, streak: 0, currentStreak: 0, matches: [] };
+    }
+    if (!playerStats[loser]) {
+      playerStats[loser] = { wins: 0, losses: 0, eloGain: 0, streak: 0, currentStreak: 0, matches: [] };
+    }
+    
+    playerStats[winner].wins++;
+    playerStats[winner].eloGain += eloChange;
+    playerStats[winner].currentStreak++;
+    playerStats[winner].streak = Math.max(playerStats[winner].streak, playerStats[winner].currentStreak);
+    playerStats[winner].matches.push({ result: 'win', match });
+    
+    playerStats[loser].losses++;
+    playerStats[loser].eloGain -= eloChange;
+    playerStats[loser].currentStreak = 0;
+    playerStats[loser].matches.push({ result: 'loss', match });
+    
+    // Detect upsets (lower ELO beating higher ELO)
+    const eloDiff = loserElo - winnerElo;
+    if (eloDiff >= 100) {
+      upsets.push({
+        winner,
+        loser,
+        map: match.map,
+        eloDiff,
+        date: match.createdAt
+      });
+    }
+  });
+  
+  // Calculate rising stars (biggest ELO gains)
+  const risingStars = Object.entries(playerStats)
+    .filter(([_, stats]) => stats.wins > 0)
+    .map(([player, stats]) => ({ player, eloGain: stats.eloGain, wins: stats.wins, losses: stats.losses }))
+    .sort((a, b) => b.eloGain - a.eloGain)
+    .slice(0, 5);
+  
+  // Find hot streaks
+  const hotStreaks = Object.entries(playerStats)
+    .filter(([_, stats]) => stats.streak >= 3)
+    .map(([player, stats]) => ({ player, streak: stats.streak, currentStreak: stats.currentStreak }))
+    .sort((a, b) => b.streak - a.streak)
+    .slice(0, 5);
+  
+  // Most active players
+  const mostActive = Object.entries(playerStats)
+    .map(([player, stats]) => ({ player, total: stats.wins + stats.losses, wins: stats.wins, losses: stats.losses }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+  
+  return {
+    upsets: upsets.sort((a, b) => b.eloDiff - a.eloDiff).slice(0, 5),
+    risingStars,
+    hotStreaks,
+    mostActive
+  };
+}
+
+function renderSummaryCards(analysis) {
+  let html = '';
+  
+  // Upsets card
+  if (analysis.upsets.length > 0) {
+    html += `
+      <div class="summary-card upsets">
+        <div class="summary-card-header">
+          <div class="summary-card-icon"><i class="fas fa-bolt"></i></div>
+          <div class="summary-card-title">Biggest Upsets</div>
+        </div>
+        <div class="summary-card-body">
+          ${analysis.upsets.map(upset => `
+            <div class="summary-item">
+              <a href="profile.html?username=${encodeURIComponent(upset.winner)}" class="summary-player">${upset.winner}</a>
+              <span class="summary-stat"> defeated </span>
+              <a href="profile.html?username=${encodeURIComponent(upset.loser)}" class="summary-player">${upset.loser}</a>
+              <br><span class="summary-stat">${upset.map}</span>
+              <span class="summary-highlight"> (${upset.eloDiff} ELO diff)</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  // Rising Stars card
+  if (analysis.risingStars.length > 0) {
+    html += `
+      <div class="summary-card rising-stars">
+        <div class="summary-card-header">
+          <div class="summary-card-icon"><i class="fas fa-arrow-trend-up"></i></div>
+          <div class="summary-card-title">Rising Stars</div>
+        </div>
+        <div class="summary-card-body">
+          ${analysis.risingStars.map(star => `
+            <div class="summary-item">
+              <a href="profile.html?username=${encodeURIComponent(star.player)}" class="summary-player">${star.player}</a>
+              <br><span class="summary-stat">${star.wins}-${star.losses} record</span>
+              <span class="summary-highlight"> +${Math.round(star.eloGain)} ELO</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  // Hot Streaks card
+  if (analysis.hotStreaks.length > 0) {
+    html += `
+      <div class="summary-card hot-streaks">
+        <div class="summary-card-header">
+          <div class="summary-card-icon"><i class="fas fa-fire"></i></div>
+          <div class="summary-card-title">Hot Streaks</div>
+        </div>
+        <div class="summary-card-body">
+          ${analysis.hotStreaks.map(streak => `
+            <div class="summary-item">
+              <a href="profile.html?username=${encodeURIComponent(streak.player)}" class="summary-player">${streak.player}</a>
+              <br><span class="summary-highlight">${streak.streak} wins in a row</span>
+              ${streak.currentStreak > 0 ? '<span class="summary-stat"> (ongoing!)</span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  // Most Active card
+  if (analysis.mostActive.length > 0) {
+    html += `
+      <div class="summary-card notable">
+        <div class="summary-card-header">
+          <div class="summary-card-icon"><i class="fas fa-trophy"></i></div>
+          <div class="summary-card-title">Most Active</div>
+        </div>
+        <div class="summary-card-body">
+          ${analysis.mostActive.map(player => `
+            <div class="summary-item">
+              <a href="profile.html?username=${encodeURIComponent(player.player)}" class="summary-player">${player.player}</a>
+              <br><span class="summary-stat">${player.total} matches</span>
+              <span class="summary-highlight"> (${player.wins}-${player.losses})</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  return html || '<div class="summary-empty">No notable activity this week.</div>';
+}
+
+// ===================================
+// NOTABLE MATCHES HELPER FUNCTIONS
+// ===================================
+
+function findNotableMatches(matches) {
+  const notable = [];
+  const playerMatchups = {}; // Track head-to-head records
+  
+  // Rare subgames list
+  const rareSubgames = ['Rematch', 'Blind Match'];
+  
+  matches.forEach(match => {
+    let score = 0;
+    const reasons = [];
+    
+    const winner = match.winnerUsername;
+    const loser = match.loserUsername;
+    const winnerElo = match.winnerPreviousElo || match.winnerOldElo || match.winnerRating || 0;
+    const loserElo = match.loserPreviousElo || match.loserOldElo || match.loserRating || match.losersOldElo || 0;
+    const eloDiff = loserElo - winnerElo;
+    const subgame = (match.subgameType || '').toLowerCase().trim();
+    const winnerScore = match.winnerScore || 0;
+    const loserScore = match.loserScore || 0;
+    
+    // 1. OVERTIME MATCHES (HIGH PRIORITY)
+    if (winnerScore > 25 || loserScore > 25) {
+      score += 15; // Very long overtime
+      reasons.push('Epic Overtime');
+    } else if (winnerScore > 20 || loserScore > 20) {
+      score += 12; // Overtime
+      reasons.push('Overtime');
+    }
+    
+    // 2. MAJOR UPSETS (HIGH PRIORITY)
+    if (eloDiff >= 300) {
+      score += 20;
+      reasons.push('Massive Upset');
+    } else if (eloDiff >= 200) {
+      score += 15;
+      reasons.push('Major Upset');
+    } else if (eloDiff >= 150) {
+      score += 10;
+      reasons.push('Big Upset');
+    } else if (eloDiff >= 100) {
+      score += 6;
+      reasons.push('Upset');
+    }
+    
+    // 3. Rare Subgames
+    if (subgame && rareSubgames.includes(subgame)) {
+      score += 10;
+      reasons.push('Rare Subgame');
+    }
+    
+    // 4. Close matches (both scores 18+)
+    if (winnerScore >= 18 && loserScore >= 18) {
+      score += 8;
+      reasons.push('Close Match');
+    }
+    
+    // 5. High ELO matches (both players above 950)
+    if (winnerElo >= 950 && loserElo >= 950) {
+      score += 7;
+      reasons.push('High Stakes');
+    }
+    
+    // 6. Track rivalries (players facing each other multiple times)
+    const matchupKey = [winner, loser].sort().join('_vs_');
+    if (!playerMatchups[matchupKey]) {
+      playerMatchups[matchupKey] = 0;
+    }
+    playerMatchups[matchupKey]++;
+    
+    if (playerMatchups[matchupKey] >= 4) {
+      score += 6;
+      reasons.push('Rivalry');
+    }
+    
+    // Add to notable if score is high enough (stricter threshold)
+    if (score >= 10) {
+      notable.push({
+        match,
+        score,
+        reasons
+      });
+    }
+  });
+  
+  // Second pass: check for nemesis scenarios
+  const playerResults = {};
+  matches.forEach(match => {
+    const winner = match.winnerUsername;
+    const loser = match.loserUsername;
+    
+    if (!playerResults[winner]) playerResults[winner] = { beaten: new Set(), lostTo: new Set() };
+    if (!playerResults[loser]) playerResults[loser] = { beaten: new Set(), lostTo: new Set() };
+    
+    playerResults[winner].beaten.add(loser);
+    playerResults[loser].lostTo.add(winner);
+  });
+  
+  notable.forEach(item => {
+    const winner = item.match.winnerUsername;
+    const loser = item.match.loserUsername;
+    
+    // Check if loser previously beat winner
+    if (playerResults[loser] && playerResults[loser].beaten.has(winner)) {
+      item.score += 8;
+      item.reasons.push('Revenge Match');
+    }
+  });
+  
+  // Sort by score and take top 15
+  notable.sort((a, b) => b.score - a.score);
+  return notable.slice(0, 15); // Return full notable objects with reasons
+}
+
+async function renderNotableMatchCards(matches, container) {
+  const template = document.getElementById('match-card-template');
+  if (!template) {
+    container.innerHTML = '<div class=\"summary-empty\">Unable to render match cards.</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  // Fetch comments for all matches
+  const commentsMap = {};
+  try {
+    const allCommentsPromises = matches.map(match => getAllCommentsForMatch(match.id));
+    const allCommentsResults = await Promise.all(allCommentsPromises);
+    allCommentsResults.forEach((comments, index) => {
+      commentsMap[matches[index].id] = comments || [];
+    });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+  }
+  
+  // Render each match card (reuse existing logic from renderMatchCards)
+  matches.forEach(notableItem => {
+    const match = notableItem.match;
+    const reasons = notableItem.reasons || [];
+    
+    const cardClone = template.content.cloneNode(true);
+    const wrapper = cardClone.querySelector('.match-display-wrapper');
+    const card = cardClone.querySelector('.match-card');
+
+    // Add winner rank border class
+    const winnerRankClass = getEloRankClass(match.winnerOldElo || match.winnerPreviousElo || 0);
+    card.classList.add(`winner-${winnerRankClass}`);
+
+    // Populate match card
+    card.querySelector('.match-map').textContent = match.mapPlayed || match.map || 'Unknown Map';
+    card.querySelector('.match-date').textContent = formatDate(match.approvedAt || match.createdAt);
+
+    const winnerNameEl = card.querySelector('.player.winner .player-name');
+    winnerNameEl.textContent = match.winnerUsername || 'Unknown';
+    winnerNameEl.style.color = getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0);
+    card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
+    
+    const winnerSuicidesEl = card.querySelector('.player.winner .player-suicides');
+    winnerSuicidesEl.textContent = `S: ${match.winnerSuicides || 0}`;
+
+    const loserNameEl = card.querySelector('.player.loser .player-name');
+    loserNameEl.textContent = match.loserUsername || 'Unknown';
+    loserNameEl.style.color = getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0);
+    card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
+    
+    const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
+    loserSuicidesEl.textContent = `S: ${match.loserSuicides || 0}`;
+
+    // Add subgame type and notable tags
+    const subgameEl = card.querySelector('.match-subgame');
+    if (subgameEl) {
+      if (match.subgameType && match.subgameType.trim() !== '') {
+        subgameEl.textContent = match.subgameType;
+        subgameEl.style.display = 'block';
+        const subgameClass = getSubgameClass(match.subgameType);
+        if (subgameClass) {
+          subgameEl.classList.add(subgameClass);
+        }
+      } else {
+        subgameEl.textContent = 'Standard Match';
+        subgameEl.style.display = 'block';
+        subgameEl.style.opacity = '0.6';
+      }
+      
+      // Add notable reasons as tags below subgame (limit to top 2 most important)
+      if (reasons.length > 0) {
+        const tagsContainer = document.createElement('div');
+        tagsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;';
+        
+        // Show max 2 tags to avoid overwhelming the card
+        reasons.slice(0, 2).forEach(reason => {
+          const tag = document.createElement('span');
+          tag.textContent = reason;
+          tag.style.cssText = 'font-size: 0.65em; padding: 1px 6px; border-radius: 2px; font-weight: 500; white-space: nowrap; opacity: 0.85;';
+          
+          // Color code tags
+          switch(reason) {
+            case 'Massive Upset':
+            case 'Major Upset':
+            case 'Big Upset':
+            case 'Upset':
+              tag.style.backgroundColor = 'rgba(255, 107, 107, 0.15)';
+              tag.style.color = '#ff6b6b';
+              tag.style.border = '1px solid rgba(255, 107, 107, 0.3)';
+              break;
+            case 'Epic Overtime':
+            case 'Overtime':
+              tag.style.backgroundColor = 'rgba(33, 150, 243, 0.15)';
+              tag.style.color = '#42A5F5';
+              tag.style.border = '1px solid rgba(33, 150, 243, 0.3)';
+              break;
+            case 'Rare Subgame':
+              tag.style.backgroundColor = 'rgba(156, 39, 176, 0.15)';
+              tag.style.color = '#ce93d8';
+              tag.style.border = '1px solid rgba(156, 39, 176, 0.3)';
+              break;
+            case 'Close Match':
+              tag.style.backgroundColor = 'rgba(76, 175, 80, 0.15)';
+              tag.style.color = '#4CAF50';
+              tag.style.border = '1px solid rgba(76, 175, 80, 0.3)';
+              break;
+            case 'Rivalry':
+            case 'Revenge Match':
+              tag.style.backgroundColor = 'rgba(255, 167, 38, 0.15)';
+              tag.style.color = '#FFA726';
+              tag.style.border = '1px solid rgba(255, 167, 38, 0.3)';
+              break;
+            case 'High Stakes':
+              tag.style.backgroundColor = 'rgba(255, 215, 0, 0.15)';
+              tag.style.color = '#FFD700';
+              tag.style.border = '1px solid rgba(255, 215, 0, 0.3)';
+              break;
+            default:
+              tag.style.backgroundColor = 'rgba(158, 158, 158, 0.15)';
+              tag.style.color = '#9e9e9e';
+              tag.style.border = '1px solid rgba(158, 158, 158, 0.3)';
+          }
+          
+          tagsContainer.appendChild(tag);
+        });
+        
+        subgameEl.parentNode.insertBefore(tagsContainer, subgameEl.nextSibling);
+      }
+    }
+
+    // Player comments
+    const winnerCommentEl = card.querySelector('.comment.winner-comment');
+    const loserCommentEl = card.querySelector('.comment.loser-comment');
+    const fullWinnerComment = match.winnerComment || "";
+    const fullLoserComment = match.loserComment || "";
+    const commentTimestamp = match.approvedAt || match.createdAt;
+
+    const filteredWinnerComment = filterComment(fullWinnerComment, match.winnerUsername, commentTimestamp);
+    const filteredLoserComment = filterComment(fullLoserComment, match.loserUsername, commentTimestamp);
+
+    winnerCommentEl.textContent = `"${truncateComment(fullWinnerComment)}"`;
+    loserCommentEl.textContent = `"${truncateComment(fullLoserComment)}"`;
+
+    if (fullWinnerComment && !isUsernameMuted(match.winnerUsername, commentTimestamp)) {
+      winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0));
+    } else {
+      winnerCommentEl.textContent = filteredWinnerComment === "Muted." ? "Muted." : "-";
+      winnerCommentEl.style.cursor = 'default';
+      winnerCommentEl.onclick = null;
+    }
+    
+    if (fullLoserComment && !isUsernameMuted(match.loserUsername, commentTimestamp)) {
+      loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0));
+    } else {
+      loserCommentEl.textContent = filteredLoserComment === "Muted." ? "Muted." : "-";
+      loserCommentEl.style.cursor = 'default';
+      loserCommentEl.onclick = null;
+    }
+
+    // Community comments section (simplified for notable matches)
+    const commentsSection = wrapper?.querySelector('.community-comments-section');
+    if (commentsSection) {
+      const commentsContainer = commentsSection.querySelector('.comments-container');
+      const addCommentBtn = commentsSection.querySelector('.add-comment-btn');
+      
+      if (addCommentBtn) {
+        addCommentBtn.addEventListener('click', () => {
+          showAddCommentPopup(match.id);
+        });
+      }
+      
+      const matchComments = commentsMap[match.id] || [];
+      if (matchComments.length > 0 && commentsContainer) {
+        const noCommentsMsg = commentsContainer.querySelector('.no-comments-message');
+        if (noCommentsMsg) noCommentsMsg.style.display = 'none';
+        
+        // Add comments (simplified version)
+        matchComments.forEach(comment => {
+          const commentEl = document.createElement('div');
+          commentEl.className = 'comment-item';
+          
+          if (comment.type === 'demo') {
+            commentEl.innerHTML = `
+              <a href="${comment.demoLink}" target="_blank" class="play-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                </svg>
+              </a>
+              <div class="demo-info">
+                <div class="demo-author">Demo from ${comment.username}</div>
+                <div class="demo-description">${comment.description || 'No description'}</div>
+              </div>
+            `;
+          } else {
+            const isMuted = isUsernameMuted(comment.username, comment.timestamp);
+            const displayText = isMuted ? 'Muted.' : (comment.comment || '');
+            commentEl.innerHTML = `
+              <strong>${comment.username}:</strong>
+              <span class="comment-text">${displayText}</span>
+            `;
+          }
+          
+          commentsContainer.appendChild(commentEl);
+        });
+      }
+    }
+
+    container.appendChild(cardClone);
+  });
+}

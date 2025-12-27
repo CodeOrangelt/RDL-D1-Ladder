@@ -9,14 +9,14 @@ body {
 }
 
 .container {
-    background-color: rgba(28, 28, 28, 0.85);
-    border: 1px solid #333;
+    background-color: transparent;
+    border: none;
     margin: 30px auto;
-    border-radius: 10px;
-    padding: 30px;
+    border-radius: 0;
+    padding: 0;
     margin-bottom: 50px;
     max-width: 1100px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
 }
 
 /* --- START: Recent Matches Preview Styles --- */
@@ -62,6 +62,218 @@ body {
 
 .toggle-button.active {
     background-color: #49104b;
+}
+
+/* ===================================
+   NOTABLE MATCHES STYLES
+   =================================== */
+
+.notable-matches-section {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 20px 0 30px 0;
+    box-shadow: none;
+    display: none; /* Hidden by default */
+}
+
+.notable-matches-section h2 {
+    text-align: center;
+    color: #eee;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    font-weight: 600;
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.notable-matches-section h2 i {
+    color: #FFD700;
+}
+
+.summary-period {
+    font-size: 0.6em;
+    color: #888;
+    font-weight: normal;
+}
+
+.notable-matches-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summary-card {
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid;
+}
+
+.summary-card-icon {
+    font-size: 2em;
+}
+
+.summary-card-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.summary-card-body {
+    color: #ddd;
+}
+
+.summary-item {
+    margin-bottom: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+}
+
+.summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.summary-player {
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+}
+
+.summary-player:hover {
+    color: #49104b;
+    text-decoration: underline;
+}
+
+.summary-stat {
+    color: #aaa;
+    font-size: 0.9em;
+}
+
+.summary-highlight {
+    color: #49104b;
+    font-weight: bold;
+}
+
+/* Card-specific colors */
+.summary-card.upsets {
+    border-color: #FF6B6B;
+}
+
+.summary-card.upsets .summary-card-header {
+    border-color: #FF6B6B;
+}
+
+.summary-card.upsets .summary-card-icon {
+    color: #FF6B6B;
+}
+
+.summary-card.rising-stars {
+    border-color: #4CAF50;
+}
+
+.summary-card.rising-stars .summary-card-header {
+    border-color: #4CAF50;
+}
+
+.summary-card.rising-stars .summary-card-icon {
+    color: #4CAF50;
+}
+
+.summary-card.hot-streaks {
+    border-color: #FFA726;
+}
+
+.summary-card.hot-streaks .summary-card-header {
+    border-color: #FFA726;
+}
+
+.summary-card.hot-streaks .summary-card-icon {
+    color: #FFA726;
+}
+
+.summary-card.notable {
+    border-color: #FFD700;
+}
+
+.summary-card.notable .summary-card-header {
+    border-color: #FFD700;
+}
+
+.summary-card.notable .summary-card-icon {
+    color: #FFD700;
+}
+
+.summary-loading {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+    font-style: italic;
+}
+
+.summary-empty {
+    text-align: center;
+    color: #888;
+    padding: 30px;
+    font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .weekly-summary-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .weekly-summary-section h2 {
+        font-size: 1.4em;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .summary-card {
+        padding: 15px;
+    }
+    
+    .summary-card-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .weekly-summary-section {
+        padding: 15px;
+        margin: 15px 0 20px 0;
+    }
+    
+    .weekly-summary-section h2 {
+        font-size: 1.2em;
+    }
+    
+    .summary-card-title {
+        font-size: 1.1em;
+    }
 }
 
 /* ===================================

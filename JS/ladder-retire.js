@@ -9,7 +9,9 @@ import {
     setDoc,
     query,
     collection,
-    where
+    where,
+    orderBy,
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { auth, db } from './firebase-config.js';
 
@@ -305,13 +307,37 @@ async function checkPlayerStatus(user) {
             // Prepare player data (remove hiatus-specific fields)
             const { hiatusDate, fromLadder, playerCollection: _, ...playerData } = hiatusData;
             
+            // CRITICAL: Validate ELO rating is preserved
+            if (!playerData.eloRating || playerData.eloRating <= 0) {
+                console.error('ELO rating missing or invalid when returning from hiatus:', playerData);
+                throw new Error('Cannot return from hiatus: ELO rating is missing or invalid.');
+            }
+            
+            console.log(`Restoring player ${playerData.username} to ${fromLadder} with ELO: ${playerData.eloRating}`);
+            
+            // Get the highest position in the ladder to place returning player at the bottom
+            const playersRef = collection(db, playerCollection);
+            const positionQuery = query(playersRef, orderBy('position', 'desc'), limit(1));
+            const positionSnapshot = await getDocs(positionQuery);
+            
+            let newPosition = 1;
+            if (!positionSnapshot.empty) {
+                const highestPosition = positionSnapshot.docs[0].data().position || 0;
+                newPosition = highestPosition + 1;
+            }
+            
+            // Update player data with new position at the bottom
+            playerData.position = newPosition;
+            
+            console.log(`Assigning position ${newPosition} (bottom of ladder) to returning player`);
+            
             // Add back to original ladder collection
             await setDoc(doc(db, playerCollection, user.uid), playerData);
             
             // Remove from hiatus collection
             await deleteDoc(hiatusRef);
             
-            return { success: true, ladder: fromLadder };
+            return { success: true, ladder: fromLadder, eloRating: playerData.eloRating };
             
         } catch (error) {
             console.error("Error returning from hiatus:", error);

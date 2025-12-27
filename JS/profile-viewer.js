@@ -527,8 +527,21 @@ displayFFAProfile(data) {
         roleContainer.remove();
     }
 
-    // Handle non-participant/former player status
-    if (isNonParticipant) {
+    // Handle non-participant/former player/hiatus status
+    if (data.onHiatus) {
+        // Player is on hiatus - show special hiatus badge
+        const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
+        statusContainer.className = 'profile-status hiatus-status';
+        const hiatusDate = data.hiatusDate ? new Date(data.hiatusDate.seconds * 1000).toLocaleDateString() : 'Unknown';
+        statusContainer.innerHTML = `
+            <div class="status-badge hiatus">ON HIATUS</div>
+            <p class="status-message">
+                This player is currently on hiatus from the ${data.ladder} ladder since ${hiatusDate}.
+            </p>
+        `;
+        container.classList.add('former-player-profile'); // Use former-player styling for consistency
+        container.insertBefore(statusContainer, roleContainer && roleContainer.parentNode ? roleContainer.nextSibling : container.firstChild);
+    } else if (isNonParticipant) {
         const statusContainer = document.querySelector('.profile-status') || document.createElement('div');
         statusContainer.className = 'profile-status';
         statusContainer.innerHTML = `
@@ -1482,6 +1495,39 @@ displayFFAProfile(data) {
                     return data;
                 }
                 
+                // Check if player is on hiatus
+                const hiatusQuery = query(
+                    collection(db, 'playerHiatus'),
+                    where('username', '==', username)
+                );
+                const hiatusSnapshot = await getDocs(hiatusQuery);
+                
+                if (!hiatusSnapshot.empty) {
+                    // Player is on hiatus - show their profile as a former player (with history)
+                    const hiatusData = hiatusSnapshot.docs[0].data();
+                    const userId = hiatusData.userId || hiatusSnapshot.docs[0].id;
+                    
+                    // Get their profile data
+                    const profileData = await this.getProfileData(userId);
+                    
+                    const data = {
+                        ...hiatusData,
+                        ...profileData,
+                        username,
+                        userId,
+                        ladder: hiatusData.fromLadder || this.currentLadder,
+                        isFormerPlayer: true, // Display as former player (not non-participant)
+                        onHiatus: true, // Flag to indicate they're on hiatus
+                        hiatusDate: hiatusData.hiatusDate
+                    };
+                    
+                    // Cache and display
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    await this.loadPlayerStats(username);
+                    return data;
+                }
+                
                 // Check other ladders
                 const otherLadders = ['D1', 'D2', 'D3'].filter(ladder => ladder !== this.currentLadder);
                 for (const otherLadder of otherLadders) {
@@ -1920,8 +1966,15 @@ displayProfile(data) {
         const totalMatches = wins + losses;
         const winRate = totalMatches > 0 ? (wins / totalMatches * 100) : 0;
         
+        // Calculate rank for "Next Rank" display, but don't apply classes yet
+        // updateProfileRankFromMatches will apply classes from actual match data
         if (eloRating >= 1000) {
-            if (winRate >= 80 && totalMatches >= 20) {
+            // Check for emerald: requires ALL three conditions
+            const hasWinRate = winRate >= 80;
+            const hasMatches = totalMatches >= 20;
+            const hasElo = eloRating >= 1000;
+            
+            if (hasWinRate && hasMatches && hasElo) {
                 eloClass = 'elo-emerald';
                 nextRank = 'Emerald';
                 eloNeeded = 0;
@@ -1944,11 +1997,13 @@ displayProfile(data) {
             eloClass = 'elo-silver';
             nextRank = 'Gold';
             eloNeeded = 700 - eloRating;
-        } else if (eloRating >= 200) {
+        } else if (eloRating >= 200 && totalMatches > 0) {
+            // Bronze requires at least 1 match
             eloClass = 'elo-bronze';
             nextRank = 'Silver';
             eloNeeded = 500 - eloRating;
         } else {
+            // Players with 0 matches or below 200 ELO are unranked
             // 5+ matches rule: Anyone with 5+ matches is at least Bronze
             if (totalMatches >= 5) {
                 eloClass = 'elo-bronze';
@@ -1960,20 +2015,7 @@ displayProfile(data) {
                 eloNeeded = 200 - eloRating;
             }
         }
-        container.classList.add(eloClass);
-        
-        // Also add ELO class to the main profile-container for border styling
-        const profileContainer = document.querySelector('.profile-container');
-        if (profileContainer) {
-            profileContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
-            profileContainer.classList.add(eloClass);
-        }
-        
-        const usernameSection = document.querySelector('.username-section');
-        if (usernameSection) {
-            usernameSection.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
-            usernameSection.classList.add(eloClass);
-        }
+        // Don't apply classes here - updateProfileRankFromMatches will do it
     }
     
     // Format home levels
@@ -2050,7 +2092,7 @@ updateProfileRankFromMatches(matches) {
     let losses = 0;
     
     matches.forEach(match => {
-        const isWinner = match.winner === username;
+        const isWinner = match.winnerUsername === username;
         if (isWinner) {
             wins++;
         } else {
@@ -2063,7 +2105,14 @@ updateProfileRankFromMatches(matches) {
     
     let eloClass;
     if (eloRating >= 1000) {
-        if (winRate >= 80 && totalMatches >= 20) {
+        // Check for emerald: requires ALL three conditions
+        const hasWinRate = winRate >= 80;
+        const hasMatches = totalMatches >= 20;
+        const hasElo = eloRating >= 1000;
+        
+        console.log(`Emerald check for ${username}: ELO=${eloRating}, WinRate=${winRate.toFixed(1)}%, Matches=${totalMatches}, Qualified=${hasWinRate && hasMatches && hasElo}`);
+        
+        if (hasWinRate && hasMatches && hasElo) {
             eloClass = 'elo-emerald';
         } else {
             eloClass = 'elo-gold';
@@ -2072,9 +2121,11 @@ updateProfileRankFromMatches(matches) {
         eloClass = 'elo-gold';
     } else if (eloRating >= 500) {
         eloClass = 'elo-silver';
-    } else if (eloRating >= 200) {
+    } else if (eloRating >= 200 && totalMatches > 0) {
+        // Bronze requires at least 1 match
         eloClass = 'elo-bronze';
     } else {
+        // Players with 0 matches or below 200 ELO are unranked
         // 5+ matches rule: Anyone with 5+ matches is at least Bronze
         if (totalMatches >= 5) {
             eloClass = 'elo-bronze';

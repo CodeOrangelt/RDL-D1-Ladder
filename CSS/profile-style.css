@@ -939,6 +939,11 @@
     color: white;
 }
 
+.status-badge.hiatus {
+    background-color: #FF9800;
+    color: white;
+}
+
 .status-message {
     font-size: 14px;
     color: #AAA;

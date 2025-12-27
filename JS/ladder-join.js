@@ -276,30 +276,51 @@ async function handleJoinLadder() {
         // Check if this player previously existed in this ladder (unhiatus case)
         let previousElo = null;
         
-        // FFA is COMPLETELY SEPARATE from other ladders
-        // - Players joining FFA from D1/D2/D3/DUOS/nonParticipants start at 1200
-        // - Players RETURNING to FFA from hiatus keep their previous FFA ELO
-        if (currentLadder === 'FFA') {
-            // Check if the user previously existed in the FFA collection specifically
-            // (userData might be from a different collection like D1, D2, etc.)
-            try {
-                const ffaDocRef = doc(db, 'playersFFA', user.uid);
-                const ffaDocSnap = await getDoc(ffaDocRef);
-                if (ffaDocSnap.exists()) {
-                    const ffaData = ffaDocSnap.data();
-                    if (ffaData.eloRating && ffaData.eloRating > 0) {
-                        previousElo = ffaData.eloRating;
-                        console.log(`FFA hiatus return detected - restoring ELO: ${previousElo}`);
+        // FIRST: Check if player is returning from hiatus
+        try {
+            const hiatusDocRef = doc(db, 'playerHiatus', user.uid);
+            const hiatusDocSnap = await getDoc(hiatusDocRef);
+            if (hiatusDocSnap.exists()) {
+                const hiatusData = hiatusDocSnap.data();
+                // Check if they're on hiatus from the SAME ladder they're trying to join
+                if (hiatusData.fromLadder === currentLadder) {
+                    if (hiatusData.eloRating && hiatusData.eloRating > 0) {
+                        previousElo = hiatusData.eloRating;
+                        console.log(`Hiatus return detected for ${currentLadder} - restoring ELO: ${previousElo}`);
                     }
                 }
-            } catch (error) {
-                console.error('Error checking FFA history:', error);
             }
-            // If no previous FFA ELO found, previousElo remains null (will use 1200)
-        } else if (userData) {
-            // For non-FFA ladders, check for returning players from userData
-            if (userData.eloRating) {
-                previousElo = userData.eloRating;
+        } catch (error) {
+            console.error('Error checking hiatus collection:', error);
+        }
+        
+        // If not returning from hiatus, check other sources
+        if (!previousElo) {
+            // FFA is COMPLETELY SEPARATE from other ladders
+            // - Players joining FFA from D1/D2/D3/DUOS/nonParticipants start at 1200
+            // - Players RETURNING to FFA from hiatus keep their previous FFA ELO
+            if (currentLadder === 'FFA') {
+                // Check if the user previously existed in the FFA collection specifically
+                // (userData might be from a different collection like D1, D2, etc.)
+                try {
+                    const ffaDocRef = doc(db, 'playersFFA', user.uid);
+                    const ffaDocSnap = await getDoc(ffaDocRef);
+                    if (ffaDocSnap.exists()) {
+                        const ffaData = ffaDocSnap.data();
+                        if (ffaData.eloRating && ffaData.eloRating > 0) {
+                            previousElo = ffaData.eloRating;
+                            console.log(`FFA hiatus return detected - restoring ELO: ${previousElo}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking FFA history:', error);
+                }
+                // If no previous FFA ELO found, previousElo remains null (will use 1200)
+            } else if (userData) {
+                // For non-FFA ladders, check for returning players from userData
+                if (userData.eloRating) {
+                    previousElo = userData.eloRating;
+                }
             }
         }
         
