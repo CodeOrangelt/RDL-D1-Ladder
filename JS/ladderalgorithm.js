@@ -152,7 +152,9 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 newPosition: newWinnerPosition,
                 isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: winnerMatchCount,  // ✅ Pass actual match count
+                winRate: winnerWinRate  // ✅ Pass actual win rate
             }),
             recordEloChange({
                 playerId: loserId,
@@ -164,7 +166,9 @@ export async function updateEloRatings(winnerId, loserId, matchId) {
                 newPosition: newLoserPosition,
                 isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: loserMatchCount,  // ✅ Pass actual match count
+                winRate: loserWinRate  // ✅ Pass actual win rate
             })
         ]);
 
@@ -283,6 +287,20 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         updatedReportData.loserEloChange = loserNewElo - loserOldElo;
         updatedReportData.loserMatchCount = loserMatchCount;
         updatedReportData.loserWinRate = loserWinRate;
+        
+        // Update the approved match document with ELO data
+        await updateDoc(doc(db, 'approvedMatches', reportId), {
+            winnerOldElo,
+            winnerNewElo,
+            winnerEloChange: winnerNewElo - winnerOldElo,
+            winnerMatchCount,
+            winnerWinRate,
+            loserOldElo,
+            loserNewElo,
+            loserEloChange: loserNewElo - loserOldElo,
+            loserMatchCount,
+            loserWinRate
+        });
 
         // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
         try {

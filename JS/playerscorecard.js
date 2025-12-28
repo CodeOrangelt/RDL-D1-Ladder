@@ -319,7 +319,7 @@ class PlayerScorecard {
         let versatilityScore = 0;
         if (stats.mapStats.best.length > 0) {
             const avgBestMapWinRate = stats.mapStats.best.reduce((sum, m) => sum + parseFloat(m.winRate), 0) / stats.mapStats.best.length;
-            const mapCount = stats.mapStats.mostPlayed.length;
+            const mapCount = stats.mapStats.totalUniqueMaps || stats.mapStats.mostPlayed.length;
             versatilityScore = (avgBestMapWinRate * 0.7) + (Math.min(mapCount, 10) * 3);
         }
         const versatilityGrade = getGrade(versatilityScore, {
@@ -330,12 +330,13 @@ class PlayerScorecard {
             D: 55   // Limited map pool
         });
         
+        const totalMaps = stats.mapStats.totalUniqueMaps || stats.mapStats.mostPlayed.length;
         scorecard.push({
             key: 'versatility',
             ...versatilityGrade,
-            value: `${stats.mapStats.mostPlayed.length} maps`,
+            value: `${totalMaps} maps`,
             name: 'Map Mastery',
-            description: `Performance across ${stats.mapStats.mostPlayed.length} different maps. Higher scores indicate versatility and adaptability.`,
+            description: `Performance across ${totalMaps} different maps. Higher scores indicate versatility and adaptability.`,
             order: 4
         });
 

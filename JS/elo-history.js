@@ -37,7 +37,9 @@ export async function recordEloChange({
     isPromotion = false,
     isDemotion = false,
     matchId,
-    timestamp
+    timestamp,
+    matchCount = null,
+    winRate = 0
 }) {
     try {
         const historyRef = doc(collection(db, 'eloHistory'));
@@ -51,9 +53,8 @@ export async function recordEloChange({
         if (isPromotion) type = 'promotion';
         if (isDemotion) type = 'demotion';
         
-        // Calculate rank based on new ELO using universal thresholds
-        // Note: We don't have match count/win rate here, so Emerald won't be granted in history
-        const rank = getRankStyle(newElo, 0, 0);
+        // Calculate rank based on new ELO using universal thresholds with actual match stats
+        const rank = getRankStyle(newElo, matchCount, winRate);
         const rankAchieved = rank.name;
 
         await setDoc(historyRef, {

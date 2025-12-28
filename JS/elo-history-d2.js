@@ -70,7 +70,9 @@ export async function recordEloChangeD2({
     isPromotion = false,
     isDemotion = false,
     matchId,
-    timestamp
+    timestamp,
+    matchCount = null,
+    winRate = 0
 }) {
     try {
         const historyRef = doc(collection(db, 'eloHistoryD2'));
@@ -84,8 +86,8 @@ export async function recordEloChangeD2({
         if (isPromotion) type = 'promotion';
         if (isDemotion) type = 'demotion';
         
-        // Calculate rank based on new ELO using universal thresholds
-        const rank = getRankStyle(newElo, 0, 0);
+        // Calculate rank based on new ELO using universal thresholds with actual match stats
+        const rank = getRankStyle(newElo, matchCount, winRate);
         const rankAchieved = rank.name;
 
         await setDoc(historyRef, {

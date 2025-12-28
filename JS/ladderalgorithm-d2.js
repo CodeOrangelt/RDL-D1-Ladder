@@ -65,6 +65,14 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
         const winnerOldElo = winnerData.eloRating || 200;
         const loserOldElo = loserData.eloRating || 200;
         
+        // Calculate match counts at time of match (BEFORE this match)
+        const winnerMatchCount = (winnerData.wins || 0) + (winnerData.losses || 0);
+        const loserMatchCount = (loserData.wins || 0) + (loserData.losses || 0);
+        
+        // Calculate win rates at time of match (BEFORE this match)
+        const winnerWinRate = winnerMatchCount > 0 ? ((winnerData.wins || 0) / winnerMatchCount * 100) : 0;
+        const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
+        
         const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
 
         // Handle position updating based on ladder rules
@@ -136,7 +144,9 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
                 newPosition: newWinnerPosition,
                 isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: winnerMatchCount,  // ✅ Pass actual match count
+                winRate: winnerWinRate  // ✅ Pass actual win rate
             }),
             recordEloChangeD2({
                 playerId: loserId,
@@ -148,7 +158,9 @@ export async function updateEloRatingsD2(winnerId, loserId, matchId) {
                 newPosition: newLoserPosition,
                 isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: loserMatchCount,  // ✅ Pass actual match count
+                winRate: loserWinRate  // ✅ Pass actual win rate
             })
         ]);
 
@@ -247,6 +259,12 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
         // Store pre-match ELO values
         const winnerOldElo = winnerData.eloRating || 200;
         const loserOldElo = loserData.eloRating || 200;
+        
+        // Calculate match counts and win rates at time of match (BEFORE this match)
+        const winnerMatchCount = (winnerData.wins || 0) + (winnerData.losses || 0);
+        const loserMatchCount = (loserData.wins || 0) + (loserData.losses || 0);
+        const winnerWinRate = winnerMatchCount > 0 ? ((winnerData.wins || 0) / winnerMatchCount * 100) : 0;
+        const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
 
         // Calculate new ELO values
         const { newWinnerRating, newLoserRating } = calculateEloD2(winnerOldElo, loserOldElo);
@@ -270,7 +288,14 @@ export async function approveReportD2(reportId, winnerScore, winnerSuicides, win
             loserOldElo: loserOldElo,
             losersOldElo: loserOldElo,  // Legacy field name for compatibility
             winnerNewElo: newWinnerRating,
-            loserNewElo: newLoserRating
+            loserNewElo: newLoserRating,
+            winnerEloChange: newWinnerRating - winnerOldElo,
+            loserEloChange: newLoserRating - loserOldElo,
+            // Store match stats for Emerald rank detection
+            winnerMatchCount: winnerMatchCount,
+            loserMatchCount: loserMatchCount,
+            winnerWinRate: winnerWinRate,
+            loserWinRate: loserWinRate
         };
 
         // Move match to approved collection

@@ -7,6 +7,7 @@ import {
 import { firebaseConfig } from './firebase-config.js';
 import { evaluatePlayerRibbons, getRibbonHTML, RIBBON_CSS } from './ribbons.js';
 import { playerScorecardInstance } from './playerscorecard.js';
+import { getRankStyle } from './ranks.js';
 
 // Initialize Firebase once
 const app = initializeApp(firebaseConfig);
@@ -336,25 +337,22 @@ async displayRibbons(username) {
         }
         
         try {
-            // Check which ladders the player is registered in
-            const ladderStatus = await this.checkAllLadderStatus(username);
+            // Parallelize initial data loading - check ladder status and load player data simultaneously
+            const [ladderStatus, playerDataResult] = await Promise.all([
+                this.checkAllLadderStatus(username),
+                this.currentLadder === 'FFA' 
+                    ? this.loadFFAPlayerData(username)
+                    : this.loadPlayerData(username)
+            ]);
             
-            // Load player data based on current ladder
+            // Create containers based on ladder type (fast, synchronous DOM operation)
             if (this.currentLadder === 'FFA') {
-                await this.loadFFAPlayerData(username);
-            } else {
-                await this.loadPlayerData(username);
-            }
-            
-            // Create containers based on ladder type
-            if (this.currentLadder === 'FFA') {
-                // Order: FFA Statistics -> FFA Opponents -> FFA Match History
                 this.createContainers(['ffa-stats', 'ffa-player-matchups', 'ffa-match-history']);
             } else {
                 this.createContainers(['rank-history', 'match-stats', 'player-scorecard', 'player-matchups', 'match-history']);
             }
             
-            // Display sections based on ladder type
+            // Fetch match data and display everything in parallel
             if (this.currentLadder === 'FFA') {
                 const ffaMatches = await this.getFFAPlayerMatches(username);
                 await Promise.all([
@@ -364,17 +362,26 @@ async displayRibbons(username) {
                     this.displayRibbons(username)
                 ]);
             } else {
-                const matches = await this.getPlayerMatches(username);
-                // Update profile rank with actual match data BEFORE displaying sections
-                const eloClass = this.updateProfileRankFromMatches(matches);
-                // Run all sections in parallel for faster loading
+                // Show loading state immediately in all containers
+                this.showLoadingInContainers();
+                
+                // Fetch matches and ELO history in parallel (shared across multiple displays)
+                const [matches, eloHistoryData] = await Promise.all([
+                    this.getPlayerMatches(username),
+                    this.getEloHistoryForPlayer(username)
+                ]);
+                
+                // Update profile rank with actual match data
+                this.updateProfileRankFromMatches(matches);
+                
+                // Run all display sections in parallel, passing shared eloHistoryData
                 await Promise.all([
                     this.displayPromotionHistory(username),
                     this.displayTrophyCase(username),
                     this.displayMatchStats(username, matches),
                     this.displayPlayerScorecard(username, matches),
                     this.displayPlayerMatchups(username, matches),
-                    this.displayMatchHistory(username, matches),
+                    this.displayMatchHistory(username, matches, eloHistoryData),
                     this.displayRibbons(username)
                 ]);
             }
@@ -582,7 +589,13 @@ displayFFAProfile(data) {
         'favorite-subgame-view': data.favoriteSubgame || 'Not set', 
         'timezone-view': data.timezone || 'Not set',
         'division-view': data.division || 'Not set',
-        'availability-view': data.availability || 'Not set',
+        'availability-view': (() => {
+            if (!data.availability) return 'Not set';
+            if (typeof data.availability === 'string') return data.availability;
+            if (Array.isArray(data.availability)) return data.availability.join(', ');
+            if (typeof data.availability === 'object') return Object.values(data.availability).filter(v => v).join(', ') || 'Not set';
+            return 'Not set';
+        })(),
         'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
     };
 
@@ -1426,6 +1439,15 @@ displayFFAProfile(data) {
         contentContainer.appendChild(fragment);
     }
     
+    showLoadingInContainers() {
+        // Make loading states more visible
+        Object.values(containerReferences).forEach(container => {
+            if (container && !container.querySelector('.loading-spinner')) {
+                container.innerHTML = '<div class="loading-spinner" style="padding: 40px; text-align: center;"><p class="loading-text" style="font-size: 18px; color: #aaa;">Loading...</p></div>';
+            }
+        });
+    }
+    
     async loadPlayerData(username) {
         try {
             // Get cache key that includes ladder
@@ -1447,19 +1469,17 @@ displayFFAProfile(data) {
             
             // Check if player is active in current ladder
             if (querySnapshot.empty) {
-                // Check if player is a registered non-participant
-                const nonParticipantQuery = query(
-                    collection(db, 'nonParticipants'),
-                    where('username', '==', username)
-                );
-                const nonParticipantSnapshot = await getDocs(nonParticipantQuery);
+                // Parallelize all fallback checks for faster loading
+                const [nonParticipantSnapshot, hiatusSnapshot, archivedData] = await Promise.all([
+                    getDocs(query(collection(db, 'nonParticipants'), where('username', '==', username))),
+                    getDocs(query(collection(db, 'playerHiatus'), where('username', '==', username))),
+                    this.checkArchivedData(username)
+                ]);
                 
+                // Check if player is a registered non-participant
                 if (!nonParticipantSnapshot.empty) {
-                    // This is a non-participant
                     const nonParticipantData = nonParticipantSnapshot.docs[0].data();
                     const userId = nonParticipantData.userId || nonParticipantSnapshot.docs[0].id;
-                    
-                    // Get their profile data
                     const profileData = await this.getProfileData(userId);
                     
                     const data = {
@@ -1472,42 +1492,15 @@ displayFFAProfile(data) {
                         eloRating: 'N/A'
                     };
                     
-                    // Cache and display
                     playerDataCache.set(cacheKey, data);
                     this.displayProfile(data);
-                    return data;
-                }
-                
-                // Check for archived data from previous seasons
-                const archivedData = await this.checkArchivedData(username);
-                if (archivedData) {
-                    const data = {
-                        ...archivedData,
-                        username,
-                        ladder: this.currentLadder,
-                        isFormerPlayer: true
-                    };
-                    
-                    // Cache and display
-                    playerDataCache.set(cacheKey, data);
-                    this.displayProfile(data);
-                    await this.loadPlayerStats(username);
                     return data;
                 }
                 
                 // Check if player is on hiatus
-                const hiatusQuery = query(
-                    collection(db, 'playerHiatus'),
-                    where('username', '==', username)
-                );
-                const hiatusSnapshot = await getDocs(hiatusQuery);
-                
                 if (!hiatusSnapshot.empty) {
-                    // Player is on hiatus - show their profile as a former player (with history)
                     const hiatusData = hiatusSnapshot.docs[0].data();
                     const userId = hiatusData.userId || hiatusSnapshot.docs[0].id;
-                    
-                    // Get their profile data
                     const profileData = await this.getProfileData(userId);
                     
                     const data = {
@@ -1516,29 +1509,44 @@ displayFFAProfile(data) {
                         username,
                         userId,
                         ladder: hiatusData.fromLadder || this.currentLadder,
-                        isFormerPlayer: true, // Display as former player (not non-participant)
-                        onHiatus: true, // Flag to indicate they're on hiatus
+                        isFormerPlayer: true,
+                        onHiatus: true,
                         hiatusDate: hiatusData.hiatusDate
                     };
                     
-                    // Cache and display
                     playerDataCache.set(cacheKey, data);
                     this.displayProfile(data);
                     await this.loadPlayerStats(username);
                     return data;
                 }
                 
-                // Check other ladders
-                const otherLadders = ['D1', 'D2', 'D3'].filter(ladder => ladder !== this.currentLadder);
-                for (const otherLadder of otherLadders) {
-                    const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : (otherLadder === 'D2' ? 'playersD2' : 'playersD3'));
-                    const otherQuery = query(otherPlayersRef, where('username', '==', username));
-                    const otherSnapshot = await getDocs(otherQuery);
+                // Check for archived data from previous seasons
+                if (archivedData) {
+                    const data = {
+                        ...archivedData,
+                        username,
+                        ladder: this.currentLadder,
+                        isFormerPlayer: true
+                    };
                     
-                    if (!otherSnapshot.empty) {
-                        // Found in other ladder, suggest switching
-                        throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${otherLadder} ladder.`);
-                    }
+                    playerDataCache.set(cacheKey, data);
+                    this.displayProfile(data);
+                    await this.loadPlayerStats(username);
+                    return data;
+                }
+                
+                // Check other ladders in parallel
+                const otherLadders = ['D1', 'D2', 'D3'].filter(ladder => ladder !== this.currentLadder);
+                const otherLadderQueries = otherLadders.map(otherLadder => {
+                    const otherPlayersRef = collection(db, otherLadder === 'D1' ? 'players' : (otherLadder === 'D2' ? 'playersD2' : 'playersD3'));
+                    return getDocs(query(otherPlayersRef, where('username', '==', username)));
+                });
+                
+                const otherLadderResults = await Promise.all(otherLadderQueries);
+                const foundInLadder = otherLadders.find((ladder, idx) => !otherLadderResults[idx].empty);
+                
+                if (foundInLadder) {
+                    throw new Error(`Player not found in ${this.currentLadder} ladder. Try selecting the ${foundInLadder} ladder.`);
                 }
                 
                 // Not found in any ladder or as non-participant - AUTO REGISTER AS NON-PARTICIPANT
@@ -2030,7 +2038,13 @@ displayProfile(data) {
         'favorite-subgame-view': data.favoriteSubgame || 'Not set', 
         'timezone-view': data.timezone || 'Not set',
         'division-view': data.division || 'Not set',
-        'availability-view': data.availability || 'Not set',
+        'availability-view': (() => {
+            if (!data.availability) return 'Not set';
+            if (typeof data.availability === 'string') return data.availability;
+            if (Array.isArray(data.availability)) return data.availability.join(', ');
+            if (typeof data.availability === 'object') return Object.values(data.availability).filter(v => v).join(', ') || 'Not set';
+            return 'Not set';
+        })(),
         'stats-elo': isNonParticipant ? 'N/A' : (data.eloRating || 'N/A')
     };
     
@@ -2280,6 +2294,90 @@ setupTrophyCaseToggle() {
     }
 }
 
+    async getEloHistoryForPlayer(username) {
+        try {
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
+                                       (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
+            const eloHistoryRef = collection(db, eloHistoryCollection);
+            
+            const playerId = this.currentProfileData?.userId;
+            const searchTerms = playerId ? [username, playerId] : [username];
+            
+            // Fetch all ELO history for this player once
+            const eloHistoryQuery = query(
+                eloHistoryRef,
+                where('player', 'in', searchTerms),
+                orderBy('timestamp', 'desc'),
+                limit(500)
+            );
+            
+            const eloHistorySnapshot = await getDocs(eloHistoryQuery);
+            
+            const eloRecords = [];
+            const eloHistoryMap = new Map();
+            
+            eloHistorySnapshot.forEach(doc => {
+                const data = doc.data();
+                const record = {
+                    ...data,
+                    timestamp: data.timestamp ? data.timestamp.seconds : 0,
+                    docId: doc.id
+                };
+                eloRecords.push(record);
+                
+                // Map by matchId
+                if (data.matchId) {
+                    eloHistoryMap.set(data.matchId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        type: data.type,
+                        rankAchieved: data.rankAchieved,
+                        source: 'matchId'
+                    });
+                }
+                
+                // Map by gameId
+                if (data.gameId) {
+                    eloHistoryMap.set(data.gameId, {
+                        previousElo: data.previousElo,
+                        newElo: data.newElo,
+                        change: data.change || (data.newElo - data.previousElo),
+                        type: data.type,
+                        rankAchieved: data.rankAchieved,
+                        source: 'gameId'
+                    });
+                }
+                
+                // Map by player + timestamp
+                const timeKey = `${data.player}_${record.timestamp}`;
+                eloHistoryMap.set(timeKey, {
+                    previousElo: data.previousElo,
+                    newElo: data.newElo,
+                    change: data.change || (data.newElo - data.previousElo),
+                    type: data.type,
+                    rankAchieved: data.rankAchieved,
+                    source: 'timeKey'
+                });
+            });
+            
+            return {
+                records: eloRecords,
+                map: eloHistoryMap,
+                promotions: eloRecords.filter(r => {
+                    // Only include if it's marked as promotion/demotion AND has a valid rank achievement
+                    if (r.type !== 'promotion' && r.type !== 'demotion') return false;
+                    // Exclude if rank is Unranked (these are not real promotions/demotions)
+                    if (!r.rankAchieved || r.rankAchieved.toLowerCase() === 'unranked') return false;
+                    return true;
+                })
+            };
+        } catch (error) {
+            console.error('Error fetching ELO history:', error);
+            return { records: [], map: new Map(), promotions: [] };
+        }
+    }
+
     async getPlayerMatches(username) {
         try {
             const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
@@ -2433,7 +2531,7 @@ async displayTrophyCase(username)
         }
 }
 
-async displayMatchHistory(username, matches) {
+async displayMatchHistory(username, matches, eloHistoryData = null) {
     try {
         const matchHistoryContainer = containerReferences['match-history'];
         if (!matchHistoryContainer) return;
@@ -2473,32 +2571,30 @@ async displayMatchHistory(username, matches) {
             playerElos[player] = await this.getPlayerEloData(player);
         }));
         
-        // Get ELO history for this player
-        const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
-                                   (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
-        
-        const eloHistoryRef = collection(db, eloHistoryCollection);
-        
-        const playerId = this.currentProfileData?.userId;
-        const searchTerms = [username];
-        
-        if (playerId) {
-            searchTerms.push(playerId);
-        }
-        
-        let eloHistoryMap = new Map();
-        try {
+        // Use shared ELO history data if available
+        let eloHistoryMap, eloRecords;
+        if (eloHistoryData) {
+            eloHistoryMap = eloHistoryData.map;
+            eloRecords = eloHistoryData.records;
+        } else {
+            // Fallback: fetch if not provided (shouldn't happen with optimized loading)
+            const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : 
+                                       (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
+            const playerId = this.currentProfileData?.userId;
+            const searchTerms = playerId ? [username, playerId] : [username];
+            
+            const eloHistoryRef = collection(db, eloHistoryCollection);
             const eloHistoryQuery = query(
                 eloHistoryRef,
                 where('player', 'in', searchTerms),
                 orderBy('timestamp', 'desc'),
-                limit(500) // Increase from 200 to 500 to ensure we get more history
+                limit(500)
             );
             
             const eloHistorySnapshot = await getDocs(eloHistoryQuery);
-            
-            const eloRecords = [];
+            eloRecords = [];
             eloHistoryMap = new Map();
+            
             eloHistorySnapshot.forEach(doc => {
                 const data = doc.data();
                 eloRecords.push({
@@ -2507,7 +2603,6 @@ async displayMatchHistory(username, matches) {
                     docId: doc.id
                 });
                 
-                // Map by both matchId and gameId
                 if (data.matchId) {
                     eloHistoryMap.set(data.matchId, {
                         previousElo: data.previousElo,
@@ -2525,47 +2620,13 @@ async displayMatchHistory(username, matches) {
                         source: 'gameId'
                     });
                 }
-                
-                // Also map using a composite key of player+timestamp to help with matching
-                const timeKey = `${data.player}_${data.timestamp ? data.timestamp.seconds : 0}`;
-                eloHistoryMap.set(timeKey, {
-                    previousElo: data.previousElo,
-                    newElo: data.newElo,
-                    change: data.change || (data.newElo - data.previousElo),
-                    source: 'timeKey'
-                });
             });
-            
-            // Match by timestamp proximity
-            matches.forEach(match => {
-                if (!eloHistoryMap.has(match.id) && match.createdAt) {
-                    const matchTimestamp = match.createdAt.seconds;
-                    const closeRecord = eloRecords.find(record => 
-                        Math.abs(record.timestamp - matchTimestamp) < 600
-                    );
-                    
-                    if (closeRecord) {
-                        eloHistoryMap.set(match.id, {
-                            previousElo: closeRecord.previousElo,
-                            newElo: closeRecord.newElo,
-                            change: closeRecord.change || (closeRecord.newElo - closeRecord.previousElo),
-                            source: 'timestamp'
-                        });
-                    }
-                }
-            });
-            
-        } catch (error) {
-            console.warn('Could not load ELO history for match details:', error);
         }
         
-        // Helper function
-        const getEloClass = (elo) => {
-            if (elo >= 1000) return 'elo-emerald'; // Note: This doesn't check win rate/match count
-            if (elo >= 700) return 'elo-gold';
-            if (elo >= 500) return 'elo-silver';
-            if (elo >= 200) return 'elo-bronze';
-            return 'elo-unranked';
+        // Helper function - now uses getRankStyle with matchCount and winRate
+        const getEloClass = (elo, matchCount = null, winRate = 0) => {
+            const rank = getRankStyle(elo, matchCount, winRate);
+            return `elo-${rank.name.toLowerCase()}`;
         };
         
         // IMPORTANT: Only show 10 matches initially
@@ -3050,9 +3111,15 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
         const winnerEloAtMatch = match.winnerPreviousElo || match.winnerRating || playerElos[match.winnerUsername];
         const loserEloAtMatch = match.loserPreviousElo || match.loserRating || playerElos[match.loserUsername];
         
-        // Use historical ELO for rank coloring
-        const winnerEloClass = getEloClass(winnerEloAtMatch);
-        const loserEloClass = getEloClass(loserEloAtMatch);
+        // Get match stats for accurate rank colors
+        const winnerMatchCount = match.winnerMatchCount !== undefined ? match.winnerMatchCount : null;
+        const winnerWinRate = match.winnerWinRate || 0;
+        const loserMatchCount = match.loserMatchCount !== undefined ? match.loserMatchCount : null;
+        const loserWinRate = match.loserWinRate || 0;
+        
+        // Use historical ELO for rank coloring with matchCount and winRate
+        const winnerEloClass = getEloClass(winnerEloAtMatch, winnerMatchCount, winnerWinRate);
+        const loserEloClass = getEloClass(loserEloAtMatch, loserMatchCount, loserWinRate);
         
         // Get ELO change data - focus on using eloHistory format
         let eloChangeDisplay = '';
@@ -3859,6 +3926,9 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             }))
             .sort((a, b) => b.total - a.total)
             .slice(0, 5);
+        
+        // Store total unique map count for Map Mastery calculation
+        stats.mapStats.totalUniqueMaps = Object.keys(mapPerformance).length;
         
         // Score stats
         stats.scoreStats.avgPoints = formatNum(overallAvg);
@@ -4769,7 +4839,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 promotionContainer.classList.add(existingRankClass);
             }
             
-            // Update to use ladder-specific collections
+            // Query database with proper filter for promotions/demotions only
             const eloHistoryCollection = this.currentLadder === 'D1' ? 'eloHistory' : (this.currentLadder === 'D2' ? 'eloHistoryD2' : 'eloHistoryD3');
             const eloHistoryRef = collection(db, eloHistoryCollection);
             const q = query(
@@ -4791,7 +4861,7 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             }
             
             // Process the data
-            const promotionRecords = snapshot.docs.map(doc => ({
+            const processedRecords = snapshot.docs.map(doc => ({
                 ...doc.data(),
                 id: doc.id,
                 date: doc.data().timestamp ? new Date(doc.data().timestamp.seconds * 1000) : new Date()
@@ -4802,8 +4872,8 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             const currentSeason = seasonCountDoc.exists() ? seasonCountDoc.data().count : 1;
             
             // Split records: first 3 and the rest
-            const initialRecords = promotionRecords.slice(0, 3);
-            const additionalRecords = promotionRecords.slice(3);
+            const initialRecords = processedRecords.slice(0, 3);
+            const additionalRecords = processedRecords.slice(3);
             const hasMoreRecords = additionalRecords.length > 0;
             
             // Build the promotion history table

@@ -1030,7 +1030,10 @@ async function renderMatchCards(docsData) {
         commentsMap[filteredData[index].id] = comments || [];
     });
 
-    // Render cards sequentially to ensure ELO changes appear immediately
+    // Store match data for async ELO loading
+    const matchCardsData = [];
+
+    // Render cards quickly without ELO changes
     for (const match of filteredData) {
         const cardClone = template.content.cloneNode(true);
         const wrapper = cardClone.querySelector('.match-display-wrapper');
@@ -1045,8 +1048,14 @@ async function renderMatchCards(docsData) {
         card.querySelector('.match-date').textContent = formatDate(match.approvedAt || match.createdAt);
 
         const winnerNameEl = card.querySelector('.player.winner .player-name');
-        winnerNameEl.textContent = match.winnerUsername || 'Unknown';
+        const currentLadder = previewState.currentMode.toLowerCase();
+        winnerNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.winnerUsername || 'Unknown'}</a>`;
         winnerNameEl.style.color = getEloColor(match.winnerOldElo, match.winnerMatchCount, match.winnerWinRate);
+        
+        // Debug logging for Emerald detection
+        if (match.winnerOldElo >= 1000) {
+            console.log(`Winner ${match.winnerUsername}: ELO=${match.winnerOldElo}, matchCount=${match.winnerMatchCount}, winRate=${match.winnerWinRate}`);
+        }
         card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
         
         // Add winner suicides
@@ -1055,8 +1064,13 @@ async function renderMatchCards(docsData) {
         winnerSuicidesEl.textContent = `S: ${winnerSuicides}`;
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
-        loserNameEl.textContent = match.loserUsername || 'Unknown';
+        loserNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.loserUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.loserUsername || 'Unknown'}</a>`;
         loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, match.loserMatchCount, match.loserWinRate);
+        
+        // Debug logging for Emerald detection
+        if ((match.loserOldElo || match.losersOldElo || 0) >= 1000) {
+            console.log(`Loser ${match.loserUsername}: ELO=${match.loserOldElo || match.losersOldElo}, matchCount=${match.loserMatchCount}, winRate=${match.loserWinRate}`);
+        }
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
         
         // Add loser suicides
@@ -1064,8 +1078,8 @@ async function renderMatchCards(docsData) {
         const loserSuicides = match.loserSuicides || 0;
         loserSuicidesEl.textContent = `S: ${loserSuicides}`;
 
-        // Display ELO changes before appending to DOM
-        await displayEloChanges(card, match);
+        // Store card and match for async ELO loading later
+        matchCardsData.push({ card, match });
 
         // Add subgame type display
         const subgameEl = card.querySelector('.match-subgame');
@@ -1296,10 +1310,94 @@ async function renderMatchCards(docsData) {
 
         container.appendChild(cardClone);
     }
+
+    // Load ELO changes asynchronously after all cards are rendered
+    loadEloChangesAsync(matchCardsData);
 }
 
 /**
- * Display ELO changes for both players on a match card
+ * Load ELO changes asynchronously after match cards are rendered
+ * Fast path: Use match document data immediately
+ * Slow path: Query database for matches missing ELO data (parallelized)
+ */
+async function loadEloChangesAsync(matchCardsData) {
+    const matchesNeedingQuery = [];
+    
+    // First pass - display ELO from match documents (instant)
+    for (const { card, match } of matchCardsData) {
+        const hasData = displayEloChangesFromMatch(card, match);
+        if (!hasData) {
+            matchesNeedingQuery.push({ card, match });
+        }
+    }
+    
+    // Second pass - query database for missing data in parallel (only if needed)
+    if (matchesNeedingQuery.length > 0) {
+        await Promise.all(
+            matchesNeedingQuery.map(({ card, match }) => displayEloChanges(card, match))
+        );
+    }
+}
+
+/**
+ * Display ELO changes from match document data (fast, no database queries)
+ * Returns true if data was found and displayed, false if database query needed
+ */
+function displayEloChangesFromMatch(card, match) {
+    const winnerEloChangeEl = card.querySelector('.player.winner .player-elo-change');
+    const loserEloChangeEl = card.querySelector('.player.loser .player-elo-change');
+    
+    if (!winnerEloChangeEl || !loserEloChangeEl) return false;
+    
+    let winnerChange = null;
+    let loserChange = null;
+    
+    // Get ELO changes from match document fields
+    if (match.winnerEloChange !== undefined) {
+        winnerChange = match.winnerEloChange;
+    } else if (match.winnerNewElo !== undefined && match.winnerOldElo !== undefined) {
+        winnerChange = match.winnerNewElo - match.winnerOldElo;
+    }
+    
+    if (match.loserEloChange !== undefined) {
+        loserChange = match.loserEloChange;
+    } else if (match.loserNewElo !== undefined && (match.loserOldElo || match.losersOldElo) !== undefined) {
+        const loserOldElo = match.loserOldElo || match.losersOldElo;
+        loserChange = match.loserNewElo - loserOldElo;
+    }
+    
+    // If we don't have both changes, return false to trigger database query
+    if (winnerChange === null || loserChange === null) {
+        return false;
+    }
+    
+    // Display winner ELO change
+    if (winnerChange !== null && !isNaN(winnerChange)) {
+        const rounded = Math.round(winnerChange);
+        const sign = rounded >= 0 ? '+' : '';
+        winnerEloChangeEl.textContent = `${sign}${rounded}`;
+        winnerEloChangeEl.className = 'player-elo-change ' + (rounded >= 0 ? 'positive' : 'negative');
+        winnerEloChangeEl.style.display = 'inline-block';
+    } else {
+        winnerEloChangeEl.style.display = 'none';
+    }
+    
+    // Display loser ELO change
+    if (loserChange !== null && !isNaN(loserChange)) {
+        const rounded = Math.round(loserChange);
+        const sign = rounded >= 0 ? '+' : '';
+        loserEloChangeEl.textContent = `${sign}${rounded}`;
+        loserEloChangeEl.className = 'player-elo-change ' + (rounded >= 0 ? 'positive' : 'negative');
+        loserEloChangeEl.style.display = 'inline-block';
+    } else {
+        loserEloChangeEl.style.display = 'none';
+    }
+    
+    return true;
+}
+
+/**
+ * Display ELO changes for both players on a match card (LEGACY - with database fallback)
  * PRIMARY: Use match document fields (most reliable)
  * FALLBACK: Query eloHistory if fields missing (backward compatibility)
  */

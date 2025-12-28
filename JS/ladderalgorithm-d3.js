@@ -57,10 +57,22 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
         const winnerPosition = winnerData.position || Number.MAX_SAFE_INTEGER;
         const loserPosition = loserData.position || Number.MAX_SAFE_INTEGER;
 
+        // Store original ELO
+        const winnerOldElo = winnerData.eloRating || 200;
+        const loserOldElo = loserData.eloRating || 200;
+        
+        // Calculate match counts at time of match (BEFORE this match)
+        const winnerMatchCount = (winnerData.wins || 0) + (winnerData.losses || 0);
+        const loserMatchCount = (loserData.wins || 0) + (loserData.losses || 0);
+        
+        // Calculate win rates at time of match (BEFORE this match)
+        const winnerWinRate = winnerMatchCount > 0 ? ((winnerData.wins || 0) / winnerMatchCount * 100) : 0;
+        const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
+
         // Calculate new ELO ratings - SAME AS D1/D2
         const { newWinnerRating, newLoserRating } = calculateEloD3(
-            winnerData.eloRating || 200,
-            loserData.eloRating || 200
+            winnerOldElo,
+            loserOldElo
         );
 
         // Handle position updating based on ladder rules - SAME AS D1/D2
@@ -124,7 +136,7 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
         await Promise.all([
             recordEloChangeD3({
                 playerId: winnerId,
-                previousElo: winnerData.eloRating || 200,
+                previousElo: winnerOldElo,
                 newElo: newWinnerRating,
                 opponentId: loserId,
                 matchResult: 'win',
@@ -132,11 +144,13 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
                 newPosition: newWinnerPosition,
                 isPromotion: newWinnerPosition < winnerPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: winnerMatchCount,  // ✅ Pass actual match count
+                winRate: winnerWinRate  // ✅ Pass actual win rate
             }),
             recordEloChangeD3({
                 playerId: loserId,
-                previousElo: loserData.eloRating || 200,
+                previousElo: loserOldElo,
                 newElo: newLoserRating,
                 opponentId: winnerId,
                 matchResult: 'loss',
@@ -144,7 +158,9 @@ export async function updateEloRatingsD3(winnerId, loserId, matchId) {
                 newPosition: newLoserPosition,
                 isDemotion: newLoserPosition > loserPosition,
                 matchId: matchId,
-                timestamp: matchTimestamp  // ✅ SHARED timestamp
+                timestamp: matchTimestamp,  // ✅ SHARED timestamp
+                matchCount: loserMatchCount,  // ✅ Pass actual match count
+                winRate: loserWinRate  // ✅ Pass actual win rate
             })
         ]);
 
@@ -222,9 +238,48 @@ export async function approveReportD3(reportId, winnerScore, winnerSuicides, win
 
         const winnerId = winnerDocs.docs[0].id;
         const loserId = loserDocs.docs[0].id;
+        
+        // Get player data BEFORE updating ELO for match stats
+        const winnerData = winnerDocs.docs[0].data();
+        const loserData = loserDocs.docs[0].data();
+        
+        // Store pre-match ELO values
+        const winnerOldElo = winnerData.eloRating || 200;
+        const loserOldElo = loserData.eloRating || 200;
+        
+        // Calculate match counts and win rates at time of match (BEFORE this match)
+        const winnerMatchCount = (winnerData.wins || 0) + (winnerData.losses || 0);
+        const loserMatchCount = (loserData.wins || 0) + (loserData.losses || 0);
+        const winnerWinRate = winnerMatchCount > 0 ? ((winnerData.wins || 0) / winnerMatchCount * 100) : 0;
+        const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
 
         // Update ELO ratings using D3-specific function
         await updateEloRatingsD3(winnerId, loserId, reportId);
+        
+        // Get new ELO after updating
+        const [updatedWinnerDoc, updatedLoserDoc] = await Promise.all([
+            getDoc(doc(db, 'playersD3', winnerId)),
+            getDoc(doc(db, 'playersD3', loserId))
+        ]);
+        const winnerNewElo = updatedWinnerDoc.data().eloRating;
+        const loserNewElo = updatedLoserDoc.data().eloRating;
+        
+        // Update the approved match document with ELO data and match stats
+        await setDoc(doc(db, 'approvedMatchesD3', reportId), {
+            ...updatedReportData,
+            winnerOldElo: winnerOldElo,
+            loserOldElo: loserOldElo,
+            losersOldElo: loserOldElo,
+            winnerNewElo: winnerNewElo,
+            loserNewElo: loserNewElo,
+            winnerEloChange: winnerNewElo - winnerOldElo,
+            loserEloChange: loserNewElo - loserOldElo,
+            // Store match stats for Emerald rank detection
+            winnerMatchCount: winnerMatchCount,
+            loserMatchCount: loserMatchCount,
+            winnerWinRate: winnerWinRate,
+            loserWinRate: loserWinRate
+        });
 
         // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
         try {
