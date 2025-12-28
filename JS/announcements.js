@@ -2,28 +2,27 @@
 
 // Configuration
 const ANNOUNCEMENT = {
-    id: "beta-release-2.1", // Change this ID when you want to show a new announcement
-    title: "Redux Descent League Beta Release 2.1 - Profile & Rank UI Updates",
+    id: "beta-release-2.2", // Change this ID when you want to show a new announcement
+    title: "Redux Descent League Beta Release 2.2 - 6 MORE RIBBONS AND STUFF",
     content: `
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">ADDITIONS & IMPROVEMENTS:</p>
             <ul style="list-style: none; padding-left: 20px;">
-                <li style="color:#75C35C;">• New (Legacy technically) Unified Silver Color!</li>
-                <li style="color:#75C35C;">• Implemented 5+ matches = Bronze rule (automatic Bronze rank after 5 matches, regardless of ELO)</li>
-                <li style="color:#75C35C;">• Added scorecard on profile (adjusts for "match inflation")</li>
-                <li style="color:#75C35C;">• Fixed profile container styling to show rank-based borders</li>
-                <li style="color:#75C35C;">• Improved profile loading performance</li>
+                <li style="color:#75C35C;">• Added 6 new ribbons to the system</li>
+                <li style="color:#75C35C;">• Ribbons system reworked - smarter, more autonomous, and optimized</li>
+                <li style="color:#75C35C;">• All season kills, suicides, and deaths now visible on profile (combined with ribbons section)</li>
+                <li style="color:#75C35C;">• Profile UI improvements and layout refinements</li>
+                <li style="color:#75C35C;">• Recent matches now load instantly instead of sequentially</li>
             </ul>
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">BUG FIXES:</p>
             <ul style="list-style: none; padding-left: 20px;">
-                <li style="color:#4bc0c0;">• Fixed unranked players displaying incorrect colors on profiles</li>
-                <li style="color:#4bc0c0;">• Changed Unranked color from gray to red on profile for better visibility</li>
-
+                <li style="color:#4bc0c0;">• Fixed availability field display on profile details</li>
+                <li style="color:#4bc0c0;">• Fixed player scorecard logic errors (including map dominance threshold)</li>
+                <li style="color:#4bc0c0;">• Fixed recent matches query performance bug</li>
             </ul>
         <p style="color:#ffffff; font-weight: bold; margin-bottom: 10px;">KNOWN ISSUES:</p>
             <ul style="list-style: none; padding-left: 20px;">
                 <li style="color:#FFA07A;">• D2 Recent Matches incorrect display of ELO (calculation still fine)</li>
                 <li style="color:#FFA07A;">• Non-Participant weird username assignment? (DM me.)</li>
-                <li style="color:#FFA07A;">• Rare but present ELO abnormality post-match</li>   
                 <li style="color:#FFA07A;">• Filter tool not working properly on approved matches page (WIP)</li>
             </ul>
         <p style="margin-top: 15px;"><span style="color:#ffffff; font-weight: bold;">- Code</span></p>

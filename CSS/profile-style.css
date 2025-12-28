@@ -1576,6 +1576,42 @@
     color: #50C878 !important;
 }
 
+/* Apply ELO colors to Player Matchups and Match History section headers */
+#player-matchups.elo-unranked h2,
+#match-history.elo-unranked h2,
+#ffa-player-matchups.elo-unranked h2,
+#ffa-match-history.elo-unranked h2 {
+    color: #DC143C !important;
+}
+
+#player-matchups.elo-bronze h2,
+#match-history.elo-bronze h2,
+#ffa-player-matchups.elo-bronze h2,
+#ffa-match-history.elo-bronze h2 {
+    color: #CD7F32 !important;
+}
+
+#player-matchups.elo-silver h2,
+#match-history.elo-silver h2,
+#ffa-player-matchups.elo-silver h2,
+#ffa-match-history.elo-silver h2 {
+    color: #b9f1fc !important;
+}
+
+#player-matchups.elo-gold h2,
+#match-history.elo-gold h2,
+#ffa-player-matchups.elo-gold h2,
+#ffa-match-history.elo-gold h2 {
+    color: #FFD700 !important;
+}
+
+#player-matchups.elo-emerald h2,
+#match-history.elo-emerald h2,
+#ffa-player-matchups.elo-emerald h2,
+#ffa-match-history.elo-emerald h2 {
+    color: #50C878 !important;
+}
+
 /* FFA Stats specific styling */
 .ffa-stats-grid {
     display: grid;

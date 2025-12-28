@@ -10,6 +10,7 @@ import {
     getDocs,
     limit
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { PlayerScorecard } from './playerscorecard.js';
 
 // Updated ribbon definitions - Remove levels from Top Rank ribbons
 const RIBBON_DEFINITIONS = {
@@ -65,6 +66,42 @@ const RIBBON_DEFINITIONS = {
         image: '../images/ribbons/Domination.png',
         color: '#8E44AD',
         levels: [1, 2, 3, 4, 5] // Level = number of ranks dominated
+    },
+    'Champion Ribbon': {
+        description: 'Amass at least 500 kills',
+        image: '../images/ribbons/Champion.png',
+        color: '#FFD700',
+        levels: [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+    },
+    'Death Ribbon': {
+        description: 'Amass at least 500 deaths',
+        image: '../images/ribbons/Death.png',
+        color: '#808080',
+        levels: [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+    },
+    'Long Overtime Ribbon': {
+        description: 'Win a match that exceeded 23 kills',
+        image: '../images/ribbons/LongOvertime.png',
+        color: '#FFA500'
+        // No levels array - single achievement
+    },
+    'Sacrifice Ribbon': {
+        description: 'Amass 100 suicides',
+        image: '../images/ribbons/Sacrifice.png',
+        color: '#DC143C',
+        levels: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    },
+    'Legendary Ribbon': {
+        description: 'Achieve an average score over 18 per match',
+        image: '../images/ribbons/Legendary.png',
+        color: '#FFD700',
+        levels: [18, 19, 20, 21, 22, 23, 24, 25]
+    },
+    'Prodigy Ribbon': {
+        description: 'Achieve OVERALL grade A or S on your player scorecard',
+        image: '../images/ribbons/ELOGoblin.png',
+        color: '#4CAF50',
+        levels: [1, 2] // Level 1 = A overall grade, Level 2 = S overall grade (max)
     },
     'Top Bronze Pilot': {
         description: 'Claimed the highest spot on the ladder for Bronze rank',
@@ -284,6 +321,7 @@ export const RIBBON_CSS = `
     border-radius: 6px;
     font-size: 12px;
     white-space: nowrap;
+    max-width: 500px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -291,6 +329,40 @@ export const RIBBON_CSS = `
     text-align: center;
     margin-bottom: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    line-height: 1.4;
+}
+
+/* Hide default tooltip when overtime tooltip exists */
+.military-ribbon:has(.overtime-tooltip)::before {
+    display: none;
+}
+
+/* Overtime match details tooltip */
+.overtime-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 11px;
+    max-width: 600px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    text-align: left;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.military-ribbon:hover .overtime-tooltip {
+    display: block !important;
+    opacity: 1;
 }
 
 .military-ribbon:hover::before {
@@ -518,7 +590,7 @@ class RibbonCacheManager {
         const cacheKey = this.getCacheKey(username, ladder);
         this.memoryCache.delete(cacheKey);
         localStorage.removeItem(cacheKey);
-        // Invalidated cache for ${username} (${ladder}) - new match detected
+        return `Cache cleared for ${username} (${ladder})`;
     }
 
     autoCleanup() {
@@ -556,6 +628,9 @@ class RibbonCacheManager {
                 }
             }
         }
+        
+        const message = `Cleaned ${cleanedMemory} memory entries, ${cleanedStorage} storage entries`;
+        return message;
     }
 
     clearOldCache() {
@@ -760,10 +835,42 @@ class RibbonSystem {
             }
         });
 
-        // Found ${stats.underdogWins} underdog victories for ${playerUsername}
-        // Dominated ${stats.dominatedRanks.size} ranks: [${Array.from(stats.dominatedRanks).map(tier => getRankTierName(tier)).join(', ')}]
-
-        const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
+        // Calculate ADJUSTED win rate (matching playerscorecard.js logic)
+        // Apply 30-match-per-opponent cap to prevent stat padding
+        const opponentData = {};
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            if (!opponent) return;
+            
+            if (!opponentData[opponent]) {
+                opponentData[opponent] = { matches: 0, wins: 0 };
+            }
+            opponentData[opponent].matches++;
+            if (isWinner) opponentData[opponent].wins++;
+        });
+        
+        const MAX_MATCHES_PER_OPPONENT = 30;
+        const maxMatchesAgainstOne = Math.max(...Object.values(opponentData).map(d => d.matches));
+        const percentageAgainstTopOpponent = (maxMatchesAgainstOne / stats.totalMatches) * 100;
+        const needsAdjustment = percentageAgainstTopOpponent > 30;
+        
+        let adjustedWins = 0;
+        let adjustedTotalMatches = 0;
+        Object.entries(opponentData).forEach(([opponent, data]) => {
+            if (data.matches <= MAX_MATCHES_PER_OPPONENT) {
+                adjustedTotalMatches += data.matches;
+                adjustedWins += data.wins;
+            } else {
+                const ratio = MAX_MATCHES_PER_OPPONENT / data.matches;
+                adjustedTotalMatches += MAX_MATCHES_PER_OPPONENT;
+                adjustedWins += Math.round(data.wins * ratio);
+            }
+        });
+        
+        const rawWinRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
+        const adjustedWinRate = adjustedTotalMatches > 0 ? (adjustedWins / adjustedTotalMatches) * 100 : rawWinRate;
+        const winRate = needsAdjustment ? adjustedWinRate : rawWinRate;
 
         const evaluations = [
             ['Overachiever Ribbon', this.evaluateOverachieverRibbonFromCount(stats.totalMatches, currentRibbons)],
@@ -920,15 +1027,59 @@ class RibbonSystem {
         return updates;
     }
 
+    // Helper to check if ribbon data has corruption (strings instead of numbers)
+    hasCorruptedRibbonData(ribbons) {
+        const corruptionChecks = [
+            { name: 'Champion Ribbon', field: 'totalKills' },
+            { name: 'Death Ribbon', field: 'totalDeaths' },
+            { name: 'Sacrifice Ribbon', field: 'totalSuicides' },
+            { name: 'Legendary Ribbon', field: 'avgScore' }
+        ];
+        
+        for (const check of corruptionChecks) {
+            const ribbon = ribbons[check.name];
+            if (ribbon && ribbon[check.field] !== undefined && typeof ribbon[check.field] !== 'number') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Check if ribbon data might be incomplete (missing ribbons player should have)
+    hasIncompleteRibbonDataFromStats(ribbons, matchCount, winRate) {
+        const ribbonCount = Object.keys(ribbons || {}).length;
+        
+        // Quick checks for obviously missing ribbons
+        if (matchCount >= 100 && !ribbons['Overachiever Ribbon']) return true;
+        if (matchCount >= 50 && winRate >= 80 && !ribbons['Brick Wall']) return true;
+        if (matchCount >= 300 && ribbons['Overachiever Ribbon']?.level < 3) return true;
+        if (matchCount >= 50 && winRate >= 95 && ribbons['Brick Wall']?.level < 4) return true;
+        if (matchCount >= 200 && ribbonCount < 5) return true;
+        if (matchCount >= 300 && ribbonCount < 8) return true;
+        
+        return false;
+    }
+
     // Update main evaluation to always check for top rank (but only award if currently #1)
     async evaluateAllRibbonsForPlayerOptimized(playerUsername, ladder = 'D1') {
         try {
+            // Get player data and matches
+            const playerDataForCheck = await this.getPlayerDataCached(playerUsername, ladder);
+            const allMatches = await this.getPlayerMatchesOptimized(playerUsername, ladder);
+            const matchCountForCheck = allMatches.length;
+            let winsForCheck = 0;
+            for (const match of allMatches) {
+                if (match.winnerUsername === playerUsername) winsForCheck++;
+            }
+            const winRateForCheck = matchCountForCheck > 0 ? (winsForCheck / matchCountForCheck) * 100 : 0;
+            
             const cachedRibbons = ribbonCache.getCachedData(playerUsername, ladder);
-            if (cachedRibbons) {
-                // Always check for new top rank achievements, even with cache
+            const isCorrupted = cachedRibbons && this.hasCorruptedRibbonData(cachedRibbons);
+            const isIncomplete = cachedRibbons && this.hasIncompleteRibbonDataFromStats(cachedRibbons, matchCountForCheck, winRateForCheck);
+            
+            if (cachedRibbons && !isCorrupted && !isIncomplete) {
                 const topRankRibbons = await this.evaluateTopRankRibbon(playerUsername, ladder, cachedRibbons);
                 if (Object.keys(topRankRibbons).length > 0) {
-                    // New top rank achievements found for cached player ${playerUsername}
                     await this.savePlayerRibbonsOptimized(playerUsername, topRankRibbons, ladder);
                     const updatedRibbons = { ...cachedRibbons, ...topRankRibbons };
                     ribbonCache.setCachedData(playerUsername, ladder, updatedRibbons, 0);
@@ -936,23 +1087,23 @@ class RibbonSystem {
                 }
                 return cachedRibbons;
             }
-
-            const [playerData, currentRibbons] = await Promise.all([
-                this.getPlayerDataCached(playerUsername, ladder),
-                this.getPlayerRibbonsCached(playerUsername, ladder)
-            ]);
-
-            if (!playerData) {
-                return {};
+            
+            if (cachedRibbons) {
+                ribbonCache.invalidatePlayerCache(playerUsername, ladder);
             }
 
-            const playerMatchCount = playerData.matchesPlayed || 0;
-            
-            // Always check for top rank ribbons regardless of cache status
+            const playerData = playerDataForCheck;
+            const currentRibbons = await this.getPlayerRibbonsCached(playerUsername, ladder);
+
+            if (!playerData) return {};
+
+            const playerMatchCount = matchCountForCheck;
             const topRankRibbons = await this.evaluateTopRankRibbon(playerUsername, ladder, currentRibbons);
             
-            if (!ribbonCache.shouldRefreshCache(playerUsername, ladder, playerMatchCount)) {
-                // Even if not refreshing, save any new top rank achievements
+            const hasCorruption = this.hasCorruptedRibbonData(currentRibbons);
+            const hasIncomplete = this.hasIncompleteRibbonDataFromStats(currentRibbons, matchCountForCheck, winRateForCheck);
+            
+            if (!hasCorruption && !hasIncomplete && !ribbonCache.shouldRefreshCache(playerUsername, ladder, playerMatchCount)) {
                 if (Object.keys(topRankRibbons).length > 0) {
                     await this.savePlayerRibbonsOptimized(playerUsername, topRankRibbons, ladder);
                     const updatedRibbons = { ...currentRibbons, ...topRankRibbons };
@@ -967,21 +1118,39 @@ class RibbonSystem {
             const matches = await this.getPlayerMatchesOptimized(playerUsername, ladder);
             const newRibbons = await this.evaluateAllRibbonsFromData(matches, playerData, currentRibbons, ladder);
             
-            // Merge top rank ribbons with other new ribbons
+            // Calculate scorecard-based ribbons (Legendary, Prodigy)
+            const scorecardRibbons = await this.evaluateScorecardRibbons(matches, playerUsername, currentRibbons);
+            Object.assign(newRibbons, scorecardRibbons);
             Object.assign(newRibbons, topRankRibbons);
 
-            if (Object.keys(newRibbons).length > 0) {
-                // Saving ${Object.keys(newRibbons).length} new/updated ribbons for ${playerUsername}
-                await this.savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder);
+            // Remove ribbons that no longer qualify
+            const finalRibbons = { ...currentRibbons };
+            
+            if (finalRibbons['Legendary Ribbon'] && !newRibbons['Legendary Ribbon']) {
+                delete finalRibbons['Legendary Ribbon'];
+            }
+            if (finalRibbons['Prodigy Ribbon'] && !newRibbons['Prodigy Ribbon']) {
+                delete finalRibbons['Prodigy Ribbon'];
+            }
+            if (finalRibbons['Brick Wall'] && !newRibbons['Brick Wall']) {
+                if (!this.validateBrickWallRibbon(matches, playerUsername)) {
+                    delete finalRibbons['Brick Wall'];
+                }
+            }
+            
+            Object.assign(finalRibbons, newRibbons);
+            
+            const validatedRibbons = await this.validateAllRibbons(finalRibbons, matches, playerUsername, ladder);
+
+            if (Object.keys(newRibbons).length > 0 || Object.keys(validatedRibbons).length !== Object.keys(currentRibbons).length) {
+                await this.savePlayerRibbonsOptimized(playerUsername, validatedRibbons, ladder, true);
             }
 
-            const finalRibbons = { ...currentRibbons, ...newRibbons };
-            ribbonCache.setCachedData(playerUsername, ladder, finalRibbons, matches.length);
-
-            return finalRibbons;
+            ribbonCache.setCachedData(playerUsername, ladder, validatedRibbons, matches.length);
+            return validatedRibbons;
 
         } catch (error) {
-            console.error('❌ Error in ribbon evaluation:', error);
+            console.error('Error in ribbon evaluation:', error);
             return {};
         }
     }
@@ -1063,7 +1232,12 @@ class RibbonSystem {
             subgameMatches: 0,
             uniqueMaps: new Set(),
             uniqueOpponents: new Set(),
-            underdogWins: 0
+            underdogWins: 0,
+            totalKills: 0,
+            totalDeaths: 0,
+            totalSuicides: 0,
+            overtimeWins: 0,
+            overtimeMatches: [] // Store match references for Long Overtime ribbon
         };
         
         // Get all unique opponent usernames for bulk loading
@@ -1098,6 +1272,51 @@ class RibbonSystem {
                 if (this.isUnderdogVictoryFast(match, playerUsername, currentPlayerData, allPlayerData)) {
                     stats.underdogWins++;
                 }
+                
+                // Collect kills, deaths, and suicides for winner
+                // Winner's score = their kills, Loser's score = deaths taken by winner
+                // Parse values first, then use bitwise OR to force integer addition
+                const winnerKills = parseInt(match.winnerScore, 10);
+                const loserKills = parseInt(match.loserScore, 10);
+                const winnerSuicideCount = parseInt(match.winnerSuicides, 10);
+                
+                if (!isNaN(winnerKills)) {
+                    stats.totalKills = (stats.totalKills | 0) + winnerKills;
+                }
+                if (!isNaN(loserKills)) {
+                    stats.totalDeaths = (stats.totalDeaths | 0) + loserKills;
+                }
+                if (!isNaN(winnerSuicideCount)) {
+                    stats.totalSuicides = (stats.totalSuicides | 0) + winnerSuicideCount;
+                }
+                
+                // Check for overtime win (23+ kills)
+                if (!isNaN(winnerKills) && winnerKills >= 23) {
+                    stats.overtimeWins++;
+                    stats.overtimeMatches.push({
+                        id: match.id,
+                        date: match.datePlayed || match.timestamp,
+                        opponent: match.loserUsername,
+                        score: `${match.winnerScore}-${match.loserScore}`,
+                        map: match.mapPlayed
+                    });
+                }
+            } else {
+                // Collect kills, deaths, and suicides for loser
+                // Loser's score = their kills, Winner's score = deaths taken by loser
+                const loserKills = parseInt(match.loserScore, 10);
+                const winnerKills = parseInt(match.winnerScore, 10);
+                const loserSuicideCount = parseInt(match.loserSuicides, 10);
+                
+                if (!isNaN(loserKills)) {
+                    stats.totalKills = (stats.totalKills | 0) + loserKills;
+                }
+                if (!isNaN(winnerKills)) {
+                    stats.totalDeaths = (stats.totalDeaths | 0) + winnerKills;
+                }
+                if (!isNaN(loserSuicideCount)) {
+                    stats.totalSuicides = (stats.totalSuicides | 0) + loserSuicideCount;
+                }
             }
             
             if (match.subgameType && match.subgameType !== 'Standard') {
@@ -1113,8 +1332,6 @@ class RibbonSystem {
             }
         });
 
-        // Found ${stats.underdogWins} underdog victories for ${playerUsername}
-
         const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
 
         const evaluations = [
@@ -1124,7 +1341,11 @@ class RibbonSystem {
             ['Explorer Ribbon', this.evaluateExplorerRibbonFromCount(stats.uniqueMaps.size, currentRibbons)],
             ['Socialite Ribbon', this.evaluateSocialiteRibbonFromCount(stats.uniqueOpponents.size, currentRibbons)],
             ['Brick Wall', this.evaluateBrickWallRibbonFromWinRate(winRate, currentRibbons, stats.totalMatches)],
-            ['Underdog Ribbon', this.evaluateUnderdogRibbonFromCount(stats.underdogWins, currentRibbons)]
+            ['Underdog Ribbon', this.evaluateUnderdogRibbonFromCount(stats.underdogWins, currentRibbons)],
+            ['Champion Ribbon', this.evaluateChampionRibbonFromKills(stats.totalKills, currentRibbons)],
+            ['Death Ribbon', this.evaluateDeathRibbonFromDeaths(stats.totalDeaths, currentRibbons)],
+            ['Long Overtime Ribbon', this.evaluateLongOvertimeRibbonFromMatches(stats.overtimeMatches, currentRibbons)],
+            ['Sacrifice Ribbon', this.evaluateSacrificeRibbonFromSuicides(stats.totalSuicides, currentRibbons)]
         ];
         
         evaluations.forEach(([ribbonName, result]) => {
@@ -1256,13 +1477,20 @@ class RibbonSystem {
         }
     }
 
-    async savePlayerRibbonsOptimized(playerUsername, newRibbons, ladder) {
+    async savePlayerRibbonsOptimized(playerUsername, ribbonsToSave, ladder, isCompleteSet = false) {
         try {
             const ribbonsCollection = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
             const ribbonsRef = doc(db, ribbonsCollection, playerUsername);
             
-            const currentRibbons = await this.getPlayerRibbonsCached(playerUsername, ladder);
-            const updatedRibbons = { ...currentRibbons, ...newRibbons };
+            let updatedRibbons;
+            if (isCompleteSet) {
+                // When passing the complete set, use it as-is (allows removal of ribbons)
+                updatedRibbons = ribbonsToSave;
+            } else {
+                // When passing only new ribbons, merge with existing
+                const currentRibbons = await this.getPlayerRibbonsCached(playerUsername, ladder);
+                updatedRibbons = { ...currentRibbons, ...ribbonsToSave };
+            }
             
             await setDoc(ribbonsRef, {
                 username: playerUsername,
@@ -1391,6 +1619,504 @@ class RibbonSystem {
         }
         return null;
     }
+
+    // New ribbon evaluation functions
+    evaluateChampionRibbonFromKills(totalKills, currentRibbons) {
+        if (totalKills < 500) return null;
+        
+        const current = currentRibbons['Champion Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Champion Ribbon'].levels;
+        
+        let targetLevel = 0;
+        for (let i = 0; i < levels.length; i++) {
+            if (totalKills >= levels[i]) {
+                targetLevel = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        // Always return the ribbon if player qualifies, even if level unchanged
+        // This ensures removal logic doesn't delete still-qualifying ribbons
+        return { 
+            level: targetLevel, 
+            awardedAt: current.awardedAt || new Date(), 
+            totalKills: parseInt(totalKills, 10) 
+        };
+    }
+
+    evaluateDeathRibbonFromDeaths(totalDeaths, currentRibbons) {
+        if (totalDeaths < 500) return null;
+        
+        const current = currentRibbons['Death Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Death Ribbon'].levels;
+        
+        let targetLevel = 0;
+        for (let i = 0; i < levels.length; i++) {
+            if (totalDeaths >= levels[i]) {
+                targetLevel = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        // Always return the ribbon if player qualifies, even if level unchanged
+        // This ensures removal logic doesn't delete still-qualifying ribbons
+        return { 
+            level: targetLevel, 
+            awardedAt: current.awardedAt || new Date(), 
+            totalDeaths: parseInt(totalDeaths, 10) 
+        };
+    }
+
+    evaluateLongOvertimeRibbonFromMatches(overtimeMatches, currentRibbons) {
+        if (overtimeMatches.length === 0) return null;
+        
+        const current = currentRibbons['Long Overtime Ribbon'] || { level: 0 };
+        
+        if (overtimeMatches.length > current.level) {
+            return { 
+                level: overtimeMatches.length, 
+                awardedAt: new Date(),
+                matches: overtimeMatches // Store match references
+            };
+        }
+        return null;
+    }
+
+    evaluateSacrificeRibbonFromSuicides(totalSuicides, currentRibbons) {
+        if (totalSuicides < 100) return null;
+        
+        const current = currentRibbons['Sacrifice Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Sacrifice Ribbon'].levels;
+        
+        let targetLevel = 0;
+        for (let i = 0; i < levels.length; i++) {
+            if (totalSuicides >= levels[i]) {
+                targetLevel = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        // Always return the ribbon if player qualifies, even if level unchanged
+        // This ensures removal logic doesn't delete still-qualifying ribbons
+        return { 
+            level: targetLevel, 
+            awardedAt: current.awardedAt || new Date(), 
+            totalSuicides: parseInt(totalSuicides, 10) 
+        };
+    }
+
+    evaluateLegendaryRibbonFromAvgScore(avgScore, currentRibbons) {
+        if (avgScore < 18) return null;
+        
+        const current = currentRibbons['Legendary Ribbon'] || { level: 0 };
+        const levels = RIBBON_DEFINITIONS['Legendary Ribbon'].levels;
+        
+        let targetLevel = 0;
+        for (let i = 0; i < levels.length; i++) {
+            if (avgScore >= levels[i]) {
+                targetLevel = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        // Always return the ribbon if player qualifies, even if level unchanged
+        // This ensures removal logic doesn't delete still-qualifying ribbons
+        return { 
+            level: targetLevel, 
+            awardedAt: current.awardedAt || new Date(), 
+            avgScore: parseFloat(avgScore.toFixed(2)) 
+        };
+    }
+
+    evaluateProdigyRibbonFromGrade(grade, currentRibbons) {
+        if (!grade || (grade !== 'A' && grade !== 'S')) return null;
+        
+        const current = currentRibbons['Prodigy Ribbon'] || { level: 0 };
+        const targetLevel = grade === 'S' ? 2 : 1;
+        
+        // Always return the ribbon if player qualifies, even if level unchanged
+        // This ensures removal logic doesn't delete still-qualifying ribbons
+        return { 
+            level: targetLevel, 
+            awardedAt: current.awardedAt || new Date(), 
+            grade 
+        };
+    }
+
+    // Bulk validation - re-evaluate ribbons for all players on a ladder
+    async validateAllPlayersRibbons(ladder = 'D1') {
+        try {
+            const playersCollection = ladder === 'D1' ? 'players' : 
+                                     ladder === 'D2' ? 'playersD2' : 'playersD3';
+            
+            const playersRef = collection(db, playersCollection);
+            const snapshot = await getDocs(playersRef);
+            
+            const totalPlayers = snapshot.size;
+            let processed = 0;
+            let updated = 0;
+            
+            for (const doc of snapshot.docs) {
+                const playerData = doc.data();
+                const username = playerData.username;
+                
+                if (!username) continue;
+                
+                processed++;
+                
+                // Invalidate cache to force re-evaluation
+                ribbonCache.invalidatePlayerCache(username, ladder);
+                
+                // Re-evaluate ribbons
+                await this.evaluateAllRibbonsForPlayerOptimized(username, ladder);
+                updated++;
+                
+                // Add small delay to avoid rate limits
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            return { processed, updated };
+            
+        } catch (error) {
+            console.error('Bulk validation error:', error);
+            throw error;
+        }
+    }
+
+    // Validate Brick Wall ribbon - check if player still meets minimum requirements
+    validateBrickWallRibbon(matches, playerUsername) {
+        if (matches.length < 50) return false;
+        
+        let wins = 0;
+        matches.forEach(match => {
+            if (match.winnerUsername === playerUsername) wins++;
+        });
+        
+        const winRate = (wins / matches.length) * 100;
+        return winRate >= 80; // Minimum 80% win rate required
+    }
+
+    // Full validation of all ribbons - ensures players have ribbons they deserve and don't have ones they shouldn't
+    async validateAllRibbons(currentRibbons, matches, playerUsername, ladder) {
+        const validated = { ...currentRibbons };
+        let changesDetected = false;
+        
+        // Calculate all current stats for validation
+        const stats = {
+            totalMatches: matches.length,
+            wins: 0,
+            rematchWins: 0,
+            subgameMatches: 0,
+            uniqueMaps: new Set(),
+            uniqueOpponents: new Set(),
+            totalKills: 0,
+            totalDeaths: 0,
+            totalSuicides: 0,
+            overtimeWins: 0
+        };
+        
+        matches.forEach(match => {
+            const isWinner = match.winnerUsername === playerUsername;
+            const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+            
+            if (isWinner) {
+                stats.wins++;
+                if (match.subgameType === 'Rematch') stats.rematchWins++;
+                
+                const winnerKills = parseInt(match.winnerScore, 10);
+                const loserKills = parseInt(match.loserScore, 10);
+                const winnerSuicides = parseInt(match.winnerSuicides, 10);
+                
+                if (!isNaN(winnerKills)) stats.totalKills += winnerKills;
+                if (!isNaN(loserKills)) stats.totalDeaths += loserKills;
+                if (!isNaN(winnerSuicides)) stats.totalSuicides += winnerSuicides;
+                if (!isNaN(winnerKills) && winnerKills >= 23) stats.overtimeWins++;
+            } else {
+                const loserKills = parseInt(match.loserScore, 10);
+                const winnerKills = parseInt(match.winnerScore, 10);
+                const loserSuicides = parseInt(match.loserSuicides, 10);
+                
+                if (!isNaN(loserKills)) stats.totalKills += loserKills;
+                if (!isNaN(winnerKills)) stats.totalDeaths += winnerKills;
+                if (!isNaN(loserSuicides)) stats.totalSuicides += loserSuicides;
+            }
+            
+            if (match.subgameType && match.subgameType !== 'Standard') stats.subgameMatches++;
+            if (match.mapPlayed) stats.uniqueMaps.add(match.mapPlayed);
+            if (opponent) stats.uniqueOpponents.add(opponent);
+        });
+        
+        const winRate = stats.totalMatches > 0 ? (stats.wins / stats.totalMatches) * 100 : 0;
+        
+        // Define validation rules for each ribbon type
+        const validationRules = [
+            {
+                name: 'Overachiever Ribbon',
+                check: () => stats.totalMatches >= 100,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Overachiever Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.totalMatches >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                }
+            },
+            {
+                name: 'Brick Wall',
+                check: () => stats.totalMatches >= 50 && winRate >= 80,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Brick Wall'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (winRate >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                },
+                canBeLost: true
+            },
+            {
+                name: 'Sub-Gamer Ribbon',
+                check: () => stats.subgameMatches >= 50,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Sub-Gamer Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.subgameMatches >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                }
+            },
+            {
+                name: 'Explorer Ribbon',
+                check: () => stats.uniqueMaps.size >= 20,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Explorer Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.uniqueMaps.size >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                }
+            },
+            {
+                name: 'Socialite Ribbon',
+                check: () => stats.uniqueOpponents.size >= 10,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Socialite Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.uniqueOpponents.size >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                }
+            },
+            {
+                name: 'Rematch Ribbon',
+                check: () => stats.rematchWins >= 1,
+                getLevel: () => stats.rematchWins
+            },
+            {
+                name: 'Champion Ribbon',
+                check: () => stats.totalKills >= 200,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Champion Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.totalKills >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                },
+                extraData: { totalKills: stats.totalKills }
+            },
+            {
+                name: 'Death Ribbon',
+                check: () => stats.totalDeaths >= 200,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Death Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.totalDeaths >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                },
+                extraData: { totalDeaths: stats.totalDeaths }
+            },
+            {
+                name: 'Sacrifice Ribbon',
+                check: () => stats.totalSuicides >= 50,
+                getLevel: () => {
+                    const levels = RIBBON_DEFINITIONS['Sacrifice Ribbon'].levels;
+                    for (let i = levels.length - 1; i >= 0; i--) {
+                        if (stats.totalSuicides >= levels[i]) return i + 1;
+                    }
+                    return 0;
+                },
+                extraData: { totalSuicides: stats.totalSuicides }
+            },
+            {
+                name: 'Long Overtime Ribbon',
+                check: () => stats.overtimeWins >= 1,
+                getLevel: () => stats.overtimeWins
+            }
+        ];
+        
+        // Validate each ribbon
+        for (const rule of validationRules) {
+            const existing = validated[rule.name];
+            const qualifies = rule.check();
+            const correctLevel = qualifies ? rule.getLevel() : 0;
+            
+            if (qualifies) {
+                // Player should have this ribbon
+                if (!existing) {
+                    // Missing ribbon - award it
+                    validated[rule.name] = {
+                        level: correctLevel,
+                        awardedAt: new Date(),
+                        ...(rule.extraData || {})
+                    };
+                    changesDetected = true;
+                } else if (existing.level < correctLevel) {
+                    // Level is too low - upgrade it
+                    validated[rule.name] = {
+                        ...existing,
+                        level: correctLevel,
+                        ...(rule.extraData || {})
+                    };
+                    changesDetected = true;
+                } else if (rule.extraData) {
+                    // Update extra data if it changed (like totalKills count)
+                    const needsUpdate = Object.keys(rule.extraData).some(key => 
+                        existing[key] !== rule.extraData[key]
+                    );
+                    if (needsUpdate) {
+                        validated[rule.name] = { ...existing, ...rule.extraData };
+                        changesDetected = true;
+                    }
+                }
+            } else if (existing && rule.canBeLost) {
+                // Player has ribbon but no longer qualifies (and it can be lost)
+                delete validated[rule.name];
+                changesDetected = true;
+            }
+        }
+        
+        // Validate Collector ribbon based on total ribbon count
+        const nonCollectorCount = Object.keys(validated).filter(r => r !== 'Collector Ribbon').length;
+        const collectorLevels = RIBBON_DEFINITIONS['Collector Ribbon'].levels;
+        let collectorLevel = 0;
+        for (let i = collectorLevels.length - 1; i >= 0; i--) {
+            if (nonCollectorCount >= collectorLevels[i]) {
+                collectorLevel = i + 1;
+                break;
+            }
+        }
+        
+        if (collectorLevel > 0) {
+            if (!validated['Collector Ribbon'] || validated['Collector Ribbon'].level < collectorLevel) {
+                validated['Collector Ribbon'] = {
+                    level: collectorLevel,
+                    awardedAt: validated['Collector Ribbon']?.awardedAt || new Date()
+                };
+                changesDetected = true;
+            }
+        }
+        
+        return validated;
+    }
+
+    // Evaluate scorecard-based ribbons (Legendary, Prodigy)
+    async evaluateScorecardRibbons(matches, username, currentRibbons) {
+        try {
+            // Minimum requirements check
+            const uniqueOpponents = new Set();
+            matches.forEach(match => {
+                const opponent = match.winnerUsername === username ? match.loserUsername : match.winnerUsername;
+                if (opponent) uniqueOpponents.add(opponent);
+            });
+
+            // Need 30 matches and 6 unique opponents for scorecard
+            if (matches.length < 30 || uniqueOpponents.size < 6) {
+                return {};
+            }
+
+            // Use PlayerScorecard directly to get the EXACT same grade calculation
+            const scorecardResult = PlayerScorecard.getOverallGradeForRibbon(matches, username);
+            const grade = scorecardResult.grade;
+
+            // Calculate avg score for Legendary ribbon (with adjustment logic)
+            let rawTotalKills = 0;
+            let rawWins = 0;
+            const opponentData = {};
+
+            matches.forEach(match => {
+                const isWinner = match.winnerUsername === username;
+                const opponent = isWinner ? match.loserUsername : match.winnerUsername;
+                let playerScore = 0;
+
+                if (isWinner) {
+                    playerScore = parseInt(match.winnerScore || match.score1 || match.winnerKills || 0) || 0;
+                    rawWins++;
+                } else {
+                    playerScore = parseInt(match.loserScore || match.score2 || match.loserKills || 0) || 0;
+                }
+
+                rawTotalKills += playerScore;
+
+                if (!opponentData[opponent]) {
+                    opponentData[opponent] = { matches: 0, kills: 0 };
+                }
+                opponentData[opponent].matches++;
+                opponentData[opponent].kills += playerScore;
+            });
+
+            const totalMatches = matches.length;
+            const rawAvgScore = totalMatches > 0 ? rawTotalKills / totalMatches : 0;
+
+            // Determine if adjustment is needed
+            const MAX_MATCHES_PER_OPPONENT = 30;
+            const maxMatchesAgainstOne = Math.max(...Object.values(opponentData).map(d => d.matches));
+            const percentageAgainstTopOpponent = (maxMatchesAgainstOne / totalMatches) * 100;
+            const needsAdjustment = percentageAgainstTopOpponent > 30;
+
+            let adjustedTotalKills = 0;
+            let adjustedTotalMatches = 0;
+
+            if (needsAdjustment) {
+                Object.entries(opponentData).forEach(([opponent, data]) => {
+                    if (data.matches <= MAX_MATCHES_PER_OPPONENT) {
+                        adjustedTotalMatches += data.matches;
+                        adjustedTotalKills += data.kills;
+                    } else {
+                        const ratio = MAX_MATCHES_PER_OPPONENT / data.matches;
+                        adjustedTotalMatches += MAX_MATCHES_PER_OPPONENT;
+                        adjustedTotalKills += Math.round(data.kills * ratio);
+                    }
+                });
+            }
+
+            const adjustedAvgScore = adjustedTotalMatches > 0 ? adjustedTotalKills / adjustedTotalMatches : rawAvgScore;
+            const displayAvgScore = needsAdjustment ? adjustedAvgScore : rawAvgScore;
+
+            const ribbons = {};
+            
+            // Evaluate Legendary Ribbon using adjusted avg score
+            const legendaryResult = this.evaluateLegendaryRibbonFromAvgScore(displayAvgScore, currentRibbons);
+            if (legendaryResult) {
+                ribbons['Legendary Ribbon'] = legendaryResult;
+            }
+            
+            // Evaluate Prodigy Ribbon using grade from PlayerScorecard
+            const prodigyResult = this.evaluateProdigyRibbonFromGrade(grade, currentRibbons);
+            if (prodigyResult) {
+                ribbons['Prodigy Ribbon'] = prodigyResult;
+            }
+
+            return ribbons;
+
+        } catch (error) {
+            console.error('Error evaluating scorecard ribbons:', error);
+            return {};
+        }
+    }
 }
 
 // Helper functions for rank tiers
@@ -1444,6 +2170,8 @@ const ribbonCache = new RibbonCacheManager();
 const matchCache = new MatchCacheManager();
 
 if (typeof window !== 'undefined') {
+    window.ribbonSystem = ribbonSystem;
+    window.ribbonCache = ribbonCache;
     window.getRibbonCacheStats = () => {
         return {
             ribbon: ribbonCache.getCacheStats(),
@@ -1534,10 +2262,48 @@ export function getRibbonHTML(ribbonName, ribbonData) {
         return devices.length > 0 ? `<div class="ribbon-devices">${devices.join('')}</div>` : '';
     };
     
-    const tooltipText = `${definition.description} - Level ${level}`;
+    // Special handling for Long Overtime ribbon - show match details in tooltip
+    let tooltipText = `${definition.description} - Level ${level}`;
+    let hasOvertimeMatches = false;
+    let overtimeMatchData = '';
+    
+    if (ribbonName === 'Long Overtime Ribbon' && ribbonData.matches && ribbonData.matches.length > 0) {
+        hasOvertimeMatches = true;
+        overtimeMatchData = ribbonData.matches.map(m => 
+            `${m.score} vs ${m.opponent} on ${m.map}${m.date ? ' (' + new Date(m.date).toLocaleDateString() + ')' : ''}`
+        ).join('\n');
+    }
+    
+    // Add stat counts to tooltip for stat-based ribbons
+    // Handle both number and string types (for data integrity)
+    if (ribbonName === 'Champion Ribbon' && ribbonData.totalKills !== undefined) {
+        const kills = typeof ribbonData.totalKills === 'number' ? ribbonData.totalKills : 'Recalculating...';
+        tooltipText = `${definition.description} - Level ${level} | Total Kills: ${kills}`;
+    } else if (ribbonName === 'Death Ribbon' && ribbonData.totalDeaths !== undefined) {
+        const deaths = typeof ribbonData.totalDeaths === 'number' ? ribbonData.totalDeaths : 'Recalculating...';
+        tooltipText = `${definition.description} - Level ${level} | Total Deaths: ${deaths}`;
+    } else if (ribbonName === 'Sacrifice Ribbon' && ribbonData.totalSuicides !== undefined) {
+        const suicides = typeof ribbonData.totalSuicides === 'number' ? ribbonData.totalSuicides : 'Recalculating...';
+        tooltipText = `${definition.description} - Level ${level} | Total Suicides: ${suicides}`;
+    } else if (ribbonName === 'Legendary Ribbon' && ribbonData.avgScore !== undefined) {
+        const score = typeof ribbonData.avgScore === 'number' ? ribbonData.avgScore.toFixed(2) : 'Recalculating...';
+        tooltipText = `${definition.description} - Level ${level} | Average Score: ${score}`;
+    } else if (ribbonName === 'Prodigy Ribbon' && ribbonData.grade) {
+        tooltipText = `${definition.description} - Level ${level} | Grade: ${ribbonData.grade}`;
+    }
+    
+    // Escape tooltip text properly for HTML attribute
+    const escapedTooltip = tooltipText
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
     
     return `
-        <div class="military-ribbon" data-tooltip="${tooltipText}">
+        <div class="military-ribbon" 
+             data-tooltip="${escapedTooltip}"
+             ${hasOvertimeMatches ? `data-overtime-matches="${overtimeMatchData.replace(/"/g, '&quot;')}"` : ''}>
             <div class="ribbon-image-container">
                 <img src="${definition.image}" 
                      alt="${ribbonName}" 
@@ -1550,6 +2316,12 @@ export function getRibbonHTML(ribbonName, ribbonData) {
             ${generateDevices(level)}
             <div class="ribbon-name">${shortName}</div>
             ${level > 1 ? `<div class="ribbon-level-indicator ${getLevelClass(level)}">${level}</div>` : ''}
+            ${hasOvertimeMatches ? `
+                <div class="overtime-tooltip" style="display: none;">
+                    ${definition.description} - Level ${level}<br><br>
+                    ${overtimeMatchData.split('\n').join('<br>')}
+                </div>
+            ` : ''}
         </div>
     `;
 }

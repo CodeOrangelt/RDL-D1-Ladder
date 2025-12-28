@@ -358,6 +358,42 @@
         0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+.ribbon-icon.champion { 
+    background-image: url('../images/ribbons/Champion.png');
+    border-color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 215, 0, 0.3),
+        0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.ribbon-icon.death { 
+    background-image: url('../images/ribbons/Death.png');
+    border-color: #808080;
+    background-color: rgba(128, 128, 128, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(128, 128, 128, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.long-overtime { 
+    background-image: url('../images/ribbons/LongOvertime.png');
+    border-color: #ffa500;
+    background-color: rgba(255, 165, 0, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(255, 165, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ribbon-icon.sacrifice { 
+    background-image: url('../images/ribbons/Sacrifice.png');
+    border-color: #dc143c;
+    background-color: rgba(220, 20, 60, 0.15);
+    box-shadow: 
+        inset 0 2px 8px rgba(220, 20, 60, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 .ribbon-icon.top-rank { 
     background-image: url('../images/ribbons/toprank.png');
     border-color: #f44336;
@@ -1260,23 +1296,23 @@
                                     <h3 class="ribbon-title">Legendary Ribbon</h3>
                                 </div>
                                 <div class="ribbon-description">
-                                    Gain at least 300 ELO in one season. <em>(Work in Progress)</em>
+                                    Achieve an average score over 18 per match based on your player scorecard.
                                 </div>
                                 <div class="ribbon-levels">
-                                    <strong>Leveling:</strong> This ribbon's level can be continually earned with +100 ELO factored instead of default 300 each level.
+                                    <strong>Leveling:</strong> This ribbon's level increases at each integer increment above 18 (19, 20, 21, etc.).
                                 </div>
                             </div>
 
                             <div class="ribbon-card">
                                 <div class="ribbon-header">
                                     <div class="ribbon-icon elo-goblin"></div>
-                                    <h3 class="ribbon-title">ELO Goblin Ribbon</h3>
+                                    <h3 class="ribbon-title">Prodigy Ribbon</h3>
                                 </div>
                                 <div class="ribbon-description">
-                                    In one match gain +32 ELO (the maximum possible ELO gain).
+                                    Achieve grade A or S on your player scorecard.
                                 </div>
                                 <div class="ribbon-levels">
-                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                    <strong>Leveling:</strong> Level 1 = A grade, Level 2 = S grade (maximum).
                                 </div>
                             </div>
 
@@ -1342,6 +1378,58 @@
                                 </div>
                                 <div class="ribbon-levels">
                                     <strong>Leveling:</strong> This ribbon level is at increments of 5 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon champion"></div>
+                                    <h3 class="ribbon-title">Champion Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Amass 500 kills across all matches.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 500 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon death"></div>
+                                    <h3 class="ribbon-title">Death Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Amass 500 deaths across all matches.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 500 each level.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon long-overtime"></div>
+                                    <h3 class="ribbon-title">Long Overtime Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Win a match that exceeded 23 kills (overtime).
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level increases each time earned.
+                                </div>
+                            </div>
+
+                            <div class="ribbon-card">
+                                <div class="ribbon-header">
+                                    <div class="ribbon-icon sacrifice"></div>
+                                    <h3 class="ribbon-title">Sacrifice Ribbon</h3>
+                                </div>
+                                <div class="ribbon-description">
+                                    Amass 100 suicides across all matches.
+                                </div>
+                                <div class="ribbon-levels">
+                                    <strong>Leveling:</strong> This ribbon level is at increments of 100 each level.
                                 </div>
                             </div>
 

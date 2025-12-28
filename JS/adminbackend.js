@@ -8203,18 +8203,38 @@ async function removeRibbon(ribbonName) {
     const username = document.getElementById('ribbon-target-user').value;
     const ladder = document.getElementById('ribbon-target-ladder').value;
     
+    console.log(`Attempting to remove ribbon: ${ribbonName} from ${username} on ${ladder}`);
+    
+    if (!username) {
+        showNotification('Please enter a username first', 'error');
+        return;
+    }
+    
     if (!confirm(`Remove ${ribbonName} from ${username}?`)) return;
     
     try {
         const collectionName = `playerRibbons${ladder === 'D1' ? '' : ladder}`;
+        console.log(`Using collection: ${collectionName}`);
         const ribbonRef = doc(db, collectionName, username);
         
         // Get current ribbons
         const ribbonDoc = await getDoc(ribbonRef);
-        const currentRibbons = ribbonDoc.exists() ? ribbonDoc.data().ribbons || {} : {};
+        if (!ribbonDoc.exists()) {
+            showNotification(`No ribbon data found for ${username}`, 'error');
+            return;
+        }
+        
+        const currentRibbons = ribbonDoc.data().ribbons || {};
+        console.log('Current ribbons:', Object.keys(currentRibbons));
+        
+        if (!currentRibbons[ribbonName]) {
+            showNotification(`${ribbonName} not found on ${username}`, 'warning');
+            return;
+        }
         
         // Remove ribbon
         delete currentRibbons[ribbonName];
+        console.log('Ribbons after removal:', Object.keys(currentRibbons));
         
         // Save updated ribbons
         await setDoc(ribbonRef, {
@@ -8224,8 +8244,23 @@ async function removeRibbon(ribbonName) {
             lastUpdated: serverTimestamp()
         }, { merge: true });
         
+        console.log(`Successfully removed ${ribbonName}`);
         showNotification(`Removed ${ribbonName} from ${username}`, 'success');
         displayCurrentRibbons(currentRibbons);
+        
+        // CRITICAL: Invalidate the ribbon cache so it gets re-evaluated with correct logic
+        try {
+            // Clear localStorage cache
+            const cacheKey = `ribbon_cache_${username}_${ladder}`;
+            localStorage.removeItem(cacheKey);
+            console.log(`Cleared ribbon cache for ${username}`);
+            
+            // Force re-evaluation on next profile load
+            const evalMessage = `Ribbon cache cleared. Profile will re-evaluate on next load with current logic.`;
+            console.log(evalMessage);
+        } catch (cacheError) {
+            console.warn('Could not clear ribbon cache:', cacheError);
+        }
         
     } catch (error) {
         console.error('Error removing ribbon:', error);

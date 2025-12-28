@@ -933,6 +933,17 @@ displayFFAProfile(data) {
             return;
         }
         
+        // Apply rank styling from profile-content
+        const profileContent = document.querySelector('.profile-content');
+        const existingRankClass = profileContent ? 
+            Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+            null;
+        
+        historyContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+        if (existingRankClass) {
+            historyContainer.classList.add(existingRankClass);
+        }
+        
         const totalMatches = matches.length;
         const initialMatches = matches.slice(0, 10);
         const remainingMatches = matches.slice(10);
@@ -1278,6 +1289,17 @@ displayFFAProfile(data) {
             return;
         }
         
+        // Apply rank styling from profile-content
+        const profileContent = document.querySelector('.profile-content');
+        const existingRankClass = profileContent ? 
+            Array.from(profileContent.classList).find(c => c.startsWith('elo-')) : 
+            null;
+        
+        matchupsContainer.classList.remove('elo-unranked', 'elo-bronze', 'elo-silver', 'elo-gold', 'elo-emerald');
+        if (existingRankClass) {
+            matchupsContainer.classList.add(existingRankClass);
+        }
+        
         // Calculate opponent stats
         const opponentStats = {};
         
@@ -1323,27 +1345,55 @@ displayFFAProfile(data) {
         let smallestDifference = Infinity;
         let lowestWinRate = 100;
         
-        // First pass: find rival (closest to 50/50 in finishes)
+        // First pass: find rival (closest to 50/50 in finishes, within 30-70% range)
         sortedOpponents.forEach(([opponent, stats]) => {
             if (stats.encounters >= 3) {
+                const winRate = (stats.beaten / stats.encounters) * 100;
                 const difference = Math.abs(stats.beaten - stats.beatenBy);
-                if (difference < smallestDifference) {
+                // Only consider a rival if win rate is between 30% and 70%
+                if (winRate >= 30 && winRate <= 70 && difference < smallestDifference) {
                     smallestDifference = difference;
                     rivalOpponent = opponent;
                 }
             }
         });
         
-        // Second pass: find toughest opponent (lowest win rate, excluding rival)
+        // Second pass: find toughest opponent (lowest win rate below 60%, excluding rival)
         sortedOpponents.forEach(([opponent, stats]) => {
             if (stats.encounters >= 3 && opponent !== rivalOpponent) {
                 const winRate = (stats.beaten / stats.encounters) * 100;
-                if (winRate < lowestWinRate) {
+                // Only consider "tough" if you're actually struggling (below 60% win rate)
+                if (winRate < 60 && winRate < lowestWinRate) {
                     lowestWinRate = winRate;
                     toughestOpponent = opponent;
                 }
             }
         });
+        
+        // Fetch FFA ELO data for all opponents
+        const opponentEloData = {};
+        await Promise.all(sortedOpponents.map(async ([opponent]) => {
+            try {
+                const playersRef = collection(db, 'playersFFA');
+                const q = query(playersRef, where('username', '==', opponent), limit(1));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+                    opponentEloData[opponent] = {
+                        eloRating: data.eloRating || 1000,
+                        matchCount: data.matchCount || 0
+                    };
+                }
+            } catch (e) {
+                console.error(`Error fetching FFA data for ${opponent}:`, e);
+            }
+        }));
+
+        // Helper function to get FFA player color
+        // FFA does not use colored tiers - all players use default white color
+        const getFFAPlayerColor = (opponent) => {
+            return '#ffffff'; // FFA does not have colored tiers
+        };
         
         matchupsContainer.innerHTML = `
             <h2>FFA Opponents</h2>
@@ -1376,10 +1426,14 @@ displayFFAProfile(data) {
                                 badge = '<span class="matchup-badge toughest-badge" title="Toughest opponent">Toughest</span>';
                             }
                             
+                            const opponentColor = getFFAPlayerColor(opponent);
+                            
                             return `
                                 <tr class="${rowClass}">
                                     <td>
-                                        <a href="profile.html?username=${encodeURIComponent(opponent)}&ladder=ffa" class="player-link">
+                                        <a href="profile.html?username=${encodeURIComponent(opponent)}&ladder=ffa" 
+                                           class="player-link"
+                                           style="color: ${opponentColor} !important;">
                                             ${opponent}
                                         </a>
                                         ${badge}
@@ -2154,7 +2208,11 @@ updateProfileRankFromMatches(matches) {
         document.querySelector('.profile-container'),
         document.querySelector('.username-section'),
         document.getElementById('nickname'),
-        document.getElementById('motto-view')
+        document.getElementById('motto-view'),
+        document.getElementById('player-matchups'),
+        document.getElementById('match-history'),
+        document.getElementById('ffa-player-matchups'),
+        document.getElementById('ffa-match-history')
     ];
     
     containers.forEach(container => {
@@ -2416,7 +2474,7 @@ setupTrophyCaseToggle() {
         }
     }
     
-    // Optimized getPlayerEloData with better caching
+    // Optimized getPlayerEloData with better caching - returns full stats object for rank coloring
     async getPlayerEloData(username) {
         // Use ladder-specific cache key
         const cacheKey = `${username}_${this.currentLadder}_elo`;
@@ -2434,13 +2492,36 @@ setupTrophyCaseToggle() {
             const playerData = querySnapshot.docs[0]?.data() || {};
             const eloRating = playerData.eloRating || 0;
             
-            // Cache the result with TTL
-            this.playerEloCache.set(cacheKey, eloRating);
+            // Calculate match stats from matches for this player to determine proper rank
+            const matchesCollection = this.currentLadder === 'D1' ? 'approvedMatches' : 
+                                    (this.currentLadder === 'D2' ? 'approvedMatchesD2' : 'approvedMatchesD3');
+            const matchesRef = collection(db, matchesCollection);
             
-            return eloRating;
+            // Get wins and losses for this player
+            const [winnerQuery, loserQuery] = await Promise.all([
+                getDocs(query(matchesRef, where('winnerUsername', '==', username))),
+                getDocs(query(matchesRef, where('loserUsername', '==', username)))
+            ]);
+            
+            const wins = winnerQuery.size;
+            const losses = loserQuery.size;
+            const matchCount = wins + losses;
+            const winRate = matchCount > 0 ? (wins / matchCount) * 100 : 0;
+            
+            // Return stats object instead of just ELO
+            const playerStats = {
+                eloRating: eloRating,
+                matchCount: matchCount,
+                winRate: winRate
+            };
+            
+            // Cache the result
+            this.playerEloCache.set(cacheKey, playerStats);
+            
+            return playerStats;
         } catch (error) {
-            console.error(`Error fetching ELO for ${username}:`, error);
-            return 0;
+            console.error(`Error fetching stats for ${username}:`, error);
+            return { eloRating: 0, matchCount: 0, winRate: 0 };
         }
     }
     
@@ -2559,13 +2640,14 @@ async displayMatchHistory(username, matches, eloHistoryData = null) {
             matchHistoryContainer.classList.add(existingRankClass);
         }
         
-        // Get all player ELOs at once to avoid multiple queries
+        // Get all player stats at once to avoid multiple queries
         const uniquePlayers = new Set();
         matches.forEach(match => {
             uniquePlayers.add(match.winnerUsername);
             uniquePlayers.add(match.loserUsername);
         });
         
+        // playerElos now contains full stats objects: { eloRating, matchCount, winRate }
         const playerElos = {};
         await Promise.all([...uniquePlayers].map(async (player) => {
             playerElos[player] = await this.getPlayerEloData(player);
@@ -3099,6 +3181,17 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
     // Sort the timeline chronologically
     eloTimeline.sort((a, b) => a.timestamp - b.timestamp);
     
+    // Helper function to get player color based on ELO and stats
+    const getPlayerColor = (elo, matchCount, winRate) => {
+        if (matchCount === null || matchCount === undefined || matchCount < 5) return '#DC143C'; // Unranked
+        if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return '#50C878'; // Emerald
+        if (elo >= 700) return '#FFD700'; // Gold
+        if (elo >= 500) return '#b9f1fc'; // Silver
+        if (elo >= 200) return '#CD7F32'; // Bronze
+        // If 5+ matches but ELO < 200, still Bronze (minimum rank for ranked players)
+        return '#CD7F32'; // Bronze (minimum for 5+ matches)
+    };
+    
     // Now render the matches with improved ELO differential calculation
     return matches.map(match => {
         const date = match.createdAt ? 
@@ -3108,18 +3201,27 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
         const matchTimestamp = match.createdAt?.seconds || 0;
         
         // Get ELO ratings at the time of the match for both players
-        const winnerEloAtMatch = match.winnerPreviousElo || match.winnerRating || playerElos[match.winnerUsername];
-        const loserEloAtMatch = match.loserPreviousElo || match.loserRating || playerElos[match.loserUsername];
+        // playerElos now contains stats objects: { eloRating, matchCount, winRate }
+        const winnerStats = playerElos[match.winnerUsername] || { eloRating: 0, matchCount: 0, winRate: 0 };
+        const loserStats = playerElos[match.loserUsername] || { eloRating: 0, matchCount: 0, winRate: 0 };
         
-        // Get match stats for accurate rank colors
-        const winnerMatchCount = match.winnerMatchCount !== undefined ? match.winnerMatchCount : null;
-        const winnerWinRate = match.winnerWinRate || 0;
-        const loserMatchCount = match.loserMatchCount !== undefined ? match.loserMatchCount : null;
-        const loserWinRate = match.loserWinRate || 0;
+        // Use historical ELO from match if available, otherwise use current stats
+        const winnerEloAtMatch = match.winnerPreviousElo || match.winnerRating || winnerStats.eloRating;
+        const loserEloAtMatch = match.loserPreviousElo || match.loserRating || loserStats.eloRating;
+        
+        // Get match stats for accurate rank colors - prefer match data, fallback to current stats
+        const winnerMatchCount = match.winnerMatchCount !== undefined ? match.winnerMatchCount : winnerStats.matchCount;
+        const winnerWinRate = match.winnerWinRate || winnerStats.winRate;
+        const loserMatchCount = match.loserMatchCount !== undefined ? match.loserMatchCount : loserStats.matchCount;
+        const loserWinRate = match.loserWinRate || loserStats.winRate;
         
         // Use historical ELO for rank coloring with matchCount and winRate
         const winnerEloClass = getEloClass(winnerEloAtMatch, winnerMatchCount, winnerWinRate);
         const loserEloClass = getEloClass(loserEloAtMatch, loserMatchCount, loserWinRate);
+        
+        // Get inline colors for proper styling (overrides CSS)
+        const winnerColor = getPlayerColor(winnerEloAtMatch, winnerMatchCount, winnerWinRate);
+        const loserColor = getPlayerColor(loserEloAtMatch, loserMatchCount, loserWinRate);
         
         // Get ELO change data - focus on using eloHistory format
         let eloChangeDisplay = '';
@@ -3248,8 +3350,10 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 }
                 else {
                     // Intelligent estimate based on opponent ELO if available
-                    const opponentElo = playerElos[match.loserUsername];
-                    const playerElo = playerElos[match.winnerUsername];
+                    const opponentStats = playerElos[match.loserUsername] || { eloRating: 0 };
+                    const playerStats = playerElos[match.winnerUsername] || { eloRating: 0 };
+                    const opponentElo = opponentStats.eloRating;
+                    const playerElo = playerStats.eloRating;
                     
                     if (opponentElo && playerElo) {
                         // Calculate expected ELO gain based on the difference
@@ -3264,8 +3368,10 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                 }
             } else {
                 // Intelligent estimate for losses
-                const opponentElo = playerElos[match.winnerUsername];
-                const playerElo = playerElos[match.loserUsername];
+                const opponentStats = playerElos[match.winnerUsername] || { eloRating: 0 };
+                const playerStats = playerElos[match.loserUsername] || { eloRating: 0 };
+                const opponentElo = opponentStats.eloRating;
+                const playerElo = playerStats.eloRating;
                 
                 if (opponentElo && playerElo) {
                     // Calculate expected ELO loss based on the difference
@@ -3316,14 +3422,16 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             <tr class="${isWinner ? 'match-won' : 'match-lost'}">
                 <td>${date}</td>
                 <td>
-                    <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}"
-                       class="player-link ${winnerEloClass}">
+                    <a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}&ladder=${this.currentLadder.toLowerCase()}"
+                       class="player-link ${winnerEloClass}"
+                       style="color: ${winnerColor} !important;">
                         ${match.winnerUsername}
                     </a>
                 </td>
                 <td>
-                    <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}"
-                       class="player-link ${loserEloClass}">
+                    <a href="profile.html?username=${encodeURIComponent(match.loserUsername)}&ladder=${this.currentLadder.toLowerCase()}"
+                       class="player-link ${loserEloClass}"
+                       style="color: ${loserColor} !important;">
                         ${match.loserUsername}
                     </a>
                 </td>
@@ -4722,27 +4830,54 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
             let smallestDifference = Infinity;
             let lowestWinRate = 100;
             
-            // First pass: find rival (closest to 50/50)
+            // First pass: find rival (closest to 50/50, within 30% win rate range)
             sortedMatchups.forEach(([opponent, stats]) => {
                 if (stats.total >= 3) {
+                    const winRate = (stats.wins / stats.total) * 100;
                     const difference = Math.abs(stats.wins - stats.losses);
-                    if (difference < smallestDifference) {
+                    // Only consider a rival if win rate is between 30% and 70%
+                    if (winRate >= 30 && winRate <= 70 && difference < smallestDifference) {
                         smallestDifference = difference;
                         rivalOpponent = opponent;
                     }
                 }
             });
             
-            // Second pass: find toughest opponent (lowest win rate, excluding rival)
+            // Second pass: find toughest opponent (lowest win rate below 60%, excluding rival)
             sortedMatchups.forEach(([opponent, stats]) => {
                 if (stats.total >= 3 && opponent !== rivalOpponent) {
                     const winRate = (stats.wins / stats.total) * 100;
-                    if (winRate < lowestWinRate) {
+                    // Only consider "tough" if you're actually struggling (below 60% win rate)
+                    if (winRate < 60 && winRate < lowestWinRate) {
                         lowestWinRate = winRate;
                         toughestOpponent = opponent;
                     }
                 }
             });
+            
+            // Fetch ELO data for all opponents to color them properly
+            const opponentEloData = {};
+            await Promise.all(sortedMatchups.map(async ([opponent]) => {
+                opponentEloData[opponent] = await this.getPlayerEloData(opponent);
+            }));
+
+            // Helper function to get color based on ELO and stats
+            const getOpponentColor = (opponent) => {
+                const data = opponentEloData[opponent];
+                if (!data) return '#DC143C'; // Default unranked
+                
+                const elo = data.eloRating || 0;
+                const matchCount = data.matchCount || 0;
+                const winRate = data.winRate || 0;
+                
+                if (matchCount < 5) return '#DC143C'; // Unranked
+                if (elo >= 1000 && winRate >= 80 && matchCount >= 20) return '#50C878'; // Emerald
+                if (elo >= 700) return '#FFD700'; // Gold
+                if (elo >= 500) return '#b9f1fc'; // Silver
+                if (elo >= 200) return '#CD7F32'; // Bronze
+                // If 5+ matches but ELO < 200, still Bronze (minimum rank for ranked players)
+                return '#CD7F32'; // Bronze (minimum for 5+ matches)
+            };
             
             // Get season information
             const seasonCountDoc = await getDoc(doc(db, 'metadata', 'seasonCount'));
@@ -4781,11 +4916,14 @@ renderMatchRows(matches, username, playerElos, eloHistoryMap, getEloClass) {
                                     badge = '<span class="matchup-badge toughest-badge" title="Toughest opponent">Toughest</span>';
                                 }
                                 
+                                const opponentColor = getOpponentColor(opponent);
+                                
                                 return `
                                     <tr class="${rowClass}">
                                         <td>
-                                            <a href="profile.html?username=${encodeURIComponent(opponent)}"
-                                               class="player-link">
+                                            <a href="profile.html?username=${encodeURIComponent(opponent)}&ladder=${this.currentLadder.toLowerCase()}"
+                                               class="player-link"
+                                               style="color: ${opponentColor} !important;">
                                                 ${opponent}
                                             </a>
                                             ${badge}

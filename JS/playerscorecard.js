@@ -389,14 +389,66 @@ class PlayerScorecard {
             ...overallGrade,
             value: overallGrade.grade,
             name: 'Overall Rating',
-            description: `Weighted score: Win Rate (30%), Scoring (25%), Opponent Mastery (20%), Map Mastery (15%), K/D (10%). ${needsAdjustment ? 'Adjusted for opponent distribution.' : ''}`,
+            description: `Overall Score: ${overallScore.toFixed(1)}/100 | Weighted score: Win Rate (30%), Scoring (25%), Opponent Mastery (20%), Map Mastery (15%), K/D (10%). ${needsAdjustment ? 'Adjusted for opponent distribution.' : ''}`,
             order: 6
         });
 
         return scorecard;
     }
+
+    // Static method to get just the overall grade for ribbon evaluation
+    // This is called from ribbons.js to ensure grade consistency
+    static getOverallGradeForRibbon(matches, username) {
+        // Build mapStats from matches (since we don't have the full stats object)
+        const mapData = {};
+        matches.forEach(match => {
+            if (!match.mapPlayed) return;
+            const isWinner = match.winnerUsername === username;
+            if (!mapData[match.mapPlayed]) {
+                mapData[match.mapPlayed] = { wins: 0, losses: 0, played: 0 };
+            }
+            mapData[match.mapPlayed].played++;
+            if (isWinner) mapData[match.mapPlayed].wins++;
+            else mapData[match.mapPlayed].losses++;
+        });
+
+        // Calculate win rates per map
+        const mapStats = Object.entries(mapData).map(([map, data]) => ({
+            map,
+            winRate: data.played > 0 ? (data.wins / data.played) * 100 : 0,
+            played: data.played
+        }));
+
+        // Sort by win rate to get "best" maps (top 5 by win rate with at least 3 games)
+        const bestMaps = mapStats
+            .filter(m => m.played >= 3)
+            .sort((a, b) => b.winRate - a.winRate)
+            .slice(0, 5);
+
+        const stats = {
+            mapStats: {
+                best: bestMaps,
+                totalUniqueMaps: Object.keys(mapData).length,
+                mostPlayed: mapStats.sort((a, b) => b.played - a.played)
+            }
+        };
+
+        // Create a temporary instance to use the calculation method
+        const tempInstance = new PlayerScorecard();
+        const scorecard = tempInstance.calculatePlayerScorecard(stats, matches, username);
+        
+        // Find the overall grade from the scorecard
+        const overallItem = scorecard.find(item => item.key === 'overall');
+        if (overallItem) {
+            return {
+                grade: overallItem.grade,
+                score: parseFloat(overallItem.description.match(/Overall Score: ([\d.]+)/)?.[1] || 0)
+            };
+        }
+        return { grade: 'F', score: 0 };
+    }
 }
 
 // Create and export a singleton instance
 const playerScorecardInstance = new PlayerScorecard();
-export { playerScorecardInstance };
+export { playerScorecardInstance, PlayerScorecard };
