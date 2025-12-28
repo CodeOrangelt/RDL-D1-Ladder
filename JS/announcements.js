@@ -27,7 +27,7 @@ const ANNOUNCEMENT = {
             </ul>
         <p style="margin-top: 15px;"><span style="color:#ffffff; font-weight: bold;">- Code</span></p>
     `,
-    buttonText: "Got it!"
+    buttonText: "Let me in!"
 };
 
 // Add the animation CSS
