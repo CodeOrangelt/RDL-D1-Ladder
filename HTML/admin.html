@@ -461,6 +461,67 @@
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
+                
+                <!-- Test Report Tool -->
+                <div class="test-report-section" style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <h3 style="margin-bottom: 15px; color: #4CAF50;"><i class="fas fa-flask"></i> Submit Test Report (Full Flow)</h3>
+                    <p style="font-size: 0.85em; color: #aaa; margin-bottom: 15px;">
+                        This creates a pending match that goes through the normal approval flow, including ELO calculations and eloHistory entries.
+                    </p>
+                    
+                    <form id="test-report-form" class="test-report-form">
+                        <div class="form-row" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label for="test-report-winner">Winner Username*</label>
+                                <input type="text" id="test-report-winner" placeholder="e.g., Jediluke" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label for="test-report-loser">Loser Username*</label>
+                                <input type="text" id="test-report-loser" placeholder="e.g., Behemoth" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 100px;">
+                                <label for="test-report-loser-score">Loser Score*</label>
+                                <input type="number" id="test-report-loser-score" min="0" max="19" value="15" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label for="test-report-map">Map Played</label>
+                                <input type="text" id="test-report-map" placeholder="e.g., Minerva" value="TestMap" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 100px;">
+                                <label for="test-report-suicides">Loser Suicides</label>
+                                <input type="number" id="test-report-suicides" min="0" value="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 120px;">
+                                <label for="test-report-subgame">Subgame Type</label>
+                                <select id="test-report-subgame" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                                    <option value="">Standard Match</option>
+                                    <option value="Fusion Match">Fusion Match</option>
+                                    <option value="≥6 Missiles">≥6 Missiles</option>
+                                    <option value="Weapon Imbalance">Weapon Imbalance</option>
+                                    <option value="Blind Match">Blind Match</option>
+                                    <option value="Rematch">Rematch</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row" style="display: flex; gap: 15px; align-items: center;">
+                            <div class="form-group" style="flex: 0 0 auto;">
+                                <label>
+                                    <input type="checkbox" id="test-report-auto-approve" checked>
+                                    Auto-approve (creates match with ELO + eloHistory)
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; background: #4CAF50; border: none; border-radius: 4px; color: #fff; cursor: pointer;">
+                                <i class="fas fa-paper-plane"></i> Submit Test Report
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="test-report-result" style="margin-top: 15px; padding: 10px; display: none; border-radius: 4px;"></div>
+                </div>
             </section>
 
             <!-- Manage Articles Section -->

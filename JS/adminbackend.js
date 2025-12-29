@@ -625,6 +625,7 @@ function setupDataLoadButtons(allowedTabs = []) {
     if (allowedTabs.includes('manage-matches')) {
         setupCreateTestMatchButton();
         setupCreateTestMatchModal();
+        setupTestReportForm();
     }
     
     console.log('Data load buttons initialized based on permissions');
@@ -4998,6 +4999,261 @@ async function createTestMatch() {
     } catch (error) {
         console.error('Error creating simple test match:', error);
         showNotification(`Failed to create simple test match: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * Setup the Test Report Form in the Manage Matches section
+ * This allows admins to submit test reports that go through the full approval flow
+ */
+function setupTestReportForm() {
+    const form = document.getElementById('test-report-form');
+    if (!form) {
+        console.log('Test report form not found in DOM');
+        return;
+    }
+    
+    console.log('Setting up test report form');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await submitTestReport();
+    });
+    
+    console.log('Test report form setup complete');
+}
+
+/**
+ * Submit a test report - can use real players or placeholder names
+ * If players exist, goes through full approval flow with ELO updates
+ * If players don't exist, creates a direct approved match for display testing
+ */
+async function submitTestReport() {
+    const resultDiv = document.getElementById('test-report-result');
+    
+    // Get form values
+    const winnerUsername = document.getElementById('test-report-winner').value.trim();
+    const loserUsername = document.getElementById('test-report-loser').value.trim();
+    const loserScore = parseInt(document.getElementById('test-report-loser-score').value) || 15;
+    const mapPlayed = document.getElementById('test-report-map').value.trim() || 'TestMap';
+    const loserSuicides = parseInt(document.getElementById('test-report-suicides').value) || 0;
+    const subgameType = document.getElementById('test-report-subgame').value || '';
+    const autoApprove = document.getElementById('test-report-auto-approve').checked;
+    
+    // Validate
+    if (!winnerUsername || !loserUsername) {
+        showTestReportResult('Please enter both winner and loser usernames', 'error');
+        return;
+    }
+    
+    if (winnerUsername.toLowerCase() === loserUsername.toLowerCase()) {
+        showTestReportResult('Winner and loser must be different players', 'error');
+        return;
+    }
+    
+    try {
+        showTestReportResult('Processing test report...', 'info');
+        
+        const user = auth.currentUser;
+        if (!user) {
+            showTestReportResult('You must be logged in', 'error');
+            return;
+        }
+        
+        // Determine collections based on current ladder
+        const ladder = currentLadder || 'D1';
+        const playersCollection = ladder === 'D1' ? 'players' : 
+                                  ladder === 'D2' ? 'playersD2' : 
+                                  ladder === 'D3' ? 'playersD3' : 'players';
+        const pendingCollection = ladder === 'D1' ? 'pendingMatches' : 
+                                  ladder === 'D2' ? 'pendingMatchesD2' : 
+                                  ladder === 'D3' ? 'pendingMatchesD3' : 'pendingMatches';
+        const approvedCollection = ladder === 'D1' ? 'approvedMatches' : 
+                                   ladder === 'D2' ? 'approvedMatchesD2' : 
+                                   ladder === 'D3' ? 'approvedMatchesD3' : 'approvedMatches';
+        
+        // Try to find winner (optional - allow placeholders)
+        const winnerQuery = query(collection(db, playersCollection), where('username', '==', winnerUsername));
+        const winnerSnapshot = await getDocs(winnerQuery);
+        
+        // Try to find loser (optional - allow placeholders)
+        const loserQuery = query(collection(db, playersCollection), where('username', '==', loserUsername));
+        const loserSnapshot = await getDocs(loserQuery);
+        
+        const winnerExists = !winnerSnapshot.empty;
+        const loserExists = !loserSnapshot.empty;
+        const bothPlayersExist = winnerExists && loserExists;
+        
+        // Get player data or use placeholders
+        const winnerData = winnerExists ? winnerSnapshot.docs[0].data() : { username: winnerUsername, eloRating: 1000 };
+        const winnerId = winnerExists ? winnerSnapshot.docs[0].id : 'placeholder-winner';
+        const loserData = loserExists ? loserSnapshot.docs[0].data() : { username: loserUsername, eloRating: 1000 };
+        const loserId = loserExists ? loserSnapshot.docs[0].id : 'placeholder-loser';
+        
+        // Calculate winner score
+        const winnerScore = loserScore < 18 ? 20 : loserScore + 2;
+        
+        // If both players exist and auto-approve is on, use the full flow
+        if (bothPlayersExist && autoApprove) {
+            // Create pending match document
+            const pendingMatchRef = doc(collection(db, pendingCollection));
+            
+            const reportData = {
+                matchId: pendingMatchRef.id,
+                loserUsername: loserData.username,
+                loserId: loserId,
+                winnerUsername: winnerData.username,
+                winnerId: winnerId,
+                loserScore: loserScore.toString(),
+                loserSuicides: loserSuicides.toString(),
+                mapPlayed: mapPlayed,
+                loserComment: '[Test Report]',
+                subgameType: subgameType,
+                gameMode: ladder,
+                approved: false,
+                createdAt: serverTimestamp(),
+                winnerOldElo: winnerData.eloRating || 200,
+                losersOldElo: loserData.eloRating || 200,
+                isTestReport: true,
+                testReportBy: user.email
+            };
+            
+            await setDoc(pendingMatchRef, reportData);
+            console.log(`Test report created in ${pendingCollection} with ID: ${pendingMatchRef.id}`);
+            
+            // Auto-approve through the full flow
+            showTestReportResult('Test report created. Auto-approving with ELO updates...', 'info');
+            
+            try {
+                if (ladder === 'D1') {
+                    const { approveReport } = await import('./ladderalgorithm.js');
+                    await approveReport(pendingMatchRef.id, winnerScore, 0, '[Test Report Auto-Approved]', null);
+                } else if (ladder === 'D2') {
+                    const { approveReportD2 } = await import('./ladderalgorithm-d2.js');
+                    await approveReportD2(pendingMatchRef.id, winnerScore, 0, '[Test Report Auto-Approved]');
+                } else if (ladder === 'D3') {
+                    const { approveReportD3 } = await import('./ladderalgorithm-d3.js');
+                    await approveReportD3(pendingMatchRef.id, winnerScore, 0, '[Test Report Auto-Approved]');
+                }
+                
+                showTestReportResult(
+                    `✅ Test match approved with FULL ELO flow!<br>` +
+                    `<strong>${winnerUsername}</strong> (${winnerData.eloRating || 200}) defeated ` +
+                    `<strong>${loserUsername}</strong> (${loserData.eloRating || 200})<br>` +
+                    `Match ID: ${pendingMatchRef.id}<br>` +
+                    `✓ ELO ratings updated<br>` +
+                    `✓ eloHistory entries created`,
+                    'success'
+                );
+                
+                loadMatchesData(1);
+                
+            } catch (approvalError) {
+                console.error('Auto-approval failed:', approvalError);
+                showTestReportResult(
+                    `⚠️ Test report created but auto-approval failed: ${approvalError.message}<br>` +
+                    `The pending match can be approved manually.`,
+                    'warning'
+                );
+            }
+        } else {
+            // Create a direct approved match (placeholder mode or manual approve mode)
+            const matchRef = doc(collection(db, approvedCollection));
+            
+            // Calculate fake ELO changes for display
+            const fakeWinnerEloChange = Math.round(10 + Math.random() * 10);
+            const fakeLoserEloChange = -fakeWinnerEloChange;
+            
+            const matchData = {
+                winnerUsername: winnerUsername,
+                winnerScore: winnerScore,
+                winnerSuicides: 0,
+                winnerComment: '[Test Report]',
+                winnerDemoLink: null,
+                winnerId: winnerId,
+                loserUsername: loserUsername,
+                loserScore: loserScore,
+                loserSuicides: loserSuicides,
+                loserComment: '[Test Report]',
+                loserDemoLink: null,
+                loserId: loserId,
+                mapPlayed: mapPlayed,
+                subgameType: subgameType,
+                gameMode: ladder,
+                approved: true,
+                approvedAt: serverTimestamp(),
+                approvedBy: user.email,
+                createdAt: serverTimestamp(),
+                // ELO fields for display (placeholder values)
+                winnerOldElo: winnerData.eloRating || 1000,
+                loserOldElo: loserData.eloRating || 1000,
+                losersOldElo: loserData.eloRating || 1000,
+                winnerNewElo: (winnerData.eloRating || 1000) + fakeWinnerEloChange,
+                loserNewElo: (loserData.eloRating || 1000) + fakeLoserEloChange,
+                winnerEloChange: fakeWinnerEloChange,
+                loserEloChange: fakeLoserEloChange,
+                // Mark as test
+                isTestReport: true,
+                isPlaceholder: !bothPlayersExist,
+                testReportBy: user.email
+            };
+            
+            await setDoc(matchRef, matchData);
+            
+            const placeholderNote = !bothPlayersExist ? 
+                `<br>⚠️ Using placeholder data (players not found in database)` : '';
+            
+            showTestReportResult(
+                `✅ Test match created directly in approved matches!<br>` +
+                `<strong>${winnerUsername}</strong> vs <strong>${loserUsername}</strong><br>` +
+                `Match ID: ${matchRef.id}<br>` +
+                `ELO Change Display: +${fakeWinnerEloChange} / ${fakeLoserEloChange}${placeholderNote}<br>` +
+                `<em>Note: No actual ELO updates or eloHistory entries (placeholder mode)</em>`,
+                'success'
+            );
+            
+            loadMatchesData(1);
+        }
+        
+    } catch (error) {
+        console.error('Error submitting test report:', error);
+        showTestReportResult(`Error: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * Display result message in the test report section
+ */
+function showTestReportResult(message, type) {
+    const resultDiv = document.getElementById('test-report-result');
+    if (!resultDiv) return;
+    
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = message;
+    
+    // Style based on type
+    switch (type) {
+        case 'success':
+            resultDiv.style.background = 'rgba(76, 175, 80, 0.2)';
+            resultDiv.style.border = '1px solid #4CAF50';
+            resultDiv.style.color = '#81C784';
+            break;
+        case 'error':
+            resultDiv.style.background = 'rgba(244, 67, 54, 0.2)';
+            resultDiv.style.border = '1px solid #f44336';
+            resultDiv.style.color = '#E57373';
+            break;
+        case 'warning':
+            resultDiv.style.background = 'rgba(255, 152, 0, 0.2)';
+            resultDiv.style.border = '1px solid #FF9800';
+            resultDiv.style.color = '#FFB74D';
+            break;
+        case 'info':
+        default:
+            resultDiv.style.background = 'rgba(33, 150, 243, 0.2)';
+            resultDiv.style.border = '1px solid #2196F3';
+            resultDiv.style.color = '#64B5F6';
+            break;
     }
 }
 

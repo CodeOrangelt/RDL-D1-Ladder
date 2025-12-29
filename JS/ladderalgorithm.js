@@ -220,25 +220,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
 
         const reportData = reportSnapshot.data();
 
-        // Create updated report data
-        const updatedReportData = {
-            ...reportData,
-            winnerScore: winnerScore,
-            winnerSuicides: winnerSuicides, 
-            winnerComment: winnerComment,
-            winnerDemoLink: winnerDemoLink,
-            approved: true,
-            approvedAt: serverTimestamp(),
-            approvedBy: auth.currentUser.uid
-        };
-
-        // Move match to approved collection first
-        await setDoc(doc(db, 'approvedMatches', reportId), updatedReportData);
-        await deleteDoc(reportRef);
-
-        console.log('Match moved to approved collection');
-
-        // Get player IDs
+        // Get player IDs first (before any database writes)
         const [winnerDocs, loserDocs] = await Promise.all([
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.winnerUsername))),
             getDocs(query(collection(db, 'players'), where('username', '==', reportData.loserUsername)))
@@ -276,31 +258,39 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         const winnerNewElo = updatedWinnerDoc.data().eloRating;
         const loserNewElo = updatedLoserDoc.data().eloRating;
         
-        // Add ELO changes and rank data to the match document
-        updatedReportData.winnerOldElo = winnerOldElo;
-        updatedReportData.winnerNewElo = winnerNewElo;
-        updatedReportData.winnerEloChange = winnerNewElo - winnerOldElo;
-        updatedReportData.winnerMatchCount = winnerMatchCount;
-        updatedReportData.winnerWinRate = winnerWinRate;
-        updatedReportData.loserOldElo = loserOldElo;
-        updatedReportData.loserNewElo = loserNewElo;
-        updatedReportData.loserEloChange = loserNewElo - loserOldElo;
-        updatedReportData.loserMatchCount = loserMatchCount;
-        updatedReportData.loserWinRate = loserWinRate;
-        
-        // Update the approved match document with ELO data
-        await updateDoc(doc(db, 'approvedMatches', reportId), {
-            winnerOldElo,
-            winnerNewElo,
+        // Create complete approved match data with ALL ELO information
+        const approvedMatchData = {
+            ...reportData,
+            winnerScore: winnerScore,
+            winnerSuicides: winnerSuicides, 
+            winnerComment: winnerComment,
+            winnerDemoLink: winnerDemoLink,
+            approved: true,
+            approvedAt: serverTimestamp(),
+            approvedBy: auth.currentUser.uid,
+            createdAt: reportData.createdAt || serverTimestamp(),
+            winnerId: winnerId,
+            loserId: loserId,
+            // Store ELO values - matching D2/D3 field names
+            winnerOldElo: winnerOldElo,
+            loserOldElo: loserOldElo,
+            losersOldElo: loserOldElo,  // Legacy field name for compatibility
+            winnerNewElo: winnerNewElo,
+            loserNewElo: loserNewElo,
             winnerEloChange: winnerNewElo - winnerOldElo,
-            winnerMatchCount,
-            winnerWinRate,
-            loserOldElo,
-            loserNewElo,
             loserEloChange: loserNewElo - loserOldElo,
-            loserMatchCount,
-            loserWinRate
-        });
+            // Store match stats for Emerald rank detection
+            winnerMatchCount: winnerMatchCount,
+            loserMatchCount: loserMatchCount,
+            winnerWinRate: winnerWinRate,
+            loserWinRate: loserWinRate
+        };
+
+        // Move match to approved collection with complete ELO data
+        await setDoc(doc(db, 'approvedMatches', reportId), approvedMatchData);
+        await deleteDoc(reportRef);
+
+        console.log('Match moved to approved collection with ELO data');
 
         // Check and award Top Rank ribbon to the winner if they reached #1 in their rank
         try {

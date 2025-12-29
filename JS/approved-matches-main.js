@@ -1352,18 +1352,27 @@ function displayEloChangesFromMatch(card, match) {
     let winnerChange = null;
     let loserChange = null;
     
+    // Get winner's old ELO (check multiple possible field names)
+    const winnerOldElo = match.winnerOldElo;
+    // Get winner's new ELO (check multiple possible field names: winnerNewElo or newElo)
+    const winnerNewElo = match.winnerNewElo !== undefined ? match.winnerNewElo : match.newElo;
+    
+    // Get loser's old ELO (check multiple possible field names: loserOldElo or losersOldElo)
+    const loserOldElo = match.loserOldElo !== undefined ? match.loserOldElo : match.losersOldElo;
+    // Get loser's new ELO (check multiple possible field names: loserNewElo or losersNewElo)
+    const loserNewElo = match.loserNewElo !== undefined ? match.loserNewElo : match.losersNewElo;
+    
     // Get ELO changes from match document fields
     if (match.winnerEloChange !== undefined) {
         winnerChange = match.winnerEloChange;
-    } else if (match.winnerNewElo !== undefined && match.winnerOldElo !== undefined) {
-        winnerChange = match.winnerNewElo - match.winnerOldElo;
+    } else if (winnerNewElo !== undefined && winnerOldElo !== undefined) {
+        winnerChange = winnerNewElo - winnerOldElo;
     }
     
     if (match.loserEloChange !== undefined) {
         loserChange = match.loserEloChange;
-    } else if (match.loserNewElo !== undefined && (match.loserOldElo || match.losersOldElo) !== undefined) {
-        const loserOldElo = match.loserOldElo || match.losersOldElo;
-        loserChange = match.loserNewElo - loserOldElo;
+    } else if (loserNewElo !== undefined && loserOldElo !== undefined) {
+        loserChange = loserNewElo - loserOldElo;
     }
     
     // If we don't have both changes, return false to trigger database query
@@ -1410,18 +1419,27 @@ async function displayEloChanges(card, match) {
     let winnerChange = null;
     let loserChange = null;
     
+    // Get winner's old ELO (check multiple possible field names)
+    const winnerOldElo = match.winnerOldElo;
+    // Get winner's new ELO (check multiple possible field names: winnerNewElo or newElo)
+    const winnerNewElo = match.winnerNewElo !== undefined ? match.winnerNewElo : match.newElo;
+    
+    // Get loser's old ELO (check multiple possible field names: loserOldElo or losersOldElo)
+    const loserOldElo = match.loserOldElo !== undefined ? match.loserOldElo : match.losersOldElo;
+    // Get loser's new ELO (check multiple possible field names: loserNewElo or losersNewElo)
+    const loserNewElo = match.loserNewElo !== undefined ? match.loserNewElo : match.losersNewElo;
+    
     // Try to get ELO changes from match document fields (most reliable)
     if (match.winnerEloChange !== undefined) {
         winnerChange = match.winnerEloChange;
-    } else if (match.winnerNewElo !== undefined && match.winnerOldElo !== undefined) {
-        winnerChange = match.winnerNewElo - match.winnerOldElo;
+    } else if (winnerNewElo !== undefined && winnerOldElo !== undefined) {
+        winnerChange = winnerNewElo - winnerOldElo;
     }
     
     if (match.loserEloChange !== undefined) {
         loserChange = match.loserEloChange;
-    } else if (match.loserNewElo !== undefined && (match.loserOldElo || match.losersOldElo) !== undefined) {
-        const loserOldElo = match.loserOldElo || match.losersOldElo;
-        loserChange = match.loserNewElo - loserOldElo;
+    } else if (loserNewElo !== undefined && loserOldElo !== undefined) {
+        loserChange = loserNewElo - loserOldElo;
     }
     
     // If we don't have both changes, try querying eloHistory (backward compatibility)
