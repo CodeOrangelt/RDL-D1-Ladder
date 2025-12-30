@@ -62,6 +62,10 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         request.auth.uid == userId || 
         canManageArticles(request.auth.uid) ||
+        // Allow any authenticated user to award points (for match approvals)
+        // Only if updating points and/or lastPointsModified fields
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points', 'lastPointsModified']) ||
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points'])) ||
         (
           (isAdminEmail() || hasRole(request.auth.uid, ['admin', 'owner', 'council'])) &&
           request.resource.data.diff(resource.data).affectedKeys()
@@ -596,13 +600,11 @@ service cloud.firestore {
         isAdminEmail() || 
         hasRole(request.auth.uid, ['admin', 'owner', 'council'])
       );
-      allow create: if request.auth != null && (
-        isAdminEmail() || 
-        hasRole(request.auth.uid, ['admin', 'owner', 'council'])
-      ) && request.resource.data.keys().hasAll([
-        'userId', 'previousPoints', 'newPoints', 'action', 
-        'amount', 'timestamp'
-      ]);
+      allow create: if request.auth != null && 
+        request.resource.data.keys().hasAll([
+          'userId', 'previousPoints', 'newPoints', 'action', 
+          'amount', 'timestamp'
+        ]);
       allow update, delete: if false;
     }
 

@@ -1040,7 +1040,7 @@ async function renderMatchCards(docsData) {
         const card = cardClone.querySelector('.match-card');
 
         // Add winner rank border class to the card
-        const winnerRankClass = getEloRankClass(match.winnerOldElo, match.winnerMatchCount ?? 0, match.winnerWinRate ?? 0);
+        const winnerRankClass = getEloRankClass(match.winnerOldElo, match.winnerMatchCount ?? null, match.winnerWinRate ?? 0);
         card.classList.add(`winner-${winnerRankClass}`);
 
         // Populate match card as before
@@ -1050,7 +1050,7 @@ async function renderMatchCards(docsData) {
         const winnerNameEl = card.querySelector('.player.winner .player-name');
         const currentLadder = previewState.currentMode.toLowerCase();
         winnerNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.winnerUsername || 'Unknown'}</a>`;
-        winnerNameEl.style.color = getEloColor(match.winnerOldElo, match.winnerMatchCount ?? 0, match.winnerWinRate ?? 0);
+        winnerNameEl.style.color = getEloColor(match.winnerOldElo, match.winnerMatchCount ?? null, match.winnerWinRate ?? 0);
         
         // Debug logging for Emerald detection
         if (match.winnerOldElo >= 1000) {
@@ -1065,7 +1065,7 @@ async function renderMatchCards(docsData) {
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.loserUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.loserUsername || 'Unknown'}</a>`;
-        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, match.loserMatchCount ?? 0, match.loserWinRate ?? 0);
+        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, match.loserMatchCount ?? null, match.loserWinRate ?? 0);
         
         // Debug logging for Emerald detection
         if ((match.loserOldElo || match.losersOldElo || 0) >= 1000) {

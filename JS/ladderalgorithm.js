@@ -46,7 +46,7 @@ export function assignDefaultEloRating(playerId, playerData) {
     }
 }
 
-export async function updateEloRatings(winnerId, loserId, matchId) {
+export async function updateEloRatings(winnerId, loserId, matchId, winnerMatchCount = 0, loserMatchCount = 0, winnerWinRate = 0, loserWinRate = 0) {
     try {
         // Get batch instance
         const batch = writeBatch(db);
@@ -248,7 +248,7 @@ export async function approveReport(reportId, winnerScore, winnerSuicides, winne
         const loserWinRate = loserMatchCount > 0 ? ((loserData.wins || 0) / loserMatchCount * 100) : 0;
         
         // Update ELO ratings
-        await updateEloRatings(winnerId, loserId, reportId);
+        await updateEloRatings(winnerId, loserId, reportId, winnerMatchCount, loserMatchCount, winnerWinRate, loserWinRate);
         
         // Get new ELO after updating
         const [updatedWinnerDoc, updatedLoserDoc] = await Promise.all([
