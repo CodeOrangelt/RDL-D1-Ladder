@@ -116,6 +116,35 @@ function getEloColor(elo, matchCount = null, winRate = 0) {
   return rank.color;
 }
 
+// Fetch current player stats from the ladder for accurate rank determination
+async function fetchCurrentPlayerStats(username) {
+  if (!username) return null;
+  
+  try {
+    // Determine collection based on current mode
+    const collectionName = previewState.currentMode === "D1" ? "players" : 
+                          previewState.currentMode === "D2" ? "playersD2" : 
+                          previewState.currentMode === "D3" ? "playersD3" : "players";
+    
+    const playersRef = collection(window.db, collectionName);
+    const q = query(playersRef, where("username", "==", username), limit(1));
+    const snapshot = await getDocs(q);
+    
+    if (!snapshot.empty) {
+      const playerData = snapshot.docs[0].data();
+      return {
+        matchCount: playerData.matchCount || 0,
+        winRate: playerData.winRate || 0,
+        elo: playerData.elo || 0
+      };
+    }
+  } catch (error) {
+    console.error(`Error fetching player stats for ${username}:`, error);
+  }
+  
+  return null;
+}
+
 function formatDate(timestamp, includeTime = false) {
     if (!timestamp || !timestamp.seconds) return 'N/A';
     const date = new Date(timestamp.seconds * 1000);
@@ -1039,8 +1068,23 @@ async function renderMatchCards(docsData) {
         const wrapper = cardClone.querySelector('.match-display-wrapper');
         const card = cardClone.querySelector('.match-card');
 
+        // Calculate adjusted match counts (+1 since stored counts are from BEFORE this match)
+        // For display purposes, ensure minimum of 5 matches to avoid "Unranked" status
+        // (If someone has completed THIS match and has an ELO, they should be ranked)
+        const winnerMatchCountRaw = match.winnerMatchCount != null ? match.winnerMatchCount + 1 : null;
+        const loserMatchCountRaw = match.loserMatchCount != null ? match.loserMatchCount + 1 : null;
+        
+        // Use null (lenient mode) if match count data is missing, otherwise ensure minimum of 5
+        const winnerMatchCountAdjusted = winnerMatchCountRaw != null ? Math.max(5, winnerMatchCountRaw) : null;
+        const loserMatchCountAdjusted = loserMatchCountRaw != null ? Math.max(5, loserMatchCountRaw) : null;
+
+        // Debug logging to diagnose rank display issues
+        console.log(`Match Debug - Winner: ${match.winnerUsername}, ELO: ${match.winnerOldElo}, MatchCount: ${match.winnerMatchCount} -> Adjusted: ${winnerMatchCountAdjusted}, WinRate: ${match.winnerWinRate}`);
+        console.log(`Match Debug - Loser: ${match.loserUsername}, ELO: ${match.loserOldElo || match.losersOldElo}, MatchCount: ${match.loserMatchCount} -> Adjusted: ${loserMatchCountAdjusted}, WinRate: ${match.loserWinRate}`);
+
         // Add winner rank border class to the card
-        const winnerRankClass = getEloRankClass(match.winnerOldElo, match.winnerMatchCount ?? null, match.winnerWinRate ?? 0);
+        const winnerRankClass = getEloRankClass(match.winnerOldElo, winnerMatchCountAdjusted, match.winnerWinRate ?? 0);
+        console.log(`Winner rank class: ${winnerRankClass}`);
         card.classList.add(`winner-${winnerRankClass}`);
 
         // Populate match card as before
@@ -1050,11 +1094,11 @@ async function renderMatchCards(docsData) {
         const winnerNameEl = card.querySelector('.player.winner .player-name');
         const currentLadder = previewState.currentMode.toLowerCase();
         winnerNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.winnerUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.winnerUsername || 'Unknown'}</a>`;
-        winnerNameEl.style.color = getEloColor(match.winnerOldElo, match.winnerMatchCount ?? null, match.winnerWinRate ?? 0);
+        winnerNameEl.style.color = getEloColor(match.winnerOldElo, winnerMatchCountAdjusted, match.winnerWinRate ?? 0);
         
         // Debug logging for Emerald detection
         if (match.winnerOldElo >= 1000) {
-            console.log(`Winner ${match.winnerUsername}: ELO=${match.winnerOldElo}, matchCount=${match.winnerMatchCount}, winRate=${match.winnerWinRate}`);
+            console.log(`Winner ${match.winnerUsername}: ELO=${match.winnerOldElo}, matchCount=${winnerMatchCountAdjusted}, winRate=${match.winnerWinRate}`);
         }
         card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
         
@@ -1065,11 +1109,11 @@ async function renderMatchCards(docsData) {
 
         const loserNameEl = card.querySelector('.player.loser .player-name');
         loserNameEl.innerHTML = `<a href="profile.html?username=${encodeURIComponent(match.loserUsername)}&ladder=${currentLadder}" style="color: inherit; text-decoration: none;">${match.loserUsername || 'Unknown'}</a>`;
-        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, match.loserMatchCount ?? null, match.loserWinRate ?? 0);
+        loserNameEl.style.color = getEloColor(match.loserOldElo || match.losersOldElo || 0, loserMatchCountAdjusted, match.loserWinRate ?? 0);
         
         // Debug logging for Emerald detection
         if ((match.loserOldElo || match.losersOldElo || 0) >= 1000) {
-            console.log(`Loser ${match.loserUsername}: ELO=${match.loserOldElo || match.losersOldElo}, matchCount=${match.loserMatchCount}, winRate=${match.loserWinRate}`);
+            console.log(`Loser ${match.loserUsername}: ELO=${match.loserOldElo || match.losersOldElo}, matchCount=${loserMatchCountAdjusted}, winRate=${match.loserWinRate}`);
         }
         card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
         
@@ -1116,7 +1160,7 @@ async function renderMatchCards(docsData) {
         loserCommentEl.textContent = `"${truncateComment(fullLoserComment)}"`;
 
         if (fullWinnerComment && !isUsernameMuted(match.winnerUsername, commentTimestamp)) {
-            winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo));
+            winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo, winnerMatchCountAdjusted, match.winnerWinRate ?? 0));
         } else {
             winnerCommentEl.textContent = filteredWinnerComment === "Muted." ? "Muted." : "-";
             winnerCommentEl.style.cursor = 'default';
@@ -1124,7 +1168,7 @@ async function renderMatchCards(docsData) {
         }
         
         if (fullLoserComment && !isUsernameMuted(match.loserUsername)) {
-            loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.losersOldElo));
+            loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.losersOldElo, loserMatchCountAdjusted, match.loserWinRate ?? 0));
         } else {
             loserCommentEl.textContent = filteredLoserComment === "Muted." ? "Muted." : "-";
             loserCommentEl.style.cursor = 'default';
@@ -2735,8 +2779,12 @@ async function renderNotableMatchCards(matches, container) {
     const wrapper = cardClone.querySelector('.match-display-wrapper');
     const card = cardClone.querySelector('.match-card');
 
+    // Calculate adjusted match counts (+1 since stored counts are from BEFORE this match)
+    const winnerMatchCountAdjusted = match.winnerMatchCount != null ? match.winnerMatchCount + 1 : null;
+    const loserMatchCountAdjusted = match.loserMatchCount != null ? match.loserMatchCount + 1 : null;
+
     // Add winner rank border class
-    const winnerRankClass = getEloRankClass(match.winnerOldElo || match.winnerPreviousElo || 0);
+    const winnerRankClass = getEloRankClass(match.winnerOldElo || match.winnerPreviousElo || 0, winnerMatchCountAdjusted, match.winnerWinRate ?? 0);
     card.classList.add(`winner-${winnerRankClass}`);
 
     // Populate match card
@@ -2745,7 +2793,7 @@ async function renderNotableMatchCards(matches, container) {
 
     const winnerNameEl = card.querySelector('.player.winner .player-name');
     winnerNameEl.textContent = match.winnerUsername || 'Unknown';
-    winnerNameEl.style.color = getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0);
+    winnerNameEl.style.color = getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0, winnerMatchCountAdjusted, match.winnerWinRate ?? 0);
     card.querySelector('.player.winner .player-score').textContent = match.winnerScore ?? 0;
     
     const winnerSuicidesEl = card.querySelector('.player.winner .player-suicides');
@@ -2753,7 +2801,7 @@ async function renderNotableMatchCards(matches, container) {
 
     const loserNameEl = card.querySelector('.player.loser .player-name');
     loserNameEl.textContent = match.loserUsername || 'Unknown';
-    loserNameEl.style.color = getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0);
+    loserNameEl.style.color = getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0, loserMatchCountAdjusted, match.loserWinRate ?? 0);
     card.querySelector('.player.loser .player-score').textContent = match.loserScore ?? 0;
     
     const loserSuicidesEl = card.querySelector('.player.loser .player-suicides');
@@ -2850,7 +2898,7 @@ async function renderNotableMatchCards(matches, container) {
     loserCommentEl.textContent = `"${truncateComment(fullLoserComment)}"`;
 
     if (fullWinnerComment && !isUsernameMuted(match.winnerUsername, commentTimestamp)) {
-      winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0));
+      winnerCommentEl.onclick = () => showPreviewCommentPopup(filteredWinnerComment, match.winnerUsername || 'Winner', getEloColor(match.winnerOldElo || match.winnerPreviousElo || 0, winnerMatchCountAdjusted, match.winnerWinRate ?? 0));
     } else {
       winnerCommentEl.textContent = filteredWinnerComment === "Muted." ? "Muted." : "-";
       winnerCommentEl.style.cursor = 'default';
@@ -2858,7 +2906,7 @@ async function renderNotableMatchCards(matches, container) {
     }
     
     if (fullLoserComment && !isUsernameMuted(match.loserUsername, commentTimestamp)) {
-      loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0));
+      loserCommentEl.onclick = () => showPreviewCommentPopup(filteredLoserComment, match.loserUsername || 'Loser', getEloColor(match.loserOldElo || match.loserPreviousElo || match.losersOldElo || 0, loserMatchCountAdjusted, match.loserWinRate ?? 0));
     } else {
       loserCommentEl.textContent = filteredLoserComment === "Muted." ? "Muted." : "-";
       loserCommentEl.style.cursor = 'default';
